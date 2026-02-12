@@ -8,7 +8,7 @@
  * - Beautiful exercise cards with staggered entrance animations
  */
 
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -20,6 +20,7 @@ import {
   Animated,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   Colors,
   Spacing,
@@ -33,6 +34,8 @@ import ExerciseCard, {
   CATEGORY_ACCENT_COLORS,
 } from '@/components/intervention/ExerciseCard';
 import { CATEGORY_ICONS, DIFFICULTY_ICONS } from '@/constants/icons';
+import { useAuth } from '@/context/AuthContext';
+import { getCompletions } from '@/services/intervention';
 import type { InterventionCategory } from '@/types/intervention';
 
 // ─── Category pill colors ────────────────────────────────
@@ -42,10 +45,35 @@ const FILTER_COLORS: Record<InterventionCategory, string> = {
 
 export default function ExercisesScreen() {
   const router = useRouter();
+  const { user } = useAuth();
   const [activeFilter, setActiveFilter] = useState<
     InterventionCategory | 'all'
   >('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Track which exercises have been completed (exerciseId → count)
+  const [completionMap, setCompletionMap] = useState<Record<string, number>>({});
+
+  // Fetch completions on focus (so returning from exercise shows updated state)
+  useFocusEffect(
+    useCallback(() => {
+      if (!user) return;
+      getCompletions(user.id, 500)
+        .then((completions) => {
+          const map: Record<string, number> = {};
+          for (const c of completions) {
+            map[c.exerciseId] = (map[c.exerciseId] ?? 0) + 1;
+          }
+          setCompletionMap(map);
+        })
+        .catch(() => {});
+    }, [user])
+  );
+
+  const completedCount = useMemo(
+    () => Object.keys(completionMap).length,
+    [completionMap]
+  );
 
   // Stats animation
   const statsAnim = useRef(new Animated.Value(0)).current;
@@ -156,11 +184,11 @@ export default function ExercisesScreen() {
             accentColor={Colors.accent}
           />
           <StatCard
-            value="0"
+            value={completedCount.toString()}
             label="Completed"
             icon="✅"
             accentColor={Colors.calm}
-            subtitle="Start your journey"
+            subtitle={completedCount > 0 ? `${Object.values(completionMap).reduce((a, b) => a + b, 0)} total sessions` : 'Start your journey'}
           />
         </Animated.View>
 
@@ -321,6 +349,7 @@ export default function ExercisesScreen() {
               exercise={exercise}
               onPress={() => handleExercisePress(exercise.id)}
               delay={index * 60}
+              completionCount={completionMap[exercise.id] ?? 0}
             />
           ))}
         </View>

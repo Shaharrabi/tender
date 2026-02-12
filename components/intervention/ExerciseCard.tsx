@@ -36,6 +36,8 @@ interface ExerciseCardProps {
   onPress: () => void;
   /** Stagger delay in ms for entrance animation. Defaults to 0. */
   delay?: number;
+  /** Number of times this exercise has been completed. 0 = never done. */
+  completionCount?: number;
 }
 
 // ─── Category Colors ─────────────────────────────────────
@@ -109,6 +111,7 @@ export default function ExerciseCard({
   exercise,
   onPress,
   delay = 0,
+  completionCount = 0,
 }: ExerciseCardProps) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(18)).current;
@@ -152,7 +155,7 @@ export default function ExerciseCard({
 
         {/* Card body */}
         <View style={styles.cardBody}>
-          {/* Top row: category badge */}
+          {/* Top row: category badge + completion indicator */}
           <View style={styles.topRow}>
             <View
               style={[
@@ -164,6 +167,14 @@ export default function ExerciseCard({
                 {exercise.category}
               </Text>
             </View>
+            {completionCount > 0 && (
+              <View style={styles.completionBadge}>
+                <Text style={styles.completionIcon}>{'\u2714'}</Text>
+                <Text style={styles.completionText}>
+                  {completionCount === 1 ? 'Done' : `${completionCount}×`}
+                </Text>
+              </View>
+            )}
           </View>
 
           {/* Title */}
@@ -238,6 +249,7 @@ const styles = StyleSheet.create({
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 2,
   },
   categoryBadge: {
@@ -249,6 +261,26 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
     textTransform: 'capitalize',
+  },
+
+  // Completion badge
+  completionBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E3EFE5',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: BorderRadius.pill,
+    gap: 3,
+  },
+  completionIcon: {
+    fontSize: 11,
+    color: '#4A6F50',
+  },
+  completionText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#4A6F50',
   },
 
   // Title & description

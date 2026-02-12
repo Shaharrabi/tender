@@ -396,6 +396,7 @@ export default function PortraitScreen() {
   const [loading, setLoading] = useState(true);
   const initialTab = (params.tab as TabKey) || 'overview';
   const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
+  const [exportMode, setExportMode] = useState(false);
   const tabScrollRef = useRef<ScrollView>(null);
   const contentScrollRef = useRef<ScrollView>(null);
 
@@ -412,6 +413,36 @@ export default function PortraitScreen() {
     setActiveTab(tab);
     // Scroll content to top when switching tabs
     contentScrollRef.current?.scrollTo({ y: 0, animated: true });
+  };
+
+  // Full portrait export — renders all tabs and triggers browser print
+  const handleExportAll = async () => {
+    if (Platform.OS !== 'web' || typeof window === 'undefined') return;
+
+    // Inject print-specific CSS (hide nav, force all content visible)
+    const styleId = 'portrait-print-styles';
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.textContent = `
+        @media print {
+          body * { visibility: hidden; }
+          #portrait-export-root, #portrait-export-root * { visibility: visible; }
+          #portrait-export-root {
+            position: absolute; left: 0; top: 0; width: 100%;
+          }
+          .no-print { display: none !important; }
+          @page { margin: 0.5in; }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    setExportMode(true);
+    // Wait for React to render all tabs
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    window.print();
+    setExportMode(false);
   };
 
   if (loading) {
@@ -467,11 +498,11 @@ export default function PortraitScreen() {
         </View>
         {Platform.OS === 'web' ? (
           <TouchableOpacity
-            onPress={() => { if (typeof window !== 'undefined') window.print(); }}
+            onPress={handleExportAll}
             activeOpacity={0.7}
             style={[st.headerBackBtn, { alignItems: 'flex-end' }]}
           >
-            <Text style={st.headerBackText}>Export</Text>
+            <Text style={st.headerBackText}>{exportMode ? 'Printing...' : 'Export All'}</Text>
           </TouchableOpacity>
         ) : (
           <View style={st.headerBackBtn} />
@@ -516,30 +547,81 @@ export default function PortraitScreen() {
       </View>
 
       {/* ── Tab Content ───────────────────────────── */}
-      <ScrollView
-        ref={contentScrollRef}
-        style={st.contentScroll}
-        contentContainerStyle={st.contentContainer}
-        showsVerticalScrollIndicator={false}
-      >
-        {activeTab === 'overview' && (
-          <OverviewTab
-            portrait={portrait}
-            userName={userName}
-            overallScore={overallScore}
-            onNavigate={handleTabChange}
-          />
-        )}
-        {activeTab === 'scores' && (
-          <ScoresTab portrait={portrait} overallScore={overallScore} />
-        )}
-        {activeTab === 'lenses' && <LensesTab portrait={portrait} />}
-        {activeTab === 'cycle' && <CycleTab portrait={portrait} />}
-        {activeTab === 'growth' && <GrowthTab portrait={portrait} />}
-        {activeTab === 'anchors' && (
-          <AnchorsTab portrait={portrait} router={router} />
-        )}
-      </ScrollView>
+      {exportMode ? (
+        /* Export mode: render ALL tabs together for printing */
+        <ScrollView
+          style={st.contentScroll}
+          contentContainerStyle={st.contentContainer}
+          showsVerticalScrollIndicator={false}
+          nativeID="portrait-export-root"
+        >
+          <View style={st.exportSectionHeader}>
+            <Text style={st.exportTitle}>Your Portrait — Full Report</Text>
+            <Text style={st.exportDate}>{dateStr}</Text>
+          </View>
+
+          <View style={st.exportSection}>
+            <Text style={st.exportSectionLabel}>Overview</Text>
+            <OverviewTab
+              portrait={portrait}
+              userName={userName}
+              overallScore={overallScore}
+              onNavigate={() => {}}
+            />
+          </View>
+
+          <View style={st.exportSection}>
+            <Text style={st.exportSectionLabel}>Scores</Text>
+            <ScoresTab portrait={portrait} overallScore={overallScore} />
+          </View>
+
+          <View style={st.exportSection}>
+            <Text style={st.exportSectionLabel}>Lenses</Text>
+            <LensesTab portrait={portrait} />
+          </View>
+
+          <View style={st.exportSection}>
+            <Text style={st.exportSectionLabel}>Cycle</Text>
+            <CycleTab portrait={portrait} />
+          </View>
+
+          <View style={st.exportSection}>
+            <Text style={st.exportSectionLabel}>Growth</Text>
+            <GrowthTab portrait={portrait} />
+          </View>
+
+          <View style={st.exportSection}>
+            <Text style={st.exportSectionLabel}>Anchors & Partner Guide</Text>
+            <AnchorsTab portrait={portrait} router={router} />
+          </View>
+        </ScrollView>
+      ) : (
+        /* Normal mode: show active tab only */
+        <ScrollView
+          ref={contentScrollRef}
+          style={st.contentScroll}
+          contentContainerStyle={st.contentContainer}
+          showsVerticalScrollIndicator={false}
+        >
+          {activeTab === 'overview' && (
+            <OverviewTab
+              portrait={portrait}
+              userName={userName}
+              overallScore={overallScore}
+              onNavigate={handleTabChange}
+            />
+          )}
+          {activeTab === 'scores' && (
+            <ScoresTab portrait={portrait} overallScore={overallScore} />
+          )}
+          {activeTab === 'lenses' && <LensesTab portrait={portrait} />}
+          {activeTab === 'cycle' && <CycleTab portrait={portrait} />}
+          {activeTab === 'growth' && <GrowthTab portrait={portrait} />}
+          {activeTab === 'anchors' && (
+            <AnchorsTab portrait={portrait} router={router} />
+          )}
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 }
@@ -2979,5 +3061,40 @@ const st = StyleSheet.create({
     fontSize: FontSizes.bodySmall,
     color: Colors.textSecondary,
     lineHeight: 20,
+  },
+
+  // ── Export Mode Styles ──
+  exportSectionHeader: {
+    alignItems: 'center' as const,
+    paddingVertical: Spacing.lg,
+    marginBottom: Spacing.md,
+    borderBottomWidth: 2,
+    borderBottomColor: Colors.primary,
+  },
+  exportTitle: {
+    fontSize: 26,
+    fontWeight: '700' as const,
+    fontFamily: FontFamilies.heading,
+    color: Colors.text,
+  },
+  exportDate: {
+    fontSize: FontSizes.body,
+    color: Colors.textSecondary,
+    marginTop: 4,
+  },
+  exportSection: {
+    marginBottom: Spacing.xl,
+    paddingBottom: Spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  exportSectionLabel: {
+    fontSize: FontSizes.headingL,
+    fontWeight: '700' as const,
+    fontFamily: FontFamilies.heading,
+    color: Colors.primary,
+    marginBottom: Spacing.md,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 1.5,
   },
 });
