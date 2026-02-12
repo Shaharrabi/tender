@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "couples-app-v0.1",
-    "slug": "couples-app-v0.1",
+    "name": "Tender",
+    "slug": "tender-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "couplesappv01",
+    "scheme": "tender",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {

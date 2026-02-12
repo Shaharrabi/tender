@@ -1,0 +1,23 @@
+# Netlify build configuration for Expo static web export
+
+[build]
+  # Write a .env.local so Expo's Metro bundler injects the vars at compile time.
+  # Netlify sets [build.environment] in the shell, but Expo reads .env.local files.
+  command = """
+echo "EXPO_PUBLIC_SUPABASE_URL=$EXPO_PUBLIC_SUPABASE_URL" > .env.local && \
+echo "EXPO_PUBLIC_SUPABASE_ANON_KEY=$EXPO_PUBLIC_SUPABASE_ANON_KEY" >> .env.local && \
+npm install && \
+npx expo export --platform web
+"""
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "18"
+  EXPO_PUBLIC_SUPABASE_URL = "https://qwqclhzezyzeflxrtfjy.supabase.co"
+  EXPO_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_X44nRh0JlS952CarvKJfcg_WAJLktxq"
+
+# SPA fallback — route all requests to index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

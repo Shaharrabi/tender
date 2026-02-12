@@ -1,0 +1,2744 @@
+/**
+ * Portrait Screen — Tabbed Report with Animated Reveals
+ *
+ * Tabs: Overview | Scores | Lenses | Cycle | Growth | Anchors
+ *
+ * Each tab is a self-contained section with smooth animated reveals,
+ * color-coded visuals, and a warm, polished aesthetic.
+ */
+
+import React, { useEffect, useState, useRef } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  SafeAreaView,
+  ActivityIndicator,
+  Animated,
+  Dimensions,
+  LayoutAnimation,
+  Platform,
+  UIManager,
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { useAuth } from '@/context/AuthContext';
+import { getPortrait } from '@/services/portrait';
+import {
+  Colors,
+  Spacing,
+  FontSizes,
+  ButtonSizes,
+  FontFamilies,
+  BorderRadius,
+  Shadows,
+} from '@/constants/theme';
+import type { IndividualPortrait } from '@/types';
+
+import PortraitLens from '@/components/portrait/PortraitLens';
+import AppIcon from '@/components/ui/AppIcon';
+import { synthesizeAssessments, type AssessmentSynthesis } from '@/utils/portrait/assessment-synthesis';
+import { getStep } from '@/utils/steps/twelve-steps';
+import { STAT_ICONS } from '@/constants/icons';
+
+// Enable LayoutAnimation on Android
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+// ─── Tab definitions ────────────────────────────────────
+
+type TabKey = 'overview' | 'scores' | 'lenses' | 'cycle' | 'growth' | 'anchors';
+
+interface TabDef {
+  key: TabKey;
+  label: string;
+  icon: string;
+  color: string;
+}
+
+const TABS: TabDef[] = [
+  { key: 'overview', label: 'Overview', icon: STAT_ICONS.overview, color: Colors.primary },
+  { key: 'scores', label: 'Scores', icon: STAT_ICONS.scores, color: Colors.calm },
+  { key: 'lenses', label: 'Lenses', icon: STAT_ICONS.lenses, color: Colors.depth },
+  { key: 'cycle', label: 'Cycle', icon: STAT_ICONS.cycle, color: Colors.secondary },
+  { key: 'growth', label: 'Growth', icon: STAT_ICONS.growth, color: Colors.warning },
+  { key: 'anchors', label: 'Anchors', icon: STAT_ICONS.anchor, color: Colors.calm },
+];
+
+// ─── Narrative generator ────────────────────────────────
+
+function generateLandingNarrative(portrait: IndividualPortrait): string {
+  const cs = portrait.compositeScores;
+  const nc = portrait.negativeCycle;
+
+  const strengths: string[] = [];
+  const growth: string[] = [];
+
+  if (cs.accessibility >= 60) strengths.push('emotional openness');
+  if (cs.responsiveness >= 60) strengths.push('attunement to others');
+  if (cs.engagement >= 60) strengths.push('relational investment');
+  if (cs.selfLeadership >= 60) strengths.push('self-awareness');
+  if (cs.valuesCongruence >= 60) strengths.push('values alignment');
+  if (cs.regulationScore >= 60) strengths.push('emotional regulation');
+
+  if (cs.regulationScore < 40) growth.push('widening your emotional window');
+  if (cs.windowWidth < 40) growth.push('building tolerance for discomfort');
+  if (cs.valuesCongruence < 40) growth.push('aligning your actions with your values');
+  if (cs.selfLeadership < 40) growth.push('developing your inner compass');
+
+  const strengthText = strengths.length > 0
+    ? `Your profile shows real strength in ${strengths.slice(0, 3).join(', ')}`
+    : 'Your profile reveals a complex, nuanced picture of how you relate';
+
+  const growthText = growth.length > 0
+    ? `, with opportunities to grow in ${growth.slice(0, 2).join(' and ')}`
+    : ', with a solid foundation to build on';
+
+  const cycleText = nc.position === 'pursuer'
+    ? 'You tend to move toward connection under stress — reaching for reassurance and closeness.'
+    : nc.position === 'withdrawer'
+    ? 'You tend to pull inward under stress — creating space to protect yourself.'
+    : nc.position === 'mixed'
+    ? 'Your response to stress is nuanced — sometimes reaching toward, sometimes pulling back.'
+    : 'You show flexibility in how you respond to relational stress — adapting to the moment.';
+
+  return `${strengthText}${growthText}.\n\n${cycleText} This isn't a flaw — it's a strategy that developed for good reasons. Understanding it is the first step toward choosing something different when you're ready.`;
+}
+
+// ─── Score helpers ──────────────────────────────────────
+
+function getOverallScore(cs: IndividualPortrait['compositeScores']): number {
+  const keys = ['accessibility', 'responsiveness', 'engagement', 'regulationScore', 'windowWidth', 'selfLeadership', 'valuesCongruence'] as const;
+  const total = keys.reduce((sum, k) => sum + cs[k], 0);
+  return Math.round(total / keys.length);
+}
+
+function getTierInfo(value: number): { label: string; color: string } {
+  if (value >= 75) return { label: 'Strength', color: Colors.success };
+  if (value >= 55) return { label: 'Developing', color: Colors.calm };
+  if (value >= 35) return { label: 'Emerging', color: Colors.warning };
+  return { label: 'Focus Area', color: Colors.error };
+}
+
+function getTopStrength(cs: IndividualPortrait['compositeScores']): string {
+  const scores = [
+    { label: 'Engagement', value: cs.engagement },
+    { label: 'Accessibility', value: cs.accessibility },
+    { label: 'Responsiveness', value: cs.responsiveness },
+    { label: 'Regulation', value: cs.regulationScore },
+    { label: 'Self-Leadership', value: cs.selfLeadership },
+    { label: 'Values Alignment', value: cs.valuesCongruence },
+  ];
+  const top = scores.sort((a, b) => b.value - a.value)[0];
+  return `${top.label} (${top.value}/100)`;
+}
+
+// ─── Animated Bar Component ────────────────────────────
+
+function AnimatedScoreBar({
+  label,
+  value,
+  delay = 0,
+  interpretation,
+}: {
+  label: string;
+  value: number;
+  delay?: number;
+  interpretation?: string;
+}) {
+  const widthAnim = useRef(new Animated.Value(0)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+  const tier = getTierInfo(value);
+
+  useEffect(() => {
+    Animated.sequence([
+      Animated.delay(delay),
+      Animated.parallel([
+        Animated.timing(widthAnim, {
+          toValue: value,
+          duration: 800,
+          useNativeDriver: false,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start();
+  }, []);
+
+  const animatedWidth = widthAnim.interpolate({
+    inputRange: [0, 100],
+    outputRange: ['0%', '100%'],
+  });
+
+  return (
+    <Animated.View style={[st.barContainer, { opacity: opacityAnim }]}>
+      <View style={st.barLabelRow}>
+        <Text style={st.barLabel}>{label}</Text>
+        <Text style={[st.barValue, { color: tier.color }]}>{value}</Text>
+      </View>
+      <View style={st.barTrack}>
+        <Animated.View
+          style={[
+            st.barFill,
+            {
+              width: animatedWidth,
+              backgroundColor: tier.color,
+            },
+          ]}
+        />
+      </View>
+      {interpretation && (
+        <Text style={[st.barInterpretation, { color: tier.color }]}>
+          {interpretation}
+        </Text>
+      )}
+    </Animated.View>
+  );
+}
+
+// ─── Animated Score Circle ─────────────────────────────
+
+function AnimatedScoreCircle({ score }: { score: number }) {
+  const scaleAnim = useRef(new Animated.Value(0.5)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+  const countAnim = useRef(new Animated.Value(0)).current;
+  const [displayCount, setDisplayCount] = useState(0);
+  const tier = getTierInfo(score);
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 6,
+        tension: 40,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(countAnim, {
+        toValue: score,
+        duration: 1200,
+        useNativeDriver: false,
+      }),
+    ]).start();
+
+    countAnim.addListener(({ value }) => {
+      setDisplayCount(Math.round(value));
+    });
+
+    return () => countAnim.removeAllListeners();
+  }, []);
+
+  return (
+    <Animated.View
+      style={[
+        st.scoreCircleContainer,
+        {
+          opacity: opacityAnim,
+          transform: [{ scale: scaleAnim }],
+        },
+      ]}
+    >
+      <View style={[st.scoreCircleOuter, { borderColor: tier.color }]}>
+        <Text style={[st.scoreCircleNumber, { color: tier.color }]}>
+          {displayCount}
+        </Text>
+        <Text style={st.scoreCircleLabel}>overall</Text>
+      </View>
+      <Text style={[st.scoreCircleTier, { color: tier.color }]}>{tier.label}</Text>
+    </Animated.View>
+  );
+}
+
+// ─── Stat Card ──────────────────────────────────────────
+
+function StatCard({
+  icon,
+  label,
+  value,
+  color,
+  delay = 0,
+}: {
+  icon: string;
+  label: string;
+  value: string;
+  color: string;
+  delay?: number;
+}) {
+  const slideAnim = useRef(new Animated.Value(20)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.sequence([
+      Animated.delay(delay),
+      Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start();
+  }, []);
+
+  return (
+    <Animated.View
+      style={[
+        st.statCard,
+        {
+          opacity: opacityAnim,
+          transform: [{ translateY: slideAnim }],
+        },
+      ]}
+    >
+      <View style={[st.statIcon, { backgroundColor: color }]}>
+        <Text style={st.statIconText}>{icon}</Text>
+      </View>
+      <Text style={st.statLabel}>{label}</Text>
+      <Text style={st.statValue} numberOfLines={2}>{value}</Text>
+    </Animated.View>
+  );
+}
+
+// ─── A.R.E. Score Ring ─────────────────────────────────
+
+function AREScoreRing({
+  label,
+  value,
+  color,
+  delay = 0,
+}: {
+  label: string;
+  value: number;
+  color: string;
+  delay?: number;
+}) {
+  const scaleAnim = useRef(new Animated.Value(0.3)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+  const countAnim = useRef(new Animated.Value(0)).current;
+  const [displayCount, setDisplayCount] = useState(0);
+
+  useEffect(() => {
+    Animated.sequence([
+      Animated.delay(delay),
+      Animated.parallel([
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          friction: 6,
+          tension: 40,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(countAnim, {
+          toValue: value,
+          duration: 1000,
+          useNativeDriver: false,
+        }),
+      ]),
+    ]).start();
+
+    countAnim.addListener(({ value: v }) => {
+      setDisplayCount(Math.round(v));
+    });
+
+    return () => countAnim.removeAllListeners();
+  }, []);
+
+  const tier = getTierInfo(value);
+
+  return (
+    <Animated.View
+      style={[
+        st.areRingItem,
+        {
+          opacity: opacityAnim,
+          transform: [{ scale: scaleAnim }],
+        },
+      ]}
+    >
+      <View style={[st.areRingOuter, { borderColor: color }]}>
+        {/* Background track */}
+        <View style={[st.areRingTrack, { borderColor: color + '20' }]} />
+        <Text style={[st.areRingValue, { color }]}>{displayCount}</Text>
+      </View>
+      <Text style={st.areRingLabel}>{label}</Text>
+      <Text style={[st.areRingTier, { color: tier.color }]}>{tier.label}</Text>
+    </Animated.View>
+  );
+}
+
+// ─── Main Component ────────────────────────────────────
+
+export default function PortraitScreen() {
+  const { user } = useAuth();
+  const router = useRouter();
+  const [portrait, setPortrait] = useState<IndividualPortrait | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<TabKey>('overview');
+  const tabScrollRef = useRef<ScrollView>(null);
+  const contentScrollRef = useRef<ScrollView>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    getPortrait(user.id)
+      .then(setPortrait)
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [user]);
+
+  const handleTabChange = (tab: TabKey) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setActiveTab(tab);
+    // Scroll content to top when switching tabs
+    contentScrollRef.current?.scrollTo({ y: 0, animated: true });
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={st.container}>
+        <View style={st.center}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!portrait) {
+    return (
+      <SafeAreaView style={st.container}>
+        <View style={st.center}>
+          <Text style={st.errorText}>
+            No portrait found. Complete all 6 assessments first.
+          </Text>
+          <TouchableOpacity
+            style={st.button}
+            onPress={() => router.replace('/(app)/home')}
+          >
+            <Text style={st.buttonText}>Back to Home</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const userName = user?.email?.split('@')[0] ?? 'You';
+  const dateStr = new Date(portrait.createdAt).toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  });
+  const overallScore = getOverallScore(portrait.compositeScores);
+
+  return (
+    <SafeAreaView style={st.container}>
+      {/* ── Header ────────────────────────────────── */}
+      <View style={st.header}>
+        <TouchableOpacity
+          onPress={() => router.replace('/(app)/home')}
+          activeOpacity={0.7}
+          style={st.headerBackBtn}
+        >
+          <Text style={st.headerBackText}>{'<'} Back</Text>
+        </TouchableOpacity>
+        <View style={st.headerCenter}>
+          <Text style={st.headerTitle}>Your Portrait</Text>
+          <Text style={st.headerDate}>{dateStr}</Text>
+        </View>
+        {Platform.OS === 'web' ? (
+          <TouchableOpacity
+            onPress={() => { if (typeof window !== 'undefined') window.print(); }}
+            activeOpacity={0.7}
+            style={[st.headerBackBtn, { alignItems: 'flex-end' }]}
+          >
+            <Text style={st.headerBackText}>Export</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={st.headerBackBtn} />
+        )}
+      </View>
+
+      {/* ── Tab Bar ───────────────────────────────── */}
+      <View style={st.tabBarWrapper}>
+        <ScrollView
+          ref={tabScrollRef}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={st.tabBarContent}
+        >
+          {TABS.map((tab) => {
+            const isActive = activeTab === tab.key;
+            return (
+              <TouchableOpacity
+                key={tab.key}
+                style={[
+                  st.tabItem,
+                  isActive && { backgroundColor: tab.color + '15', borderColor: tab.color },
+                ]}
+                onPress={() => handleTabChange(tab.key)}
+                activeOpacity={0.7}
+              >
+                <Text style={[st.tabIcon, isActive && { color: tab.color }]}>
+                  {tab.icon}
+                </Text>
+                <Text
+                  style={[
+                    st.tabLabel,
+                    isActive && { color: tab.color, fontWeight: '700' },
+                  ]}
+                >
+                  {tab.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      {/* ── Tab Content ───────────────────────────── */}
+      <ScrollView
+        ref={contentScrollRef}
+        style={st.contentScroll}
+        contentContainerStyle={st.contentContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        {activeTab === 'overview' && (
+          <OverviewTab
+            portrait={portrait}
+            userName={userName}
+            overallScore={overallScore}
+            onNavigate={handleTabChange}
+          />
+        )}
+        {activeTab === 'scores' && (
+          <ScoresTab portrait={portrait} overallScore={overallScore} />
+        )}
+        {activeTab === 'lenses' && <LensesTab portrait={portrait} />}
+        {activeTab === 'cycle' && <CycleTab portrait={portrait} />}
+        {activeTab === 'growth' && <GrowthTab portrait={portrait} />}
+        {activeTab === 'anchors' && (
+          <AnchorsTab portrait={portrait} router={router} />
+        )}
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+// ═══════════════════════════════════════════════════════
+// ─── TAB PANELS ──────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+
+// ─── OVERVIEW TAB ───────────────────────────────────
+
+function OverviewTab({
+  portrait,
+  userName,
+  overallScore,
+  onNavigate,
+}: {
+  portrait: IndividualPortrait;
+  userName: string;
+  overallScore: number;
+  onNavigate: (tab: TabKey) => void;
+}) {
+  const narrative = generateLandingNarrative(portrait);
+  const synthesis = synthesizeAssessments(portrait);
+  const cs = portrait.compositeScores;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 600,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  return (
+    <Animated.View style={{ opacity: fadeAnim }}>
+      {/* Landing hero */}
+      <View style={st.heroSection}>
+        <Text style={st.heroEyebrow}>YOUR RELATIONAL PORTRAIT</Text>
+        <Text style={st.heroTitle}>{userName}</Text>
+        <AnimatedScoreCircle score={overallScore} />
+      </View>
+
+      {/* Narrative */}
+      <View style={st.card}>
+        <Text style={st.cardHeading}>Here's what we learned</Text>
+        <Text style={st.cardBody}>{narrative}</Text>
+      </View>
+
+      {/* Cross-Assessment Synthesis */}
+      <SynthesisCard synthesis={synthesis} />
+
+      {/* A.R.E. Radar / Ring Chart */}
+      <View style={st.areRingsCard}>
+        <Text style={st.scoreGroupLabel}>A.R.E. ATTACHMENT QUALITY</Text>
+        <View style={st.scoreGroupDivider} />
+        <View style={st.areRingsRow}>
+          <AREScoreRing label="Accessible" value={cs.accessibility} color={Colors.calm} delay={200} />
+          <AREScoreRing label="Responsive" value={cs.responsiveness} color={Colors.primary} delay={400} />
+          <AREScoreRing label="Engaged" value={cs.engagement} color={Colors.secondary} delay={600} />
+        </View>
+      </View>
+
+      {/* Quick Stats Grid */}
+      <Text style={st.sectionLabel}>AT A GLANCE</Text>
+      <View style={st.statsGrid}>
+        <StatCard
+          icon={STAT_ICONS.cycle}
+          label="Cycle Position"
+          value={portrait.negativeCycle.position.charAt(0).toUpperCase() + portrait.negativeCycle.position.slice(1)}
+          color={Colors.secondary}
+          delay={100}
+        />
+        <StatCard
+          icon={STAT_ICONS.strength}
+          label="Top Strength"
+          value={getTopStrength(cs)}
+          color={Colors.success}
+          delay={200}
+        />
+        <StatCard
+          icon={STAT_ICONS.growth}
+          label="Growth Edge"
+          value={portrait.growthEdges[0]?.title ?? 'Not identified'}
+          color={Colors.warning}
+          delay={300}
+        />
+        <StatCard
+          icon={STAT_ICONS.values}
+          label="Core Values"
+          value={portrait.fourLens.values.coreValues.slice(0, 3).join(', ')}
+          color={Colors.primary}
+          delay={400}
+        />
+      </View>
+
+      {/* Quick navigation */}
+      <Text style={st.sectionLabel}>EXPLORE YOUR PORTRAIT</Text>
+      <View style={st.navCards}>
+        {TABS.slice(1).map((tab) => (
+          <TouchableOpacity
+            key={tab.key}
+            style={st.navCard}
+            onPress={() => onNavigate(tab.key)}
+            activeOpacity={0.8}
+          >
+            <View style={[st.navCardIcon, { backgroundColor: tab.color }]}>
+              <Text style={st.navCardIconText}>{tab.icon}</Text>
+            </View>
+            <Text style={st.navCardLabel}>{tab.label}</Text>
+            <Text style={st.navCardArrow}>{'>'}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </Animated.View>
+  );
+}
+
+// ─── SYNTHESIS CARD ─────────────────────────────────
+
+function SynthesisCard({ synthesis }: { synthesis: AssessmentSynthesis }) {
+  const stepInfo = getStep(synthesis.recommendedStep);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      delay: 300,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  return (
+    <Animated.View style={[st.synthesisCard, { opacity: fadeAnim }]}>
+      <Text style={st.synthesisSectionLabel}>CROSS-ASSESSMENT SYNTHESIS</Text>
+      <View style={st.scoreGroupDivider} />
+
+      {/* Primary Dynamic */}
+      <View style={st.synthesisPatternBox}>
+        <Text style={st.synthesisPatternLabel}>Primary Dynamic</Text>
+        <Text style={st.synthesisPatternText}>{synthesis.primaryPattern}</Text>
+      </View>
+
+      {/* Core Narrative */}
+      <Text style={st.synthesisNarrative}>{synthesis.coreNarrative}</Text>
+
+      {/* Reinforcing Factors */}
+      {synthesis.reinforcingFactors.length > 0 && (
+        <View style={st.synthesisSection}>
+          <Text style={st.synthesisSectionTitle}>Converging Patterns</Text>
+          {synthesis.reinforcingFactors.map((f, i) => (
+            <View key={i} style={st.synthesisListItem}>
+              <View style={[st.synthesisListDot, { backgroundColor: Colors.secondary }]} />
+              <Text style={st.synthesisListText}>{f}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+
+      {/* Contradictions — surfaced prominently */}
+      {synthesis.contradictions.length > 0 && (
+        <View style={st.synthesisSection}>
+          <Text style={st.synthesisSectionTitle}>Interesting Tensions</Text>
+          {synthesis.contradictions.map((c, i) => (
+            <View key={i} style={st.synthesisListItem}>
+              <View style={[st.synthesisListDot, { backgroundColor: Colors.depth }]} />
+              <Text style={st.synthesisListText}>{c}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+
+      {/* Protective Factors */}
+      {synthesis.protectiveFactors.length > 0 && (
+        <View style={st.synthesisSection}>
+          <Text style={st.synthesisSectionTitle}>Your Strengths</Text>
+          {synthesis.protectiveFactors.map((f, i) => (
+            <View key={i} style={st.synthesisListItem}>
+              <View style={[st.synthesisListDot, { backgroundColor: Colors.success }]} />
+              <Text style={st.synthesisListText}>{f}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+
+      {/* Growth Edges */}
+      {synthesis.growthEdges.length > 0 && (
+        <View style={st.synthesisSection}>
+          <Text style={st.synthesisSectionTitle}>Growth Edges</Text>
+          {synthesis.growthEdges.map((e, i) => (
+            <View key={i} style={st.synthesisListItem}>
+              <View style={[st.synthesisListDot, { backgroundColor: Colors.warning }]} />
+              <Text style={st.synthesisListText}>{e}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+
+      {/* Recommended Step */}
+      <View style={st.synthesisStepBox}>
+        <Text style={st.synthesisStepLabel}>RECOMMENDED STARTING POINT</Text>
+        <Text style={st.synthesisStepName}>
+          Step {synthesis.recommendedStep}
+          {stepInfo ? `: ${stepInfo.title}` : ''}
+        </Text>
+        <Text style={st.synthesisStepRationale}>
+          {synthesis.recommendedStepRationale}
+        </Text>
+      </View>
+    </Animated.View>
+  );
+}
+
+// ─── WINDOW OF TOLERANCE INFOGRAPHIC ────────────────
+
+function WindowOfToleranceInfographic({
+  windowWidth,
+  regulationScore,
+}: {
+  windowWidth: number;
+  regulationScore: number;
+}) {
+  const windowAnim = useRef(new Animated.Value(0)).current;
+  const zoneAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.sequence([
+      Animated.delay(800),
+      Animated.parallel([
+        Animated.spring(windowAnim, {
+          toValue: 1,
+          friction: 8,
+          tension: 40,
+          useNativeDriver: false,
+        }),
+        Animated.timing(zoneAnim, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start();
+  }, []);
+
+  // The "window" height is proportional to the score
+  const windowHeightPercent = Math.max(20, Math.min(80, windowWidth));
+
+  const animatedWindowHeight = windowAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, windowHeightPercent * 1.8],
+  });
+
+  const getZoneLabel = (): string => {
+    if (windowWidth >= 70) return 'Wide window — you can handle significant stress before dysregulating';
+    if (windowWidth >= 50) return 'Moderate window — you manage everyday stress but intense situations can push you out';
+    if (windowWidth >= 30) return 'Narrower window — you may get overwhelmed by moderate stress';
+    return 'Narrow window — small stressors can push you into activation or shutdown';
+  };
+
+  return (
+    <View style={st.wotContainer}>
+      <Text style={st.scoreGroupLabel}>WINDOW OF TOLERANCE</Text>
+      <View style={st.scoreGroupDivider} />
+
+      {/* Infographic */}
+      <View style={st.wotInfographic}>
+        {/* Hyperarousal zone */}
+        <Animated.View style={[st.wotZone, st.wotHyperZone, { opacity: zoneAnim }]}>
+          <Text style={st.wotZoneLabel}>Hyperarousal</Text>
+          <Text style={st.wotZoneHint}>Anxiety, panic, anger, racing thoughts</Text>
+        </Animated.View>
+
+        {/* Window zone (the green safe area) */}
+        <Animated.View
+          style={[
+            st.wotWindowZone,
+            { height: animatedWindowHeight },
+          ]}
+        >
+          <View style={st.wotWindowInner}>
+            <Text style={st.wotWindowLabel}>Your Window</Text>
+            <Text style={st.wotWindowScore}>{windowWidth}/100</Text>
+          </View>
+          {/* Regulation capacity marker */}
+          <View style={st.wotRegulationRow}>
+            <View style={st.wotRegulationBar}>
+              <Animated.View
+                style={[
+                  st.wotRegulationFill,
+                  {
+                    width: windowAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ['0%', `${regulationScore}%`],
+                    }),
+                  },
+                ]}
+              />
+            </View>
+            <Text style={st.wotRegulationText}>Regulation: {regulationScore}%</Text>
+          </View>
+        </Animated.View>
+
+        {/* Hypoarousal zone */}
+        <Animated.View style={[st.wotZone, st.wotHypoZone, { opacity: zoneAnim }]}>
+          <Text style={st.wotZoneLabel}>Hypoarousal</Text>
+          <Text style={st.wotZoneHint}>Numbness, shutdown, dissociation, flatness</Text>
+        </Animated.View>
+      </View>
+
+      {/* Interpretation */}
+      <View style={st.wotInterpretation}>
+        <Text style={st.wotInterpretationText}>{getZoneLabel()}</Text>
+      </View>
+    </View>
+  );
+}
+
+// ─── VALUES COMPASS INFOGRAPHIC ─────────────────────
+
+function ValuesCompassInfographic({
+  values,
+}: {
+  values: IndividualPortrait['fourLens']['values'];
+}) {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.8)).current;
+
+  useEffect(() => {
+    Animated.sequence([
+      Animated.delay(400),
+      Animated.parallel([
+        Animated.timing(fadeAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
+        Animated.spring(scaleAnim, { toValue: 1, friction: 8, tension: 40, useNativeDriver: true }),
+      ]),
+    ]).start();
+  }, []);
+
+  const topValues = values.coreValues.slice(0, 5);
+  const gaps = values.significantGaps ?? [];
+
+  return (
+    <Animated.View style={[st.valuesCompassContainer, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }]}>
+      <Text style={st.scoreGroupLabel}>{'🧭'} VALUES COMPASS</Text>
+      <View style={st.scoreGroupDivider} />
+
+      {/* Values ring */}
+      <View style={st.valuesRing}>
+        {topValues.map((v, i) => {
+          const angle = (i / topValues.length) * 360 - 90;
+          const rad = (angle * Math.PI) / 180;
+          const radius = 70;
+          const x = Math.cos(rad) * radius;
+          const y = Math.sin(rad) * radius;
+          const gap = gaps.find((g) => g.value === v);
+          const gapSize = gap?.gap ?? 0;
+          const dotSize = Math.max(28, 42 - gapSize * 0.3);
+          const dotColor = gapSize > 25 ? Colors.warning : gapSize > 15 ? Colors.calm : Colors.primary;
+
+          return (
+            <View
+              key={v}
+              style={[
+                st.valuesCompassItem,
+                {
+                  left: 90 + x - dotSize / 2,
+                  top: 90 + y - dotSize / 2,
+                },
+              ]}
+            >
+              <View style={[st.valuesCompassDot, { width: dotSize, height: dotSize, borderRadius: dotSize / 2, backgroundColor: dotColor }]}>
+                <Text style={st.valuesCompassDotText}>{v.charAt(0)}</Text>
+              </View>
+              <Text style={st.valuesCompassLabel} numberOfLines={1}>{v}</Text>
+            </View>
+          );
+        })}
+        <View style={st.valuesCompassCenter}>
+          <Text style={st.valuesCompassCenterText}>{'💎'}</Text>
+        </View>
+      </View>
+
+      {/* Gap bars */}
+      {gaps.length > 0 && (
+        <View style={st.valuesGapSection}>
+          <Text style={st.valuesGapTitle}>Values-Action Gaps</Text>
+          {gaps.map((g) => (
+            <View key={g.value} style={st.valuesGapRow}>
+              <Text style={st.valuesGapLabel}>{g.value}</Text>
+              <View style={st.valuesGapBarTrack}>
+                <View style={[st.valuesGapBarFill, {
+                  width: `${Math.min(100, g.gap)}%`,
+                  backgroundColor: g.gap > 25 ? Colors.warning : Colors.calm,
+                }]} />
+              </View>
+              <Text style={[st.valuesGapScore, {
+                color: g.gap > 25 ? Colors.warning : Colors.calm,
+              }]}>{g.gap}</Text>
+            </View>
+          ))}
+          <Text style={st.valuesGapHint}>Higher gap = more room to align action with values</Text>
+        </View>
+      )}
+    </Animated.View>
+  );
+}
+
+// ─── PARTS MAP INFOGRAPHIC ──────────────────────────
+
+function PartsMapInfographic({
+  parts,
+}: {
+  parts: IndividualPortrait['fourLens']['parts'];
+}) {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, { toValue: 1, duration: 600, useNativeDriver: true }).start();
+  }, []);
+
+  const selfScore = parts.selfLeadershipScore;
+  const selfTier = getTierInfo(selfScore);
+
+  return (
+    <Animated.View style={[st.partsMapContainer, { opacity: fadeAnim }]}>
+      <Text style={st.scoreGroupLabel}>{'🎭'} INNER PARTS MAP</Text>
+      <View style={st.scoreGroupDivider} />
+
+      {/* Self-Leadership Circle */}
+      <View style={st.partsMapCenter}>
+        <View style={[st.partsMapSelfCircle, { borderColor: selfTier.color }]}>
+          <Text style={[st.partsMapSelfScore, { color: selfTier.color }]}>{selfScore}</Text>
+          <Text style={st.partsMapSelfLabel}>Self{'\n'}Leadership</Text>
+        </View>
+      </View>
+
+      {/* Manager Parts */}
+      <View style={st.partsMapSection}>
+        <View style={[st.partsMapSectionHeader, { backgroundColor: Colors.warning + '15' }]}>
+          <Text style={[st.partsMapSectionIcon]}>{'🛡️'}</Text>
+          <Text style={st.partsMapSectionTitle}>Manager Parts</Text>
+          <Text style={st.partsMapSectionHint}>Try to prevent pain</Text>
+        </View>
+        <View style={st.partsMapPills}>
+          {parts.managerParts.map((p) => (
+            <View key={p} style={[st.partsMapPill, { backgroundColor: Colors.warning + '12', borderColor: Colors.warning + '40' }]}>
+              <Text style={[st.partsMapPillText, { color: Colors.warning }]}>{p}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+
+      {/* Firefighter Parts */}
+      <View style={st.partsMapSection}>
+        <View style={[st.partsMapSectionHeader, { backgroundColor: Colors.error + '12' }]}>
+          <Text style={[st.partsMapSectionIcon]}>{'🚒'}</Text>
+          <Text style={st.partsMapSectionTitle}>Firefighter Parts</Text>
+          <Text style={st.partsMapSectionHint}>React when pain breaks through</Text>
+        </View>
+        <View style={st.partsMapPills}>
+          {parts.firefighterParts.map((p) => (
+            <View key={p} style={[st.partsMapPill, { backgroundColor: Colors.error + '10', borderColor: Colors.error + '30' }]}>
+              <Text style={[st.partsMapPillText, { color: Colors.error }]}>{p}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+
+      {/* Polarities */}
+      {parts.polarities.length > 0 && (
+        <View style={st.partsMapSection}>
+          <View style={[st.partsMapSectionHeader, { backgroundColor: Colors.depth + '10' }]}>
+            <Text style={[st.partsMapSectionIcon]}>{'⚖️'}</Text>
+            <Text style={st.partsMapSectionTitle}>Inner Tensions</Text>
+          </View>
+          {parts.polarities.map((p, i) => (
+            <View key={i} style={st.partsMapPolarity}>
+              <Text style={st.partsMapPolarityText}>{p}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+    </Animated.View>
+  );
+}
+
+// ─── CYCLE DIAGRAM INFOGRAPHIC ──────────────────────
+
+function CycleDiagramInfographic({
+  negativeCycle,
+}: {
+  negativeCycle: IndividualPortrait['negativeCycle'];
+}) {
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
+      Animated.loop(
+        Animated.timing(rotateAnim, {
+          toValue: 1,
+          duration: 8000,
+          useNativeDriver: true,
+        })
+      ),
+    ]).start();
+  }, []);
+
+  const isPursuer = negativeCycle.position === 'pursuer';
+
+  const spin = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
+  return (
+    <Animated.View style={[st.cycleDiagramContainer, { opacity: fadeAnim }]}>
+      <Text style={st.scoreGroupLabel}>{'🔄'} YOUR CYCLE POSITION</Text>
+      <View style={st.scoreGroupDivider} />
+
+      {/* Animated cycle diagram */}
+      <View style={st.cycleDiagramVisual}>
+        {/* Rotating arrows */}
+        <Animated.View style={[st.cycleDiagramArrowRing, { transform: [{ rotate: spin }] }]}>
+          <Text style={st.cycleDiagramArrow}>{'↻'}</Text>
+        </Animated.View>
+
+        {/* Your position */}
+        <View style={[
+          st.cycleDiagramYouBadge,
+          { backgroundColor: isPursuer ? Colors.secondary : Colors.depth },
+        ]}>
+          <Text style={st.cycleDiagramYouText}>You</Text>
+          <Text style={st.cycleDiagramYouRole}>
+            {isPursuer ? 'Pursuer' : negativeCycle.position === 'withdrawer' ? 'Withdrawer' : 'Mixed'}
+          </Text>
+        </View>
+
+        {/* Partner position */}
+        <View style={[
+          st.cycleDiagramPartnerBadge,
+          { backgroundColor: isPursuer ? Colors.depth + '60' : Colors.secondary + '60' },
+        ]}>
+          <Text style={st.cycleDiagramPartnerText}>Partner</Text>
+          <Text style={st.cycleDiagramPartnerRole}>
+            {isPursuer ? 'Withdrawer' : 'Pursuer'}
+          </Text>
+        </View>
+
+        {/* Connection lines */}
+        <View style={st.cycleDiagramLineTop}>
+          <Text style={st.cycleDiagramLineLabel}>
+            {isPursuer ? 'You pursue →' : '← Partner pursues'}
+          </Text>
+        </View>
+        <View style={st.cycleDiagramLineBottom}>
+          <Text style={st.cycleDiagramLineLabel}>
+            {isPursuer ? '← Partner withdraws' : 'You withdraw →'}
+          </Text>
+        </View>
+      </View>
+
+      {/* Key insight */}
+      <View style={st.cycleDiagramInsight}>
+        <Text style={st.cycleDiagramInsightText}>
+          {isPursuer
+            ? 'The more you pursue, the more they withdraw. The more they withdraw, the more you pursue.'
+            : 'The more you withdraw, the more they pursue. The more they pursue, the more you withdraw.'}
+        </Text>
+        <Text style={st.cycleDiagramInsightSub}>
+          Neither of you is "wrong" — you're both caught in the dance.
+        </Text>
+      </View>
+    </Animated.View>
+  );
+}
+
+// ─── SCORES TAB ─────────────────────────────────────
+
+function ScoresTab({
+  portrait,
+  overallScore,
+}: {
+  portrait: IndividualPortrait;
+  overallScore: number;
+}) {
+  const cs = portrait.compositeScores;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 400,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  const SCORE_INTERPRETATIONS: Record<string, [string, string, string]> = {
+    accessibility: ['Emotionally available', 'Sometimes guarded', 'Tends to withdraw'],
+    responsiveness: ['Attuned to partner', 'Working on attunement', 'Needs focus'],
+    engagement: ['Deeply invested', 'Moderately engaged', 'Disengaging risk'],
+    regulationScore: ['Steady under stress', 'Regulation developing', 'Easily overwhelmed'],
+    windowWidth: ['Wide window', 'Moderate window', 'Narrow window'],
+    selfLeadership: ['Strong self-awareness', 'Building awareness', 'Self-led growth needed'],
+    valuesCongruence: ['Living your values', 'Some gaps to bridge', 'Significant values gap'],
+  };
+
+  const getInterpretation = (key: string, value: number): string => {
+    const [high, mid, low] = SCORE_INTERPRETATIONS[key] ?? ['Strong', 'Moderate', 'Developing'];
+    if (value >= 65) return high;
+    if (value >= 40) return mid;
+    return low;
+  };
+
+  // Legend
+  const TIERS = [
+    { label: 'Strength', color: Colors.success, range: '75-100' },
+    { label: 'Developing', color: Colors.calm, range: '55-74' },
+    { label: 'Emerging', color: Colors.warning, range: '35-54' },
+    { label: 'Focus Area', color: Colors.error, range: '0-34' },
+  ];
+
+  return (
+    <Animated.View style={{ opacity: fadeAnim }}>
+      {/* Overall */}
+      <AnimatedScoreCircle score={overallScore} />
+
+      {/* Legend */}
+      <View style={st.legendRow}>
+        {TIERS.map((t) => (
+          <View key={t.label} style={st.legendItem}>
+            <View style={[st.legendDot, { backgroundColor: t.color }]} />
+            <Text style={st.legendText}>{t.label}</Text>
+            <Text style={st.legendRange}>{t.range}</Text>
+          </View>
+        ))}
+      </View>
+
+      {/* A.R.E. Group */}
+      <View style={st.scoreGroupCard}>
+        <Text style={st.scoreGroupLabel}>A.R.E. — ATTACHMENT QUALITY</Text>
+        <View style={st.scoreGroupDivider} />
+        <AnimatedScoreBar label="Accessible" value={cs.accessibility} delay={100} interpretation={getInterpretation('accessibility', cs.accessibility)} />
+        <AnimatedScoreBar label="Responsive" value={cs.responsiveness} delay={200} interpretation={getInterpretation('responsiveness', cs.responsiveness)} />
+        <AnimatedScoreBar label="Engaged" value={cs.engagement} delay={300} interpretation={getInterpretation('engagement', cs.engagement)} />
+      </View>
+
+      {/* Capacity Group */}
+      <View style={st.scoreGroupCard}>
+        <Text style={st.scoreGroupLabel}>CAPACITY — INNER RESOURCES</Text>
+        <View style={st.scoreGroupDivider} />
+        <AnimatedScoreBar label="Regulation" value={cs.regulationScore} delay={400} interpretation={getInterpretation('regulationScore', cs.regulationScore)} />
+        <AnimatedScoreBar label="Window Width" value={cs.windowWidth} delay={500} interpretation={getInterpretation('windowWidth', cs.windowWidth)} />
+        <AnimatedScoreBar label="Self-Leadership" value={cs.selfLeadership} delay={600} interpretation={getInterpretation('selfLeadership', cs.selfLeadership)} />
+      </View>
+
+      {/* Values Group */}
+      <View style={st.scoreGroupCard}>
+        <Text style={st.scoreGroupLabel}>VALUES — ALIGNMENT</Text>
+        <View style={st.scoreGroupDivider} />
+        <AnimatedScoreBar label="Values Congruence" value={cs.valuesCongruence} delay={700} interpretation={getInterpretation('valuesCongruence', cs.valuesCongruence)} />
+      </View>
+
+      {/* Window of Tolerance Infographic */}
+      <WindowOfToleranceInfographic
+        windowWidth={cs.windowWidth}
+        regulationScore={cs.regulationScore}
+      />
+
+      {/* Values Compass Infographic */}
+      <ValuesCompassInfographic values={portrait.fourLens.values} />
+    </Animated.View>
+  );
+}
+
+// ─── LENSES TAB ─────────────────────────────────────
+
+function LensesTab({ portrait }: { portrait: IndividualPortrait }) {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 400,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  return (
+    <Animated.View style={{ opacity: fadeAnim }}>
+      <Text style={st.tabIntro}>
+        Four distinct perspectives that together form a complete picture of how you relate.
+      </Text>
+
+      <PortraitLens
+        title="Attachment & Protection"
+        lens={portrait.fourLens.attachment}
+        type="attachment"
+      />
+      <PortraitLens
+        title="Parts & Polarities"
+        lens={portrait.fourLens.parts}
+        type="parts"
+      />
+
+      {/* Parts Map Infographic */}
+      <PartsMapInfographic parts={portrait.fourLens.parts} />
+
+      <PortraitLens
+        title="Regulation & Window"
+        lens={portrait.fourLens.regulation}
+        type="regulation"
+      />
+      <PortraitLens
+        title="Values & Becoming"
+        lens={portrait.fourLens.values}
+        type="values"
+      />
+    </Animated.View>
+  );
+}
+
+// ─── CYCLE TAB ──────────────────────────────────────
+
+function CycleTab({ portrait }: { portrait: IndividualPortrait }) {
+  const nc = portrait.negativeCycle;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 400,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  const positionColor =
+    nc.position === 'pursuer' ? Colors.secondary :
+    nc.position === 'withdrawer' ? Colors.depth :
+    Colors.calm;
+
+  return (
+    <Animated.View style={{ opacity: fadeAnim }}>
+      {/* Position Hero */}
+      <View style={[st.cycleHero, { backgroundColor: positionColor + '12' }]}>
+        <View style={[st.cycleBadge, { backgroundColor: positionColor }]}>
+          <Text style={st.cycleBadgeText}>
+            {nc.position.toUpperCase()}
+          </Text>
+        </View>
+        <Text style={st.cycleHeroTitle}>Your Negative Cycle</Text>
+        <Text style={st.cycleHeroBody}>{nc.description}</Text>
+      </View>
+
+      {/* Cycle Diagram */}
+      <CycleDiagramInfographic negativeCycle={nc} />
+
+      {/* Triggers */}
+      <View style={st.card}>
+        <View style={st.cardHeaderRow}>
+          <Text style={{ fontSize: 16 }}>⚡</Text>
+          <Text style={st.cardHeading}>Triggers</Text>
+        </View>
+        {nc.primaryTriggers.map((t, i) => (
+          <View key={i} style={st.listItem}>
+            <Text style={st.listBullet}>{'•'}</Text>
+            <Text style={st.listText}>{t}</Text>
+          </View>
+        ))}
+      </View>
+
+      {/* Typical Moves */}
+      <View style={st.card}>
+        <View style={st.cardHeaderRow}>
+          <Text style={{ fontSize: 16 }}>🎭</Text>
+          <Text style={st.cardHeading}>Typical Moves</Text>
+        </View>
+        {nc.typicalMoves.map((m, i) => (
+          <View key={i} style={st.listItem}>
+            <Text style={st.listBullet}>{'•'}</Text>
+            <Text style={st.listText}>{m}</Text>
+          </View>
+        ))}
+      </View>
+
+      {/* De-escalators */}
+      <View style={st.card}>
+        <View style={st.cardHeaderRow}>
+          <Text style={{ fontSize: 16 }}>🕊️</Text>
+          <Text style={st.cardHeading}>De-escalators</Text>
+        </View>
+        {nc.deEscalators.map((d, i) => (
+          <View key={i} style={st.listItem}>
+            <Text style={st.listBullet}>{'•'}</Text>
+            <Text style={st.listText}>{d}</Text>
+          </View>
+        ))}
+      </View>
+
+      {/* Patterns */}
+      {portrait.patterns.length > 0 && (
+        <>
+          <Text style={st.sectionLabel}>DETECTED PATTERNS</Text>
+          {portrait.patterns.map((pattern) => (
+            <View key={pattern.id} style={st.patternCard}>
+              <View style={st.patternHeader}>
+                <View style={[st.patternBadge, {
+                  backgroundColor: pattern.confidence === 'high' ? Colors.success + '20' : Colors.warning + '20',
+                }]}>
+                  <Text style={[st.patternBadgeText, {
+                    color: pattern.confidence === 'high' ? Colors.success : Colors.warning,
+                  }]}>
+                    {pattern.confidence} confidence
+                  </Text>
+                </View>
+                <Text style={st.patternCategory}>
+                  {pattern.category.replace(/-/g, ' ')}
+                </Text>
+              </View>
+              <Text style={st.patternDescription}>{pattern.description}</Text>
+              <Text style={st.patternInterpretation}>{pattern.interpretation}</Text>
+            </View>
+          ))}
+        </>
+      )}
+    </Animated.View>
+  );
+}
+
+// ─── GROWTH TAB ─────────────────────────────────────
+
+function GrowthTab({ portrait }: { portrait: IndividualPortrait }) {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 400,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  return (
+    <Animated.View style={{ opacity: fadeAnim }}>
+      <Text style={st.tabIntro}>
+        Your growth edges — the areas where small, consistent practice creates the most transformation.
+      </Text>
+
+      {portrait.growthEdges.map((edge, i) => (
+        <View key={edge.id} style={st.growthEdgeCard}>
+          <View style={st.growthEdgeHeader}>
+            <View style={st.growthEdgeNumber}>
+              <Text style={st.growthEdgeNumberText}>{i + 1}</Text>
+            </View>
+            <View style={st.growthEdgeHeaderText}>
+              <Text style={st.growthEdgeLabel}>GROWTH EDGE {i + 1}</Text>
+              <Text style={st.growthEdgeTitle}>{edge.title}</Text>
+            </View>
+          </View>
+
+          <Text style={st.growthEdgeDescription}>{edge.description}</Text>
+
+          <View style={st.growthEdgeRationaleBox}>
+            <Text style={st.growthEdgeRationale}>{edge.rationale}</Text>
+          </View>
+
+          {edge.practices.length > 0 && (
+            <View style={st.practicesSection}>
+              <Text style={st.practicesTitle}>Practices</Text>
+              {edge.practices.map((p, j) => (
+                <View key={j} style={st.practiceItem}>
+                  <View style={st.practiceCheckbox}>
+                    <Text style={st.practiceCheckboxText}>{'○'}</Text>
+                  </View>
+                  <Text style={st.practiceText}>{p}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+      ))}
+    </Animated.View>
+  );
+}
+
+// ─── ANCHORS TAB ────────────────────────────────────
+
+function AnchorsTab({
+  portrait,
+  router,
+}: {
+  portrait: IndividualPortrait;
+  router: any;
+}) {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 400,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  const ANCHOR_ITEMS = [
+    { key: 'whenActivated' as const, label: 'When Activated', icon: '🔥', color: Colors.error },
+    { key: 'whenShutdown' as const, label: 'When Shutdown', icon: '🧊', color: Colors.depth },
+    { key: 'patternInterrupt' as const, label: 'Pattern Interrupt', icon: '⏸️', color: Colors.warning },
+    { key: 'repair' as const, label: 'Repair', icon: '🩹', color: Colors.secondary },
+    { key: 'selfCompassion' as const, label: 'Self-Compassion', icon: '💚', color: Colors.primary },
+  ];
+
+  return (
+    <Animated.View style={{ opacity: fadeAnim }}>
+      <Text style={st.tabIntro}>
+        Short phrases for difficult moments. Save the ones that resonate.
+      </Text>
+
+      {ANCHOR_ITEMS.map(({ key, label, icon, color }) => (
+        <View key={key} style={st.anchorCard}>
+          <View style={st.anchorCardHeader}>
+            <View style={[st.anchorIcon, { backgroundColor: color + '15' }]}>
+              <Text style={[st.anchorIconText, { color }]}>{icon}</Text>
+            </View>
+            <Text style={[st.anchorLabel, { color }]}>{label}</Text>
+          </View>
+          <Text style={st.anchorText}>{portrait.anchorPoints[key]}</Text>
+        </View>
+      ))}
+
+      {/* Partner Guide */}
+      <Text style={st.sectionLabel}>FOR YOUR PARTNER</Text>
+      <View style={st.card}>
+        <Text style={st.cardBody}>{portrait.partnerGuide.whatToKnow}</Text>
+      </View>
+
+      <View style={st.card}>
+        <Text style={st.cardHeading}>When I'm struggling, I need...</Text>
+        {portrait.partnerGuide.whenStrugglingINeed.map((item, i) => (
+          <View key={i} style={st.listItem}>
+            <Text style={st.listBullet}>{'•'}</Text>
+            <Text style={st.listText}>{item}</Text>
+          </View>
+        ))}
+      </View>
+
+      <View style={st.card}>
+        <View style={st.twoCol}>
+          <View style={st.colCard}>
+            <Text style={[st.colCardTitle, { color: Colors.success }]}>What helps</Text>
+            {portrait.partnerGuide.whatHelps.map((item, i) => (
+              <Text key={i} style={st.colCardItem}>{'•'} {item}</Text>
+            ))}
+          </View>
+          <View style={st.colCard}>
+            <Text style={[st.colCardTitle, { color: Colors.error }]}>What doesn't</Text>
+            {portrait.partnerGuide.whatDoesntHelp.map((item, i) => (
+              <Text key={i} style={st.colCardItem}>{'•'} {item}</Text>
+            ))}
+          </View>
+        </View>
+      </View>
+
+      {/* What's Next */}
+      <Text style={st.sectionLabel}>WHAT'S NEXT</Text>
+      <View style={st.card}>
+        <Text style={st.cardBody}>
+          This portrait is a starting point, not a verdict. Return to it when you
+          are stuck, share it with your partner when you are ready, and use it as
+          a guide for the work ahead.
+        </Text>
+      </View>
+
+      <TouchableOpacity
+        style={st.ctaButton}
+        onPress={() => router.push('/(app)/chat' as any)}
+        activeOpacity={0.8}
+      >
+        <Text style={st.ctaButtonText}>Talk to Sage 🌿</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={st.ctaButtonOutline}
+        onPress={() => router.push('/(app)/exercises' as any)}
+        activeOpacity={0.8}
+      >
+        <Text style={st.ctaButtonOutlineText}>Practice an Exercise</Text>
+      </TouchableOpacity>
+
+      <View style={{ height: Spacing.xxl }} />
+    </Animated.View>
+  );
+}
+
+// ═══════════════════════════════════════════════════════
+// ─── STYLES ──────────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+
+const CIRCLE_SIZE = 100;
+const CIRCLE_BORDER = 6;
+
+const st = StyleSheet.create({
+  container: { flex: 1, backgroundColor: Colors.background },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: Spacing.xl,
+    gap: Spacing.lg,
+  },
+  errorText: {
+    fontSize: FontSizes.body,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+  },
+  button: {
+    backgroundColor: Colors.primary,
+    height: ButtonSizes.large,
+    borderRadius: BorderRadius.pill,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.xl,
+  },
+  buttonText: {
+    color: Colors.white,
+    fontSize: FontSizes.body,
+    fontWeight: '600',
+  },
+
+  // ── Header ──
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.borderLight,
+  },
+  headerBackBtn: {
+    width: 70,
+  },
+  headerBackText: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.primary,
+    fontWeight: '600',
+  },
+  headerCenter: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: FontSizes.body,
+    fontWeight: '700',
+    fontFamily: FontFamilies.heading,
+    color: Colors.text,
+  },
+  headerDate: {
+    fontSize: FontSizes.caption,
+    color: Colors.textMuted,
+    marginTop: 1,
+  },
+
+  // ── Tab Bar ──
+  tabBarWrapper: {
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.borderLight,
+    backgroundColor: Colors.surfaceElevated,
+  },
+  tabBarContent: {
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.sm,
+    gap: Spacing.xs,
+  },
+  tabItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: BorderRadius.pill,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+  },
+  tabIcon: {
+    fontSize: 14,
+    color: Colors.textMuted,
+  },
+  tabLabel: {
+    fontSize: FontSizes.caption,
+    color: Colors.textSecondary,
+    fontWeight: '500',
+  },
+
+  // ── Content ──
+  contentScroll: {
+    flex: 1,
+  },
+  contentContainer: {
+    padding: Spacing.lg,
+    paddingBottom: Spacing.xxxl,
+  },
+
+  // ── Hero ──
+  heroSection: {
+    alignItems: 'center',
+    paddingVertical: Spacing.lg,
+    gap: Spacing.sm,
+  },
+  heroEyebrow: {
+    fontSize: FontSizes.caption,
+    color: Colors.primary,
+    fontWeight: '600',
+    letterSpacing: 2,
+  },
+  heroTitle: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: Colors.text,
+    fontFamily: FontFamilies.heading,
+    textTransform: 'capitalize',
+  },
+
+  // ── Score Circle ──
+  scoreCircleContainer: {
+    alignItems: 'center',
+    paddingVertical: Spacing.md,
+  },
+  scoreCircleOuter: {
+    width: CIRCLE_SIZE,
+    height: CIRCLE_SIZE,
+    borderRadius: CIRCLE_SIZE / 2,
+    borderWidth: CIRCLE_BORDER,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.surfaceElevated,
+    ...Shadows.elevated,
+  },
+  scoreCircleNumber: {
+    fontSize: 28,
+    fontFamily: FontFamilies.heading,
+    fontWeight: '700',
+    lineHeight: 32,
+  },
+  scoreCircleLabel: {
+    fontSize: 10,
+    color: Colors.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginTop: -2,
+  },
+  scoreCircleTier: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '600',
+    marginTop: Spacing.xs,
+  },
+
+  // ── A.R.E. Rings ──
+  areRingsCard: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    marginBottom: Spacing.md,
+    gap: Spacing.sm,
+    ...Shadows.card,
+  },
+  areRingsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: Spacing.md,
+  },
+  areRingItem: {
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  areRingOuter: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    borderWidth: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.surfaceElevated,
+    ...Shadows.subtle,
+  },
+  areRingTrack: {
+    position: 'absolute',
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    borderWidth: 5,
+  },
+  areRingValue: {
+    fontSize: 20,
+    fontWeight: '700',
+    fontFamily: FontFamilies.heading,
+  },
+  areRingLabel: {
+    fontSize: FontSizes.caption,
+    fontWeight: '600',
+    color: Colors.text,
+  },
+  areRingTier: {
+    fontSize: 10,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+
+  // ── Cards ──
+  card: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    marginBottom: Spacing.md,
+    gap: Spacing.sm,
+    ...Shadows.card,
+  },
+  cardHeading: {
+    fontSize: FontSizes.headingM,
+    fontWeight: '600',
+    fontFamily: FontFamilies.heading,
+    color: Colors.text,
+  },
+  cardBody: {
+    fontSize: FontSizes.body,
+    color: Colors.text,
+    lineHeight: 26,
+  },
+  cardHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  cardHeaderDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+
+  // ── Section Label ──
+  sectionLabel: {
+    fontSize: FontSizes.caption,
+    color: Colors.textMuted,
+    fontWeight: '700',
+    letterSpacing: 1.5,
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.md,
+  },
+
+  // ── Stats Grid ──
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+    marginBottom: Spacing.md,
+  },
+  statCard: {
+    width: (SCREEN_WIDTH - Spacing.lg * 2 - Spacing.sm) / 2,
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    gap: Spacing.xs,
+    ...Shadows.subtle,
+  },
+  statIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statIconText: {
+    fontSize: 16,
+    color: Colors.white,
+    fontWeight: '700',
+  },
+  statLabel: {
+    fontSize: FontSizes.caption,
+    color: Colors.textMuted,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  statValue: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.text,
+    fontWeight: '600',
+  },
+
+  // ── Navigation Cards ──
+  navCards: {
+    gap: Spacing.sm,
+    marginBottom: Spacing.lg,
+  },
+  navCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    gap: Spacing.md,
+    ...Shadows.subtle,
+  },
+  navCardIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navCardIconText: {
+    fontSize: 16,
+    color: Colors.white,
+    fontWeight: '700',
+  },
+  navCardLabel: {
+    flex: 1,
+    fontSize: FontSizes.body,
+    fontWeight: '600',
+    color: Colors.text,
+  },
+  navCardArrow: {
+    fontSize: 20,
+    color: Colors.textMuted,
+    fontWeight: '300',
+  },
+
+  // ── Legend ──
+  legendRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: Spacing.md,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.sm,
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.sm,
+    marginBottom: Spacing.lg,
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  legendDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  legendText: {
+    fontSize: FontSizes.caption,
+    color: Colors.text,
+    fontWeight: '500',
+  },
+  legendRange: {
+    fontSize: FontSizes.caption,
+    color: Colors.textMuted,
+  },
+
+  // ── Score Group Card ──
+  scoreGroupCard: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    gap: Spacing.sm,
+    marginBottom: Spacing.md,
+    ...Shadows.card,
+  },
+  scoreGroupLabel: {
+    fontSize: FontSizes.caption,
+    fontWeight: '700',
+    color: Colors.primary,
+    letterSpacing: 1.2,
+  },
+  scoreGroupDivider: {
+    height: 1,
+    backgroundColor: Colors.borderLight,
+    marginBottom: Spacing.xs,
+  },
+
+  // ── Animated Score Bar ──
+  barContainer: {
+    gap: 3,
+    marginBottom: Spacing.sm,
+  },
+  barLabelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  barLabel: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '500',
+    color: Colors.text,
+  },
+  barValue: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '700',
+  },
+  barTrack: {
+    height: 14,
+    backgroundColor: Colors.surface,
+    borderRadius: 7,
+    overflow: 'hidden',
+  },
+  barFill: {
+    height: 14,
+    borderRadius: 7,
+  },
+  barInterpretation: {
+    fontSize: FontSizes.caption,
+    fontStyle: 'italic',
+  },
+
+  // ── Tab Intro ──
+  tabIntro: {
+    fontSize: FontSizes.body,
+    color: Colors.textSecondary,
+    lineHeight: 24,
+    marginBottom: Spacing.lg,
+  },
+
+  // ── Cycle Tab ──
+  cycleHero: {
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    gap: Spacing.md,
+    marginBottom: Spacing.lg,
+    alignItems: 'center',
+  },
+  cycleBadge: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.pill,
+  },
+  cycleBadgeText: {
+    fontSize: FontSizes.caption,
+    fontWeight: '700',
+    color: Colors.white,
+    letterSpacing: 1.5,
+  },
+  cycleHeroTitle: {
+    fontSize: FontSizes.headingL,
+    fontWeight: '600',
+    fontFamily: FontFamilies.heading,
+    color: Colors.text,
+  },
+  cycleHeroBody: {
+    fontSize: FontSizes.body,
+    color: Colors.text,
+    lineHeight: 24,
+    textAlign: 'center',
+  },
+
+  // ── Lists ──
+  listItem: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    paddingLeft: Spacing.xs,
+  },
+  listBullet: {
+    fontSize: FontSizes.body,
+    color: Colors.textMuted,
+    lineHeight: 24,
+  },
+  listText: {
+    flex: 1,
+    fontSize: FontSizes.bodySmall,
+    color: Colors.text,
+    lineHeight: 22,
+  },
+
+  // ── Patterns ──
+  patternCard: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    gap: Spacing.sm,
+    marginBottom: Spacing.md,
+    ...Shadows.subtle,
+  },
+  patternHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  patternBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: BorderRadius.pill,
+  },
+  patternBadgeText: {
+    fontSize: 10,
+    fontWeight: '600',
+    textTransform: 'capitalize',
+  },
+  patternCategory: {
+    fontSize: FontSizes.caption,
+    color: Colors.textMuted,
+    textTransform: 'capitalize',
+  },
+  patternDescription: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.text,
+    lineHeight: 22,
+  },
+  patternInterpretation: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    lineHeight: 20,
+    fontStyle: 'italic',
+  },
+
+  // ── Growth Edges ──
+  growthEdgeCard: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    marginBottom: Spacing.md,
+    gap: Spacing.sm,
+    ...Shadows.card,
+  },
+  growthEdgeHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  growthEdgeNumber: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Colors.warning,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  growthEdgeNumberText: {
+    fontSize: FontSizes.body,
+    fontWeight: '700',
+    color: Colors.white,
+  },
+  growthEdgeHeaderText: {
+    flex: 1,
+    gap: 2,
+  },
+  growthEdgeLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: Colors.warning,
+    letterSpacing: 1,
+  },
+  growthEdgeTitle: {
+    fontSize: FontSizes.headingM,
+    fontWeight: '600',
+    fontFamily: FontFamilies.heading,
+    color: Colors.text,
+  },
+  growthEdgeDescription: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.text,
+    lineHeight: 22,
+  },
+  growthEdgeRationaleBox: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.sm,
+    padding: Spacing.md,
+    borderLeftWidth: 3,
+    borderLeftColor: Colors.warning,
+  },
+  growthEdgeRationale: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    lineHeight: 20,
+    fontStyle: 'italic',
+  },
+  practicesSection: {
+    marginTop: Spacing.xs,
+    gap: Spacing.xs,
+  },
+  practicesTitle: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '700',
+    color: Colors.text,
+    marginBottom: Spacing.xs,
+  },
+  practiceItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.sm,
+  },
+  practiceCheckbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: Colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 1,
+  },
+  practiceCheckboxText: {
+    fontSize: 10,
+    color: Colors.textMuted,
+  },
+  practiceText: {
+    flex: 1,
+    fontSize: FontSizes.bodySmall,
+    color: Colors.text,
+    lineHeight: 22,
+  },
+
+  // ── Anchors ──
+  anchorCard: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    marginBottom: Spacing.md,
+    gap: Spacing.sm,
+    ...Shadows.subtle,
+  },
+  anchorCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  anchorIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  anchorIconText: {
+    fontSize: 16,
+  },
+  anchorLabel: {
+    fontSize: FontSizes.caption,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  anchorText: {
+    fontSize: FontSizes.body,
+    color: Colors.text,
+    lineHeight: 24,
+    fontStyle: 'italic',
+  },
+
+  // ── Two Column ──
+  twoCol: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  colCard: {
+    flex: 1,
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.sm,
+    padding: Spacing.sm,
+    gap: Spacing.xs,
+  },
+  colCardTitle: {
+    fontSize: FontSizes.caption,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 2,
+  },
+  colCardItem: {
+    fontSize: FontSizes.caption,
+    color: Colors.text,
+    lineHeight: 18,
+  },
+
+  // ── Window of Tolerance Infographic ──
+  wotContainer: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    gap: Spacing.sm,
+    marginBottom: Spacing.md,
+    ...Shadows.card,
+  },
+  wotInfographic: {
+    marginTop: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    overflow: 'hidden',
+  },
+  wotZone: {
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    alignItems: 'center',
+  },
+  wotHyperZone: {
+    backgroundColor: Colors.error + '12',
+    borderTopLeftRadius: BorderRadius.md,
+    borderTopRightRadius: BorderRadius.md,
+  },
+  wotHypoZone: {
+    backgroundColor: Colors.depth + '12',
+    borderBottomLeftRadius: BorderRadius.md,
+    borderBottomRightRadius: BorderRadius.md,
+  },
+  wotZoneLabel: {
+    fontSize: FontSizes.caption,
+    fontWeight: '700',
+    color: Colors.textSecondary,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  wotZoneHint: {
+    fontSize: 11,
+    color: Colors.textMuted,
+    marginTop: 2,
+    textAlign: 'center',
+  },
+  wotWindowZone: {
+    backgroundColor: Colors.primary + '18',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    borderLeftWidth: 3,
+    borderRightWidth: 3,
+    borderLeftColor: Colors.primary,
+    borderRightColor: Colors.primary,
+    minHeight: 80,
+    gap: Spacing.sm,
+  },
+  wotWindowInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  wotWindowLabel: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '600',
+    color: Colors.primary,
+    fontFamily: FontFamilies.heading,
+  },
+  wotWindowScore: {
+    fontSize: FontSizes.headingM,
+    fontWeight: '700',
+    color: Colors.primary,
+    fontFamily: FontFamilies.heading,
+  },
+  wotRegulationRow: {
+    width: '100%',
+    gap: 4,
+  },
+  wotRegulationBar: {
+    height: 6,
+    backgroundColor: Colors.primary + '25',
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  wotRegulationFill: {
+    height: 6,
+    backgroundColor: Colors.primary,
+    borderRadius: 3,
+  },
+  wotRegulationText: {
+    fontSize: 11,
+    color: Colors.primary,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  wotInterpretation: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.sm,
+    padding: Spacing.md,
+    borderLeftWidth: 3,
+    borderLeftColor: Colors.calm,
+  },
+  wotInterpretationText: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    lineHeight: 20,
+    fontStyle: 'italic',
+  },
+
+  // ── Values Compass Infographic ──
+  valuesCompassContainer: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    gap: Spacing.sm,
+    marginBottom: Spacing.md,
+    ...Shadows.card,
+  },
+  valuesRing: {
+    width: 210,
+    height: 210,
+    alignSelf: 'center',
+    position: 'relative',
+    marginVertical: Spacing.md,
+  },
+  valuesCompassItem: {
+    position: 'absolute',
+    alignItems: 'center',
+    width: 60,
+  },
+  valuesCompassDot: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...Shadows.subtle,
+  },
+  valuesCompassDotText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: Colors.white,
+  },
+  valuesCompassLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: Colors.text,
+    textAlign: 'center',
+    marginTop: 3,
+  },
+  valuesCompassCenter: {
+    position: 'absolute',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: Colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    left: 83,
+    top: 83,
+    ...Shadows.subtle,
+  },
+  valuesCompassCenterText: {
+    fontSize: 20,
+  },
+  valuesGapSection: {
+    gap: Spacing.xs,
+    marginTop: Spacing.sm,
+  },
+  valuesGapTitle: {
+    fontSize: FontSizes.caption,
+    fontWeight: '700',
+    color: Colors.text,
+    marginBottom: 4,
+  },
+  valuesGapRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  valuesGapLabel: {
+    width: 80,
+    fontSize: FontSizes.caption,
+    color: Colors.text,
+    fontWeight: '500',
+  },
+  valuesGapBarTrack: {
+    flex: 1,
+    height: 8,
+    backgroundColor: Colors.surface,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  valuesGapBarFill: {
+    height: 8,
+    borderRadius: 4,
+  },
+  valuesGapScore: {
+    width: 24,
+    fontSize: FontSizes.caption,
+    fontWeight: '700',
+    textAlign: 'right',
+  },
+  valuesGapHint: {
+    fontSize: 10,
+    color: Colors.textMuted,
+    fontStyle: 'italic',
+    marginTop: 4,
+  },
+
+  // ── Parts Map Infographic ──
+  partsMapContainer: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    gap: Spacing.md,
+    marginBottom: Spacing.md,
+    ...Shadows.card,
+  },
+  partsMapCenter: {
+    alignItems: 'center',
+    paddingVertical: Spacing.sm,
+  },
+  partsMapSelfCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.surfaceElevated,
+    ...Shadows.elevated,
+  },
+  partsMapSelfScore: {
+    fontSize: 22,
+    fontWeight: '700',
+    fontFamily: FontFamilies.heading,
+  },
+  partsMapSelfLabel: {
+    fontSize: 9,
+    color: Colors.textMuted,
+    textAlign: 'center',
+    lineHeight: 11,
+  },
+  partsMapSection: {
+    gap: Spacing.xs,
+  },
+  partsMapSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    paddingHorizontal: Spacing.sm,
+    borderRadius: BorderRadius.sm,
+  },
+  partsMapSectionIcon: {
+    fontSize: 16,
+  },
+  partsMapSectionTitle: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '700',
+    color: Colors.text,
+  },
+  partsMapSectionHint: {
+    fontSize: 10,
+    color: Colors.textMuted,
+    fontStyle: 'italic',
+    flex: 1,
+    textAlign: 'right',
+  },
+  partsMapPills: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.xs,
+    paddingLeft: Spacing.sm,
+  },
+  partsMapPill: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: BorderRadius.pill,
+    borderWidth: 1,
+  },
+  partsMapPillText: {
+    fontSize: FontSizes.caption,
+    fontWeight: '600',
+  },
+  partsMapPolarity: {
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    backgroundColor: Colors.depth + '08',
+    borderRadius: BorderRadius.sm,
+    borderLeftWidth: 2,
+    borderLeftColor: Colors.depth,
+  },
+  partsMapPolarityText: {
+    fontSize: FontSizes.caption,
+    color: Colors.text,
+    fontStyle: 'italic',
+    lineHeight: 18,
+  },
+
+  // ── Cycle Diagram Infographic ──
+  cycleDiagramContainer: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    gap: Spacing.md,
+    marginBottom: Spacing.lg,
+    ...Shadows.card,
+  },
+  cycleDiagramVisual: {
+    height: 180,
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cycleDiagramArrowRing: {
+    position: 'absolute',
+    width: 140,
+    height: 140,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cycleDiagramArrow: {
+    fontSize: 140,
+    color: Colors.textMuted + '20',
+    fontWeight: '200',
+  },
+  cycleDiagramYouBadge: {
+    position: 'absolute',
+    left: 20,
+    top: '50%',
+    marginTop: -30,
+    width: 80,
+    height: 60,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...Shadows.elevated,
+  },
+  cycleDiagramYouText: {
+    fontSize: 10,
+    color: Colors.white,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  cycleDiagramYouRole: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.white,
+    fontWeight: '700',
+  },
+  cycleDiagramPartnerBadge: {
+    position: 'absolute',
+    right: 20,
+    top: '50%',
+    marginTop: -30,
+    width: 80,
+    height: 60,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cycleDiagramPartnerText: {
+    fontSize: 10,
+    color: Colors.white,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  cycleDiagramPartnerRole: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.white,
+    fontWeight: '700',
+  },
+  cycleDiagramLineTop: {
+    position: 'absolute',
+    top: 20,
+    alignItems: 'center',
+  },
+  cycleDiagramLineBottom: {
+    position: 'absolute',
+    bottom: 20,
+    alignItems: 'center',
+  },
+  cycleDiagramLineLabel: {
+    fontSize: 11,
+    color: Colors.textMuted,
+    fontWeight: '500',
+    fontStyle: 'italic',
+  },
+  cycleDiagramInsight: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.sm,
+    padding: Spacing.md,
+    gap: Spacing.xs,
+    borderLeftWidth: 3,
+    borderLeftColor: Colors.secondary,
+  },
+  cycleDiagramInsightText: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.text,
+    lineHeight: 20,
+    fontStyle: 'italic',
+  },
+  cycleDiagramInsightSub: {
+    fontSize: FontSizes.caption,
+    color: Colors.textMuted,
+    marginTop: 4,
+  },
+
+  // ── CTA Buttons ──
+  ctaButton: {
+    backgroundColor: Colors.secondary,
+    height: ButtonSizes.large,
+    borderRadius: BorderRadius.pill,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
+    ...Shadows.card,
+  },
+  ctaButtonText: {
+    color: Colors.white,
+    fontSize: FontSizes.body,
+    fontWeight: '700',
+  },
+  ctaButtonOutline: {
+    borderWidth: 1.5,
+    borderColor: Colors.primary,
+    height: ButtonSizes.large,
+    borderRadius: BorderRadius.pill,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
+  },
+  ctaButtonOutlineText: {
+    color: Colors.primary,
+    fontSize: FontSizes.body,
+    fontWeight: '600',
+  },
+
+  // ── Synthesis Card ──
+  synthesisCard: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    marginBottom: Spacing.md,
+    gap: Spacing.md,
+    borderLeftWidth: 3,
+    borderLeftColor: Colors.depth,
+    ...Shadows.card,
+  },
+  synthesisSectionLabel: {
+    fontSize: FontSizes.caption,
+    color: Colors.depth,
+    fontWeight: '700',
+    letterSpacing: 1.5,
+  },
+  synthesisPatternBox: {
+    backgroundColor: `${Colors.depth}15`,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    gap: Spacing.xs,
+  },
+  synthesisPatternLabel: {
+    fontSize: FontSizes.caption,
+    color: Colors.depth,
+    fontWeight: '700',
+    textTransform: 'uppercase' as const,
+    letterSpacing: 1,
+  },
+  synthesisPatternText: {
+    fontSize: FontSizes.body,
+    color: Colors.text,
+    fontWeight: '500',
+    lineHeight: 24,
+  },
+  synthesisNarrative: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    lineHeight: 22,
+  },
+  synthesisSection: {
+    gap: Spacing.xs,
+  },
+  synthesisSectionTitle: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '700',
+    fontFamily: FontFamilies.heading,
+    color: Colors.text,
+    marginBottom: 2,
+  },
+  synthesisListItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.sm,
+    paddingVertical: 2,
+  },
+  synthesisListDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginTop: 6,
+  },
+  synthesisListText: {
+    flex: 1,
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    lineHeight: 20,
+  },
+  synthesisStepBox: {
+    backgroundColor: `${Colors.primary}12`,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    gap: Spacing.xs,
+    borderWidth: 1,
+    borderColor: `${Colors.primary}30`,
+  },
+  synthesisStepLabel: {
+    fontSize: 10,
+    color: Colors.primary,
+    fontWeight: '700',
+    letterSpacing: 1.5,
+  },
+  synthesisStepName: {
+    fontSize: FontSizes.headingM,
+    fontWeight: '700',
+    fontFamily: FontFamilies.heading,
+    color: Colors.text,
+  },
+  synthesisStepRationale: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    lineHeight: 20,
+  },
+});
