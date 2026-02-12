@@ -6,6 +6,34 @@
  *
  * The Twelve Steps are the TRANSFORMATIONAL ARC of Tender.
  * Steps live inside Healing Phases. Practices live inside Steps.
+ *
+ * ─── HOW IT ALL CONNECTS ───────────────────────────────
+ *
+ * The 12 Steps are NOT a rigid ladder. They are organized by
+ * FOUR MOVEMENTS — recurring motions of growth that you cycle
+ * through at deeper levels as you progress:
+ *
+ *   1. RECOGNITION — Seeing what's here (patterns, cycles, parts)
+ *      "I can name what's happening between us."
+ *
+ *   2. RELEASE — Letting go of old stories and certainty
+ *      "I can loosen my grip on being right."
+ *
+ *   3. RESONANCE — Feeling with each other
+ *      "I can be moved by your experience."
+ *
+ *   4. EMBODIMENT — Living it daily through practice
+ *      "I can do something different in the moments that matter."
+ *
+ * Each Step emphasizes 1-2 of these movements. Your PORTRAIT
+ * determines which movement needs the most attention, and your
+ * INTERVENTION PROTOCOL routes you through the steps in the
+ * order that matches YOUR specific assessment profile.
+ *
+ * The connection chain:
+ *   Assessments → Portrait → Protocol → Personalized Step Order → Practices
+ *
+ * See: utils/steps/intervention-protocols.ts for the protocol engine.
  */
 
 import type { HealingStep, HealingPhase } from '@/types/growth';
@@ -566,4 +594,160 @@ export const SAGE_OPENING_PROMPTS: Record<number, string[]> = {
 /** Get opening prompts for Sage based on current step. */
 export function getSageOpeningPrompts(stepNumber: number): string[] {
   return SAGE_OPENING_PROMPTS[stepNumber] ?? SAGE_OPENING_PROMPTS[1];
+}
+
+// ─── How Steps Relate to Your Portrait ────────────────
+// This is the "secret sauce" bridge that Shahar asked for:
+// How do the 12 steps connect to someone's specific assessment profile?
+
+/**
+ * STEP-TO-MOVEMENT MAPPING
+ *
+ * Each step's primary and secondary movements — used by the
+ * intervention protocol engine to determine emphasis.
+ */
+export const STEP_MOVEMENTS: Record<number, { primary: string; secondary?: string }> = {
+  1:  { primary: 'Recognition' },                           // See the pattern
+  2:  { primary: 'Recognition', secondary: 'Resonance' },   // See + feel the "we"
+  3:  { primary: 'Release' },                                // Let go of fixed stories
+  4:  { primary: 'Release' },                                // Own your part
+  5:  { primary: 'Resonance' },                              // Share vulnerably
+  6:  { primary: 'Release', secondary: 'Resonance' },        // Release enemy story + empathy
+  7:  { primary: 'Embodiment' },                             // Build daily practice
+  8:  { primary: 'Recognition' },                            // Face the wounds
+  9:  { primary: 'Embodiment' },                             // Act to repair
+  10: { primary: 'Recognition', secondary: 'Embodiment' },   // Ongoing awareness + practice
+  11: { primary: 'Resonance' },                              // Shared insight
+  12: { primary: 'Embodiment' },                             // Carry it forward
+};
+
+/**
+ * MOVEMENT DESCRIPTIONS — User-facing explanations
+ * Used in the homepage and growth plan UI to explain what
+ * each movement means in plain language.
+ */
+export const FOUR_MOVEMENTS_EXPLAINED = {
+  recognition: {
+    name: 'Recognition',
+    icon: '👁️',
+    question: 'Can I see what\'s happening?',
+    description:
+      'The ability to see your patterns clearly — without blame, without shame. ' +
+      'Recognition means you can name your cycle, your triggers, and your protective moves. ' +
+      'It\'s the foundation: you can\'t change what you can\'t see.',
+    howItFeels:
+      'Moments of "Oh — THAT\'S what we\'re doing." The lightbulb of pattern recognition. ' +
+      'Seeing your cycle from the outside rather than being stuck inside it.',
+    steps: [1, 2, 8, 10],
+  },
+  release: {
+    name: 'Release',
+    icon: '🫧',
+    question: 'Can I let go of being right?',
+    description:
+      'The willingness to loosen your grip on certainty — about your partner, ' +
+      'about yourself, about what "should" happen. Release is not forgetting; ' +
+      'it\'s making space for something new.',
+    howItFeels:
+      'The softening when you realize your story about them isn\'t the whole truth. ' +
+      'The moment of "Maybe I\'ve been wrong about why they do that." Humility without humiliation.',
+    steps: [3, 4, 6],
+  },
+  resonance: {
+    name: 'Resonance',
+    icon: '💫',
+    question: 'Can I be moved by your experience?',
+    description:
+      'The capacity to let your partner\'s world touch yours — to feel WITH them, ' +
+      'not just think ABOUT them. Resonance is what makes repair possible and connection real.',
+    howItFeels:
+      'When your partner shares something and you feel it in your body. When their tears ' +
+      'become your tears. When you understand not just their words but their world.',
+    steps: [2, 5, 11],
+  },
+  embodiment: {
+    name: 'Embodiment',
+    icon: '🌱',
+    question: 'Can I live this daily?',
+    description:
+      'Turning insight into habit. Embodiment is when the new way of being becomes ' +
+      'your default — not through willpower, but through consistent practice. Small moves, ' +
+      'repeated daily, change everything.',
+    howItFeels:
+      'When you catch yourself mid-pattern and choose differently — without having to think ' +
+      'about it. When the repair attempt comes naturally. When your values are lived, not just believed.',
+    steps: [7, 9, 12],
+  },
+} as const;
+
+/**
+ * Get a personalized step order based on intervention protocol emphasis.
+ * Instead of going 1-2-3-4..., the protocol determines which steps
+ * matter most for THIS person's profile.
+ *
+ * @param stepEmphasis - Array of step numbers in priority order (from protocol)
+ * @returns The full 12-step array reordered with priority steps first
+ */
+export function getPersonalizedStepOrder(stepEmphasis: number[]): HealingStep[] {
+  const prioritySteps = stepEmphasis
+    .map(num => TWELVE_STEPS.find(s => s.stepNumber === num))
+    .filter((s): s is HealingStep => s !== undefined);
+
+  const remainingSteps = TWELVE_STEPS.filter(
+    s => !stepEmphasis.includes(s.stepNumber)
+  );
+
+  return [...prioritySteps, ...remainingSteps];
+}
+
+/**
+ * Get a human-readable summary of why a specific step matters
+ * for a given user, based on their portrait data.
+ *
+ * This powers the "Why This Step" section in the growth plan UI.
+ */
+export function getStepRelevance(
+  stepNumber: number,
+  regulationScore: number,
+  selfLeadership: number,
+  accessibility: number,
+  valuesCongruence: number
+): string {
+  const step = getStep(stepNumber);
+  if (!step) return '';
+
+  const movement = STEP_MOVEMENTS[stepNumber];
+  const relevance: string[] = [];
+
+  // Add movement context
+  relevance.push(
+    `This step develops your ${movement.primary} capacity` +
+    (movement.secondary ? ` and ${movement.secondary}` : '') +
+    '.'
+  );
+
+  // Add personalized relevance based on scores
+  switch (stepNumber) {
+    case 1:
+      if (regulationScore < 50)
+        relevance.push('Particularly important for you — your regulation scores suggest pattern awareness is your foundation.');
+      break;
+    case 3:
+    case 4:
+      if (selfLeadership < 50)
+        relevance.push('Your self-leadership score suggests this Release work is a priority — loosening protective patterns opens new possibilities.');
+      break;
+    case 5:
+    case 11:
+      if (accessibility < 50)
+        relevance.push('This Resonance step stretches your growth edge — building emotional accessibility takes practice, and this step provides the structure.');
+      break;
+    case 7:
+    case 9:
+      if (valuesCongruence < 60)
+        relevance.push('This Embodiment step directly addresses your values-behavior gap — turning what you believe into what you do.');
+      break;
+  }
+
+  return relevance.join(' ');
 }

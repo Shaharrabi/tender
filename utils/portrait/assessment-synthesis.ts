@@ -13,9 +13,17 @@
  * - Growth edges (where multiple assessments point to the same opportunity)
  * - Contradictions (where assessments seem to conflict — often the most interesting)
  * - Recommended starting step based on full assessment profile
+ * - Intervention protocol match (links to growth plan)
+ * - Four Movements profile (shows growth dimensions)
+ *
+ * THE BRIDGE: This module connects Portrait → Protocol → Growth Plan
+ * See: utils/steps/intervention-protocols.ts for the protocol engine
+ * See: utils/steps/twelve-steps.ts for step definitions
  */
 
 import type { IndividualPortrait } from '@/types/portrait';
+import { matchProtocol, assessFourMovements, generateJourneyMap } from '@/utils/steps/intervention-protocols';
+import type { InterventionProtocol, JourneyMap, FourMovements } from '@/utils/steps/intervention-protocols';
 
 // ─── Synthesis Output ───────────────────────────────────
 
@@ -28,6 +36,12 @@ export interface AssessmentSynthesis {
   contradictions: string[];
   recommendedStep: number;
   recommendedStepRationale: string;
+  /** The matched intervention protocol — the personalized growth plan */
+  protocol: InterventionProtocol;
+  /** Four Movements profile — shows growth dimension readiness */
+  movements: FourMovements;
+  /** User-facing journey map — plain language growth plan */
+  journeyMap: JourneyMap;
 }
 
 // ─── Synthesize Function ────────────────────────────────
@@ -55,6 +69,20 @@ export function synthesizeAssessments(
   // ── Determine recommended step ───────────────────────
   const { step, rationale } = recommendStartingStep(compositeScores, fourLens, patterns);
 
+  // ── Match intervention protocol ─────────────────────
+  const { primary: protocol } = matchProtocol(portrait);
+
+  // ── Assess Four Movements ─────────────────────────
+  const movements = assessFourMovements(portrait);
+
+  // ── Generate journey map ──────────────────────────
+  const journeyMap = generateJourneyMap(protocol, movements);
+
+  // ── Override step recommendation from protocol ────
+  // The protocol's step emphasis is more research-informed than the simple heuristic
+  const protocolStep = protocol.stepEmphasis[0] || step;
+  const protocolRationale = protocol.rationale || rationale;
+
   // ── Build core narrative ─────────────────────────────
   const coreNarrative = buildCoreNarrative(
     compositeScores,
@@ -74,8 +102,11 @@ export function synthesizeAssessments(
     protectiveFactors,
     growthEdges: synthesizedEdges,
     contradictions,
-    recommendedStep: step,
-    recommendedStepRationale: rationale,
+    recommendedStep: protocolStep,
+    recommendedStepRationale: protocolRationale,
+    protocol,
+    movements,
+    journeyMap,
   };
 }
 

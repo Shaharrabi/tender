@@ -1381,8 +1381,101 @@ function GrowthTab({ portrait }: { portrait: IndividualPortrait }) {
     }).start();
   }, []);
 
+  // Get the intervention protocol and four movements
+  let protocol: any = null;
+  let movements: any = null;
+  let journeyMap: any = null;
+  try {
+    const { matchProtocol, assessFourMovements, generateJourneyMap } = require('@/utils/steps/intervention-protocols');
+    const { primary } = matchProtocol(portrait);
+    protocol = primary;
+    movements = assessFourMovements(portrait);
+    journeyMap = generateJourneyMap(protocol, movements);
+  } catch {
+    // Protocol engine not available — show growth edges only
+  }
+
+  const { FOUR_MOVEMENTS_EXPLAINED } = require('@/utils/steps/twelve-steps');
+
   return (
     <Animated.View style={{ opacity: fadeAnim }}>
+      {/* ── Your Personalized Growth Plan ── */}
+      {protocol && journeyMap && (
+        <View style={st.protocolSection}>
+          <Text style={st.protocolEyebrow}>YOUR GROWTH PLAN</Text>
+          <Text style={st.protocolName}>{protocol.name}</Text>
+          <Text style={st.protocolDescription}>{protocol.description}</Text>
+
+          {/* Four Movements Visualization */}
+          {movements && (
+            <View style={st.movementsContainer}>
+              <Text style={st.movementsSectionTitle}>Four Movements of Growth</Text>
+              <Text style={st.movementsSubtitle}>
+                Where you are in each dimension of relational growth
+              </Text>
+              {(['recognition', 'release', 'resonance', 'embodiment'] as const).map((key) => {
+                const m = movements[key];
+                const explained = (FOUR_MOVEMENTS_EXPLAINED as any)[key];
+                return (
+                  <View key={key} style={st.movementCard}>
+                    <View style={st.movementCardHeader}>
+                      <Text style={st.movementIcon}>{explained?.icon || ''}</Text>
+                      <View style={{ flex: 1 }}>
+                        <Text style={st.movementName}>{m.name}</Text>
+                        <Text style={st.movementQuestion}>{explained?.question || m.subtitle}</Text>
+                      </View>
+                      <Text style={st.movementScore}>{m.readiness}%</Text>
+                    </View>
+                    <View style={st.movementProgressTrack}>
+                      <View
+                        style={[
+                          st.movementProgressFill,
+                          { width: `${Math.max(m.readiness, 3)}%` as any },
+                        ]}
+                      />
+                    </View>
+                    <Text style={st.movementDescription}>
+                      {explained?.howItFeels || m.description}
+                    </Text>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+
+          {/* Protocol Phases */}
+          <View style={st.phasesContainer}>
+            <Text style={st.movementsSectionTitle}>Your Path</Text>
+            {protocol.phases.map((phase: any, i: number) => (
+              <View key={i} style={st.phaseCard}>
+                <View style={st.phaseHeader}>
+                  <View style={[
+                    st.phaseIndicator,
+                    i === 0 && { backgroundColor: Colors.secondary },
+                  ]} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={st.phaseName}>{phase.name}</Text>
+                    <Text style={st.phaseWeeks}>{phase.weekRange}</Text>
+                  </View>
+                </View>
+                <Text style={st.phaseFocus}>{phase.focus}</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* Contraindications as gentle guidance */}
+          {protocol.contraindications.length > 0 && (
+            <View style={st.guidanceContainer}>
+              <Text style={st.guidanceTitle}>What to keep in mind</Text>
+              {protocol.contraindications.map((c: string, i: number) => (
+                <Text key={i} style={st.guidanceItem}>{'\u2022'} {c}</Text>
+              ))}
+            </View>
+          )}
+        </View>
+      )}
+
+      {/* ── Growth Edges ── */}
       <Text style={st.tabIntro}>
         Your growth edges — the areas where small, consistent practice creates the most transformation.
       </Text>
@@ -2050,6 +2143,150 @@ const st = StyleSheet.create({
     color: Colors.textSecondary,
     lineHeight: 20,
     fontStyle: 'italic',
+  },
+
+  // ── Protocol / Growth Plan styles ──
+  protocolSection: {
+    marginBottom: Spacing.xl,
+  },
+  protocolEyebrow: {
+    fontSize: FontSizes.caption,
+    fontWeight: '700' as const,
+    color: Colors.secondary,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 1.5,
+    marginBottom: Spacing.xs,
+  },
+  protocolName: {
+    fontSize: FontSizes.headingM,
+    fontWeight: '700' as const,
+    color: Colors.text,
+    marginBottom: Spacing.sm,
+  },
+  protocolDescription: {
+    fontSize: FontSizes.body,
+    color: Colors.textSecondary,
+    lineHeight: 24,
+    marginBottom: Spacing.lg,
+  },
+  movementsContainer: {
+    marginBottom: Spacing.lg,
+  },
+  movementsSectionTitle: {
+    fontSize: FontSizes.body,
+    fontWeight: '700' as const,
+    color: Colors.text,
+    marginBottom: Spacing.xs,
+  },
+  movementsSubtitle: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    marginBottom: Spacing.md,
+  },
+  movementCard: {
+    backgroundColor: Colors.white,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    marginBottom: Spacing.sm,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  movementCardHeader: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    marginBottom: Spacing.sm,
+  },
+  movementIcon: {
+    fontSize: 20,
+    marginRight: Spacing.sm,
+  },
+  movementName: {
+    fontSize: FontSizes.body,
+    fontWeight: '600' as const,
+    color: Colors.text,
+  },
+  movementQuestion: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    fontStyle: 'italic' as const,
+  },
+  movementScore: {
+    fontSize: FontSizes.body,
+    fontWeight: '700' as const,
+    color: Colors.secondary,
+  },
+  movementProgressTrack: {
+    height: 6,
+    backgroundColor: Colors.border,
+    borderRadius: 3,
+    marginBottom: Spacing.sm,
+    overflow: 'hidden' as const,
+  },
+  movementProgressFill: {
+    height: '100%' as any,
+    backgroundColor: Colors.secondary,
+    borderRadius: 3,
+  },
+  movementDescription: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    lineHeight: 20,
+  },
+  phasesContainer: {
+    marginBottom: Spacing.lg,
+  },
+  phaseCard: {
+    backgroundColor: Colors.white,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    marginBottom: Spacing.sm,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  phaseHeader: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    marginBottom: Spacing.sm,
+  },
+  phaseIndicator: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: Colors.border,
+    marginRight: Spacing.sm,
+  },
+  phaseName: {
+    fontSize: FontSizes.body,
+    fontWeight: '600' as const,
+    color: Colors.text,
+  },
+  phaseWeeks: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+  },
+  phaseFocus: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    lineHeight: 20,
+    paddingLeft: Spacing.md + Spacing.sm,
+  },
+  guidanceContainer: {
+    backgroundColor: '#FFF8F0',
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    marginBottom: Spacing.lg,
+  },
+  guidanceTitle: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '600' as const,
+    color: Colors.text,
+    marginBottom: Spacing.sm,
+  },
+  guidanceItem: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    lineHeight: 20,
+    marginBottom: Spacing.xs,
   },
 
   // ── Growth Edges ──

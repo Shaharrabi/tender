@@ -778,6 +778,85 @@ export default function HomeScreen() {
           )}
         </View>
 
+        {/* ═══ 4B. YOUR GROWTH PLAN (if portrait exists) ══════ */}
+        {hasPortrait && portrait && (() => {
+          // Import inline to avoid breaking non-portrait flow
+          const { synthesizeAssessments } = require('@/utils/portrait/assessment-synthesis');
+          try {
+            const synthesis = synthesizeAssessments(portrait);
+            const { journeyMap, movements } = synthesis;
+            return (
+              <View style={styles.growthPlanSection}>
+                <Text style={styles.growthPlanTitle}>
+                  Your Growth Plan
+                </Text>
+                <Text style={styles.growthPlanHeadline}>
+                  {journeyMap.headline}
+                </Text>
+                <Text style={styles.growthPlanRationale}>
+                  {journeyMap.whyThisPath.length > 150
+                    ? journeyMap.whyThisPath.slice(0, 147) + '...'
+                    : journeyMap.whyThisPath}
+                </Text>
+
+                {/* Four Movements mini-viz */}
+                <View style={styles.movementsRow}>
+                  {(['recognition', 'release', 'resonance', 'embodiment'] as const).map((key) => {
+                    const m = movements[key];
+                    return (
+                      <View key={key} style={styles.movementItem}>
+                        <View style={styles.movementBarTrack}>
+                          <View
+                            style={[
+                              styles.movementBarFill,
+                              { height: `${Math.max(m.readiness, 8)}%` },
+                            ]}
+                          />
+                        </View>
+                        <Text style={styles.movementLabel}>
+                          {m.name.slice(0, 5)}
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
+
+                {/* Phases preview */}
+                <View style={styles.growthPlanPhases}>
+                  {journeyMap.phases.slice(0, 3).map((phase: { name: string; weeks: string; whatToDo: string; practiceCount: number }, i: number) => (
+                    <View key={i} style={styles.growthPlanPhaseRow}>
+                      <View style={[
+                        styles.growthPlanPhaseDot,
+                        i === 0 && styles.growthPlanPhaseDotActive,
+                      ]} />
+                      <View style={styles.growthPlanPhaseContent}>
+                        <Text style={styles.growthPlanPhaseName}>
+                          {phase.name}
+                        </Text>
+                        <Text style={styles.growthPlanPhaseWeeks}>
+                          {phase.weeks}
+                        </Text>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+
+                <TouchableOpacity
+                  style={styles.growthPlanCta}
+                  onPress={() => router.push('/(app)/portrait' as any)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.growthPlanCtaText}>
+                    See Full Plan {'\u2192'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            );
+          } catch {
+            return null;
+          }
+        })()}
+
         {/* ═══ 5. STREAK (Small, celebratory) ═════════════════ */}
         {streakData && streakData.currentStreak > 0 && (
           <View style={styles.streakMiniSection}>
@@ -1770,6 +1849,109 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontSize: FontSizes.bodySmall,
     fontWeight: '700',
+  },
+
+  // ── Growth Plan Section ──
+  growthPlanSection: {
+    marginHorizontal: Spacing.xl,
+    marginBottom: Spacing.lg,
+    backgroundColor: Colors.white,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    ...Shadows.card,
+  },
+  growthPlanTitle: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '700' as const,
+    color: Colors.secondary,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 1.2,
+    marginBottom: Spacing.xs,
+  },
+  growthPlanHeadline: {
+    fontSize: FontSizes.headingM,
+    fontWeight: '700' as const,
+    color: Colors.text,
+    marginBottom: Spacing.sm,
+    lineHeight: 26,
+  },
+  growthPlanRationale: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    lineHeight: 20,
+    marginBottom: Spacing.md,
+  },
+  movementsRow: {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-around' as const,
+    alignItems: 'flex-end' as const,
+    marginBottom: Spacing.md,
+    paddingHorizontal: Spacing.sm,
+    height: 60,
+  },
+  movementItem: {
+    alignItems: 'center' as const,
+    flex: 1,
+  },
+  movementBarTrack: {
+    width: 16,
+    height: 40,
+    backgroundColor: Colors.border,
+    borderRadius: 8,
+    overflow: 'hidden' as const,
+    justifyContent: 'flex-end' as const,
+    marginBottom: 4,
+  },
+  movementBarFill: {
+    backgroundColor: Colors.secondary,
+    borderRadius: 8,
+    width: '100%' as any,
+  },
+  movementLabel: {
+    fontSize: 10,
+    color: Colors.textSecondary,
+    fontWeight: '600' as const,
+  },
+  growthPlanPhases: {
+    marginBottom: Spacing.md,
+  },
+  growthPlanPhaseRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    marginBottom: Spacing.sm,
+  },
+  growthPlanPhaseDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: Colors.border,
+    marginRight: Spacing.sm,
+  },
+  growthPlanPhaseDotActive: {
+    backgroundColor: Colors.secondary,
+  },
+  growthPlanPhaseContent: {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    flex: 1,
+  },
+  growthPlanPhaseName: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '600' as const,
+    color: Colors.text,
+  },
+  growthPlanPhaseWeeks: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+  },
+  growthPlanCta: {
+    alignItems: 'center' as const,
+    paddingVertical: Spacing.sm,
+  },
+  growthPlanCtaText: {
+    fontSize: FontSizes.body,
+    fontWeight: '600' as const,
+    color: Colors.secondary,
   },
 
   // ── Streak Mini ──
