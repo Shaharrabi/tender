@@ -41,6 +41,9 @@ import AppIcon from '@/components/ui/AppIcon';
 import { synthesizeAssessments, type AssessmentSynthesis } from '@/utils/portrait/assessment-synthesis';
 import { getStep } from '@/utils/steps/twelve-steps';
 import { STAT_ICONS } from '@/constants/icons';
+import { getExerciseById } from '@/utils/interventions/registry';
+import { getExercisesForEdge } from '@/utils/portrait/growth-edges';
+import { CATEGORY_ACCENT_COLORS } from '@/components/intervention/ExerciseCard';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -587,7 +590,7 @@ export default function PortraitScreen() {
 
           <View style={st.exportSection}>
             <Text style={st.exportSectionLabel}>Growth</Text>
-            <GrowthTab portrait={portrait} />
+            <GrowthTab portrait={portrait} router={router} />
           </View>
 
           <View style={st.exportSection}>
@@ -616,7 +619,7 @@ export default function PortraitScreen() {
           )}
           {activeTab === 'lenses' && <LensesTab portrait={portrait} />}
           {activeTab === 'cycle' && <CycleTab portrait={portrait} />}
-          {activeTab === 'growth' && <GrowthTab portrait={portrait} />}
+          {activeTab === 'growth' && <GrowthTab portrait={portrait} router={router} />}
           {activeTab === 'anchors' && (
             <AnchorsTab portrait={portrait} router={router} />
           )}
@@ -1454,7 +1457,7 @@ function CycleTab({ portrait }: { portrait: IndividualPortrait }) {
 
 // ─── GROWTH TAB ─────────────────────────────────────
 
-function GrowthTab({ portrait }: { portrait: IndividualPortrait }) {
+function GrowthTab({ portrait, router }: { portrait: IndividualPortrait; router: any }) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -1527,24 +1530,54 @@ function GrowthTab({ portrait }: { portrait: IndividualPortrait }) {
             </View>
           )}
 
-          {/* Protocol Phases */}
+          {/* Protocol Phases with Exercises */}
           <View style={st.phasesContainer}>
             <Text style={st.movementsSectionTitle}>Your Path</Text>
-            {protocol.phases.map((phase: any, i: number) => (
-              <View key={i} style={st.phaseCard}>
-                <View style={st.phaseHeader}>
-                  <View style={[
-                    st.phaseIndicator,
-                    i === 0 && { backgroundColor: Colors.secondary },
-                  ]} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={st.phaseName}>{phase.name}</Text>
-                    <Text style={st.phaseWeeks}>{phase.weekRange}</Text>
+            {protocol.phases.map((phase: any, i: number) => {
+              // Resolve phase exercise IDs to real exercises
+              const phaseExercises = (phase.practices || [])
+                .map((id: string) => getExerciseById(id))
+                .filter(Boolean)
+                .slice(0, 4);
+              return (
+                <View key={i} style={st.phaseCard}>
+                  <View style={st.phaseHeader}>
+                    <View style={[
+                      st.phaseIndicator,
+                      i === 0 && { backgroundColor: Colors.secondary },
+                    ]} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={st.phaseName}>{phase.name}</Text>
+                      <Text style={st.phaseWeeks}>{phase.weekRange}</Text>
+                    </View>
                   </View>
+                  <Text style={st.phaseFocus}>{phase.focus}</Text>
+
+                  {/* Phase exercises — tappable rows */}
+                  {phaseExercises.length > 0 && (
+                    <View style={st.phaseExercises}>
+                      <Text style={st.phaseExercisesLabel}>Recommended Exercises</Text>
+                      {phaseExercises.map((ex: any) => {
+                        const accentColor = CATEGORY_ACCENT_COLORS[ex.category as keyof typeof CATEGORY_ACCENT_COLORS] || Colors.primary;
+                        return (
+                          <TouchableOpacity
+                            key={ex.id}
+                            style={st.exerciseRow}
+                            activeOpacity={0.7}
+                            onPress={() => router.push({ pathname: '/(app)/exercise', params: { id: ex.id } } as any)}
+                          >
+                            <View style={[st.exerciseDot, { backgroundColor: accentColor }]} />
+                            <Text style={st.exerciseRowTitle} numberOfLines={1}>{ex.title}</Text>
+                            <Text style={st.exerciseRowMeta}>{ex.duration} min</Text>
+                            <Text style={st.exerciseRowArrow}>{'\u203A'}</Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  )}
                 </View>
-                <Text style={st.phaseFocus}>{phase.focus}</Text>
-              </View>
-            ))}
+              );
+            })}
           </View>
 
           {/* Contraindications as gentle guidance */}
@@ -1584,8 +1617,8 @@ function GrowthTab({ portrait }: { portrait: IndividualPortrait }) {
 
           {edge.practices.length > 0 && (
             <View style={st.practicesSection}>
-              <Text style={st.practicesTitle}>Practices</Text>
-              {edge.practices.map((p, j) => (
+              <Text style={st.practicesTitle}>Guidance</Text>
+              {edge.practices.map((p: string, j: number) => (
                 <View key={j} style={st.practiceItem}>
                   <View style={st.practiceCheckbox}>
                     <Text style={st.practiceCheckboxText}>{'○'}</Text>
@@ -1595,6 +1628,36 @@ function GrowthTab({ portrait }: { portrait: IndividualPortrait }) {
               ))}
             </View>
           )}
+
+          {/* Linked exercises for this growth edge */}
+          {(() => {
+            const edgeExercises = getExercisesForEdge(edge.id)
+              .map((id) => getExerciseById(id))
+              .filter(Boolean)
+              .slice(0, 3);
+            if (edgeExercises.length === 0) return null;
+            return (
+              <View style={st.phaseExercises}>
+                <Text style={st.phaseExercisesLabel}>Try These Exercises</Text>
+                {edgeExercises.map((ex: any) => {
+                  const accentColor = CATEGORY_ACCENT_COLORS[ex.category as keyof typeof CATEGORY_ACCENT_COLORS] || Colors.primary;
+                  return (
+                    <TouchableOpacity
+                      key={ex.id}
+                      style={st.exerciseRow}
+                      activeOpacity={0.7}
+                      onPress={() => router.push({ pathname: '/(app)/exercise', params: { id: ex.id } } as any)}
+                    >
+                      <View style={[st.exerciseDot, { backgroundColor: accentColor }]} />
+                      <Text style={st.exerciseRowTitle} numberOfLines={1}>{ex.title}</Text>
+                      <Text style={st.exerciseRowMeta}>{ex.duration} min</Text>
+                      <Text style={st.exerciseRowArrow}>{'\u203A'}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            );
+          })()}
         </View>
       ))}
     </Animated.View>
@@ -2353,6 +2416,49 @@ const st = StyleSheet.create({
     color: Colors.textSecondary,
     lineHeight: 20,
     paddingLeft: Spacing.md + Spacing.sm,
+  },
+  phaseExercises: {
+    marginTop: Spacing.sm,
+    paddingLeft: Spacing.md + Spacing.sm,
+  },
+  phaseExercisesLabel: {
+    fontSize: 11,
+    fontWeight: '700' as const,
+    color: Colors.textMuted,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 0.8,
+    marginBottom: 6,
+  },
+  exerciseRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.md,
+    paddingVertical: 10,
+    paddingHorizontal: Spacing.sm,
+    marginBottom: 6,
+  },
+  exerciseDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 10,
+  },
+  exerciseRowTitle: {
+    flex: 1,
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '600' as const,
+    color: Colors.text,
+  },
+  exerciseRowMeta: {
+    fontSize: 11,
+    color: Colors.textMuted,
+    marginRight: 8,
+  },
+  exerciseRowArrow: {
+    fontSize: 18,
+    color: Colors.textMuted,
+    fontWeight: '300' as const,
   },
   guidanceContainer: {
     backgroundColor: '#FFF8F0',

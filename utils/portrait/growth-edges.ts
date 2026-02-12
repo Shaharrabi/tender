@@ -170,6 +170,68 @@ const VALUES_PRACTICES: Record<string, string[]> = {
   ],
 };
 
+/**
+ * Maps each growth edge ID to recommended exercises from the registry.
+ * These are the actionable practices that users can actually DO.
+ * The text practices on each GrowthEdge remain as narrative guidance;
+ * these exercise IDs link to the real interactive exercises.
+ */
+export const EDGE_EXERCISE_MAP: Record<string, string[]> = {
+  // Regulation capacity → regulation + grounding exercises
+  regulation_capacity: [
+    'window-check',
+    'grounding-5-4-3-2-1',
+    'self-compassion-break',
+    'distress-tolerance-together',
+  ],
+  // Speaking your truth → communication exercises
+  speak_truth: [
+    'soft-startup',
+    'dear-man',
+    'four-horsemen-antidotes',
+    'unified-detachment',
+  ],
+  // Approaching closeness → attachment exercises
+  approach_closeness: [
+    'emotional-bid',
+    'hold-me-tight',
+    'bonding-through-vulnerability',
+    'turning-toward',
+  ],
+  // Differentiation work → differentiation + values exercises
+  differentiation_work: [
+    'parts-check-in',
+    'defusion-from-stories',
+    'protector-dialogue',
+    'values-compass',
+  ],
+  // Reclaiming self → differentiation + acceptance exercises
+  reclaim_self: [
+    'protector-dialogue',
+    'defusion-from-stories',
+    'parts-check-in',
+    'radical-acceptance',
+  ],
+};
+
+/**
+ * Get exercises for a growth edge, falling back to values exercises
+ * for dynamic values_gap_* edges.
+ */
+export function getExercisesForEdge(edgeId: string): string[] {
+  if (EDGE_EXERCISE_MAP[edgeId]) return EDGE_EXERCISE_MAP[edgeId];
+  // Values gap edges (values_gap_honesty, values_gap_intimacy, etc.)
+  if (edgeId.startsWith('values_gap_')) {
+    return [
+      'values-compass',
+      'relationship-values-compass',
+      'willingness-stance',
+      'relationship-mission-statement',
+    ];
+  }
+  return [];
+}
+
 const PATTERN_EDGES: Record<string, GrowthEdge> = {
   values_honesty_avoids_conflict: {
     id: 'speak_truth',

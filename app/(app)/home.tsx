@@ -793,7 +793,13 @@ export default function HomeScreen() {
           const { synthesizeAssessments } = require('@/utils/portrait/assessment-synthesis');
           try {
             const synthesis = synthesizeAssessments(portrait);
-            const { journeyMap, movements } = synthesis;
+            const { journeyMap, movements, protocol } = synthesis;
+            // Get 2 exercises from the first protocol phase for quick-launch
+            const { getExerciseById: getExById } = require('@/utils/interventions/registry');
+            const quickExercises = (protocol?.phases?.[0]?.practices || [])
+              .map((id: string) => getExById(id))
+              .filter(Boolean)
+              .slice(0, 2);
             return (
               <View style={styles.growthPlanSection}>
                 <Text style={styles.growthPlanTitle}>
@@ -852,6 +858,24 @@ export default function HomeScreen() {
                     </View>
                   ))}
                 </View>
+
+                {/* Quick-launch exercises from Phase 1 */}
+                {quickExercises.length > 0 && (
+                  <View style={styles.quickPracticeSection}>
+                    <Text style={styles.quickPracticeLabel}>Start a Practice</Text>
+                    {quickExercises.map((ex: any) => (
+                      <TouchableOpacity
+                        key={ex.id}
+                        style={styles.quickPracticeRow}
+                        activeOpacity={0.7}
+                        onPress={() => router.push({ pathname: '/(app)/exercise', params: { id: ex.id } } as any)}
+                      >
+                        <Text style={styles.quickPracticeTitle} numberOfLines={1}>{ex.title}</Text>
+                        <Text style={styles.quickPracticeMeta}>{ex.duration} min {'\u203A'}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
 
                 <TouchableOpacity
                   style={styles.growthPlanCta}
@@ -1956,6 +1980,38 @@ const styles = StyleSheet.create({
   growthPlanPhaseWeeks: {
     fontSize: FontSizes.bodySmall,
     color: Colors.textSecondary,
+  },
+  quickPracticeSection: {
+    marginBottom: Spacing.md,
+  },
+  quickPracticeLabel: {
+    fontSize: 11,
+    fontWeight: '700' as const,
+    color: Colors.textMuted,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 0.8,
+    marginBottom: 6,
+  },
+  quickPracticeRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'space-between' as const,
+    backgroundColor: Colors.surface,
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: Spacing.sm,
+    marginBottom: 6,
+  },
+  quickPracticeTitle: {
+    flex: 1,
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '600' as const,
+    color: Colors.text,
+  },
+  quickPracticeMeta: {
+    fontSize: 12,
+    color: Colors.primary,
+    fontWeight: '600' as const,
   },
   growthPlanCta: {
     alignItems: 'center' as const,
