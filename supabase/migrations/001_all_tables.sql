@@ -215,6 +215,16 @@ CREATE POLICY "Users can insert own check-ins"
   ON daily_check_ins FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update own check-ins" ON daily_check_ins;
+CREATE POLICY "Users can update own check-ins"
+  ON daily_check_ins FOR UPDATE
+  USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can delete own check-ins" ON daily_check_ins;
+CREATE POLICY "Users can delete own check-ins"
+  ON daily_check_ins FOR DELETE
+  USING (auth.uid() = user_id);
+
 CREATE INDEX IF NOT EXISTS idx_daily_checkins_user ON daily_check_ins(user_id, checkin_date DESC);
 
 

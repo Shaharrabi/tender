@@ -28,6 +28,7 @@ import {
   ActivityIndicator,
   Animated,
   Platform,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -438,14 +439,22 @@ export default function HomeScreen() {
     note?: string
   ) => {
     if (!user) return;
-    const ci = await saveDailyCheckIn(
-      user.id,
-      mood,
-      relationship,
-      practiced,
-      note
-    );
-    setTodaysCheckIn(ci);
+    try {
+      const ci = await saveDailyCheckIn(
+        user.id,
+        mood,
+        relationship,
+        practiced,
+        note
+      );
+      setTodaysCheckIn(ci);
+    } catch (err: any) {
+      console.error('Check-in save failed:', err);
+      Alert.alert(
+        'Could not save check-in',
+        'Please try again. If this keeps happening, try logging out and back in.',
+      );
+    }
   };
 
   const handleLogout = async () => {
@@ -813,8 +822,11 @@ export default function HomeScreen() {
                             ]}
                           />
                         </View>
-                        <Text style={styles.movementLabel}>
-                          {m.name.slice(0, 5)}
+                        <Text style={styles.movementLabel} numberOfLines={1}>
+                          {key === 'recognition' ? 'See' :
+                           key === 'release' ? 'Soften' :
+                           key === 'resonance' ? 'Feel' :
+                           'Practice'}
                         </Text>
                       </View>
                     );
@@ -843,7 +855,7 @@ export default function HomeScreen() {
 
                 <TouchableOpacity
                   style={styles.growthPlanCta}
-                  onPress={() => router.push('/(app)/portrait' as any)}
+                  onPress={() => router.push({ pathname: '/(app)/portrait', params: { tab: 'growth' } } as any)}
                   activeOpacity={0.8}
                 >
                   <Text style={styles.growthPlanCtaText}>
@@ -1908,9 +1920,10 @@ const styles = StyleSheet.create({
     width: '100%' as any,
   },
   movementLabel: {
-    fontSize: 10,
+    fontSize: 11,
     color: Colors.textSecondary,
     fontWeight: '600' as const,
+    textAlign: 'center' as const,
   },
   growthPlanPhases: {
     marginBottom: Spacing.md,

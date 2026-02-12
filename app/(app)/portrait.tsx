@@ -22,7 +22,7 @@ import {
   Platform,
   UIManager,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { getPortrait } from '@/services/portrait';
 import {
@@ -391,9 +391,11 @@ function AREScoreRing({
 export default function PortraitScreen() {
   const { user } = useAuth();
   const router = useRouter();
+  const params = useLocalSearchParams<{ tab?: string }>();
   const [portrait, setPortrait] = useState<IndividualPortrait | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<TabKey>('overview');
+  const initialTab = (params.tab as TabKey) || 'overview';
+  const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
   const tabScrollRef = useRef<ScrollView>(null);
   const contentScrollRef = useRef<ScrollView>(null);
 

@@ -189,6 +189,23 @@ export async function saveDailyCheckIn(
   const today = localDateString();
 
   try {
+    // Delete any existing check-in for today first, then insert fresh.
+    // This avoids needing an UPDATE RLS policy (the original migration
+    // only had SELECT + INSERT). A separate migration (006) adds the
+    // UPDATE policy, but this delete-then-insert approach is more robust.
+    const { error: deleteError } = await supabase
+      .from('daily_check_ins')
+      .delete()
+      .eq('user_id', userId)
+      .eq('checkin_date', today);
+
+    // If delete fails due to missing DELETE policy, try upsert as fallback
+    if (deleteError) {
+      if (__DEV__) {
+        console.warn('[saveDailyCheckIn] Delete failed, trying upsert:', deleteError.message);
+      }
+    }
+
     const { data, error } = await supabase
       .from('daily_check_ins')
       .upsert(
