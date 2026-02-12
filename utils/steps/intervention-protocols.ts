@@ -900,3 +900,98 @@ function getAdditionalProtocols(
 
   return additional.slice(0, 2);
 }
+
+// ─── Growth Progress Calculation ─────────────────────────
+
+export interface GrowthProgress {
+  overall: number;  // 0-100
+  phaseProgress: Array<{
+    name: string;
+    completed: number;
+    total: number;
+    pct: number;
+    isComplete: boolean;
+  }>;
+}
+
+/**
+ * Calculate growth progress based on exercise completions relative to protocol phases.
+ * Earlier phases are weighted more heavily (foundational work matters more).
+ */
+export function calculateGrowthProgress(
+  protocol: InterventionProtocol,
+  completionMap: Record<string, number>
+): GrowthProgress {
+  const phaseProgress = protocol.phases.map((phase) => {
+    const total = phase.practices.length;
+    const completed = phase.practices.filter(id => (completionMap[id] ?? 0) > 0).length;
+    return {
+      name: phase.name,
+      completed,
+      total,
+      pct: total > 0 ? Math.round((completed / total) * 100) : 0,
+      isComplete: total > 0 && completed >= total,
+    };
+  });
+
+  // Weighted average: earlier phases count more (weight decreases by phase index)
+  let weightedSum = 0;
+  let weightTotal = 0;
+  phaseProgress.forEach((p, i) => {
+    const weight = phaseProgress.length - i; // Phase 1 gets highest weight
+    weightedSum += p.pct * weight;
+    weightTotal += weight;
+  });
+
+  return {
+    overall: weightTotal > 0 ? Math.round(weightedSum / weightTotal) : 0,
+    phaseProgress,
+  };
+}
+
+/**
+ * Boost Four Movements readiness based on practice completion.
+ * Each exercise has a `fourMovement` category — completing exercises in a
+ * movement category adds up to +10 bonus points to that movement's readiness.
+ */
+export function boostMovementsFromProgress(
+  movements: FourMovements,
+  completionMap: Record<string, number>,
+  getExercise: (id: string) => { fourMovement?: string } | undefined
+): FourMovements {
+  // Count completions per movement
+  const movementCounts: Record<string, number> = {
+    recognition: 0, release: 0, resonance: 0, embodiment: 0,
+  };
+  for (const [exId, count] of Object.entries(completionMap)) {
+    if (count <= 0) continue;
+    const ex = getExercise(exId);
+    const mv = ex?.fourMovement;
+    if (mv && mv in movementCounts) {
+      movementCounts[mv] += count;
+    }
+  }
+
+  // Apply boost: min(count * 2, 10) bonus points, capped at 100 total
+  const boost = (base: number, movement: string): number =>
+    Math.min(100, base + Math.min(movementCounts[movement] * 2, 10));
+
+  return {
+    recognition: {
+      ...movements.recognition,
+      readiness: boost(movements.recognition.readiness, 'recognition'),
+    },
+    release: {
+      ...movements.release,
+      readiness: boost(movements.release.readiness, 'release'),
+    },
+    resonance: {
+      ...movements.resonance,
+      readiness: boost(movements.resonance.readiness, 'resonance'),
+    },
+    embodiment: {
+      ...movements.embodiment,
+      readiness: boost(movements.embodiment.readiness, 'embodiment'),
+    },
+  };
+}

@@ -56,6 +56,8 @@ import { generatePortrait } from '@/utils/portrait/portrait-generator';
 import { getTodaysCheckIn, saveDailyCheckIn } from '@/services/growth';
 import { getMyCouple } from '@/services/couples';
 import { getAllExercises, getExerciseById } from '@/utils/interventions/registry';
+import { getCompletions } from '@/services/intervention';
+import { calculateGrowthProgress } from '@/utils/steps/intervention-protocols';
 import CheckInCard from '@/components/growth/CheckInCard';
 import NudgeCarousel from '@/components/NudgeCarousel';
 import { getNudges } from '@/utils/nudges';
@@ -131,6 +133,9 @@ export default function HomeScreen() {
   // Portrait state
   const [portrait, setPortrait] = useState<IndividualPortrait | null>(null);
   const [generating, setGenerating] = useState(false);
+
+  // Exercise completion tracking for growth plan
+  const [exerciseCompletionMap, setExerciseCompletionMap] = useState<Record<string, number>>({});
 
   // Check-in state
   const [todaysCheckIn, setTodaysCheckIn] = useState<DailyCheckIn | null>(null);
@@ -301,7 +306,19 @@ export default function HomeScreen() {
   useFocusEffect(
     useCallback(() => {
       loadData();
-    }, [loadData])
+      // Also fetch exercise completions for growth plan done states
+      if (user) {
+        getCompletions(user.id, 500)
+          .then((completions) => {
+            const map: Record<string, number> = {};
+            for (const c of completions) {
+              map[c.exerciseId] = (map[c.exerciseId] ?? 0) + 1;
+            }
+            setExerciseCompletionMap(map);
+          })
+          .catch(() => {});
+      }
+    }, [loadData, user])
   );
 
   // ─── Derived state ────────────────────────────────────
@@ -802,9 +819,23 @@ export default function HomeScreen() {
               .slice(0, 2);
             return (
               <View style={styles.growthPlanSection}>
-                <Text style={styles.growthPlanTitle}>
-                  Your Growth Plan
-                </Text>
+                <View style={styles.growthPlanTitleRow}>
+                  <Text style={styles.growthPlanTitle}>
+                    Your Growth Plan
+                  </Text>
+                  {(() => {
+                    if (!protocol) return null;
+                    const gp = calculateGrowthProgress(protocol, exerciseCompletionMap);
+                    if (gp.overall === 0) return null;
+                    return (
+                      <View style={styles.growthPlanProgressBadge}>
+                        <Text style={styles.growthPlanProgressBadgeText}>
+                          {gp.overall}%
+                        </Text>
+                      </View>
+                    );
+                  })()}
+                </View>
                 <Text style={styles.growthPlanHeadline}>
                   {journeyMap.headline}
                 </Text>
@@ -863,17 +894,30 @@ export default function HomeScreen() {
                 {quickExercises.length > 0 && (
                   <View style={styles.quickPracticeSection}>
                     <Text style={styles.quickPracticeLabel}>Start a Practice</Text>
-                    {quickExercises.map((ex: any) => (
-                      <TouchableOpacity
-                        key={ex.id}
-                        style={styles.quickPracticeRow}
-                        activeOpacity={0.7}
-                        onPress={() => router.push({ pathname: '/(app)/exercise', params: { id: ex.id } } as any)}
-                      >
-                        <Text style={styles.quickPracticeTitle} numberOfLines={1}>{ex.title}</Text>
-                        <Text style={styles.quickPracticeMeta}>{ex.duration} min {'\u203A'}</Text>
-                      </TouchableOpacity>
-                    ))}
+                    {quickExercises.map((ex: any) => {
+                      const isDone = (exerciseCompletionMap[ex.id] ?? 0) > 0;
+                      return (
+                        <TouchableOpacity
+                          key={ex.id}
+                          style={[styles.quickPracticeRow, isDone && styles.quickPracticeRowDone]}
+                          activeOpacity={0.7}
+                          onPress={() => router.push({ pathname: '/(app)/exercise', params: { id: ex.id } } as any)}
+                        >
+                          {isDone && (
+                            <Text style={styles.quickPracticeCheck}>{'\u2713'}</Text>
+                          )}
+                          <Text
+                            style={[styles.quickPracticeTitle, isDone && styles.quickPracticeTitleDone]}
+                            numberOfLines={1}
+                          >
+                            {ex.title}
+                          </Text>
+                          <Text style={styles.quickPracticeMeta}>
+                            {isDone ? 'Done' : `${ex.duration} min`} {'\u203A'}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
                   </View>
                 )}
 
@@ -1902,7 +1946,6 @@ const styles = StyleSheet.create({
     color: Colors.secondary,
     textTransform: 'uppercase' as const,
     letterSpacing: 1.2,
-    marginBottom: Spacing.xs,
   },
   growthPlanHeadline: {
     fontSize: FontSizes.headingM,
@@ -2012,6 +2055,35 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.primary,
     fontWeight: '600' as const,
+  },
+  quickPracticeRowDone: {
+    backgroundColor: '#E3EFE5',
+  },
+  quickPracticeCheck: {
+    fontSize: 13,
+    color: '#4A6F50',
+    fontWeight: '700' as const,
+    marginRight: 8,
+  },
+  quickPracticeTitleDone: {
+    color: '#4A6F50',
+  },
+  growthPlanTitleRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'space-between' as const,
+    marginBottom: Spacing.xs,
+  },
+  growthPlanProgressBadge: {
+    backgroundColor: Colors.secondary,
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+  },
+  growthPlanProgressBadgeText: {
+    fontSize: 12,
+    fontWeight: '700' as const,
+    color: Colors.white,
   },
   growthPlanCta: {
     alignItems: 'center' as const,

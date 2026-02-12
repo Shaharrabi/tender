@@ -7,7 +7,7 @@
  * color-coded visuals, and a warm, polished aesthetic.
  */
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -44,6 +44,10 @@ import { STAT_ICONS } from '@/constants/icons';
 import { getExerciseById } from '@/utils/interventions/registry';
 import { getExercisesForEdge } from '@/utils/portrait/growth-edges';
 import { CATEGORY_ACCENT_COLORS } from '@/components/intervention/ExerciseCard';
+import { useFocusEffect } from '@react-navigation/native';
+import { getCompletions } from '@/services/intervention';
+import { calculateGrowthProgress, boostMovementsFromProgress } from '@/utils/steps/intervention-protocols';
+import type { GrowthProgress } from '@/utils/steps/intervention-protocols';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -1459,6 +1463,7 @@ function CycleTab({ portrait }: { portrait: IndividualPortrait }) {
 
 function GrowthTab({ portrait, router }: { portrait: IndividualPortrait; router: any }) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const { user } = useAuth();
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -1467,6 +1472,24 @@ function GrowthTab({ portrait, router }: { portrait: IndividualPortrait; router:
       useNativeDriver: true,
     }).start();
   }, []);
+
+  // ── Completion tracking ──
+  const [completionMap, setCompletionMap] = useState<Record<string, number>>({});
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!user) return;
+      getCompletions(user.id, 500)
+        .then((completions) => {
+          const map: Record<string, number> = {};
+          for (const c of completions) {
+            map[c.exerciseId] = (map[c.exerciseId] ?? 0) + 1;
+          }
+          setCompletionMap(map);
+        })
+        .catch(() => {});
+    }, [user])
+  );
 
   // Get the intervention protocol and four movements
   let protocol: any = null;
@@ -1482,6 +1505,19 @@ function GrowthTab({ portrait, router }: { portrait: IndividualPortrait; router:
     // Protocol engine not available — show growth edges only
   }
 
+  // ── Growth progress from completions ──
+  const growthProgress: GrowthProgress | null = useMemo(() => {
+    if (!protocol) return null;
+    return calculateGrowthProgress(protocol, completionMap);
+  }, [protocol, completionMap]);
+
+  // ── Boost Four Movements with practice completions ──
+  const boostedMovements = useMemo(() => {
+    if (!movements) return movements;
+    if (Object.keys(completionMap).length === 0) return movements;
+    return boostMovementsFromProgress(movements, completionMap, getExerciseById as any);
+  }, [movements, completionMap]);
+
   const { FOUR_MOVEMENTS_EXPLAINED } = require('@/utils/steps/twelve-steps');
 
   return (
@@ -1493,15 +1529,54 @@ function GrowthTab({ portrait, router }: { portrait: IndividualPortrait; router:
           <Text style={st.protocolName}>{protocol.name}</Text>
           <Text style={st.protocolDescription}>{protocol.description}</Text>
 
+          {/* Growth Progress Bar */}
+          {growthProgress && (
+            <View style={st.growthProgressContainer}>
+              <View style={st.growthProgressHeader}>
+                <Text style={st.growthProgressLabel}>Growth Progress</Text>
+                <Text style={st.growthProgressPct}>{growthProgress.overall}%</Text>
+              </View>
+              <View style={st.growthProgressTrack}>
+                <View
+                  style={[
+                    st.growthProgressFill,
+                    { width: `${Math.max(growthProgress.overall, 2)}%` as any },
+                  ]}
+                />
+              </View>
+              {/* Mini phase bars */}
+              <View style={st.phaseProgressRow}>
+                {growthProgress.phaseProgress.map((p, i) => (
+                  <View key={i} style={st.phaseProgressItem}>
+                    <View style={st.phaseProgressMiniTrack}>
+                      <View
+                        style={[
+                          st.phaseProgressMiniFill,
+                          {
+                            width: `${Math.max(p.pct, 4)}%` as any,
+                            backgroundColor: p.isComplete ? '#4A6F50' : Colors.secondary,
+                          },
+                        ]}
+                      />
+                    </View>
+                    <Text style={st.phaseProgressMiniLabel} numberOfLines={1}>
+                      {p.isComplete ? '\u2713 ' : ''}{p.name}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
           {/* Four Movements Visualization */}
-          {movements && (
+          {boostedMovements && (
             <View style={st.movementsContainer}>
               <Text style={st.movementsSectionTitle}>Four Movements of Growth</Text>
               <Text style={st.movementsSubtitle}>
                 Where you are in each dimension of relational growth
               </Text>
               {(['recognition', 'release', 'resonance', 'embodiment'] as const).map((key) => {
-                const m = movements[key];
+                const m = boostedMovements[key];
                 const explained = (FOUR_MOVEMENTS_EXPLAINED as any)[key];
                 return (
                   <View key={key} style={st.movementCard}>
@@ -1539,40 +1614,88 @@ function GrowthTab({ portrait, router }: { portrait: IndividualPortrait; router:
                 .map((id: string) => getExerciseById(id))
                 .filter(Boolean)
                 .slice(0, 4);
+              // Phase completion stats
+              const phaseCompletedCount = phaseExercises.filter(
+                (ex: any) => (completionMap[ex.id] ?? 0) > 0
+              ).length;
+              const phaseTotal = phaseExercises.length;
+              const phaseIsComplete = phaseTotal > 0 && phaseCompletedCount >= phaseTotal;
+              const nextPhase = protocol.phases[i + 1];
               return (
                 <View key={i} style={st.phaseCard}>
                   <View style={st.phaseHeader}>
                     <View style={[
                       st.phaseIndicator,
-                      i === 0 && { backgroundColor: Colors.secondary },
+                      phaseIsComplete
+                        ? { backgroundColor: '#4A6F50' }
+                        : i === 0 && { backgroundColor: Colors.secondary },
                     ]} />
                     <View style={{ flex: 1 }}>
-                      <Text style={st.phaseName}>{phase.name}</Text>
+                      <Text style={st.phaseName}>
+                        {phaseIsComplete ? '\u2713 ' : ''}{phase.name}
+                      </Text>
                       <Text style={st.phaseWeeks}>{phase.weekRange}</Text>
                     </View>
                   </View>
                   <Text style={st.phaseFocus}>{phase.focus}</Text>
 
-                  {/* Phase exercises — tappable rows */}
+                  {/* Phase exercises — tappable rows with done state */}
                   {phaseExercises.length > 0 && (
                     <View style={st.phaseExercises}>
                       <Text style={st.phaseExercisesLabel}>Recommended Exercises</Text>
                       {phaseExercises.map((ex: any) => {
-                        const accentColor = CATEGORY_ACCENT_COLORS[ex.category as keyof typeof CATEGORY_ACCENT_COLORS] || Colors.primary;
+                        const isDone = (completionMap[ex.id] ?? 0) > 0;
+                        const accentColor = isDone
+                          ? '#4A6F50'
+                          : CATEGORY_ACCENT_COLORS[ex.category as keyof typeof CATEGORY_ACCENT_COLORS] || Colors.primary;
                         return (
                           <TouchableOpacity
                             key={ex.id}
-                            style={st.exerciseRow}
+                            style={[st.exerciseRow, isDone && st.exerciseRowDone]}
                             activeOpacity={0.7}
                             onPress={() => router.push({ pathname: '/(app)/exercise', params: { id: ex.id } } as any)}
                           >
-                            <View style={[st.exerciseDot, { backgroundColor: accentColor }]} />
-                            <Text style={st.exerciseRowTitle} numberOfLines={1}>{ex.title}</Text>
-                            <Text style={st.exerciseRowMeta}>{ex.duration} min</Text>
+                            {isDone ? (
+                              <View style={st.exerciseCheckmark}>
+                                <Text style={st.exerciseCheckmarkText}>{'\u2713'}</Text>
+                              </View>
+                            ) : (
+                              <View style={[st.exerciseDot, { backgroundColor: accentColor }]} />
+                            )}
+                            <Text
+                              style={[st.exerciseRowTitle, isDone && st.exerciseRowTitleDone]}
+                              numberOfLines={1}
+                            >
+                              {ex.title}
+                            </Text>
+                            <Text style={st.exerciseRowMeta}>
+                              {isDone ? 'Done' : `${ex.duration} min`}
+                            </Text>
                             <Text style={st.exerciseRowArrow}>{'\u203A'}</Text>
                           </TouchableOpacity>
                         );
                       })}
+
+                      {/* Phase progress counter */}
+                      {phaseTotal > 0 && (
+                        <Text style={st.phaseProgressText}>
+                          {phaseCompletedCount} of {phaseTotal} complete
+                        </Text>
+                      )}
+                    </View>
+                  )}
+
+                  {/* Phase completion summary card */}
+                  {phaseIsComplete && (
+                    <View style={st.phaseCompleteSummary}>
+                      <Text style={st.phaseCompleteIcon}>{'\u2728'}</Text>
+                      <Text style={st.phaseCompleteTitle}>
+                        {phase.name} — Complete
+                      </Text>
+                      <Text style={st.phaseCompleteText}>
+                        You practiced {phaseExercises.map((ex: any) => ex.title).join(', ')}.{' '}
+                        {phase.focus}{nextPhase ? ` Next: ${nextPhase.name} \u2192` : ' Great work!'}
+                      </Text>
                     </View>
                   )}
                 </View>
@@ -1640,17 +1763,33 @@ function GrowthTab({ portrait, router }: { portrait: IndividualPortrait; router:
               <View style={st.phaseExercises}>
                 <Text style={st.phaseExercisesLabel}>Try These Exercises</Text>
                 {edgeExercises.map((ex: any) => {
-                  const accentColor = CATEGORY_ACCENT_COLORS[ex.category as keyof typeof CATEGORY_ACCENT_COLORS] || Colors.primary;
+                  const isDone = (completionMap[ex.id] ?? 0) > 0;
+                  const accentColor = isDone
+                    ? '#4A6F50'
+                    : CATEGORY_ACCENT_COLORS[ex.category as keyof typeof CATEGORY_ACCENT_COLORS] || Colors.primary;
                   return (
                     <TouchableOpacity
                       key={ex.id}
-                      style={st.exerciseRow}
+                      style={[st.exerciseRow, isDone && st.exerciseRowDone]}
                       activeOpacity={0.7}
                       onPress={() => router.push({ pathname: '/(app)/exercise', params: { id: ex.id } } as any)}
                     >
-                      <View style={[st.exerciseDot, { backgroundColor: accentColor }]} />
-                      <Text style={st.exerciseRowTitle} numberOfLines={1}>{ex.title}</Text>
-                      <Text style={st.exerciseRowMeta}>{ex.duration} min</Text>
+                      {isDone ? (
+                        <View style={st.exerciseCheckmark}>
+                          <Text style={st.exerciseCheckmarkText}>{'\u2713'}</Text>
+                        </View>
+                      ) : (
+                        <View style={[st.exerciseDot, { backgroundColor: accentColor }]} />
+                      )}
+                      <Text
+                        style={[st.exerciseRowTitle, isDone && st.exerciseRowTitleDone]}
+                        numberOfLines={1}
+                      >
+                        {ex.title}
+                      </Text>
+                      <Text style={st.exerciseRowMeta}>
+                        {isDone ? 'Done' : `${ex.duration} min`}
+                      </Text>
                       <Text style={st.exerciseRowArrow}>{'\u203A'}</Text>
                     </TouchableOpacity>
                   );
@@ -3166,6 +3305,122 @@ const st = StyleSheet.create({
   synthesisStepRationale: {
     fontSize: FontSizes.bodySmall,
     color: Colors.textSecondary,
+    lineHeight: 20,
+  },
+
+  // ── Growth Progress ──
+  growthProgressContainer: {
+    backgroundColor: Colors.white,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    marginBottom: Spacing.lg,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  growthProgressHeader: {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    alignItems: 'center' as const,
+    marginBottom: Spacing.sm,
+  },
+  growthProgressLabel: {
+    fontSize: FontSizes.body,
+    fontWeight: '700' as const,
+    color: Colors.text,
+  },
+  growthProgressPct: {
+    fontSize: FontSizes.headingM,
+    fontWeight: '700' as const,
+    color: Colors.secondary,
+  },
+  growthProgressTrack: {
+    height: 10,
+    backgroundColor: Colors.border,
+    borderRadius: 5,
+    overflow: 'hidden' as const,
+    marginBottom: Spacing.md,
+  },
+  growthProgressFill: {
+    height: '100%' as any,
+    backgroundColor: Colors.secondary,
+    borderRadius: 5,
+  },
+  phaseProgressRow: {
+    flexDirection: 'row' as const,
+    gap: Spacing.sm,
+  },
+  phaseProgressItem: {
+    flex: 1,
+  },
+  phaseProgressMiniTrack: {
+    height: 4,
+    backgroundColor: Colors.border,
+    borderRadius: 2,
+    overflow: 'hidden' as const,
+    marginBottom: 4,
+  },
+  phaseProgressMiniFill: {
+    height: '100%' as any,
+    borderRadius: 2,
+  },
+  phaseProgressMiniLabel: {
+    fontSize: 9,
+    color: Colors.textMuted,
+    fontWeight: '600' as const,
+  },
+
+  // ── Exercise Done States ──
+  exerciseRowDone: {
+    backgroundColor: '#E3EFE5',
+    opacity: 0.85,
+  },
+  exerciseCheckmark: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#4A6F50',
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    marginRight: 10,
+  },
+  exerciseCheckmarkText: {
+    fontSize: 11,
+    color: Colors.white,
+    fontWeight: '700' as const,
+  },
+  exerciseRowTitleDone: {
+    color: '#4A6F50',
+  },
+  phaseProgressText: {
+    fontSize: 11,
+    color: Colors.textMuted,
+    fontWeight: '600' as const,
+    marginTop: 4,
+    textAlign: 'right' as const,
+  },
+
+  // ── Phase Completion Summary ──
+  phaseCompleteSummary: {
+    backgroundColor: '#E3EFE5',
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    marginTop: Spacing.sm,
+    borderLeftWidth: 3,
+    borderLeftColor: '#4A6F50',
+  },
+  phaseCompleteIcon: {
+    fontSize: 18,
+    marginBottom: 4,
+  },
+  phaseCompleteTitle: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '700' as const,
+    color: '#4A6F50',
+    marginBottom: 4,
+  },
+  phaseCompleteText: {
+    fontSize: FontSizes.bodySmall,
+    color: '#3D6B42',
     lineHeight: 20,
   },
 
