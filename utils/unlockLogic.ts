@@ -146,9 +146,9 @@ export const FEATURE_CARDS: FeatureCard[] = [
   },
   {
     key: 'aiCoach',
-    title: 'Talk to Sage',
+    title: 'Talk to Nuance',
     subtitle: 'Your AI relationship guide — always here',
-    icon: '🌿',
+    icon: '✦',
     color: '#6B8F71',
     unlockHint: 'Complete 1 assessment to start',
     route: '/(app)/chat',

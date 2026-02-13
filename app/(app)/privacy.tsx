@@ -105,7 +105,7 @@ export default function PrivacyScreen() {
         'Your assessment responses and scores',
         'Your relational portrait and analysis',
         'Your practice history and progress',
-        'Your AI conversation history with Sage',
+        'Your AI conversation history with Nuance',
         'Your daily check-in data',
         'Your partner connection status (if connected)',
       ],

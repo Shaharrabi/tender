@@ -1903,7 +1903,7 @@ function AnchorsTab({
         onPress={() => router.push('/(app)/chat' as any)}
         activeOpacity={0.8}
       >
-        <Text style={st.ctaButtonText}>Talk to Sage 🌿</Text>
+        <Text style={st.ctaButtonText}>Talk to Nuance ✦</Text>
       </TouchableOpacity>
 
       <TouchableOpacity

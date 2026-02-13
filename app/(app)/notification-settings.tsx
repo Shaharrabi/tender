@@ -35,7 +35,7 @@ interface NotificationPreferences {
   dailyCheckInReminder: boolean;
   practiceReminders: boolean;
   assessmentNudges: boolean;
-  sageInsights: boolean;
+  nuanceInsights: boolean;
   partnerActivity: boolean;
   motivationalQuotes: boolean;
   reminderTime: 'morning' | 'afternoon' | 'evening';
@@ -45,7 +45,7 @@ const DEFAULT_PREFS: NotificationPreferences = {
   dailyCheckInReminder: true,
   practiceReminders: true,
   assessmentNudges: true,
-  sageInsights: true,
+  nuanceInsights: true,
   partnerActivity: true,
   motivationalQuotes: true,
   reminderTime: 'morning',
@@ -157,11 +157,11 @@ export default function NotificationSettingsScreen() {
         <Text style={styles.sectionLabel}>INSIGHTS & UPDATES</Text>
 
         <ToggleRow
-          icon="🌿"
-          title="Sage Insights"
+          icon="✦"
+          title="Nuance Insights"
           description="Personalized reflections from your AI relationship guide"
-          value={prefs.sageInsights}
-          onToggle={(v) => updatePref('sageInsights', v)}
+          value={prefs.nuanceInsights}
+          onToggle={(v) => updatePref('nuanceInsights', v)}
         />
 
         <ToggleRow

@@ -2,7 +2,7 @@
  * Twelve Steps of Relational Healing — Master Data
  *
  * Contains the full step definitions, practice-to-step mapping,
- * phase definitions, and Sage behavior contexts.
+ * phase definitions, and Nuance behavior contexts.
  *
  * The Twelve Steps are the TRANSFORMATIONAL ARC of Tender.
  * Steps live inside Healing Phases. Practices live inside Steps.
@@ -126,7 +126,7 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Create shared awareness of disconnection without blame. Move from "you\'re the problem" to "we have a pattern."',
     phase: 'seeing',
     fourMovementsEmphasis: 'Recognition',
-    sageBehavior: {
+    nuanceBehavior: {
       tone: 'curious, gentle, normalizing',
       focus: 'seeing patterns without blame',
       avoids: ['pushing for change too fast', 'assigning blame', 'rushing past acknowledgment'],
@@ -148,7 +148,7 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Shift from adversarial orientation to collaborative orientation. Build faith in the relationship itself as an entity worth tending.',
     phase: 'seeing',
     fourMovementsEmphasis: 'Recognition \u2192 Resonance',
-    sageBehavior: {
+    nuanceBehavior: {
       tone: 'warm, inviting, hopeful',
       focus: 'building faith in the "we"',
       avoids: ['cynicism', 'skepticism about repair', 'focusing only on individual growth'],
@@ -170,7 +170,7 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Soften rigid narratives. Create space for partner to be more than the story you\'ve told yourself about them.',
     phase: 'feeling',
     fourMovementsEmphasis: 'Release',
-    sageBehavior: {
+    nuanceBehavior: {
       tone: 'gentle, curious, destabilizing (in a safe way)',
       focus: 'loosening grip on certainty',
       avoids: ['reinforcing fixed stories', 'agreeing with black-and-white thinking'],
@@ -191,7 +191,7 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Move from victim to agent. Own contribution to the cycle without collapsing into shame.',
     phase: 'feeling',
     fourMovementsEmphasis: 'Release',
-    sageBehavior: {
+    nuanceBehavior: {
       tone: 'honest, compassionate, direct',
       focus: 'owning without shaming',
       avoids: ['enabling blame of partner', 'collapsing into shame', 'bypassing accountability'],
@@ -213,7 +213,7 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Practice vulnerable disclosure. Build trust through witnessing and being witnessed.',
     phase: 'shifting',
     fourMovementsEmphasis: 'Resonance',
-    sageBehavior: {
+    nuanceBehavior: {
       tone: 'tender, reverent, holding',
       focus: 'creating safety for disclosure',
       avoids: ['rushing', 'intellectualizing', 'minimizing vulnerability'],
@@ -234,7 +234,7 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Soften contempt. See partner\'s behavior through attachment lens rather than character lens.',
     phase: 'shifting',
     fourMovementsEmphasis: 'Release \u2192 Resonance',
-    sageBehavior: {
+    nuanceBehavior: {
       tone: 'compassionate, reframing, curious about partner',
       focus: 'dissolving the enemy image',
       avoids: ['enabling contempt', 'agreeing with demonization'],
@@ -255,7 +255,7 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Move from insight to consistent action. Build sustainable rituals.',
     phase: 'shifting',
     fourMovementsEmphasis: 'Embodiment',
-    sageBehavior: {
+    nuanceBehavior: {
       tone: 'practical, encouraging, coach-like',
       focus: 'building sustainable habits',
       avoids: ['perfectionism', 'overwhelming with too many practices'],
@@ -276,7 +276,7 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Surface unresolved wounds without re-traumatizing. Create readiness for repair.',
     phase: 'shifting',
     fourMovementsEmphasis: 'Recognition',
-    sageBehavior: {
+    nuanceBehavior: {
       tone: 'grounded, careful, boundaried',
       focus: 'preparing safely for difficult repair work',
       avoids: ['forcing repair before readiness', 're-traumatizing', 'minimizing harm'],
@@ -297,7 +297,7 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Take concrete repair actions. Demonstrate change through behavior, not just words.',
     phase: 'integrating',
     fourMovementsEmphasis: 'Embodiment',
-    sageBehavior: {
+    nuanceBehavior: {
       tone: 'action-oriented, accountable, celebrating effort',
       focus: 'supporting follow-through',
       avoids: ['accepting words without action', 'enabling empty apologies'],
@@ -319,7 +319,7 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Normalize setbacks. Build sustainable maintenance practices. Prevent relapse into old cycles.',
     phase: 'integrating',
     fourMovementsEmphasis: 'Recognition \u2192 Embodiment',
-    sageBehavior: {
+    nuanceBehavior: {
       tone: 'steady, normalizing, non-judgmental',
       focus: 'supporting ongoing awareness without perfectionism',
       avoids: ['shame about setbacks', 'complacency', 'all-or-nothing thinking'],
@@ -340,7 +340,7 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Develop couple\'s capacity for metacognition. Learn to "check in" with the relationship as an entity.',
     phase: 'sustaining',
     fourMovementsEmphasis: 'Resonance',
-    sageBehavior: {
+    nuanceBehavior: {
       tone: 'spacious, reflective, attuned to something larger',
       focus: 'listening to the relationship itself',
       avoids: ['rushing to solutions', 'staying on surface level'],
@@ -361,7 +361,7 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Integration and expansion. The couple becomes a source of relational health in their community.',
     phase: 'sustaining',
     fourMovementsEmphasis: 'Embodiment \u2192 Transmission',
-    sageBehavior: {
+    nuanceBehavior: {
       tone: 'celebratory, humble, looking outward',
       focus: 'integration and service',
       avoids: ['false completion', 'ignoring ongoing work'],
@@ -524,11 +524,11 @@ export function getTaglineForStep(stepNumber: number): string {
   return taglines[Math.floor(Math.random() * taglines.length)];
 }
 
-// ─── Step-Specific Sage Opening Prompts ──────────────────
+// ─── Step-Specific Nuance Opening Prompts ──────────────────
 // These replace the generic conversation starters when the user
 // has an active step. They guide the conversation toward the step's focus.
 
-export const SAGE_OPENING_PROMPTS: Record<number, string[]> = {
+export const NUANCE_OPENING_PROMPTS: Record<number, string[]> = {
   1: [
     'Help me see the pattern between us',
     'I noticed something keeps happening in our arguments',
@@ -591,9 +591,9 @@ export const SAGE_OPENING_PROMPTS: Record<number, string[]> = {
   ],
 };
 
-/** Get opening prompts for Sage based on current step. */
-export function getSageOpeningPrompts(stepNumber: number): string[] {
-  return SAGE_OPENING_PROMPTS[stepNumber] ?? SAGE_OPENING_PROMPTS[1];
+/** Get opening prompts for Nuance based on current step. */
+export function getNuanceOpeningPrompts(stepNumber: number): string[] {
+  return NUANCE_OPENING_PROMPTS[stepNumber] ?? NUANCE_OPENING_PROMPTS[1];
 }
 
 // ─── How Steps Relate to Your Portrait ────────────────

@@ -65,7 +65,7 @@ export interface HealingStep {
   therapeuticGoal: string;
   phase: HealingPhase;
   fourMovementsEmphasis: string;
-  sageBehavior: {
+  nuanceBehavior: {
     tone: string;
     focus: string;
     avoids: string[];

@@ -55,8 +55,8 @@ export interface ProtocolPhase {
   weekRange: string;
   focus: string;
   practices: string[];
-  /** What Sage AI should emphasize during this phase */
-  sageGuidance: string;
+  /** What Nuance AI should emphasize during this phase */
+  nuanceGuidance: string;
 }
 
 // ─── Four Movements Framework ─────────────────────────
@@ -309,7 +309,7 @@ function buildRegulationFoundationProtocol(
           'Learn to recognize early signs of activation. Build a daily grounding practice. ' +
           'Understand your window of tolerance.',
         practices: ['window-check', 'grounding-5-4-3-2-1', 'parts-check-in'],
-        sageGuidance:
+        nuanceGuidance:
           'Prioritize regulation. If the user is activated or shutdown, don\'t push for insight. ' +
           'Meet them where they are. Teach the window of tolerance concept.',
       },
@@ -320,7 +320,7 @@ function buildRegulationFoundationProtocol(
           'Practice staying regulated during low-stakes conversations. Build co-regulation ' +
           'skills. Start naming patterns without blame.',
         practices: ['recognize-cycle', 'stress-reducing-conversation', 'self-compassion-break'],
-        sageGuidance:
+        nuanceGuidance:
           'Start gently connecting patterns to their portrait. Use "I notice" language. ' +
           'Celebrate any moment they catch themselves before flooding.',
       },
@@ -331,7 +331,7 @@ function buildRegulationFoundationProtocol(
           'Now that your window is wider, begin the emotional work: sharing feelings, ' +
           'practicing repair, building new rituals.',
         practices: ['soft-startup', 'repair-attempt', 'turning-toward', 'emotional-bid'],
-        sageGuidance:
+        nuanceGuidance:
           'They\'re ready for deeper work now. Connect growth edges to practices. ' +
           'Reference their values and anchors.',
       },
@@ -379,7 +379,7 @@ function buildAnxiousReactiveProtocol(
           'Learn to slow down your nervous system before engaging. Practice recognizing ' +
           'the difference between "I need to talk about this NOW" and "my nervous system is flooded."',
         practices: ['window-check', 'grounding-5-4-3-2-1', 'parts-check-in', 'recognize-cycle'],
-        sageGuidance:
+        nuanceGuidance:
           'When they come in activated, validate first then redirect to regulation. ' +
           'Use their anchor points. Don\'t analyze the content of the fight yet.',
       },
@@ -390,7 +390,7 @@ function buildAnxiousReactiveProtocol(
           'Build emotional vocabulary. Learn to name what\'s happening underneath the urgency. ' +
           'Practice cognitive reappraisal: "Is this a real threat, or is my alarm going off?"',
         practices: ['accessing-primary-emotions', 'protector-dialogue', 'self-compassion-break'],
-        sageGuidance:
+        nuanceGuidance:
           'Help them identify primary emotions under secondary ones. ' +
           '"Underneath your frustration, what are you really feeling? Fear? Longing?"',
       },
@@ -401,7 +401,7 @@ function buildAnxiousReactiveProtocol(
           'Now that you can regulate, practice reaching for your partner from a grounded place. ' +
           'Express needs directly, without urgency or blame.',
         practices: ['bonding-through-vulnerability', 'hold-me-tight', 'soft-startup', 'emotional-bid'],
-        sageGuidance:
+        nuanceGuidance:
           'Connect their reaching behavior to attachment needs. Help them express needs ' +
           'from their primary emotions rather than their protest behavior.',
       },
@@ -412,7 +412,7 @@ function buildAnxiousReactiveProtocol(
           'Build sustainable daily practices. Create a personalized relapse plan for when ' +
           'old patterns resurface.',
         practices: ['rituals-of-connection', 'relationship-values-compass'],
-        sageGuidance:
+        nuanceGuidance:
           'Normalize setbacks. Help them build a "when I notice the old pattern" plan. ' +
           'Celebrate growth.',
       },
@@ -462,7 +462,7 @@ function buildAvoidantWithdrawnProtocol(
           'of emotional arousal. Understand your avoidance not as a flaw but as a learned ' +
           'protective strategy.',
         practices: ['parts-check-in', 'protector-dialogue', 'window-check'],
-        sageGuidance:
+        nuanceGuidance:
           'Use autonomy-supportive language. Don\'t push for feelings. Normalize their ' +
           'protective distance. Help them see avoidance as adaptive, then name its cost.',
       },
@@ -474,7 +474,7 @@ function buildAvoidantWithdrawnProtocol(
           'vulnerable topics. In-session practice with homework. The goal: 10% more open, ' +
           'not 100%.',
         practices: ['stress-reducing-conversation', 'love-maps', 'turning-toward', 'emotional-bid'],
-        sageGuidance:
+        nuanceGuidance:
           'Celebrate any disclosure. Don\'t ask "how do you feel?" directly — ask ' +
           '"what was that like?" Frame sharing as brave, not expected.',
       },
@@ -485,7 +485,7 @@ function buildAvoidantWithdrawnProtocol(
           'Build the I-Position: "I think..." "I feel..." "I want..." without reactivity. ' +
           'Practice self-soothing when closeness feels overwhelming. Maintain self while staying.',
         practices: ['values-compass', 'relationship-values-compass', 'self-compassion-break'],
-        sageGuidance:
+        nuanceGuidance:
           'Help them differentiate between "I don\'t feel" and "I don\'t want to feel." ' +
           'Connect their withdrawal to what it costs the relationship and their own values.',
       },
@@ -496,7 +496,7 @@ function buildAvoidantWithdrawnProtocol(
           'Structured turn-taking. Negotiated time-outs with re-engagement commitment. ' +
           'Replace withdrawal with "I need space but I\'m coming back."',
         practices: ['repair-attempt', 'soft-startup', 'dear-man', 'rituals-of-connection'],
-        sageGuidance:
+        nuanceGuidance:
           'They can handle more now. Practice repair scripts. Help them see the ' +
           'connection between showing up emotionally and getting the closeness they actually want.',
       },
@@ -549,7 +549,7 @@ function buildLowDiffReactiveProtocol(
           'Practice noticing self-critical thoughts without believing them. ' +
           'Understand that losing yourself was an adaptive strategy.',
         practices: ['self-compassion-break', 'parts-check-in', 'protector-dialogue'],
-        sageGuidance:
+        nuanceGuidance:
           'Watch for shame. Their pattern of self-abandonment probably comes with ' +
           'deep self-criticism. Validate before everything.',
       },
@@ -560,7 +560,7 @@ function buildLowDiffReactiveProtocol(
           'Practice knowing and stating what you think, feel, want, and need — ' +
           'even when it differs from your partner. Start with low-stakes situations.',
         practices: ['values-compass', 'accessing-primary-emotions', 'defusion-from-stories'],
-        sageGuidance:
+        nuanceGuidance:
           'Help them practice "I think..." statements. Celebrate any moment ' +
           'they state a preference before checking with their partner.',
       },
@@ -572,7 +572,7 @@ function buildLowDiffReactiveProtocol(
           'it meaning the relationship is in danger. Tolerate the tension of "we see ' +
           'this differently."',
         practices: ['soft-startup', 'dear-man', 'four-horsemen-antidotes'],
-        sageGuidance:
+        nuanceGuidance:
           'Frame disagreement as healthy differentiation, not threat. ' +
           'Help them see that their partner can handle their truth.',
       },
@@ -583,7 +583,7 @@ function buildLowDiffReactiveProtocol(
           'Consolidate the new "I" position. Practice repair for times you lost yourself. ' +
           'Build maintenance practices.',
         practices: ['repair-attempt', 'relationship-values-compass', 'rituals-of-connection'],
-        sageGuidance:
+        nuanceGuidance:
           'Help them forgive themselves for the accommodating. Celebrate the ' +
           'courage of the new position. Build relapse prevention.',
       },
@@ -635,7 +635,7 @@ function buildValuesMisalignedProtocol(
           'Get crystal clear on your top 3 values. Understand the gap — not to judge ' +
           'yourself, but to see clearly where your protective patterns override your values.',
         practices: ['values-compass', 'defusion-from-stories'],
-        sageGuidance:
+        nuanceGuidance:
           'Use ACT-style values exploration. Don\'t moralize. Help them see the gap ' +
           'with compassion: "Your values are real. So is the pattern that overrides them."',
       },
@@ -646,7 +646,7 @@ function buildValuesMisalignedProtocol(
           'Why does the pattern win? What is it protecting you from? Understanding ' +
           'the function of the pattern without judging it.',
         practices: ['protector-dialogue', 'parts-check-in', 'accessing-primary-emotions'],
-        sageGuidance:
+        nuanceGuidance:
           'IFS-style exploration. Help them have compassion for the part that ' +
           'protects by avoiding/yielding/withdrawing. Name the fear underneath.',
       },
@@ -657,7 +657,7 @@ function buildValuesMisalignedProtocol(
           'Start taking small values-aligned actions. "What would Honesty do right now?" ' +
           'Practice tolerating the discomfort of living your values.',
         practices: ['willingness-stance', 'soft-startup', 'bonding-through-vulnerability'],
-        sageGuidance:
+        nuanceGuidance:
           'Use their top value as a compass in sessions. When they describe a ' +
           'situation, ask: "What would [their top value] have you do here?"',
       },
@@ -668,7 +668,7 @@ function buildValuesMisalignedProtocol(
           'Build sustainable practices that keep you aligned. Create value-based ' +
           'rituals. Prepare for when old patterns pull you back.',
         practices: ['relationship-values-compass', 'rituals-of-connection'],
-        sageGuidance:
+        nuanceGuidance:
           'Celebrate alignment moments. Build a library of "I chose my value" stories. ' +
           'Create a simple daily check: "Did I live my values today?"',
       },
@@ -714,7 +714,7 @@ function buildBalancedGrowthProtocol(
           'Understand your patterns, your cycle, your parts. Build the vocabulary ' +
           'for what happens between you.',
         practices: ['recognize-cycle', 'parts-check-in', 'love-maps'],
-        sageGuidance: 'Explore with curiosity. Help them see nuance in their patterns.',
+        nuanceGuidance: 'Explore with curiosity. Help them see nuance in their patterns.',
       },
       {
         name: 'Stretch & Grow',
@@ -723,7 +723,7 @@ function buildBalancedGrowthProtocol(
           'Work your growth edges. Take the 10% different action. Practice new ' +
           'relational moves.',
         practices: ['bonding-through-vulnerability', 'soft-startup', 'hold-me-tight'],
-        sageGuidance:
+        nuanceGuidance:
           'Challenge gently. They can handle more depth. Push into growth edges.',
       },
       {
@@ -732,7 +732,7 @@ function buildBalancedGrowthProtocol(
         focus:
           'Build rituals. Create your relationship mission. Celebrate the journey.',
         practices: ['rituals-of-connection', 'relationship-values-compass', 'fondness-admiration'],
-        sageGuidance: 'Help them build sustainable practices. Celebrate growth.',
+        nuanceGuidance: 'Help them build sustainable practices. Celebrate growth.',
       },
     ],
     stepEmphasis: [1, 4, 5, 7, 11, 12],
@@ -775,7 +775,7 @@ function buildLowEIHighConflictProtocol(
           'Build emotional vocabulary. Learn to identify what you\'re feeling ' +
           'before it becomes behavior.',
         practices: ['accessing-primary-emotions', 'window-check', 'parts-check-in'],
-        sageGuidance:
+        nuanceGuidance:
           'Help expand emotional vocabulary. When they say "angry" ask "is it ' +
           'more like frustrated? hurt? scared?"',
       },
@@ -786,7 +786,7 @@ function buildLowEIHighConflictProtocol(
           'Practice expressing emotions constructively. Partner listening and ' +
           'validation skills.',
         practices: ['soft-startup', 'stress-reducing-conversation', 'self-compassion-break'],
-        sageGuidance:
+        nuanceGuidance:
           'Model emotional expression in your responses. Show what vulnerable ' +
           'sharing looks like.',
       },
@@ -797,7 +797,7 @@ function buildLowEIHighConflictProtocol(
           'Concrete problem-solving drills. Role-plays of conflict scenarios. ' +
           'Daily 10-15 min joint coping check-ins.',
         practices: ['dear-man', 'four-horsemen-antidotes', 'repair-attempt', 'aftermath-of-fight'],
-        sageGuidance:
+        nuanceGuidance:
           'Practice scripts together. Celebrate any moment of effective ' +
           'emotional communication.',
       },

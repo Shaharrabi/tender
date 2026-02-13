@@ -6,12 +6,12 @@
  *
  * Layout (top to bottom):
  * 1. Greeting + Journey Context — name, step, progress dots
- * 2. Today's Focus — ONE clear action (practice or Sage)
+ * 2. Today's Focus — ONE clear action (practice or Nuance)
  * 3. Daily Check-In — collapsed habit tracker
  * 4. Your Journey — progress bar + next assessment integrated
  * 5. Streak — small, celebratory, not guilt-inducing
  * 6. Inspiration — rotating quote or nudge carousel
- * 7. Explore — feature grid (Portrait, Sage, Growth, etc.)
+ * 7. Explore — feature grid (Portrait, Nuance, Growth, etc.)
  * 8. Results — completed assessment scores
  * 9. Individual Assessments — collapsible list
  * 10. Logout
@@ -698,14 +698,14 @@ export default function HomeScreen() {
             >
               <Text style={styles.todaysFocusEyebrow}>TODAY'S FOCUS</Text>
               <Text style={styles.todaysFocusTitle}>
-                Talk to Sage about your journey
+                Talk to Nuance about your journey
               </Text>
               <Text style={styles.todaysFocusMeta}>
                 Your relationship guide {'\u00B7'} Always here
               </Text>
               <View style={styles.todaysFocusButton}>
                 <Text style={styles.todaysFocusButtonText}>
-                  Open Sage {'\u2192'}
+                  Open Nuance {'\u2192'}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -977,7 +977,7 @@ export default function HomeScreen() {
               </TouchableOpacity>
             )}
 
-            {/* Sage Coach */}
+            {/* Nuance Coach */}
             <TouchableOpacity
               style={[
                 styles.featureCard,
@@ -987,25 +987,25 @@ export default function HomeScreen() {
                 if (completedCount > 0) {
                   router.push('/(app)/chat' as any);
                 } else {
-                  setLockedHintKey('sage');
+                  setLockedHintKey('nuance');
                   setTimeout(() => setLockedHintKey(null), 2500);
                 }
               }}
               activeOpacity={0.8}
             >
               <View style={styles.featureCardHeader}>
-                <Text style={styles.featureCardIcon}>{'\u{1F33F}'}</Text>
+                <Text style={styles.featureCardIcon}>{'\u2726'}</Text>
                 {completedCount === 0 && (
                   <Text style={styles.featureCardLockIcon}>
                     {'\u{1F512}'}
                   </Text>
                 )}
               </View>
-              <Text style={styles.featureCardTitle}>Talk to Sage</Text>
+              <Text style={styles.featureCardTitle}>Talk to Nuance</Text>
               <Text style={styles.featureCardSubtitle} numberOfLines={2}>
                 Your relationship guide
               </Text>
-              {lockedHintKey === 'sage' && completedCount === 0 && (
+              {lockedHintKey === 'nuance' && completedCount === 0 && (
                 <Text style={styles.featureCardHint}>
                   Complete 1 assessment to start
                 </Text>
@@ -1084,12 +1084,12 @@ export default function HomeScreen() {
                     {card.subtitle}
                   </Text>
                   <TouchableOpacity
-                    style={styles.askSageButton}
+                    style={styles.askNuanceButton}
                     onPress={() => router.push('/(app)/chat' as any)}
                     activeOpacity={0.7}
                   >
-                    <Text style={styles.askSageText}>
-                      {'\u{1F33F}'} Ask Sage
+                    <Text style={styles.askNuanceText}>
+                      {'\u2726'} Ask Nuance
                     </Text>
                   </TouchableOpacity>
                 </TouchableOpacity>
@@ -1449,7 +1449,7 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     lineHeight: 16,
   },
-  askSageButton: {
+  askNuanceButton: {
     marginTop: Spacing.xs,
     alignSelf: 'flex-start',
     backgroundColor: Colors.primaryLight + '20',
@@ -1457,7 +1457,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: BorderRadius.pill,
   },
-  askSageText: {
+  askNuanceText: {
     fontSize: 11,
     color: Colors.primary,
     fontWeight: '600',
@@ -1595,8 +1595,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  // ── Sage Coach Card ──
-  sageCard: {
+  // ── Nuance Coach Card ──
+  nuanceCard: {
     backgroundColor: Colors.secondary,
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
@@ -1605,16 +1605,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     ...Shadows.elevated,
   },
-  sageCardLocked: {
+  nuanceCardLocked: {
     opacity: 0.6,
   },
-  sageCardContent: {
+  nuanceCardContent: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
     gap: Spacing.md,
   },
-  sageIconCircle: {
+  nuanceIconCircle: {
     width: 44,
     height: 44,
     borderRadius: 22,
@@ -1622,18 +1622,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  sageIcon: {
+  nuanceIcon: {
     fontSize: 22,
   },
-  sageTextContainer: {
+  nuanceTextContainer: {
     flex: 1,
   },
-  sageTitleRow: {
+  nuanceTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.xs,
   },
-  sageCardTitle: {
+  nuanceCardTitle: {
     fontSize: FontSizes.body,
     fontWeight: '700',
     color: Colors.white,
@@ -1642,12 +1642,12 @@ const styles = StyleSheet.create({
   lockIcon: {
     fontSize: 14,
   },
-  sageCardSubtitle: {
+  nuanceCardSubtitle: {
     fontSize: FontSizes.caption,
     color: 'rgba(255,255,255,0.8)',
     marginTop: 2,
   },
-  sageArrow: {
+  nuanceArrow: {
     width: 28,
     height: 28,
     borderRadius: 14,
@@ -1655,7 +1655,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  sageArrowText: {
+  nuanceArrowText: {
     fontSize: 18,
     color: Colors.white,
     fontWeight: '600',

@@ -13,7 +13,7 @@ export type NudgeType =
   | 'assessment_reminder'
   | 'practice_reminder'
   | 'check_in_reminder'
-  | 'sage_prompt'
+  | 'nuance_prompt'
   | 'milestone'
   | 'motivation';
 

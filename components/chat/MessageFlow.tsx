@@ -1,8 +1,8 @@
 /**
  * MessageFlow — texting-style conversation bubbles (iMessage / WhatsApp).
  *
- * Sage messages: left-aligned, light surface bubbles with avatar label.
- * User messages: right-aligned, sage-green bubbles with white text.
+ * Nuance messages: left-aligned, light surface bubbles with avatar label.
+ * User messages: right-aligned, green bubbles with white text.
  * Includes typing indicator, message grouping, and animated entrance.
  */
 
@@ -117,7 +117,7 @@ export default function MessageFlow({
                 {formatTimestamp(msg.createdAt)}
               </Text>
             )}
-            <MessageBubble
+            <MesnuanceBubble
               message={msg}
               isFirstInGroup={isFirstInGroup}
               isLastInGroup={isLastInGroup}
@@ -208,7 +208,7 @@ function parseExerciseSuggestions(
 
 // ─── Message Bubble ─────────────────────────────────────
 
-function MessageBubble({
+function MesnuanceBubble({
   message,
   isFirstInGroup,
   isLastInGroup,
@@ -274,14 +274,14 @@ function MessageBubble({
     );
   }
 
-  // Assistant (Sage) message
+  // Assistant (Nuance) message
   const parts = parseExerciseSuggestions(message.content);
 
   return (
     <Animated.View
       style={[
         styles.bubbleRow,
-        styles.bubbleRowSage,
+        styles.bubbleRowNuance,
         !isLastInGroup && styles.groupedSpacing,
         {
           opacity: opacityAnim,
@@ -302,10 +302,10 @@ function MessageBubble({
         )}
       </View>
 
-      <View style={styles.sageBubbleColumn}>
-        {/* Sage name label above first message in group */}
+      <View style={styles.nuanceBubbleColumn}>
+        {/* Nuance name label above first message in group */}
         {isFirstInGroup && (
-          <Text style={styles.sageLabel}>
+          <Text style={styles.nuanceLabel}>
             {COACH.name} {COACH.avatar}
           </Text>
         )}
@@ -334,14 +334,14 @@ function MessageBubble({
                 key={`txt-${idx}`}
                 style={[
                   styles.bubble,
-                  styles.sageBubble,
-                  isFirstInGroup && idx === 0 && styles.sageBubbleFirst,
+                  styles.nuanceBubble,
+                  isFirstInGroup && idx === 0 && styles.nuanceBubbleFirst,
                   isLastInGroup &&
                     idx === parts.filter((p) => p.text.trim() || p.exerciseId).length - 1 &&
-                    styles.sageBubbleLast,
+                    styles.nuanceBubbleLast,
                 ]}
               >
-                <Text style={styles.sageBubbleText}>{part.text.trim()}</Text>
+                <Text style={styles.nuanceBubbleText}>{part.text.trim()}</Text>
               </View>
             );
           }
@@ -383,13 +383,13 @@ function TypingIndicator() {
   }, []);
 
   return (
-    <View style={[styles.bubbleRow, styles.bubbleRowSage]}>
+    <View style={[styles.bubbleRow, styles.bubbleRowNuance]}>
       <View style={styles.avatarColumn}>
         <View style={styles.avatarCircle}>
           <Text style={styles.avatarEmoji}>{COACH.avatar}</Text>
         </View>
       </View>
-      <View style={[styles.bubble, styles.sageBubble, styles.typingBubble]}>
+      <View style={[styles.bubble, styles.nuanceBubble, styles.typingBubble]}>
         <View style={styles.dotsRow}>
           <Animated.View
             style={[styles.dot, { transform: [{ translateY: dot1 }] }]}
@@ -485,7 +485,7 @@ const styles = StyleSheet.create({
   bubbleRowUser: {
     justifyContent: 'flex-end',
   },
-  bubbleRowSage: {
+  bubbleRowNuance: {
     justifyContent: 'flex-start',
   },
   groupedSpacing: {
@@ -515,8 +515,8 @@ const styles = StyleSheet.create({
     height: 28,
   },
 
-  // ── Sage label ──
-  sageLabel: {
+  // ── Nuance label ──
+  nuanceLabel: {
     fontSize: FontSizes.caption,
     color: Colors.textMuted,
     fontWeight: '600',
@@ -524,8 +524,8 @@ const styles = StyleSheet.create({
     marginLeft: 2,
   },
 
-  // ── Sage bubble column ──
-  sageBubbleColumn: {
+  // ── Nuance bubble column ──
+  nuanceBubbleColumn: {
     maxWidth: BUBBLE_MAX_WIDTH,
     flexShrink: 1,
   },
@@ -559,8 +559,8 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
 
-  // ── Sage bubbles ──
-  sageBubble: {
+  // ── Nuance bubbles ──
+  nuanceBubble: {
     backgroundColor: Colors.surfaceElevated,
     borderRadius: BorderRadius.lg,
     borderTopLeftRadius: BorderRadius.lg,
@@ -569,19 +569,19 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: BorderRadius.sm,
     ...Shadows.subtle,
   },
-  sageBubbleFirst: {
+  nuanceBubbleFirst: {
     borderTopLeftRadius: BorderRadius.lg,
   },
-  sageBubbleLast: {
+  nuanceBubbleLast: {
     borderBottomLeftRadius: BorderRadius.sm,
   },
-  sageBubbleText: {
+  nuanceBubbleText: {
     fontSize: FontSizes.body,
     color: Colors.text,
     lineHeight: 22,
   },
 
-  // ── Exercise card (embedded in Sage stream) ──
+  // ── Exercise card (embedded in Nuance stream) ──
   exerciseCard: {
     backgroundColor: Colors.surfaceElevated,
     borderRadius: BorderRadius.md,

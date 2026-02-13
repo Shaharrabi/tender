@@ -1,5 +1,5 @@
 /**
- * Chat screen — texting-style conversation with Sage, the relationship guide.
+ * Chat screen — texting-style conversation with Nuance, the relationship guide.
  *
  * Supports inline exercise suggestions — tapping an exercise card
  * in the conversation navigates to the exercise runner.
@@ -26,7 +26,7 @@ import SessionList from '@/components/chat/SessionList';
 import { COACH } from '@/constants/coach';
 import { Colors, Spacing, FontSizes, FontFamilies, BorderRadius } from '@/constants/theme';
 import { getCurrentStepNumber } from '@/services/steps';
-import { getSageOpeningPrompts } from '@/utils/steps/twelve-steps';
+import { getNuanceOpeningPrompts } from '@/utils/steps/twelve-steps';
 
 function ChatScreenInner() {
   const router = useRouter();
@@ -48,7 +48,7 @@ function ChatScreenInner() {
   const [showSessions, setShowSessions] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [sessionCreateAttempted, setSessionCreateAttempted] = useState(false);
-  const [sageStarters, setSageStarters] = useState<string[] | undefined>(undefined);
+  const [nuanceStarters, setNuanceStarters] = useState<string[] | undefined>(undefined);
 
   useEffect(() => {
     if (!user || authLoading) return; // Wait for auth to settle
@@ -57,7 +57,7 @@ function ChatScreenInner() {
       // Load step-specific starters
       try {
         const stepNum = await getCurrentStepNumber(user.id);
-        setSageStarters(getSageOpeningPrompts(stepNum));
+        setNuanceStarters(getNuanceOpeningPrompts(stepNum));
       } catch {
         // Fall back to defaults
       }
@@ -171,7 +171,7 @@ function ChatScreenInner() {
             sending={sending}
             onExerciseTap={handleExerciseTap}
             onSuggestedTap={handleSuggestedTap}
-            suggestedStarters={sageStarters}
+            suggestedStarters={nuanceStarters}
           />
           <UserInput onSend={sendMessage} disabled={sending || !user} />
         </View>
@@ -186,7 +186,7 @@ function ChatScreenInner() {
             sending={sending}
             onExerciseTap={handleExerciseTap}
             onSuggestedTap={handleSuggestedTap}
-            suggestedStarters={sageStarters}
+            suggestedStarters={nuanceStarters}
           />
           <UserInput onSend={sendMessage} disabled={sending || !user} />
         </KeyboardAvoidingView>

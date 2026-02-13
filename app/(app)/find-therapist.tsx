@@ -324,19 +324,19 @@ export default function FindTherapistScreen() {
           </TouchableOpacity>
         ))}
 
-        {/* ── Ask Sage ──────────────────── */}
-        <View style={s.sageCard}>
-          <Text style={s.sageIcon}>{'🌿'}</Text>
-          <Text style={s.sageTitle}>Not sure which therapy is right?</Text>
-          <Text style={s.sageSubtitle}>
-            Ask Sage to help you understand which type of therapy would be best for your specific patterns.
+        {/* ── Ask Nuance ──────────────────── */}
+        <View style={s.nuanceCard}>
+          <Text style={s.nuanceIcon}>{'✦'}</Text>
+          <Text style={s.nuanceTitle}>Not sure which therapy is right?</Text>
+          <Text style={s.nuanceSubtitle}>
+            Ask Nuance to help you understand which type of therapy would be best for your specific patterns.
           </Text>
           <TouchableOpacity
-            style={s.sageButton}
+            style={s.nuanceButton}
             onPress={() => router.push('/(app)/chat' as any)}
             activeOpacity={0.7}
           >
-            <Text style={s.sageButtonText}>Chat with Sage {'→'}</Text>
+            <Text style={s.nuanceButtonText}>Chat with Nuance {'→'}</Text>
           </TouchableOpacity>
         </View>
 
@@ -538,8 +538,8 @@ const s = StyleSheet.create({
     color: Colors.textMuted,
   },
 
-  // Sage section
-  sageCard: {
+  // Nuance section
+  nuanceCard: {
     backgroundColor: Colors.secondary + '12',
     borderRadius: BorderRadius.lg,
     padding: Spacing.lg,
@@ -549,21 +549,21 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.secondary + '25',
   },
-  sageIcon: { fontSize: 36 },
-  sageTitle: {
+  nuanceIcon: { fontSize: 36 },
+  nuanceTitle: {
     fontSize: FontSizes.body,
     fontWeight: '700',
     fontFamily: FontFamilies.heading,
     color: Colors.text,
     textAlign: 'center',
   },
-  sageSubtitle: {
+  nuanceSubtitle: {
     fontSize: FontSizes.bodySmall,
     color: Colors.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
   },
-  sageButton: {
+  nuanceButton: {
     backgroundColor: Colors.secondary,
     height: ButtonSizes.small,
     borderRadius: BorderRadius.pill,
@@ -572,7 +572,7 @@ const s = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     marginTop: Spacing.xs,
   },
-  sageButtonText: {
+  nuanceButtonText: {
     color: Colors.white,
     fontSize: FontSizes.caption,
     fontWeight: '700',

@@ -100,7 +100,7 @@ function buildWaiverText(option: ConsentType, name: string): string {
     `from our servers\n` +
     `  - No one will ever see my data — not my partner, not a therapist, not even ` +
     `our team\n` +
-    `  - I will not be able to use partner sharing features or Sage coaching for ` +
+    `  - I will not be able to use partner sharing features or Nuance coaching for ` +
     `these results\n\n` +
     `I understand:\n` +
     `Once erased, my data cannot be recovered. If I want to see my results again ` +
@@ -127,7 +127,7 @@ const ERASE_BULLETS = [
   'Download a PDF copy for your own records',
   'All data permanently deleted from our servers when you leave',
   'No one else will ever see it \u2014 not even us',
-  "You won't be able to share with a partner or use Sage coaching",
+  "You won't be able to share with a partner or use Nuance coaching",
 ];
 
 // ─── Component ────────────────────────────────────────────

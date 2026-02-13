@@ -1,7 +1,7 @@
 /**
  * UserInput — messaging-app-style input bar with rounded field and send button.
  *
- * Rounded text input with sage-green circular send arrow.
+ * Rounded text input with circular send arrow.
  * Looks and feels like iMessage / WhatsApp input.
  */
 
