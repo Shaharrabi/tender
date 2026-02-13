@@ -1,6 +1,13 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/services/supabase';
+import {
+  checkRateLimit,
+  recordAttempt,
+  clearRateLimit,
+  isValidEmail,
+  sanitizeTextInput,
+} from '@/utils/security/validation';
 
 interface AuthContextType {
   session: Session | null;
@@ -54,21 +61,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signUp = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    // Validate email format
+    const cleanEmail = sanitizeTextInput(email).toLowerCase();
+    if (!isValidEmail(cleanEmail)) {
+      return { error: 'Please enter a valid email address.' };
+    }
+
+    // Rate limit sign-up attempts by email
+    const rl = checkRateLimit(`signup:${cleanEmail}`);
+    if (!rl.allowed) {
+      const mins = Math.ceil((rl.lockedUntilMs ?? 0) / 60000);
+      return { error: `Too many attempts. Please try again in ${mins} minute${mins > 1 ? 's' : ''}.` };
+    }
+    recordAttempt(`signup:${cleanEmail}`);
+
+    const { data, error } = await supabase.auth.signUp({ email: cleanEmail, password });
     if (error) return { error: error.message };
     // Explicitly set session if returned (when email confirm is OFF)
     if (data.session) {
       setSession(data.session);
+      clearRateLimit(`signup:${cleanEmail}`);
     }
     return { error: null };
   };
 
   const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    // Validate email format
+    const cleanEmail = sanitizeTextInput(email).toLowerCase();
+    if (!isValidEmail(cleanEmail)) {
+      return { error: 'Please enter a valid email address.' };
+    }
+
+    // Rate limit sign-in attempts by email
+    const rl = checkRateLimit(`signin:${cleanEmail}`);
+    if (!rl.allowed) {
+      const mins = Math.ceil((rl.lockedUntilMs ?? 0) / 60000);
+      return { error: `Too many login attempts. Please try again in ${mins} minute${mins > 1 ? 's' : ''}.` };
+    }
+    recordAttempt(`signin:${cleanEmail}`);
+
+    const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
     if (error) return { error: error.message };
-    // Explicitly set session
+    // Explicitly set session + clear rate limit on success
     if (data.session) {
       setSession(data.session);
+      clearRateLimit(`signin:${cleanEmail}`);
     }
     return { error: null };
   };

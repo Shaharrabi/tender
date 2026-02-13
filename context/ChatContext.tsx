@@ -6,6 +6,7 @@ import React, { createContext, useContext, useState, useCallback, useRef } from 
 import { useAuth } from './AuthContext';
 import { getPortrait } from '@/services/portrait';
 import { supabase } from '@/services/supabase';
+import { sanitizeTextInput, isWithinLimit } from '@/utils/security/validation';
 import {
   createSession,
   getUserSessions,
@@ -117,6 +118,16 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     if (sending) return;
+
+    // Sanitize and validate input
+    const sanitized = sanitizeTextInput(text);
+    if (!sanitized) return;
+    if (!isWithinLimit(sanitized, 'chatMessage')) {
+      setError('Message is too long (max 2000 characters).');
+      return;
+    }
+    // Use sanitized text from here on
+    text = sanitized;
 
     // If no active session, create one first
     if (!session) {
