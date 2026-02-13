@@ -17,12 +17,42 @@ const createStorage = () => {
       removeItem: (k: string) => { delete mem[k]; return Promise.resolve(); },
     };
   }
-  // Web client → localStorage
+  // Web client → localStorage (with Safari private-mode fallback)
   if (Platform.OS === 'web') {
+    // Safari private browsing throws on localStorage access — fall back to in-memory
+    let canUseLocalStorage = false;
+    try {
+      const testKey = '__supabase_storage_test__';
+      localStorage.setItem(testKey, '1');
+      localStorage.removeItem(testKey);
+      canUseLocalStorage = true;
+    } catch {
+      canUseLocalStorage = false;
+    }
+
+    if (canUseLocalStorage) {
+      return {
+        getItem: (k: string) => {
+          try { return Promise.resolve(localStorage.getItem(k)); }
+          catch { return Promise.resolve(null); }
+        },
+        setItem: (k: string, v: string) => {
+          try { localStorage.setItem(k, v); } catch { /* quota or private mode */ }
+          return Promise.resolve();
+        },
+        removeItem: (k: string) => {
+          try { localStorage.removeItem(k); } catch { /* ignore */ }
+          return Promise.resolve();
+        },
+      };
+    }
+
+    // Fallback: in-memory storage (session won't persist across refreshes)
+    const mem: Record<string, string> = {};
     return {
-      getItem: (k: string) => Promise.resolve(localStorage.getItem(k)),
-      setItem: (k: string, v: string) => { localStorage.setItem(k, v); return Promise.resolve(); },
-      removeItem: (k: string) => { localStorage.removeItem(k); return Promise.resolve(); },
+      getItem: (k: string) => Promise.resolve(mem[k] ?? null),
+      setItem: (k: string, v: string) => { mem[k] = v; return Promise.resolve(); },
+      removeItem: (k: string) => { delete mem[k]; return Promise.resolve(); },
     };
   }
   // Native → AsyncStorage

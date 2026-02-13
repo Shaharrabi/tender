@@ -425,31 +425,38 @@ export default function PortraitScreen() {
   // Full portrait export — renders all tabs and triggers browser print
   const handleExportAll = async () => {
     if (Platform.OS !== 'web' || typeof window === 'undefined') return;
+    // Guard DOM APIs for Safari / SSR safety
+    if (typeof document === 'undefined') return;
 
-    // Inject print-specific CSS (hide nav, force all content visible)
-    const styleId = 'portrait-print-styles';
-    if (!document.getElementById(styleId)) {
-      const style = document.createElement('style');
-      style.id = styleId;
-      style.textContent = `
-        @media print {
-          body * { visibility: hidden; }
-          #portrait-export-root, #portrait-export-root * { visibility: visible; }
-          #portrait-export-root {
-            position: absolute; left: 0; top: 0; width: 100%;
+    try {
+      // Inject print-specific CSS (hide nav, force all content visible)
+      const styleId = 'portrait-print-styles';
+      if (!document.getElementById(styleId)) {
+        const style = document.createElement('style');
+        style.id = styleId;
+        style.textContent = `
+          @media print {
+            body * { visibility: hidden; }
+            #portrait-export-root, #portrait-export-root * { visibility: visible; }
+            #portrait-export-root {
+              position: absolute; left: 0; top: 0; width: 100%;
+            }
+            .no-print { display: none !important; }
+            @page { margin: 0.5in; }
           }
-          .no-print { display: none !important; }
-          @page { margin: 0.5in; }
-        }
-      `;
-      document.head.appendChild(style);
-    }
+        `;
+        document.head.appendChild(style);
+      }
 
-    setExportMode(true);
-    // Wait for React to render all tabs
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    window.print();
-    setExportMode(false);
+      setExportMode(true);
+      // Wait for React to render all tabs
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      window.print();
+    } catch (err) {
+      if (__DEV__) console.warn('[Export] Failed:', err);
+    } finally {
+      setExportMode(false);
+    }
   };
 
   if (loading) {
