@@ -28,8 +28,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Get initial session — wrapped safely for null-client during SSR
     const initSession = async () => {
       try {
-        const result = await supabase.auth.getSession();
-        setSession(result?.data?.session ?? null);
+        // Race against a timeout so the app never stays stuck on a spinner.
+        // Safari's navigator.locks can hang — the lock adapter in supabase.ts
+        // mitigates this, but we add a safety net just in case.
+        const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000));
+        const sessionPromise = supabase.auth.getSession()
+          .then((r) => r?.data?.session ?? null)
+          .catch(() => null);
+
+        const sess = await Promise.race([sessionPromise, timeout]);
+        setSession(sess);
       } catch {
         // Null client during build / SSR — safe to ignore
       } finally {

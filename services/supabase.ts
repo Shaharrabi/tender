@@ -6,6 +6,34 @@ import { Platform } from 'react-native';
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
 
+// ─── Lock adapter (Safari fix) ────────────────────────
+// Supabase auth uses navigator.locks (Web Locks API) which can hang
+// indefinitely on Safari, causing the app to show a spinner forever.
+// We provide a simple in-memory mutex that works reliably everywhere.
+const createLock = () => {
+  if (Platform.OS !== 'web') return undefined; // Native uses default
+
+  const locks = new Map<string, Promise<any>>();
+  return async (name: string, acquireTimeout: number, fn: () => Promise<any>) => {
+    // Wait for any existing lock on this name
+    const existing = locks.get(name);
+    if (existing) {
+      try { await existing; } catch { /* ignore */ }
+    }
+
+    // Run the callback and track it
+    const promise = fn();
+    locks.set(name, promise);
+
+    try {
+      return await promise;
+    } finally {
+      // Only delete if this is still the current lock
+      if (locks.get(name) === promise) locks.delete(name);
+    }
+  };
+};
+
 // ─── Storage adapter ───────────────────────────────────
 const createStorage = () => {
   // SSR (Node — no window) → in-memory
@@ -116,12 +144,14 @@ function createSupabaseClient(): SupabaseClient {
 
   // Wrap in try/catch as final safety net — createClient validates URL
   try {
+    const lock = createLock();
     return createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
         storage: createStorage(),
         autoRefreshToken: true,
         persistSession: true,
         detectSessionInUrl: false,
+        ...(lock ? { lock } : {}),
       },
     });
   } catch (err) {
