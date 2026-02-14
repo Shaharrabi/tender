@@ -37,13 +37,13 @@ export default function DSIRResults({ scores }: Props) {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <Text style={styles.title}>Your Results</Text>
-          <Text style={styles.subtitle}>Differentiation of Self</Text>
+          <Text style={styles.title}>Staying You While Staying Close</Text>
+          <Text style={styles.subtitle}>Your capacity for self and connection</Text>
         </View>
 
         {/* Total Score */}
         <View style={styles.totalSection}>
-          <Text style={styles.totalLabel}>Overall Differentiation</Text>
+          <Text style={styles.totalLabel}>{totalInfo.warmLabel}</Text>
           <Text style={styles.totalScore}>{scores.totalNormalized}</Text>
           <Text style={styles.totalScale}>out of 100</Text>
           <View style={[styles.levelBadge, { backgroundColor: getLevelColor(scores.totalNormalized) }]}>
@@ -51,24 +51,36 @@ export default function DSIRResults({ scores }: Props) {
           </View>
         </View>
 
+        {/* Main Interpretation */}
         <View style={styles.interpretationSection}>
           <Text style={styles.interpretationText}>{totalInfo.description}</Text>
         </View>
 
-        <View style={styles.noteSection}>
-          <Text style={styles.noteText}>
-            Higher scores indicate greater differentiation — a stronger ability to maintain your sense of self while staying emotionally connected in relationships.
-          </Text>
+        {/* Field Insight */}
+        <View style={styles.insightSection}>
+          <Text style={styles.insightHeader}>The Space Between You</Text>
+          <Text style={styles.insightText}>{totalInfo.fieldInsight}</Text>
+        </View>
+
+        {/* Growth Edge */}
+        <View style={styles.growthSection}>
+          <Text style={styles.growthHeader}>Your Growth Edge</Text>
+          <Text style={styles.growthText}>{totalInfo.growthEdge}</Text>
+        </View>
+
+        {/* Body Prompt */}
+        <View style={styles.bodySection}>
+          <Text style={styles.bodyHeader}>Body Check-In</Text>
+          <Text style={styles.bodyText}>{totalInfo.bodyPrompt}</Text>
         </View>
 
         {/* Subscale Bars */}
         <View style={styles.barsSection}>
-          <Text style={styles.sectionTitle}>Subscale Breakdown</Text>
+          <Text style={styles.sectionTitle}>Your Four Dimensions</Text>
           {SUBSCALE_ORDER.map((key) => {
             const data = scores.subscaleScores[key];
             if (!data) return null;
             const color = SUBSCALE_COLORS[key] || Colors.primary;
-            const levelInfo = getDSIRLevel(data.normalized);
             return (
               <View key={key} style={styles.subscaleCard}>
                 <View style={styles.barLabelRow}>
@@ -76,7 +88,7 @@ export default function DSIRResults({ scores }: Props) {
                     {getDSIRSubscaleLabel(key)}
                   </Text>
                   <Text style={styles.barValue}>
-                    {data.normalized}% — {levelInfo.level}
+                    {data.normalized}%
                   </Text>
                 </View>
                 <View style={styles.barBg}>
@@ -136,7 +148,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   totalLabel: {
-    fontSize: FontSizes.caption,
+    fontSize: FontSizes.bodySmall,
     color: Colors.primary,
     fontWeight: '700',
     textTransform: 'uppercase',
@@ -164,25 +176,69 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  interpretationSection: { marginBottom: Spacing.md },
+  interpretationSection: { marginBottom: Spacing.lg },
   interpretationText: {
     fontSize: FontSizes.body,
     color: Colors.text,
     lineHeight: 24,
   },
 
-  noteSection: {
+  insightSection: {
     backgroundColor: Colors.surface,
     padding: Spacing.md,
     borderRadius: 12,
     borderLeftWidth: 4,
-    borderLeftColor: Colors.primary,
+    borderLeftColor: '#6BA3A0',
+    marginBottom: Spacing.lg,
+  },
+  insightHeader: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '700',
+    color: '#6BA3A0',
+    marginBottom: Spacing.xs,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  insightText: { fontSize: FontSizes.body, color: Colors.text, lineHeight: 22 },
+
+  growthSection: {
+    backgroundColor: Colors.surface,
+    padding: Spacing.md,
+    borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#6B8F71',
+    marginBottom: Spacing.lg,
+  },
+  growthHeader: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '700',
+    color: '#6B8F71',
+    marginBottom: Spacing.xs,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  growthText: { fontSize: FontSizes.body, color: Colors.text, lineHeight: 22 },
+
+  bodySection: {
+    backgroundColor: '#F5F0EB',
+    padding: Spacing.md,
+    borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#C4785B',
     marginBottom: Spacing.xl,
   },
-  noteText: {
-    fontSize: FontSizes.caption,
-    color: Colors.textSecondary,
-    lineHeight: 18,
+  bodyHeader: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '700',
+    color: '#C4785B',
+    marginBottom: Spacing.xs,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  bodyText: {
+    fontSize: FontSizes.body,
+    color: Colors.text,
+    lineHeight: 22,
     fontStyle: 'italic',
   },
 

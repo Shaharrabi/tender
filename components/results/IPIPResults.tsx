@@ -16,7 +16,7 @@ import {
 } from '@/utils/assessments/configs/ipip-neo-120';
 import {
   getIPIPPercentileLabel,
-  getIPIPDomainDescription,
+  getIPIPDomainInterpretation,
 } from '@/utils/assessments/interpretations/ipip-neo-120';
 import { Colors, Spacing, FontSizes, ButtonSizes } from '@/constants/theme';
 
@@ -40,14 +40,15 @@ export default function IPIPResults({ scores }: Props) {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <Text style={styles.title}>Your Results</Text>
-          <Text style={styles.subtitle}>Big Five Personality Profile</Text>
+          <Text style={styles.title}>Who You Are in Relationships</Text>
+          <Text style={styles.subtitle}>Your personality through a relational lens</Text>
         </View>
 
         {DOMAINS.map((domain) => {
           const percentile = scores.domainPercentiles[domain] ?? 50;
           const color = DOMAIN_COLORS[domain] || Colors.primary;
           const label = getIPIPPercentileLabel(percentile);
+          const interpretation = getIPIPDomainInterpretation(domain, percentile);
           const isExpanded = expanded === domain;
           const domainFacets = FACETS.filter((f) => f.domain === domain);
 
@@ -59,9 +60,12 @@ export default function IPIPResults({ scores }: Props) {
                 activeOpacity={0.7}
               >
                 <View style={styles.domainTitleRow}>
-                  <Text style={styles.domainTitle}>
-                    {DOMAIN_LABELS[domain]}
-                  </Text>
+                  <View>
+                    <Text style={styles.domainWarmLabel}>{interpretation.warmLabel}</Text>
+                    <Text style={styles.domainTitle}>
+                      {interpretation.label}
+                    </Text>
+                  </View>
                   <Text style={styles.expandIcon}>
                     {isExpanded ? '−' : '+'}
                   </Text>
@@ -80,8 +84,19 @@ export default function IPIPResults({ scores }: Props) {
                   </Text>
                 </View>
                 <Text style={styles.domainDesc}>
-                  {getIPIPDomainDescription(domain, percentile)}
+                  {interpretation.description}
                 </Text>
+
+                {/* Field Insight */}
+                <View style={styles.domainInsight}>
+                  <Text style={styles.domainInsightText}>{interpretation.fieldInsight}</Text>
+                </View>
+
+                {/* Growth Edge */}
+                <View style={styles.domainGrowth}>
+                  <Text style={styles.domainGrowthLabel}>Growth Edge</Text>
+                  <Text style={styles.domainGrowthText}>{interpretation.growthEdge}</Text>
+                </View>
               </TouchableOpacity>
 
               {isExpanded && (
@@ -153,8 +168,16 @@ const styles = StyleSheet.create({
   domainTitleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: Spacing.sm,
+  },
+  domainWarmLabel: {
+    fontSize: FontSizes.caption,
+    color: Colors.primary,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 2,
   },
   domainTitle: {
     fontSize: FontSizes.headingM,
@@ -165,6 +188,7 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.headingM,
     color: Colors.textSecondary,
     fontWeight: '600',
+    marginTop: 4,
   },
   percentileRow: { gap: 4, marginBottom: Spacing.sm },
   barBg: {
@@ -181,8 +205,43 @@ const styles = StyleSheet.create({
   },
   domainDesc: {
     fontSize: FontSizes.bodySmall,
-    color: Colors.textSecondary,
+    color: Colors.text,
     lineHeight: 20,
+    marginBottom: Spacing.sm,
+  },
+  domainInsight: {
+    backgroundColor: '#F0F7F7',
+    padding: Spacing.sm,
+    borderRadius: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: '#6BA3A0',
+    marginBottom: Spacing.sm,
+  },
+  domainInsightText: {
+    fontSize: FontSizes.caption,
+    color: '#4A6B69',
+    lineHeight: 18,
+    fontStyle: 'italic',
+  },
+  domainGrowth: {
+    backgroundColor: '#F0F5F1',
+    padding: Spacing.sm,
+    borderRadius: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: '#6B8F71',
+  },
+  domainGrowthLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#6B8F71',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 2,
+  },
+  domainGrowthText: {
+    fontSize: FontSizes.caption,
+    color: '#4A6B4E',
+    lineHeight: 18,
   },
 
   facetsSection: {

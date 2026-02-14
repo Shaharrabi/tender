@@ -37,13 +37,13 @@ export default function SSEITResults({ scores }: Props) {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <Text style={styles.title}>Your Results</Text>
-          <Text style={styles.subtitle}>Emotional Intelligence</Text>
+          <Text style={styles.title}>How You Sense What's Alive</Text>
+          <Text style={styles.subtitle}>Your emotional attunement in relationships</Text>
         </View>
 
         {/* Total Score */}
         <View style={styles.totalSection}>
-          <Text style={styles.totalLabel}>Overall Emotional Intelligence</Text>
+          <Text style={styles.totalLabel}>{totalInfo.warmLabel}</Text>
           <Text style={styles.totalScore}>{scores.totalNormalized}</Text>
           <Text style={styles.totalScale}>out of 100</Text>
           <View style={[styles.levelBadge, { backgroundColor: getLevelColor(totalInfo.level) }]}>
@@ -51,17 +51,35 @@ export default function SSEITResults({ scores }: Props) {
           </View>
         </View>
 
+        {/* Main Interpretation */}
         <View style={styles.interpretationSection}>
           <Text style={styles.interpretationText}>{totalInfo.description}</Text>
         </View>
 
+        {/* Field Insight */}
+        <View style={styles.insightSection}>
+          <Text style={styles.insightHeader}>The Space Between You</Text>
+          <Text style={styles.insightText}>{totalInfo.fieldInsight}</Text>
+        </View>
+
+        {/* Growth Edge */}
+        <View style={styles.growthSection}>
+          <Text style={styles.growthHeader}>Your Growth Edge</Text>
+          <Text style={styles.growthText}>{totalInfo.growthEdge}</Text>
+        </View>
+
+        {/* Body Prompt */}
+        <View style={styles.bodySection}>
+          <Text style={styles.bodyHeader}>Body Check-In</Text>
+          <Text style={styles.bodyText}>{totalInfo.bodyPrompt}</Text>
+        </View>
+
         {/* Subscale Bars */}
         <View style={styles.barsSection}>
-          <Text style={styles.sectionTitle}>Subscale Breakdown</Text>
+          <Text style={styles.sectionTitle}>Your Four Instruments</Text>
           {SUBSCALE_ORDER.map((key) => {
             const normalized = scores.subscaleNormalized[key] ?? 0;
             const color = SUBSCALE_COLORS[key] || Colors.primary;
-            const levelInfo = getSSEITLevel(normalized);
             return (
               <View key={key} style={styles.subscaleCard}>
                 <View style={styles.barLabelRow}>
@@ -69,7 +87,7 @@ export default function SSEITResults({ scores }: Props) {
                     {getSSEITSubscaleLabel(key)}
                   </Text>
                   <Text style={styles.barValue}>
-                    {normalized}% — {levelInfo.level}
+                    {normalized}%
                   </Text>
                 </View>
                 <View style={styles.barBg}>
@@ -138,7 +156,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   totalLabel: {
-    fontSize: FontSizes.caption,
+    fontSize: FontSizes.bodySmall,
     color: Colors.primary,
     fontWeight: '700',
     textTransform: 'uppercase',
@@ -166,11 +184,70 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  interpretationSection: { marginBottom: Spacing.xl },
+  interpretationSection: { marginBottom: Spacing.lg },
   interpretationText: {
     fontSize: FontSizes.body,
     color: Colors.text,
     lineHeight: 24,
+  },
+
+  insightSection: {
+    backgroundColor: Colors.surface,
+    padding: Spacing.md,
+    borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#6BA3A0',
+    marginBottom: Spacing.lg,
+  },
+  insightHeader: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '700',
+    color: '#6BA3A0',
+    marginBottom: Spacing.xs,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  insightText: { fontSize: FontSizes.body, color: Colors.text, lineHeight: 22 },
+
+  growthSection: {
+    backgroundColor: Colors.surface,
+    padding: Spacing.md,
+    borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#6B8F71',
+    marginBottom: Spacing.lg,
+  },
+  growthHeader: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '700',
+    color: '#6B8F71',
+    marginBottom: Spacing.xs,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  growthText: { fontSize: FontSizes.body, color: Colors.text, lineHeight: 22 },
+
+  bodySection: {
+    backgroundColor: '#F5F0EB',
+    padding: Spacing.md,
+    borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#C4785B',
+    marginBottom: Spacing.xl,
+  },
+  bodyHeader: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '700',
+    color: '#C4785B',
+    marginBottom: Spacing.xs,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  bodyText: {
+    fontSize: FontSizes.body,
+    color: Colors.text,
+    lineHeight: 22,
+    fontStyle: 'italic',
   },
 
   barsSection: { gap: Spacing.lg, marginBottom: Spacing.xl },

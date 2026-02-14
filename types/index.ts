@@ -17,7 +17,9 @@ export type DyadicAssessmentType =
   | 'rdas'
   | 'dci'
   | 'csi-16'
-  | 'csi-4';
+  | 'csi-4'
+  | 'relational-field'
+  | 'couple-field';
 
 export type AssessmentType = IndividualAssessmentType | DyadicAssessmentType;
 
@@ -198,6 +200,37 @@ export interface AssessmentStatus {
   completedAt?: string;
 }
 
+// ─── Tender Assessment (Unified Flow) ────────────────────
+
+export interface TenderSection {
+  sectionNumber: number;
+  fieldName: string;
+  fieldDescription: string;
+  /** Assessment type — usually individual, but Section 7 (RFAS) crosses categories */
+  assessmentType: AssessmentType;
+  supplementGroup?: string;
+  estimatedMinutes: number;
+  breakAfter: boolean;
+  breakMessage?: string;
+}
+
+// ─── Couple Instrument Scores ────────────────────────────
+
+export interface RelationalFieldScores {
+  totalScore: number;
+  totalMean: number;
+  fieldRecognition: { sum: number; mean: number };
+  creativeTension: { sum: number; mean: number };
+  presenceAttunement: { sum: number; mean: number };
+  emergentOrientation: { sum: number; mean: number };
+}
+
+export interface CoupleFieldScores {
+  patternSection: Record<string, any>;
+  resourceSection: Record<string, any>;
+  growingEdgeSection: Record<string, any>;
+}
+
 // ─── Portrait Types (re-export) ─────────────────────────
 
 export type {
@@ -281,3 +314,25 @@ export type {
   AppPhase,
   AppUnlockState,
 } from './couples';
+
+// ─── WEARE Types (Phase 4) ─────────────────────────────
+
+export type {
+  WEAREDataMode,
+  WEAREMovementPhase,
+  WEAREVariableScore,
+  WEAREVariables,
+  WEARELayers,
+  WEAREVariableName,
+  WEAREBottleneck,
+  WEARETrendDirection,
+  WEARETrend,
+  WEAREWarmSummary,
+  WEAREProfile,
+  WeeklyCheckIn,
+  WEAREInput,
+  WEAREPartnerData,
+  WEAREBehavioralData,
+  WEAREScoreRow,
+  WeeklyCheckInRow,
+} from './weare';

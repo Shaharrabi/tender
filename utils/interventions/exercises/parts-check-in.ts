@@ -12,6 +12,7 @@ export const partsCheckIn: Intervention = {
   title: 'Parts Check-In',
   description:
     'An IFS-inspired practice to notice which part of you is most active right now, understand what it is protecting, and reconnect with your calm, curious Self.',
+  fieldInsight: 'When you know which part of you is speaking, you can choose who shows up in the field.',
   category: 'differentiation',
   duration: 5,
   difficulty: 'beginner',

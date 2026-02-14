@@ -8,6 +8,7 @@ export const fourHorsemenAntidotes: Intervention = {
   title: 'Four Horsemen Antidotes',
   description:
     'Identify destructive communication patterns and replace them with their research-backed antidotes: gentle startup, appreciation, responsibility, and self-soothing.',
+  fieldInsight: 'The antidotes are not techniques \u2014 they are new ways of being in the space between you.',
   category: 'communication',
   duration: 15,
   difficulty: 'intermediate',

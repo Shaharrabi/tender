@@ -14,6 +14,7 @@ export const aftermathOfFight: Intervention = {
   title: 'Processing a Regrettable Incident',
   description:
     'Process a recent argument or painful interaction using Gottman\'s structured approach. This is not about resolving the issue — it is about understanding each other\'s subjective experience so resentment does not build.',
+  fieldInsight: 'Processing what happened between you is where the real learning lives.',
   category: 'communication',
   duration: 35,
   difficulty: 'intermediate',

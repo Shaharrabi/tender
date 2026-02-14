@@ -13,6 +13,7 @@ export const windowCheck: Intervention = {
   title: 'Window of Tolerance Check',
   description:
     'A quick check-in with your nervous system. Scan your body, rate where you are, and get guidance on returning to your window of tolerance if needed.',
+  fieldInsight: 'A pause gives the relational field room to breathe.',
   category: 'regulation',
   duration: 3,
   difficulty: 'beginner',

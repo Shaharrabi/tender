@@ -4,36 +4,66 @@ import { analyzeAttachmentProtection } from './lens-attachment';
 import { analyzePartsPolarities } from './lens-parts';
 import { analyzeRegulationWindow } from './lens-regulation';
 import { analyzeValuesBecoming } from './lens-values';
+import { analyzeFieldAwareness } from './lens-field-awareness';
 import { predictNegativeCycle } from './negative-cycle';
 import { identifyGrowthEdges } from './growth-edges';
 import { generateAnchorPoints } from './anchor-points';
 import { generatePartnerGuide } from './partner-guide';
+import { generateBigFiveReframes } from './big-five-reframes';
+import { buildTailoringContext } from './attachment-tailoring';
 import type { AllAssessmentScores, IndividualPortrait } from '@/types';
+import type { SupplementScores } from '@/types/portrait';
 
 /**
  * Generate a complete Individual Portrait from 6 assessment score objects.
  * Returns everything except `id` and `createdAt` (set by DB).
+ *
+ * Phase 3: Accepts optional supplement data for enhanced portrait generation.
+ * When supplements are provided, adds field awareness lens, Big Five reframes,
+ * and supplement-aware patterns. Version bumps to '2.0.0'.
  */
 export function generatePortrait(
   userId: string,
   assessmentIds: string[],
-  scores: AllAssessmentScores
+  scores: AllAssessmentScores,
+  supplements?: SupplementScores
 ): Omit<IndividualPortrait, 'id' | 'createdAt'> {
   const { ecrr, dutch, sseit, dsir, ipip, values } = scores;
 
   // Step 1: Composite scores
   const compositeScores = calculateCompositeScores(ecrr, ipip, sseit, dsir, values);
 
-  // Step 2: Pattern detection
-  const patternResult = detectPatterns(ecrr, dutch, sseit, dsir, ipip, values, compositeScores);
+  // Step 2: Pattern detection (now with optional supplement-aware patterns)
+  const patternResult = detectPatterns(ecrr, dutch, sseit, dsir, ipip, values, compositeScores, supplements);
+
+  // Build tailoring context for attachment-adaptive language
+  const tailoring = buildTailoringContext(
+    ecrr.attachmentStyle,
+    ecrr.anxietyScore,
+    ecrr.avoidanceScore
+  );
 
   // Step 3: Four-lens analysis
   const attachment = analyzeAttachmentProtection(ecrr, compositeScores, patternResult.patterns);
   const parts = analyzePartsPolarities(ecrr, dutch, dsir, ipip, values, compositeScores);
   const regulation = analyzeRegulationWindow(ecrr, ipip, sseit, dsir, dutch, compositeScores, patternResult.patterns);
-  const valuesLens = analyzeValuesBecoming(values, patternResult.patterns);
+  const valuesLens = analyzeValuesBecoming(values, patternResult.patterns, ecrr);
 
-  const fourLens = { attachment, parts, regulation, values: valuesLens };
+  // Step 3.5 (Phase 3): Field Awareness lens — only if supplement data present
+  const fieldAwareness = supplements
+    ? analyzeFieldAwareness(supplements, ecrr, ipip, dsir, compositeScores, tailoring)
+    : undefined;
+
+  const fourLens = {
+    attachment,
+    parts,
+    regulation,
+    values: valuesLens,
+    ...(fieldAwareness ? { fieldAwareness } : {}),
+  };
+
+  // Step 3.6 (Phase 3): Big Five relational reframes
+  const bigFiveReframes = generateBigFiveReframes(ipip, ecrr, dsir, compositeScores);
 
   // Step 4: Negative cycle
   const negativeCycle = predictNegativeCycle(ecrr, dutch);
@@ -57,6 +87,9 @@ export function generatePortrait(
     growthEdges,
     anchorPoints,
     partnerGuide,
-    version: '1.0.0',
+    version: supplements ? '2.0.0' : '1.0.0',
+    // Phase 3 additions
+    bigFiveReframes: bigFiveReframes.length > 0 ? bigFiveReframes : undefined,
+    supplementData: supplements,
   };
 }

@@ -9,6 +9,12 @@ interface SectionBreakProps {
   questionsCompleted: number;
   onContinue: () => void;
   onSaveAndExit: () => void;
+  /** Name of the just-completed section (e.g., "How You Connect") */
+  sectionName?: string;
+  /** Encouraging message shown after section completion */
+  encouragingMessage?: string;
+  /** Section-level progress (e.g., 2 of 6 sections) */
+  sectionProgress?: { completed: number; total: number };
 }
 
 export default function SectionBreak({
@@ -17,6 +23,9 @@ export default function SectionBreak({
   questionsCompleted,
   onContinue,
   onSaveAndExit,
+  sectionName,
+  encouragingMessage,
+  sectionProgress,
 }: SectionBreakProps) {
   const percent = Math.round((questionsCompleted / totalQuestions) * 100);
 
@@ -25,9 +34,22 @@ export default function SectionBreak({
       <View style={styles.content}>
         <View style={styles.header}>
           <Text style={styles.checkmark}>&#10003;</Text>
-          <Text style={styles.progressLabel}>
-            {questionsCompleted} of {totalQuestions} questions completed ({percent}%)
-          </Text>
+          {sectionName ? (
+            <Text style={styles.completedLabel}>{sectionName} complete</Text>
+          ) : null}
+          {sectionProgress ? (
+            <Text style={styles.progressLabel}>
+              {sectionProgress.completed} of {sectionProgress.total} sections {'\u00B7'}{' '}
+              {questionsCompleted} of {totalQuestions} questions ({percent}%)
+            </Text>
+          ) : (
+            <Text style={styles.progressLabel}>
+              {questionsCompleted} of {totalQuestions} questions completed ({percent}%)
+            </Text>
+          )}
+          {encouragingMessage ? (
+            <Text style={styles.encouragingMessage}>{encouragingMessage}</Text>
+          ) : null}
         </View>
 
         <View style={styles.sectionInfo}>
@@ -71,10 +93,24 @@ const styles = StyleSheet.create({
     fontSize: 48,
     color: Colors.success,
   },
+  completedLabel: {
+    fontSize: FontSizes.headingM,
+    fontWeight: '600',
+    color: Colors.text,
+    textAlign: 'center',
+  },
   progressLabel: {
     fontSize: FontSizes.body,
     color: Colors.textSecondary,
     textAlign: 'center',
+  },
+  encouragingMessage: {
+    fontSize: FontSizes.body,
+    color: Colors.text,
+    textAlign: 'center',
+    fontStyle: 'italic',
+    lineHeight: 22,
+    marginTop: Spacing.sm,
   },
   sectionInfo: {
     backgroundColor: Colors.surface,

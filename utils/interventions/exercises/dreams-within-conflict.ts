@@ -15,6 +15,7 @@ export const dreamsWithinConflict: Intervention = {
   title: 'Dreams Within Conflict',
   description:
     'Explore the hidden dreams and deeper meanings behind your gridlocked conflicts. When couples understand why a position matters so deeply, they move from opposition to understanding — even when they cannot fully agree.',
+  fieldInsight: 'Underneath every gridlocked issue lives a dream that has not been heard.',
   category: 'communication',
   duration: 40,
   difficulty: 'advanced',

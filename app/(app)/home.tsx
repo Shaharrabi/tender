@@ -51,7 +51,7 @@ import {
   getAssessmentConfig,
 } from '@/utils/assessments/registry';
 import { supabase } from '@/services/supabase';
-import { getPortrait, savePortrait, fetchAllScores } from '@/services/portrait';
+import { getPortrait, savePortrait, fetchAllScores, extractSupplementScores } from '@/services/portrait';
 import { generatePortrait } from '@/utils/portrait/portrait-generator';
 import { getTodaysCheckIn, saveDailyCheckIn } from '@/services/growth';
 import { getMyCouple } from '@/services/couples';
@@ -66,6 +66,10 @@ import { recordDailyEngagement, getStreakData, type StreakData } from '@/service
 import StreakBanner from '@/components/StreakBanner';
 import { getCurrentStepNumber } from '@/services/steps';
 import { getTaglineForStep, getPracticesForStep, getStep } from '@/utils/steps/twelve-steps';
+import { MICRO_COURSES, calculateCourseProgress, type CourseProgress } from '@/utils/microcourses/course-registry';
+import { getCompletions as getMicroCourseCompletions } from '@/services/intervention';
+import MicroCourseCard from '@/components/microcourse/MicroCourseCard';
+import { TENDER_SECTIONS, TOTAL_QUESTIONS, TOTAL_ESTIMATED_MINUTES } from '@/utils/assessments/tender-sections';
 import {
   Colors,
   Spacing,
@@ -77,8 +81,10 @@ import {
 } from '@/constants/theme';
 import type { AssessmentConfig, AllAssessmentScores, AssessmentType } from '@/types';
 import type { IndividualPortrait } from '@/types/portrait';
+import type { WEAREProfile } from '@/types/weare';
 import type { DailyCheckIn } from '@/types/growth';
 import type { Couple } from '@/types/couples';
+import { getLatestWEAREProfile } from '@/services/weare';
 import {
   seedDemoAssessments,
   clearDemoAssessments,
@@ -88,6 +94,8 @@ import {
   DEMO_DSIR,
   DEMO_IPIP,
   DEMO_VALUES,
+  DEMO_SUPPLEMENTS,
+  DEMO_WEARE_PROFILE,
 } from '@/utils/demo-data';
 
 // ─── Types ──────────────────────────────────────────────
@@ -116,6 +124,13 @@ const DAILY_GREETINGS = [
   "Today is another chance to connect.",
   "Your relationship deserves this time.",
   "Let's continue where you left off.",
+  "Presence is the first practice. Everything else follows.",
+  "The space between you is alive. It changes when you do.",
+  "What kind of partner do you want to be today?",
+  "Regulate before you reason.",
+  "You keep showing up. That rhythm changes everything.",
+  "Vulnerability is not weakness. It is the birthplace of connection.",
+  "Small, consistent practice changes everything.",
 ];
 
 // ─── Component ──────────────────────────────────────────
@@ -128,7 +143,15 @@ export default function HomeScreen() {
   const [statuses, setStatuses] = useState<Record<string, CardStatus>>({});
   const [completedTypes, setCompletedTypes] = useState<AssessmentType[]>([]);
   const [assessmentScores, setAssessmentScores] = useState<Record<string, any>>({});
-  const [assessmentsExpanded, setAssessmentsExpanded] = useState(true);
+  const [assessmentsExpanded, setAssessmentsExpanded] = useState(false);
+
+  // Tender Assessment unified flow state
+  const [tenderStatus, setTenderStatus] = useState<{
+    state: 'not_started' | 'in_progress' | 'completed';
+    completedSections: number;
+    totalAnswered: number;
+    currentSectionName?: string;
+  }>({ state: 'not_started', completedSections: 0, totalAnswered: 0 });
 
   // Portrait state
   const [portrait, setPortrait] = useState<IndividualPortrait | null>(null);
@@ -143,6 +166,9 @@ export default function HomeScreen() {
   // Couple state
   const [couple, setCouple] = useState<Couple | null>(null);
 
+  // WEARE profile state (Phase 4)
+  const [weareProfile, setWeareProfile] = useState<WEAREProfile | null>(null);
+
   // Unlock state
   const [unlockState, setUnlockState] = useState<UnlockState | null>(null);
 
@@ -152,6 +178,12 @@ export default function HomeScreen() {
   // Step state
   const [currentStepNum, setCurrentStepNum] = useState<number>(1);
   const [stepTagline, setStepTagline] = useState<string>('');
+
+  // Micro-course state
+  const [activeCourse, setActiveCourse] = useState<{
+    courseId: string;
+    progress: CourseProgress;
+  } | null>(null);
 
   // Loading
   const [loading, setLoading] = useState(true);
@@ -226,10 +258,138 @@ export default function HomeScreen() {
       const completedAssessmentTypes = Object.keys(completionMap) as AssessmentType[];
       setCompletedTypes(completedAssessmentTypes);
 
-      // 2. Load portrait
+      // Compute Tender Assessment status
+      const individualTypes = TENDER_SECTIONS.map((s) => s.assessmentType);
+      const doneIndividual = individualTypes.filter((t) => !!completionMap[t]);
+      if (doneIndividual.length === individualTypes.length) {
+        setTenderStatus({
+          state: 'completed',
+          completedSections: individualTypes.length,
+          totalAnswered: TOTAL_QUESTIONS,
+        });
+      } else {
+        // Check for in-progress orchestrator state
+        try {
+          const tenderSaved = await AsyncStorage.getItem('tender_assessment_progress');
+          if (tenderSaved) {
+            const tData = JSON.parse(tenderSaved);
+            const doneSections = (tData.completedSections || []).length;
+            // Estimate total answered from section states
+            let totalAns = 0;
+            if (tData.sectionStates) {
+              for (const ss of tData.sectionStates) {
+                totalAns += (ss.responses || []).filter(
+                  (r: any) => r !== null && r !== '' && r !== undefined,
+                ).length;
+                totalAns += (ss.supplementResponses || []).filter(
+                  (r: any) => r !== null && r !== '' && r !== undefined,
+                ).length;
+              }
+            }
+            const currentSecIdx = tData.currentSectionIndex || 0;
+            const currentSecName = TENDER_SECTIONS[currentSecIdx]?.fieldName;
+            setTenderStatus({
+              state: doneSections > 0 || totalAns > 0 ? 'in_progress' : 'not_started',
+              completedSections: doneSections,
+              totalAnswered: totalAns,
+              currentSectionName: currentSecName,
+            });
+          } else if (doneIndividual.length > 0) {
+            // Some individual assessments done but no orchestrator state
+            setTenderStatus({
+              state: 'in_progress',
+              completedSections: doneIndividual.length,
+              totalAnswered: 0, // can't know exactly
+              currentSectionName: undefined,
+            });
+          } else {
+            setTenderStatus({
+              state: 'not_started',
+              completedSections: 0,
+              totalAnswered: 0,
+            });
+          }
+        } catch {
+          setTenderStatus({
+            state: doneIndividual.length > 0 ? 'in_progress' : 'not_started',
+            completedSections: doneIndividual.length,
+            totalAnswered: 0,
+          });
+        }
+      }
+
+      // 2. Load portrait (and auto-regenerate if stale)
       let loadedPortrait: IndividualPortrait | null = null;
       try {
         loadedPortrait = await getPortrait(user.id);
+
+        // Auto-regenerate portrait if assessments have been updated
+        if (loadedPortrait && completedAssessmentTypes.length >= 6) {
+          const latestScoresMap = await fetchAllScores(user.id);
+          const currentIds = new Set(Object.values(latestScoresMap).map((r) => r.id));
+          const portraitIds = new Set(loadedPortrait.assessmentIds || []);
+          const isStale = [...currentIds].some((id) => !portraitIds.has(id));
+
+          if (isStale) {
+            console.log('[Home] Portrait is stale — auto-regenerating...');
+            try {
+              const scores: AllAssessmentScores = {
+                ecrr: latestScoresMap['ecr-r'].scores,
+                dutch: latestScoresMap['dutch'].scores,
+                sseit: latestScoresMap['sseit'].scores,
+                dsir: latestScoresMap['dsi-r'].scores,
+                ipip: latestScoresMap['ipip-neo-120'].scores,
+                values: latestScoresMap['values'].scores,
+              };
+              const supplements = extractSupplementScores(latestScoresMap);
+              const ids = Object.values(latestScoresMap).map((r) => r.id);
+              const freshPortrait = generatePortrait(user.id, ids, scores, supplements);
+              await savePortrait(freshPortrait);
+              loadedPortrait = freshPortrait as IndividualPortrait;
+              console.log('[Home] Portrait auto-regenerated successfully');
+            } catch (regenErr) {
+              console.error('[Home] Auto-regeneration failed:', regenErr);
+              // Keep the old portrait rather than showing nothing
+            }
+          }
+        }
+
+        // Auto-generate portrait if all assessments complete but no portrait yet
+        if (!loadedPortrait && completedAssessmentTypes.length >= 6) {
+          console.log('[Home] All assessments complete, no portrait — auto-generating...');
+          try {
+            const latestScoresMap = await fetchAllScores(user.id);
+            console.log('[Home] Fetched scores for types:', Object.keys(latestScoresMap));
+
+            // Verify all 6 types are present
+            const required = ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'ipip-neo-120', 'values'];
+            const missing = required.filter((t) => !latestScoresMap[t]);
+            if (missing.length > 0) {
+              console.warn('[Home] Missing assessment scores for:', missing);
+            } else {
+              const scores: AllAssessmentScores = {
+                ecrr: latestScoresMap['ecr-r'].scores,
+                dutch: latestScoresMap['dutch'].scores,
+                sseit: latestScoresMap['sseit'].scores,
+                dsir: latestScoresMap['dsi-r'].scores,
+                ipip: latestScoresMap['ipip-neo-120'].scores,
+                values: latestScoresMap['values'].scores,
+              };
+              const supplements = extractSupplementScores(latestScoresMap);
+              const ids = Object.values(latestScoresMap).map((r) => r.id);
+              console.log('[Home] Generating portrait with', ids.length, 'assessments, supplements:', !!supplements);
+              const freshPortrait = generatePortrait(user.id, ids, scores, supplements);
+              console.log('[Home] Portrait generated, saving...');
+              await savePortrait(freshPortrait);
+              loadedPortrait = freshPortrait as IndividualPortrait;
+              console.log('[Home] Portrait auto-generated successfully');
+            }
+          } catch (genErr: any) {
+            console.error('[Home] Auto-generation failed:', genErr?.message || genErr);
+            console.error('[Home] Error details:', JSON.stringify(genErr, null, 2));
+          }
+        }
+
         setPortrait(loadedPortrait);
       } catch {
         setPortrait(null);
@@ -297,6 +457,45 @@ export default function HomeScreen() {
         setStepTagline(getTaglineForStep(stepNum));
       } catch {
         setStepTagline(getTaglineForStep(1));
+      }
+
+      // 8. Load WEARE profile if couple exists
+      if (loadedCouple) {
+        try {
+          const wp = await getLatestWEAREProfile(loadedCouple.id);
+          setWeareProfile(wp);
+        } catch {
+          setWeareProfile(null);
+        }
+      }
+
+      // 9. Load micro-course progress (find active/in-progress course)
+      try {
+        const completions = await getMicroCourseCompletions(user.id, 200);
+        const completedLessonIds = new Set(completions.map((c) => c.exerciseId));
+
+        // Find the first course that's started but not complete, or first unlocked
+        for (const course of MICRO_COURSES) {
+          const courseLessons = Array.from({ length: course.totalLessons }, (_, i) =>
+            `${course.id}-lesson-${i + 1}`
+          );
+          const lessonsCompleted = courseLessons.filter((id) => completedLessonIds.has(id)).length;
+
+          if (lessonsCompleted > 0 && lessonsCompleted < course.totalLessons) {
+            setActiveCourse({
+              courseId: course.id,
+              progress: {
+                courseId: course.id,
+                lessonsCompleted,
+                totalLessons: course.totalLessons,
+                currentLesson: lessonsCompleted,
+              },
+            });
+            break;
+          }
+        }
+      } catch {
+        setActiveCourse(null);
       }
     } finally {
       setLoading(false);
@@ -438,7 +637,8 @@ export default function HomeScreen() {
         ipip: latest['ipip-neo-120'].scores,
         values: latest['values'].scores,
       };
-      const p = generatePortrait(user.id, ids, scores);
+      const supplements = extractSupplementScores(latest);
+      const p = generatePortrait(user.id, ids, scores, supplements);
       await savePortrait(p);
       setPortrait(p as IndividualPortrait);
       router.push('/(app)/portrait' as any);
@@ -515,10 +715,11 @@ export default function HomeScreen() {
         ipip: DEMO_IPIP,
         values: DEMO_VALUES,
       };
-      const demoPortrait = generatePortrait(user.id, assessmentIds, scores);
+      const demoPortrait = generatePortrait(user.id, assessmentIds, scores, DEMO_SUPPLEMENTS);
       await savePortrait(demoPortrait);
       await AsyncStorage.setItem('demo_mode', 'true');
       setPortrait(demoPortrait as IndividualPortrait);
+      setWeareProfile(DEMO_WEARE_PROFILE);
       setIsDemo(true);
       router.push('/(app)/portrait' as any);
     } catch (e) {
@@ -542,11 +743,13 @@ export default function HomeScreen() {
       await clearDemoAssessments(user.id);
       await AsyncStorage.removeItem('demo_mode');
       setPortrait(null);
+      setWeareProfile(null);
       setIsDemo(false);
       loadData(); // Refresh to reflect cleared state
     } catch (e) {
       console.error('Failed to exit demo:', e);
       setPortrait(null);
+      setWeareProfile(null);
     }
   };
 
@@ -722,62 +925,69 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* ═══ 4. YOUR JOURNEY ════════════════════════════════ */}
+        {/* ═══ 4. YOUR JOURNEY — The Tender Assessment ════════ */}
         <View style={styles.progressSection}>
           <View style={styles.progressHeader}>
             <Text style={styles.progressLabel}>YOUR JOURNEY</Text>
             <Text style={styles.progressCount}>
-              {completedCount} of 6 assessments complete
+              {tenderStatus.completedSections} of {TENDER_SECTIONS.length} sections complete
             </Text>
           </View>
-          <View style={styles.progressBarTrack}>
-            <Animated.View
-              style={[
-                styles.progressBarFill,
-                {
-                  width: progressAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: ['0%', '100%'],
-                  }),
-                },
-              ]}
-            />
+
+          {/* Section progress segments */}
+          <View style={styles.tenderSegmentBar}>
+            {TENDER_SECTIONS.map((sec, idx) => (
+              <View
+                key={sec.assessmentType}
+                style={[
+                  styles.tenderSegment,
+                  idx < tenderStatus.completedSections && styles.tenderSegmentDone,
+                ]}
+              />
+            ))}
           </View>
 
-          {/* Next assessment integrated into journey section */}
-          {nextAssessmentConfig && !isDemo && (
-            <TouchableOpacity
-              style={styles.nextAssessmentCard}
-              onPress={() => {
-                const status = statuses[nextAssessmentConfig.type];
-                if (status?.state === 'in_progress') {
-                  handleResume(nextAssessmentConfig);
-                } else {
-                  handleStart(nextAssessmentConfig);
-                }
-              }}
-              activeOpacity={0.8}
-            >
-              <View style={styles.nextAssessmentContent}>
-                <View style={styles.nextAssessmentBadge}>
-                  <Text style={styles.nextAssessmentBadgeText}>
-                    Up Next
+          {/* Tender Assessment card */}
+          {tenderStatus.state !== 'completed' && !isDemo && (
+            <View style={styles.tenderCard}>
+              {tenderStatus.state === 'not_started' && (
+                <>
+                  <Text style={styles.tenderCardTitle}>The Tender Assessment</Text>
+                  <Text style={styles.tenderCardDescription}>
+                    6 sections covering how you connect, feel, fight, and what matters to you.
+                    Take breaks between sections and come back anytime.
                   </Text>
-                </View>
-                <Text style={styles.nextAssessmentTitle}>
-                  {nextAssessmentConfig.name}
-                </Text>
-                <Text style={styles.nextAssessmentMeta}>
-                  {nextAssessmentConfig.totalQuestions} questions{' '}
-                  {'\u00B7'} ~{nextAssessmentConfig.estimatedMinutes} min
-                </Text>
-              </View>
-              <View style={styles.nextAssessmentArrow}>
-                <Text style={styles.nextAssessmentArrowText}>
-                  Start {'\u2192'}
-                </Text>
-              </View>
-            </TouchableOpacity>
+                  <Text style={styles.tenderCardMeta}>
+                    {TOTAL_QUESTIONS} questions {'\u00B7'} ~{TOTAL_ESTIMATED_MINUTES} min {'\u00B7'} Save & exit anytime
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.tenderStartButton}
+                    onPress={() => router.push('/(app)/tender-assessment' as any)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.tenderStartButtonText}>Start Assessment</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+
+              {tenderStatus.state === 'in_progress' && (
+                <>
+                  <Text style={styles.tenderCardTitle}>The Tender Assessment</Text>
+                  {tenderStatus.currentSectionName && (
+                    <Text style={styles.tenderCurrentSection}>
+                      Next: {tenderStatus.currentSectionName}
+                    </Text>
+                  )}
+                  <TouchableOpacity
+                    style={styles.tenderStartButton}
+                    onPress={() => router.push('/(app)/tender-assessment' as any)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.tenderStartButtonText}>Continue</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
           )}
 
           {/* Portrait generation prompt — part of journey */}
@@ -809,7 +1019,7 @@ export default function HomeScreen() {
           // Import inline to avoid breaking non-portrait flow
           const { synthesizeAssessments } = require('@/utils/portrait/assessment-synthesis');
           try {
-            const synthesis = synthesizeAssessments(portrait);
+            const synthesis = synthesizeAssessments(portrait, portrait.supplementData);
             const { journeyMap, movements, protocol } = synthesis;
             // Get 2 exercises from the first protocol phase for quick-launch
             const { getExerciseById: getExById } = require('@/utils/interventions/registry');
@@ -937,6 +1147,70 @@ export default function HomeScreen() {
           }
         })()}
 
+        {/* ═══ 4b. WEARE SUMMARY (The Space Between You) ═══════ */}
+        {weareProfile && (couple || isDemo) && (
+          <TouchableOpacity
+            style={styles.weareSummaryCard}
+            onPress={() => router.push('/(app)/couple-portal' as any)}
+            activeOpacity={0.8}
+          >
+            <View style={styles.weareSummaryHeader}>
+              <Text style={styles.weareSummaryTitle}>
+                The Space Between You
+              </Text>
+              {weareProfile.dataMode !== 'full' && (
+                <View style={styles.weareModeBadge}>
+                  <Text style={styles.weareModeBadgeText}>
+                    {weareProfile.dataMode === 'single-partner' ? 'Partial' : 'Preview'}
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            <View style={styles.weareSummaryBody}>
+              {/* Resonance Pulse Circle */}
+              <View style={[
+                styles.wearePulseCircle,
+                weareProfile.layers.resonancePulse >= 60
+                  ? { borderColor: Colors.primary }
+                  : weareProfile.layers.resonancePulse >= 40
+                    ? { borderColor: Colors.secondary }
+                    : { borderColor: Colors.textMuted },
+              ]}>
+                <Text style={styles.wearePulseText}>
+                  {weareProfile.warmSummary === 'Deeply alive' ? '\u2728'
+                    : weareProfile.warmSummary === 'Growing stronger' ? '\u{1F331}'
+                    : weareProfile.warmSummary === 'Finding its way' ? '\u{1F50D}'
+                    : '\u{1F33F}'}
+                </Text>
+              </View>
+
+              <View style={styles.weareSummaryContent}>
+                <Text style={styles.weareSummaryPhrase}>
+                  {weareProfile.warmSummary}
+                </Text>
+
+                {/* Direction indicator */}
+                <Text style={styles.weareSummaryDirection}>
+                  {weareProfile.layers.emergenceDirection > 1 ? '\u2197\uFE0F Growing'
+                    : weareProfile.layers.emergenceDirection < -1 ? '\u2198\uFE0F Contracting'
+                    : '\u2794 Steady'}
+                  {weareProfile.trend ? ` \u00B7 ${weareProfile.trend.periodLabel}` : ''}
+                </Text>
+
+                {/* Bottleneck nudge */}
+                <Text style={styles.weareSummaryNudge}>
+                  Where the invitation is: {weareProfile.bottleneck.label}
+                </Text>
+              </View>
+            </View>
+
+            <Text style={styles.weareSummaryArrow}>
+              See full picture {'\u2192'}
+            </Text>
+          </TouchableOpacity>
+        )}
+
         {/* ═══ 5. STREAK (Small, celebratory) ═════════════════ */}
         {streakData && streakData.currentStreak > 0 && (
           <View style={styles.streakMiniSection}>
@@ -955,6 +1229,32 @@ export default function HomeScreen() {
           </View>
         )}
         {!hasPortrait && <NudgeCarousel nudges={nudges} />}
+
+        {/* ═══ 6b. MICRO-COURSE (Continue Course card) ═══════ */}
+        {activeCourse && (() => {
+          const course = MICRO_COURSES.find((c) => c.id === activeCourse.courseId);
+          if (!course) return null;
+          return (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Continue Your Course</Text>
+              <MicroCourseCard
+                course={course}
+                progress={activeCourse.progress}
+                isLocked={false}
+                compact
+                onPress={() =>
+                  router.push({
+                    pathname: '/(app)/microcourse',
+                    params: {
+                      courseId: course.id,
+                      lessonNumber: String(activeCourse.progress.lessonsCompleted + 1),
+                    },
+                  } as any)
+                }
+              />
+            </View>
+          );
+        })()}
 
         {/* ═══ 7. EXPLORE (Bottom section) ════════════════════ */}
         <View style={styles.section}>
@@ -1099,97 +1399,37 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* ═══ Individual Assessments (Collapsible) ═══════════ */}
-        <View style={styles.section}>
-          <TouchableOpacity
-            style={styles.sectionTitleRow}
-            onPress={() => setAssessmentsExpanded(!assessmentsExpanded)}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.sectionTitle}>Individual Assessments</Text>
-            <Text style={styles.expandArrow}>
-              {assessmentsExpanded ? '\u25B4' : '\u25BE'}
-            </Text>
-          </TouchableOpacity>
+        {/* Retake individual sections (collapsed, shown when assessment completed) */}
+        {tenderStatus.state === 'completed' && (
+          <View style={styles.section}>
+            <TouchableOpacity
+              style={styles.sectionTitleRow}
+              onPress={() => setAssessmentsExpanded(!assessmentsExpanded)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.retakeSectionLabel}>Retake Individual Sections</Text>
+              <Text style={styles.expandArrow}>
+                {assessmentsExpanded ? '\u25B4' : '\u25BE'}
+              </Text>
+            </TouchableOpacity>
 
-          {!assessmentsExpanded && (
-            <Text style={styles.assessmentSummary}>
-              {completedCount} of {individualConfigs.length} completed
-            </Text>
-          )}
-
-          {assessmentsExpanded && (
-            <View style={styles.assessmentCards}>
-              {individualConfigs.map((config) => {
-                const status = statuses[config.type] || {
-                  state: 'not_started',
-                };
-                return (
-                  <View key={config.type} style={styles.assessmentCard}>
-                    <View style={styles.assessmentCardHeader}>
-                      <View style={styles.assessmentTitleRow}>
-                        <Text style={styles.assessmentShortName}>
-                          {config.shortName}
-                        </Text>
-                        <AssessmentBadge status={status} />
-                      </View>
-                      <Text style={styles.assessmentName}>{config.name}</Text>
-                      <Text style={styles.assessmentDescription}>
-                        {config.description}
-                      </Text>
-                      <Text style={styles.assessmentMeta}>
-                        {config.totalQuestions} questions {'\u00B7'} ~
-                        {config.estimatedMinutes} min
-                      </Text>
-                    </View>
-
-                    <View style={styles.assessmentActions}>
-                      {status.state === 'not_started' && (
-                        <TouchableOpacity
-                          style={styles.assessmentButton}
-                          onPress={() => handleStart(config)}
-                          activeOpacity={0.7}
-                        >
-                          <Text style={styles.assessmentButtonText}>
-                            Start
-                          </Text>
-                        </TouchableOpacity>
-                      )}
-                      {status.state === 'in_progress' && (
-                        <>
-                          <Text style={styles.progressNote}>
-                            {status.progressQuestion} of{' '}
-                            {status.totalQuestions} answered
-                          </Text>
-                          <TouchableOpacity
-                            style={styles.assessmentButton}
-                            onPress={() => handleResume(config)}
-                            activeOpacity={0.7}
-                          >
-                            <Text style={styles.assessmentButtonText}>
-                              Continue
-                            </Text>
-                          </TouchableOpacity>
-                        </>
-                      )}
-                      {status.state === 'completed' && (
-                        <TouchableOpacity
-                          style={styles.assessmentButtonOutline}
-                          onPress={() => handleStart(config)}
-                          activeOpacity={0.7}
-                        >
-                          <Text style={styles.assessmentButtonOutlineText}>
-                            Retake
-                          </Text>
-                        </TouchableOpacity>
-                      )}
-                    </View>
-                  </View>
-                );
-              })}
-            </View>
-          )}
-        </View>
+            {assessmentsExpanded && (
+              <View style={styles.assessmentCards}>
+                {individualConfigs.map((config) => (
+                  <TouchableOpacity
+                    key={config.type}
+                    style={styles.retakeRow}
+                    onPress={() => handleStart(config)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.retakeRowName}>{config.shortName}: {config.name}</Text>
+                    <Text style={styles.retakeRowAction}>Retake</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </View>
+        )}
 
         {/* ═══ Logout ═════════════════════════════════════════ */}
         <TouchableOpacity
@@ -1837,6 +2077,112 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
+  // ── Tender Assessment Card ──
+  tenderCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.lg,
+    gap: Spacing.md,
+    ...Shadows.subtle,
+  },
+  tenderCardTitle: {
+    fontSize: FontSizes.headingM,
+    fontWeight: '600',
+    color: Colors.text,
+    fontFamily: FontFamilies.heading,
+  },
+  tenderCardDescription: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    lineHeight: 20,
+  },
+  tenderCardMeta: {
+    fontSize: FontSizes.caption,
+    color: Colors.textMuted,
+  },
+  tenderStartButton: {
+    backgroundColor: Colors.primary,
+    height: ButtonSizes.medium,
+    borderRadius: BorderRadius.pill,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: Spacing.xs,
+  },
+  tenderStartButtonText: {
+    color: Colors.white,
+    fontSize: FontSizes.body,
+    fontWeight: '600',
+  },
+  tenderViewButton: {
+    borderWidth: 1,
+    borderColor: Colors.primary,
+    height: ButtonSizes.medium,
+    borderRadius: BorderRadius.pill,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  tenderViewButtonText: {
+    color: Colors.primary,
+    fontSize: FontSizes.body,
+    fontWeight: '600',
+  },
+  tenderProgressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  tenderProgressLabel: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.text,
+    fontWeight: '600',
+  },
+  tenderSegmentBar: {
+    flexDirection: 'row',
+    gap: 3,
+    height: 6,
+  },
+  tenderSegment: {
+    flex: 1,
+    backgroundColor: Colors.border,
+    borderRadius: 3,
+  },
+  tenderSegmentDone: {
+    backgroundColor: Colors.success,
+  },
+  tenderCurrentSection: {
+    fontSize: FontSizes.caption,
+    color: Colors.primary,
+    fontWeight: '500',
+  },
+  tenderCompleteEmoji: {
+    fontSize: 32,
+    color: Colors.success,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  retakeSectionLabel: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    fontWeight: '500',
+  },
+  retakeRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: Spacing.sm,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: Colors.borderLight,
+  },
+  retakeRowName: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.text,
+  },
+  retakeRowAction: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.primary,
+    fontWeight: '600',
+  },
+
   // ── Badges ──
   badge: {
     paddingHorizontal: 8,
@@ -2093,6 +2439,81 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.body,
     fontWeight: '600' as const,
     color: Colors.secondary,
+  },
+
+  // ── WEARE Summary Card ──
+  weareSummaryCard: {
+    marginHorizontal: Spacing.lg,
+    marginBottom: Spacing.md,
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    gap: Spacing.sm,
+    ...Shadows.card,
+  },
+  weareSummaryHeader: {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    alignItems: 'center' as const,
+  },
+  weareSummaryTitle: {
+    fontSize: FontSizes.body,
+    fontWeight: '600' as const,
+    fontFamily: FontFamilies.heading,
+    color: Colors.text,
+  },
+  weareModeBadge: {
+    backgroundColor: Colors.borderLight,
+    borderRadius: BorderRadius.sm,
+    paddingHorizontal: Spacing.xs + 2,
+    paddingVertical: 2,
+  },
+  weareModeBadgeText: {
+    fontSize: FontSizes.caption - 1,
+    color: Colors.textSecondary,
+    fontWeight: '500' as const,
+  },
+  weareSummaryBody: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: Spacing.md,
+  },
+  wearePulseCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    borderWidth: 3,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    backgroundColor: Colors.surfaceElevated,
+  },
+  wearePulseText: {
+    fontSize: 22,
+  },
+  weareSummaryContent: {
+    flex: 1,
+    gap: 3,
+  },
+  weareSummaryPhrase: {
+    fontSize: FontSizes.headingM,
+    fontWeight: '600' as const,
+    fontFamily: FontFamilies.heading,
+    color: Colors.text,
+  },
+  weareSummaryDirection: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+  },
+  weareSummaryNudge: {
+    fontSize: FontSizes.caption,
+    color: Colors.secondary,
+    fontStyle: 'italic' as const,
+  },
+  weareSummaryArrow: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '600' as const,
+    color: Colors.primary,
+    textAlign: 'right' as const,
   },
 
   // ── Streak Mini ──

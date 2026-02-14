@@ -2,8 +2,10 @@ import type {
   ValuesScores,
   DetectedPattern,
   ValuesLens,
+  ECRRScores,
 } from '@/types';
 import { VALUE_DOMAINS } from '@/utils/assessments/configs/values';
+import { tailorNarrative, buildTailoringContext } from './attachment-tailoring';
 
 /**
  * Lens 4: Values & Becoming
@@ -11,12 +13,22 @@ import { VALUE_DOMAINS } from '@/utils/assessments/configs/values';
  */
 export function analyzeValuesBecoming(
   values: ValuesScores,
-  patterns: DetectedPattern[]
+  patterns: DetectedPattern[],
+  ecrr?: ECRRScores
 ): ValuesLens {
   const coreValues = getCoreValues(values);
   const significantGaps = getSignificantGaps(values);
   const developmentalInvitations = getDevelopmentalInvitations(values, patterns);
-  const narrative = buildValuesNarrative(values, coreValues, significantGaps);
+  const rawNarrative = buildValuesNarrative(values, coreValues, significantGaps);
+
+  // Apply attachment tailoring if ECR-R data available
+  const narrative = ecrr
+    ? tailorNarrative(
+        rawNarrative,
+        buildTailoringContext(ecrr.attachmentStyle, ecrr.anxietyScore, ecrr.avoidanceScore),
+        'values'
+      )
+    : rawNarrative;
 
   return { narrative, coreValues, significantGaps, developmentalInvitations };
 }

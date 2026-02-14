@@ -8,6 +8,7 @@ export const defusionFromStories: Intervention = {
   title: 'Defusion from Relationship Stories',
   description:
     'Use ACT cognitive defusion techniques to create distance from the rigid stories you tell about your relationship, creating space for new possibilities.',
+  fieldInsight: 'The story you tell about your partner is not your partner.',
   category: 'differentiation',
   duration: 8,
   difficulty: 'intermediate',

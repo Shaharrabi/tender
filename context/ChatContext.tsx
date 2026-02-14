@@ -180,9 +180,22 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     setError(null);
 
     try {
-      // Get auth token
+      // Get auth token — try getSession first, then refreshSession as fallback
+      let token: string | undefined;
       const { data: authData } = await supabase.auth.getSession();
-      const token = authData.session?.access_token;
+      token = authData.session?.access_token;
+
+      // If no token, attempt a session refresh (handles expired JWTs)
+      if (!token) {
+        if (__DEV__) console.log('[Chat] No token from getSession, attempting refresh...');
+        const { data: refreshData } = await supabase.auth.refreshSession();
+        token = refreshData.session?.access_token;
+      }
+
+      // If still no token after refresh, the user isn't authenticated
+      if (!token) {
+        throw new Error('Your session has expired. Please sign in again to chat with Nuance.');
+      }
 
       if (__DEV__) console.log('[Chat] Sending message to edge function...');
       if (__DEV__) console.log('[Chat] URL:', CHAT_FUNCTION_URL);
@@ -194,7 +207,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
           sessionId: session.id,
@@ -211,6 +224,10 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           const errorData = await response.json();
           errorMessage = errorData.error || errorMessage;
         } catch {}
+        // Give user-friendly messages for common errors
+        if (response.status === 401) {
+          errorMessage = 'Your session has expired. Please sign out and sign back in.';
+        }
         throw new Error(errorMessage);
       }
 

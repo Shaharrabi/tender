@@ -8,6 +8,7 @@ import type {
   DetectedPattern,
   RegulationLens,
 } from '@/types';
+import { tailorNarrative, buildTailoringContext } from './attachment-tailoring';
 
 /**
  * Lens 3: Regulation & Window
@@ -22,7 +23,9 @@ export function analyzeRegulationWindow(
   composite: CompositeScores,
   patterns: DetectedPattern[]
 ): RegulationLens {
-  const narrative = buildRegulationNarrative(composite, sseit);
+  const rawNarrative = buildRegulationNarrative(composite, sseit);
+  const ctx = buildTailoringContext(ecrr.attachmentStyle, ecrr.anxietyScore, ecrr.avoidanceScore);
+  const narrative = tailorNarrative(rawNarrative, ctx, 'regulation');
   const activationPatterns = getActivationPatterns(ecrr, ipip);
   const shutdownPatterns = getShutdownPatterns(ecrr, dutch, ipip);
   const floodingMarkers = getFloodingMarkers(ecrr, ipip, sseit);

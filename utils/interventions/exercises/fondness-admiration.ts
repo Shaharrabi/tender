@@ -14,6 +14,7 @@ export const fondnessAdmiration: Intervention = {
   title: 'Fondness & Admiration: Building Positive Sentiment',
   description:
     'Actively nurture the positive feelings between you. This exercise strengthens the friendship system that Gottman identifies as the foundation of lasting relationships — by practicing admiration, gratitude, and positive memories.',
+  fieldInsight: 'What you notice and name grows. Admiration feeds the field between you.',
   category: 'attachment',
   duration: 15,
   difficulty: 'beginner',

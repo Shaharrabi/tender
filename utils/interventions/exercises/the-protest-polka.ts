@@ -14,6 +14,7 @@ export const protestPolka: Intervention = {
   title: 'The Protest Polka',
   description:
     'Map the "demon dialogue" that shows up in your conflicts — the pursue-withdraw dance where one partner reaches and the other retreats. When you can see the cycle together, you stop blaming each other and start fighting the pattern instead.',
+  fieldInsight: 'The reach and the retreat are both asking for the same thing \u2014 connection.',
   category: 'attachment',
   duration: 15,
   difficulty: 'intermediate',

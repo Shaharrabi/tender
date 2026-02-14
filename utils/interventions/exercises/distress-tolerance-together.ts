@@ -16,6 +16,7 @@ export const distressToleranceTogether: Intervention = {
   title: 'TIPP Skills for Couples',
   description:
     'Learn and practice DBT\'s TIPP technique together — a body-based approach to rapidly reducing emotional flooding. When your nervous system is activated beyond its window of tolerance, no amount of talking helps. TIPP brings you back to a state where connection is possible.',
+  fieldInsight: 'Holding the storm together \u2014 not fixing it \u2014 is the deepest co-regulation.',
   category: 'regulation',
   duration: 20,
   difficulty: 'beginner',

@@ -13,6 +13,7 @@ export const emotionalBid: Intervention = {
   title: 'Turning Toward',
   description:
     'Explore the small moments that build connection. Learn to recognize emotional bids — yours and your partner\'s — and practice turning toward them.',
+  fieldInsight: 'Every bid \u2014 even the clumsy ones \u2014 is a hand reaching across the space between you.',
   category: 'attachment',
   duration: 5,
   difficulty: 'beginner',

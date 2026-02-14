@@ -120,6 +120,7 @@ export const TWELVE_STEPS: HealingStep[] = [
   {
     stepNumber: 1,
     title: 'Acknowledge the Strain',
+    subtitle: 'Seeing the pattern \u2014 not as personal failure, but as the dance between you',
     quote:
       'We admit that patterns of disconnection have taken hold in our relationship \u2014 patterns we didn\u2019t choose but now must face together.',
     therapeuticGoal:
@@ -142,6 +143,7 @@ export const TWELVE_STEPS: HealingStep[] = [
   {
     stepNumber: 2,
     title: 'Trust the Relational Field',
+    subtitle: 'Trusting that the space between you can hold more than you think',
     quote:
       'We come to believe that something wiser than either of us emerges when we meet with openness \u2014 a \u201Cwe\u201D that can heal what \u201CI\u201D cannot.',
     therapeuticGoal:
@@ -164,6 +166,7 @@ export const TWELVE_STEPS: HealingStep[] = [
   {
     stepNumber: 3,
     title: 'Release Certainty',
+    subtitle: 'Choosing vulnerability over protection \u2014 leading with the soft move',
     quote:
       'We let go of our fixed stories about each other and our relationship. We choose presence over prediction.',
     therapeuticGoal:
@@ -185,6 +188,7 @@ export const TWELVE_STEPS: HealingStep[] = [
   {
     stepNumber: 4,
     title: 'Examine Our Part',
+    subtitle: 'Getting underneath \u2014 what is really driving the pattern',
     quote:
       'We look honestly at how our own patterns contribute to disconnection \u2014 not to blame ourselves, but to reclaim our power to change.',
     therapeuticGoal:
@@ -207,6 +211,7 @@ export const TWELVE_STEPS: HealingStep[] = [
   {
     stepNumber: 5,
     title: 'Share Our Truths',
+    subtitle: 'Sharing your pattern with your partner \u2014 letting yourself be seen',
     quote:
       'We speak what has been hidden \u2014 our fears, our longings, our disappointments \u2014 trusting that truth told with care strengthens the bond.',
     therapeuticGoal:
@@ -228,6 +233,7 @@ export const TWELVE_STEPS: HealingStep[] = [
   {
     stepNumber: 6,
     title: 'Release the Enemy Story',
+    subtitle: 'Releasing the protective moves that once kept you safe but now keep you apart',
     quote:
       'We let go of seeing each other as adversaries. We recognize that the walls between us came from protection, not malice.',
     therapeuticGoal:
@@ -249,6 +255,7 @@ export const TWELVE_STEPS: HealingStep[] = [
   {
     stepNumber: 7,
     title: 'Commit to Relational Practices',
+    subtitle: 'Moving from insight to daily rhythm \u2014 making love a practice, not a feeling',
     quote:
       'We ask for the humility and courage to approach each encounter with curiosity and kindness, making our relationship a daily practice.',
     therapeuticGoal:
@@ -270,6 +277,7 @@ export const TWELVE_STEPS: HealingStep[] = [
   {
     stepNumber: 8,
     title: 'Prepare to Repair Harm',
+    subtitle: 'Turning toward the ruptures \u2014 not to reopen wounds, but to finally tend them',
     quote:
       'We bring our attention to the ruptures \u2014 the moments of betrayal, withdrawal, or harm \u2014 and prepare to face them together.',
     therapeuticGoal:
@@ -291,6 +299,7 @@ export const TWELVE_STEPS: HealingStep[] = [
   {
     stepNumber: 9,
     title: 'Act to Rebuild Trust',
+    subtitle: 'Showing up differently \u2014 trust rebuilt through action, not promises',
     quote:
       'We move from intention to action \u2014 listening where we once dismissed, reaching where we once retreated, showing up where we once stayed silent.',
     therapeuticGoal:
@@ -313,6 +322,7 @@ export const TWELVE_STEPS: HealingStep[] = [
   {
     stepNumber: 10,
     title: 'Maintain Ongoing Awareness',
+    subtitle: 'Old patterns will return \u2014 meeting them with gentleness, not shame',
     quote:
       'We recognize that old patterns will resurface. When they do, we meet them with honesty and gentle recalibration, not shame.',
     therapeuticGoal:
@@ -334,6 +344,7 @@ export const TWELVE_STEPS: HealingStep[] = [
   {
     stepNumber: 11,
     title: 'Seek Shared Insight',
+    subtitle: 'Listening to what the relationship itself is trying to tell you',
     quote:
       'We create spaces for the relationship itself to speak \u2014 through reflection, dialogue, and quiet presence together.',
     therapeuticGoal:
@@ -355,6 +366,7 @@ export const TWELVE_STEPS: HealingStep[] = [
   {
     stepNumber: 12,
     title: 'Carry the Message of Connection',
+    subtitle: 'Living it \u2014 your healing becomes a gift to every relationship around you',
     quote:
       'Having experienced how openness and presence transform us, we embody these values in all our relationships \u2014 not by demanding others change, but by living as examples.',
     therapeuticGoal:
@@ -460,61 +472,84 @@ export const TAGLINES_BY_STEP: Record<number, string[]> = {
     'The pattern is not the person.',
     'Your cycle makes sense. It just costs too much.',
     'The dance between you is not either person\u2019s fault.',
+    'The pattern between you is not the problem. It is the doorway.',
+    'You brought this pattern with you. You did not create it on purpose. And you can change it.',
   ],
   2: [
     'Something wiser than either of you emerges when you meet with openness.',
     'The \u201Cwe\u201D can heal what \u201CI\u201D cannot.',
     'Safety is not the absence of danger. It is the presence of connection.',
+    'The space between you is alive. It changes when you do.',
+    'Co-regulation is not weakness. It is biology.',
   ],
   3: [
     'What if you are wrong about why they do that?',
     'Your story about them might not be the whole truth.',
     'Presence over prediction.',
+    'You can hold two truths at once. So can your relationship.',
+    'The body always knows before the mind catches up.',
   ],
   4: [
     'What you are feeling underneath is the real conversation.',
     'Every protector has a good reason.',
     'Owning your part is not blame. It is power.',
+    'Name it to tame it.',
+    'The reach and the retreat are both asking for the same thing.',
   ],
   5: [
     'Vulnerability is not weakness. It is the birthplace of connection.',
     'The strongest relationships are built by people willing to be seen.',
     'Truth told with care strengthens the bond.',
+    'Strip it down. See what is singular. See your partner\u2019s version. Let it land.',
   ],
   6: [
     'The walls between you came from protection, not malice.',
     'Can you see the scared child underneath their difficult behavior?',
     'Contempt dissolves when you see your partner\u2019s wound.',
+    'What divides you also connects you.',
+    'Your differences are resources, not obstacles.',
   ],
   7: [
     'Small, consistent practice changes everything.',
     'Your relationship is a daily practice, not a fixed state.',
     'Rituals of connection are how love lives.',
+    'Rhythm over memory. Practice over perfection.',
+    'Secure is not a type. It is a practice.',
   ],
   8: [
     'Rupture is inevitable. Repair is a choice.',
     'Old wounds need acknowledgment before healing.',
     'Preparing to repair is an act of courage.',
+    'The strongest relationships are not conflict-free. They are repair-rich.',
+    'Rupture is inevitable. Repair is a choice.',
   ],
   9: [
     'Coming back is braver than never leaving.',
     'Real repair is behavior change, not just words.',
     'Trust is rebuilt in small, consistent actions.',
+    'Every repair is a fresh start.',
+    'Love is not a feeling. It is a series of choices.',
   ],
   10: [
     'Old patterns will resurface. Meet them with gentleness.',
     'Catching yourself in the cycle is the practice.',
     'Setbacks are not failures. They are data.',
+    'Growth does not move in a straight line. It spirals.',
+    'Healing is not linear. Rest is part of the process.',
   ],
   11: [
     'What does your relationship want to tell you?',
     'The deeper meaning is underneath the conflict.',
     'Listen to the \u201Cwe\u201D \u2014 it has wisdom.',
+    'The relationship knows things that neither of you individually knows.',
+    'What is here? What is between you? What is trying to emerge?',
   ],
   12: [
     'You are already brave enough to be here.',
     'Your healing ripples outward.',
     'Living this way IS the message.',
+    'Between stimulus and response, there is a space.',
+    'Both of you are doing the best you can with what you have.',
   ],
 };
 

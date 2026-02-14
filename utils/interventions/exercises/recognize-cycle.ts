@@ -15,6 +15,7 @@ export const recognizeCycle: Intervention = {
   title: 'Recognizing Your Negative Cycle',
   description:
     'Map the repeating pattern that traps you both during conflict. EFT research shows that when couples can see the cycle as the enemy — rather than each other — they break free from blame and begin to reconnect.',
+  fieldInsight: 'The pattern between you is not either person\'s fault \u2014 it is the dance itself.',
   category: 'attachment',
   duration: 30,
   difficulty: 'intermediate',

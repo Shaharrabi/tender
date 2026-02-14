@@ -35,6 +35,7 @@ import {
   Shadows,
 } from '@/constants/theme';
 import type { IndividualPortrait } from '@/types';
+import type { FieldAwarenessLens } from '@/types/portrait';
 
 import PortraitLens from '@/components/portrait/PortraitLens';
 import AppIcon from '@/components/ui/AppIcon';
@@ -658,7 +659,7 @@ function OverviewTab({
   onNavigate: (tab: TabKey) => void;
 }) {
   const narrative = generateLandingNarrative(portrait);
-  const synthesis = synthesizeAssessments(portrait);
+  const synthesis = synthesizeAssessments(portrait, portrait.supplementData);
   const cs = portrait.compositeScores;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -687,6 +688,11 @@ function OverviewTab({
 
       {/* Cross-Assessment Synthesis */}
       <SynthesisCard synthesis={synthesis} />
+
+      {/* Field Awareness — Phase 3 (only if supplement data present) */}
+      {portrait.fourLens.fieldAwareness && (
+        <FieldAwarenessCard fieldAwareness={portrait.fourLens.fieldAwareness} />
+      )}
 
       {/* A.R.E. Radar / Ring Chart */}
       <View style={st.areRingsCard}>
@@ -751,6 +757,109 @@ function OverviewTab({
         ))}
       </View>
     </Animated.View>
+  );
+}
+
+// ─── FIELD AWARENESS CARD (Phase 3) ────────────────
+
+function FieldAwarenessCard({ fieldAwareness }: { fieldAwareness: FieldAwarenessLens }) {
+  const [expanded, setExpanded] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      delay: 400,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  return (
+    <Animated.View style={[st.synthesisCard, { opacity: fadeAnim }]}>
+      <Text style={st.synthesisSectionLabel}>RELATIONAL FIELD AWARENESS</Text>
+      <View style={st.scoreGroupDivider} />
+
+      {/* Narrative */}
+      <Text style={st.synthesisNarrative}>{fieldAwareness.narrative}</Text>
+
+      {/* Score bars */}
+      <View style={st.fieldScoresRow}>
+        <FieldScoreBar label="Field Sensitivity" value={fieldAwareness.fieldSensitivity} color={Colors.primary} />
+        <FieldScoreBar label="Boundary Clarity" value={fieldAwareness.boundaryClarity} color={Colors.calm} />
+        <FieldScoreBar label="Pattern Awareness" value={fieldAwareness.patternAwareness} color={Colors.depth} />
+      </View>
+
+      {/* Metacognitive badge */}
+      {fieldAwareness.metacognitiveCapacity && (
+        <View style={st.fieldBadgeRow}>
+          <View style={st.fieldMetaBadge}>
+            <Text style={st.fieldMetaBadgeText}>Metacognitive Capacity</Text>
+          </View>
+          <Text style={st.fieldMetaHint}>You can observe your patterns while they unfold</Text>
+        </View>
+      )}
+
+      {/* Cross-pattern insights (expandable) */}
+      {fieldAwareness.crossPatterns.length > 0 && (
+        <View style={{ marginTop: Spacing.sm }}>
+          <TouchableOpacity
+            onPress={() => {
+              LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+              setExpanded(!expanded);
+            }}
+            style={st.fieldExpandBtn}
+            activeOpacity={0.7}
+          >
+            <Text style={st.fieldExpandLabel}>
+              Cross-Pattern Insights ({fieldAwareness.crossPatterns.length})
+            </Text>
+            <Text style={st.fieldExpandArrow}>{expanded ? '▲' : '▼'}</Text>
+          </TouchableOpacity>
+          {expanded && fieldAwareness.crossPatterns.map((insight, i) => (
+            <View key={i} style={st.synthesisListItem}>
+              <View style={[st.synthesisListDot, { backgroundColor: Colors.depth }]} />
+              <Text style={st.synthesisListText}>{insight}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+    </Animated.View>
+  );
+}
+
+function FieldScoreBar({ label, value, color }: { label: string; value: number; color: string }) {
+  const pct = Math.max(0, Math.min(100, (value / 7) * 100));
+  const barAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(barAnim, {
+      toValue: pct,
+      duration: 800,
+      delay: 600,
+      useNativeDriver: false,
+    }).start();
+  }, [pct]);
+
+  return (
+    <View style={st.fieldScoreItem}>
+      <Text style={st.fieldScoreLabel}>{label}</Text>
+      <View style={st.fieldScoreBarBg}>
+        <Animated.View
+          style={[
+            st.fieldScoreBarFill,
+            {
+              backgroundColor: color,
+              width: barAnim.interpolate({
+                inputRange: [0, 100],
+                outputRange: ['0%', '100%'],
+              }),
+            },
+          ]}
+        />
+      </View>
+      <Text style={st.fieldScoreValue}>{value.toFixed(1)}/7</Text>
+    </View>
   );
 }
 
@@ -1316,6 +1425,8 @@ function ScoresTab({
 
 function LensesTab({ portrait }: { portrait: IndividualPortrait }) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const hasFieldAwareness = !!portrait.fourLens.fieldAwareness;
+  const hasReframes = (portrait.bigFiveReframes?.length ?? 0) > 0;
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -1328,7 +1439,9 @@ function LensesTab({ portrait }: { portrait: IndividualPortrait }) {
   return (
     <Animated.View style={{ opacity: fadeAnim }}>
       <Text style={st.tabIntro}>
-        Four distinct perspectives that together form a complete picture of how you relate.
+        {hasFieldAwareness
+          ? 'Five distinct perspectives that together form a complete picture of how you relate.'
+          : 'Four distinct perspectives that together form a complete picture of how you relate.'}
       </Text>
 
       <PortraitLens
@@ -1355,7 +1468,72 @@ function LensesTab({ portrait }: { portrait: IndividualPortrait }) {
         lens={portrait.fourLens.values}
         type="values"
       />
+
+      {/* Field Awareness Lens — Phase 3 (only if supplement data present) */}
+      {hasFieldAwareness && portrait.fourLens.fieldAwareness && (
+        <View style={st.card}>
+          <View style={st.cardHeaderRow}>
+            <View style={[st.lensIconCircle, { backgroundColor: Colors.depth + '20' }]}>
+              <Text style={{ fontSize: 16 }}>🌊</Text>
+            </View>
+            <Text style={[st.cardHeading, { flex: 1 }]}>Field Awareness</Text>
+          </View>
+          <Text style={st.cardBody}>{portrait.fourLens.fieldAwareness.narrative}</Text>
+          {portrait.fourLens.fieldAwareness.crossPatterns.length > 0 && (
+            <View style={{ marginTop: Spacing.sm }}>
+              {portrait.fourLens.fieldAwareness.crossPatterns.map((cp, i) => (
+                <View key={i} style={st.listItem}>
+                  <Text style={st.listBullet}>{'•'}</Text>
+                  <Text style={st.listText}>{cp}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+      )}
+
+      {/* Big Five Relational Reframes — Phase 3 */}
+      {hasReframes && (
+        <BigFiveReframesSection reframes={portrait.bigFiveReframes!} />
+      )}
     </Animated.View>
+  );
+}
+
+// ─── BIG FIVE REFRAMES SECTION (Phase 3) ───────────
+
+function BigFiveReframesSection({ reframes }: { reframes: string[] }) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <View style={st.card}>
+      <TouchableOpacity
+        onPress={() => {
+          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+          setExpanded(!expanded);
+        }}
+        activeOpacity={0.7}
+      >
+        <View style={st.cardHeaderRow}>
+          <View style={[st.lensIconCircle, { backgroundColor: Colors.secondary + '20' }]}>
+            <Text style={{ fontSize: 16 }}>🔬</Text>
+          </View>
+          <Text style={[st.cardHeading, { flex: 1 }]}>Personality Reframes</Text>
+          <Text style={st.fieldExpandArrow}>{expanded ? '▲' : '▼'}</Text>
+        </View>
+        <Text style={[st.cardBody, { marginTop: Spacing.xs }]}>
+          Your Big Five personality traits through a relational lens — how they shape connection.
+        </Text>
+      </TouchableOpacity>
+      {expanded && reframes.map((reframe, i) => (
+        <View
+          key={i}
+          style={[st.reframeItem, i > 0 && { borderTopWidth: 1, borderTopColor: Colors.border }]}
+        >
+          <Text style={st.cardBody}>{reframe}</Text>
+        </View>
+      ))}
+    </View>
   );
 }
 
@@ -3464,5 +3642,90 @@ const st = StyleSheet.create({
     marginBottom: Spacing.md,
     textTransform: 'uppercase' as const,
     letterSpacing: 1.5,
+  },
+
+  // ── Phase 3: Field Awareness styles ──
+  fieldScoresRow: {
+    marginTop: Spacing.md,
+    gap: Spacing.sm,
+  },
+  fieldScoreItem: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: Spacing.xs,
+  },
+  fieldScoreLabel: {
+    fontSize: FontSizes.caption,
+    color: Colors.textSecondary,
+    width: 110,
+    fontWeight: '500' as const,
+  },
+  fieldScoreBarBg: {
+    flex: 1,
+    height: 6,
+    backgroundColor: Colors.borderLight,
+    borderRadius: 3,
+    overflow: 'hidden' as const,
+  },
+  fieldScoreBarFill: {
+    height: 6,
+    borderRadius: 3,
+  },
+  fieldScoreValue: {
+    fontSize: FontSizes.caption,
+    color: Colors.textSecondary,
+    width: 36,
+    textAlign: 'right' as const,
+  },
+  fieldBadgeRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    marginTop: Spacing.md,
+    gap: Spacing.sm,
+  },
+  fieldMetaBadge: {
+    backgroundColor: Colors.depth + '18',
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.pill,
+  },
+  fieldMetaBadgeText: {
+    fontSize: FontSizes.caption,
+    color: Colors.depth,
+    fontWeight: '600' as const,
+  },
+  fieldMetaHint: {
+    fontSize: FontSizes.caption,
+    color: Colors.textSecondary,
+    flex: 1,
+  },
+  fieldExpandBtn: {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    alignItems: 'center' as const,
+    paddingVertical: Spacing.xs,
+  },
+  fieldExpandLabel: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.primary,
+    fontWeight: '600' as const,
+  },
+  fieldExpandArrow: {
+    fontSize: FontSizes.caption,
+    color: Colors.textSecondary,
+  },
+
+  // ── Phase 3: Lens icon + Reframes styles ──
+  lensIconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    marginRight: Spacing.xs,
+  },
+  reframeItem: {
+    paddingTop: Spacing.sm,
+    marginTop: Spacing.sm,
   },
 });

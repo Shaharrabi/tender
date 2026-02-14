@@ -15,6 +15,7 @@ export const stressReducingConversation: Intervention = {
   title: 'Stress-Reducing Conversation',
   description:
     'A daily debrief ritual from Gottman research. Take turns sharing about your day — not about the relationship — while your partner simply listens. This small practice builds the friendship that keeps couples strong through hard times.',
+  fieldInsight: 'Turning toward your partner\'s world outside the relationship strengthens the world inside it.',
   category: 'communication',
   duration: 20,
   difficulty: 'beginner',

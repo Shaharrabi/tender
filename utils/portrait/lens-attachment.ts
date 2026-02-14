@@ -5,6 +5,7 @@ import type {
   DetectedPattern,
   AttachmentLens,
 } from '@/types';
+import { tailorNarrative, buildTailoringContext } from './attachment-tailoring';
 
 /**
  * Lens 1: Attachment & Protection
@@ -17,7 +18,9 @@ export function analyzeAttachmentProtection(
 ): AttachmentLens {
   const { attachmentStyle, anxietyScore, avoidanceScore } = ecrr;
 
-  const narrative = buildNarrative(attachmentStyle, anxietyScore, avoidanceScore);
+  const rawNarrative = buildNarrative(attachmentStyle, anxietyScore, avoidanceScore);
+  const ctx = buildTailoringContext(attachmentStyle, anxietyScore, avoidanceScore);
+  const narrative = tailorNarrative(rawNarrative, ctx, 'attachment');
   const protectiveStrategy = getProtectiveStrategy(attachmentStyle);
   const triggers = getTriggers(attachmentStyle, anxietyScore, avoidanceScore);
   const areProfile = {

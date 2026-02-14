@@ -12,6 +12,7 @@ import { DUTCHScores } from '@/types';
 import {
   getDUTCHInterpretation,
   getDUTCHSubscaleLabel,
+  getDUTCHSubscaleWarmLabel,
 } from '@/utils/assessments/interpretations/dutch';
 import { Colors, Spacing, FontSizes, ButtonSizes } from '@/constants/theme';
 
@@ -38,16 +39,17 @@ export default function DUTCHResults({ scores }: Props) {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <Text style={styles.title}>Your Results</Text>
-          <Text style={styles.subtitle}>Your conflict handling style</Text>
+          <Text style={styles.title}>How You Keep the Space Safe</Text>
+          <Text style={styles.subtitle}>Your protective patterns in conflict</Text>
         </View>
 
         {/* Primary Style */}
         <View style={styles.primarySection}>
-          <Text style={styles.primaryLabel}>Primary Style</Text>
+          <Text style={styles.primaryLabel}>Primary Pattern</Text>
+          <Text style={styles.primaryWarmLabel}>{primaryInfo.warmLabel}</Text>
           <Text style={styles.primaryStyle}>{primaryInfo.label}</Text>
           <Text style={styles.secondaryNote}>
-            Secondary: {secondaryInfo.label}
+            Secondary: {secondaryInfo.warmLabel} ({secondaryInfo.label})
           </Text>
         </View>
 
@@ -63,7 +65,7 @@ export default function DUTCHResults({ scores }: Props) {
               <View key={key} style={styles.barRow}>
                 <View style={styles.barLabelRow}>
                   <Text style={[styles.barLabel, isPrimary && styles.barLabelPrimary]}>
-                    {getDUTCHSubscaleLabel(key)}
+                    {getDUTCHSubscaleWarmLabel(key)}
                   </Text>
                   <Text style={styles.barValue}>{data.mean.toFixed(2)}</Text>
                 </View>
@@ -84,9 +86,15 @@ export default function DUTCHResults({ scores }: Props) {
         {/* Primary Style Interpretation */}
         <View style={styles.interpretationSection}>
           <Text style={styles.interpretationHeader}>
-            About Your Primary Style
+            Your Protective Pattern
           </Text>
           <Text style={styles.interpretationText}>{primaryInfo.description}</Text>
+        </View>
+
+        {/* Field Insight */}
+        <View style={styles.insightSection}>
+          <Text style={styles.insightHeader}>The Space Between You</Text>
+          <Text style={styles.insightText}>{primaryInfo.fieldInsight}</Text>
         </View>
 
         <View style={styles.twoCol}>
@@ -96,15 +104,22 @@ export default function DUTCHResults({ scores }: Props) {
           </View>
           <View style={styles.colCard}>
             <Text style={[styles.colHeader, { color: Colors.warning }]}>
-              Watch Out For
+              The Pattern to Notice
             </Text>
             <Text style={styles.colText}>{primaryInfo.watchOut}</Text>
           </View>
         </View>
 
+        {/* Growth Tip */}
         <View style={styles.tipSection}>
-          <Text style={styles.tipHeader}>Growth Tip</Text>
+          <Text style={styles.tipHeader}>This Week's Practice</Text>
           <Text style={styles.tipText}>{primaryInfo.growthTip}</Text>
+        </View>
+
+        {/* Body Prompt */}
+        <View style={styles.bodySection}>
+          <Text style={styles.bodyHeader}>Body Check-In</Text>
+          <Text style={styles.bodyText}>{primaryInfo.bodyPrompt}</Text>
         </View>
 
         <View style={styles.actions}>
@@ -146,11 +161,16 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
-  primaryStyle: {
+  primaryWarmLabel: {
     fontSize: FontSizes.headingXL,
     fontWeight: 'bold',
     color: Colors.primary,
     marginTop: Spacing.xs,
+  },
+  primaryStyle: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    marginTop: 2,
   },
   secondaryNote: {
     fontSize: FontSizes.bodySmall,
@@ -203,6 +223,24 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
 
+  insightSection: {
+    backgroundColor: Colors.surface,
+    padding: Spacing.md,
+    borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#6BA3A0',
+    marginBottom: Spacing.lg,
+  },
+  insightHeader: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '700',
+    color: '#6BA3A0',
+    marginBottom: Spacing.xs,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  insightText: { fontSize: FontSizes.body, color: Colors.text, lineHeight: 22 },
+
   twoCol: { gap: Spacing.md, marginBottom: Spacing.lg },
   colCard: {
     backgroundColor: Colors.surface,
@@ -229,7 +267,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderLeftWidth: 4,
     borderLeftColor: Colors.success,
-    marginBottom: Spacing.xl,
+    marginBottom: Spacing.lg,
   },
   tipHeader: {
     fontSize: FontSizes.bodySmall,
@@ -240,6 +278,29 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   tipText: { fontSize: FontSizes.body, color: Colors.text, lineHeight: 22 },
+
+  bodySection: {
+    backgroundColor: '#F5F0EB',
+    padding: Spacing.md,
+    borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#C4785B',
+    marginBottom: Spacing.xl,
+  },
+  bodyHeader: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '700',
+    color: '#C4785B',
+    marginBottom: Spacing.xs,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  bodyText: {
+    fontSize: FontSizes.body,
+    color: Colors.text,
+    lineHeight: 22,
+    fontStyle: 'italic',
+  },
 
   actions: { gap: Spacing.md },
   primaryButton: {

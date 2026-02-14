@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import type { IndividualPortrait, AssessmentType } from '@/types';
+import type { SupplementScores } from '@/types/portrait';
 
 const REQUIRED_ASSESSMENTS: AssessmentType[] = [
   'ecr-r', 'dutch', 'sseit', 'dsi-r', 'ipip-neo-120', 'values',
@@ -42,6 +43,36 @@ export async function fetchAllScores(userId: string) {
   return latest;
 }
 
+/**
+ * Extract aggregated supplement scores from the latest assessment scores.
+ * Returns undefined if no supplement data exists (pre-Phase-2 assessments).
+ */
+export function extractSupplementScores(
+  latest: Record<string, { id: string; scores: any }>
+): SupplementScores | undefined {
+  const supplements: SupplementScores = {};
+  let hasAny = false;
+
+  if (latest['ecr-r']?.scores?.supplementScores) {
+    supplements.ecrr = latest['ecr-r'].scores.supplementScores;
+    hasAny = true;
+  }
+  if (latest['sseit']?.scores?.supplementScores) {
+    supplements.sseit = latest['sseit'].scores.supplementScores;
+    hasAny = true;
+  }
+  if (latest['dsi-r']?.scores?.supplementScores) {
+    supplements.dsir = latest['dsi-r'].scores.supplementScores;
+    hasAny = true;
+  }
+  if (latest['values']?.scores?.supplementScores) {
+    supplements.values = latest['values'].scores.supplementScores;
+    hasAny = true;
+  }
+
+  return hasAny ? supplements : undefined;
+}
+
 /** Save (upsert) a portrait. */
 export async function savePortrait(
   portrait: Omit<IndividualPortrait, 'id' | 'createdAt'>
@@ -60,6 +91,9 @@ export async function savePortrait(
         anchor_points: portrait.anchorPoints,
         partner_guide: portrait.partnerGuide,
         version: portrait.version,
+        // Phase 3 additions — stored in the JSONB columns already available
+        big_five_reframes: portrait.bigFiveReframes ?? null,
+        supplement_data: portrait.supplementData ?? null,
       },
       { onConflict: 'user_id' }
     )
@@ -105,5 +139,8 @@ function mapRow(row: any): IndividualPortrait {
     anchorPoints: row.anchor_points,
     partnerGuide: row.partner_guide,
     version: row.version,
+    // Phase 3 additions (may be undefined for v1.0.0 portraits)
+    bigFiveReframes: row.big_five_reframes ?? undefined,
+    supplementData: row.supplement_data ?? undefined,
   };
 }

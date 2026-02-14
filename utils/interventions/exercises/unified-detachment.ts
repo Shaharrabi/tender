@@ -15,6 +15,7 @@ export const unifiedDetachment: Intervention = {
   title: 'Unified Detachment: It\'s Not You vs. Me',
   description:
     'Learn to step back from recurring conflicts and see them as shared patterns rather than personal attacks. IBCT\'s unified detachment technique helps couples become curious observers of their dynamics instead of adversaries trapped in them.',
+  fieldInsight: 'When you both look at the pattern together, it loses its power over you.',
   category: 'communication',
   duration: 30,
   difficulty: 'intermediate',

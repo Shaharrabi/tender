@@ -15,6 +15,7 @@ export const empathicJoining: Intervention = {
   title: 'Empathic Joining Around Differences',
   description:
     'Practice hearing the emotion beneath your partner\'s words rather than reacting to the content. IBCT research shows that when partners feel genuinely understood — even without agreement — defensive patterns dissolve and intimacy deepens.',
+  fieldInsight: 'Stepping into your partner\'s world changes the temperature of the field.',
   category: 'communication',
   duration: 35,
   difficulty: 'advanced',

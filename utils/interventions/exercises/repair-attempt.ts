@@ -13,6 +13,7 @@ export const repairAttempt: Intervention = {
   title: 'Repair Conversation Guide',
   description:
     'A step-by-step guide for repairing after conflict or disconnection. Identify what happened, own your part, and craft a genuine repair statement.',
+  fieldInsight: 'Every repair resets the field. Every bid is a fresh start.',
   category: 'communication',
   duration: 10,
   difficulty: 'intermediate',

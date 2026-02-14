@@ -14,6 +14,7 @@ export const dearMan: Intervention = {
   title: 'DEAR MAN',
   description:
     'A structured DBT skill for asking for what you need or setting a boundary — clearly, kindly, and effectively. DEAR MAN walks you through each step of assertive communication so you can be heard without damaging the relationship.',
+  fieldInsight: 'Asking clearly for what you need is an act of trust in the space between you.',
   category: 'communication',
   duration: 10,
   difficulty: 'intermediate',

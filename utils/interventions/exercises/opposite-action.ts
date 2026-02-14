@@ -14,6 +14,7 @@ export const oppositeAction: Intervention = {
   title: 'Opposite Action',
   description:
     'When an emotion is pushing you toward a reaction that will not serve you, this DBT skill helps you identify the urge and choose the opposite. A powerful way to interrupt reactive patterns and build emotional flexibility.',
+  fieldInsight: 'When you move against the pull of the pattern, the whole field shifts.',
   category: 'regulation',
   duration: 5,
   difficulty: 'intermediate',

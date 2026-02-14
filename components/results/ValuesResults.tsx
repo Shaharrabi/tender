@@ -12,8 +12,12 @@ import { ValuesScores } from '@/types';
 import {
   getGapLabel,
   getGapColor,
+  getGapDescription,
   getAvoidanceLabel,
+  getAvoidanceDescription,
   getDomainLabel,
+  getDomainFieldInsight,
+  getValuesProfileInsight,
 } from '@/utils/assessments/interpretations/values';
 import { Colors, Spacing, FontSizes, ButtonSizes } from '@/constants/theme';
 
@@ -27,26 +31,45 @@ export default function ValuesResults({ scores }: Props) {
     (a, b) => b[1].importance - a[1].importance
   );
 
+  // Calculate average gap for overall insight
+  const allGaps = Object.values(scores.domainScores).map((d) => Math.abs(d.gap));
+  const avgGap = allGaps.length > 0 ? allGaps.reduce((a, b) => a + b, 0) / allGaps.length : 0;
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <Text style={styles.title}>Your Results</Text>
-          <Text style={styles.subtitle}>Personal Values Profile</Text>
+          <Text style={styles.title}>What's Calling You Forward</Text>
+          <Text style={styles.subtitle}>Your values and where they live in your relationship</Text>
+        </View>
+
+        {/* Overall Insight */}
+        <View style={styles.overallSection}>
+          <Text style={styles.overallText}>
+            {getValuesProfileInsight(avgGap, scores.highGapDomains)}
+          </Text>
         </View>
 
         {/* Top 5 Ranked Values */}
         {scores.top5Values.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Your Top 5 Values</Text>
-            {scores.top5Values.map((id, i) => (
-              <View key={id} style={styles.rankRow}>
-                <View style={styles.rankCircle}>
-                  <Text style={styles.rankNum}>{i + 1}</Text>
+            <Text style={styles.sectionTitle}>What Matters Most</Text>
+            {scores.top5Values.map((id, i) => {
+              const fieldInsight = getDomainFieldInsight(id);
+              return (
+                <View key={id} style={styles.rankCard}>
+                  <View style={styles.rankRow}>
+                    <View style={styles.rankCircle}>
+                      <Text style={styles.rankNum}>{i + 1}</Text>
+                    </View>
+                    <Text style={styles.rankLabel}>{getDomainLabel(id)}</Text>
+                  </View>
+                  {fieldInsight ? (
+                    <Text style={styles.rankInsight}>{fieldInsight}</Text>
+                  ) : null}
                 </View>
-                <Text style={styles.rankLabel}>{getDomainLabel(id)}</Text>
-              </View>
-            ))}
+              );
+            })}
           </View>
         )}
 
@@ -54,20 +77,19 @@ export default function ValuesResults({ scores }: Props) {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Values Alignment</Text>
           <Text style={styles.sectionDesc}>
-            How important each value is vs. how well you're living it
+            How important each value is vs. how fully you are living it
           </Text>
           {sortedDomains.map(([id, data]) => {
-            const gapColor = getGapColor(Math.abs(data.gap));
-            const gapLabel = getGapLabel(Math.abs(data.gap));
+            const absGap = Math.abs(data.gap);
+            const gapColor = getGapColor(absGap);
+            const gapLabel = getGapLabel(absGap);
             return (
               <View key={id} style={styles.domainCard}>
                 <View style={styles.domainHeaderRow}>
                   <Text style={styles.domainName}>{getDomainLabel(id)}</Text>
-                  {data.gap >= 3 && (
-                    <View style={[styles.gapBadge, { backgroundColor: gapColor }]}>
-                      <Text style={styles.gapBadgeText}>{gapLabel}</Text>
-                    </View>
-                  )}
+                  <View style={[styles.gapBadge, { backgroundColor: gapColor }]}>
+                    <Text style={styles.gapBadgeText}>{gapLabel}</Text>
+                  </View>
                 </View>
                 {/* Importance bar */}
                 <View style={styles.barRow}>
@@ -95,6 +117,10 @@ export default function ValuesResults({ scores }: Props) {
                   </View>
                   <Text style={styles.barNum}>{data.accordance}</Text>
                 </View>
+                {/* Gap description for significant gaps */}
+                {absGap >= 3 && (
+                  <Text style={styles.gapDesc}>{getGapDescription(absGap)}</Text>
+                )}
               </View>
             );
           })}
@@ -103,9 +129,9 @@ export default function ValuesResults({ scores }: Props) {
         {/* High-Gap Domains */}
         {scores.highGapDomains.length > 0 && (
           <View style={styles.highlightSection}>
-            <Text style={styles.highlightTitle}>Priority Growth Areas</Text>
+            <Text style={styles.highlightTitle}>Where Growth is Calling</Text>
             <Text style={styles.highlightDesc}>
-              These values are important to you but have a significant gap between importance and current alignment.
+              These values matter deeply to you but have the largest gap between importance and how you are currently living them.
             </Text>
             {scores.highGapDomains.map((id) => (
               <Text key={id} style={styles.highlightItem}>
@@ -117,19 +143,16 @@ export default function ValuesResults({ scores }: Props) {
 
         {/* Behavioral Tendencies */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Behavioral Patterns</Text>
-          <View style={styles.tendencyRow}>
-            <Text style={styles.tendencyLabel}>Avoidance tendency:</Text>
+          <Text style={styles.sectionTitle}>Your Relationship with Your Values</Text>
+          <View style={styles.tendencyCard}>
+            <Text style={styles.tendencyLabel}>Avoidance pattern:</Text>
             <Text style={styles.tendencyValue}>
-              {Math.round(scores.avoidanceTendency * 100)}% — {getAvoidanceLabel(scores.avoidanceTendency)}
+              {getAvoidanceLabel(scores.avoidanceTendency)}
             </Text>
           </View>
-          <View style={styles.tendencyRow}>
-            <Text style={styles.tendencyLabel}>Balanced approach:</Text>
-            <Text style={styles.tendencyValue}>
-              {Math.round(scores.balancedTendency * 100)}%
-            </Text>
-          </View>
+          <Text style={styles.tendencyDesc}>
+            {getAvoidanceDescription(scores.avoidanceTendency)}
+          </Text>
         </View>
 
         {/* Qualitative Responses */}
@@ -142,13 +165,13 @@ export default function ValuesResults({ scores }: Props) {
             </View>
             {scores.qualitativeResponses.nonNegotiables ? (
               <View style={styles.reflectionCard}>
-                <Text style={styles.reflectionLabel}>Your non-negotiables</Text>
+                <Text style={styles.reflectionLabel}>What you will not compromise</Text>
                 <Text style={styles.reflectionText}>{scores.qualitativeResponses.nonNegotiables}</Text>
               </View>
             ) : null}
             {scores.qualitativeResponses.aspirationalVision ? (
               <View style={styles.reflectionCard}>
-                <Text style={styles.reflectionLabel}>Your vision for the future</Text>
+                <Text style={styles.reflectionLabel}>Where you are headed</Text>
                 <Text style={styles.reflectionText}>{scores.qualitativeResponses.aspirationalVision}</Text>
               </View>
             ) : null}
@@ -178,7 +201,20 @@ const styles = StyleSheet.create({
     color: Colors.text,
     marginBottom: Spacing.xs,
   },
-  subtitle: { fontSize: FontSizes.body, color: Colors.textSecondary },
+  subtitle: { fontSize: FontSizes.body, color: Colors.textSecondary, textAlign: 'center' },
+
+  overallSection: {
+    backgroundColor: '#EEF2FF',
+    padding: Spacing.md,
+    borderRadius: 12,
+    marginBottom: Spacing.xl,
+  },
+  overallText: {
+    fontSize: FontSizes.body,
+    color: Colors.text,
+    lineHeight: 24,
+    textAlign: 'center',
+  },
 
   section: { marginBottom: Spacing.xl, gap: Spacing.sm },
   sectionTitle: {
@@ -192,11 +228,16 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 
+  rankCard: {
+    backgroundColor: Colors.surface,
+    padding: Spacing.md,
+    borderRadius: 12,
+    gap: Spacing.xs,
+  },
   rankRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.md,
-    paddingVertical: Spacing.xs,
   },
   rankCircle: {
     width: 32,
@@ -215,6 +256,13 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.body,
     color: Colors.text,
     fontWeight: '500',
+  },
+  rankInsight: {
+    fontSize: FontSizes.caption,
+    color: Colors.textSecondary,
+    lineHeight: 18,
+    fontStyle: 'italic',
+    marginLeft: 44,
   },
 
   domainCard: {
@@ -270,6 +318,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'right',
   },
+  gapDesc: {
+    fontSize: FontSizes.caption,
+    color: Colors.textSecondary,
+    lineHeight: 18,
+    fontStyle: 'italic',
+    marginTop: 4,
+  },
 
   highlightSection: {
     backgroundColor: '#FEF3C7',
@@ -299,7 +354,7 @@ const styles = StyleSheet.create({
     paddingLeft: Spacing.sm,
   },
 
-  tendencyRow: {
+  tendencyCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -316,6 +371,12 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.bodySmall,
     color: Colors.textSecondary,
     fontWeight: '600',
+  },
+  tendencyDesc: {
+    fontSize: FontSizes.caption,
+    color: Colors.textSecondary,
+    lineHeight: 18,
+    fontStyle: 'italic',
   },
 
   reflectionCard: {

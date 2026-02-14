@@ -17,6 +17,8 @@ import type {
   IPIPScores,
   ValuesScores,
 } from '@/types';
+import type { SupplementScores } from '@/types/portrait';
+import type { WEAREProfile, WeeklyCheckIn } from '@/types/weare';
 
 // ─── Assessment Scores ──────────────────────────────────
 
@@ -117,6 +119,87 @@ export const DEMO_VALUES: ValuesScores = {
   avoidanceTendency: 0.3,
   balancedTendency: 0.5,
   highGapDomains: ['intimacy', 'honesty', 'playfulness'],
+};
+
+// ─── Phase 3: Demo Supplement Scores ────────────────────
+
+/**
+ * Demo supplement data for the anxious-preoccupied pursuer profile.
+ * High somatic awareness, moderate cycle awareness, low fixed story (reverse-scored),
+ * strong field sensitivity, low boundary clarity, values divergence as threat.
+ */
+export const DEMO_SUPPLEMENTS: SupplementScores = {
+  ecrr: {
+    somaticAwareness: 6,        // High — feels disconnection in body first
+    fixedStory: 3,              // Reverse-scored: low = has a fixed narrative about partner
+    cycleAwareness: 5,          // Can sometimes step back and see the pattern
+    certaintyVsCuriosity: 3,    // Reverse-scored: low = more certainty than curiosity
+    needsAsInformation: 5,      // Sees needs as valid information
+    patternAwarenessMean: 4.4,
+  },
+  sseit: {
+    roomSensing: 6,             // Strong room-reading ability
+    relationalShiftAwareness: 6, // Picks up on relational shifts quickly
+    emotionDifferentiation: 3,  // Struggles to distinguish own vs partner's emotions
+    fieldSensitivityMean: 5.0,
+  },
+  dsir: {
+    closenessWithIdentity: 4,
+    disagreementWithConnection: 3,
+    emotionalBoundaryClarity: 3,
+    boundaryWithoutGuilt: 3,
+    boundaryAwarenessMean: 3.25,
+  },
+  values: {
+    valuesDivergenceResponse: 'threat',
+    differenceAsResource: 'I know our differences could help us, but in the moment they feel scary.',
+    rightVsPresent: 3,          // Leans toward being right about values
+    sharedValue: 'Growth — we both want to become better versions of ourselves.',
+    willingnessToChange: 5,
+  },
+};
+
+// ─── Demo WEARE Profile (Phase 4) ───────────────────────
+
+export const DEMO_WEARE_PROFILE: WEAREProfile = {
+  variables: {
+    attunement: { raw: 7.0, confidence: 0.8, sources: ['rfas-fieldRecognition', 'rfas-presenceAttunement', 'ecr-r-supp-somatic', 'sseit-supp-roomSensing'] },
+    coCreation: { raw: 5.0, confidence: 0.7, sources: ['rfas-creativeTension', 'values-supp-divergence', 'cfa-learningFromPartner'] },
+    transmission: { raw: 3.0, confidence: 0.5, sources: ['behavioral-completion', 'behavioral-repetition', 'cfa-willingnessToBeChanged'] },
+    space: { raw: 5.0, confidence: 0.6, sources: ['dsir-total', 'dsir-supp-boundaryAwareness'] },
+    time: { raw: 5.0, confidence: 0.4, sources: ['behavioral-streak', 'behavioral-sessionConsistency'] },
+    individual: { raw: 7.0, confidence: 0.9, sources: ['sseit-totalNormalized', 'composite-windowWidth', 'dsir-reactivity-inv', 'ipip-composite'] },
+    context: { raw: 4.0, confidence: 0.8, sources: ['checkin-stress-inv', 'checkin-support'] },
+    change: { raw: 5.0, confidence: 0.5, sources: ['rfas-emergentOrientation', 'behavioral-stepProgression', 'values-supp-willingnessToChange'] },
+    resistance: { raw: 6.0, confidence: 0.7, sources: ['ecr-r-supp-fixedStory-inv', 'ecr-r-supp-certainty-inv', 'ipip-openness-inv', 'dutch-ipip-rigidity'] },
+  },
+  layers: {
+    resonancePulse: 50,         // (7+5+3)/30 * 100 = 50
+    emergenceDirection: -1,     // 5-6 = -1
+    overall: 42,
+  },
+  bottleneck: {
+    variable: 'resistance',
+    label: 'Letting Go',
+    value: 6.0,
+    description: 'Some resistance to change is present. This is normal \u2014 the protective system needs to feel safe before it can let go. Small experiments with flexibility help.',
+    recommendedPractices: ['defusion-from-stories', 'radical-acceptance', 'unified-detachment', 'accessing-primary-emotions'],
+  },
+  movementPhase: 'release',
+  movementNarrative: 'You are beginning to let go of old protective patterns. This takes courage \u2014 the nervous system sometimes resists even when the mind is ready. Be patient with the process. The place where growth is most available right now is letting go.',
+  warmSummary: 'Finding its way',
+  dataMode: 'preliminary',
+  calculatedAt: new Date().toISOString(),
+};
+
+export const DEMO_WEEKLY_CHECKIN: Omit<WeeklyCheckIn, 'id' | 'createdAt'> = {
+  userId: '',          // filled at runtime
+  coupleId: '',        // filled at runtime
+  weekOf: new Date().toISOString().split('T')[0],
+  externalStressLevel: 6,
+  supportSystemRating: 4,
+  relationshipSatisfaction: 5,
+  practiceHighlight: 'The grounding exercise helped me stay present during a difficult conversation.',
 };
 
 // ─── Seeder Function ────────────────────────────────────

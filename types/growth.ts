@@ -61,6 +61,8 @@ export type StepStatus = 'locked' | 'active' | 'completed';
 export interface HealingStep {
   stepNumber: number;
   title: string;
+  /** V2 enriched subtitle — one-line field-language description */
+  subtitle?: string;
   quote: string;
   therapeuticGoal: string;
   phase: HealingPhase;

@@ -14,6 +14,7 @@ export const radicalAcceptance: Intervention = {
   title: 'Radical Acceptance',
   description:
     'When you are caught in a loop of fighting reality — replaying what should have been, resenting what is — this DBT skill helps you practice accepting what you cannot change. Acceptance is not approval. It is the doorway out of suffering.',
+  fieldInsight: 'Accepting what is here \u2014 without needing it to change \u2014 opens space for what comes next.',
   category: 'regulation',
   duration: 8,
   difficulty: 'intermediate',

@@ -12,6 +12,7 @@ export const valuesCompass: Intervention = {
   title: 'Values Compass',
   description:
     'An ACT-inspired check-in to reconnect with your core values, assess how aligned your recent actions have been, and choose one small step for tomorrow.',
+  fieldInsight: 'Your values are the compass for the space between you.',
   category: 'values',
   duration: 5,
   difficulty: 'beginner',

@@ -15,6 +15,7 @@ export const relationshipValuesCompass: Intervention = {
   title: 'Relationship Values Compass',
   description:
     'Clarify what matters most to you as a couple using ACT\'s values framework. When partners know their shared values, they can navigate disagreements with a compass rather than a scoreboard — choosing direction over victory.',
+  fieldInsight: 'Shared values are not agreement \u2014 they are a shared direction.',
   category: 'values',
   duration: 30,
   difficulty: 'intermediate',

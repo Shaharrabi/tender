@@ -13,6 +13,7 @@ export const grounding54321: Intervention = {
   title: '5-4-3-2-1 Grounding',
   description:
     'Use your five senses to ground yourself in the present moment. A quick and effective way to move back into your window of tolerance.',
+  fieldInsight: 'When your body finds ground, the space between you can breathe again.',
   category: 'regulation',
   duration: 3,
   difficulty: 'beginner',

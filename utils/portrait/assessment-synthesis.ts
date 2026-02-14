@@ -22,8 +22,15 @@
  */
 
 import type { IndividualPortrait } from '@/types/portrait';
+import type { SupplementScores } from '@/types/portrait';
 import { matchProtocol, assessFourMovements, generateJourneyMap } from '@/utils/steps/intervention-protocols';
 import type { InterventionProtocol, JourneyMap, FourMovements } from '@/utils/steps/intervention-protocols';
+import {
+  buildTailoringContext,
+  getValidationOpener,
+  tailorGrowthEdge,
+  type TailoringContext,
+} from './attachment-tailoring';
 
 // ─── Synthesis Output ───────────────────────────────────
 
@@ -47,24 +54,42 @@ export interface AssessmentSynthesis {
 // ─── Synthesize Function ────────────────────────────────
 
 export function synthesizeAssessments(
-  portrait: IndividualPortrait
+  portrait: IndividualPortrait,
+  supplements?: SupplementScores
 ): AssessmentSynthesis {
   const { compositeScores, fourLens, patterns, growthEdges, negativeCycle } = portrait;
 
+  // Build tailoring context from attachment lens data
+  const tailoring = buildTailoringContext(
+    fourLens.attachment.areProfile.accessible > 50 &&
+    fourLens.attachment.areProfile.responsive > 50
+      ? 'secure'
+      : portrait.fourLens.attachment.protectiveStrategy.includes('Pursue')
+        ? 'anxious-preoccupied'
+        : portrait.fourLens.attachment.protectiveStrategy.includes('Withdraw')
+          ? 'dismissive-avoidant'
+          : portrait.fourLens.attachment.protectiveStrategy.includes('Oscillate')
+            ? 'fearful-avoidant'
+            : 'secure',
+    // Use accessibility as proxy for anxiety (inverted), engagement for attachment investment
+    compositeScores.accessibility > 55 ? 5.0 : 3.0,
+    compositeScores.accessibility < 45 ? 5.0 : 3.0
+  );
+
   // ── Determine primary dynamic ────────────────────────
-  const primaryPattern = determinePrimaryDynamic(compositeScores, fourLens, negativeCycle, patterns);
+  const primaryPattern = determinePrimaryDynamic(compositeScores, fourLens, negativeCycle, patterns, supplements);
 
   // ── Identify reinforcing factors ─────────────────────
-  const reinforcingFactors = findReinforcingFactors(compositeScores, fourLens, negativeCycle, patterns);
+  const reinforcingFactors = findReinforcingFactors(compositeScores, fourLens, negativeCycle, patterns, supplements);
 
   // ── Identify protective factors ──────────────────────
-  const protectiveFactors = findProtectiveFactors(compositeScores, fourLens, patterns);
+  const protectiveFactors = findProtectiveFactors(compositeScores, fourLens, patterns, supplements);
 
   // ── Identify growth edges from synthesis ──────────────
-  const synthesizedEdges = findGrowthEdges(compositeScores, fourLens, growthEdges, patterns);
+  const synthesizedEdges = findGrowthEdges(compositeScores, fourLens, growthEdges, patterns, tailoring);
 
   // ── Identify contradictions ──────────────────────────
-  const contradictions = findContradictions(compositeScores, fourLens, patterns, negativeCycle);
+  const contradictions = findContradictions(compositeScores, fourLens, patterns, negativeCycle, supplements);
 
   // ── Determine recommended step ───────────────────────
   const { step, rationale } = recommendStartingStep(compositeScores, fourLens, patterns);
@@ -92,7 +117,9 @@ export function synthesizeAssessments(
     reinforcingFactors,
     protectiveFactors,
     contradictions,
-    patterns
+    patterns,
+    tailoring,
+    supplements
   );
 
   return {
@@ -120,9 +147,21 @@ function determinePrimaryDynamic(
   scores: IndividualPortrait['compositeScores'],
   lens: IndividualPortrait['fourLens'],
   cycle: IndividualPortrait['negativeCycle'],
-  patterns: IndividualPortrait['patterns']
+  patterns: IndividualPortrait['patterns'],
+  supplements?: SupplementScores
 ): string {
   const { regulationScore, windowWidth, accessibility, responsiveness, engagement, selfLeadership, valuesCongruence } = scores;
+
+  // ── Sensing without grounding (Phase 3 — supplement-aware) ──
+  // High field sensitivity + low regulation = strong antenna, weak filter
+  if (
+    supplements?.sseit &&
+    supplements.sseit.fieldSensitivityMean > 5.0 &&
+    regulationScore < 45 &&
+    windowWidth < 50
+  ) {
+    return 'Sensing without grounding — you are highly attuned to the relational field between you and your partner. You sense shifts in mood, connection, and emotional atmosphere before most people would. But your regulation capacity cannot keep pace with your sensitivity. Strong antenna, weak filter — the signals flood rather than inform. Your foundational work is building the regulation to match your perception.';
+  }
 
   // ── Heightened sensitivity to relational threat ──
   // ECR anxiety (via high accessibility/engagement + low window) + neuroticism + emotional reactivity
@@ -207,7 +246,8 @@ function findReinforcingFactors(
   scores: IndividualPortrait['compositeScores'],
   lens: IndividualPortrait['fourLens'],
   cycle: IndividualPortrait['negativeCycle'],
-  patterns: IndividualPortrait['patterns']
+  patterns: IndividualPortrait['patterns'],
+  supplements?: SupplementScores
 ): string[] {
   const factors: string[] = [];
 
@@ -266,6 +306,30 @@ function findReinforcingFactors(
     );
   }
 
+  // ── Phase 3: Supplement-aware reinforcing factors ──
+
+  // Somatic wisdom reinforces attunement
+  if (
+    supplements?.ecrr &&
+    supplements.ecrr.somaticAwareness >= 5 &&
+    scores.responsiveness > 55
+  ) {
+    factors.push(
+      'Your body-based relational awareness reinforces your emotional responsiveness — you detect shifts somatically and respond with genuine attunement. This somatic wisdom is a powerful relational resource.'
+    );
+  }
+
+  // Fixed narrative deepens the cycle
+  if (
+    supplements?.ecrr &&
+    supplements.ecrr.fixedStory < 4 && // reverse-scored: low = high fixed story
+    (cycle.position === 'pursuer' || cycle.position === 'withdrawer')
+  ) {
+    factors.push(
+      'A fixed narrative about your partner — "they always..." or "they never..." — deepens your negative cycle. The story confirms the pattern, and the pattern confirms the story. Breaking the narrative is as important as breaking the cycle.'
+    );
+  }
+
   return factors;
 }
 
@@ -276,7 +340,8 @@ function findReinforcingFactors(
 function findProtectiveFactors(
   scores: IndividualPortrait['compositeScores'],
   lens: IndividualPortrait['fourLens'],
-  patterns: IndividualPortrait['patterns']
+  patterns: IndividualPortrait['patterns'],
+  supplements?: SupplementScores
 ): string[] {
   const factors: string[] = [];
 
@@ -322,6 +387,26 @@ function findProtectiveFactors(
     );
   }
 
+  // Phase 3: Supplement-aware protective factors
+  if (
+    supplements?.ecrr &&
+    supplements.ecrr.cycleAwareness >= 5 &&
+    scores.selfLeadership > 50
+  ) {
+    factors.push(
+      'Metacognitive capacity — you can step back and observe the pattern between you and your partner while it is happening. This ability to see the cycle from above is one of the most powerful resources for change.'
+    );
+  }
+
+  if (
+    supplements?.ecrr &&
+    supplements.ecrr.needsAsInformation >= 5
+  ) {
+    factors.push(
+      'Needs-as-information stance — you treat your relational needs as valid data rather than flaws to overcome. This is a secure relational posture that supports healthy advocacy.'
+    );
+  }
+
   // Return top 4 to avoid overwhelming
   return factors.slice(0, 4);
 }
@@ -334,7 +419,8 @@ function findGrowthEdges(
   scores: IndividualPortrait['compositeScores'],
   lens: IndividualPortrait['fourLens'],
   existingEdges: IndividualPortrait['growthEdges'],
-  patterns: IndividualPortrait['patterns']
+  patterns: IndividualPortrait['patterns'],
+  tailoring?: TailoringContext
 ): string[] {
   const edges: string[] = [];
 
@@ -370,6 +456,11 @@ function findGrowthEdges(
     );
   }
 
+  // Apply attachment tailoring to all growth edges
+  if (tailoring) {
+    return edges.slice(0, 4).map(edge => tailorGrowthEdge(edge, tailoring));
+  }
+
   return edges.slice(0, 4);
 }
 
@@ -381,7 +472,8 @@ function findContradictions(
   scores: IndividualPortrait['compositeScores'],
   lens: IndividualPortrait['fourLens'],
   patterns: IndividualPortrait['patterns'],
-  cycle: IndividualPortrait['negativeCycle']
+  cycle: IndividualPortrait['negativeCycle'],
+  supplements?: SupplementScores
 ): string[] {
   const contradictions: string[] = [];
 
@@ -448,6 +540,31 @@ function findContradictions(
   ) {
     contradictions.push(
       'You value your independence — yet in practice, you tend to merge with your partner, losing track of where you end and they begin. You may resent them for "making" you lose yourself, but the pattern lives in you, not in them.'
+    );
+  }
+
+  // ── Phase 3: Supplement-aware contradictions ──
+
+  // High boundary clarity but absorbs partner's emotions
+  if (
+    supplements?.dsir &&
+    supplements.dsir.boundaryAwarenessMean >= 5 &&
+    supplements?.sseit &&
+    supplements.sseit.emotionDifferentiation < 4
+  ) {
+    contradictions.push(
+      'You have intellectual clarity about boundaries — you can articulate where you end and your partner begins. But emotionally, you still absorb their feelings as if they were your own. The concept is there; the lived experience has not caught up.'
+    );
+  }
+
+  // Values growth but resists being changed
+  if (
+    supplements?.values &&
+    supplements.values.willingnessToChange <= 3 &&
+    patterns.some(p => p.id === 'values_growth_resists_change')
+  ) {
+    contradictions.push(
+      'You value growth deeply — yet your supplement responses reveal resistance to being changed by the relationship. You want to grow, but on your own terms and at your own pace. The tension: relational growth requires being affected by your partner.'
     );
   }
 
@@ -520,8 +637,13 @@ function buildCoreNarrative(
   reinforcing: string[],
   protective: string[],
   contradictions: string[],
-  patterns: IndividualPortrait['patterns']
+  patterns: IndividualPortrait['patterns'],
+  tailoring?: TailoringContext,
+  supplements?: SupplementScores
 ): string {
+  // ── Attachment-tailored opening (Phase 3) ──
+  const opener = tailoring ? getValidationOpener(tailoring) : '';
+
   // ── Paragraph 1: Who you are relationally ──
   const regulationDesc =
     scores.regulationScore > 60 ? 'a solid capacity for emotional regulation'
@@ -535,11 +657,13 @@ function buildCoreNarrative(
 
   const attachmentDesc = buildAttachmentSentence(lens.attachment, cycle);
 
-  const paragraph1 = `Your relational portrait reveals someone with ${regulationDesc}. Your window of tolerance ${windowDesc}. ${attachmentDesc}`;
+  const paragraph1 = opener
+    ? `${opener}\n\nYour relational portrait reveals someone with ${regulationDesc}. Your window of tolerance ${windowDesc}. ${attachmentDesc}`
+    : `Your relational portrait reveals someone with ${regulationDesc}. Your window of tolerance ${windowDesc}. ${attachmentDesc}`;
 
   // ── Paragraph 2: The cross-assessment story ──
   const crossAssessmentInsight = buildCrossAssessmentParagraph(
-    scores, lens, cycle, contradictions, reinforcing, patterns
+    scores, lens, cycle, contradictions, reinforcing, patterns, supplements
   );
 
   // ── Paragraph 3: Strengths and path forward ──
@@ -580,7 +704,8 @@ function buildCrossAssessmentParagraph(
   cycle: IndividualPortrait['negativeCycle'],
   contradictions: string[],
   reinforcing: string[],
-  patterns: IndividualPortrait['patterns']
+  patterns: IndividualPortrait['patterns'],
+  supplements?: SupplementScores
 ): string {
   const parts: string[] = [];
 
@@ -609,6 +734,23 @@ function buildCrossAssessmentParagraph(
     parts.push(
       `Your values are clear — especially around ${topGap.value.toLowerCase()} — but protective patterns create a gap between intention and action.`
     );
+  }
+
+  // Phase 3: Integrate supplement insights into paragraph 2 when available
+  if (supplements) {
+    // Field sensitivity insight
+    if (supplements.sseit && supplements.sseit.fieldSensitivityMean > 4.5) {
+      parts.push(
+        'Your supplement data reveals strong relational field sensitivity — you read the emotional atmosphere between you and your partner with precision. How you use that information is the next growth step.'
+      );
+    }
+
+    // Cycle awareness insight
+    if (supplements.ecrr && supplements.ecrr.cycleAwareness >= 5 && scores.selfLeadership > 45) {
+      parts.push(
+        'You show the ability to observe your relational patterns while they are unfolding — a metacognitive capacity that accelerates growth.'
+      );
+    }
   }
 
   // If we have few specific patterns, add a general integration note

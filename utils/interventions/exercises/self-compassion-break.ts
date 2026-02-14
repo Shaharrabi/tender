@@ -12,6 +12,7 @@ export const selfCompassionBreak: Intervention = {
   title: 'Self-Compassion Break',
   description:
     'A gentle practice based on Kristin Neff\'s three pillars of self-compassion: mindfulness, common humanity, and self-kindness. A way to meet your suffering with care.',
+  fieldInsight: 'Tenderness toward yourself softens the field between you and everyone.',
   category: 'regulation',
   duration: 5,
   difficulty: 'beginner',

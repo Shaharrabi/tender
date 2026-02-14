@@ -14,6 +14,7 @@ export const loveMaps: Intervention = {
   title: 'Love Maps: Know Your Partner\'s World',
   description:
     'Deepen your knowledge of each other\'s inner world — dreams, worries, joys, and preferences. Gottman\'s research shows that couples who keep updated "love maps" build a foundation of friendship that buffers against conflict.',
+  fieldInsight: 'Curiosity about your partner\'s inner world is the simplest form of love.',
   category: 'attachment',
   duration: 20,
   difficulty: 'beginner',

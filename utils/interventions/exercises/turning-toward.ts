@@ -15,6 +15,7 @@ export const turningToward: Intervention = {
   title: 'Turning Toward Bids for Connection',
   description:
     'Learn to recognize and respond to the small but crucial moments when your partner reaches out for connection. Gottman\'s research shows that how you handle these everyday "bids" is the strongest predictor of relationship success.',
+  fieldInsight: 'Each small turn toward each other warms the space between you.',
   category: 'communication',
   duration: 15,
   difficulty: 'beginner',

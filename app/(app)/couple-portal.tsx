@@ -46,6 +46,9 @@ import {
 } from '@/constants/theme';
 import type { Couple, UserProfile, RelationshipPortrait } from '@/types/couples';
 import type { IndividualPortrait } from '@/types/portrait';
+import type { WEAREProfile, WeeklyCheckIn, WEAREVariableName } from '@/types/weare';
+import { getLatestWEAREProfile, getThisWeeksCheckIn, saveWeeklyCheckIn } from '@/services/weare';
+import WeeklyCheckInCard from '@/components/weare/WeeklyCheckInCard';
 
 export default function CouplePortalScreen() {
   const { user } = useAuth();
@@ -58,6 +61,10 @@ export default function CouplePortalScreen() {
   const [portrait, setPortrait] = useState<RelationshipPortrait | null>(null);
   const [expandedSection, setExpandedSection] = useState<string | null>('patterns');
   const [partnerSharedAssessments, setPartnerSharedAssessments] = useState<string[]>([]);
+
+  // WEARE state (Phase 4)
+  const [weareProfile, setWeareProfile] = useState<WEAREProfile | null>(null);
+  const [weeklyCheckIn, setWeeklyCheckIn] = useState<WeeklyCheckIn | null>(null);
 
   const loadData = useCallback(async () => {
     if (!user) return;
@@ -128,6 +135,19 @@ export default function CouplePortalScreen() {
       }
 
       setPortrait(rp);
+
+      // Load WEARE profile + weekly check-in
+      try {
+        const [wp, wci] = await Promise.all([
+          getLatestWEAREProfile(myCouple.id),
+          getThisWeeksCheckIn(myCouple.id, user.id),
+        ]);
+        setWeareProfile(wp);
+        setWeeklyCheckIn(wci);
+      } catch {
+        setWeareProfile(null);
+        setWeeklyCheckIn(null);
+      }
     } catch (e) {
       console.error('[CouplePortal] Error loading:', e);
     } finally {
@@ -172,6 +192,41 @@ export default function CouplePortalScreen() {
       </SafeAreaView>
     );
   }
+
+  // ─── WEARE Variable Bar Helper ──────────────────────
+
+  const renderVariableBar = (
+    variable: WEAREVariableName,
+    label: string,
+    profile: WEAREProfile,
+  ) => {
+    const v = profile.variables[variable];
+    const isBottleneck = profile.bottleneck.variable === variable;
+    const fillPercent = (v.raw / 10) * 100;
+    // For resistance, high = bad, so invert the color
+    const isResistance = variable === 'resistance';
+    const barColor = isResistance
+      ? (v.raw >= 7 ? Colors.accent : v.raw >= 4 ? Colors.secondary : Colors.primary)
+      : (v.raw >= 7 ? Colors.primary : v.raw >= 4 ? Colors.secondary : Colors.accent);
+
+    return (
+      <View key={variable} style={[
+        styles.weareVarRow,
+        isBottleneck && styles.weareVarRowHighlight,
+      ]}>
+        <Text style={[styles.weareVarLabel, isBottleneck && { fontWeight: '600' as const }]}>
+          {label}
+        </Text>
+        <View style={styles.weareVarBarBg}>
+          <View style={[
+            styles.weareVarBarFill,
+            { width: `${fillPercent}%`, backgroundColor: barColor },
+          ]} />
+        </View>
+        <Text style={styles.weareVarValue}>{v.raw.toFixed(1)}</Text>
+      </View>
+    );
+  };
 
   // ─── Main Render ─────────────────────────────────────
 
@@ -237,6 +292,132 @@ export default function CouplePortalScreen() {
           )}
         </View>
 
+        {/* ═══ WEARE DASHBOARD — The Space Between You ═══════ */}
+        {weareProfile && (
+          <>
+            <TouchableOpacity
+              style={styles.sectionHeader}
+              onPress={() => toggle('weare')}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.sectionTitle}>The Space Between You</Text>
+              <Text style={styles.chevron}>{expandedSection === 'weare' ? '\u25BC' : '\u25B6'}</Text>
+            </TouchableOpacity>
+
+            {expandedSection === 'weare' && (
+              <View style={styles.weareDashboard}>
+                {/* Data mode badge */}
+                {weareProfile.dataMode !== 'full' && (
+                  <View style={styles.weareDataModeBadge}>
+                    <Text style={styles.weareDataModeText}>
+                      {weareProfile.dataMode === 'single-partner'
+                        ? '\u{1F464} Based on your data only — more accurate when your partner completes their portrait'
+                        : '\u{1F50D} Preview — complete couple instruments for full picture'}
+                    </Text>
+                  </View>
+                )}
+
+                {/* Overall + Movement Phase */}
+                <View style={[styles.card, styles.weareOverallCard]}>
+                  <View style={styles.weareOverallRow}>
+                    <View style={[
+                      styles.weareOverallCircle,
+                      weareProfile.layers.overall >= 65
+                        ? { borderColor: Colors.primary }
+                        : weareProfile.layers.overall >= 45
+                          ? { borderColor: Colors.secondary }
+                          : weareProfile.layers.overall >= 25
+                            ? { borderColor: Colors.accent }
+                            : { borderColor: Colors.textMuted },
+                    ]}>
+                      <Text style={styles.weareOverallEmoji}>
+                        {weareProfile.warmSummary === 'Deeply alive' ? '\u2728'
+                          : weareProfile.warmSummary === 'Growing stronger' ? '\u{1F331}'
+                          : weareProfile.warmSummary === 'Finding its way' ? '\u{1F50D}'
+                          : '\u{1F33F}'}
+                      </Text>
+                    </View>
+                    <View style={styles.weareOverallInfo}>
+                      <Text style={styles.weareOverallPhrase}>{weareProfile.warmSummary}</Text>
+                      <Text style={styles.wearePhaseLabel}>
+                        Phase: {weareProfile.movementPhase.charAt(0).toUpperCase() + weareProfile.movementPhase.slice(1)}
+                      </Text>
+                      <Text style={styles.weareDirectionLabel}>
+                        {weareProfile.layers.emergenceDirection > 1 ? '\u2197\uFE0F Growing'
+                          : weareProfile.layers.emergenceDirection < -1 ? '\u2198\uFE0F Contracting'
+                          : '\u2794 Steady'}
+                        {weareProfile.trend ? ` \u00B7 ${weareProfile.trend.periodLabel}` : ''}
+                      </Text>
+                    </View>
+                  </View>
+                  <Text style={styles.weareNarrative}>{weareProfile.movementNarrative}</Text>
+                </View>
+
+                {/* Variable Breakdown — grouped */}
+                <View style={styles.card}>
+                  <Text style={styles.weareGroupTitle}>How You Connect</Text>
+                  {renderVariableBar('attunement', 'Feeling Each Other', weareProfile)}
+                  {renderVariableBar('coCreation', 'Building Together', weareProfile)}
+                  {renderVariableBar('transmission', 'Showing Up', weareProfile)}
+
+                  <Text style={[styles.weareGroupTitle, { marginTop: Spacing.md }]}>What Supports You</Text>
+                  {renderVariableBar('space', 'Healthy Separateness', weareProfile)}
+                  {renderVariableBar('time', 'Consistency', weareProfile)}
+                  {renderVariableBar('individual', 'Inner Resources', weareProfile)}
+
+                  <Text style={[styles.weareGroupTitle, { marginTop: Spacing.md }]}>What Shapes You</Text>
+                  {renderVariableBar('context', 'Life Pressures', weareProfile)}
+                  {renderVariableBar('change', 'Growth Momentum', weareProfile)}
+                  {renderVariableBar('resistance', 'Letting Go', weareProfile)}
+                </View>
+
+                {/* Bottleneck Card */}
+                <View style={[styles.card, styles.weareBottleneckCard]}>
+                  <Text style={styles.weareBottleneckLabel}>
+                    Where the invitation is
+                  </Text>
+                  <Text style={styles.weareBottleneckTitle}>
+                    {weareProfile.bottleneck.label}
+                  </Text>
+                  <Text style={styles.weareBottleneckDesc}>
+                    {weareProfile.bottleneck.description}
+                  </Text>
+                  {weareProfile.bottleneck.recommendedPractices.slice(0, 2).map((practiceId) => {
+                    const exercise = getExerciseById(practiceId);
+                    if (!exercise) return null;
+                    return (
+                      <TouchableOpacity
+                        key={practiceId}
+                        style={styles.weareBottleneckPractice}
+                        onPress={() => router.push(`/(app)/exercise?id=${exercise.id}` as any)}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.weareBottleneckPracticeName}>
+                          {exercise.title} \u2192
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+
+                {/* Weekly Check-In */}
+                {couple && (
+                  <WeeklyCheckInCard
+                    existingCheckIn={weeklyCheckIn}
+                    onSubmit={async (stress, support, satisfaction, highlight) => {
+                      if (!user || !couple) return;
+                      const saved = await saveWeeklyCheckIn(
+                        user.id, couple.id, stress, support, satisfaction, highlight
+                      );
+                      setWeeklyCheckIn(saved);
+                    }}
+                  />
+                )}
+              </View>
+            )}
+          </>
+        )}
+
         {/* Relationship Patterns */}
         <TouchableOpacity
           style={styles.sectionHeader}
@@ -244,7 +425,7 @@ export default function CouplePortalScreen() {
           activeOpacity={0.7}
         >
           <Text style={styles.sectionTitle}>Relationship Patterns</Text>
-          <Text style={styles.chevron}>{expandedSection === 'patterns' ? '▼' : '▶'}</Text>
+          <Text style={styles.chevron}>{expandedSection === 'patterns' ? '\u25BC' : '\u25B6'}</Text>
         </TouchableOpacity>
         {expandedSection === 'patterns' && patterns.map((p, i) => (
           <View key={i} style={[styles.card, styles.patternCard]}>
@@ -527,4 +708,156 @@ const styles = StyleSheet.create({
   coachTitle: { fontSize: FontSizes.headingM, fontFamily: FontFamilies.heading, color: Colors.depth, marginBottom: Spacing.xs },
   coachDesc: { fontSize: FontSizes.bodySmall, fontFamily: FontFamilies.body, color: Colors.textSecondary, lineHeight: 22, marginBottom: Spacing.md },
   coachCta: { fontSize: FontSizes.body, fontFamily: FontFamilies.body, color: Colors.depth, fontWeight: '600' },
+
+  // ── WEARE Dashboard ──
+  weareDashboard: {
+    gap: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  weareDataModeBadge: {
+    backgroundColor: Colors.borderLight,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.sm,
+  },
+  weareDataModeText: {
+    fontSize: FontSizes.caption,
+    fontFamily: FontFamilies.body,
+    color: Colors.textSecondary,
+    lineHeight: 18,
+  },
+  weareOverallCard: {
+    borderColor: Colors.secondary,
+    borderWidth: 1,
+  },
+  weareOverallRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  weareOverallCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    borderWidth: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.surfaceElevated,
+  },
+  weareOverallEmoji: {
+    fontSize: 28,
+  },
+  weareOverallInfo: {
+    flex: 1,
+    gap: 3,
+  },
+  weareOverallPhrase: {
+    fontSize: FontSizes.headingM,
+    fontFamily: FontFamilies.heading,
+    color: Colors.text,
+    fontWeight: '700',
+  },
+  wearePhaseLabel: {
+    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    color: Colors.secondary,
+    fontWeight: '500',
+  },
+  weareDirectionLabel: {
+    fontSize: FontSizes.caption,
+    fontFamily: FontFamilies.body,
+    color: Colors.textSecondary,
+  },
+  weareNarrative: {
+    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    color: Colors.textSecondary,
+    lineHeight: 22,
+  },
+  weareGroupTitle: {
+    fontSize: FontSizes.caption,
+    fontFamily: FontFamilies.heading,
+    color: Colors.depth,
+    fontWeight: '600',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginBottom: Spacing.xs,
+  },
+  weareVarRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginBottom: Spacing.xs,
+    paddingVertical: 3,
+    paddingHorizontal: 4,
+    borderRadius: BorderRadius.sm,
+  },
+  weareVarRowHighlight: {
+    backgroundColor: Colors.secondary + '10',
+  },
+  weareVarLabel: {
+    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    color: Colors.text,
+    width: 130,
+  },
+  weareVarBarBg: {
+    flex: 1,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.borderLight,
+    overflow: 'hidden',
+  },
+  weareVarBarFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  weareVarValue: {
+    fontSize: FontSizes.caption,
+    fontFamily: FontFamilies.body,
+    color: Colors.textSecondary,
+    width: 28,
+    textAlign: 'right',
+  },
+  weareBottleneckCard: {
+    borderColor: Colors.secondary,
+    borderWidth: 1,
+    borderLeftWidth: 4,
+  },
+  weareBottleneckLabel: {
+    fontSize: FontSizes.caption,
+    fontFamily: FontFamilies.body,
+    color: Colors.secondary,
+    fontWeight: '600',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginBottom: Spacing.xs,
+  },
+  weareBottleneckTitle: {
+    fontSize: FontSizes.headingM,
+    fontFamily: FontFamilies.heading,
+    color: Colors.text,
+    fontWeight: '600',
+    marginBottom: Spacing.sm,
+  },
+  weareBottleneckDesc: {
+    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    color: Colors.textSecondary,
+    lineHeight: 22,
+    marginBottom: Spacing.md,
+  },
+  weareBottleneckPractice: {
+    backgroundColor: Colors.primary + '10',
+    borderRadius: BorderRadius.sm,
+    paddingVertical: Spacing.xs + 2,
+    paddingHorizontal: Spacing.sm,
+    marginBottom: Spacing.xs,
+  },
+  weareBottleneckPracticeName: {
+    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    color: Colors.primary,
+    fontWeight: '600',
+  },
 });

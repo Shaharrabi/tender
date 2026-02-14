@@ -9,9 +9,10 @@ import type {
   DetectedPattern,
   PatternResult,
 } from '@/types';
+import type { SupplementScores } from '@/types/portrait';
 
 /**
- * Detect cross-assessment patterns across 4 categories.
+ * Detect cross-assessment patterns across 4 categories (+ field-awareness if supplements present).
  * Returns patterns + aggregated flag counts + priority flags.
  */
 export function detectPatterns(
@@ -21,13 +22,15 @@ export function detectPatterns(
   dsir: DSIRScores,
   ipip: IPIPScores,
   values: ValuesScores,
-  composite: CompositeScores
+  composite: CompositeScores,
+  supplements?: SupplementScores
 ): PatternResult {
   const allPatterns: DetectedPattern[] = [
     ...detectAttachmentConflict(ecrr, dutch),
     ...detectRegulation(sseit, composite),
     ...detectValuesBehavior(values, dutch, ecrr, dsir, ipip),
     ...detectDifferentiation(dsir),
+    ...(supplements ? detectFieldAwareness(supplements, ecrr, ipip, composite) : []),
   ];
 
   // Aggregate flags
@@ -299,6 +302,121 @@ function detectDifferentiation(dsir: DSIRScores): DetectedPattern[] {
         'You react strongly but without a clear sense of what you actually need or believe. This can create chaotic relationship dynamics.',
       confidence: 'high',
       flags: ['volatility_risk', 'regulation_priority'],
+    });
+  }
+
+  return patterns;
+}
+
+// ─── Category 5: Field Awareness (Phase 3 — supplement data) ──
+
+function detectFieldAwareness(
+  sup: SupplementScores,
+  ecrr: ECRRScores,
+  ipip: IPIPScores,
+  composite: CompositeScores
+): DetectedPattern[] {
+  const patterns: DetectedPattern[] = [];
+
+  // 16. Sensing without grounding — strong field sensitivity + low regulation
+  if (
+    sup.sseit &&
+    sup.sseit.fieldSensitivityMean > 5.0 &&
+    composite.regulationScore < 45
+  ) {
+    patterns.push({
+      id: 'sensing_without_grounding',
+      category: 'field-awareness',
+      description: 'High relational field sensitivity with low regulation capacity',
+      interpretation:
+        'You have a strong antenna for the relational field — you sense shifts, moods, and emotional atmospheres accurately. But without adequate regulation, these signals overwhelm rather than inform. Strong sensing, weak filter.',
+      confidence: 'high',
+      flags: ['regulation_priority', 'field_sensitivity', 'growth_edge_candidate'],
+    });
+  }
+
+  // 17. Fixed narrative blocks field awareness
+  if (
+    sup.ecrr &&
+    sup.ecrr.fixedStory < 4 && // reverse-scored: low = high fixed story
+    sup.ecrr.cycleAwareness < 4
+  ) {
+    patterns.push({
+      id: 'fixed_narrative_blocks_field',
+      category: 'field-awareness',
+      description: 'Strong fixed narrative about partner combined with low cycle awareness',
+      interpretation:
+        'The story you carry about your partner — "they always..." or "they never..." — prevents you from seeing the pattern you are both caught in. The story blocks field awareness.',
+      confidence: 'high',
+      flags: ['narrative_rigidity', 'growth_edge_candidate'],
+    });
+  }
+
+  // 18. Somatic wisdom — body-based relational intelligence
+  if (
+    sup.ecrr &&
+    sup.ecrr.somaticAwareness >= 5 &&
+    composite.regulationScore > 50
+  ) {
+    patterns.push({
+      id: 'somatic_wisdom',
+      category: 'field-awareness',
+      description: 'High somatic awareness with adequate regulation',
+      interpretation:
+        'You notice relational shifts in your body first — a tightness, a warmth, a pulling away. And you have enough regulation to use this information rather than be flooded by it. This is body-based relational intelligence.',
+      confidence: 'high',
+      flags: ['somatic_resource'],
+    });
+  }
+
+  // 19. Boundary as wall — over-differentiation
+  if (
+    sup.dsir &&
+    sup.dsir.boundaryAwarenessMean >= 5.5 &&
+    ecrr.avoidanceScore > 4.0
+  ) {
+    patterns.push({
+      id: 'boundary_as_wall',
+      category: 'field-awareness',
+      description: 'High boundary clarity combined with avoidant attachment',
+      interpretation:
+        'Your boundaries are clear — perhaps too clear. Combined with avoidance, they may serve as walls that protect identity but also prevent emotional closeness. The question: which boundaries are truly for you, and which are against connection?',
+      confidence: 'medium',
+      flags: ['over_differentiation', 'intimacy_block'],
+    });
+  }
+
+  // 20. Porous boundaries — absorbing partner's emotions
+  if (
+    sup.dsir &&
+    sup.dsir.boundaryAwarenessMean < 3.5 &&
+    ecrr.anxietyScore > 4.0
+  ) {
+    patterns.push({
+      id: 'porous_boundaries',
+      category: 'field-awareness',
+      description: 'Low boundary clarity combined with anxious attachment',
+      interpretation:
+        'Your emotional boundaries are porous — you absorb your partner\'s moods, fears, and needs as if they were your own. This creates a fusion pattern where you lose track of what belongs to you and what belongs to the space between you.',
+      confidence: 'high',
+      flags: ['fusion_risk', 'differentiation_priority', 'growth_edge_candidate'],
+    });
+  }
+
+  // 21. Metacognitive capacity — can observe own patterns
+  if (
+    sup.ecrr &&
+    sup.ecrr.cycleAwareness >= 5 &&
+    composite.selfLeadership > 50
+  ) {
+    patterns.push({
+      id: 'metacognitive_capacity',
+      category: 'field-awareness',
+      description: 'Strong cycle awareness combined with self-leadership',
+      interpretation:
+        'You can step back and observe the pattern between you and your partner while it is happening. This metacognitive capacity is a powerful resource — it means you can choose differently in the moments that matter.',
+      confidence: 'high',
+      flags: ['metacognitive_resource'],
     });
   }
 

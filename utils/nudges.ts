@@ -163,6 +163,58 @@ const MOTIVATIONAL_QUOTES: { title: string; body: string }[] = [
   },
 ];
 
+// ─── WEARE-Targeted Smart Nudges ────────────────────────
+// When a WEARE variable is a bottleneck, these warm one-liners
+// are surfaced as the primary nudge.
+
+export const WEARE_BOTTLENECK_NUDGES: Record<string, { title: string; body: string; icon: string }> = {
+  attunement: {
+    title: '2 minutes of seeing',
+    body: 'Put everything else down. Look at your partner. What do you notice in their face right now?',
+    icon: '\u{1F441}\uFE0F',
+  },
+  coCreation: {
+    title: 'Absurdity is medicine',
+    body: 'Be ridiculous together. Play is how the field remembers it is alive.',
+    icon: '\u{1F3AD}',
+  },
+  transmission: {
+    title: 'Bodies before words',
+    body: 'Touch, do not talk. A hand on the shoulder. A two-second hug. Let your body say what words cannot.',
+    icon: '\u{1F91D}',
+  },
+  space: {
+    title: 'Ask the relationship',
+    body: 'What does the space between you need today? Not what you need. Not what they need. What does WE need?',
+    icon: '\u{1F30A}',
+  },
+  time: {
+    title: 'Consistency over intensity',
+    body: '5 minutes every day changes more than 2 hours once a week. Show up small. Show up often.',
+    icon: '\u{23F0}',
+  },
+  individual: {
+    title: 'Fill your own cup',
+    body: 'What would help YOU feel more grounded today? You cannot pour from an empty vessel.',
+    icon: '\u{1F331}',
+  },
+  context: {
+    title: 'Notice what is whole',
+    body: 'Before you work on what is broken, notice what is working. The field needs your attention on both.',
+    icon: '\u{1F33F}',
+  },
+  change: {
+    title: 'One small new move',
+    body: 'You do not need a revolution. You need one different response to the same old trigger. Try it today.',
+    icon: '\u{1F504}',
+  },
+  resistance: {
+    title: 'Not everything needs solving',
+    body: 'Some things just need to be felt. Sit with what is here without fixing it. That IS the practice.',
+    icon: '\u{1F54A}\uFE0F',
+  },
+};
+
 // ─── Nudge Generator ────────────────────────────────────
 
 /**
@@ -173,12 +225,14 @@ const MOTIVATIONAL_QUOTES: { title: string; body: string }[] = [
  * @param hasPortrait         Whether the relationship portrait has been unlocked
  * @param hasCheckInToday     Whether the user has completed a check-in today
  * @param daysSinceLastAssessment  Days since the most recent assessment was completed
+ * @param weareBottleneck     Optional WEARE variable that is the current bottleneck
  */
 export function getNudges(
   completedCount: number,
   hasPortrait: boolean,
   hasCheckInToday: boolean,
   daysSinceLastAssessment: number,
+  weareBottleneck?: string,
 ): Nudge[] {
   const nudges: Nudge[] = [];
 
@@ -231,6 +285,19 @@ export function getNudges(
       icon: '📅',
       actionRoute: '/(app)/check-in',
       priority: 85,
+    });
+  }
+
+  // ── WEARE-targeted smart nudge (when bottleneck is known) ─
+  if (weareBottleneck && WEARE_BOTTLENECK_NUDGES[weareBottleneck]) {
+    const bn = WEARE_BOTTLENECK_NUDGES[weareBottleneck];
+    nudges.push({
+      id: `nudge-weare-${weareBottleneck}`,
+      type: 'practice_reminder',
+      title: bn.title,
+      body: bn.body,
+      icon: bn.icon,
+      priority: 80,
     });
   }
 

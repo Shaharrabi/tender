@@ -14,6 +14,7 @@ export const holdMeTight: Intervention = {
   title: 'Hold Me Tight Conversation',
   description:
     'Share your deepest attachment needs with your partner in a structured, safe conversation. This advanced EFT exercise helps couples move from self-protection to genuine vulnerability, building the secure bond that both partners long for.',
+  fieldInsight: 'When you name what is underneath, the space between you softens.',
   category: 'attachment',
   duration: 45,
   difficulty: 'advanced',

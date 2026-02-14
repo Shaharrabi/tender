@@ -13,6 +13,7 @@ export const relationshipMissionStatement: Intervention = {
   title: 'Relationship Mission Statement',
   description:
     'Co-create a living document that captures your shared vision, values, and commitments as a couple. The capstone practice of your healing journey.',
+  fieldInsight: 'Naming what you are building together gives the field a direction.',
   category: 'values',
   duration: 25,
   difficulty: 'advanced',

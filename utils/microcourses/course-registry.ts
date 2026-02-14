@@ -1,0 +1,216 @@
+/**
+ * Micro-Course Registry
+ *
+ * 6 micro-courses, each with 5 lessons (~25 min total per course).
+ * Courses are placed at specific points in the healing journey
+ * and gated by assessment prerequisites.
+ */
+
+import type { HealingPhase } from '@/types/growth';
+import type { AttachmentStyle } from '@/types';
+
+// ─── Types ──────────────────────────────────────────────
+
+export interface MicroCourse {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  totalLessons: number;
+  estimatedMinutes: number;
+  healingPhase: HealingPhase;
+  phasePosition: 'start' | 'mid' | 'end';
+  prerequisites: string[];
+  weareVariable: string;
+  primaryModality: string;
+  hasAttachmentVariants: boolean;
+  /** Icon name for display (from a hypothetical icon set) */
+  icon: string;
+}
+
+export interface LessonProgress {
+  lessonId: string;
+  courseId: string;
+  completed: boolean;
+  completedAt?: string;
+  reflectionText?: string;
+}
+
+export interface CourseProgress {
+  courseId: string;
+  lessonsCompleted: number;
+  totalLessons: number;
+  currentLesson: number;
+  lastAccessedAt?: string;
+  completedAt?: string;
+}
+
+// ─── Course Definitions ──────────────────────────────────
+
+export const MICRO_COURSES: MicroCourse[] = [
+  {
+    id: 'mc-attachment-101',
+    title: 'Understanding Your Attachment Pattern',
+    subtitle: 'Where your pattern came from, how it shows up, and your first shift',
+    description:
+      'Five lessons that take you from understanding your attachment pattern to making your first intentional shift. You will learn where your pattern came from, how it shows up in your body and relationship, what your partner experiences, and how to begin changing the dance.',
+    totalLessons: 5,
+    estimatedMinutes: 25,
+    healingPhase: 'seeing',
+    phasePosition: 'end',
+    prerequisites: ['ecr-r-complete'],
+    weareVariable: 'individual',
+    primaryModality: 'attachment-psychoeducation',
+    hasAttachmentVariants: true,
+    icon: 'heart-pulse',
+  },
+  {
+    id: 'mc-regulation',
+    title: 'Your Nervous System in Love',
+    subtitle: 'Window of tolerance, activation signatures, and co-regulation',
+    description:
+      'Five lessons on your nervous system in relationships. Learn your window of tolerance, discover your personal activation signature, practice grounding when hyperaroused, waking up when shut down, and co-regulating with your partner.',
+    totalLessons: 5,
+    estimatedMinutes: 25,
+    healingPhase: 'feeling',
+    phasePosition: 'start',
+    prerequisites: ['mc-attachment-101-complete'],
+    weareVariable: 'space',
+    primaryModality: 'polyvagal-regulation',
+    hasAttachmentVariants: false,
+    icon: 'brain',
+  },
+  {
+    id: 'mc-conflict-repair',
+    title: 'From Rupture to Repair',
+    subtitle: 'Why conflict is not the enemy, and how to come back from it',
+    description:
+      'Five lessons on transforming conflict from a threat into a doorway. Learn why conflict is not the enemy, identify the Four Horsemen, master the anatomy of repair, practice structured repair conversations, and build a repair culture.',
+    totalLessons: 5,
+    estimatedMinutes: 25,
+    healingPhase: 'shifting',
+    phasePosition: 'mid',
+    prerequisites: ['mc-attachment-101-complete', 'mc-regulation-complete'],
+    weareVariable: 'attunement',
+    primaryModality: 'gottman-eft',
+    hasAttachmentVariants: false,
+    icon: 'refresh-cw',
+  },
+  {
+    id: 'mc-boundaries',
+    title: 'Boundaries That Connect',
+    subtitle: 'Not walls. Not punishment. Information that serves love.',
+    description:
+      'Five lessons on boundaries as an act of care. Learn what boundaries actually are, distinguish fusion from connection from distance, practice the I-Position, hold boundaries without guilt, and reframe boundaries as care rather than rejection.',
+    totalLessons: 5,
+    estimatedMinutes: 25,
+    healingPhase: 'shifting',
+    phasePosition: 'mid',
+    prerequisites: ['mc-attachment-101-complete'],
+    weareVariable: 'space',
+    primaryModality: 'bowen-act',
+    hasAttachmentVariants: false,
+    icon: 'shield',
+  },
+  {
+    id: 'mc-act-defusion',
+    title: 'Unhooking from the Story',
+    subtitle: 'See the story your mind tells. Hold it lightly. Choose what matters.',
+    description:
+      'Five ACT-based lessons on defusing from the narratives that keep you stuck. Identify the story you carry about your partner, learn to see thoughts as thoughts, cultivate the observer self, practice willingness, and take committed action toward your values.',
+    totalLessons: 5,
+    estimatedMinutes: 25,
+    healingPhase: 'feeling',
+    phasePosition: 'mid',
+    prerequisites: ['mc-attachment-101-complete'],
+    weareVariable: 'resistance',
+    primaryModality: 'act',
+    hasAttachmentVariants: false,
+    icon: 'wind',
+  },
+  {
+    id: 'mc-values-alignment',
+    title: 'What Matters Most (Together)',
+    subtitle: 'Your values, their values, and the shared compass you build',
+    description:
+      'Five lessons on living your values in relationship. Explore where your values overlap and diverge from your partner, reframe value clashes as creative tension, build shared meaning, take committed action toward what matters, and establish a weekly values review.',
+    totalLessons: 5,
+    estimatedMinutes: 25,
+    healingPhase: 'shifting',
+    phasePosition: 'start',
+    prerequisites: ['values-complete'],
+    weareVariable: 'coCreation',
+    primaryModality: 'act-gottman',
+    hasAttachmentVariants: false,
+    icon: 'compass',
+  },
+];
+
+// ─── Helpers ────────────────────────────────────────────
+
+export function getCourseById(id: string): MicroCourse | undefined {
+  return MICRO_COURSES.find((c) => c.id === id);
+}
+
+export function getCoursesForPhase(phase: HealingPhase): MicroCourse[] {
+  return MICRO_COURSES.filter((c) => c.healingPhase === phase);
+}
+
+export function getNextCourse(
+  completedCourseIds: string[]
+): MicroCourse | undefined {
+  // Return first course whose prerequisites are all met
+  return MICRO_COURSES.find((course) => {
+    if (completedCourseIds.includes(course.id)) return false;
+    return course.prerequisites.every(
+      (prereq) =>
+        completedCourseIds.includes(prereq) ||
+        // Assessment prereqs (not course prereqs) are assumed met
+        !prereq.endsWith('-complete') ||
+        !prereq.startsWith('mc-')
+    );
+  });
+}
+
+/**
+ * Calculate course progress from lesson completions.
+ */
+export function calculateCourseProgress(
+  courseId: string,
+  lessonCompletions: LessonProgress[]
+): CourseProgress {
+  const course = getCourseById(courseId);
+  if (!course) {
+    return {
+      courseId,
+      lessonsCompleted: 0,
+      totalLessons: 5,
+      currentLesson: 0,
+    };
+  }
+
+  const courseCompletions = lessonCompletions.filter(
+    (lp) => lp.courseId === courseId && lp.completed
+  );
+  const lessonsCompleted = courseCompletions.length;
+  const currentLesson = Math.min(lessonsCompleted, course.totalLessons - 1);
+
+  const lastAccess = courseCompletions
+    .filter((lp) => lp.completedAt)
+    .sort(
+      (a, b) =>
+        new Date(b.completedAt!).getTime() - new Date(a.completedAt!).getTime()
+    )[0];
+
+  return {
+    courseId,
+    lessonsCompleted,
+    totalLessons: course.totalLessons,
+    currentLesson: lessonsCompleted < course.totalLessons ? lessonsCompleted : course.totalLessons - 1,
+    lastAccessedAt: lastAccess?.completedAt,
+    completedAt:
+      lessonsCompleted >= course.totalLessons
+        ? lastAccess?.completedAt
+        : undefined,
+  };
+}

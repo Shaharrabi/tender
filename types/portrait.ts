@@ -21,7 +21,8 @@ export type PatternCategory =
   | 'attachment-conflict'
   | 'regulation'
   | 'values-behavior'
-  | 'differentiation';
+  | 'differentiation'
+  | 'field-awareness';
 
 export interface DetectedPattern {
   id: string;
@@ -78,11 +79,23 @@ export interface ValuesLens {
   developmentalInvitations: string[];
 }
 
+// ─── Field Awareness Lens (Phase 3) ─────────────────────
+
+export interface FieldAwarenessLens {
+  narrative: string;           // 2-3 paragraph attachment-tailored story
+  fieldSensitivity: number;    // 0-7 mean from SSEIT supplement
+  boundaryClarity: number;     // 0-7 mean from DSI-R supplement
+  patternAwareness: number;    // 0-7 mean from ECR-R supplement
+  metacognitiveCapacity: boolean; // ECR-R cycle awareness ≥ 5
+  crossPatterns: string[];     // Supplement cross-reference insights
+}
+
 export interface FourLensAnalysis {
   attachment: AttachmentLens;
   parts: PartsLens;
   regulation: RegulationLens;
   values: ValuesLens;
+  fieldAwareness?: FieldAwarenessLens; // Phase 3: present when supplement data available
 }
 
 // ─── Negative Cycle ──────────────────────────────────────
@@ -126,6 +139,15 @@ export interface PartnerGuide {
   whatDoesntHelp: string[];
 }
 
+// ─── Supplement Scores (Phase 3 — aggregated from 4 supplements) ──
+
+export interface SupplementScores {
+  ecrr?: import('../utils/assessments/supplements/ecr-r-supplement').ECRRSupplementScores;
+  sseit?: import('../utils/assessments/supplements/sseit-supplement').SSEITSupplementScores;
+  dsir?: import('../utils/assessments/supplements/dsi-r-supplement').DSIRSupplementScores;
+  values?: import('../utils/assessments/supplements/values-supplement').ValuesSupplementScores;
+}
+
 // ─── Individual Portrait ─────────────────────────────────
 
 export interface IndividualPortrait {
@@ -141,6 +163,9 @@ export interface IndividualPortrait {
   anchorPoints: AnchorPoints;
   partnerGuide: PartnerGuide;
   version: string;
+  // Phase 3 additions (optional — backward compatible)
+  bigFiveReframes?: string[];
+  supplementData?: SupplementScores;
 }
 
 // ─── Helper: All assessment scores grouped ───────────────
@@ -152,4 +177,5 @@ export interface AllAssessmentScores {
   dsir: import('./index').DSIRScores;
   ipip: import('./index').IPIPScores;
   values: import('./index').ValuesScores;
+  supplements?: SupplementScores; // Phase 3: optional supplement data
 }

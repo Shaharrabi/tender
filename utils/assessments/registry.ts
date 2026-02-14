@@ -8,6 +8,8 @@ import { valuesConfig } from './configs/values';
 import { rdasConfig } from './configs/rdas';
 import { dciConfig } from './configs/dci';
 import { csi16Config } from './configs/csi-16';
+import { relationalFieldConfig } from './configs/relational-field';
+import { coupleFieldConfig } from './configs/couple-field';
 
 const ASSESSMENT_REGISTRY: Record<string, AssessmentConfig> = {
   // Individual assessments
@@ -21,6 +23,9 @@ const ASSESSMENT_REGISTRY: Record<string, AssessmentConfig> = {
   'rdas': rdasConfig,
   'dci': dciConfig,
   'csi-16': csi16Config,
+  // Couple instruments (V2)
+  'relational-field': relationalFieldConfig,
+  'couple-field': coupleFieldConfig,
 };
 
 export function getAssessmentConfig(type: AssessmentType): AssessmentConfig {
@@ -63,6 +68,8 @@ export const DYADIC_ASSESSMENT_ORDER: DyadicAssessmentType[] = [
   'rdas',
   'dci',
   'csi-16',
+  'relational-field',
+  'couple-field',
 ];
 
 /** All assessments in recommended order (individual first, then dyadic). */

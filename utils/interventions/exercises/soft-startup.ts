@@ -13,6 +13,7 @@ export const softStartup: Intervention = {
   title: 'Soft Startup',
   description:
     'Practice the Gottman method of raising concerns gently. Transform complaints into connection by leading with feelings and needs instead of blame.',
+  fieldInsight: 'How you begin shapes everything that follows in the space between you.',
   category: 'communication',
   duration: 5,
   difficulty: 'intermediate',

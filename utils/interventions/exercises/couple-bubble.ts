@@ -15,6 +15,7 @@ export const coupleBubble: Intervention = {
   title: 'Building Your Couple Bubble',
   description:
     'Create a shared protective space — a "couple bubble" — where both partners agree to prioritize each other\'s security. PACT research shows that couples who form this alliance handle external stressors better because they know they have each other\'s backs.',
+  fieldInsight: 'The couple bubble is the living container that holds everything between you.',
   category: 'attachment',
   duration: 25,
   difficulty: 'intermediate',

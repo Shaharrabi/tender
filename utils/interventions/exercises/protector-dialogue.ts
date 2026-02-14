@@ -8,6 +8,7 @@ export const protectorDialogue: Intervention = {
   title: 'Dialogue with a Protector',
   description:
     'Use Internal Family Systems to gently engage with the protective parts that show up in your relationship. Understand their fears and appreciate their service.',
+  fieldInsight: 'Your protector parts developed for good reasons \u2014 they just cost too much now.',
   category: 'differentiation',
   duration: 10,
   difficulty: 'intermediate',

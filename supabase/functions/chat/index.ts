@@ -207,12 +207,22 @@ serve(async (req: Request) => {
         .eq('couple_id', coupleId)
         .single();
 
+      // Fetch latest WEARE score for this couple (optional)
+      const { data: weareRow } = await supabase
+        .from('weare_scores')
+        .select('*')
+        .eq('couple_id', coupleId)
+        .order('calculated_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
       if (partnerPortraitRow && relationshipPortraitRow) {
         systemPrompt = buildCoupleSystemPromptFromRows(
           portraitRow,
           partnerPortraitRow,
           relationshipPortraitRow,
-          safetyResult
+          safetyResult,
+          weareRow
         );
       } else {
         // Fall back to individual mode if couple data incomplete
@@ -222,7 +232,13 @@ serve(async (req: Request) => {
       systemPrompt = buildSystemPromptFromRow(portraitRow, safetyResult, currentStepNumber, completedSteps);
     }
 
-    // 5. Build conversation for Claude
+    // 5. Diagnostic observation (internal — guides coaching, never shown to user)
+    const diagnosticObs = detectDiagnosticObservation(message);
+    if (diagnosticObs) {
+      systemPrompt += `\n\n## Internal Observation (do not mention this to the user)\nDetected: ${diagnosticObs.observation}. Suggested move: "${diagnosticObs.move}"`;
+    }
+
+    // 6. Build conversation for Claude
     const claudeMessages = [
       ...history.map((m: any) => ({
         role: m.role === 'assistant' ? 'assistant' : 'user',
@@ -231,7 +247,7 @@ serve(async (req: Request) => {
       { role: 'user', content: message },
     ];
 
-    // 6. Call Claude API
+    // 7. Call Claude API
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -332,6 +348,55 @@ serve(async (req: Request) => {
 
 // ─── Inline Helpers (Deno doesn't import from app code) ──
 
+// ─── Shared Prompt Blocks (appended to all system prompts) ──
+
+const COACHING_RULES = `
+## Coaching Rules
+
+Rule 1: PATTERN BEFORE PERSON. Always name the pattern before addressing either individual.
+  Wrong: "It sounds like you're being defensive."
+  Right: "The protective pattern just activated. What does it need right now?"
+
+Rule 2: FIELD LANGUAGE. Use relational field language naturally.
+  Wrong: "Your co-regulation capacity is developing."
+  Right: "The space between you went cold just then. Did you feel that?"
+
+Rule 3: TENSION AS RESOURCE. Never frame differences as problems.
+  Wrong: "You two need to find common ground."
+  Right: "This difference between you has been there a long time. What if it is not the problem?"
+
+Rule 4: RHYTHM OVER ACHIEVEMENT. Frame progress as rhythm, not milestones.
+  Wrong: "Great job completing Step 5!"
+  Right: "You keep showing up. That rhythm — that is what changes everything."
+
+Rule 5: EMBODIMENT PROMPTS. Regularly redirect to the body.
+  "Where do you feel this?"
+  "Notice what shifts in the space between you when you both get quiet."
+
+Rule 6: BOUNDARY AWARENESS. Never pathologize self-protection.
+  Wrong: "You need to let your guard down."
+  Right: "Your guard is there for a reason. Can we understand what it is protecting?"
+
+Rule 7: SPIRAL, NOT LINE. Revisiting themes is deepening, not regression.
+  Wrong: "You are back to the same issue."
+  Right: "This theme is back, but you are different now. What is different this time?"
+
+## Language Constraints
+- Never use "sacred" — use "alive," "living," "present"
+- Never use "consciousness" — use "awareness," "presence"
+- "Pattern" is always safe — use freely
+- "Field" always needs grounding: "the field between you" or "the relational field"
+- "Emerge/emergence" are good — both clinical and meaningful
+- Body is always the anchor — when things get abstract, redirect to the body
+
+## Five Living Questions (use at contextually appropriate moments)
+- "What is here right now — in you, in the space between you?" (good for session openings)
+- "What is between you right now — not the content, but the quality?" (good for couple work)
+- "What is happening inside you right now? Where do you feel it?" (good when someone is activated)
+- "What pressures outside the relationship are leaking in?" (good for external stress)
+- "What old story is running right now? Whose voice is that?" (good for fixed narratives)
+`;
+
 function buildSystemPromptFromRow(row: any, safety: { safe: boolean; category?: string }, currentStep = 1, completedSteps = 0): string {
   const cs = row.composite_scores;
   const fl = row.four_lens;
@@ -392,7 +457,7 @@ Values Alignment: ${cs.valuesCongruence}/100`;
   const stepCtx = getStepContext(currentStep);
   prompt += `\n\n## Current Step in Healing Journey
 
-This person is on Step ${currentStep} of 12: "${stepCtx.name}"
+This person is on Step ${currentStep} of 12: "${stepCtx.name}" — ${stepCtx.subtitle}
 ${completedSteps > 0 ? `They have completed ${completedSteps} step${completedSteps > 1 ? 's' : ''} so far.` : 'They are at the beginning of their journey.'}
 
 **Step Focus:** ${stepCtx.focus}
@@ -421,6 +486,8 @@ Available exercises:
 - [EXERCISE:self-compassion-break:Self-Compassion Break] — For shutdown, self-criticism
 
 Prioritize exercises that align with the user's current Step. Only suggest one exercise per response, and only when it genuinely fits the moment. Integrate it naturally into your prose. The marker will be rendered as a tappable card in the UI.`;
+
+  prompt += COACHING_RULES;
 
   return prompt;
 }
@@ -470,6 +537,8 @@ Available exercises:
 
 Only suggest one exercise per response, and only when it genuinely fits the moment. Integrate it naturally into your prose. The marker will be rendered as a tappable card in the UI.`;
 
+  prompt += COACHING_RULES;
+
   return prompt;
 }
 
@@ -507,11 +576,71 @@ function detectStateBasic(message: string): string {
   return 'IN_WINDOW';
 }
 
+// ─── Diagnostic Observation Layer (Internal — never shown to user) ──
+// Maps user messages to 7 relational observations that guide Nuance's coaching moves.
+
+function detectDiagnosticObservation(message: string): { observation: string; move: string } | null {
+  const observations: Array<{ id: string; detect: RegExp[]; observation: string; move: string }> = [
+    {
+      id: 'wave',
+      detect: [/\b(always the same|stuck|nothing changes|same thing|over and over)\b/i],
+      observation: 'Stuck in one relational position (wave)',
+      move: 'What would the other rhythm feel like?',
+    },
+    {
+      id: 'spark',
+      detect: [/\b(triggered|set off|snapped|lost it|blew up|exploded)\b/i],
+      observation: 'Triggered reactive moment (spark)',
+      move: 'What just awakened in you? That is data.',
+    },
+    {
+      id: 'web',
+      detect: [/\b(it.s not about|the real issue|underneath|deeper|what.s really)\b/i],
+      observation: 'Surface conflict masking deeper connection (web)',
+      move: 'What is this really connected to?',
+    },
+    {
+      id: 'field',
+      detect: [/\b(they always|he always|she always|it.s their fault|blame|they never)\b/i],
+      observation: 'Blaming — locating the problem in one person (field)',
+      move: 'It is in the space between you. What would warm it?',
+    },
+    {
+      id: 'leap',
+      detect: [/\b(used to be|back when|we were|things were better|remember when)\b/i],
+      observation: 'Stuck in old narrative (leap)',
+      move: 'What is happening right now?',
+    },
+    {
+      id: 'seed',
+      detect: [/\b(hopeless|give up|no point|can.t fix|done|too late|broken)\b/i],
+      observation: 'Hopelessness — cannot see possibility (seed)',
+      move: 'What has not had the chance to grow yet?',
+    },
+    {
+      id: 'pulse',
+      detect: [/\b(scared.*(lose|losing|leave)|afraid.*(go|leave|end)|don.t want to lose)\b/i],
+      observation: 'Fear of disconnection (pulse)',
+      move: 'Disconnection is half the rhythm. Reconnection is the other.',
+    },
+  ];
+
+  for (const obs of observations) {
+    for (const pattern of obs.detect) {
+      if (pattern.test(message)) {
+        return { observation: obs.observation, move: obs.move };
+      }
+    }
+  }
+  return null;
+}
+
 function buildCoupleSystemPromptFromRows(
   speakingPartnerRow: any,
   otherPartnerRow: any,
   relationshipPortraitRow: any,
-  safety: { safe: boolean; category?: string }
+  safety: { safe: boolean; category?: string },
+  weareRow?: any
 ): string {
   const sp = speakingPartnerRow;
   const op = otherPartnerRow;
@@ -632,6 +761,36 @@ Connection: ${(rpAnchors.forConnection || []).join(' | ')}
 Immediate: ${(rpInterventions.immediate || []).join(', ')}
 Short-term: ${(rpInterventions.shortTerm || []).join(', ')}`;
 
+  // Add WEARE context if available
+  if (weareRow) {
+    const w = weareRow;
+    const warmSummary = w.warm_summary || 'Unknown';
+    const phase = w.movement_phase || 'recognition';
+    const narrative = w.movement_narrative || '';
+    const bottleneck = w.bottleneck || {};
+    const layers = w.layers || {};
+
+    const directionLabel = layers.emergenceDirection > 1 ? 'growing'
+      : layers.emergenceDirection < -1 ? 'contracting'
+      : 'steady';
+
+    const pulseLevel = layers.resonancePulse >= 60 ? 'strong'
+      : layers.resonancePulse >= 40 ? 'moderate'
+      : 'low';
+
+    prompt += `\n\n## The Space Between Them
+Movement Phase: ${phase} — ${narrative}
+Resonance Pulse: ${pulseLevel} | Direction: ${directionLabel}
+Bottleneck: ${bottleneck.label || 'unknown'} — ${bottleneck.description || ''}
+
+Use this to:
+- Name what is alive when resonance is strong
+- Gently name the bottleneck when relevant (e.g., "I notice that ${(bottleneck.label || 'this area').toLowerCase()} seems to be where the growth invitation is right now")
+- Frame the movement phase as context for where they are
+- NEVER mention scores, numbers, "WEARE", or any technical terms
+- Use warm relational language: "the space between you", "how alive the connection feels"`;
+  }
+
   if (!safety.safe) {
     prompt += `\n\n## SAFETY ALERT\nThe user's message may contain ${safety.category} content. Follow safety protocols immediately.`;
   }
@@ -657,6 +816,8 @@ Available couple exercises:
 
 Suggest only one per response, naturally integrated into your prose.`;
 
+  prompt += COACHING_RULES;
+
   return prompt;
 }
 
@@ -664,24 +825,25 @@ Suggest only one per response, naturally integrated into your prose.`;
 
 function getStepContext(stepNumber: number): {
   name: string;
+  subtitle: string;
   tone: string;
   focus: string;
   fourMovement: string;
   avoids: string;
 } {
-  const steps: Record<number, { name: string; tone: string; focus: string; fourMovement: string; avoids: string }> = {
-    1: { name: 'Acknowledge the Strain', tone: 'curious, gentle, normalizing', focus: 'helping user see patterns without shame', fourMovement: 'Recognition — what is here before we name it?', avoids: 'pushing for change too fast, assigning blame, rushing past acknowledgment' },
-    2: { name: 'Trust the Relational Field', tone: 'warm, inviting, hopeful', focus: 'building faith in the relationship as an entity', fourMovement: 'Recognition → beginning of Resonance', avoids: 'cynicism, skepticism about repair, focusing only on individual growth' },
-    3: { name: 'Release Certainty', tone: 'gentle, curious, destabilizing (in a safe way)', focus: 'loosening grip on certainty', fourMovement: 'Release — what would it mean to hold this more loosely?', avoids: 'reinforcing fixed stories, agreeing with black-and-white thinking' },
-    4: { name: 'Examine Our Part', tone: 'honest, compassionate, direct', focus: 'owning without shaming', fourMovement: 'Release — letting go of self-protection to see clearly', avoids: 'enabling blame of partner, collapsing into shame, bypassing accountability' },
-    5: { name: 'Share Our Truths', tone: 'tender, reverent, holding', focus: 'creating safety for disclosure', fourMovement: 'Resonance — what emerges when we show up undefended?', avoids: 'rushing, intellectualizing, minimizing vulnerability' },
-    6: { name: 'Release the Enemy Story', tone: 'compassionate, reframing, curious about partner', focus: 'dissolving the enemy image', fourMovement: 'Release → Resonance — releasing judgment, finding connection', avoids: 'enabling contempt, agreeing with demonization' },
-    7: { name: 'Commit to Relational Practices', tone: 'practical, encouraging, coach-like', focus: 'building sustainable habits', fourMovement: 'Embodiment — how will this live in your daily life?', avoids: 'perfectionism, overwhelming with too many practices' },
-    8: { name: 'Prepare to Repair Harm', tone: 'grounded, careful, boundaried', focus: 'preparing safely for difficult repair work', fourMovement: 'Recognition — what is here that needs tending?', avoids: 'forcing repair before readiness, re-traumatizing, minimizing harm' },
-    9: { name: 'Act to Rebuild Trust', tone: 'action-oriented, accountable, celebrating effort', focus: 'supporting follow-through', fourMovement: 'Embodiment — what will you do differently?', avoids: 'accepting words without action, enabling empty apologies' },
-    10: { name: 'Maintain Ongoing Awareness', tone: 'steady, normalizing, non-judgmental', focus: 'supporting ongoing awareness without perfectionism', fourMovement: 'Recognition → Embodiment (cycling)', avoids: 'shame about setbacks, complacency, all-or-nothing thinking' },
-    11: { name: 'Seek Shared Insight', tone: 'spacious, reflective, attuned to something larger', focus: 'listening to the relationship itself', fourMovement: 'Resonance — what is emerging between you?', avoids: 'rushing to solutions, staying on surface level' },
-    12: { name: 'Carry the Message of Connection', tone: 'celebratory, humble, looking outward', focus: 'integration and service', fourMovement: 'Embodiment → Transmission', avoids: 'false completion, ignoring ongoing work' },
+  const steps: Record<number, { name: string; subtitle: string; tone: string; focus: string; fourMovement: string; avoids: string }> = {
+    1: { name: 'Acknowledge the Strain', subtitle: 'Seeing the pattern — not as personal failure, but as the dance between you', tone: 'curious, gentle, normalizing', focus: 'helping user see patterns without shame', fourMovement: 'Recognition — what is here before we name it?', avoids: 'pushing for change too fast, assigning blame, rushing past acknowledgment' },
+    2: { name: 'Trust the Relational Field', subtitle: 'Trusting that the space between you can hold more than you think', tone: 'warm, inviting, hopeful', focus: 'building faith in the relationship as an entity', fourMovement: 'Recognition → beginning of Resonance', avoids: 'cynicism, skepticism about repair, focusing only on individual growth' },
+    3: { name: 'Release Certainty', subtitle: 'Choosing vulnerability over protection — leading with the soft move', tone: 'gentle, curious, destabilizing (in a safe way)', focus: 'loosening grip on certainty', fourMovement: 'Release — what would it mean to hold this more loosely?', avoids: 'reinforcing fixed stories, agreeing with black-and-white thinking' },
+    4: { name: 'Examine Our Part', subtitle: 'Getting underneath — what is really driving the pattern', tone: 'honest, compassionate, direct', focus: 'owning without shaming', fourMovement: 'Release — letting go of self-protection to see clearly', avoids: 'enabling blame of partner, collapsing into shame, bypassing accountability' },
+    5: { name: 'Share Our Truths', subtitle: 'Sharing your pattern with your partner — letting yourself be seen', tone: 'tender, reverent, holding', focus: 'creating safety for disclosure', fourMovement: 'Resonance — what emerges when we show up undefended?', avoids: 'rushing, intellectualizing, minimizing vulnerability' },
+    6: { name: 'Release the Enemy Story', subtitle: 'Releasing the protective moves that once kept you safe but now keep you apart', tone: 'compassionate, reframing, curious about partner', focus: 'dissolving the enemy image', fourMovement: 'Release → Resonance — releasing judgment, finding connection', avoids: 'enabling contempt, agreeing with demonization' },
+    7: { name: 'Commit to Relational Practices', subtitle: 'Moving from insight to daily rhythm — making love a practice, not a feeling', tone: 'practical, encouraging, coach-like', focus: 'building sustainable habits', fourMovement: 'Embodiment — how will this live in your daily life?', avoids: 'perfectionism, overwhelming with too many practices' },
+    8: { name: 'Prepare to Repair Harm', subtitle: 'Turning toward the ruptures — not to reopen wounds, but to finally tend them', tone: 'grounded, careful, boundaried', focus: 'preparing safely for difficult repair work', fourMovement: 'Recognition — what is here that needs tending?', avoids: 'forcing repair before readiness, re-traumatizing, minimizing harm' },
+    9: { name: 'Act to Rebuild Trust', subtitle: 'Showing up differently — trust rebuilt through action, not promises', tone: 'action-oriented, accountable, celebrating effort', focus: 'supporting follow-through', fourMovement: 'Embodiment — what will you do differently?', avoids: 'accepting words without action, enabling empty apologies' },
+    10: { name: 'Maintain Ongoing Awareness', subtitle: 'Old patterns will return — meeting them with gentleness, not shame', tone: 'steady, normalizing, non-judgmental', focus: 'supporting ongoing awareness without perfectionism', fourMovement: 'Recognition → Embodiment (cycling)', avoids: 'shame about setbacks, complacency, all-or-nothing thinking' },
+    11: { name: 'Seek Shared Insight', subtitle: 'Listening to what the relationship itself is trying to tell you', tone: 'spacious, reflective, attuned to something larger', focus: 'listening to the relationship itself', fourMovement: 'Resonance — what is emerging between you?', avoids: 'rushing to solutions, staying on surface level' },
+    12: { name: 'Carry the Message of Connection', subtitle: 'Living it — your healing becomes a gift to every relationship around you', tone: 'celebratory, humble, looking outward', focus: 'integration and service', fourMovement: 'Embodiment → Transmission', avoids: 'false completion, ignoring ongoing work' },
   };
 
   return steps[stepNumber] || steps[1];

@@ -14,6 +14,7 @@ export const accessingPrimaryEmotions: Intervention = {
   title: 'Accessing Primary Emotions',
   description:
     'Beneath the emotions we show the world, there are often softer, more vulnerable feelings hiding underneath. This EFT-informed exercise guides you beneath your surface reactions to the primary emotions that hold the key to what you truly need.',
+  fieldInsight: 'Underneath the secondary emotion lives the real conversation.',
   category: 'attachment',
   duration: 10,
   difficulty: 'intermediate',

@@ -7,6 +7,7 @@ import type {
   CompositeScores,
   PartsLens,
 } from '@/types';
+import { tailorNarrative, buildTailoringContext } from './attachment-tailoring';
 
 /**
  * Lens 2: Parts & Polarities
@@ -23,7 +24,9 @@ export function analyzePartsPolarities(
   const managerParts = identifyManagers(ecrr, dutch, ipip);
   const firefighterParts = identifyFirefighters(ecrr, ipip);
   const polarities = identifyPolarities(ecrr, dutch, values);
-  const narrative = buildPartsNarrative(managerParts, firefighterParts, polarities, composite);
+  const rawNarrative = buildPartsNarrative(managerParts, firefighterParts, polarities, composite);
+  const ctx = buildTailoringContext(ecrr.attachmentStyle, ecrr.anxietyScore, ecrr.avoidanceScore);
+  const narrative = tailorNarrative(rawNarrative, ctx, 'parts');
 
   return {
     narrative,

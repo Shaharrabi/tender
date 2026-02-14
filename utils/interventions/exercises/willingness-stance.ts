@@ -8,6 +8,7 @@ export const willingnessStance: Intervention = {
   title: 'The Willingness Stance',
   description:
     'Explore the ACT concept of willingness — the practice of opening to uncomfortable experiences in service of what matters most to you in your relationship.',
+  fieldInsight: 'Willingness is not wanting to \u2014 it is showing up anyway because it matters.',
   category: 'values',
   duration: 6,
   difficulty: 'beginner',

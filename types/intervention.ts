@@ -55,6 +55,8 @@ export interface Intervention {
   vulnerabilityLevel?: VulnerabilityLevel;
   /** Ideal nervous-system state(s) to begin this practice */
   bestEntryStates?: NervousSystemState[];
+  /** One-line field-language insight shown on practice card */
+  fieldInsight?: string;
 }
 
 // ─── Completion Tracking ────────────────────────────────
