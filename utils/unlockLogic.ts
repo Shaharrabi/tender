@@ -21,6 +21,7 @@ export interface UnlockState {
   couplesPortal: boolean;         // Partner linked + both complete
   aiCoach: boolean;               // Available after 1+ assessment
   practices: boolean;             // Always available
+  courses: boolean;               // Available after 1+ assessment
   treatmentPlan: boolean;         // Available after 3+ assessments
   findTherapist: boolean;         // Always available
   community: boolean;             // Available after 1+ assessment
@@ -165,6 +166,16 @@ export const FEATURE_CARDS: FeatureCard[] = [
     category: 'feature',
   },
   {
+    key: 'courses',
+    title: 'Learning Courses',
+    subtitle: '6 micro-courses to deepen your understanding',
+    icon: '📚',
+    color: '#6B5B8A',
+    unlockHint: 'Complete 1 assessment to unlock',
+    route: '/(app)/courses',
+    category: 'feature',
+  },
+  {
     key: 'treatmentPlan',
     title: 'Growth Plan',
     subtitle: 'Your personalized growth pathway',
@@ -221,6 +232,7 @@ export function getUnlockState(
     couplesPortal: hasCoupleLinked && hasPortrait,
     aiCoach: completedCount >= 1,
     practices: true,
+    courses: completedCount >= 1,
     treatmentPlan: completedCount >= 3,
     findTherapist: true,
     community: completedCount >= 1,
