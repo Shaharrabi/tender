@@ -8,7 +8,7 @@ const GUEST_SCORE_PREFIX = 'guest_scores_';
 // ─── Types ──────────────────────────────────────────────
 interface GuestContextType {
   isGuest: boolean;
-  setGuestMode: (on: boolean) => void;
+  setGuestMode: (on: boolean) => Promise<void>;
   guestScores: Record<string, any>;
   saveGuestScore: (type: string, scores: any) => Promise<void>;
   clearGuestData: () => Promise<void>;
@@ -61,9 +61,9 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Toggle guest mode on/off and persist the flag
-  const setGuestMode = useCallback((on: boolean) => {
+  const setGuestMode = useCallback(async (on: boolean): Promise<void> => {
     setIsGuest(on);
-    AsyncStorage.setItem(GUEST_MODE_KEY, on ? 'true' : 'false').catch(() => {});
+    await AsyncStorage.setItem(GUEST_MODE_KEY, on ? 'true' : 'false').catch(() => {});
   }, []);
 
   // Save a single assessment score by type

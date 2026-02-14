@@ -134,8 +134,8 @@ export default function LoginScreen() {
 
         <TouchableOpacity
           style={styles.guestButton}
-          onPress={() => {
-            setGuestMode(true);
+          onPress={async () => {
+            await setGuestMode(true);
             router.replace('/(app)/home');
           }}
         >

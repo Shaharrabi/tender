@@ -34,6 +34,7 @@ import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '@/context/AuthContext';
+import { useGuest } from '@/context/GuestContext';
 import {
   getUnlockState,
   getNextAssessment,
@@ -137,6 +138,7 @@ const DAILY_GREETINGS = [
 
 export default function HomeScreen() {
   const { user, signOut } = useAuth();
+  const { isGuest, clearGuestData } = useGuest();
   const router = useRouter();
 
   // Assessment state
@@ -679,6 +681,8 @@ export default function HomeScreen() {
     for (const config of configs) {
       await AsyncStorage.removeItem(config.progressKey);
     }
+    // Clear guest mode data so it doesn't persist across sessions
+    await clearGuestData();
     await signOut();
     router.replace('/(auth)/login');
   };
@@ -1399,7 +1403,7 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* Retake individual sections (collapsed, shown when assessment completed) */}
+        {/* Revisit sections (collapsed, shown when assessment completed) */}
         {tenderStatus.state === 'completed' && (
           <View style={styles.section}>
             <TouchableOpacity
@@ -1407,7 +1411,7 @@ export default function HomeScreen() {
               onPress={() => setAssessmentsExpanded(!assessmentsExpanded)}
               activeOpacity={0.7}
             >
-              <Text style={styles.retakeSectionLabel}>Retake Individual Sections</Text>
+              <Text style={styles.retakeSectionLabel}>Revisit a Section</Text>
               <Text style={styles.expandArrow}>
                 {assessmentsExpanded ? '\u25B4' : '\u25BE'}
               </Text>
@@ -1415,17 +1419,26 @@ export default function HomeScreen() {
 
             {assessmentsExpanded && (
               <View style={styles.assessmentCards}>
-                {individualConfigs.map((config) => (
-                  <TouchableOpacity
-                    key={config.type}
-                    style={styles.retakeRow}
-                    onPress={() => handleStart(config)}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.retakeRowName}>{config.shortName}: {config.name}</Text>
-                    <Text style={styles.retakeRowAction}>Retake</Text>
-                  </TouchableOpacity>
-                ))}
+                <Text style={styles.retakeIntroText}>
+                  Re-explore any section. Your patterns evolve {'\u2014'} so can your answers.
+                </Text>
+                {TENDER_SECTIONS.filter((s) => s.assessmentType !== 'relational-field').map((section) => {
+                  const config = getAssessmentConfig(section.assessmentType);
+                  return (
+                    <TouchableOpacity
+                      key={section.assessmentType}
+                      style={styles.retakeRow}
+                      onPress={() => handleStart(config)}
+                      activeOpacity={0.7}
+                    >
+                      <View style={styles.retakeRowLeft}>
+                        <Text style={styles.retakeRowNumber}>{section.sectionNumber}</Text>
+                        <Text style={styles.retakeRowName}>{section.fieldName}</Text>
+                      </View>
+                      <Text style={styles.retakeRowAction}>Revisit</Text>
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
             )}
           </View>
@@ -2173,9 +2186,30 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: Colors.borderLight,
   },
+  retakeIntroText: {
+    fontSize: FontSizes.caption,
+    color: Colors.textSecondary,
+    fontStyle: 'italic',
+    lineHeight: 18,
+    marginBottom: Spacing.xs,
+  },
+  retakeRowLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    flex: 1,
+  },
+  retakeRowNumber: {
+    fontSize: FontSizes.caption,
+    fontWeight: '700',
+    color: Colors.primary,
+    width: 20,
+    textAlign: 'center',
+  },
   retakeRowName: {
     fontSize: FontSizes.bodySmall,
     color: Colors.text,
+    flex: 1,
   },
   retakeRowAction: {
     fontSize: FontSizes.bodySmall,

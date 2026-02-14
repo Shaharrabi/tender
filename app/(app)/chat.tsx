@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
+import { useGuest } from '@/context/GuestContext';
 import { useChat, ChatProvider } from '@/context/ChatContext';
 import MessageFlow from '@/components/chat/MessageFlow';
 import UserInput from '@/components/chat/UserInput';
@@ -31,6 +32,7 @@ import { getNuanceOpeningPrompts } from '@/utils/steps/twelve-steps';
 function ChatScreenInner() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const { isGuest } = useGuest();
   const {
     activeSession,
     sessions,
@@ -127,13 +129,17 @@ function ChatScreenInner() {
       {!authLoading && !user && (
         <View style={styles.authBanner}>
           <Text style={styles.authBannerText}>
-            Please sign in to use the chat feature.
+            {isGuest
+              ? 'Nuance needs an account to remember your conversations. Create one to start chatting.'
+              : 'Please sign in to use the chat feature.'}
           </Text>
           <TouchableOpacity
             onPress={() => router.replace('/(auth)/login' as any)}
             activeOpacity={0.7}
           >
-            <Text style={styles.authSignInText}>Sign In</Text>
+            <Text style={styles.authSignInText}>
+              {isGuest ? 'Create Account' : 'Sign In'}
+            </Text>
           </TouchableOpacity>
         </View>
       )}
