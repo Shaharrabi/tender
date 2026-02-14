@@ -196,6 +196,16 @@ export const FEATURE_CARDS: FeatureCard[] = [
     category: 'feature',
   },
   {
+    key: 'community',
+    title: 'Community',
+    subtitle: 'Anonymous stories and curated resources',
+    icon: '🤝',
+    color: '#7B8F6B',
+    unlockHint: 'Complete 1 assessment to unlock',
+    route: '/(app)/community',
+    category: 'feature',
+  },
+  {
     key: 'couplesPortal',
     title: 'Couple Portal',
     subtitle: 'Shared portrait, couple assessments, and coaching',

@@ -552,7 +552,7 @@ export default function HomeScreen() {
   const featureGridCards = FEATURE_CARDS.filter(
     (card) =>
       card.category === 'feature' &&
-      ['treatmentPlan', 'findTherapist', 'practices', 'courses', 'couplesPortal'].includes(
+      ['treatmentPlan', 'findTherapist', 'practices', 'courses', 'couplesPortal', 'community'].includes(
         card.key
       )
   );
@@ -804,6 +804,7 @@ export default function HomeScreen() {
                       })()}
                     </Text>
                   )}
+                  <Text style={styles.heroAppTagline}>The Science of Relationships</Text>
                 </>
               );
             })()}
@@ -1515,6 +1516,13 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     marginTop: Spacing.xs,
     lineHeight: 22,
+  },
+  heroAppTagline: {
+    fontSize: FontSizes.caption,
+    color: Colors.textMuted,
+    fontStyle: 'italic',
+    marginTop: Spacing.sm,
+    letterSpacing: 0.5,
   },
 
   // ── Step Tagline ──

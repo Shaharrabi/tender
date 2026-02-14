@@ -79,6 +79,7 @@ export default function LoginScreen() {
         <View style={styles.header}>
           <Text style={styles.title}>Welcome back</Text>
           <Text style={styles.subtitle}>Sign in to your account</Text>
+          <Text style={styles.appTagline}>Tender — The Science of Relationships</Text>
         </View>
 
         <View style={styles.form}>
@@ -172,6 +173,13 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: FontSizes.body,
     color: Colors.textSecondary,
+  },
+  appTagline: {
+    fontSize: FontSizes.caption,
+    color: Colors.textMuted,
+    fontStyle: 'italic',
+    marginTop: Spacing.sm,
+    letterSpacing: 0.5,
   },
   form: {
     gap: Spacing.md,

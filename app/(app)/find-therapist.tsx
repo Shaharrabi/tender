@@ -15,10 +15,13 @@ import {
   ScrollView,
   Linking,
   ActivityIndicator,
+  Alert,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { getPortrait } from '@/services/portrait';
+import { generatePortraitPDF } from '@/services/pdf-export';
 import {
   Colors,
   Spacing,
@@ -203,6 +206,7 @@ export default function FindTherapistScreen() {
   const router = useRouter();
   const [portrait, setPortrait] = useState<IndividualPortrait | null>(null);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -347,13 +351,33 @@ export default function FindTherapistScreen() {
             If you already have a therapist, you can share your assessment results and portrait with them. This helps your therapist understand your patterns quickly.
           </Text>
           <TouchableOpacity
-            style={s.shareButton}
-            onPress={() => {
-              // TODO: PDF report generation
+            style={[s.shareButton, !portrait && { opacity: 0.5 }]}
+            onPress={async () => {
+              if (!portrait) {
+                const msg = 'Complete your assessments first to generate a report.';
+                Platform.OS === 'web' ? alert(msg) : Alert.alert('Portrait Required', msg);
+                return;
+              }
+              setExporting(true);
+              try {
+                await generatePortraitPDF(portrait);
+              } catch (err) {
+                const msg = 'Unable to generate report. Please try again.';
+                Platform.OS === 'web' ? alert(msg) : Alert.alert('Error', msg);
+              } finally {
+                setExporting(false);
+              }
             }}
+            disabled={exporting}
             activeOpacity={0.7}
           >
-            <Text style={s.shareButtonText}>{'📄'} Generate Report (Coming Soon)</Text>
+            {exporting ? (
+              <ActivityIndicator size="small" color={Colors.textSecondary} />
+            ) : (
+              <Text style={s.shareButtonText}>
+                {'📄'} {portrait ? 'Generate Report' : 'Complete Assessments First'}
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
 
