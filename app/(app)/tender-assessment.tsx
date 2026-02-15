@@ -265,6 +265,15 @@ export default function TenderAssessmentScreen() {
   const isLastQuestionInSection = qIndex === totalCombined - 1;
   const isLastSection = currentSectionIndex === TENDER_SECTIONS.length - 1;
 
+  // ── Skip completed sections (via effect, not during render) ──
+  // IMPORTANT: This useEffect MUST be before all conditional returns
+  // to satisfy React's rules of hooks (same number of hooks every render).
+  useEffect(() => {
+    if (loaded && !showingIntro && !showingSectionBreak && !showingCompletion && currentSectionState.completed) {
+      advanceToNextSection();
+    }
+  }, [currentSectionIndex, currentSectionState.completed, loaded, showingIntro, showingSectionBreak, showingCompletion]);
+
   // ── Handlers ──
 
   const handleSelect = (value: any) => {
@@ -774,13 +783,8 @@ export default function TenderAssessmentScreen() {
     );
   }
 
-  // ── Skip completed sections (via effect, not during render) ──
-  useEffect(() => {
-    if (loaded && !showingIntro && !showingSectionBreak && !showingCompletion && currentSectionState.completed) {
-      advanceToNextSection();
-    }
-  }, [currentSectionIndex, currentSectionState.completed, loaded, showingIntro, showingSectionBreak, showingCompletion]);
-
+  // If current section is already completed, render nothing while the
+  // useEffect above triggers advanceToNextSection.
   if (currentSectionState.completed) {
     return null;
   }
