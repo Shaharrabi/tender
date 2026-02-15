@@ -367,6 +367,14 @@ export default function TenderAssessmentScreen() {
         ? { ...originalScores, supplementScores }
         : originalScores;
 
+      // Remove any previous record for this assessment type (handles retakes
+      // and avoids duplicate-key failures on the insert)
+      await supabase
+        .from('assessments')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('type', currentConfig.type);
+
       // Save to Supabase with the ORIGINAL assessment type
       const { error } = await supabase.from('assessments').insert({
         user_id: user.id,
@@ -382,19 +390,18 @@ export default function TenderAssessmentScreen() {
         return;
       }
 
-      // Mark section complete
+      // Mark section complete — build updated state synchronously so
+      // auto-advance (breakAfter: false) saves correct progress.
       const newCompleted = [...completedSections, currentSection.assessmentType];
       setCompletedSections(newCompleted);
 
-      setSectionStates((prev) => {
-        const updated = [...prev];
-        updated[currentSectionIndex] = {
-          ...updated[currentSectionIndex],
-          completed: true,
-        };
-        saveProgress(currentSectionIndex, updated, newCompleted);
-        return updated;
-      });
+      const newStates = [...sectionStates];
+      newStates[currentSectionIndex] = {
+        ...newStates[currentSectionIndex],
+        completed: true,
+      };
+      setSectionStates(newStates);
+      saveProgress(currentSectionIndex, newStates, newCompleted);
 
       // Clear individual progress key if it existed
       try {
@@ -411,7 +418,7 @@ export default function TenderAssessmentScreen() {
         setShowingSectionBreak(true);
       } else {
         // Auto-advance to next section
-        advanceToNextSection();
+        advanceToNextSection(newStates, newCompleted);
       }
     } catch (e: any) {
       Alert.alert('Error', 'Something went wrong. Please try again.');
@@ -420,10 +427,16 @@ export default function TenderAssessmentScreen() {
     }
   };
 
-  const advanceToNextSection = () => {
+  const advanceToNextSection = (
+    updatedStates?: SectionState[],
+    updatedCompleted?: string[],
+  ) => {
+    const states = updatedStates || sectionStates;
+    const completed = updatedCompleted || completedSections;
+
     // Find next incomplete section
     let nextIdx = currentSectionIndex + 1;
-    while (nextIdx < TENDER_SECTIONS.length && sectionStates[nextIdx]?.completed) {
+    while (nextIdx < TENDER_SECTIONS.length && states[nextIdx]?.completed) {
       nextIdx++;
     }
 
@@ -436,7 +449,7 @@ export default function TenderAssessmentScreen() {
 
     setCurrentSectionIndex(nextIdx);
     setShowingSectionBreak(false);
-    saveProgress(nextIdx, sectionStates, completedSections);
+    saveProgress(nextIdx, states, completed);
   };
 
   const handleSaveAndExit = async () => {
@@ -593,9 +606,14 @@ export default function TenderAssessmentScreen() {
     );
   }
 
-  // ── Render: Skip completed sections ──
+  // ── Skip completed sections (via effect, not during render) ──
+  useEffect(() => {
+    if (loaded && !showingIntro && !showingSectionBreak && !showingCompletion && currentSectionState.completed) {
+      advanceToNextSection();
+    }
+  }, [currentSectionIndex, currentSectionState.completed, loaded, showingIntro, showingSectionBreak, showingCompletion]);
+
   if (currentSectionState.completed) {
-    advanceToNextSection();
     return null;
   }
 
