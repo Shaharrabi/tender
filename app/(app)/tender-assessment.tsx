@@ -506,42 +506,11 @@ export default function TenderAssessmentScreen() {
     router.replace('/(app)/home');
   };
 
-  // ── Render: Loading ──
-  if (!loaded) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.centerContent}>
-          <Text style={styles.loadingText}>Loading...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  // ── Render: Completion (only after finishing last section in-flow) ──
-  // If the welcome screen is still showing, skip this — the welcome screen
-  // has its own "all complete" variant with retake options.
-  if (showingCompletion && !showingIntro) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.centerContent}>
-          <Text style={styles.completionEmoji}>{'\u2728'}</Text>
-          <Text style={styles.completionTitle}>Assessment Complete</Text>
-          <Text style={styles.completionSubtitle}>
-            You have completed all 7 sections of The Tender Assessment.
-            Your relational portrait is ready to be explored.
-          </Text>
-          <TouchableOpacity
-            style={styles.completionButton}
-            onPress={() => router.replace('/(app)/home')}
-          >
-            <Text style={styles.completionButtonText}>View Your Results</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   // ── Welcome screen helpers ──
+  // IMPORTANT: These must be defined BEFORE any conditional returns.
+  // The React Compiler (enabled in app.json) may add memoization hooks
+  // for these functions. If they appear after a conditional return, the
+  // hook count changes between renders, causing React Error #310.
 
   /** Determine chapter status for a given section index. */
   const getChapterStatus = (idx: number): 'complete' | 'in_progress' | 'not_started' => {
@@ -607,6 +576,47 @@ export default function TenderAssessmentScreen() {
     setCurrentSectionIndex(firstIncomplete >= 0 ? firstIncomplete : 0);
     setShowingIntro(false);
   };
+
+  // ── Derived values for question flow (must be computed before conditional
+  // returns, because the React Compiler may auto-memoize them via hidden hooks) ──
+  const sectionProgress = ((qIndex + 1) / totalCombined) * 100;
+  const globalAnswered = countTotalAnswered(sectionStates);
+  const globalProgress = (globalAnswered / TOTAL_QUESTIONS) * 100;
+
+  // ── Render: Loading ──
+  if (!loaded) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.centerContent}>
+          <Text style={styles.loadingText}>Loading...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // ── Render: Completion (only after finishing last section in-flow) ──
+  // If the welcome screen is still showing, skip this — the welcome screen
+  // has its own "all complete" variant with retake options.
+  if (showingCompletion && !showingIntro) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.centerContent}>
+          <Text style={styles.completionEmoji}>{'\u2728'}</Text>
+          <Text style={styles.completionTitle}>Assessment Complete</Text>
+          <Text style={styles.completionSubtitle}>
+            You have completed all 7 sections of The Tender Assessment.
+            Your relational portrait is ready to be explored.
+          </Text>
+          <TouchableOpacity
+            style={styles.completionButton}
+            onPress={() => router.replace('/(app)/home')}
+          >
+            <Text style={styles.completionButtonText}>View Your Results</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   // ── Render: Welcome Screen ──
   if (showingIntro) {
@@ -790,10 +800,6 @@ export default function TenderAssessmentScreen() {
   }
 
   // ── Render: Question Flow ──
-  const sectionProgress = ((qIndex + 1) / totalCombined) * 100;
-  const globalAnswered = countTotalAnswered(sectionStates);
-  const globalProgress = (globalAnswered / TOTAL_QUESTIONS) * 100;
-
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
