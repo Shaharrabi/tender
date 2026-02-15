@@ -151,9 +151,10 @@ export default function HomeScreen() {
   const [tenderStatus, setTenderStatus] = useState<{
     state: 'not_started' | 'in_progress' | 'completed';
     completedSections: number;
+    completedTypes: string[];          // which specific section types are done
     totalAnswered: number;
     currentSectionName?: string;
-  }>({ state: 'not_started', completedSections: 0, totalAnswered: 0 });
+  }>({ state: 'not_started', completedSections: 0, completedTypes: [], totalAnswered: 0 });
 
   // Portrait state
   const [portrait, setPortrait] = useState<IndividualPortrait | null>(null);
@@ -260,24 +261,27 @@ export default function HomeScreen() {
       const completedAssessmentTypes = Object.keys(completionMap) as AssessmentType[];
       setCompletedTypes(completedAssessmentTypes);
 
-      // Compute Tender Assessment status
+      // Compute Tender Assessment status.
+      // Supabase is the single source of truth for completed sections.
+      // AsyncStorage is only used for in-progress question counts.
       const individualTypes = TENDER_SECTIONS.map((s) => s.assessmentType);
       const doneIndividual = individualTypes.filter((t) => !!completionMap[t]);
       if (doneIndividual.length === individualTypes.length) {
         setTenderStatus({
           state: 'completed',
           completedSections: individualTypes.length,
+          completedTypes: doneIndividual,
           totalAnswered: TOTAL_QUESTIONS,
         });
       } else {
-        // Check for in-progress orchestrator state
+        // Use Supabase count as the authoritative completed-sections count.
+        // Only check AsyncStorage for in-progress question detail.
+        let totalAns = 0;
+        let currentSecName: string | undefined;
         try {
           const tenderSaved = await AsyncStorage.getItem('tender_assessment_progress');
           if (tenderSaved) {
             const tData = JSON.parse(tenderSaved);
-            const doneSections = (tData.completedSections || []).length;
-            // Estimate total answered from section states
-            let totalAns = 0;
             if (tData.sectionStates) {
               for (const ss of tData.sectionStates) {
                 totalAns += (ss.responses || []).filter(
@@ -289,35 +293,25 @@ export default function HomeScreen() {
               }
             }
             const currentSecIdx = tData.currentSectionIndex || 0;
-            const currentSecName = TENDER_SECTIONS[currentSecIdx]?.fieldName;
-            setTenderStatus({
-              state: doneSections > 0 || totalAns > 0 ? 'in_progress' : 'not_started',
-              completedSections: doneSections,
-              totalAnswered: totalAns,
-              currentSectionName: currentSecName,
-            });
-          } else if (doneIndividual.length > 0) {
-            // Some individual assessments done but no orchestrator state
-            setTenderStatus({
-              state: 'in_progress',
-              completedSections: doneIndividual.length,
-              totalAnswered: 0, // can't know exactly
-              currentSectionName: undefined,
-            });
-          } else {
-            setTenderStatus({
-              state: 'not_started',
-              completedSections: 0,
-              totalAnswered: 0,
-            });
+            currentSecName = TENDER_SECTIONS[currentSecIdx]?.fieldName;
           }
-        } catch {
-          setTenderStatus({
-            state: doneIndividual.length > 0 ? 'in_progress' : 'not_started',
-            completedSections: doneIndividual.length,
-            totalAnswered: 0,
-          });
+        } catch {}
+
+        // Find the first incomplete section for the label
+        if (!currentSecName && doneIndividual.length > 0) {
+          const firstIncomplete = TENDER_SECTIONS.find(
+            (s) => !completionMap[s.assessmentType],
+          );
+          currentSecName = firstIncomplete?.fieldName;
         }
+
+        setTenderStatus({
+          state: doneIndividual.length > 0 || totalAns > 0 ? 'in_progress' : 'not_started',
+          completedSections: doneIndividual.length,
+          completedTypes: doneIndividual,
+          totalAnswered: totalAns,
+          currentSectionName: currentSecName,
+        });
       }
 
       // 2. Load portrait (and auto-regenerate if stale)
@@ -941,12 +935,12 @@ export default function HomeScreen() {
 
           {/* Section progress segments */}
           <View style={styles.tenderSegmentBar}>
-            {TENDER_SECTIONS.map((sec, idx) => (
+            {TENDER_SECTIONS.map((sec) => (
               <View
                 key={sec.assessmentType}
                 style={[
                   styles.tenderSegment,
-                  idx < tenderStatus.completedSections && styles.tenderSegmentDone,
+                  tenderStatus.completedTypes.includes(sec.assessmentType) && styles.tenderSegmentDone,
                 ]}
               />
             ))}

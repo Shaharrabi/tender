@@ -241,10 +241,10 @@ export function getNudges(
     nudges.push({
       id: 'nudge-first-assessment',
       type: 'assessment_reminder',
-      title: 'Start your first assessment',
-      body: 'Begin your journey of self-discovery. Your first assessment takes about 5 minutes and unlocks personalized insights.',
+      title: 'Start The Tender Assessment',
+      body: 'Begin your journey of self-discovery. Take breaks between sections and come back anytime.',
       icon: '🌱',
-      actionRoute: '/(app)/assessment',
+      actionRoute: '/(app)/tender-assessment',
       priority: 100,
     });
   }
@@ -257,7 +257,7 @@ export function getNudges(
       title: 'Continue your journey',
       body: `You have completed ${completedCount} of 6 assessments. Each one adds a new layer to your relationship portrait.`,
       icon: '🧭',
-      actionRoute: '/(app)/assessment',
+      actionRoute: '/(app)/tender-assessment',
       priority: 90,
     });
   }
