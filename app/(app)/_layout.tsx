@@ -27,6 +27,7 @@ export default function AppLayout() {
     >
       <Stack.Screen name="home" options={{ animation: 'fade' }} />
       <Stack.Screen name="assessment" />
+      <Stack.Screen name="tender-assessment" />
       <Stack.Screen name="results" options={{ animation: 'slide_from_bottom' }} />
       <Stack.Screen name="portrait" options={{ animation: 'fade_from_bottom' }} />
       <Stack.Screen name="chat" options={{ animation: 'slide_from_bottom' }} />

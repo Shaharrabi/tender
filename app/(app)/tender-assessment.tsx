@@ -19,7 +19,7 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/services/supabase';
@@ -28,7 +28,7 @@ import { TENDER_SECTIONS, TOTAL_QUESTIONS, TOTAL_ESTIMATED_MINUTES } from '@/uti
 import { getSupplementDef } from '@/utils/assessments/supplements';
 import QuestionRenderer from '@/components/assessment/QuestionRenderer';
 import SectionBreak from '@/components/assessment/SectionBreak';
-import { Colors, Spacing, FontSizes, FontFamilies, ButtonSizes, BorderRadius } from '@/constants/theme';
+import { Colors, Spacing, FontSizes, FontFamilies, ButtonSizes, BorderRadius, Shadows } from '@/constants/theme';
 import type { AssessmentConfig, GenericQuestion, AssessmentSection } from '@/types';
 
 // ─── Types ───────────────────────────────────────────────
@@ -104,6 +104,7 @@ function getCombinedResponses(ss: SectionState): (any | null)[] {
 export default function TenderAssessmentScreen() {
   const { user } = useAuth();
   const router = useRouter();
+  const params = useLocalSearchParams<{ startSection?: string }>();
 
   const [showingIntro, setShowingIntro] = useState(true);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
@@ -116,6 +117,11 @@ export default function TenderAssessmentScreen() {
   const [showingCompletion, setShowingCompletion] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
+  // When navigated with startSection param (e.g. retake from home), run as
+  // a single-section flow and return to home after submission.
+  const retakeMode = useRef(params.startSection != null);
+  const startSectionIdx = params.startSection != null ? parseInt(params.startSection, 10) : null;
+
   // Ref for debounced save
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -127,12 +133,12 @@ export default function TenderAssessmentScreen() {
   const loadProgress = async () => {
     try {
       const saved = await AsyncStorage.getItem(PROGRESS_KEY);
-      if (saved) {
+      if (saved && startSectionIdx == null) {
         const data: OrchestratorProgress = JSON.parse(saved);
         setCurrentSectionIndex(data.currentSectionIndex);
         setSectionStates(data.sectionStates);
         setCompletedSections(data.completedSections);
-        setShowingIntro(false);
+        // Don't skip intro — always show welcome screen
       }
 
       // Smart resume: check which individual assessments are already done
@@ -169,7 +175,7 @@ export default function TenderAssessmentScreen() {
             return changed ? newCompleted : prev;
           });
 
-          // If resuming and no saved progress, find first incomplete section
+          // If no saved progress, find first incomplete section
           if (!saved) {
             const firstIncomplete = TENDER_SECTIONS.findIndex(
               (sec) => !doneTypes.has(sec.assessmentType),
@@ -182,6 +188,28 @@ export default function TenderAssessmentScreen() {
             }
           }
         }
+      }
+
+      // Direct-start via route param (retake from home screen)
+      if (startSectionIdx != null && startSectionIdx >= 0 && startSectionIdx < TENDER_SECTIONS.length) {
+        // Reset this section's responses for a fresh retake
+        setSectionStates((prev) => {
+          const updated = [...prev];
+          const config = getAssessmentConfig(TENDER_SECTIONS[startSectionIdx].assessmentType);
+          const supplement = TENDER_SECTIONS[startSectionIdx].supplementGroup
+            ? getSupplementDef(TENDER_SECTIONS[startSectionIdx].supplementGroup!)
+            : undefined;
+          updated[startSectionIdx] = {
+            ...updated[startSectionIdx],
+            responses: new Array(config.totalQuestions).fill(null),
+            supplementResponses: supplement ? new Array(supplement.questions.length).fill(null) : [],
+            currentQuestionIndex: 0,
+            completed: false,
+          };
+          return updated;
+        });
+        setCurrentSectionIndex(startSectionIdx);
+        setShowingIntro(false);
       }
     } catch {
       // Start fresh
@@ -409,6 +437,11 @@ export default function TenderAssessmentScreen() {
       } catch {}
 
       // What's next?
+      if (retakeMode.current) {
+        // Single-section retake from home — return to home
+        router.replace('/(app)/home');
+        return;
+      }
       if (isLastSection) {
         // All done!
         await AsyncStorage.removeItem(PROGRESS_KEY);
@@ -499,69 +532,205 @@ export default function TenderAssessmentScreen() {
     );
   }
 
-  // ── Render: Intro ──
+  // ── Welcome screen helpers ──
+
+  /** Determine chapter status for a given section index. */
+  const getChapterStatus = (idx: number): 'complete' | 'in_progress' | 'not_started' => {
+    if (completedSections.includes(TENDER_SECTIONS[idx].assessmentType)) return 'complete';
+    const ss = sectionStates[idx];
+    if (ss && ss.responses.some((r) => r !== null && r !== '' && r !== undefined)) return 'in_progress';
+    return 'not_started';
+  };
+
+  /** Handle tapping a chapter card. */
+  const handleChapterTap = (idx: number) => {
+    const status = getChapterStatus(idx);
+    if (status === 'complete') {
+      Alert.alert(
+        'Retake this chapter?',
+        'Your previous answers will be replaced with your new ones.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Retake',
+            onPress: () => {
+              // Reset section responses for a fresh retake
+              const config = getAssessmentConfig(TENDER_SECTIONS[idx].assessmentType);
+              const supplement = TENDER_SECTIONS[idx].supplementGroup
+                ? getSupplementDef(TENDER_SECTIONS[idx].supplementGroup!)
+                : undefined;
+              setSectionStates((prev) => {
+                const updated = [...prev];
+                updated[idx] = {
+                  ...updated[idx],
+                  responses: new Array(config.totalQuestions).fill(null),
+                  supplementResponses: supplement ? new Array(supplement.questions.length).fill(null) : [],
+                  currentQuestionIndex: 0,
+                  completed: false,
+                };
+                return updated;
+              });
+              setCompletedSections((prev) => prev.filter((t) => t !== TENDER_SECTIONS[idx].assessmentType));
+              setCurrentSectionIndex(idx);
+              setShowingIntro(false);
+            },
+          },
+        ],
+      );
+    } else {
+      // Not started or in-progress — jump directly
+      setCurrentSectionIndex(idx);
+      setShowingIntro(false);
+    }
+  };
+
+  /** Handle the main CTA button press. */
+  const handleWelcomeCTA = () => {
+    const alreadyDone = completedSections.length;
+    if (alreadyDone >= TENDER_SECTIONS.length) {
+      // All done — view portrait
+      router.replace('/(app)/home');
+      return;
+    }
+    // Find first incomplete section
+    const firstIncomplete = TENDER_SECTIONS.findIndex(
+      (sec) => !completedSections.includes(sec.assessmentType),
+    );
+    setCurrentSectionIndex(firstIncomplete >= 0 ? firstIncomplete : 0);
+    setShowingIntro(false);
+  };
+
+  // ── Render: Welcome Screen ──
   if (showingIntro) {
     const alreadyDone = completedSections.length;
+    const allComplete = alreadyDone >= TENDER_SECTIONS.length;
+
     return (
       <SafeAreaView style={styles.container}>
-        <ScrollView contentContainerStyle={styles.introContent}>
-          <Text style={styles.introTitle}>The Tender Assessment</Text>
-          <Text style={styles.introSubtitle}>
-            {TOTAL_QUESTIONS} questions across {TENDER_SECTIONS.length} sections {'\u00B7'} ~{TOTAL_ESTIMATED_MINUTES} minutes
-          </Text>
+        <ScrollView contentContainerStyle={styles.welcomeContent} showsVerticalScrollIndicator={false}>
+          {/* Title block */}
+          <Text style={styles.welcomeTitle}>THE TENDER ASSESSMENT</Text>
+          <Text style={styles.welcomeSubtitle}>Seven chapters. One portrait of you.</Text>
 
-          {alreadyDone > 0 && (
-            <View style={styles.resumeBanner}>
-              <Text style={styles.resumeText}>
-                {alreadyDone} of {TENDER_SECTIONS.length} sections already completed. You will pick up where you left off.
+          {/* Ornamental divider */}
+          <View style={styles.ornamentRow}>
+            <View style={styles.ornamentLine} />
+            <Text style={styles.ornamentSymbol}>{'✦'}</Text>
+            <View style={styles.ornamentLine} />
+          </View>
+
+          {/* Intro copy or completion message */}
+          {allComplete ? (
+            <View style={styles.welcomeTextBlock}>
+              <Text style={styles.welcomeBody}>
+                All seven chapters — complete.{'\n'}Your portrait is ready.
+              </Text>
+              <Text style={styles.welcomeBodyMuted}>
+                Want to revisit a chapter? Tap any one below.
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.welcomeTextBlock}>
+              <Text style={styles.welcomeBody}>
+                This is not a quiz. It is a way of listening to yourself — slowly, honestly, and without judgment. Across seven chapters, you will explore how you connect, how you fight, what you feel, and what you value. Together, your answers will form a relational portrait: a living reflection of how you show up in your closest relationships.
+              </Text>
+              <Text style={styles.welcomeEmphasis}>
+                It's worth it. You're worth it.
               </Text>
             </View>
           )}
 
-          <View style={styles.introSections}>
-            {TENDER_SECTIONS.map((sec, idx) => {
-              const isDone = completedSections.includes(sec.assessmentType);
-              return (
-                <View key={sec.assessmentType} style={styles.introSectionRow}>
-                  <View style={[styles.introSectionBadge, isDone && styles.introSectionBadgeDone]}>
-                    <Text style={[styles.introSectionNumber, isDone && styles.introSectionNumberDone]}>
-                      {isDone ? '\u2713' : sec.sectionNumber}
-                    </Text>
-                  </View>
-                  <View style={styles.introSectionInfo}>
-                    <Text style={[styles.introSectionName, isDone && styles.introSectionNameDone]}>
-                      {sec.fieldName}
-                    </Text>
-                    <Text style={styles.introSectionMeta}>
-                      ~{sec.estimatedMinutes} min
-                    </Text>
-                  </View>
+          {/* Guidelines (show only if not all complete) */}
+          {!allComplete && (
+            <View style={styles.guidelinesBlock}>
+              {[
+                { icon: '✦', text: 'Go in any order' },
+                { icon: '🔖', text: 'Save and return anytime' },
+                { icon: '🔄', text: 'Retake any chapter' },
+                { icon: '❤️', text: 'No wrong answers' },
+              ].map((g) => (
+                <View key={g.text} style={styles.guidelineRow}>
+                  <Text style={styles.guidelineIcon}>{g.icon}</Text>
+                  <Text style={styles.guidelineText}>{g.text}</Text>
                 </View>
+              ))}
+            </View>
+          )}
+
+          {/* Ornamental divider */}
+          <View style={styles.ornamentRow}>
+            <View style={styles.ornamentLine} />
+            <Text style={styles.ornamentSymbol}>{'✦'}</Text>
+            <View style={styles.ornamentLine} />
+          </View>
+
+          {/* Chapter cards */}
+          <View style={styles.chapterList}>
+            {TENDER_SECTIONS.map((sec, idx) => {
+              const status = getChapterStatus(idx);
+              return (
+                <TouchableOpacity
+                  key={sec.assessmentType}
+                  style={styles.chapterCard}
+                  onPress={() => handleChapterTap(idx)}
+                  activeOpacity={0.7}
+                >
+                  {/* Status circle */}
+                  <View style={[
+                    styles.chapterStatusCircle,
+                    status === 'complete' && styles.chapterStatusComplete,
+                    status === 'in_progress' && styles.chapterStatusInProgress,
+                  ]}>
+                    {status === 'complete' && (
+                      <Text style={styles.chapterStatusCheck}>{'✓'}</Text>
+                    )}
+                    {status === 'in_progress' && (
+                      <View style={styles.chapterStatusHalf} />
+                    )}
+                  </View>
+
+                  {/* Chapter info */}
+                  <View style={styles.chapterInfo}>
+                    <Text style={styles.chapterLabel}>CHAPTER {sec.sectionNumber}</Text>
+                    <Text style={styles.chapterName}>{sec.fieldName}</Text>
+                    <Text style={styles.chapterDesc} numberOfLines={2}>{sec.fieldDescription}</Text>
+                    <Text style={styles.chapterTime}>~{sec.estimatedMinutes} min</Text>
+                  </View>
+
+                  {/* Chevron */}
+                  <Text style={styles.chapterChevron}>{'›'}</Text>
+                </TouchableOpacity>
               );
             })}
           </View>
 
-          <View style={styles.introNote}>
-            <Text style={styles.introNoteText}>
-              You can save and exit at any section break and come back later.
-              Your answers help build your complete relational portrait.
-            </Text>
-          </View>
-
+          {/* CTA button */}
           <TouchableOpacity
-            style={styles.introStartButton}
-            onPress={() => setShowingIntro(false)}
+            style={styles.welcomeCTA}
+            onPress={handleWelcomeCTA}
           >
-            <Text style={styles.introStartButtonText}>
-              {alreadyDone > 0 ? 'Continue' : 'Begin'}
+            <Text style={styles.welcomeCTAText}>
+              {allComplete
+                ? 'VIEW PORTRAIT'
+                : alreadyDone > 0
+                ? 'CONTINUE'
+                : 'BEGIN CHAPTER 1'}
             </Text>
           </TouchableOpacity>
 
+          {/* Caption below CTA */}
+          {!allComplete && (
+            <Text style={styles.welcomeCaption}>
+              or choose your starting point above
+            </Text>
+          )}
+
+          {/* Back link */}
           <TouchableOpacity
-            style={styles.introCancelButton}
+            style={styles.welcomeBackButton}
             onPress={() => router.back()}
           >
-            <Text style={styles.introCancelButtonText}>Cancel</Text>
+            <Text style={styles.welcomeBackText}>Back</Text>
           </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
@@ -780,109 +949,205 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  // ── Intro ──
-  introContent: {
+  // ── Welcome Screen ──
+  welcomeContent: {
     flexGrow: 1,
-    justifyContent: 'center',
-    padding: Spacing.xl,
-    gap: Spacing.lg,
+    paddingHorizontal: Spacing.xl,
+    paddingTop: Spacing.xxl,
+    paddingBottom: Spacing.xl,
   },
-  introTitle: {
+  welcomeTitle: {
     fontSize: FontSizes.headingL,
-    fontWeight: 'bold',
-    color: Colors.text,
     fontFamily: FontFamilies.heading,
+    color: Colors.text,
     textAlign: 'center',
+    letterSpacing: 3,
+    fontWeight: '300',
   },
-  introSubtitle: {
+  welcomeSubtitle: {
     fontSize: FontSizes.body,
+    fontFamily: FontFamilies.heading,
+    fontStyle: 'italic',
     color: Colors.textSecondary,
     textAlign: 'center',
+    marginTop: Spacing.sm,
   },
-  resumeBanner: {
-    backgroundColor: '#EEF2FF',
-    padding: Spacing.md,
-    borderRadius: BorderRadius.md,
-  },
-  resumeText: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.primary,
-    textAlign: 'center',
-    fontWeight: '500',
-  },
-  introSections: {
-    gap: Spacing.sm,
-    marginVertical: Spacing.md,
-  },
-  introSectionRow: {
+
+  // Ornamental divider
+  ornamentRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.md,
-    paddingVertical: Spacing.xs,
+    marginVertical: Spacing.lg,
+    paddingHorizontal: Spacing.xl,
   },
-  introSectionBadge: {
+  ornamentLine: {
+    flex: 1,
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: Colors.borderLight,
+  },
+  ornamentSymbol: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.secondary,
+    marginHorizontal: Spacing.md,
+  },
+
+  // Text block
+  welcomeTextBlock: {
+    gap: Spacing.md,
+  },
+  welcomeBody: {
+    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    color: Colors.textSecondary,
+    lineHeight: 22,
+    textAlign: 'center',
+  },
+  welcomeBodyMuted: {
+    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    color: Colors.textMuted,
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+  welcomeEmphasis: {
+    fontSize: FontSizes.body,
+    fontFamily: FontFamilies.heading,
+    fontStyle: 'italic',
+    color: Colors.secondary,
+    textAlign: 'center',
+  },
+
+  // Guidelines
+  guidelinesBlock: {
+    gap: Spacing.sm,
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
+  },
+  guidelineRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  guidelineIcon: {
+    fontSize: FontSizes.bodySmall,
+    width: 24,
+    textAlign: 'center',
+  },
+  guidelineText: {
+    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    color: Colors.textSecondary,
+  },
+
+  // Chapter cards
+  chapterList: {
+    gap: Spacing.sm,
+  },
+  chapterCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.white,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+    padding: Spacing.md,
+    ...Shadows.card,
+  },
+  chapterStatusCircle: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: Colors.surface,
+    borderWidth: 2,
+    borderColor: Colors.border,
     justifyContent: 'center',
     alignItems: 'center',
+    marginRight: Spacing.md,
   },
-  introSectionBadgeDone: {
+  chapterStatusComplete: {
     backgroundColor: Colors.success,
+    borderColor: Colors.success,
   },
-  introSectionNumber: {
+  chapterStatusInProgress: {
+    borderColor: Colors.secondary,
+  },
+  chapterStatusCheck: {
+    color: Colors.white,
     fontSize: FontSizes.bodySmall,
     fontWeight: '700',
-    color: Colors.textSecondary,
   },
-  introSectionNumberDone: {
-    color: Colors.white,
+  chapterStatusHalf: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: Colors.secondary,
+    opacity: 0.5,
   },
-  introSectionInfo: { flex: 1 },
-  introSectionName: {
-    fontSize: FontSizes.body,
-    fontWeight: '500',
-    color: Colors.text,
+  chapterInfo: {
+    flex: 1,
   },
-  introSectionNameDone: {
-    color: Colors.textSecondary,
-    textDecorationLine: 'line-through',
-  },
-  introSectionMeta: {
+  chapterLabel: {
     fontSize: FontSizes.caption,
+    fontFamily: FontFamilies.body,
+    color: Colors.textMuted,
+    letterSpacing: 1.5,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  chapterName: {
+    fontSize: FontSizes.body,
+    fontFamily: FontFamilies.heading,
+    color: Colors.text,
+    fontWeight: '500',
+  },
+  chapterDesc: {
+    fontSize: FontSizes.caption,
+    fontFamily: FontFamilies.body,
     color: Colors.textSecondary,
+    lineHeight: 16,
+    marginTop: 2,
   },
-  introNote: {
-    backgroundColor: Colors.surface,
-    padding: Spacing.md,
-    borderRadius: BorderRadius.md,
+  chapterTime: {
+    fontSize: FontSizes.caption,
+    fontFamily: FontFamilies.body,
+    color: Colors.textMuted,
+    marginTop: Spacing.xs,
   },
-  introNoteText: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.textSecondary,
-    lineHeight: 20,
-    textAlign: 'center',
+  chapterChevron: {
+    fontSize: FontSizes.headingL,
+    color: Colors.textMuted,
+    marginLeft: Spacing.sm,
   },
-  introStartButton: {
+
+  // CTA
+  welcomeCTA: {
     backgroundColor: Colors.primary,
     height: ButtonSizes.large,
     borderRadius: BorderRadius.pill,
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: Spacing.lg,
   },
-  introStartButtonText: {
+  welcomeCTAText: {
     color: Colors.white,
     fontSize: FontSizes.body,
     fontWeight: '600',
+    letterSpacing: 1,
   },
-  introCancelButton: {
+  welcomeCaption: {
+    fontSize: FontSizes.caption,
+    color: Colors.textMuted,
+    textAlign: 'center',
+    marginTop: Spacing.sm,
+    fontStyle: 'italic',
+  },
+  welcomeBackButton: {
     height: ButtonSizes.large,
     borderRadius: BorderRadius.pill,
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: Spacing.xs,
   },
-  introCancelButtonText: {
+  welcomeBackText: {
     color: Colors.textSecondary,
     fontSize: FontSizes.body,
     fontWeight: '600',

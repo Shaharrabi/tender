@@ -596,21 +596,6 @@ export default function HomeScreen() {
 
   // ─── Handlers ──────────────────────────────────────────
 
-  const handleStart = async (config: AssessmentConfig) => {
-    await AsyncStorage.removeItem(config.progressKey);
-    router.push({
-      pathname: '/(app)/assessment',
-      params: { type: config.type },
-    } as any);
-  };
-
-  const handleResume = (config: AssessmentConfig) => {
-    router.push({
-      pathname: '/(app)/assessment',
-      params: { type: config.type },
-    } as any);
-  };
-
   const handleGeneratePortrait = async () => {
     if (!user || generating) return;
 
@@ -1398,15 +1383,15 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* Revisit sections (collapsed, shown when assessment completed) */}
-        {tenderStatus.state === 'completed' && (
+        {/* Revisit chapters (collapsed, shown when any section is complete) */}
+        {tenderStatus.completedTypes.length > 0 && (
           <View style={styles.section}>
             <TouchableOpacity
               style={styles.sectionTitleRow}
               onPress={() => setAssessmentsExpanded(!assessmentsExpanded)}
               activeOpacity={0.7}
             >
-              <Text style={styles.retakeSectionLabel}>Revisit a Section</Text>
+              <Text style={styles.retakeSectionLabel}>Revisit a Chapter</Text>
               <Text style={styles.expandArrow}>
                 {assessmentsExpanded ? '\u25B4' : '\u25BE'}
               </Text>
@@ -1415,22 +1400,35 @@ export default function HomeScreen() {
             {assessmentsExpanded && (
               <View style={styles.assessmentCards}>
                 <Text style={styles.retakeIntroText}>
-                  Re-explore any section. Your patterns evolve {'\u2014'} so can your answers.
+                  Re-explore any chapter. Your patterns evolve {'\u2014'} so can your answers.
                 </Text>
-                {TENDER_SECTIONS.filter((s) => s.assessmentType !== 'relational-field').map((section) => {
-                  const config = getAssessmentConfig(section.assessmentType);
+                {TENDER_SECTIONS.map((section) => {
+                  const isDone = tenderStatus.completedTypes.includes(section.assessmentType);
+                  const sectionIdx = TENDER_SECTIONS.findIndex((s) => s.assessmentType === section.assessmentType);
                   return (
                     <TouchableOpacity
                       key={section.assessmentType}
-                      style={styles.retakeRow}
-                      onPress={() => handleStart(config)}
+                      style={[styles.retakeRow, !isDone && styles.retakeRowDisabled]}
+                      onPress={() => {
+                        router.push({
+                          pathname: '/(app)/tender-assessment',
+                          params: { startSection: String(sectionIdx) },
+                        } as any);
+                      }}
                       activeOpacity={0.7}
+                      disabled={!isDone}
                     >
                       <View style={styles.retakeRowLeft}>
-                        <Text style={styles.retakeRowNumber}>{section.sectionNumber}</Text>
-                        <Text style={styles.retakeRowName}>{section.fieldName}</Text>
+                        <Text style={[styles.retakeRowNumber, !isDone && styles.retakeRowNumberDisabled]}>
+                          {section.sectionNumber}
+                        </Text>
+                        <Text style={[styles.retakeRowName, !isDone && styles.retakeRowNameDisabled]}>
+                          {section.fieldName}
+                        </Text>
                       </View>
-                      <Text style={styles.retakeRowAction}>Revisit</Text>
+                      <Text style={[styles.retakeRowAction, !isDone && styles.retakeRowActionDisabled]}>
+                        {isDone ? 'Revisit' : 'Not yet'}
+                      </Text>
                     </TouchableOpacity>
                   );
                 })}
@@ -2217,6 +2215,19 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.bodySmall,
     color: Colors.primary,
     fontWeight: '600',
+  },
+  retakeRowDisabled: {
+    opacity: 0.45,
+  },
+  retakeRowNumberDisabled: {
+    color: Colors.textMuted,
+  },
+  retakeRowNameDisabled: {
+    color: Colors.textMuted,
+  },
+  retakeRowActionDisabled: {
+    color: Colors.textMuted,
+    fontWeight: '400',
   },
 
   // ── Badges ──
