@@ -182,10 +182,8 @@ export default function TenderAssessmentScreen() {
             );
             if (firstIncomplete >= 0) {
               setCurrentSectionIndex(firstIncomplete);
-            } else {
-              // All done
-              setShowingCompletion(true);
             }
+            // If all done, welcome screen will show the "all complete" variant
           }
         }
       }
@@ -510,8 +508,10 @@ export default function TenderAssessmentScreen() {
     );
   }
 
-  // ── Render: Completion ──
-  if (showingCompletion) {
+  // ── Render: Completion (only after finishing last section in-flow) ──
+  // If the welcome screen is still showing, skip this — the welcome screen
+  // has its own "all complete" variant with retake options.
+  if (showingCompletion && !showingIntro) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centerContent}>
@@ -542,41 +542,40 @@ export default function TenderAssessmentScreen() {
     return 'not_started';
   };
 
+  /** Reset a section's state and start it fresh. */
+  const startChapterFresh = (idx: number) => {
+    const config = getAssessmentConfig(TENDER_SECTIONS[idx].assessmentType);
+    const supplement = TENDER_SECTIONS[idx].supplementGroup
+      ? getSupplementDef(TENDER_SECTIONS[idx].supplementGroup!)
+      : undefined;
+    setSectionStates((prev) => {
+      const updated = [...prev];
+      updated[idx] = {
+        ...updated[idx],
+        responses: new Array(config.totalQuestions).fill(null),
+        supplementResponses: supplement ? new Array(supplement.questions.length).fill(null) : [],
+        currentQuestionIndex: 0,
+        completed: false,
+      };
+      return updated;
+    });
+    setCompletedSections((prev) => prev.filter((t) => t !== TENDER_SECTIONS[idx].assessmentType));
+    setShowingCompletion(false);
+    setCurrentSectionIndex(idx);
+    setShowingIntro(false);
+  };
+
   /** Handle tapping a chapter card. */
   const handleChapterTap = (idx: number) => {
     const status = getChapterStatus(idx);
     if (status === 'complete') {
-      Alert.alert(
-        'Retake this chapter?',
-        'Your previous answers will be replaced with your new ones.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Retake',
-            onPress: () => {
-              // Reset section responses for a fresh retake
-              const config = getAssessmentConfig(TENDER_SECTIONS[idx].assessmentType);
-              const supplement = TENDER_SECTIONS[idx].supplementGroup
-                ? getSupplementDef(TENDER_SECTIONS[idx].supplementGroup!)
-                : undefined;
-              setSectionStates((prev) => {
-                const updated = [...prev];
-                updated[idx] = {
-                  ...updated[idx],
-                  responses: new Array(config.totalQuestions).fill(null),
-                  supplementResponses: supplement ? new Array(supplement.questions.length).fill(null) : [],
-                  currentQuestionIndex: 0,
-                  completed: false,
-                };
-                return updated;
-              });
-              setCompletedSections((prev) => prev.filter((t) => t !== TENDER_SECTIONS[idx].assessmentType));
-              setCurrentSectionIndex(idx);
-              setShowingIntro(false);
-            },
-          },
-        ],
-      );
+      // Use window.confirm on web (Alert.alert is mobile-only)
+      const confirmed = typeof window !== 'undefined'
+        ? window.confirm('Retake this chapter?\n\nYour previous answers will be replaced with your new ones.')
+        : true; // On native, fall back to immediate retake (or use Alert)
+      if (confirmed) {
+        startChapterFresh(idx);
+      }
     } else {
       // Not started or in-progress — jump directly
       setCurrentSectionIndex(idx);

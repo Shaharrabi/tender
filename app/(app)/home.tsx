@@ -200,7 +200,10 @@ export default function HomeScreen() {
   // ─── Load everything on focus ──────────────────────────
 
   const loadData = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
 
     try {
