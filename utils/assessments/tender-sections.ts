@@ -36,7 +36,8 @@ export const TENDER_SECTIONS: TenderSection[] = [
     assessmentType: 'sseit',
     supplementGroup: 'sseit-supplement',
     estimatedMinutes: 10,
-    breakAfter: false,
+    breakAfter: true,
+    breakMessage: 'Well done. You are learning to see the emotional currents beneath the surface.',
   },
   {
     sectionNumber: 4,
@@ -54,7 +55,8 @@ export const TENDER_SECTIONS: TenderSection[] = [
     fieldDescription: 'Your approach to conflict and disagreement \u2014 what you do when things get hard.',
     assessmentType: 'dutch',
     estimatedMinutes: 5,
-    breakAfter: false,
+    breakAfter: true,
+    breakMessage: 'Conflict takes courage to face. You are doing the work.',
   },
   {
     sectionNumber: 6,

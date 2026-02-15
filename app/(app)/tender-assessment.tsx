@@ -358,23 +358,21 @@ export default function TenderAssessmentScreen() {
     });
 
     if (unanswered !== -1) {
-      Alert.alert(
-        'Incomplete',
-        `Please answer all questions in this section. Question ${unanswered + 1} is unanswered.`,
-        [{
-          text: 'Go to question',
-          onPress: () => {
-            setSectionStates((prev) => {
-              const updated = [...prev];
-              updated[currentSectionIndex] = {
-                ...updated[currentSectionIndex],
-                currentQuestionIndex: unanswered,
-              };
-              return updated;
-            });
-          },
-        }],
-      );
+      const msg = `Please answer all questions in this section. Question ${unanswered + 1} is unanswered.`;
+      if (typeof window !== 'undefined') {
+        window.alert(msg);
+      } else {
+        Alert.alert('Incomplete', msg);
+      }
+      // Navigate to the unanswered question
+      setSectionStates((prev) => {
+        const updated = [...prev];
+        updated[currentSectionIndex] = {
+          ...updated[currentSectionIndex],
+          currentQuestionIndex: unanswered,
+        };
+        return updated;
+      });
       return;
     }
 
@@ -420,7 +418,8 @@ export default function TenderAssessmentScreen() {
       });
 
       if (error) {
-        Alert.alert('Error', 'Failed to save section results. Please try again.');
+        const msg = 'Failed to save section results. Please try again.';
+        typeof window !== 'undefined' ? window.alert(msg) : Alert.alert('Error', msg);
         setSubmittingSection(false);
         return;
       }
@@ -461,7 +460,8 @@ export default function TenderAssessmentScreen() {
         advanceToNextSection(newStates, newCompleted);
       }
     } catch (e: any) {
-      Alert.alert('Error', 'Something went wrong. Please try again.');
+      const msg = 'Something went wrong. Please try again.';
+      typeof window !== 'undefined' ? window.alert(msg) : Alert.alert('Error', msg);
     } finally {
       setSubmittingSection(false);
     }
