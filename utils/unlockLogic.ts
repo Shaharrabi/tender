@@ -6,6 +6,7 @@
  */
 
 import type { AssessmentType } from '@/types';
+import { Colors } from '@/constants/theme';
 
 export interface UnlockState {
   // Individual assessment result cards
@@ -78,7 +79,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     title: 'How You Connect',
     subtitle: 'Your attachment patterns and how you reach for closeness or create distance',
     icon: '💕',
-    color: '#C4785B',
+    color: Colors.secondary,
     unlockHint: 'Complete the assessment',
     route: '/(app)/results',
     category: 'result',
@@ -108,7 +109,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     title: 'How You Fight',
     subtitle: 'Your approach to conflict and what you do when things get hard',
     icon: '⚖️',
-    color: '#D4A55A',
+    color: Colors.accent,
     unlockHint: 'Complete the assessment',
     route: '/(app)/results',
     category: 'result',
@@ -118,7 +119,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     title: 'How You Hold Your Ground',
     subtitle: 'Your boundaries and ability to stay yourself while staying close',
     icon: '🌿',
-    color: '#6B8F71',
+    color: Colors.primary,
     unlockHint: 'Complete the assessment',
     route: '/(app)/results',
     category: 'result',
@@ -140,7 +141,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     title: 'Full Relational Portrait',
     subtitle: 'Your complete pattern analysis across 4 lenses',
     icon: '✨',
-    color: '#6B8F71',
+    color: Colors.primary,
     unlockHint: 'Complete all 6 assessments',
     route: '/(app)/portrait',
     category: 'feature',
@@ -150,7 +151,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     title: 'Talk to Nuance',
     subtitle: 'Your AI relationship guide — always here',
     icon: '✦',
-    color: '#6B8F71',
+    color: Colors.primary,
     unlockHint: 'Complete 1 assessment to start',
     route: '/(app)/chat',
     category: 'feature',
@@ -160,7 +161,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     title: 'Practices & Exercises',
     subtitle: '32 guided practices across 7 modalities',
     icon: '🎯',
-    color: '#C4785B',
+    color: Colors.secondary,
     unlockHint: '',
     route: '/(app)/exercises',
     category: 'feature',
@@ -210,7 +211,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     title: 'Couple Portal',
     subtitle: 'Shared portrait, couple assessments, and coaching',
     icon: '💑',
-    color: '#C4785B',
+    color: Colors.secondary,
     unlockHint: 'Both partners must complete their portraits',
     route: '/(app)/couple-portal',
     category: 'couple',

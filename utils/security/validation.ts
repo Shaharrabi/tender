@@ -5,6 +5,8 @@
  * and rate limiting helpers for Tender.
  */
 
+import { Colors } from '@/constants/theme';
+
 // ─── Email Validation ──────────────────────────────────
 
 const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -44,7 +46,7 @@ export function checkPasswordStrength(password: string): PasswordStrength {
   score = Math.min(score, 4);
 
   const labels: PasswordStrength['label'][] = ['Weak', 'Fair', 'Good', 'Strong', 'Very Strong'];
-  const colors = ['#C4585B', '#D4A55A', '#6BA3A0', '#6B8F71', '#567358'];
+  const colors = [Colors.error, Colors.accent, Colors.calm, Colors.primary, Colors.primaryDark];
 
   return {
     score,

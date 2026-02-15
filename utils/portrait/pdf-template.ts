@@ -10,9 +10,9 @@ import type { IndividualPortrait, CompositeScores } from '@/types/portrait';
 /* ── helpers ────────────────────────────────────────────── */
 
 function scoreColor(score: number): string {
-  if (score >= 70) return '#6B8F71'; // green
-  if (score >= 45) return '#D4A55A'; // amber
-  return '#C4785B'; // warm red
+  if (score >= 70) return '#C4616E'; // primary
+  if (score >= 45) return '#D8A499'; // accent
+  return '#7294D4'; // secondary
 }
 
 function scoreBar(label: string, value: number): string {
@@ -75,14 +75,14 @@ export function generatePortraitHTML(portrait: IndividualPortrait): string {
     /* header */
     .header {
       text-align: center;
-      border-bottom: 2px solid #6B8F71;
+      border-bottom: 2px solid #C4616E;
       padding-bottom: 12px;
       margin-bottom: 20px;
     }
     .header h1 {
       font-size: 22pt;
       margin: 0 0 2px;
-      color: #6B8F71;
+      color: #C4616E;
       letter-spacing: 1px;
     }
     .header .subtitle {
@@ -103,7 +103,7 @@ export function generatePortraitHTML(portrait: IndividualPortrait): string {
     .section-title {
       font-size: 13pt;
       font-weight: 700;
-      color: #6B8F71;
+      color: #C4616E;
       margin: 0 0 8px;
       padding-bottom: 4px;
       border-bottom: 1px solid #E5E5E5;

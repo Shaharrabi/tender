@@ -1,67 +1,82 @@
 /**
- * Design tokens for Tender — "Warm Analytic Minimalism"
+ * Design tokens for Tender — "Wes Anderson"
  *
- * Warm neutrals as the foundation, with sage green (growth),
- * terracotta (warmth/connection), soft amber (highlights),
- * muted indigo (depth/reflection), and soft teal (calm/regulation).
+ * Grand Budapest Hotel meets Moonrise Kingdom.
+ * Dusty rose primary, lobby blue secondary, warm parchment backgrounds,
+ * curated Google Fonts (Jost, Josefin Sans, Playfair Display),
+ * precise geometry, and vintage warmth.
  */
-
-import { Platform } from 'react-native';
 
 // ─── Colors ──────────────────────────────────────────────
 
 export const Colors = {
-  // Primary & secondary
-  primary: '#6B8F71',        // Sage green — growth, positive actions
-  primaryLight: '#8BAF91',
-  primaryDark: '#567358',
-  secondary: '#C4785B',      // Terracotta — warmth, connection
-  secondaryLight: '#D4926F',
-  accent: '#D4A55A',         // Soft amber — highlights, accents
-  depth: '#5B6B8A',          // Muted indigo — depth, reflection
-  calm: '#6BA3A0',           // Soft teal — calm, regulation
+  // Primary — Dusty Rose
+  primary: '#C4616E',
+  primaryLight: '#E6A0C4',    // Mendl's Pink
+  primaryDark: '#8B3A4A',     // Deep Rose
+  primaryFaded: '#F4D5D0',    // Blush Whisper — subtle backgrounds, cards
+
+  // Secondary — Lobby Blue
+  secondary: '#7294D4',
+  secondaryLight: '#C6CDF7',  // Lavender Haze
+  secondaryDark: '#4A6699',   // Twilight Blue
+
+  // Accent
+  accent: '#D8A499',          // Warm Terracotta
+  accentGold: '#D4A843',      // Concierge Gold — premium feel, star ratings
+  accentCream: '#F1BB7B',     // Budapest Cream — warm highlight backgrounds
+
+  // Semantic role colors (unchanged — revisit Phase 2)
+  depth: '#5B6B8A',           // Muted indigo — depth, reflection
+  calm: '#6BA3A0',            // Soft teal — calm, regulation
 
   // Surfaces
-  background: '#FAF8F5',     // Warm white
-  surface: '#F2EDE7',        // Linen — cards, panels
-  surfaceElevated: '#FFFFFF', // Pure white for elevated cards
-  overlay: 'rgba(45, 45, 45, 0.4)',
+  background: '#FDF6F0',      // Warm Parchment — main app background
+  backgroundAlt: '#FAF0E6',   // Linen — alternate sections, card backgrounds
+  surface: '#FFFFFF',          // White — card surfaces, input fields
+  surfaceElevated: '#FFF8F2', // Warm White — elevated cards, modals
+  overlay: 'rgba(45, 34, 38, 0.4)',
 
   // Text
-  text: '#2D2D2D',          // Charcoal
-  textSecondary: '#8A8578',  // Warm gray
-  textMuted: '#B5AFA6',      // Light warm gray
+  text: '#2D2226',            // Warm Almost-Black
+  textSecondary: '#6B5B5E',   // Warm Gray
+  textMuted: '#9B8E91',       // Muted Mauve
   textOnPrimary: '#FFFFFF',
   textOnSecondary: '#FFFFFF',
 
   // Borders
-  border: '#E8E2DA',         // Warm border
-  borderLight: '#F0EBE4',    // Very subtle border
+  border: '#E0D3CE',          // Warm Sand
+  borderLight: '#F0E6E0',     // Faint Blush
+  borderFocus: '#C4616E',     // Dusty Rose — focused inputs
 
   // Semantic
-  success: '#6B8F71',        // Sage green (reuse primary)
-  warning: '#D4A55A',        // Soft amber (reuse accent)
-  error: '#C4585B',          // Warm red
-  errorLight: '#F5E0E0',
+  success: '#6B9080',         // Muted Sage
+  warning: '#D4A843',         // Concierge Gold
+  error: '#C93312',           // Anderson Red
+  errorLight: '#FDEAE5',      // Pale Rose
+
+  // Attachment style quadrants
+  attachmentSecure: '#6B9080',   // Muted Sage — calm, grounded
+  attachmentAnxious: '#C4616E',  // Dusty Rose — conflicted, tender
+  attachmentAvoidant: '#7294D4', // Lobby Blue — distant, cool
+  attachmentFearful: '#D8A499',  // Warm Terracotta — seeking, alert
+
+  // Assessment progress
+  progressTrack: '#F0E6E0',     // Faint Blush — unfilled
+  progressFill: '#C4616E',      // Dusty Rose — filled
+  progressComplete: '#6B9080',  // Muted Sage — completed
 
   // Utility
   white: '#FFFFFF',
-  black: '#2D2D2D',
+  black: '#2D2226',
 };
 
 // ─── Typography ──────────────────────────────────────────
 
 export const FontFamilies = {
-  heading: Platform.select({
-    ios: 'Georgia',
-    android: 'serif',
-    default: 'Georgia, serif',
-  }) as string,
-  body: Platform.select({
-    ios: 'System',
-    android: 'Roboto',
-    default: 'system-ui, -apple-system, sans-serif',
-  }) as string,
+  heading: 'Jost_500Medium',              // Futura-inspired geometric — display & headings
+  body: 'JosefinSans_400Regular',         // Geometric elegance — body & UI text
+  accent: 'PlayfairDisplay_600SemiBold',  // Sophisticated serif — scores, quotes, special moments
 };
 
 export const FontSizes = {
@@ -71,6 +86,142 @@ export const FontSizes = {
   body: 16,
   bodySmall: 14,
   caption: 12,
+};
+
+// ─── Typography Presets (composite styles for gradual adoption) ──
+
+export const Typography = {
+  // Display — Jost (Futura-inspired)
+  displayLarge: {
+    fontFamily: 'Jost_300Light',
+    fontSize: 36,
+    letterSpacing: 3,
+    lineHeight: 44,
+    textTransform: 'uppercase' as const,
+  },
+  displayMedium: {
+    fontFamily: 'Jost_400Regular',
+    fontSize: 28,
+    letterSpacing: 2.5,
+    lineHeight: 36,
+    textTransform: 'uppercase' as const,
+  },
+
+  // Headings — Jost
+  headingXL: {
+    fontFamily: 'Jost_700Bold',
+    fontSize: 28,
+    letterSpacing: 1.5,
+    lineHeight: 36,
+  },
+  headingL: {
+    fontFamily: 'Jost_600SemiBold',
+    fontSize: 24,
+    letterSpacing: 1.2,
+    lineHeight: 32,
+  },
+  headingM: {
+    fontFamily: 'Jost_500Medium',
+    fontSize: 20,
+    letterSpacing: 1,
+    lineHeight: 28,
+  },
+  headingS: {
+    fontFamily: 'Jost_500Medium',
+    fontSize: 17,
+    letterSpacing: 0.8,
+    lineHeight: 24,
+  },
+
+  // Body — Josefin Sans
+  bodyLarge: {
+    fontFamily: 'JosefinSans_400Regular',
+    fontSize: 17,
+    letterSpacing: 0.3,
+    lineHeight: 26,
+  },
+  body: {
+    fontFamily: 'JosefinSans_400Regular',
+    fontSize: 16,
+    letterSpacing: 0.2,
+    lineHeight: 24,
+  },
+  bodySmall: {
+    fontFamily: 'JosefinSans_300Light',
+    fontSize: 14,
+    letterSpacing: 0.2,
+    lineHeight: 20,
+  },
+  bodyMedium: {
+    fontFamily: 'JosefinSans_500Medium',
+    fontSize: 16,
+    letterSpacing: 0.2,
+    lineHeight: 24,
+  },
+
+  // UI Elements
+  button: {
+    fontFamily: 'Jost_600SemiBold',
+    fontSize: 15,
+    letterSpacing: 2,
+    textTransform: 'uppercase' as const,
+  },
+  buttonSmall: {
+    fontFamily: 'Jost_500Medium',
+    fontSize: 13,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase' as const,
+  },
+  label: {
+    fontFamily: 'JosefinSans_500Medium',
+    fontSize: 13,
+    letterSpacing: 1,
+    textTransform: 'uppercase' as const,
+  },
+  caption: {
+    fontFamily: 'JosefinSans_300Light',
+    fontSize: 12,
+    letterSpacing: 0.3,
+    lineHeight: 16,
+  },
+  inputText: {
+    fontFamily: 'JosefinSans_400Regular',
+    fontSize: 16,
+    letterSpacing: 0.2,
+  },
+
+  // Accent / Serif — Playfair Display (use sparingly)
+  serifDisplay: {
+    fontFamily: 'PlayfairDisplay_700Bold',
+    fontSize: 48,
+    letterSpacing: -0.5,
+    lineHeight: 56,
+  },
+  serifHeading: {
+    fontFamily: 'PlayfairDisplay_600SemiBold',
+    fontSize: 24,
+    letterSpacing: 0,
+    lineHeight: 32,
+  },
+  serifBody: {
+    fontFamily: 'PlayfairDisplay_400Regular',
+    fontSize: 18,
+    letterSpacing: 0,
+    lineHeight: 28,
+  },
+  serifItalic: {
+    fontFamily: 'PlayfairDisplay_400Regular_Italic',
+    fontSize: 18,
+    letterSpacing: 0,
+    lineHeight: 28,
+    fontStyle: 'italic' as const,
+  },
+  serifScore: {
+    fontFamily: 'PlayfairDisplay_700Bold',
+    fontSize: 56,
+    letterSpacing: -1,
+    lineHeight: 64,
+  },
 };
 
 // ─── Spacing ─────────────────────────────────────────────
@@ -94,35 +245,36 @@ export const ButtonSizes = {
 };
 
 export const BorderRadius = {
-  sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 24,
+  sm: 4,       // Crisp — Anderson geometric precision
+  md: 8,       // Standard cards
+  lg: 12,      // Buttons, prominent cards
+  xl: 20,      // Modal containers
   pill: 999,
 };
 
 // ─── Shadows ─────────────────────────────────────────────
+// Warm shadow color (#2D2226), not cool gray
 
 export const Shadows = {
   subtle: {
-    shadowColor: '#8A8578',
+    shadowColor: '#2D2226',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,
-    shadowRadius: 2,
+    shadowRadius: 3,
     elevation: 1,
   },
   card: {
-    shadowColor: '#8A8578',
+    shadowColor: '#2D2226',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 2,
+    shadowRadius: 8,
+    elevation: 3,
   },
   elevated: {
-    shadowColor: '#8A8578',
+    shadowColor: '#2D2226',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    elevation: 4,
+    shadowOpacity: 0.10,
+    shadowRadius: 16,
+    elevation: 5,
   },
 };

@@ -37,6 +37,7 @@
  */
 
 import type { HealingStep, HealingPhase } from '@/types/growth';
+import { Colors } from '@/constants/theme';
 
 // ─── Practice-to-Step Mapping ───────────────────────────
 // Maps exercise IDs from the intervention registry to their primary step.
@@ -417,7 +418,7 @@ export const HEALING_PHASES: PhaseDefinition[] = [
     subtitle: 'Making contact with what\u2019s underneath',
     weekRange: [3, 4],
     icon: '\u2764\uFE0F',
-    color: '#C4785B',
+    color: Colors.secondary,
     stepRange: [3, 4],
     stepFocus: 'Release Certainty + Examine Our Part',
   },

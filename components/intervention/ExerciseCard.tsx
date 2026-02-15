@@ -43,9 +43,9 @@ interface ExerciseCardProps {
 // ─── Category Colors ─────────────────────────────────────
 export const CATEGORY_ACCENT_COLORS: Record<InterventionCategory, string> = {
   regulation: '#6BA3A0',   // calm / teal
-  communication: '#C4785B', // secondary / terracotta
-  attachment: '#6B8F71',    // primary / sage
-  values: '#D4A55A',        // accent / amber
+  communication: Colors.secondary, // secondary
+  attachment: Colors.primary,      // primary
+  values: Colors.accent,           // accent
   differentiation: '#5B6B8A', // depth / indigo
 };
 
