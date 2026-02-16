@@ -785,9 +785,9 @@ function FieldAwarenessCard({ fieldAwareness }: { fieldAwareness: FieldAwareness
 
       {/* Score bars */}
       <View style={st.fieldScoresRow}>
-        <FieldScoreBar label="Field Sensitivity" value={fieldAwareness.fieldSensitivity} color={Colors.primary} />
-        <FieldScoreBar label="Boundary Clarity" value={fieldAwareness.boundaryClarity} color={Colors.calm} />
-        <FieldScoreBar label="Pattern Awareness" value={fieldAwareness.patternAwareness} color={Colors.depth} />
+        <FieldScoreBar label="Field Sensitivity" value={fieldAwareness.fieldSensitivity} color={Colors.primary} maxScale={5} />
+        <FieldScoreBar label="Boundary Clarity" value={fieldAwareness.boundaryClarity} color={Colors.calm} maxScale={6} />
+        <FieldScoreBar label="Pattern Awareness" value={fieldAwareness.patternAwareness} color={Colors.depth} maxScale={7} />
       </View>
 
       {/* Metacognitive badge */}
@@ -828,8 +828,8 @@ function FieldAwarenessCard({ fieldAwareness }: { fieldAwareness: FieldAwareness
   );
 }
 
-function FieldScoreBar({ label, value, color }: { label: string; value: number; color: string }) {
-  const pct = Math.max(0, Math.min(100, (value / 7) * 100));
+function FieldScoreBar({ label, value, color, maxScale = 7 }: { label: string; value: number; color: string; maxScale?: number }) {
+  const pct = Math.max(0, Math.min(100, (value / maxScale) * 100));
   const barAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -858,7 +858,7 @@ function FieldScoreBar({ label, value, color }: { label: string; value: number; 
           ]}
         />
       </View>
-      <Text style={st.fieldScoreValue}>{value.toFixed(1)}/7</Text>
+      <Text style={st.fieldScoreValue}>{value.toFixed(1)}/{maxScale}</Text>
     </View>
   );
 }

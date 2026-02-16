@@ -278,8 +278,8 @@ ${fl.fieldAwareness ? `
 <div class="section">
   <div class="section-title">Field Awareness Lens</div>
   <p>${escapeHtml(fl.fieldAwareness.narrative)}</p>
-  ${scoreBar('Field Sensitivity', Math.round((fl.fieldAwareness.fieldSensitivity / 7) * 100))}
-  ${scoreBar('Boundary Clarity', Math.round((fl.fieldAwareness.boundaryClarity / 7) * 100))}
+  ${scoreBar('Field Sensitivity', Math.round((fl.fieldAwareness.fieldSensitivity / 5) * 100))}
+  ${scoreBar('Boundary Clarity', Math.round((fl.fieldAwareness.boundaryClarity / 6) * 100))}
   ${scoreBar('Pattern Awareness', Math.round((fl.fieldAwareness.patternAwareness / 7) * 100))}
 </div>` : ''}
 

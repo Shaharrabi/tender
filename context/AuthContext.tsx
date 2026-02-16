@@ -29,9 +29,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const initSession = async () => {
       try {
         // Race against a timeout so the app never stays stuck on a spinner.
-        // Safari's navigator.locks can hang — the lock adapter in supabase.ts
-        // mitigates this, but we add a safety net just in case.
-        const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000));
+        // Safari can hang on Supabase auth init — keep timeout aggressive.
+        const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000));
         const sessionPromise = supabase.auth.getSession()
           .then((r) => r?.data?.session ?? null)
           .catch(() => null);

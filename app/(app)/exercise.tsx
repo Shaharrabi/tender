@@ -17,10 +17,12 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Colors, Spacing, FontSizes, FontFamilies } from '@/constants/theme';
 import { useAuth } from '@/context/AuthContext';
+import { useGamification } from '@/context/GamificationContext';
 import { getExerciseById } from '@/utils/interventions/registry';
 import { saveCompletion } from '@/services/intervention';
 import { incrementPracticeCount, addInsight, upsertGrowthEdge } from '@/services/growth';
 import ExerciseFlow from '@/components/intervention/ExerciseFlow';
+import type { StepResponse } from '@/components/intervention/ExerciseFlow';
 
 /**
  * Maps exercise categories to possible growth edge IDs.
@@ -39,14 +41,25 @@ export default function ExerciseScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
+  const { awardXP } = useGamification();
 
   const exercise = id ? getExerciseById(id) : undefined;
 
-  const handleComplete = async (reflection?: string, rating?: number) => {
+  const handleComplete = async (reflection?: string, rating?: number, stepResponses?: StepResponse[]) => {
     if (user && exercise) {
       try {
-        // 1. Save exercise completion
-        await saveCompletion(user.id, exercise.id, reflection, rating);
+        // 1. Save exercise completion (with step responses for journal)
+        await saveCompletion(
+          user.id,
+          exercise.id,
+          reflection,
+          rating,
+          stepResponses,
+          exercise.title
+        );
+
+        // 1b. Award XP for exercise completion (non-blocking)
+        awardXP('lesson_complete', exercise.id, `Completed: ${exercise.title}`).catch(() => {});
 
         // 2. Update growth tracking for matching edges
         const edgeIds = CATEGORY_TO_EDGE[exercise.category] ?? [];

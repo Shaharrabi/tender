@@ -83,9 +83,9 @@ export interface ValuesLens {
 
 export interface FieldAwarenessLens {
   narrative: string;           // 2-3 paragraph attachment-tailored story
-  fieldSensitivity: number;    // 0-7 mean from SSEIT supplement
-  boundaryClarity: number;     // 0-7 mean from DSI-R supplement
-  patternAwareness: number;    // 0-7 mean from ECR-R supplement
+  fieldSensitivity: number;    // 1-5 mean from SSEIT supplement (5-point scale)
+  boundaryClarity: number;     // 1-6 mean from DSI-R supplement (6-point scale)
+  patternAwareness: number;    // 1-7 mean from ECR-R supplement (7-point scale)
   metacognitiveCapacity: boolean; // ECR-R cycle awareness ≥ 5
   crossPatterns: string[];     // Supplement cross-reference insights
 }

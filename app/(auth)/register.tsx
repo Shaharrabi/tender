@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
-import { supabase } from '@/services/supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Colors, Spacing, FontSizes, ButtonSizes, FontFamilies, BorderRadius } from '@/constants/theme';
 import {
   isValidEmail,
@@ -92,19 +92,14 @@ export default function RegisterScreen() {
     if (authError) {
       setError(authError);
     } else {
-      // Save display name to user_profiles
+      // Stash name so the onboarding flow can save it reliably
+      // (session may not be ready yet at this point)
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          await supabase.from('user_profiles').upsert({
-            user_id: session.user.id,
-            display_name: firstName.trim(),
-          }, { onConflict: 'user_id' });
-        }
+        await AsyncStorage.setItem('pending_display_name', firstName.trim());
       } catch {
         // Non-blocking — name will fall back to email prefix
       }
-      router.replace('/(app)/home');
+      router.replace('/(onboarding)/welcome');
     }
   };
 

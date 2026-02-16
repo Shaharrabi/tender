@@ -24,14 +24,20 @@ export function GuestProvider({ children }: { children: React.ReactNode }) {
   const [guestScores, setGuestScores] = useState<Record<string, any>>({});
 
   // Hydrate guest mode flag and any persisted scores on mount
+  // Wrapped in a timeout so Safari/private-browsing AsyncStorage stalls
+  // don't block the app indefinitely.
   useEffect(() => {
     const hydrate = async () => {
       try {
-        const stored = await AsyncStorage.getItem(GUEST_MODE_KEY);
-        if (stored === 'true') {
-          setIsGuest(true);
-          await loadAllScores();
-        }
+        const timeoutGuard = new Promise<void>((resolve) => setTimeout(resolve, 2000));
+        const load = async () => {
+          const stored = await AsyncStorage.getItem(GUEST_MODE_KEY);
+          if (stored === 'true') {
+            setIsGuest(true);
+            await loadAllScores();
+          }
+        };
+        await Promise.race([load(), timeoutGuard]);
       } catch {
         // Storage unavailable — stay non-guest
       }

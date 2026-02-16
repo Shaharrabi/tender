@@ -3,18 +3,25 @@
  *
  * Added after the standard 46 DSI-R items.
  * Scored separately — does not affect original DSI-R scoring.
+ *
+ * IMPORTANT: Uses 6-point Likert scale to match the original DSI-R
+ * (Skowron & Schmitt, 2003). The original DSI-R deliberately uses
+ * 6 points with NO neutral midpoint — this is a theoretical choice
+ * aligned with Bowen's model of differentiation. The labels are
+ * self-descriptive ("true of me") rather than opinion-based
+ * ("agree/disagree"). Do NOT change this to a 7-point scale or
+ * add a neutral option.
  */
 
 import type { GenericQuestion, LikertOption } from '@/types';
 
 export const DSI_R_SUPPLEMENT_LIKERT: LikertOption[] = [
-  { value: 1, label: 'Strongly Disagree' },
-  { value: 2, label: 'Disagree' },
-  { value: 3, label: 'Somewhat Disagree' },
-  { value: 4, label: 'Neutral' },
-  { value: 5, label: 'Somewhat Agree' },
-  { value: 6, label: 'Agree' },
-  { value: 7, label: 'Strongly Agree' },
+  { value: 1, label: 'Not at all true of me' },
+  { value: 2, label: 'Slightly true of me' },
+  { value: 3, label: 'Somewhat true of me' },
+  { value: 4, label: 'Moderately true of me' },
+  { value: 5, label: 'Mostly true of me' },
+  { value: 6, label: 'Very true of me' },
 ];
 
 export const DSI_R_SUPPLEMENT_QUESTIONS: GenericQuestion[] = [
@@ -34,7 +41,7 @@ export const DSI_R_SUPPLEMENT_QUESTIONS: GenericQuestion[] = [
   },
   {
     id: 49,
-    text: 'I know where I end and my partner begins \u2014 emotionally, not just physically.',
+    text: 'I know where I end and my partner begins — emotionally, not just physically.',
     inputType: 'likert',
     subscale: 'boundary-awareness',
     likertScale: DSI_R_SUPPLEMENT_LIKERT,
@@ -59,7 +66,8 @@ export interface DSIRSupplementScores {
 export function scoreDSIRSupplement(
   responses: (number | string | string[] | null)[],
 ): DSIRSupplementScores {
-  const nums = responses.map((r) => (typeof r === 'number' ? r : 4));
+  // Default to 3 (approximate midpoint of 6-point scale) if response is missing
+  const nums = responses.map((r) => (typeof r === 'number' ? r : 3));
 
   return {
     closenessWithIdentity: nums[0],

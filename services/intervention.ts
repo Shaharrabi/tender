@@ -3,7 +3,7 @@
  */
 
 import { supabase } from './supabase';
-import type { ExerciseCompletion } from '@/types/intervention';
+import type { ExerciseCompletion, StepResponseEntry } from '@/types/intervention';
 
 // ─── Save Completion ────────────────────────────────────
 
@@ -11,15 +11,21 @@ export async function saveCompletion(
   userId: string,
   exerciseId: string,
   reflection?: string,
-  rating?: number
+  rating?: number,
+  stepResponses?: StepResponseEntry[],
+  exerciseName?: string
 ): Promise<ExerciseCompletion> {
   const { data, error } = await supabase
     .from('exercise_completions')
     .insert({
       user_id: userId,
       exercise_id: exerciseId,
+      exercise_name: exerciseName ?? null,
       reflection: reflection ?? null,
       rating: rating ?? null,
+      step_responses: stepResponses && stepResponses.length > 0
+        ? stepResponses
+        : null,
       completed_at: new Date().toISOString(),
     })
     .select()
@@ -69,8 +75,10 @@ function mapCompletion(row: any): ExerciseCompletion {
     id: row.id,
     userId: row.user_id,
     exerciseId: row.exercise_id,
+    exerciseName: row.exercise_name ?? undefined,
     completedAt: row.completed_at,
     reflection: row.reflection ?? undefined,
     rating: row.rating ?? undefined,
+    stepResponses: row.step_responses ?? undefined,
   };
 }

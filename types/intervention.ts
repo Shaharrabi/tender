@@ -65,7 +65,17 @@ export interface ExerciseCompletion {
   id: string;
   userId: string;
   exerciseId: string;
+  exerciseName?: string;
   completedAt: string;
   reflection?: string;
   rating?: number;
+  stepResponses?: StepResponseEntry[];
+}
+
+/** A single step response within an exercise completion. */
+export interface StepResponseEntry {
+  step: number;
+  prompt: string;
+  response: string;
+  type: string;
 }

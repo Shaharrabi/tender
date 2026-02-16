@@ -35,6 +35,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '@/context/AuthContext';
 import { useGuest } from '@/context/GuestContext';
+import { useGamification } from '@/context/GamificationContext';
 import {
   getUnlockState,
   getNextAssessment,
@@ -64,6 +65,8 @@ import NudgeCarousel from '@/components/NudgeCarousel';
 import { getNudges } from '@/utils/nudges';
 import { getUserConsent } from '@/services/consent';
 import { recordDailyEngagement, getStreakData, type StreakData } from '@/services/streaks';
+import { SoundHaptics } from '@/services/SoundHapticsService';
+import { XPProgressBar } from '@/components/gamification/XPProgressBar';
 import StreakBanner from '@/components/StreakBanner';
 import { getCurrentStepNumber } from '@/services/steps';
 import { getTaglineForStep, getPracticesForStep, getStep } from '@/utils/steps/twelve-steps';
@@ -139,6 +142,7 @@ const DAILY_GREETINGS = [
 export default function HomeScreen() {
   const { user, signOut } = useAuth();
   const { isGuest, clearGuestData } = useGuest();
+  const { awardXP: awardGamificationXP } = useGamification();
   const router = useRouter();
 
   // Assessment state
@@ -210,7 +214,28 @@ export default function HomeScreen() {
     setLoading(true);
 
     try {
-      // 0. Load display name from user_profiles
+      // 0a. Auto-clear stuck demo mode on startup
+      try {
+        const demoFlag = await AsyncStorage.getItem('demo_mode');
+        if (demoFlag === 'true') {
+          console.log('[Home] Clearing stuck demo data...');
+          await clearDemoAssessments(user.id);
+          await supabase.from('portraits').delete().eq('user_id', user.id);
+          // Clear stale assessment progress keys
+          await AsyncStorage.removeItem('tender_assessment_progress').catch(() => {});
+          const allConfigs = getAllAssessments();
+          for (const config of allConfigs) {
+            await AsyncStorage.removeItem(config.progressKey).catch(() => {});
+          }
+          await AsyncStorage.removeItem('demo_mode');
+          setIsDemo(false);
+          setPortrait(null);
+        }
+      } catch {
+        // Safe to ignore
+      }
+
+      // 0b. Load display name from user_profiles
       try {
         const { data: profile } = await supabase
           .from('user_profiles')
@@ -219,6 +244,25 @@ export default function HomeScreen() {
           .single();
         if (profile?.display_name) {
           setDisplayName(profile.display_name);
+        } else {
+          // Fallback: check if name was stashed during registration but never saved
+          try {
+            const stashedName = await AsyncStorage.getItem('pending_display_name');
+            if (stashedName) {
+              setDisplayName(stashedName);
+              // Try to save it to user_profiles now
+              await supabase
+                .from('user_profiles')
+                .upsert(
+                  { user_id: user.id, display_name: stashedName },
+                  { onConflict: 'user_id' }
+                );
+              await AsyncStorage.removeItem('pending_display_name').catch(() => {});
+              console.log('[Home] Recovered display name from AsyncStorage:', stashedName);
+            }
+          } catch {
+            // Non-blocking
+          }
         }
       } catch {
         // Fall back to email-based name
@@ -666,6 +710,8 @@ export default function HomeScreen() {
         note
       );
       setTodaysCheckIn(ci);
+      // Award XP for daily check-in (non-blocking)
+      awardGamificationXP('daily_checkin').catch(() => {});
     } catch (err: any) {
       console.error('Check-in save failed:', err);
       Alert.alert(
@@ -744,6 +790,12 @@ export default function HomeScreen() {
     try {
       await supabase.from('portraits').delete().eq('user_id', user.id);
       await clearDemoAssessments(user.id);
+      // Clear stale assessment progress keys
+      await AsyncStorage.removeItem('tender_assessment_progress').catch(() => {});
+      const allConfigs = getAllAssessments();
+      for (const config of allConfigs) {
+        await AsyncStorage.removeItem(config.progressKey).catch(() => {});
+      }
       await AsyncStorage.removeItem('demo_mode');
       setPortrait(null);
       setWeareProfile(null);
@@ -864,6 +916,13 @@ export default function HomeScreen() {
           )}
         </View>
 
+        {/* ═══ XP & LEVEL PROGRESS ═══════════════════════════ */}
+        {!isGuest && (
+          <View style={{ paddingHorizontal: Spacing.lg, marginBottom: Spacing.md }}>
+            <XPProgressBar />
+          </View>
+        )}
+
         {/* ═══ 2. TODAY'S FOCUS (ONE THING) ═══════════════════ */}
         {todaysExercise ? (
           <View style={styles.todaysFocusSection}>
@@ -967,7 +1026,7 @@ export default function HomeScreen() {
                   </Text>
                   <TouchableOpacity
                     style={styles.tenderStartButton}
-                    onPress={() => router.push('/(app)/tender-assessment' as any)}
+                    onPress={() => { SoundHaptics.tap(); router.push('/(app)/tender-assessment' as any); }}
                     activeOpacity={0.7}
                   >
                     <Text style={styles.tenderStartButtonText}>Start Assessment</Text>
@@ -985,7 +1044,7 @@ export default function HomeScreen() {
                   )}
                   <TouchableOpacity
                     style={styles.tenderStartButton}
-                    onPress={() => router.push('/(app)/tender-assessment' as any)}
+                    onPress={() => { SoundHaptics.tap(); router.push('/(app)/tender-assessment' as any); }}
                     activeOpacity={0.7}
                   >
                     <Text style={styles.tenderStartButtonText}>Continue</Text>
@@ -1116,7 +1175,7 @@ export default function HomeScreen() {
                           key={ex.id}
                           style={[styles.quickPracticeRow, isDone && styles.quickPracticeRowDone]}
                           activeOpacity={0.7}
-                          onPress={() => router.push({ pathname: '/(app)/exercise', params: { id: ex.id } } as any)}
+                          onPress={() => { SoundHaptics.tapSoft(); router.push({ pathname: '/(app)/exercise', params: { id: ex.id } } as any); }}
                         >
                           {isDone && (
                             <Text style={styles.quickPracticeCheck}>{'\u2713'}</Text>
@@ -1156,7 +1215,7 @@ export default function HomeScreen() {
         {weareProfile && (couple || isDemo) && (
           <TouchableOpacity
             style={styles.weareSummaryCard}
-            onPress={() => router.push('/(app)/couple-portal' as any)}
+            onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/couple-portal' as any); }}
             activeOpacity={0.8}
           >
             <View style={styles.weareSummaryHeader}>
@@ -1269,7 +1328,7 @@ export default function HomeScreen() {
             {hasPortrait && (
               <TouchableOpacity
                 style={styles.featureCard}
-                onPress={() => router.push('/(app)/portrait' as any)}
+                onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/portrait' as any); }}
                 activeOpacity={0.8}
               >
                 <View style={styles.featureCardHeader}>
@@ -1390,7 +1449,7 @@ export default function HomeScreen() {
                   </Text>
                   <TouchableOpacity
                     style={styles.askNuanceButton}
-                    onPress={() => router.push('/(app)/chat' as any)}
+                    onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/chat' as any); }}
                     activeOpacity={0.7}
                   >
                     <Text style={styles.askNuanceText}>
@@ -2430,13 +2489,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   growthPlanPhaseName: {
+    flex: 1,
     fontSize: FontSizes.bodySmall,
     fontWeight: '600' as const,
     color: Colors.text,
+    marginRight: Spacing.sm,
   },
   growthPlanPhaseWeeks: {
     fontSize: FontSizes.bodySmall,
     color: Colors.textSecondary,
+    flexShrink: 0,
   },
   quickPracticeSection: {
     marginBottom: Spacing.md,

@@ -3,6 +3,11 @@
  *
  * Added after the standard 33 SSEIT items.
  * Scored separately — does not affect original SSEIT scoring.
+ *
+ * IMPORTANT: Uses 5-point Likert scale to match the original SSEIT
+ * (Schutte et al., 1998). The original SSEIT uses:
+ *   1 = Strongly Disagree → 5 = Strongly Agree
+ * Do NOT change this to a 7-point scale.
  */
 
 import type { GenericQuestion, LikertOption } from '@/types';
@@ -10,11 +15,9 @@ import type { GenericQuestion, LikertOption } from '@/types';
 export const SSEIT_SUPPLEMENT_LIKERT: LikertOption[] = [
   { value: 1, label: 'Strongly Disagree' },
   { value: 2, label: 'Disagree' },
-  { value: 3, label: 'Somewhat Disagree' },
-  { value: 4, label: 'Neutral' },
-  { value: 5, label: 'Somewhat Agree' },
-  { value: 6, label: 'Agree' },
-  { value: 7, label: 'Strongly Agree' },
+  { value: 3, label: 'Neither Agree nor Disagree' },
+  { value: 4, label: 'Agree' },
+  { value: 5, label: 'Strongly Agree' },
 ];
 
 export const SSEIT_SUPPLEMENT_QUESTIONS: GenericQuestion[] = [
@@ -27,7 +30,7 @@ export const SSEIT_SUPPLEMENT_QUESTIONS: GenericQuestion[] = [
   },
   {
     id: 35,
-    text: 'I notice when the space between me and my partner shifts \u2014 even when neither of us has said anything.',
+    text: 'I notice when the space between me and my partner shifts — even when neither of us has said anything.',
     inputType: 'likert',
     subscale: 'field-sensitivity',
     likertScale: SSEIT_SUPPLEMENT_LIKERT,
@@ -51,7 +54,8 @@ export interface SSEITSupplementScores {
 export function scoreSSEITSupplement(
   responses: (number | string | string[] | null)[],
 ): SSEITSupplementScores {
-  const nums = responses.map((r) => (typeof r === 'number' ? r : 4));
+  // Default to 3 (midpoint of 5-point scale) if response is missing
+  const nums = responses.map((r) => (typeof r === 'number' ? r : 3));
 
   return {
     roomSensing: nums[0],

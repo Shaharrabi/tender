@@ -138,10 +138,10 @@ export const DEMO_SUPPLEMENTS: SupplementScores = {
     patternAwarenessMean: 4.4,
   },
   sseit: {
-    roomSensing: 6,             // Strong room-reading ability
-    relationalShiftAwareness: 6, // Picks up on relational shifts quickly
-    emotionDifferentiation: 3,  // Struggles to distinguish own vs partner's emotions
-    fieldSensitivityMean: 5.0,
+    roomSensing: 5,             // Strong room-reading ability (max 5 on 5-point scale)
+    relationalShiftAwareness: 5, // Picks up on relational shifts quickly (max 5)
+    emotionDifferentiation: 2,  // Struggles to distinguish own vs partner's emotions
+    fieldSensitivityMean: 4.0,  // High on 5-point scale
   },
   dsir: {
     closenessWithIdentity: 4,
@@ -251,5 +251,5 @@ export async function clearDemoAssessments(userId: string): Promise<void> {
     .from('assessments')
     .delete()
     .eq('user_id', userId)
-    .in('type', ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'ipip-neo-120', 'values']);
+    .in('type', ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'ipip-neo-120', 'values', 'relational-field']);
 }

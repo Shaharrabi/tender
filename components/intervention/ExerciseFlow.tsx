@@ -1,7 +1,13 @@
 /**
- * ExerciseFlow — Enhanced step-by-step exercise runner.
+ * ExerciseFlow — Enhanced step-by-step exercise runner with cascading data.
  *
- * Features:
+ * Phase 3 enhancements:
+ * - Previous responses cascade into subsequent steps (visible above input)
+ * - Summary screen shows all responses before rating
+ * - onComplete passes step_responses JSONB for database persistence
+ * - "Save to Journal" flow integrated into completion
+ *
+ * Original features:
  * - Animated color-coded progress bar with "Step X of Y"
  * - Smooth slide-left transitions between steps
  * - Step-specific rendering:
@@ -41,9 +47,23 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 // ─── Timer ring constants ────────────────────────────────
 const RING_SIZE = 180;
 const RING_STROKE = 8;
+
+// ─── Exported types for step responses ───────────────────
+
+export interface StepResponse {
+  step: number;
+  prompt: string;
+  response: string;
+  type: string;
+}
+
 interface ExerciseFlowProps {
   exercise: Intervention;
-  onComplete: (reflection?: string, rating?: number) => void;
+  onComplete: (
+    reflection?: string,
+    rating?: number,
+    stepResponses?: StepResponse[]
+  ) => void;
   onExit: () => void;
 }
 
@@ -54,7 +74,7 @@ export default function ExerciseFlow({
 }: ExerciseFlowProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [responses, setResponses] = useState<Record<number, string>>({});
-  const [completed, setCompleted] = useState(false);
+  const [phase, setPhase] = useState<'steps' | 'summary' | 'complete'>('steps');
   const [rating, setRating] = useState<number | undefined>(undefined);
   const [finalReflection, setFinalReflection] = useState('');
 
@@ -70,6 +90,46 @@ export default function ExerciseFlow({
 
   const totalSteps = exercise.steps.length;
   const isLastStep = currentIndex === totalSteps - 1;
+
+  // ─── Build previous responses for cascading display ────
+  const getPreviousResponses = useCallback(
+    (upToIndex: number): StepResponse[] => {
+      const result: StepResponse[] = [];
+      for (let i = 0; i < upToIndex; i++) {
+        const step = exercise.steps[i];
+        const text = responses[i];
+        // Only include steps that have text responses (prompts/reflections)
+        if (text && text.trim().length > 0) {
+          result.push({
+            step: i + 1,
+            prompt: step.title,
+            response: text.trim(),
+            type: step.type,
+          });
+        }
+      }
+      return result;
+    },
+    [exercise.steps, responses]
+  );
+
+  // ─── Build all step responses for saving ───────────────
+  const getAllStepResponses = useCallback((): StepResponse[] => {
+    const result: StepResponse[] = [];
+    for (let i = 0; i < exercise.steps.length; i++) {
+      const step = exercise.steps[i];
+      const text = responses[i];
+      if (text && text.trim().length > 0) {
+        result.push({
+          step: i + 1,
+          prompt: step.title,
+          response: text.trim(),
+          type: step.type,
+        });
+      }
+    }
+    return result;
+  }, [exercise.steps, responses]);
 
   // Animate progress bar
   useEffect(() => {
@@ -88,7 +148,7 @@ export default function ExerciseFlow({
 
   // Completion celebration animation
   useEffect(() => {
-    if (completed) {
+    if (phase === 'complete') {
       Animated.sequence([
         Animated.parallel([
           Animated.spring(checkScale, {
@@ -110,7 +170,7 @@ export default function ExerciseFlow({
         }),
       ]).start();
     }
-  }, [completed, checkScale, checkOpacity, celebrationFade]);
+  }, [phase, checkScale, checkOpacity, celebrationFade]);
 
   const animateTransition = useCallback(
     (direction: 'forward' | 'back', cb: () => void) => {
@@ -150,7 +210,8 @@ export default function ExerciseFlow({
 
   const handleNext = () => {
     if (isLastStep) {
-      animateTransition('forward', () => setCompleted(true));
+      // Go to summary screen instead of directly to completion
+      animateTransition('forward', () => setPhase('summary'));
     } else {
       animateTransition('forward', () =>
         setCurrentIndex((prev) => prev + 1)
@@ -170,15 +231,137 @@ export default function ExerciseFlow({
     setResponses((prev) => ({ ...prev, [index]: text }));
   };
 
-  const handleFinish = () => {
-    onComplete(finalReflection || undefined, rating);
+  const handleSummaryBack = () => {
+    animateTransition('back', () => {
+      setPhase('steps');
+      // Go back to last step
+      setCurrentIndex(totalSteps - 1);
+    });
   };
+
+  const handleSummaryContinue = () => {
+    animateTransition('forward', () => setPhase('complete'));
+  };
+
+  const handleFinish = () => {
+    const stepResponses = getAllStepResponses();
+    onComplete(
+      finalReflection || undefined,
+      rating,
+      stepResponses.length > 0 ? stepResponses : undefined
+    );
+  };
+
+  // ═══════════════════════════════════════════════════════
+  //  SUMMARY SCREEN (Phase 3 — between steps and completion)
+  // ═══════════════════════════════════════════════════════
+
+  if (phase === 'summary') {
+    const allResponses = getAllStepResponses();
+    const hasResponses = allResponses.length > 0;
+
+    return (
+      <View style={styles.container}>
+        {/* Progress header */}
+        <View style={styles.progressSection}>
+          <View style={styles.progressHeader}>
+            <Text style={styles.progressLabel}>Your Responses</Text>
+            <Text style={styles.exerciseTitle}>{exercise.title}</Text>
+          </View>
+          <View style={styles.progressTrack}>
+            <View style={[styles.progressFill, { width: '100%' }]} />
+          </View>
+        </View>
+
+        <Animated.View
+          style={[
+            styles.stepContainer,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateX: slideAnim }],
+            },
+          ]}
+        >
+          <ScrollView
+            style={styles.stepScroll}
+            contentContainerStyle={styles.stepContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {hasResponses ? (
+              <>
+                <Text style={summaryStyles.summaryTitle}>
+                  Here's what you shared
+                </Text>
+                <Text style={summaryStyles.summarySubtitle}>
+                  Take a moment to read through your responses.
+                </Text>
+
+                {allResponses.map((item, idx) => (
+                  <View key={idx} style={summaryStyles.responseCard}>
+                    <View style={summaryStyles.responseHeader}>
+                      <View style={summaryStyles.stepBadge}>
+                        <Text style={summaryStyles.stepBadgeText}>
+                          {item.step}
+                        </Text>
+                      </View>
+                      <Text style={summaryStyles.responsePrompt}>
+                        {item.prompt}
+                      </Text>
+                    </View>
+                    <Text style={summaryStyles.responseText}>
+                      {item.response}
+                    </Text>
+                  </View>
+                ))}
+
+                <View style={summaryStyles.editHint}>
+                  <Text style={summaryStyles.editHintText}>
+                    Want to change something? Tap "Back" to edit your responses.
+                  </Text>
+                </View>
+              </>
+            ) : (
+              <View style={summaryStyles.emptyState}>
+                <Text style={summaryStyles.emptyIcon}>{'\u{1F4DD}'}</Text>
+                <Text style={summaryStyles.emptyTitle}>No written responses</Text>
+                <Text style={summaryStyles.emptyText}>
+                  This exercise focused on experiential practice.
+                  You can still add a reflection on the next screen.
+                </Text>
+              </View>
+            )}
+          </ScrollView>
+        </Animated.View>
+
+        {/* Navigation */}
+        <View style={styles.navigation}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={handleSummaryBack}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.backButtonText}>{'\u2039'} Back</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.nextButton}
+            onPress={handleSummaryContinue}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.nextButtonText}>
+              Continue {'\u203A'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
 
   // ═══════════════════════════════════════════════════════
   //  COMPLETION SCREEN
   // ═══════════════════════════════════════════════════════
 
-  if (completed) {
+  if (phase === 'complete') {
     return (
       <ScrollView
         style={styles.container}
@@ -289,6 +472,7 @@ export default function ExerciseFlow({
   // ═══════════════════════════════════════════════════════
 
   const step = exercise.steps[currentIndex];
+  const previousResponses = getPreviousResponses(currentIndex);
 
   return (
     <View style={styles.container}>
@@ -336,6 +520,7 @@ export default function ExerciseFlow({
             step={step}
             value={responses[currentIndex]}
             onChangeText={(text) => handleResponseChange(currentIndex, text)}
+            previousResponses={previousResponses}
           />
         </ScrollView>
       </Animated.View>
@@ -366,13 +551,114 @@ export default function ExerciseFlow({
           activeOpacity={0.7}
         >
           <Text style={styles.nextButtonText}>
-            {isLastStep ? 'Complete \u2713' : 'Next \u203A'}
+            {isLastStep ? 'Review \u203A' : 'Next \u203A'}
           </Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 }
+
+// ═══════════════════════════════════════════════════════════
+//  PreviousResponses — cascading display of earlier answers
+// ═══════════════════════════════════════════════════════════
+
+function PreviousResponses({ responses }: { responses: StepResponse[] }) {
+  if (responses.length === 0) return null;
+
+  return (
+    <View style={cascadeStyles.container}>
+      <View style={cascadeStyles.header}>
+        <View style={cascadeStyles.headerLine} />
+        <Text style={cascadeStyles.headerText}>Your earlier responses</Text>
+        <View style={cascadeStyles.headerLine} />
+      </View>
+
+      {responses.map((item, idx) => (
+        <View key={idx} style={cascadeStyles.responseItem}>
+          <View style={cascadeStyles.dotColumn}>
+            <View style={cascadeStyles.dot} />
+            {idx < responses.length - 1 && (
+              <View style={cascadeStyles.connector} />
+            )}
+          </View>
+          <View style={cascadeStyles.responseContent}>
+            <Text style={cascadeStyles.promptLabel}>{item.prompt}</Text>
+            <Text style={cascadeStyles.responseText}>{item.response}</Text>
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+const cascadeStyles = StyleSheet.create({
+  container: {
+    marginBottom: Spacing.lg,
+    paddingBottom: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.borderLight,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginBottom: Spacing.md,
+  },
+  headerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: Colors.borderLight,
+  },
+  headerText: {
+    fontSize: FontSizes.caption,
+    fontFamily: 'JosefinSans_400Regular',
+    color: Colors.textMuted,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  responseItem: {
+    flexDirection: 'row',
+    marginBottom: Spacing.sm,
+  },
+  dotColumn: {
+    width: 20,
+    alignItems: 'center',
+    paddingTop: 6,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.primaryLight,
+  },
+  connector: {
+    flex: 1,
+    width: 1.5,
+    backgroundColor: Colors.borderLight,
+    marginTop: 4,
+  },
+  responseContent: {
+    flex: 1,
+    backgroundColor: Colors.backgroundAlt,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.sm + 2,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+  },
+  promptLabel: {
+    fontSize: FontSizes.caption,
+    fontFamily: 'Jost_500Medium',
+    color: Colors.textSecondary,
+    marginBottom: 4,
+  },
+  responseText: {
+    fontSize: FontSizes.bodySmall,
+    fontFamily: 'JosefinSans_400Regular',
+    color: Colors.text,
+    lineHeight: 20,
+  },
+});
 
 // ═══════════════════════════════════════════════════════════
 //  StepRenderer — renders each step type with unique styling
@@ -382,23 +668,49 @@ function StepRenderer({
   step,
   value,
   onChangeText,
+  previousResponses,
 }: {
   step: ExerciseStep;
   value?: string;
   onChangeText?: (text: string) => void;
+  previousResponses: StepResponse[];
 }) {
   switch (step.type) {
     case 'instruction':
-      return <InstructionStep step={step} />;
+      return (
+        <>
+          {previousResponses.length > 0 && (
+            <PreviousResponses responses={previousResponses} />
+          )}
+          <InstructionStep step={step} />
+        </>
+      );
     case 'reflection':
       return (
-        <ReflectionStep step={step} value={value} onChangeText={onChangeText} />
+        <>
+          {previousResponses.length > 0 && (
+            <PreviousResponses responses={previousResponses} />
+          )}
+          <ReflectionStep step={step} value={value} onChangeText={onChangeText} />
+        </>
       );
     case 'timer':
-      return <TimerStep step={step} />;
+      return (
+        <>
+          {previousResponses.length > 0 && (
+            <PreviousResponses responses={previousResponses} />
+          )}
+          <TimerStep step={step} />
+        </>
+      );
     case 'prompt':
       return (
-        <PromptStep step={step} value={value} onChangeText={onChangeText} />
+        <>
+          {previousResponses.length > 0 && (
+            <PreviousResponses responses={previousResponses} />
+          )}
+          <PromptStep step={step} value={value} onChangeText={onChangeText} />
+        </>
       );
     default:
       return <InstructionStep step={step} />;
@@ -690,6 +1002,102 @@ function PromptStep({
     </View>
   );
 }
+
+// ═══════════════════════════════════════════════════════════
+//  Summary screen styles
+// ═══════════════════════════════════════════════════════════
+
+const summaryStyles = StyleSheet.create({
+  summaryTitle: {
+    fontSize: FontSizes.headingL,
+    fontWeight: '700',
+    fontFamily: FontFamilies.heading,
+    color: Colors.text,
+    marginBottom: Spacing.xs,
+  },
+  summarySubtitle: {
+    fontSize: FontSizes.body,
+    fontFamily: 'JosefinSans_300Light',
+    color: Colors.textSecondary,
+    marginBottom: Spacing.lg,
+    lineHeight: 24,
+  },
+  responseCard: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
+    marginBottom: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+    ...Shadows.subtle,
+  },
+  responseHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginBottom: Spacing.sm,
+  },
+  stepBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: Colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepBadgeText: {
+    fontSize: 13,
+    fontFamily: 'PlayfairDisplay_700Bold',
+    color: Colors.white,
+  },
+  responsePrompt: {
+    flex: 1,
+    fontSize: FontSizes.bodySmall,
+    fontFamily: 'Jost_500Medium',
+    color: Colors.textSecondary,
+  },
+  responseText: {
+    fontSize: FontSizes.body,
+    fontFamily: 'JosefinSans_400Regular',
+    color: Colors.text,
+    lineHeight: 24,
+    paddingLeft: 28 + Spacing.sm, // Align with text after badge
+  },
+  editHint: {
+    paddingVertical: Spacing.md,
+    alignItems: 'center',
+  },
+  editHintText: {
+    fontSize: FontSizes.caption,
+    fontFamily: 'JosefinSans_400Regular',
+    color: Colors.textMuted,
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+  emptyState: {
+    alignItems: 'center',
+    paddingVertical: Spacing.xxl,
+    gap: Spacing.sm,
+  },
+  emptyIcon: {
+    fontSize: 48,
+    marginBottom: Spacing.sm,
+  },
+  emptyTitle: {
+    fontSize: FontSizes.headingM,
+    fontFamily: FontFamilies.heading,
+    fontWeight: '600',
+    color: Colors.text,
+  },
+  emptyText: {
+    fontSize: FontSizes.body,
+    fontFamily: 'JosefinSans_400Regular',
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 24,
+    paddingHorizontal: Spacing.lg,
+  },
+});
 
 // ═══════════════════════════════════════════════════════════
 //  Step-type styles

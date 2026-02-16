@@ -27,8 +27,8 @@ export function analyzeFieldAwareness(
   tailoring: TailoringContext
 ): FieldAwarenessLens {
   // Extract scores with defaults for missing supplements
-  const fieldSensitivity = supplements.sseit?.fieldSensitivityMean ?? 4;
-  const boundaryClarity = supplements.dsir?.boundaryAwarenessMean ?? 4;
+  const fieldSensitivity = supplements.sseit?.fieldSensitivityMean ?? 3;   // midpoint of 5-point scale
+  const boundaryClarity = supplements.dsir?.boundaryAwarenessMean ?? 3.5; // midpoint of 6-point scale
   const patternAwareness = supplements.ecrr?.patternAwarenessMean ?? 4;
   const cycleAwareness = supplements.ecrr?.cycleAwareness ?? 4;
   const metacognitiveCapacity = cycleAwareness >= 5;
@@ -105,33 +105,34 @@ function buildCrossPatterns(
   }
 
   // SSEIT E1+E2 high but E3 low — absorb everything
+  // (SSEIT supplement uses 5-point scale: 1–5)
   if (
     sup.sseit &&
-    sup.sseit.roomSensing >= 5 &&
-    sup.sseit.relationalShiftAwareness >= 5 &&
-    sup.sseit.emotionDifferentiation < 4
+    sup.sseit.roomSensing >= 4 &&
+    sup.sseit.relationalShiftAwareness >= 4 &&
+    sup.sseit.emotionDifferentiation < 3
   ) {
     patterns.push(
       'You are a strong emotional reader — you sense the atmosphere and relational shifts accurately. But you absorb everything without distinguishing what is yours, what is your partner\'s, and what belongs to the space between you. This leads to emotional flooding and reactivity.'
     );
   }
 
-  // SSEIT low field sensitivity
-  if (sup.sseit && sup.sseit.fieldSensitivityMean < 3.5) {
+  // SSEIT low field sensitivity (5-point scale: below midpoint)
+  if (sup.sseit && sup.sseit.fieldSensitivityMean < 2.5) {
     patterns.push(
       'The relational field is not strongly on your radar yet. You tend to focus on content — what was said — rather than process — what is happening between you. Building field sensitivity opens a new channel of relational information.'
     );
   }
 
-  // DSI-R boundary clarity × avoidance — over-differentiation
-  if (sup.dsir && sup.dsir.boundaryAwarenessMean >= 5.5 && ecrr.avoidanceScore > 4.0) {
+  // DSI-R boundary clarity × avoidance — over-differentiation (6-point scale)
+  if (sup.dsir && sup.dsir.boundaryAwarenessMean >= 5.0 && ecrr.avoidanceScore > 4.0) {
     patterns.push(
       'Your boundary clarity is high — you know where you end and your partner begins. Combined with avoidant tendencies, these boundaries may serve double duty: protecting your identity AND preventing closeness. The question: which boundaries are for you, and which are against connection?'
     );
   }
 
-  // DSI-R boundary clarity × anxiety — fusion risk
-  if (sup.dsir && sup.dsir.boundaryAwarenessMean < 3.5 && ecrr.anxietyScore > 4.0) {
+  // DSI-R boundary clarity × anxiety — fusion risk (6-point scale: below midpoint)
+  if (sup.dsir && sup.dsir.boundaryAwarenessMean < 3.0 && ecrr.anxietyScore > 4.0) {
     patterns.push(
       'Low boundary clarity combined with attachment anxiety creates fusion risk — the couple bubble swallows your individual identity. Your partner\'s emotions become your emotions. Their mood becomes your forecast. Differentiation work is foundational here.'
     );
@@ -180,11 +181,11 @@ function buildFieldNarrative(
 
   // ── Select primary narrative template ──
 
-  // Anxious + High Neuroticism + High Field Sensitivity
+  // Anxious + High Neuroticism + High Field Sensitivity (5-point scale)
   if (
     ctx.style === 'anxious-preoccupied' &&
     neuroPct > 60 &&
-    fieldSensitivity > 4.5
+    fieldSensitivity > 3.5
   ) {
     const para1 = 'You are deeply attuned to the relational field between you and your partner — you sense shifts in connection quickly and accurately. This sensitivity is a gift: you know when something changes between you before most people would notice.';
     const para2 = 'But your nervous system translates these shifts into alarm rather than information: "something changed" becomes "something is wrong" becomes "I am about to be left." When differences arise, your system reads them as threats rather than the natural creative tension that all relationships need to grow.';
@@ -195,11 +196,11 @@ function buildFieldNarrative(
     return `${para1}\n\n${para2}\n\n${para3}`;
   }
 
-  // Avoidant + Low Openness + Low Field Sensitivity + High Differentiation
+  // Avoidant + Low Openness + Low Field Sensitivity + High Differentiation (5-point scale)
   if (
     ctx.style === 'dismissive-avoidant' &&
     openPct < 40 &&
-    fieldSensitivity < 4.0 &&
+    fieldSensitivity < 3.0 &&
     composite.selfLeadership > 50
   ) {
     const para1 = 'You have a strong sense of self — you know who you are, what you want, and you do not lose yourself in relationships. That is a genuine strength.';
@@ -209,11 +210,11 @@ function buildFieldNarrative(
     return `${para1}\n\n${para2}\n\n${para3}`;
   }
 
-  // Secure + High Openness + High Field Sensitivity
+  // Secure + High Openness + High Field Sensitivity (5-point scale)
   if (
     ctx.style === 'secure' &&
     openPct > 60 &&
-    fieldSensitivity > 4.5
+    fieldSensitivity > 3.5
   ) {
     const para1 = 'You have a natural capacity for relational depth. You sense the field between you and your partner, you welcome differences, and you do not need certainty to feel safe in the relationship.';
     const para2 = 'This is the foundation for everything your growth plan will build on. Your growing edge may be less about learning new capacities and more about deepening existing ones — and about helping your partner meet you in the depth you are already capable of.';
@@ -225,7 +226,7 @@ function buildFieldNarrative(
   // Fearful-avoidant template
   if (ctx.style === 'fearful-avoidant') {
     const para1 = 'Your relationship with the relational field is complex — sometimes you sense it intensely, sometimes you lose track of it entirely. This oscillation mirrors your approach-avoidance pattern: when the field feels safe, you are attuned; when it feels threatening, you disconnect.';
-    const para2 = boundaryClarity > 4.0
+    const para2 = boundaryClarity > 3.5  // 6-point scale midpoint
       ? 'You have some boundary clarity — you know where you end and your partner begins, at least when things are calm. Under stress, those boundaries can blur or harden unpredictably.'
       : 'Boundary clarity is an area for growth. Under stress, you may either merge with your partner\'s emotional state or cut off entirely. Neither extreme reflects your full capacity.';
     const para3 = 'Your growth edge: building enough internal safety that you can stay present with the relational field — sensing it, learning from it — without needing to flee when it becomes intense. Both the reach and the retreat are asking for the same thing: safety with connection.';
@@ -234,17 +235,19 @@ function buildFieldNarrative(
   }
 
   // ── Default/general template ──
+  // fieldSensitivity: 5-point scale (1–5)
   const sensitivityDesc =
-    fieldSensitivity > 5
+    fieldSensitivity > 4
       ? 'strongly attuned to the relational field — you sense shifts in connection and emotional atmosphere quickly'
-      : fieldSensitivity > 3.5
+      : fieldSensitivity > 2.5
         ? 'developing awareness of the relational field — you notice some shifts but may miss subtler signals'
         : 'building awareness of the relational field — the emotional atmosphere between you and your partner is not yet a primary channel of information';
 
+  // boundaryClarity: 6-point scale (1–6)
   const boundaryDesc =
-    boundaryClarity > 5
+    boundaryClarity > 4.5
       ? 'clear about where you end and your partner begins'
-      : boundaryClarity > 3.5
+      : boundaryClarity > 3.0
         ? 'developing clearer boundaries — sometimes clear, sometimes blurred under stress'
         : 'working on boundary clarity — it is hard to tell which emotions are yours and which belong to the space between you';
 

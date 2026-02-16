@@ -24,6 +24,9 @@ import {
 } from '@expo-google-fonts/playfair-display';
 import { AuthProvider } from '@/context/AuthContext';
 import { GuestProvider } from '@/context/GuestContext';
+import { GamificationProvider } from '@/context/GamificationContext';
+import { SoundHaptics } from '@/services/SoundHapticsService';
+import { registerAllAppSounds } from '@/services/sounds';
 
 // Keep splash screen visible while loading fonts
 SplashScreen.preventAutoHideAsync();
@@ -54,20 +57,32 @@ export default function RootLayout() {
     }
   }, [fontsLoaded, fontError]);
 
+  // Initialize sound & haptics system + register all sound files
+  useEffect(() => {
+    SoundHaptics.init();
+    registerAllAppSounds();
+    return () => {
+      SoundHaptics.cleanup();
+    };
+  }, []);
+
   if (!fontsLoaded && !fontError) {
     return null;
   }
 
   return (
     <AuthProvider>
-      <GuestProvider>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" />
-          <Stack.Screen name="(auth)" />
-          <Stack.Screen name="(app)" />
-        </Stack>
-        <StatusBar style="dark" />
-      </GuestProvider>
+      <GamificationProvider>
+        <GuestProvider>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="(auth)" />
+            <Stack.Screen name="(onboarding)" />
+            <Stack.Screen name="(app)" />
+          </Stack>
+          <StatusBar style="dark" />
+        </GuestProvider>
+      </GamificationProvider>
     </AuthProvider>
   );
 }

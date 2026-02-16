@@ -34,6 +34,7 @@ import {
   Shadows,
 } from '@/constants/theme';
 import { useAuth } from '@/context/AuthContext';
+import { useGamification } from '@/context/GamificationContext';
 import { saveCompletion } from '@/services/intervention';
 import { incrementPracticeCount, addInsight, upsertGrowthEdge } from '@/services/growth';
 import { getPortrait } from '@/services/portrait';
@@ -70,6 +71,7 @@ export default function MicroCourseScreen() {
     lessonNumber: string;
   }>();
   const { user } = useAuth();
+  const { awardXP } = useGamification();
 
   const [currentStep, setCurrentStep] = useState<LessonStep>('read');
   const [reflectionText, setReflectionText] = useState('');
@@ -200,6 +202,11 @@ export default function MicroCourseScreen() {
       }
     } catch (err) {
       console.error('Failed to save lesson completion:', err);
+    }
+
+    // Award XP for lesson completion (non-blocking)
+    if (lesson) {
+      awardXP('lesson_complete', lesson.id, `Completed lesson: ${lesson.title}`).catch(() => {});
     }
 
     setSaving(false);

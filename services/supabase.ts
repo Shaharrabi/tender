@@ -13,24 +13,12 @@ const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
 const createLock = () => {
   if (Platform.OS !== 'web') return undefined; // Native uses default
 
-  const locks = new Map<string, Promise<any>>();
-  return async (name: string, acquireTimeout: number, fn: () => Promise<any>) => {
-    // Wait for any existing lock on this name
-    const existing = locks.get(name);
-    if (existing) {
-      try { await existing; } catch { /* ignore */ }
-    }
-
-    // Run the callback and track it
-    const promise = fn();
-    locks.set(name, promise);
-
-    try {
-      return await promise;
-    } finally {
-      // Only delete if this is still the current lock
-      if (locks.get(name) === promise) locks.delete(name);
-    }
+  // On web, bypass all locking — single-tab app doesn't need coordination.
+  // This prevents Safari hangs from navigator.locks or stalled promise chains.
+  // The previous Map-based lock could hang if a prior Supabase internal
+  // operation stalled, causing `await existing` to wait forever.
+  return async (_name: string, _acquireTimeout: number, fn: () => Promise<any>) => {
+    return await fn();
   };
 };
 

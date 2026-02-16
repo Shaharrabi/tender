@@ -18,10 +18,12 @@ import {
   SafeAreaView,
   ScrollView,
   Alert,
+  Platform,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '@/context/AuthContext';
+import { useGamification } from '@/context/GamificationContext';
 import { supabase } from '@/services/supabase';
 import { getAssessmentConfig } from '@/utils/assessments/registry';
 import { TENDER_SECTIONS, TOTAL_QUESTIONS, TOTAL_ESTIMATED_MINUTES } from '@/utils/assessments/tender-sections';
@@ -103,6 +105,7 @@ function getCombinedResponses(ss: SectionState): (any | null)[] {
 
 export default function TenderAssessmentScreen() {
   const { user } = useAuth();
+  const { awardXP } = useGamification();
   const router = useRouter();
   const params = useLocalSearchParams<{ startSection?: string }>();
 
@@ -442,6 +445,13 @@ export default function TenderAssessmentScreen() {
         await AsyncStorage.removeItem(currentConfig.progressKey);
       } catch {}
 
+      // Award XP for completing a section (non-blocking)
+      if (retakeMode.current) {
+        awardXP('assessment_retake', currentConfig.type, `Retook: ${currentSection.sectionName}`).catch(() => {});
+      } else {
+        awardXP('assessment_complete', currentConfig.type, `Completed: ${currentSection.sectionName}`).catch(() => {});
+      }
+
       // What's next?
       if (retakeMode.current) {
         // Single-section retake from home — return to home
@@ -547,12 +557,21 @@ export default function TenderAssessmentScreen() {
   const handleChapterTap = (idx: number) => {
     const status = getChapterStatus(idx);
     if (status === 'complete') {
-      // Use window.confirm on web (Alert.alert is mobile-only)
-      const confirmed = typeof window !== 'undefined'
-        ? window.confirm('Retake this chapter?\n\nYour previous answers will be replaced with your new ones.')
-        : true; // On native, fall back to immediate retake (or use Alert)
-      if (confirmed) {
-        startChapterFresh(idx);
+      // Use Alert.alert on native, window.confirm on web
+      if (Platform.OS === 'web' && typeof window !== 'undefined' && typeof window.confirm === 'function') {
+        const confirmed = window.confirm('Retake this chapter?\n\nYour previous answers will be replaced with your new ones.');
+        if (confirmed) {
+          startChapterFresh(idx);
+        }
+      } else {
+        Alert.alert(
+          'Retake this chapter?',
+          'Your previous answers will be replaced with your new ones.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Retake', onPress: () => startChapterFresh(idx) },
+          ],
+        );
       }
     } else {
       // Not started or in-progress — jump directly
@@ -1267,10 +1286,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: Colors.success,
+    paddingHorizontal: Spacing.sm,
   },
   submitButtonText: {
-    fontSize: FontSizes.body,
+    fontSize: FontSizes.bodySmall,
     color: Colors.white,
-    fontWeight: '600',
+    fontWeight: '700',
+    textAlign: 'center' as const,
   },
 });
