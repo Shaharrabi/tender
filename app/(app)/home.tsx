@@ -188,6 +188,9 @@ export default function HomeScreen() {
     progress: CourseProgress;
   } | null>(null);
 
+  // Display name from user_profiles
+  const [displayName, setDisplayName] = useState<string | null>(null);
+
   // Loading
   const [loading, setLoading] = useState(true);
 
@@ -207,6 +210,20 @@ export default function HomeScreen() {
     setLoading(true);
 
     try {
+      // 0. Load display name from user_profiles
+      try {
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('display_name')
+          .eq('user_id', user.id)
+          .single();
+        if (profile?.display_name) {
+          setDisplayName(profile.display_name);
+        }
+      } catch {
+        // Fall back to email-based name
+      }
+
       // 1. Load completed assessment types from supabase
       const newStatuses: Record<string, CardStatus> = {};
       const { data: completed } = await supabase
@@ -767,8 +784,9 @@ export default function HomeScreen() {
           <View style={styles.heroBackground}>
             {(() => {
               const { greeting, emoji } = getTimeGreeting();
-              const firstName = user?.email?.split('@')[0]?.replace(/[._-]/g, ' ')?.split(' ')[0] || '';
-              const capitalName = firstName.charAt(0).toUpperCase() + firstName.slice(1);
+              const emailFallback = user?.email?.split('@')[0]?.replace(/[._-]/g, ' ')?.split(' ')[0] || '';
+              const capitalFallback = emailFallback.charAt(0).toUpperCase() + emailFallback.slice(1);
+              const capitalName = displayName || capitalFallback;
               return (
                 <>
                   <Text style={styles.heroTagline}>

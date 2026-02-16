@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/services/supabase';
 import { Colors, Spacing, FontSizes, ButtonSizes, FontFamilies, BorderRadius } from '@/constants/theme';
 import {
   isValidEmail,
@@ -23,6 +24,7 @@ import {
 export default function RegisterScreen() {
   const { signUp } = useAuth();
   const router = useRouter();
+  const [firstName, setFirstName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -43,6 +45,12 @@ export default function RegisterScreen() {
     if (!rateCheck.allowed) {
       const minutes = Math.ceil((rateCheck.lockedUntilMs ?? 0) / 60000);
       setError(`Too many attempts. Please try again in ${minutes} minute${minutes !== 1 ? 's' : ''}.`);
+      return;
+    }
+
+    // Validate name
+    if (!firstName.trim()) {
+      setError('Please enter your first name');
       return;
     }
 
@@ -84,6 +92,18 @@ export default function RegisterScreen() {
     if (authError) {
       setError(authError);
     } else {
+      // Save display name to user_profiles
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          await supabase.from('user_profiles').upsert({
+            user_id: session.user.id,
+            display_name: firstName.trim(),
+          }, { onConflict: 'user_id' });
+        }
+      } catch {
+        // Non-blocking — name will fall back to email prefix
+      }
       router.replace('/(app)/home');
     }
   };
@@ -105,6 +125,19 @@ export default function RegisterScreen() {
         </View>
 
         <View style={styles.form}>
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>First name</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Your first name"
+              placeholderTextColor={Colors.textMuted}
+              value={firstName}
+              onChangeText={setFirstName}
+              autoCapitalize="words"
+              autoComplete="given-name"
+            />
+          </View>
+
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>Email</Text>
             <TextInput
