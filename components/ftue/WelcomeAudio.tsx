@@ -5,6 +5,9 @@
  * with play/pause, progress, and skip controls. Auto-plays on mount,
  * fades out on completion or skip.
  *
+ * If autoplay fails (e.g. browser policy), the player remains visible
+ * with a play button so the user can start it manually.
+ *
  * Uses expo-av directly (not SoundHapticsService) because we need
  * progress tracking and pause/resume support.
  *
@@ -49,6 +52,7 @@ export const WelcomeAudio: React.FC<WelcomeAudioProps> = ({ screenKey }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const mountedRef = useRef(true);
   const completedRef = useRef(false);
@@ -95,7 +99,7 @@ export const WelcomeAudio: React.FC<WelcomeAudioProps> = ({ screenKey }) => {
     });
   }, [screenKey, markAudioHeard, fadeAnim]);
 
-  // Playback status handler — uses ref to avoid stale closure
+  // Playback status handler
   const onPlaybackStatusUpdate = useCallback(
     (status: AVPlaybackStatus) => {
       if (!status.isLoaded) return;
@@ -111,7 +115,8 @@ export const WelcomeAudio: React.FC<WelcomeAudioProps> = ({ screenKey }) => {
     [doComplete]
   );
 
-  const playAudio = useCallback(async () => {
+  // Load and attempt to play audio
+  const loadAndPlayAudio = useCallback(async () => {
     if (!config?.source) return;
 
     try {
@@ -121,22 +126,39 @@ export const WelcomeAudio: React.FC<WelcomeAudioProps> = ({ screenKey }) => {
         staysActiveInBackground: false,
       }).catch(() => {});
 
+      // First, create the sound WITHOUT autoplay
+      // This ensures the sound loads even if play() is blocked by browser
       const { sound: newSound } = await Audio.Sound.createAsync(
         config.source,
-        { shouldPlay: true, volume: 1.0 },
+        { shouldPlay: false, volume: 1.0 },
         onPlaybackStatusUpdate
       );
-      if (mountedRef.current) {
-        soundRef.current = newSound;
-        setIsPlaying(true);
-      } else {
+
+      if (!mountedRef.current) {
         newSound.unloadAsync();
+        return;
+      }
+
+      soundRef.current = newSound;
+      setIsLoaded(true);
+
+      // Now try to play — may fail on web due to autoplay policy
+      try {
+        await newSound.playAsync();
+        if (mountedRef.current) {
+          setIsPlaying(true);
+        }
+      } catch (playError) {
+        // Autoplay blocked — sound is loaded but not playing.
+        // Player stays visible so user can tap play manually.
+        console.log('[WelcomeAudio] Autoplay blocked, showing play button');
       }
     } catch (error) {
-      console.warn('[WelcomeAudio] Playback error:', error);
-      // Don't mark as complete on error — just hide silently
+      console.warn('[WelcomeAudio] Load error:', error);
+      // Sound failed to load entirely — show player anyway with play button
+      // User can tap to retry
       if (mountedRef.current) {
-        setIsVisible(false);
+        setIsLoaded(false);
       }
     }
   }, [config, onPlaybackStatusUpdate]);
@@ -148,13 +170,13 @@ export const WelcomeAudio: React.FC<WelcomeAudioProps> = ({ screenKey }) => {
     const timer = setTimeout(() => {
       if (mountedRef.current) {
         setIsVisible(true);
-        // Fade in
+        // Fade in, then try to play
         Animated.timing(fadeAnim, {
           toValue: 1,
           duration: FTUETiming.audioFadeIn,
           useNativeDriver: true,
         }).start(() => {
-          playAudio();
+          loadAndPlayAudio();
         });
       }
     }, FTUETiming.audioAutoPlayDelay);
@@ -164,16 +186,21 @@ export const WelcomeAudio: React.FC<WelcomeAudioProps> = ({ screenKey }) => {
 
   const togglePlayback = async () => {
     if (!soundRef.current) {
-      playAudio();
+      // Sound not loaded yet — try loading and playing
+      await loadAndPlayAudio();
       return;
     }
 
-    if (isPlaying) {
-      await soundRef.current.pauseAsync();
-      setIsPlaying(false);
-    } else {
-      await soundRef.current.playAsync();
-      setIsPlaying(true);
+    try {
+      if (isPlaying) {
+        await soundRef.current.pauseAsync();
+        setIsPlaying(false);
+      } else {
+        await soundRef.current.playAsync();
+        setIsPlaying(true);
+      }
+    } catch (error) {
+      console.warn('[WelcomeAudio] Toggle error:', error);
     }
   };
 
