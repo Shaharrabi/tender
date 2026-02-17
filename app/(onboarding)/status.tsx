@@ -31,7 +31,12 @@ export default function StatusScreen() {
     setStatus(id);
     // Brief delay so the user sees the selection highlight
     setTimeout(() => {
-      router.push('/(onboarding)/duration' as any);
+      if (id === 'single') {
+        // Skip "how long have you been together" — not relevant for single users
+        router.push('/(onboarding)/goals' as any);
+      } else {
+        router.push('/(onboarding)/duration' as any);
+      }
     }, 200);
   };
 
