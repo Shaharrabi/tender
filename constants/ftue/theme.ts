@@ -73,19 +73,19 @@ export const FTUELayout = {
 // ─── FTUE Animation Timing ────────────────────────────────────────────────
 
 export const FTUETiming = {
-  /** Highlight animation (total ~2000ms — snappier feel) */
-  highlightEnter: 200,
-  highlightHold: 1600,
-  highlightExit: 200,
-  highlightPulseCount: 2,
-  highlightPulseDuration: 600,
+  /** Highlight animation (total ~1200ms — quick and light) */
+  highlightEnter: 150,
+  highlightHold: 800,
+  highlightExit: 150,
+  highlightPulseCount: 1,
+  highlightPulseDuration: 500,
 
   /** Tooltip */
   tooltipFadeIn: 200,
   tooltipFadeOut: 150,
 
   /** Tour */
-  tourTransition: 250,
+  tourTransition: 200,
 
   /** Audio welcome */
   audioFadeIn: 250,

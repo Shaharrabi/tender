@@ -16,6 +16,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View,
+  Text,
   StyleSheet,
   SafeAreaView,
   ScrollView,
@@ -47,7 +48,7 @@ import {
 import { getPortrait } from '@/services/portrait';
 import { useSoundHaptics } from '@/services/SoundHapticsService';
 import { CATEGORIES } from '@/constants/community';
-import { Colors, Spacing } from '@/constants/theme';
+import { Colors, Spacing, FontSizes, FontFamilies, BorderRadius } from '@/constants/theme';
 import type {
   CommunityPost,
   CommunityAlias,
@@ -71,7 +72,7 @@ import { ComposeFlow } from '@/components/community/ComposeFlow';
 import { WelcomeModal } from '@/components/community/WelcomeModal';
 import { LetterDesk } from '@/components/community/LetterDesk';
 import { LetterFlow } from '@/components/community/LetterFlow';
-import { ThoughtBubbleIcon, LockIcon, SparkleIcon } from '@/assets/graphics/icons';
+import { ThoughtBubbleIcon, LockIcon, SparkleIcon, FireIcon } from '@/assets/graphics/icons';
 
 // ─── FTUE ───────────────────────────────────────────────
 import { TooltipManager } from '@/components/ftue/TooltipManager';
@@ -481,13 +482,38 @@ export default function CommunityScreen() {
           />
         )}
 
-        {/* ═══ Circle (locked) ═══════════════════ */}
+        {/* ═══ Circle ═══════════════════════════ */}
         {activeTab === 'circle' && (
-          <EmptyState
-            Icon={LockIcon}
-            title="Circle — Coming Soon"
-            subtitle="Small, time-limited support groups where you can share openly and grow together."
-          />
+          <View style={st.circleSection}>
+            <View style={st.circleHero}>
+              <FireIcon size={48} color={Colors.accentGold} />
+              <Text style={st.circleTitle}>The Fireplace Circle</Text>
+              <Text style={st.circleSubtitle}>
+                A small, time-limited space where 5-8 people gather around a shared theme for one week.
+              </Text>
+            </View>
+
+            <View style={st.circleFeature}>
+              <Text style={st.circleFeatureTitle}>How it works</Text>
+              <Text style={st.circleFeatureBody}>
+                Each circle has a theme — like "repair after conflict" or "learning to be vulnerable." You share openly and support each other, all anonymously.
+              </Text>
+            </View>
+
+            <View style={st.circleFeature}>
+              <Text style={st.circleFeatureTitle}>Safe by design</Text>
+              <Text style={st.circleFeatureBody}>
+                No DMs, no profiles. Just a group of people on a similar path, showing up for each other for one week.
+              </Text>
+            </View>
+
+            <View style={st.circleFeature}>
+              <Text style={st.circleFeatureTitle}>Opening soon</Text>
+              <Text style={st.circleFeatureBody}>
+                We're carefully designing this to feel warm and safe. The first circles will open once our community reaches enough members to match thoughtfully.
+              </Text>
+            </View>
+          </View>
         )}
 
         <View style={{ height: Spacing.xxl }} />
@@ -551,5 +577,52 @@ const st = StyleSheet.create({
   },
   loader: {
     marginTop: Spacing.xxl,
+  },
+
+  // ─── Circle Section ────────────────────────
+  circleSection: {
+    gap: Spacing.lg,
+    paddingTop: Spacing.md,
+  },
+  circleHero: {
+    alignItems: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.xl,
+    paddingHorizontal: Spacing.lg,
+    backgroundColor: Colors.accentGold + '08',
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.accentGold + '20',
+  },
+  circleTitle: {
+    fontSize: FontSizes.headingM,
+    fontWeight: '700',
+    fontFamily: FontFamilies.heading,
+    color: Colors.text,
+    textAlign: 'center',
+    marginTop: Spacing.sm,
+  },
+  circleSubtitle: {
+    fontSize: FontSizes.body,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+  circleFeature: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.lg,
+    gap: Spacing.xs,
+  },
+  circleFeatureTitle: {
+    fontSize: FontSizes.body,
+    fontWeight: '600',
+    fontFamily: FontFamilies.heading,
+    color: Colors.text,
+  },
+  circleFeatureBody: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    lineHeight: 22,
   },
 });

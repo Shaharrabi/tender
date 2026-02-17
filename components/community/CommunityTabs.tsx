@@ -34,7 +34,7 @@ const TABS: TabConfig[] = [
   { key: 'forYou', label: 'For You', Icon: SparkleIcon, locked: false },
   { key: 'allStories', label: 'All Stories', Icon: BookOpenIcon, locked: false },
   { key: 'letters', label: 'Letters', Icon: MailboxIcon, locked: false },
-  { key: 'circle', label: 'Circle', Icon: FireIcon, locked: true },
+  { key: 'circle', label: 'Circle', Icon: FireIcon, locked: false },
 ];
 
 interface CommunityTabsProps {
