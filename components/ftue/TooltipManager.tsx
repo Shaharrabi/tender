@@ -25,7 +25,7 @@ interface TooltipManagerProps {
 
 export const TooltipManager: React.FC<TooltipManagerProps> = ({
   screen,
-  delay = 800,
+  delay = 4000,  // Wait for highlight animations to finish (300ms delay + 3000ms animation + buffer)
   enabled = true,
 }) => {
   const { state, loading, markTooltipSeen } = useFirstTime();

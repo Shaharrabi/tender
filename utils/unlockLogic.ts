@@ -37,13 +37,13 @@ export interface UnlockState {
 
   // Composite features
   fullPortrait: boolean;          // All 6 individual assessments done
-  couplesPortal: boolean;         // Partner linked + both complete
+  couplesPortal: boolean;         // Available after 4+ assessments
   aiCoach: boolean;               // Available after 1+ assessment
   practices: boolean;             // Always available
   courses: boolean;               // Available after 1+ assessment
   treatmentPlan: boolean;         // Available after 3+ assessments
   findTherapist: boolean;         // Always available
-  community: boolean;             // Available after 1+ assessment
+  community: boolean;             // Always available
 
   // Counts
   completedCount: number;
@@ -220,7 +220,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     subtitle: 'Anonymous stories and curated resources',
     icon: HandshakeIcon,
     color: '#7B8F6B',
-    unlockHint: 'Complete 1 assessment to unlock',
+    unlockHint: '',
     route: '/(app)/community',
     category: 'feature',
   },
@@ -230,7 +230,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     subtitle: 'Shared portrait, couple assessments, and coaching',
     icon: CoupleIcon,
     color: Colors.secondary,
-    unlockHint: 'Both partners must complete their portraits',
+    unlockHint: 'Complete 4 assessments to unlock',
     route: '/(app)/couple-portal',
     category: 'couple',
   },
@@ -258,13 +258,13 @@ export function getUnlockState(
 
     // Composite
     fullPortrait: hasPortrait || completedCount >= 6,
-    couplesPortal: hasCoupleLinked && hasPortrait,
+    couplesPortal: completedCount >= 4,
     aiCoach: completedCount >= 1,
     practices: true,
     courses: completedCount >= 1,
     treatmentPlan: completedCount >= 3,
     findTherapist: true,
-    community: completedCount >= 1,
+    community: true,
 
     // Counts
     completedCount,

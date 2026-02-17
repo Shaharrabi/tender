@@ -113,9 +113,15 @@ export const WelcomeAudio: React.FC<WelcomeAudioProps> = ({ screenKey }) => {
     if (!config?.source) return;
 
     try {
+      // Set audio mode for web compatibility
+      await Audio.setAudioModeAsync({
+        playsInSilentModeIOS: true,
+        staysActiveInBackground: false,
+      }).catch(() => {});
+
       const { sound: newSound } = await Audio.Sound.createAsync(
         config.source,
-        { shouldPlay: true },
+        { shouldPlay: true, volume: 1.0 },
         onPlaybackStatusUpdate
       );
       if (mountedRef.current) {
@@ -126,7 +132,8 @@ export const WelcomeAudio: React.FC<WelcomeAudioProps> = ({ screenKey }) => {
       }
     } catch (error) {
       console.warn('[WelcomeAudio] Playback error:', error);
-      handleComplete();
+      // Don't mark as complete on error — just hide silently so user can retry later
+      setIsVisible(false);
     }
   };
 
