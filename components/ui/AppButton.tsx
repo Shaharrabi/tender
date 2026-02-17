@@ -121,7 +121,7 @@ const sizeTokens: Record<ButtonSize, SizeTokens> = {
 
 // ─── Component ──────────────────────────────────────────
 
-export default function AppButton({
+export function AppButton({
   title,
   onPress,
   variant = 'primary',
