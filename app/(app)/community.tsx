@@ -29,6 +29,10 @@ import {
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { useGuest } from '@/context/GuestContext';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { TooltipManager } from '@/components/ftue/TooltipManager';
+import { WelcomeAudio } from '@/components/ftue/WelcomeAudio';
+import { RefRegistry } from '@/utils/ftue/refRegistry';
 import { getPosts, createPost, toggleResonated, reportPost } from '@/services/community';
 import { checkSafety } from '@/utils/agent/safety-check';
 import { sanitizeTextInput } from '@/utils/security/validation';
@@ -656,14 +660,13 @@ export default function CommunityScreen() {
             {loadingPosts && posts.length === 0 ? (
               <ActivityIndicator style={st.loader} color={Colors.primary} />
             ) : posts.length === 0 ? (
-              <View style={st.emptyState}>
-                <ThoughtBubbleIcon size={40} color={Colors.textMuted} />
-                <Text style={st.emptyTitle}>No stories yet</Text>
-                <Text style={st.emptyText}>
-                  Be the first to share. Your experience might be exactly what someone
-                  else needs to hear.
-                </Text>
-              </View>
+              <EmptyState
+                icon={ThoughtBubbleIcon}
+                title="It's quiet here"
+                message="No stories match your filters right now. Check back soon, or be the first to share."
+                ctaText={user && !isGuest ? 'Share Your Story' : undefined}
+                ctaOnPress={user && !isGuest ? () => setShowCompose(true) : undefined}
+              />
             ) : (
               posts.map(renderPostCard)
             )}
@@ -680,12 +683,11 @@ export default function CommunityScreen() {
             </Text>
 
             {filteredResources.length === 0 ? (
-              <View style={st.emptyState}>
-                <MailboxIcon size={40} color={Colors.textMuted} />
-                <Text style={st.emptyText}>
-                  No articles in this category yet. Check back soon!
-                </Text>
-              </View>
+              <EmptyState
+                icon={MailboxIcon}
+                title="Coming soon"
+                message="No articles in this category yet. Check back soon!"
+              />
             ) : (
               filteredResources.map(renderResourceCard)
             )}
@@ -735,6 +737,10 @@ export default function CommunityScreen() {
 
       {/* Compose modal */}
       {renderComposeModal()}
+
+      {/* FTUE Overlays */}
+      <TooltipManager screen="community" />
+      <WelcomeAudio screenKey="community" />
     </SafeAreaView>
   );
 }

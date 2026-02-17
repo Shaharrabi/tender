@@ -68,6 +68,13 @@ import { recordDailyEngagement, getStreakData, type StreakData } from '@/service
 import { SoundHaptics } from '@/services/SoundHapticsService';
 import { XPProgressBar } from '@/components/gamification/XPProgressBar';
 import StreakBanner from '@/components/StreakBanner';
+import { useFirstTime } from '@/context/FirstTimeContext';
+import { HighlightWrapper } from '@/components/ui/HighlightWrapper';
+import { TooltipManager } from '@/components/ftue/TooltipManager';
+import { GuidedTour } from '@/components/ftue/GuidedTour';
+import { WelcomeAudio } from '@/components/ftue/WelcomeAudio';
+import { HOME_TOUR } from '@/constants/ftue/tourSteps';
+import { RefRegistry } from '@/utils/ftue/refRegistry';
 import { getCurrentStepNumber } from '@/services/steps';
 import { getTaglineForStep, getPracticesForStep, getStep } from '@/utils/steps/twelve-steps';
 import { MICRO_COURSES, calculateCourseProgress, type CourseProgress } from '@/utils/microcourses/course-registry';
@@ -179,7 +186,9 @@ export default function HomeScreen() {
   const { user, signOut } = useAuth();
   const { isGuest, clearGuestData } = useGuest();
   const { awardXP: awardGamificationXP } = useGamification();
+  const { state: ftueState, markTourCompleted, markFirstLaunchComplete } = useFirstTime();
   const router = useRouter();
+  const [showTour, setShowTour] = useState(false);
 
   // Assessment state
   const [statuses, setStatuses] = useState<Record<string, CardStatus>>({});
@@ -643,6 +652,26 @@ export default function HomeScreen() {
       })()
     : null;
 
+  // Show guided tour on first launch (after data loads)
+  useEffect(() => {
+    if (
+      !loading &&
+      !isGuest &&
+      ftueState.isFirstLaunch &&
+      !ftueState.completedTours.includes('tour_home')
+    ) {
+      // Small delay to let layout render before measuring
+      const timer = setTimeout(() => setShowTour(true), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [loading, isGuest, ftueState.isFirstLaunch, ftueState.completedTours]);
+
+  const handleTourComplete = useCallback(() => {
+    setShowTour(false);
+    markTourCompleted('tour_home');
+    markFirstLaunchComplete();
+  }, [markTourCompleted, markFirstLaunchComplete]);
+
   // Result cards — only show completed ones
   const resultCards = FEATURE_CARDS.filter(
     (card) =>
@@ -981,8 +1010,13 @@ export default function HomeScreen() {
 
         {/* ═══ XP & LEVEL PROGRESS ═══════════════════════════ */}
         {!isGuest && (
-          <View style={{ paddingHorizontal: Spacing.lg, marginBottom: Spacing.md }}>
-            <XPProgressBar />
+          <View
+            ref={(r) => RefRegistry.register('home_xpBar', r)}
+            style={{ paddingHorizontal: Spacing.lg, marginBottom: Spacing.md }}
+          >
+            <HighlightWrapper highlightId="home_xp_bar" enabled={!ftueState.isFirstLaunch}>
+              <XPProgressBar />
+            </HighlightWrapper>
           </View>
         )}
 
@@ -1076,7 +1110,10 @@ export default function HomeScreen() {
 
           {/* Tender Assessment card */}
           {tenderStatus.state !== 'completed' && !isDemo && (
-            <View style={styles.tenderCard}>
+            <View
+              ref={(r) => RefRegistry.register('home_assessmentCta', r)}
+              style={styles.tenderCard}
+            >
               {tenderStatus.state === 'not_started' && (
                 <>
                   <Text style={styles.tenderCardTitle}>The Tender Assessment</Text>
@@ -1394,6 +1431,7 @@ export default function HomeScreen() {
             {/* View Portrait — always show if exists */}
             {hasPortrait && (
               <TouchableOpacity
+                ref={(r) => RefRegistry.register('home_portraitCard', r)}
                 style={styles.featureCard}
                 onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/portrait' as any); }}
                 activeOpacity={0.8}
@@ -1410,6 +1448,7 @@ export default function HomeScreen() {
 
             {/* Journal — always unlocked */}
             <TouchableOpacity
+              ref={(r) => RefRegistry.register('home_journalCard', r)}
               style={styles.featureCard}
               onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/journal' as any); }}
               activeOpacity={0.8}
@@ -1459,9 +1498,14 @@ export default function HomeScreen() {
             {/* Other feature cards */}
             {gridCards.map((card) => {
               const isUnlocked = unlockState?.[card.key] === true;
+              // Register refs for FTUE tooltips (courses, community)
+              const refKey = card.key === 'courses' ? 'home_coursesCard'
+                : card.key === 'community' ? 'home_communityCard'
+                : null;
               return (
                 <TouchableOpacity
                   key={card.key}
+                  ref={refKey ? (r: any) => RefRegistry.register(refKey, r) : undefined}
                   style={[
                     styles.featureCard,
                     !isUnlocked && styles.featureCardLocked,
@@ -1607,6 +1651,13 @@ export default function HomeScreen() {
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* ═══ FTUE Overlays ═══════════════════════════════════ */}
+      {showTour && (
+        <GuidedTour tour={HOME_TOUR} onComplete={handleTourComplete} />
+      )}
+      <TooltipManager screen="home" enabled={!showTour} />
+      <WelcomeAudio screenKey="home" />
     </SafeAreaView>
   );
 }

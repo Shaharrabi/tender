@@ -26,6 +26,8 @@ import {
 } from '@/constants/theme';
 import { LightbulbIcon } from '@/assets/graphics/icons';
 import { useAuth } from '@/context/AuthContext';
+import { TooltipManager } from '@/components/ftue/TooltipManager';
+import { WelcomeAudio } from '@/components/ftue/WelcomeAudio';
 import {
   MICRO_COURSES,
   calculateCourseProgress,
@@ -251,6 +253,10 @@ export default function CoursesScreen() {
 
         <View style={{ height: Spacing.xxxl }} />
       </ScrollView>
+
+      {/* FTUE Overlays */}
+      <TooltipManager screen="courses" />
+      <WelcomeAudio screenKey="courses" />
     </SafeAreaView>
   );
 }

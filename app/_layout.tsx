@@ -25,6 +25,7 @@ import {
 import { AuthProvider } from '@/context/AuthContext';
 import { GuestProvider } from '@/context/GuestContext';
 import { GamificationProvider } from '@/context/GamificationContext';
+import { FirstTimeProvider } from '@/context/FirstTimeContext';
 import { SoundHaptics } from '@/services/SoundHapticsService';
 import { registerAllAppSounds } from '@/services/sounds';
 
@@ -74,13 +75,15 @@ export default function RootLayout() {
     <AuthProvider>
       <GamificationProvider>
         <GuestProvider>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(onboarding)" />
-            <Stack.Screen name="(app)" />
-          </Stack>
-          <StatusBar style="dark" />
+          <FirstTimeProvider>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" />
+              <Stack.Screen name="(auth)" />
+              <Stack.Screen name="(onboarding)" />
+              <Stack.Screen name="(app)" />
+            </Stack>
+            <StatusBar style="dark" />
+          </FirstTimeProvider>
         </GuestProvider>
       </GamificationProvider>
     </AuthProvider>

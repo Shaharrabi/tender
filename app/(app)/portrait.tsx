@@ -24,6 +24,8 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
+import { TooltipManager } from '@/components/ftue/TooltipManager';
+import { WelcomeAudio } from '@/components/ftue/WelcomeAudio';
 import { getPortrait } from '@/services/portrait';
 import {
   Colors,
@@ -656,6 +658,10 @@ export default function PortraitScreen() {
           )}
         </ScrollView>
       )}
+
+      {/* FTUE Overlays */}
+      <TooltipManager screen="portrait" />
+      <WelcomeAudio screenKey="portrait" />
     </SafeAreaView>
   );
 }

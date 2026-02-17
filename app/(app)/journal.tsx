@@ -55,6 +55,8 @@ import JournalDayView from '@/components/journal/JournalDayView';
 import JournalActivitySummary from '@/components/journal/JournalActivitySummary';
 import JournalReflection from '@/components/journal/JournalReflection';
 import { SoundHaptics } from '@/services/SoundHapticsService';
+import { TooltipManager } from '@/components/ftue/TooltipManager';
+import { WelcomeAudio } from '@/components/ftue/WelcomeAudio';
 import {
   Colors,
   Spacing,
@@ -430,6 +432,10 @@ export default function JournalScreen() {
         {/* Bottom spacer */}
         <View style={{ height: Spacing.xxl }} />
       </ScrollView>
+
+      {/* FTUE Overlays */}
+      <TooltipManager screen="journal" />
+      <WelcomeAudio screenKey="journal" />
     </SafeAreaView>
   );
 }

@@ -23,6 +23,7 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '@/context/AuthContext';
+import { WelcomeAudio } from '@/components/ftue/WelcomeAudio';
 import { useGamification } from '@/context/GamificationContext';
 import { supabase } from '@/services/supabase';
 import { getAssessmentConfig } from '@/utils/assessments/registry';
@@ -949,6 +950,9 @@ export default function TenderAssessmentScreen() {
           )}
         </View>
       </View>
+
+      {/* FTUE Welcome Audio */}
+      <WelcomeAudio screenKey="assessment" />
     </SafeAreaView>
   );
 }
