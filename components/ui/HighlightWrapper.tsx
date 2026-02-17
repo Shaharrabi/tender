@@ -104,7 +104,7 @@ export const HighlightWrapper: React.FC<HighlightWrapperProps> = ({
       animation.start(() => {
         markHighlightSeen(highlightId);
       });
-    }, FTUETiming.measureDelay + 200); // Extra 200ms buffer after tour dismisses
+    }, 300); // Quick start after tour dismisses
 
     return () => clearTimeout(timer);
   }, [enabled, loading, alreadySeen, highlightId, state.isFirstLaunch]);

@@ -73,27 +73,27 @@ export const FTUELayout = {
 // ─── FTUE Animation Timing ────────────────────────────────────────────────
 
 export const FTUETiming = {
-  /** Highlight animation (total 3000ms) */
-  highlightEnter: 300,
-  highlightHold: 2400,
-  highlightExit: 300,
-  highlightPulseCount: 3,
-  highlightPulseDuration: 800,
+  /** Highlight animation (total ~2000ms — snappier feel) */
+  highlightEnter: 200,
+  highlightHold: 1600,
+  highlightExit: 200,
+  highlightPulseCount: 2,
+  highlightPulseDuration: 600,
 
   /** Tooltip */
   tooltipFadeIn: 200,
   tooltipFadeOut: 150,
 
   /** Tour */
-  tourTransition: 300,
+  tourTransition: 250,
 
   /** Audio welcome */
-  audioFadeIn: 300,
-  audioFadeOut: 300,
-  audioAutoPlayDelay: 500,
+  audioFadeIn: 250,
+  audioFadeOut: 250,
+  audioAutoPlayDelay: 400,
 
   /** General */
-  measureDelay: 300, // delay before measuring (let layout settle)
+  measureDelay: 200, // delay before measuring (let layout settle)
 };
 
 // ─── FTUE Typography ──────────────────────────────────────────────────────

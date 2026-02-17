@@ -3,6 +3,7 @@
  *
  * Tracks which highlights, tooltips, audio welcomes, and tours a user
  * has already seen. Persisted to AsyncStorage with user-scoped keys.
+ * Works for both authenticated users AND guests.
  *
  * Follows the GamificationContext pattern:
  *   createContext<T | undefined>, useCallback actions, useMemo value.
@@ -75,12 +76,12 @@ const FirstTimeContext = createContext<FirstTimeContextType | undefined>(
 // ─── Storage Keys ─────────────────────────────────────────────────────────
 
 const STORAGE_PREFIX = '@ftue_';
-const getKeys = (userId: string) => ({
-  highlights: `${STORAGE_PREFIX}highlights_${userId}`,
-  tooltips: `${STORAGE_PREFIX}tooltips_${userId}`,
-  audios: `${STORAGE_PREFIX}audios_${userId}`,
-  tours: `${STORAGE_PREFIX}tours_${userId}`,
-  firstLaunch: `${STORAGE_PREFIX}first_launch_${userId}`,
+const getKeys = (scopeId: string) => ({
+  highlights: `${STORAGE_PREFIX}highlights_${scopeId}`,
+  tooltips: `${STORAGE_PREFIX}tooltips_${scopeId}`,
+  audios: `${STORAGE_PREFIX}audios_${scopeId}`,
+  tours: `${STORAGE_PREFIX}tours_${scopeId}`,
+  firstLaunch: `${STORAGE_PREFIX}first_launch_${scopeId}`,
 });
 
 // ─── Provider ──────────────────────────────────────────────────────────────
@@ -94,18 +95,15 @@ export function FirstTimeProvider({
   const [state, setState] = useState<FirstTimeState>(DEFAULT_STATE);
   const [loading, setLoading] = useState(true);
 
-  // ─── Load persisted state on user change ─────────────────────────────
+  // Use user.id if authenticated, or 'guest' for guest mode
+  const scopeId = user?.id ?? 'guest';
+
+  // ─── Load persisted state ──────────────────────────────────────────────
 
   const loadData = useCallback(async () => {
-    if (!user) {
-      setState(DEFAULT_STATE);
-      setLoading(false);
-      return;
-    }
-
     try {
       setLoading(true);
-      const keys = getKeys(user.id);
+      const keys = getKeys(scopeId);
 
       const [highlights, tooltips, audios, tours, firstLaunch] =
         await Promise.all([
@@ -129,7 +127,7 @@ export function FirstTimeProvider({
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [scopeId]);
 
   useEffect(() => {
     loadData();
@@ -159,70 +157,64 @@ export function FirstTimeProvider({
 
   const markHighlightSeen = useCallback(
     (highlightId: string) => {
-      if (!user) return;
       setState((prev) => {
         if (prev.seenHighlights.includes(highlightId)) return prev;
         const updated = [...prev.seenHighlights, highlightId];
-        persistArray(getKeys(user.id).highlights, updated);
+        persistArray(getKeys(scopeId).highlights, updated);
         return { ...prev, seenHighlights: updated };
       });
     },
-    [user, persistArray]
+    [scopeId, persistArray]
   );
 
   const markTooltipSeen = useCallback(
     (tooltipId: string) => {
-      if (!user) return;
       setState((prev) => {
         if (prev.seenTooltips.includes(tooltipId)) return prev;
         const updated = [...prev.seenTooltips, tooltipId];
-        persistArray(getKeys(user.id).tooltips, updated);
+        persistArray(getKeys(scopeId).tooltips, updated);
         return { ...prev, seenTooltips: updated };
       });
     },
-    [user, persistArray]
+    [scopeId, persistArray]
   );
 
   const markAudioHeard = useCallback(
     (screenKey: string) => {
-      if (!user) return;
       setState((prev) => {
         if (prev.heardAudios.includes(screenKey)) return prev;
         const updated = [...prev.heardAudios, screenKey];
-        persistArray(getKeys(user.id).audios, updated);
+        persistArray(getKeys(scopeId).audios, updated);
         return { ...prev, heardAudios: updated };
       });
     },
-    [user, persistArray]
+    [scopeId, persistArray]
   );
 
   const markTourCompleted = useCallback(
     (tourId: string) => {
-      if (!user) return;
       setState((prev) => {
         if (prev.completedTours.includes(tourId)) return prev;
         const updated = [...prev.completedTours, tourId];
-        persistArray(getKeys(user.id).tours, updated);
+        persistArray(getKeys(scopeId).tours, updated);
         return { ...prev, completedTours: updated };
       });
     },
-    [user, persistArray]
+    [scopeId, persistArray]
   );
 
   const markFirstLaunchComplete = useCallback(() => {
-    if (!user) return;
     setState((prev) => {
       if (!prev.isFirstLaunch) return prev;
-      persistValue(getKeys(user.id).firstLaunch, false);
+      persistValue(getKeys(scopeId).firstLaunch, false);
       return { ...prev, isFirstLaunch: false };
     });
-  }, [user, persistValue]);
+  }, [scopeId, persistValue]);
 
   // ─── Reset (for testing) ─────────────────────────────────────────────
 
   const resetAll = useCallback(async () => {
-    if (!user) return;
-    const keys = getKeys(user.id);
+    const keys = getKeys(scopeId);
     await Promise.all([
       AsyncStorage.removeItem(keys.highlights),
       AsyncStorage.removeItem(keys.tooltips),
@@ -231,7 +223,7 @@ export function FirstTimeProvider({
       AsyncStorage.removeItem(keys.firstLaunch),
     ]);
     setState(DEFAULT_STATE);
-  }, [user]);
+  }, [scopeId]);
 
   // ─── Context Value ───────────────────────────────────────────────────
 

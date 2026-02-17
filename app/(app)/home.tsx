@@ -652,11 +652,10 @@ export default function HomeScreen() {
       })()
     : null;
 
-  // Show guided tour on first launch (after data loads)
+  // Show guided tour on first launch (works for both guests and auth users)
   useEffect(() => {
     if (
       !loading &&
-      !isGuest &&
       ftueState.isFirstLaunch &&
       !ftueState.completedTours.includes('tour_home')
     ) {
@@ -664,7 +663,7 @@ export default function HomeScreen() {
       const timer = setTimeout(() => setShowTour(true), 800);
       return () => clearTimeout(timer);
     }
-  }, [loading, isGuest, ftueState.isFirstLaunch, ftueState.completedTours]);
+  }, [loading, ftueState.isFirstLaunch, ftueState.completedTours]);
 
   const handleTourComplete = useCallback(() => {
     setShowTour(false);
@@ -1023,6 +1022,7 @@ export default function HomeScreen() {
         {/* ═══ 2. TODAY'S FOCUS (ONE THING) ═══════════════════ */}
         {todaysExercise ? (
           <View style={styles.todaysFocusSection}>
+            <HighlightWrapper highlightId="home_practice_card">
             <TouchableOpacity
               style={styles.todaysFocusCard}
               onPress={() =>
@@ -1048,6 +1048,7 @@ export default function HomeScreen() {
                 </Text>
               </View>
             </TouchableOpacity>
+            </HighlightWrapper>
           </View>
         ) : completedCount > 0 ? (
           <View style={styles.todaysFocusSection}>
@@ -1110,6 +1111,7 @@ export default function HomeScreen() {
 
           {/* Tender Assessment card */}
           {tenderStatus.state !== 'completed' && !isDemo && (
+            <HighlightWrapper highlightId="home_assessment_cta">
             <View
               ref={(r) => RefRegistry.register('home_assessmentCta', r)}
               style={styles.tenderCard}
@@ -1152,6 +1154,7 @@ export default function HomeScreen() {
                 </>
               )}
             </View>
+            </HighlightWrapper>
           )}
 
           {/* Portrait generation prompt — part of journey */}
@@ -1447,6 +1450,7 @@ export default function HomeScreen() {
             )}
 
             {/* Journal — always unlocked */}
+            <HighlightWrapper highlightId="home_journal_card">
             <TouchableOpacity
               ref={(r) => RefRegistry.register('home_journalCard', r)}
               style={styles.featureCard}
@@ -1461,6 +1465,7 @@ export default function HomeScreen() {
                 Your relationship timeline
               </Text>
             </TouchableOpacity>
+            </HighlightWrapper>
 
             {/* Nuance Coach */}
             <TouchableOpacity

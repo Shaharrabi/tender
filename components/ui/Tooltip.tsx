@@ -109,13 +109,29 @@ export const Tooltip: React.FC<TooltipProps> = ({ config, onDismiss }) => {
   // Calculate tooltip position
   const padding = 12;
   const pointerOffset = FTUELayout.tooltipPointerSize;
+  const estimatedTooltipHeight = 160; // approximate height of tooltip card
 
   let tooltipTop: number;
+  let effectivePosition = config.position;
+
   if (config.position === 'bottom') {
     tooltipTop = targetLayout.y + targetLayout.height + padding + pointerOffset;
+    // If tooltip would go off-screen at bottom, flip to top
+    if (tooltipTop + estimatedTooltipHeight > screenHeight - 40) {
+      tooltipTop = targetLayout.y - estimatedTooltipHeight - padding - pointerOffset;
+      effectivePosition = 'top';
+    }
   } else {
-    tooltipTop = targetLayout.y - padding - pointerOffset; // will be adjusted after measuring
+    tooltipTop = targetLayout.y - estimatedTooltipHeight - padding - pointerOffset;
+    // If tooltip would go off-screen at top, flip to bottom
+    if (tooltipTop < 40) {
+      tooltipTop = targetLayout.y + targetLayout.height + padding + pointerOffset;
+      effectivePosition = 'bottom';
+    }
   }
+
+  // Final clamp: ensure tooltip stays within viewport
+  tooltipTop = Math.max(40, Math.min(tooltipTop, screenHeight - estimatedTooltipHeight - 20));
 
   // Horizontal centering relative to target, clamped to screen
   const tooltipLeft = Math.max(
@@ -176,7 +192,7 @@ export const Tooltip: React.FC<TooltipProps> = ({ config, onDismiss }) => {
         <View
           style={[
             styles.pointer,
-            config.position === 'bottom'
+            effectivePosition === 'bottom'
               ? [styles.pointerTop, { left: pointerLeft }]
               : [styles.pointerBottom, { left: pointerLeft }],
           ]}

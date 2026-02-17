@@ -57,7 +57,8 @@ export const TooltipManager: React.FC<TooltipManagerProps> = ({
     }
 
     // Tour just completed OR returning user — wait for highlights to finish
-    const delay = wasFirstLaunch.current ? 4500 : 4000;
+    // Highlights take ~2.3s (300ms start + 2000ms animation), so wait ~2.8s after tour
+    const delay = wasFirstLaunch.current ? 2800 : 2500;
     wasFirstLaunch.current = false;
 
     const timer = setTimeout(() => {
