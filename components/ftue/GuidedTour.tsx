@@ -185,27 +185,29 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({
         accessibilityRole="alert"
         accessibilityLabel={`Step ${currentStepIndex + 1} of ${tour.steps.length}. ${currentStep.title}. ${currentStep.body}`}
       >
-        {/* Progress dots */}
-        <View style={styles.progressDots}>
-          {tour.steps.map((_, index) => (
-            <View
-              key={index}
-              style={[
-                styles.dot,
-                index === currentStepIndex && styles.dotActive,
-                index < currentStepIndex && styles.dotComplete,
-              ]}
-            />
-          ))}
-        </View>
+        {/* Progress dots (hide for single-step tours) */}
+        {tour.steps.length > 1 && (
+          <View style={styles.progressDots}>
+            {tour.steps.map((_, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.dot,
+                  index === currentStepIndex && styles.dotActive,
+                  index < currentStepIndex && styles.dotComplete,
+                ]}
+              />
+            ))}
+          </View>
+        )}
 
         {/* Content */}
         <Text style={styles.title}>{currentStep.title}</Text>
         <Text style={styles.body}>{currentStep.body}</Text>
 
         {/* Actions */}
-        <View style={styles.actions}>
-          {!isFirstStep ? (
+        <View style={tour.steps.length === 1 ? styles.actionsCentered : styles.actions}>
+          {!isFirstStep && tour.steps.length > 1 ? (
             <Pressable
               style={styles.skipButton}
               onPress={handleSkip}
@@ -214,9 +216,9 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({
             >
               <Text style={styles.skipText}>Skip tour</Text>
             </Pressable>
-          ) : (
+          ) : tour.steps.length > 1 ? (
             <View />
-          )}
+          ) : null}
 
           <Pressable
             style={styles.nextButton}
@@ -229,11 +231,6 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({
             </Text>
           </Pressable>
         </View>
-
-        {/* Step counter */}
-        <Text style={styles.stepCounter}>
-          {currentStepIndex + 1} of {tour.steps.length}
-        </Text>
       </Animated.View>
     </Modal>
   );
@@ -295,6 +292,11 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  actionsCentered: {
+    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
   },
   skipButton: {
