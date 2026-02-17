@@ -19,6 +19,7 @@ import {
   StyleSheet,
   Text,
   View,
+  Platform,
 } from 'react-native';
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
@@ -44,12 +45,13 @@ interface WelcomeAudioProps {
 
 export const WelcomeAudio: React.FC<WelcomeAudioProps> = ({ screenKey }) => {
   const { state, loading, markAudioHeard } = useFirstTime();
-  const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const soundRef = useRef<Audio.Sound | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const mountedRef = useRef(true);
+  const completedRef = useRef(false);
 
   const config = WELCOME_AUDIO_CONFIGS[screenKey];
   const alreadyHeard = state.heardAudios.includes(screenKey);
@@ -67,11 +69,77 @@ export const WelcomeAudio: React.FC<WelcomeAudioProps> = ({ screenKey }) => {
   // Cleanup sound on unmount
   useEffect(() => {
     return () => {
-      if (sound) {
-        sound.unloadAsync().catch(() => {});
+      if (soundRef.current) {
+        soundRef.current.unloadAsync().catch(() => {});
+        soundRef.current = null;
       }
     };
-  }, [sound]);
+  }, []);
+
+  const doComplete = useCallback(() => {
+    if (completedRef.current) return;
+    completedRef.current = true;
+
+    setIsPlaying(false);
+    markAudioHeard(screenKey);
+
+    // Fade out
+    Animated.timing(fadeAnim, {
+      toValue: 0,
+      duration: FTUETiming.audioFadeOut,
+      useNativeDriver: true,
+    }).start(() => {
+      if (mountedRef.current) {
+        setIsVisible(false);
+      }
+    });
+  }, [screenKey, markAudioHeard, fadeAnim]);
+
+  // Playback status handler — uses ref to avoid stale closure
+  const onPlaybackStatusUpdate = useCallback(
+    (status: AVPlaybackStatus) => {
+      if (!status.isLoaded) return;
+
+      if (status.durationMillis && status.durationMillis > 0) {
+        setProgress(status.positionMillis / status.durationMillis);
+      }
+
+      if (status.didJustFinish) {
+        doComplete();
+      }
+    },
+    [doComplete]
+  );
+
+  const playAudio = useCallback(async () => {
+    if (!config?.source) return;
+
+    try {
+      // Set audio mode for web + iOS compatibility
+      await Audio.setAudioModeAsync({
+        playsInSilentModeIOS: true,
+        staysActiveInBackground: false,
+      }).catch(() => {});
+
+      const { sound: newSound } = await Audio.Sound.createAsync(
+        config.source,
+        { shouldPlay: true, volume: 1.0 },
+        onPlaybackStatusUpdate
+      );
+      if (mountedRef.current) {
+        soundRef.current = newSound;
+        setIsPlaying(true);
+      } else {
+        newSound.unloadAsync();
+      }
+    } catch (error) {
+      console.warn('[WelcomeAudio] Playback error:', error);
+      // Don't mark as complete on error — just hide silently
+      if (mountedRef.current) {
+        setIsVisible(false);
+      }
+    }
+  }, [config, onPlaybackStatusUpdate]);
 
   // Auto-play on first render
   useEffect(() => {
@@ -94,85 +162,26 @@ export const WelcomeAudio: React.FC<WelcomeAudioProps> = ({ screenKey }) => {
     return () => clearTimeout(timer);
   }, [shouldShow]);
 
-  const onPlaybackStatusUpdate = useCallback(
-    (status: AVPlaybackStatus) => {
-      if (!status.isLoaded) return;
-
-      if (status.durationMillis && status.durationMillis > 0) {
-        setProgress(status.positionMillis / status.durationMillis);
-      }
-
-      if (status.didJustFinish) {
-        handleComplete();
-      }
-    },
-    []
-  );
-
-  const playAudio = async () => {
-    if (!config?.source) return;
-
-    try {
-      // Set audio mode for web compatibility
-      await Audio.setAudioModeAsync({
-        playsInSilentModeIOS: true,
-        staysActiveInBackground: false,
-      }).catch(() => {});
-
-      const { sound: newSound } = await Audio.Sound.createAsync(
-        config.source,
-        { shouldPlay: true, volume: 1.0 },
-        onPlaybackStatusUpdate
-      );
-      if (mountedRef.current) {
-        setSound(newSound);
-        setIsPlaying(true);
-      } else {
-        newSound.unloadAsync();
-      }
-    } catch (error) {
-      console.warn('[WelcomeAudio] Playback error:', error);
-      // Don't mark as complete on error — just hide silently so user can retry later
-      setIsVisible(false);
-    }
-  };
-
-  const handleComplete = useCallback(() => {
-    setIsPlaying(false);
-    markAudioHeard(screenKey);
-
-    // Fade out
-    Animated.timing(fadeAnim, {
-      toValue: 0,
-      duration: FTUETiming.audioFadeOut,
-      useNativeDriver: true,
-    }).start(() => {
-      if (mountedRef.current) {
-        setIsVisible(false);
-      }
-    });
-  }, [screenKey, markAudioHeard, fadeAnim]);
-
   const togglePlayback = async () => {
-    if (!sound) {
+    if (!soundRef.current) {
       playAudio();
       return;
     }
 
     if (isPlaying) {
-      await sound.pauseAsync();
+      await soundRef.current.pauseAsync();
       setIsPlaying(false);
     } else {
-      await sound.playAsync();
+      await soundRef.current.playAsync();
       setIsPlaying(true);
     }
   };
 
   const handleSkip = async () => {
-    if (sound) {
-      await sound.stopAsync().catch(() => {});
+    if (soundRef.current) {
+      await soundRef.current.stopAsync().catch(() => {});
     }
-    handleComplete();
+    doComplete();
   };
 
   if (!isVisible || !config) return null;
@@ -231,7 +240,7 @@ export const WelcomeAudio: React.FC<WelcomeAudioProps> = ({ screenKey }) => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 100,
+    bottom: Platform.OS === 'web' ? 20 : 40,
     left: Spacing.md,
     right: Spacing.md,
     backgroundColor: FTUEColors.audioBg,

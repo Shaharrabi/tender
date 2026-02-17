@@ -5,6 +5,9 @@
  * the first time the user sees it. After animation completes, it is
  * marked as seen and never replays.
  *
+ * Flow order: Tour completes → isFirstLaunch becomes false → highlights run →
+ *             highlights complete → tooltips appear (4s delay in TooltipManager)
+ *
  * Usage:
  *   <HighlightWrapper highlightId="home_assessment_cta">
  *     <AssessmentCard ... />
@@ -45,10 +48,11 @@ export const HighlightWrapper: React.FC<HighlightWrapperProps> = ({
   const alreadySeen = state.seenHighlights.includes(highlightId);
 
   useEffect(() => {
-    if (!enabled || loading || alreadySeen || hasStarted.current) return;
+    // Don't start highlights while tour is running (isFirstLaunch = true means tour hasn't completed)
+    if (!enabled || loading || alreadySeen || hasStarted.current || state.isFirstLaunch) return;
     hasStarted.current = true;
 
-    // Small delay to let layout settle
+    // Delay to let layout settle after tour dismisses
     const timer = setTimeout(() => {
       const animation = Animated.sequence([
         // Phase 1: Enter (300ms) — fade in border + glow
@@ -100,10 +104,10 @@ export const HighlightWrapper: React.FC<HighlightWrapperProps> = ({
       animation.start(() => {
         markHighlightSeen(highlightId);
       });
-    }, FTUETiming.measureDelay);
+    }, FTUETiming.measureDelay + 200); // Extra 200ms buffer after tour dismisses
 
     return () => clearTimeout(timer);
-  }, [enabled, loading, alreadySeen, highlightId]);
+  }, [enabled, loading, alreadySeen, highlightId, state.isFirstLaunch]);
 
   // If already seen or disabled, render children without animation wrapper
   if (alreadySeen || !enabled) {

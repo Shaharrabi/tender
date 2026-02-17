@@ -1656,7 +1656,7 @@ export default function HomeScreen() {
       {showTour && (
         <GuidedTour tour={HOME_TOUR} onComplete={handleTourComplete} />
       )}
-      <TooltipManager screen="home" enabled={!showTour} />
+      <TooltipManager screen="home" />
       <WelcomeAudio screenKey="home" />
     </SafeAreaView>
   );
