@@ -1341,6 +1341,21 @@ export default function HomeScreen() {
               </TouchableOpacity>
             )}
 
+            {/* Journal — always unlocked */}
+            <TouchableOpacity
+              style={styles.featureCard}
+              onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/journal' as any); }}
+              activeOpacity={0.8}
+            >
+              <View style={styles.featureCardHeader}>
+                <Text style={styles.featureCardIcon}>{'\u{1F4D6}'}</Text>
+              </View>
+              <Text style={styles.featureCardTitle}>Journal</Text>
+              <Text style={styles.featureCardSubtitle} numberOfLines={2}>
+                Your relationship timeline
+              </Text>
+            </TouchableOpacity>
+
             {/* Nuance Coach */}
             <TouchableOpacity
               style={[

@@ -35,6 +35,7 @@ export default function AppLayout() {
       <Stack.Screen name="courses" />
       <Stack.Screen name="microcourse" options={{ animation: 'slide_from_bottom' }} />
       <Stack.Screen name="exercise" options={{ animation: 'slide_from_bottom' }} />
+      <Stack.Screen name="journal" options={{ animation: 'fade_from_bottom' }} />
       <Stack.Screen name="growth" />
       <Stack.Screen name="treatment-plan" />
       <Stack.Screen name="partner" options={{ animation: 'slide_from_bottom' }} />

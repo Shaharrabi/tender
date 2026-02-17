@@ -1,0 +1,457 @@
+/**
+ * Journal service — Aggregates user activity across all Supabase tables
+ * into a unified timeline for the Journal screen.
+ *
+ * Reads from: daily_check_ins, exercise_completions, practice_completions,
+ *             chat_sessions, xp_transactions, assessments
+ */
+
+import { supabase } from './supabase';
+
+// ─── Types ──────────────────────────────────────────────
+
+export type JournalEntryType =
+  | 'checkin'
+  | 'exercise'
+  | 'practice'
+  | 'chat'
+  | 'assessment'
+  | 'xp';
+
+export interface JournalEntry {
+  id: string;
+  type: JournalEntryType;
+  timestamp: string; // ISO string
+  title: string;
+  subtitle?: string;
+  data: Record<string, any>;
+}
+
+export interface JournalStats {
+  totalDays: number;
+  totalEntries: number;
+  firstEntryDate: string | null;
+}
+
+export interface CalendarDayData {
+  types: Set<JournalEntryType>;
+}
+
+// ─── Helpers ────────────────────────────────────────────
+
+/** Return YYYY-MM-DD in the device's local timezone. */
+function localDateString(d: Date = new Date()): string {
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+/** Get start of day (midnight) in ISO format for a YYYY-MM-DD string. */
+function startOfDayISO(dateStr: string): string {
+  return `${dateStr}T00:00:00.000Z`;
+}
+
+/** Get start of next day in ISO format. */
+function endOfDayISO(dateStr: string): string {
+  const d = new Date(dateStr);
+  d.setDate(d.getDate() + 1);
+  return `${localDateString(d)}T00:00:00.000Z`;
+}
+
+/** Get first and last day of a month as YYYY-MM-DD. */
+function monthRange(year: number, month: number): { start: string; end: string } {
+  const start = `${year}-${String(month).padStart(2, '0')}-01`;
+  // End is first day of next month
+  const nextMonth = month === 12 ? 1 : month + 1;
+  const nextYear = month === 12 ? year + 1 : year;
+  const end = `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`;
+  return { start, end };
+}
+
+/** Extract YYYY-MM-DD from an ISO timestamp. */
+function dateFromTimestamp(ts: string): string {
+  return ts.slice(0, 10);
+}
+
+// ─── Journal Entries for a Single Day ───────────────────
+
+export async function getJournalEntriesForDate(
+  userId: string,
+  date: string // YYYY-MM-DD
+): Promise<JournalEntry[]> {
+  const dayStart = startOfDayISO(date);
+  const dayEnd = endOfDayISO(date);
+
+  const entries: JournalEntry[] = [];
+
+  // Run all queries in parallel
+  const [
+    checkInsResult,
+    exercisesResult,
+    practicesResult,
+    chatSessionsResult,
+    xpResult,
+    assessmentsResult,
+  ] = await Promise.allSettled([
+    // 1. Daily check-ins (uses DATE type — exact match)
+    supabase
+      .from('daily_check_ins')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('checkin_date', date),
+
+    // 2. Exercise completions (TIMESTAMPTZ — range)
+    supabase
+      .from('exercise_completions')
+      .select('*')
+      .eq('user_id', userId)
+      .gte('completed_at', dayStart)
+      .lt('completed_at', dayEnd)
+      .order('completed_at', { ascending: true }),
+
+    // 3. Practice completions (TIMESTAMPTZ — range)
+    supabase
+      .from('practice_completions')
+      .select('*')
+      .eq('user_id', userId)
+      .gte('completed_at', dayStart)
+      .lt('completed_at', dayEnd)
+      .order('completed_at', { ascending: true }),
+
+    // 4. Chat sessions (TIMESTAMPTZ — range)
+    supabase
+      .from('chat_sessions')
+      .select('*, chat_messages(id, content, role, created_at)')
+      .eq('user_id', userId)
+      .gte('created_at', dayStart)
+      .lt('created_at', dayEnd)
+      .order('created_at', { ascending: true }),
+
+    // 5. XP transactions (TIMESTAMPTZ — range)
+    supabase
+      .from('xp_transactions')
+      .select('*')
+      .eq('user_id', userId)
+      .gte('created_at', dayStart)
+      .lt('created_at', dayEnd)
+      .order('created_at', { ascending: true }),
+
+    // 6. Assessments (TIMESTAMPTZ — range)
+    supabase
+      .from('assessments')
+      .select('*')
+      .eq('user_id', userId)
+      .gte('completed_at', dayStart)
+      .lt('completed_at', dayEnd)
+      .order('completed_at', { ascending: true }),
+  ]);
+
+  // Process check-ins
+  if (checkInsResult.status === 'fulfilled' && checkInsResult.value.data) {
+    for (const row of checkInsResult.value.data) {
+      entries.push({
+        id: row.id,
+        type: 'checkin',
+        timestamp: row.created_at || `${date}T12:00:00.000Z`,
+        title: 'Daily Check-In',
+        subtitle: row.note || `Mood: ${row.mood_rating}/10`,
+        data: {
+          moodRating: row.mood_rating,
+          relationshipRating: row.relationship_rating,
+          note: row.note,
+          practicedGrowthEdge: row.practiced_growth_edge,
+        },
+      });
+    }
+  }
+
+  // Process exercises
+  if (exercisesResult.status === 'fulfilled' && exercisesResult.value.data) {
+    for (const row of exercisesResult.value.data) {
+      const name = row.exercise_name || row.exercise_id?.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'Exercise';
+      entries.push({
+        id: row.id,
+        type: 'exercise',
+        timestamp: row.completed_at,
+        title: name,
+        subtitle: row.reflection ? row.reflection.slice(0, 80) + (row.reflection.length > 80 ? '...' : '') : undefined,
+        data: {
+          exerciseId: row.exercise_id,
+          exerciseName: row.exercise_name,
+          reflection: row.reflection,
+          rating: row.rating,
+          stepResponses: row.step_responses,
+        },
+      });
+    }
+  }
+
+  // Process practices
+  if (practicesResult.status === 'fulfilled' && practicesResult.value.data) {
+    for (const row of practicesResult.value.data) {
+      const practiceLabel = row.practice_id?.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'Practice';
+      entries.push({
+        id: row.id,
+        type: 'practice',
+        timestamp: row.completed_at,
+        title: practiceLabel,
+        subtitle: row.step_number ? `Step ${row.step_number}` : undefined,
+        data: {
+          practiceId: row.practice_id,
+          stepNumber: row.step_number,
+          completionData: row.completion_data,
+        },
+      });
+    }
+  }
+
+  // Process chat sessions
+  if (chatSessionsResult.status === 'fulfilled' && chatSessionsResult.value.data) {
+    for (const row of chatSessionsResult.value.data) {
+      const messages = row.chat_messages || [];
+      const userMessages = messages.filter((m: any) => m.role === 'user');
+      const firstMessage = userMessages.length > 0 ? userMessages[0].content : null;
+      entries.push({
+        id: row.id,
+        type: 'chat',
+        timestamp: row.created_at,
+        title: row.title || 'Chat with Nuance',
+        subtitle: firstMessage ? firstMessage.slice(0, 80) + (firstMessage.length > 80 ? '...' : '') : `${messages.length} messages`,
+        data: {
+          messageCount: messages.length,
+          firstMessage,
+          mode: row.current_mode,
+        },
+      });
+    }
+  }
+
+  // Process XP transactions (group small ones, show notable ones)
+  if (xpResult.status === 'fulfilled' && xpResult.value.data) {
+    const xpRows = xpResult.value.data;
+    // Only show significant XP events (>= 20 XP) or level-ups
+    const notable = xpRows.filter((row: any) => row.amount >= 20 || row.source === 'level_up');
+    for (const row of notable) {
+      entries.push({
+        id: row.id,
+        type: 'xp',
+        timestamp: row.created_at,
+        title: `+${row.amount} XP`,
+        subtitle: row.description || row.source,
+        data: {
+          amount: row.amount,
+          source: row.source,
+          description: row.description,
+        },
+      });
+    }
+  }
+
+  // Process assessments
+  if (assessmentsResult.status === 'fulfilled' && assessmentsResult.value.data) {
+    for (const row of assessmentsResult.value.data) {
+      const typeLabel = row.type?.replace(/-/g, ' ').toUpperCase() || 'Assessment';
+      entries.push({
+        id: row.id,
+        type: 'assessment',
+        timestamp: row.completed_at,
+        title: `Assessment: ${typeLabel}`,
+        subtitle: 'Completed',
+        data: {
+          assessmentType: row.type,
+          scores: row.scores,
+        },
+      });
+    }
+  }
+
+  // Sort by timestamp
+  entries.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+  return entries;
+}
+
+// ─── Calendar Data for a Month ──────────────────────────
+
+export async function getJournalCalendarData(
+  userId: string,
+  year: number,
+  month: number // 1-12
+): Promise<Map<string, CalendarDayData>> {
+  const { start, end } = monthRange(year, month);
+  const startISO = startOfDayISO(start);
+  const endISO = startOfDayISO(end);
+
+  const dayMap = new Map<string, CalendarDayData>();
+
+  const addDay = (dateStr: string, type: JournalEntryType) => {
+    const existing = dayMap.get(dateStr);
+    if (existing) {
+      existing.types.add(type);
+    } else {
+      dayMap.set(dateStr, { types: new Set([type]) });
+    }
+  };
+
+  // Run all queries in parallel
+  const [
+    checkInsResult,
+    exercisesResult,
+    practicesResult,
+    chatSessionsResult,
+    assessmentsResult,
+  ] = await Promise.allSettled([
+    supabase
+      .from('daily_check_ins')
+      .select('checkin_date')
+      .eq('user_id', userId)
+      .gte('checkin_date', start)
+      .lt('checkin_date', end),
+
+    supabase
+      .from('exercise_completions')
+      .select('completed_at')
+      .eq('user_id', userId)
+      .gte('completed_at', startISO)
+      .lt('completed_at', endISO),
+
+    supabase
+      .from('practice_completions')
+      .select('completed_at')
+      .eq('user_id', userId)
+      .gte('completed_at', startISO)
+      .lt('completed_at', endISO),
+
+    supabase
+      .from('chat_sessions')
+      .select('created_at')
+      .eq('user_id', userId)
+      .gte('created_at', startISO)
+      .lt('created_at', endISO),
+
+    supabase
+      .from('assessments')
+      .select('completed_at')
+      .eq('user_id', userId)
+      .gte('completed_at', startISO)
+      .lt('completed_at', endISO),
+  ]);
+
+  // Map check-ins (DATE type)
+  if (checkInsResult.status === 'fulfilled' && checkInsResult.value.data) {
+    for (const row of checkInsResult.value.data) {
+      addDay(row.checkin_date, 'checkin');
+    }
+  }
+
+  // Map exercises (TIMESTAMPTZ)
+  if (exercisesResult.status === 'fulfilled' && exercisesResult.value.data) {
+    for (const row of exercisesResult.value.data) {
+      addDay(dateFromTimestamp(row.completed_at), 'exercise');
+    }
+  }
+
+  // Map practices
+  if (practicesResult.status === 'fulfilled' && practicesResult.value.data) {
+    for (const row of practicesResult.value.data) {
+      addDay(dateFromTimestamp(row.completed_at), 'practice');
+    }
+  }
+
+  // Map chat sessions
+  if (chatSessionsResult.status === 'fulfilled' && chatSessionsResult.value.data) {
+    for (const row of chatSessionsResult.value.data) {
+      addDay(dateFromTimestamp(row.created_at), 'chat');
+    }
+  }
+
+  // Map assessments
+  if (assessmentsResult.status === 'fulfilled' && assessmentsResult.value.data) {
+    for (const row of assessmentsResult.value.data) {
+      addDay(dateFromTimestamp(row.completed_at), 'assessment');
+    }
+  }
+
+  return dayMap;
+}
+
+// ─── Journal Stats (for Cover Page) ────────────────────
+
+export async function getJournalStats(
+  userId: string
+): Promise<JournalStats> {
+  // Fetch earliest entries from key tables in parallel
+  const [checkInResult, exerciseResult, assessmentResult] = await Promise.allSettled([
+    supabase
+      .from('daily_check_ins')
+      .select('checkin_date')
+      .eq('user_id', userId)
+      .order('checkin_date', { ascending: true })
+      .limit(1),
+
+    supabase
+      .from('exercise_completions')
+      .select('completed_at')
+      .eq('user_id', userId)
+      .order('completed_at', { ascending: true })
+      .limit(1),
+
+    supabase
+      .from('assessments')
+      .select('completed_at')
+      .eq('user_id', userId)
+      .order('completed_at', { ascending: true })
+      .limit(1),
+  ]);
+
+  // Find earliest date
+  const dates: string[] = [];
+
+  if (checkInResult.status === 'fulfilled' && checkInResult.value.data?.[0]) {
+    dates.push(checkInResult.value.data[0].checkin_date);
+  }
+  if (exerciseResult.status === 'fulfilled' && exerciseResult.value.data?.[0]) {
+    dates.push(dateFromTimestamp(exerciseResult.value.data[0].completed_at));
+  }
+  if (assessmentResult.status === 'fulfilled' && assessmentResult.value.data?.[0]) {
+    dates.push(dateFromTimestamp(assessmentResult.value.data[0].completed_at));
+  }
+
+  const firstEntryDate = dates.length > 0
+    ? dates.sort()[0]
+    : null;
+
+  // Count total active days and entries
+  const [checkInCountResult, exerciseCountResult, practiceCountResult] = await Promise.allSettled([
+    supabase
+      .from('daily_check_ins')
+      .select('checkin_date', { count: 'exact', head: true })
+      .eq('user_id', userId),
+
+    supabase
+      .from('exercise_completions')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId),
+
+    supabase
+      .from('practice_completions')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId),
+  ]);
+
+  const checkInCount = checkInCountResult.status === 'fulfilled' ? (checkInCountResult.value.count ?? 0) : 0;
+  const exerciseCount = exerciseCountResult.status === 'fulfilled' ? (exerciseCountResult.value.count ?? 0) : 0;
+  const practiceCount = practiceCountResult.status === 'fulfilled' ? (practiceCountResult.value.count ?? 0) : 0;
+
+  const totalEntries = checkInCount + exerciseCount + practiceCount;
+
+  // Total active days = count of unique check-in dates (best proxy)
+  const totalDays = checkInCount;
+
+  return {
+    totalDays,
+    totalEntries,
+    firstEntryDate,
+  };
+}
