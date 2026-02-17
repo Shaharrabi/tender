@@ -34,6 +34,14 @@ import {
   Shadows,
   ButtonSizes,
 } from '@/constants/theme';
+import {
+  ShieldIcon,
+  EyeIcon,
+  CheckmarkIcon,
+  ArrowLeftIcon,
+} from '@/assets/graphics/icons';
+import type { ComponentType } from 'react';
+import type { IconProps } from '@/assets/graphics/icons';
 
 // ─── Helpers ──────────────────────────────────────────────
 
@@ -170,7 +178,7 @@ export default function ConsentWaiverScreen() {
 
   const renderOptionCard = (
     option: ConsentType,
-    icon: string,
+    IconComp: ComponentType<IconProps>,
     title: string,
     bullets: string[],
     accentColor: string,
@@ -194,7 +202,7 @@ export default function ConsentWaiverScreen() {
       >
         {/* Card Header */}
         <View style={s.optionHeader}>
-          <Text style={s.optionIcon}>{icon}</Text>
+          <IconComp size={24} color={accentColor} />
           <Text style={[s.optionTitle, isSelected && { color: accentColor }]}>
             {title}
           </Text>
@@ -215,9 +223,9 @@ export default function ConsentWaiverScreen() {
         <View style={s.bulletList}>
           {bullets.map((text, i) => (
             <View key={i} style={s.bulletRow}>
-              <Text style={[s.bulletCheck, { color: accentColor }]}>
-                {'\u2713'}
-              </Text>
+              <View style={{ width: 18, alignItems: 'center', paddingTop: 3 }}>
+                <CheckmarkIcon size={14} color={accentColor} />
+              </View>
               <Text style={s.bulletText}>{text}</Text>
             </View>
           ))}
@@ -243,14 +251,15 @@ export default function ConsentWaiverScreen() {
       >
         {/* ── Back Button ───────────── */}
         <View style={s.header}>
-          <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7}>
-            <Text style={s.backText}>{'\u2190'} Back</Text>
+          <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <ArrowLeftIcon size={16} color={Colors.primary} />
+            <Text style={s.backText}>Back</Text>
           </TouchableOpacity>
         </View>
 
         {/* ── Section 1: Hero ──────── */}
         <View style={s.heroSection}>
-          <Text style={s.heroIcon}>{'\uD83D\uDEE1\uFE0F'}</Text>
+          <ShieldIcon size={56} color={Colors.primary} />
           <Text style={s.heroTitle}>Before You See Your Results</Text>
           <Text style={s.heroSubtitle}>
             We believe in complete transparency about your data.{'\n'}
@@ -275,7 +284,7 @@ export default function ConsentWaiverScreen() {
 
         {renderOptionCard(
           'store_and_share',
-          '\uD83D\uDEE1\uFE0F',
+          ShieldIcon,
           'Keep My Data',
           STORE_BULLETS,
           Colors.primary,
@@ -284,7 +293,7 @@ export default function ConsentWaiverScreen() {
 
         {renderOptionCard(
           'view_and_erase',
-          '\uD83D\uDC41\uFE0F',
+          EyeIcon,
           'View Once & Erase',
           ERASE_BULLETS,
           Colors.calm,
@@ -321,7 +330,7 @@ export default function ConsentWaiverScreen() {
                   agreed && s.checkboxChecked,
                 ]}
               >
-                {agreed && <Text style={s.checkboxMark}>{'\u2713'}</Text>}
+                {agreed && <CheckmarkIcon size={14} color={Colors.textOnPrimary} />}
               </View>
               <Text style={s.checkboxLabel}>
                 I understand and agree to the above
@@ -404,7 +413,7 @@ const s = StyleSheet.create({
     marginBottom: Spacing.xl,
   },
   heroIcon: {
-    fontSize: 56,
+    // Kept for layout — now rendered by SVG component
   },
   heroTitle: {
     fontSize: FontSizes.headingXL,

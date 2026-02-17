@@ -31,6 +31,7 @@ import {
   Shadows,
 } from '@/constants/theme';
 import type { ExerciseStep as ExerciseStepType } from '@/types/intervention';
+import { BookOpenIcon, PenIcon, CheckmarkIcon, QuestionIcon } from '@/assets/graphics/icons';
 
 interface ExerciseStepProps {
   step: ExerciseStepType;
@@ -67,7 +68,7 @@ function InstructionView({ step }: { step: ExerciseStepType }) {
   return (
     <View style={styles.instructionCard}>
       <View style={styles.iconCircle}>
-        <Text style={styles.icon}>{'\u{1F4D6}'}</Text>
+        <BookOpenIcon size={22} color={Colors.primary} />
       </View>
       <Text style={styles.title}>{step.title}</Text>
       <Text style={styles.content}>{step.content}</Text>
@@ -89,7 +90,7 @@ function ReflectionView({
   return (
     <View style={styles.reflectionCard}>
       <View style={styles.reflectionHeader}>
-        <Text style={styles.icon}>{'\u{270D}\uFE0F'}</Text>
+        <PenIcon size={22} color={Colors.text} />
         <Text style={styles.title}>{step.title}</Text>
       </View>
       <Text style={styles.content}>{step.content}</Text>
@@ -174,14 +175,13 @@ function TimerView({ step }: { step: ExerciseStepType }) {
           { transform: [{ scale: pulseAnim }] },
         ]}
       >
-        <Text
-          style={[
-            styles.timerTime,
-            remaining === 0 && { color: Colors.success },
-          ]}
-        >
-          {remaining === 0 ? '\u2713' : timeStr}
-        </Text>
+        {remaining === 0 ? (
+          <CheckmarkIcon size={40} color={Colors.success} />
+        ) : (
+          <Text style={styles.timerTime}>
+            {timeStr}
+          </Text>
+        )}
         <Text style={styles.timerHint}>
           {remaining === 0
             ? 'complete'
@@ -221,7 +221,7 @@ function PromptView({
   return (
     <View style={styles.promptCard}>
       <View style={styles.promptRow}>
-        <Text style={styles.icon}>{'\u{2753}'}</Text>
+        <QuestionIcon size={22} color={Colors.text} />
         <Text style={[styles.title, { flex: 1 }]}>{step.title}</Text>
       </View>
       <Text style={styles.content}>{step.content}</Text>

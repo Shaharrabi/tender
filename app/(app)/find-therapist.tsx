@@ -32,6 +32,22 @@ import {
   ButtonSizes,
 } from '@/constants/theme';
 import type { IndividualPortrait } from '@/types/portrait';
+import type { IconProps } from '@/assets/graphics/icons';
+import {
+  HeartDoubleIcon,
+  HomeIcon,
+  MeditationIcon,
+  CompassIcon,
+  MasksIcon,
+  BookOpenIcon,
+  GreenHeartIcon,
+  RainbowIcon,
+  HeartFireIcon,
+  SearchIcon,
+  SparkleIcon,
+  StarIcon,
+  ClipboardIcon,
+} from '@/assets/graphics/icons';
 
 // ─── Therapy Recommendation Logic ──────────────────────
 
@@ -41,7 +57,7 @@ interface TherapyRecommendation {
   reason: string;
   directory: string;
   directoryName: string;
-  icon: string;
+  Icon: React.ComponentType<IconProps>;
   priority: number;
 }
 
@@ -57,7 +73,7 @@ function getTherapyRecommendations(portrait: IndividualPortrait | null): Therapy
         reason: 'EFT helps couples understand and reshape emotional patterns in relationships.',
         directory: 'https://iceeft.com/therapist-finder/',
         directoryName: 'ICEEFT Therapist Finder',
-        icon: '💕',
+        Icon: HeartDoubleIcon,
         priority: 1,
       },
       {
@@ -66,7 +82,7 @@ function getTherapyRecommendations(portrait: IndividualPortrait | null): Therapy
         reason: 'Evidence-based approach focused on communication, conflict management, and building friendship.',
         directory: 'https://www.gottman.com/couples/find-a-therapist/',
         directoryName: 'Gottman Referral Network',
-        icon: '🏠',
+        Icon: HomeIcon,
         priority: 2,
       },
     ];
@@ -83,7 +99,7 @@ function getTherapyRecommendations(portrait: IndividualPortrait | null): Therapy
       reason: `Your ${nc.position} pattern and attachment profile suggest EFT could help you build more secure connection.`,
       directory: 'https://iceeft.com/therapist-finder/',
       directoryName: 'ICEEFT Therapist Finder',
-      icon: '💕',
+      Icon: HeartDoubleIcon,
       priority: 1,
     });
   }
@@ -96,7 +112,7 @@ function getTherapyRecommendations(portrait: IndividualPortrait | null): Therapy
       reason: 'Your regulation patterns and conflict style suggest the Gottman Method could help with communication and de-escalation.',
       directory: 'https://www.gottman.com/couples/find-a-therapist/',
       directoryName: 'Gottman Referral Network',
-      icon: '🏠',
+      Icon: HomeIcon,
       priority: 2,
     });
   }
@@ -109,7 +125,7 @@ function getTherapyRecommendations(portrait: IndividualPortrait | null): Therapy
       reason: 'Your narrower window of tolerance suggests skills-based regulation work could be highly beneficial.',
       directory: 'https://www.psychologytoday.com/us/therapists/dialectical-behavior-therapy',
       directoryName: 'Psychology Today (DBT)',
-      icon: '🧘',
+      Icon: MeditationIcon,
       priority: 3,
     });
   }
@@ -122,7 +138,7 @@ function getTherapyRecommendations(portrait: IndividualPortrait | null): Therapy
       reason: 'The gap between your values and actions suggests ACT could help you live more aligned with what matters most.',
       directory: 'https://www.psychologytoday.com/us/therapists/acceptance-and-commitment-act',
       directoryName: 'Psychology Today (ACT)',
-      icon: '🧭',
+      Icon: CompassIcon,
       priority: 4,
     });
   }
@@ -135,7 +151,7 @@ function getTherapyRecommendations(portrait: IndividualPortrait | null): Therapy
       reason: 'Your inner parts may benefit from IFS work to build more Self-leadership and reduce internal conflict.',
       directory: 'https://ifs-institute.com/practitioners',
       directoryName: 'IFS Institute Directory',
-      icon: '🎭',
+      Icon: MasksIcon,
       priority: 5,
     });
   }
@@ -152,7 +168,7 @@ function getTherapyRecommendations(portrait: IndividualPortrait | null): Therapy
         reason: 'EFT is one of the most evidence-based approaches for couple therapy.',
         directory: 'https://iceeft.com/therapist-finder/',
         directoryName: 'ICEEFT Therapist Finder',
-        icon: '💕',
+        Icon: HeartDoubleIcon,
         priority: 1,
       },
       {
@@ -161,7 +177,7 @@ function getTherapyRecommendations(portrait: IndividualPortrait | null): Therapy
         reason: 'The Gottman approach excels at communication patterns and friendship-building.',
         directory: 'https://www.gottman.com/couples/find-a-therapist/',
         directoryName: 'Gottman Referral Network',
-        icon: '🏠',
+        Icon: HomeIcon,
         priority: 2,
       }
     );
@@ -177,25 +193,25 @@ const GENERAL_DIRECTORIES = [
     name: 'Psychology Today',
     url: 'https://www.psychologytoday.com/us/therapists',
     description: 'Largest therapist directory — filter by specialty, insurance, and location',
-    icon: '📖',
+    Icon: BookOpenIcon,
   },
   {
     name: 'Open Path Collective',
     url: 'https://openpathcollective.org/',
     description: 'Affordable therapy — $30-$80 per session',
-    icon: '💚',
+    Icon: GreenHeartIcon,
   },
   {
     name: 'Inclusive Therapists',
     url: 'https://www.inclusivetherapists.com/',
     description: 'Therapists committed to anti-oppressive, culturally responsive care',
-    icon: '🌈',
+    Icon: RainbowIcon,
   },
   {
     name: 'AASECT (Sex Therapy)',
     url: 'https://www.aasect.org/referral-directory',
     description: 'Certified sex therapists and sexuality educators',
-    icon: '❤️‍🔥',
+    Icon: HeartFireIcon,
   },
 ];
 
@@ -247,7 +263,9 @@ export default function FindTherapistScreen() {
         </View>
 
         <View style={s.heroSection}>
-          <Text style={s.heroIcon}>{'🔍'}</Text>
+          <View style={s.heroIcon}>
+            <SearchIcon size={48} color={Colors.primary} />
+          </View>
           <Text style={s.heroTitle}>Find a Therapist</Text>
           <Text style={s.heroSubtitle}>
             {portrait
@@ -260,10 +278,15 @@ export default function FindTherapistScreen() {
         {topRec && (
           <View style={s.topRecCard}>
             <View style={s.topRecBadge}>
-              <Text style={s.topRecBadgeText}>{'⭐'} RECOMMENDED FOR YOU</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <StarIcon size={12} color={Colors.primary} />
+                <Text style={s.topRecBadgeText}>RECOMMENDED FOR YOU</Text>
+              </View>
             </View>
             <View style={s.topRecHeader}>
-              <Text style={s.topRecIcon}>{topRec.icon}</Text>
+              <View style={s.topRecIcon}>
+                <topRec.Icon size={32} color={Colors.primary} />
+              </View>
               <View style={s.topRecTitleGroup}>
                 <Text style={s.topRecTitle}>{topRec.modality}</Text>
                 <Text style={s.topRecAbbrev}>({topRec.abbreviation})</Text>
@@ -290,7 +313,9 @@ export default function FindTherapistScreen() {
             {otherRecs.map((rec) => (
               <View key={rec.abbreviation} style={s.recCard}>
                 <View style={s.recHeader}>
-                  <Text style={s.recIcon}>{rec.icon}</Text>
+                  <View style={s.recIcon}>
+                    <rec.Icon size={24} color={Colors.primary} />
+                  </View>
                   <View style={{ flex: 1 }}>
                     <Text style={s.recTitle}>{rec.modality}</Text>
                     <Text style={s.recReason}>{rec.reason}</Text>
@@ -319,7 +344,9 @@ export default function FindTherapistScreen() {
             onPress={() => Linking.openURL(dir.url)}
             activeOpacity={0.7}
           >
-            <Text style={s.dirIcon}>{dir.icon}</Text>
+            <View style={s.dirIcon}>
+              <dir.Icon size={24} color={Colors.text} />
+            </View>
             <View style={{ flex: 1 }}>
               <Text style={s.dirName}>{dir.name}</Text>
               <Text style={s.dirDescription}>{dir.description}</Text>
@@ -330,7 +357,9 @@ export default function FindTherapistScreen() {
 
         {/* ── Ask Nuance ──────────────────── */}
         <View style={s.nuanceCard}>
-          <Text style={s.nuanceIcon}>{'✦'}</Text>
+          <View style={s.nuanceIcon}>
+            <SparkleIcon size={36} color={Colors.secondary} />
+          </View>
           <Text style={s.nuanceTitle}>Not sure which therapy is right?</Text>
           <Text style={s.nuanceSubtitle}>
             Ask Nuance to help you understand which type of therapy would be best for your specific patterns.
@@ -374,9 +403,12 @@ export default function FindTherapistScreen() {
             {exporting ? (
               <ActivityIndicator size="small" color={Colors.textSecondary} />
             ) : (
-              <Text style={s.shareButtonText}>
-                {'📄'} {portrait ? 'Generate Report' : 'Complete Assessments First'}
-              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <ClipboardIcon size={16} color={Colors.textSecondary} />
+                <Text style={s.shareButtonText}>
+                  {portrait ? 'Generate Report' : 'Complete Assessments First'}
+                </Text>
+              </View>
             )}
           </TouchableOpacity>
         </View>
@@ -406,7 +438,7 @@ const s = StyleSheet.create({
     gap: Spacing.sm,
     marginBottom: Spacing.xl,
   },
-  heroIcon: { fontSize: 48, marginBottom: Spacing.xs },
+  heroIcon: { marginBottom: Spacing.xs },
   heroTitle: {
     fontSize: FontSizes.headingL,
     fontWeight: '700',
@@ -449,7 +481,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.md,
   },
-  topRecIcon: { fontSize: 32 },
+  topRecIcon: { },
   topRecTitleGroup: { flex: 1, gap: 2 },
   topRecTitle: {
     fontSize: FontSizes.headingM,
@@ -508,7 +540,7 @@ const s = StyleSheet.create({
     gap: Spacing.md,
     alignItems: 'flex-start',
   },
-  recIcon: { fontSize: 24 },
+  recIcon: { },
   recTitle: {
     fontSize: FontSizes.body,
     fontWeight: '600',
@@ -545,7 +577,7 @@ const s = StyleSheet.create({
     marginBottom: Spacing.sm,
     ...Shadows.subtle,
   },
-  dirIcon: { fontSize: 24 },
+  dirIcon: { },
   dirName: {
     fontSize: FontSizes.bodySmall,
     fontWeight: '600',
@@ -573,7 +605,7 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.secondary + '25',
   },
-  nuanceIcon: { fontSize: 36 },
+  nuanceIcon: { },
   nuanceTitle: {
     fontSize: FontSizes.body,
     fontWeight: '700',

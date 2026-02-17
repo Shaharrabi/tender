@@ -7,6 +7,24 @@
  * so the experience feels fresh.
  */
 
+import type { ComponentType } from 'react';
+import type { IconProps } from '@/assets/graphics/icons';
+import {
+  SeedlingIcon,
+  CompassIcon,
+  TargetIcon,
+  CalendarIcon,
+  SparkleIcon,
+  EyeIcon,
+  MasksIcon,
+  HandshakeIcon,
+  WaveIcon,
+  HourglassIcon,
+  LeafIcon,
+  RefreshIcon,
+  DoveIcon,
+} from '@/assets/graphics/icons';
+
 // ─── Types ──────────────────────────────────────────────
 
 export type NudgeType =
@@ -22,7 +40,7 @@ export interface Nudge {
   type: NudgeType;
   title: string;
   body: string;
-  icon: string;
+  icon: ComponentType<IconProps>;
   actionRoute?: string;
   priority: number;
 }
@@ -167,51 +185,51 @@ const MOTIVATIONAL_QUOTES: { title: string; body: string }[] = [
 // When a WEARE variable is a bottleneck, these warm one-liners
 // are surfaced as the primary nudge.
 
-export const WEARE_BOTTLENECK_NUDGES: Record<string, { title: string; body: string; icon: string }> = {
+export const WEARE_BOTTLENECK_NUDGES: Record<string, { title: string; body: string; icon: ComponentType<IconProps> }> = {
   attunement: {
     title: '2 minutes of seeing',
     body: 'Put everything else down. Look at your partner. What do you notice in their face right now?',
-    icon: '\u{1F441}\uFE0F',
+    icon: EyeIcon,
   },
   coCreation: {
     title: 'Absurdity is medicine',
     body: 'Be ridiculous together. Play is how the field remembers it is alive.',
-    icon: '\u{1F3AD}',
+    icon: MasksIcon,
   },
   transmission: {
     title: 'Bodies before words',
     body: 'Touch, do not talk. A hand on the shoulder. A two-second hug. Let your body say what words cannot.',
-    icon: '\u{1F91D}',
+    icon: HandshakeIcon,
   },
   space: {
     title: 'Ask the relationship',
     body: 'What does the space between you need today? Not what you need. Not what they need. What does WE need?',
-    icon: '\u{1F30A}',
+    icon: WaveIcon,
   },
   time: {
     title: 'Consistency over intensity',
     body: '5 minutes every day changes more than 2 hours once a week. Show up small. Show up often.',
-    icon: '\u{23F0}',
+    icon: HourglassIcon,
   },
   individual: {
     title: 'Fill your own cup',
     body: 'What would help YOU feel more grounded today? You cannot pour from an empty vessel.',
-    icon: '\u{1F331}',
+    icon: SeedlingIcon,
   },
   context: {
     title: 'Notice what is whole',
     body: 'Before you work on what is broken, notice what is working. The field needs your attention on both.',
-    icon: '\u{1F33F}',
+    icon: LeafIcon,
   },
   change: {
     title: 'One small new move',
     body: 'You do not need a revolution. You need one different response to the same old trigger. Try it today.',
-    icon: '\u{1F504}',
+    icon: RefreshIcon,
   },
   resistance: {
     title: 'Not everything needs solving',
     body: 'Some things just need to be felt. Sit with what is here without fixing it. That IS the practice.',
-    icon: '\u{1F54A}\uFE0F',
+    icon: DoveIcon,
   },
 };
 
@@ -243,7 +261,7 @@ export function getNudges(
       type: 'assessment_reminder',
       title: 'Start The Tender Assessment',
       body: 'Begin your journey of self-discovery. Take breaks between sections and come back anytime.',
-      icon: '🌱',
+      icon: SeedlingIcon,
       actionRoute: '/(app)/tender-assessment',
       priority: 100,
     });
@@ -256,7 +274,7 @@ export function getNudges(
       type: 'assessment_reminder',
       title: 'Continue your journey',
       body: `You have completed ${completedCount} of 6 assessments. Each one adds a new layer to your relationship portrait.`,
-      icon: '🧭',
+      icon: CompassIcon,
       actionRoute: '/(app)/tender-assessment',
       priority: 90,
     });
@@ -269,7 +287,7 @@ export function getNudges(
       type: 'milestone',
       title: "You've unlocked the Growth Plan!",
       body: 'With 3 assessments complete, your personalized growth plan is ready to explore.',
-      icon: '🎯',
+      icon: TargetIcon,
       actionRoute: '/(app)/portrait',
       priority: 95,
     });
@@ -282,7 +300,7 @@ export function getNudges(
       type: 'check_in_reminder',
       title: 'Daily check-in',
       body: 'Take a moment to reflect on how you and your partner are doing today.',
-      icon: '📅',
+      icon: CalendarIcon,
       actionRoute: '/(app)/check-in',
       priority: 85,
     });
@@ -311,7 +329,7 @@ export function getNudges(
     type: 'motivation',
     title: quote.title,
     body: quote.body,
-    icon: '✨',
+    icon: SparkleIcon,
     priority: 10,
   });
 

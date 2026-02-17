@@ -27,19 +27,33 @@ import {
   BorderRadius,
   ButtonSizes,
 } from '@/constants/theme';
+import {
+  MirrorIcon,
+  ChatBubbleIcon,
+  LeafIcon,
+  HeartDoubleIcon,
+  DoveIcon,
+  LinkIcon,
+  SeedlingIcon,
+  BrainIcon,
+  FireIcon,
+  HandshakeIcon,
+  SparkleIcon,
+} from '@/assets/graphics/icons';
+import type { IconProps } from '@/assets/graphics/icons';
 
-const GOALS = [
-  { id: 'understand-self', label: 'Understand myself better', emoji: '🪞', desc: 'How I love, fight, and connect' },
-  { id: 'communication', label: 'Improve communication', emoji: '💬', desc: 'Fewer misunderstandings, more clarity' },
-  { id: 'heal', label: 'Heal from past relationships', emoji: '🌿', desc: 'Process old wounds, find closure' },
-  { id: 'deepen', label: 'Deepen my current relationship', emoji: '💕', desc: 'More intimacy, trust, and safety' },
-  { id: 'conflict', label: 'Handle conflict better', emoji: '🕊️', desc: 'Fight fair, repair faster' },
-  { id: 'attachment', label: 'Understand my attachment style', emoji: '🔗', desc: 'Why I pull close or push away' },
-  { id: 'prepare', label: 'Prepare for a relationship', emoji: '🌱', desc: 'Build a strong foundation first' },
-  { id: 'emotional-intel', label: 'Build emotional intelligence', emoji: '🧠', desc: 'Read emotions — mine and others' },
-  { id: 'intimacy', label: 'Reconnect with intimacy', emoji: '🔥', desc: 'Physical and emotional closeness' },
-  { id: 'trust', label: 'Rebuild trust', emoji: '🤝', desc: 'After betrayal or distance' },
-  { id: 'curious', label: 'Just curious', emoji: '✨', desc: 'Exploring what this is about' },
+const GOALS: { id: string; label: string; Icon: React.ComponentType<IconProps>; desc: string }[] = [
+  { id: 'understand-self', label: 'Understand myself better', Icon: MirrorIcon, desc: 'How I love, fight, and connect' },
+  { id: 'communication', label: 'Improve communication', Icon: ChatBubbleIcon, desc: 'Fewer misunderstandings, more clarity' },
+  { id: 'heal', label: 'Heal from past relationships', Icon: LeafIcon, desc: 'Process old wounds, find closure' },
+  { id: 'deepen', label: 'Deepen my current relationship', Icon: HeartDoubleIcon, desc: 'More intimacy, trust, and safety' },
+  { id: 'conflict', label: 'Handle conflict better', Icon: DoveIcon, desc: 'Fight fair, repair faster' },
+  { id: 'attachment', label: 'Understand my attachment style', Icon: LinkIcon, desc: 'Why I pull close or push away' },
+  { id: 'prepare', label: 'Prepare for a relationship', Icon: SeedlingIcon, desc: 'Build a strong foundation first' },
+  { id: 'emotional-intel', label: 'Build emotional intelligence', Icon: BrainIcon, desc: 'Read emotions — mine and others' },
+  { id: 'intimacy', label: 'Reconnect with intimacy', Icon: FireIcon, desc: 'Physical and emotional closeness' },
+  { id: 'trust', label: 'Rebuild trust', Icon: HandshakeIcon, desc: 'After betrayal or distance' },
+  { id: 'curious', label: 'Just curious', Icon: SparkleIcon, desc: 'Exploring what this is about' },
 ];
 
 export default function GoalsScreen() {
@@ -74,7 +88,9 @@ export default function GoalsScreen() {
                 onPress={() => { SoundHaptics.tapSoft(); toggleGoal(goal.id); }}
                 activeOpacity={0.7}
               >
-                <Text style={styles.optionEmoji}>{goal.emoji}</Text>
+                <View style={styles.optionIconWrapper}>
+                  <goal.Icon size={22} color={isSelected ? Colors.primaryDark : Colors.primary} />
+                </View>
                 <View style={styles.optionTextContainer}>
                   <Text style={[styles.optionLabel, isSelected && styles.optionLabelSelected]}>
                     {goal.label}
@@ -176,10 +192,10 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
     backgroundColor: Colors.primaryFaded,
   },
-  optionEmoji: {
-    fontSize: 22,
+  optionIconWrapper: {
     width: 32,
-    textAlign: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   optionTextContainer: {
     flex: 1,

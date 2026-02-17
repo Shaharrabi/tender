@@ -31,6 +31,7 @@ import { getSupplementDef } from '@/utils/assessments/supplements';
 import QuestionRenderer from '@/components/assessment/QuestionRenderer';
 import SectionBreak from '@/components/assessment/SectionBreak';
 import { Colors, Spacing, FontSizes, FontFamilies, ButtonSizes, BorderRadius, Shadows } from '@/constants/theme';
+import { SparkleIcon, BookOpenIcon, RefreshIcon, HeartIcon } from '@/assets/graphics/icons';
 import type { AssessmentConfig, GenericQuestion, AssessmentSection } from '@/types';
 
 // ─── Types ───────────────────────────────────────────────
@@ -620,7 +621,9 @@ export default function TenderAssessmentScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centerContent}>
-          <Text style={styles.completionEmoji}>{'\u2728'}</Text>
+          <View style={{ marginBottom: Spacing.sm }}>
+            <SparkleIcon size={64} color={Colors.secondary} />
+          </View>
           <Text style={styles.completionTitle}>Assessment Complete</Text>
           <Text style={styles.completionSubtitle}>
             You have completed all 7 sections of The Tender Assessment.
@@ -652,7 +655,9 @@ export default function TenderAssessmentScreen() {
           {/* Ornamental divider */}
           <View style={styles.ornamentRow}>
             <View style={styles.ornamentLine} />
-            <Text style={styles.ornamentSymbol}>{'✦'}</Text>
+            <View style={styles.ornamentSymbol}>
+              <SparkleIcon size={12} color={Colors.secondary} />
+            </View>
             <View style={styles.ornamentLine} />
           </View>
 
@@ -680,24 +685,31 @@ export default function TenderAssessmentScreen() {
           {/* Guidelines (show only if not all complete) */}
           {!allComplete && (
             <View style={styles.guidelinesBlock}>
-              {[
-                { icon: '✦', text: 'Go in any order' },
-                { icon: '🔖', text: 'Save and return anytime' },
-                { icon: '🔄', text: 'Retake any chapter' },
-                { icon: '❤️', text: 'No wrong answers' },
-              ].map((g) => (
-                <View key={g.text} style={styles.guidelineRow}>
-                  <Text style={styles.guidelineIcon}>{g.icon}</Text>
-                  <Text style={styles.guidelineText}>{g.text}</Text>
-                </View>
-              ))}
+              <View style={styles.guidelineRow}>
+                <View style={styles.guidelineIcon}><SparkleIcon size={16} color={Colors.secondary} /></View>
+                <Text style={styles.guidelineText}>Go in any order</Text>
+              </View>
+              <View style={styles.guidelineRow}>
+                <View style={styles.guidelineIcon}><BookOpenIcon size={16} color={Colors.secondary} /></View>
+                <Text style={styles.guidelineText}>Save and return anytime</Text>
+              </View>
+              <View style={styles.guidelineRow}>
+                <View style={styles.guidelineIcon}><RefreshIcon size={16} color={Colors.secondary} /></View>
+                <Text style={styles.guidelineText}>Retake any chapter</Text>
+              </View>
+              <View style={styles.guidelineRow}>
+                <View style={styles.guidelineIcon}><HeartIcon size={16} color={Colors.secondary} /></View>
+                <Text style={styles.guidelineText}>No wrong answers</Text>
+              </View>
             </View>
           )}
 
           {/* Ornamental divider */}
           <View style={styles.ornamentRow}>
             <View style={styles.ornamentLine} />
-            <Text style={styles.ornamentSymbol}>{'✦'}</Text>
+            <View style={styles.ornamentSymbol}>
+              <SparkleIcon size={12} color={Colors.secondary} />
+            </View>
             <View style={styles.ornamentLine} />
           </View>
 
@@ -947,7 +959,6 @@ const styles = StyleSheet.create({
   },
 
   // ── Completion ──
-  completionEmoji: { fontSize: 64 },
   completionTitle: {
     fontSize: FontSizes.headingL,
     fontWeight: 'bold',
@@ -1014,8 +1025,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.borderLight,
   },
   ornamentSymbol: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.secondary,
     marginHorizontal: Spacing.md,
   },
 
@@ -1057,9 +1066,9 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   guidelineIcon: {
-    fontSize: FontSizes.bodySmall,
     width: 24,
-    textAlign: 'center',
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
   },
   guidelineText: {
     fontSize: FontSizes.bodySmall,

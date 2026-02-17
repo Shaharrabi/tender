@@ -42,6 +42,25 @@ import AppIcon from '@/components/ui/AppIcon';
 import { synthesizeAssessments, type AssessmentSynthesis } from '@/utils/portrait/assessment-synthesis';
 import { getStep } from '@/utils/steps/twelve-steps';
 import { STAT_ICONS } from '@/constants/icons';
+import type { IconComponent } from '@/constants/icons';
+import {
+  CompassIcon,
+  MasksIcon,
+  SparkleIcon,
+  RefreshIcon,
+  LightningIcon,
+  DoveIcon,
+  WaveIcon,
+  SearchIcon,
+  ShieldIcon,
+  FireIcon,
+  SnowflakeIcon,
+  HourglassIcon,
+  HeartIcon,
+  GreenHeartIcon,
+  ScaleIcon,
+  StarIcon,
+} from '@/assets/graphics/icons';
 import { getExerciseById } from '@/utils/interventions/registry';
 import { getExercisesForEdge } from '@/utils/portrait/growth-edges';
 import { CATEGORY_ACCENT_COLORS } from '@/components/intervention/ExerciseCard';
@@ -64,17 +83,17 @@ type TabKey = 'overview' | 'scores' | 'lenses' | 'cycle' | 'growth' | 'anchors';
 interface TabDef {
   key: TabKey;
   label: string;
-  icon: string;
+  Icon: IconComponent;
   color: string;
 }
 
 const TABS: TabDef[] = [
-  { key: 'overview', label: 'Overview', icon: STAT_ICONS.overview, color: Colors.primary },
-  { key: 'scores', label: 'Scores', icon: STAT_ICONS.scores, color: Colors.calm },
-  { key: 'lenses', label: 'Lenses', icon: STAT_ICONS.lenses, color: Colors.depth },
-  { key: 'cycle', label: 'Cycle', icon: STAT_ICONS.cycle, color: Colors.secondary },
-  { key: 'growth', label: 'Growth', icon: STAT_ICONS.growth, color: Colors.warning },
-  { key: 'anchors', label: 'Anchors', icon: STAT_ICONS.anchor, color: Colors.calm },
+  { key: 'overview', label: 'Overview', Icon: STAT_ICONS.overview, color: Colors.primary },
+  { key: 'scores', label: 'Scores', Icon: STAT_ICONS.scores, color: Colors.calm },
+  { key: 'lenses', label: 'Lenses', Icon: STAT_ICONS.lenses, color: Colors.depth },
+  { key: 'cycle', label: 'Cycle', Icon: STAT_ICONS.cycle, color: Colors.secondary },
+  { key: 'growth', label: 'Growth', Icon: STAT_ICONS.growth, color: Colors.warning },
+  { key: 'anchors', label: 'Anchors', Icon: STAT_ICONS.anchor, color: Colors.calm },
 ];
 
 // ─── Narrative generator ────────────────────────────────
@@ -271,13 +290,13 @@ function AnimatedScoreCircle({ score }: { score: number }) {
 // ─── Stat Card ──────────────────────────────────────────
 
 function StatCard({
-  icon,
+  icon: IconComp,
   label,
   value,
   color,
   delay = 0,
 }: {
-  icon: string;
+  icon: IconComponent;
   label: string;
   value: string;
   color: string;
@@ -315,7 +334,7 @@ function StatCard({
       ]}
     >
       <View style={[st.statIcon, { backgroundColor: color }]}>
-        <Text style={st.statIconText}>{icon}</Text>
+        <IconComp size={16} color={Colors.white} />
       </View>
       <Text style={st.statLabel}>{label}</Text>
       <Text style={st.statValue} numberOfLines={2}>{value}</Text>
@@ -544,9 +563,9 @@ export default function PortraitScreen() {
                 onPress={() => handleTabChange(tab.key)}
                 activeOpacity={0.7}
               >
-                <Text style={[st.tabIcon, isActive && { color: tab.color }]}>
-                  {tab.icon}
-                </Text>
+                <View style={st.tabIcon}>
+                  <tab.Icon size={14} color={isActive ? tab.color : Colors.textMuted} />
+                </View>
                 <Text
                   style={[
                     st.tabLabel,
@@ -749,7 +768,7 @@ function OverviewTab({
             activeOpacity={0.8}
           >
             <View style={[st.navCardIcon, { backgroundColor: tab.color }]}>
-              <Text style={st.navCardIconText}>{tab.icon}</Text>
+              <tab.Icon size={16} color={Colors.white} />
             </View>
             <Text style={st.navCardLabel}>{tab.label}</Text>
             <Text style={st.navCardArrow}>{'>'}</Text>
@@ -1088,7 +1107,10 @@ function ValuesCompassInfographic({
 
   return (
     <Animated.View style={[st.valuesCompassContainer, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }]}>
-      <Text style={st.scoreGroupLabel}>{'🧭'} VALUES COMPASS</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+        <CompassIcon size={16} color={Colors.textMuted} />
+        <Text style={st.scoreGroupLabel}>VALUES COMPASS</Text>
+      </View>
       <View style={st.scoreGroupDivider} />
 
       {/* Values ring */}
@@ -1123,7 +1145,7 @@ function ValuesCompassInfographic({
           );
         })}
         <View style={st.valuesCompassCenter}>
-          <Text style={st.valuesCompassCenterText}>{'💎'}</Text>
+          <StarIcon size={16} color={Colors.primary} />
         </View>
       </View>
 
@@ -1170,7 +1192,10 @@ function PartsMapInfographic({
 
   return (
     <Animated.View style={[st.partsMapContainer, { opacity: fadeAnim }]}>
-      <Text style={st.scoreGroupLabel}>{'🎭'} INNER PARTS MAP</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+        <MasksIcon size={16} color={Colors.textMuted} />
+        <Text style={st.scoreGroupLabel}>INNER PARTS MAP</Text>
+      </View>
       <View style={st.scoreGroupDivider} />
 
       {/* Self-Leadership Circle */}
@@ -1184,7 +1209,7 @@ function PartsMapInfographic({
       {/* Manager Parts */}
       <View style={st.partsMapSection}>
         <View style={[st.partsMapSectionHeader, { backgroundColor: Colors.warning + '15' }]}>
-          <Text style={[st.partsMapSectionIcon]}>{'🛡️'}</Text>
+          <View style={st.partsMapSectionIcon}><ShieldIcon size={16} color={Colors.warning} /></View>
           <Text style={st.partsMapSectionTitle}>Manager Parts</Text>
           <Text style={st.partsMapSectionHint}>Try to prevent pain</Text>
         </View>
@@ -1200,7 +1225,7 @@ function PartsMapInfographic({
       {/* Firefighter Parts */}
       <View style={st.partsMapSection}>
         <View style={[st.partsMapSectionHeader, { backgroundColor: Colors.error + '12' }]}>
-          <Text style={[st.partsMapSectionIcon]}>{'🚒'}</Text>
+          <View style={st.partsMapSectionIcon}><FireIcon size={16} color={Colors.error} /></View>
           <Text style={st.partsMapSectionTitle}>Firefighter Parts</Text>
           <Text style={st.partsMapSectionHint}>React when pain breaks through</Text>
         </View>
@@ -1217,7 +1242,7 @@ function PartsMapInfographic({
       {parts.polarities.length > 0 && (
         <View style={st.partsMapSection}>
           <View style={[st.partsMapSectionHeader, { backgroundColor: Colors.depth + '10' }]}>
-            <Text style={[st.partsMapSectionIcon]}>{'⚖️'}</Text>
+            <View style={st.partsMapSectionIcon}><ScaleIcon size={16} color={Colors.depth} /></View>
             <Text style={st.partsMapSectionTitle}>Inner Tensions</Text>
           </View>
           {parts.polarities.map((p, i) => (
@@ -1263,7 +1288,10 @@ function CycleDiagramInfographic({
 
   return (
     <Animated.View style={[st.cycleDiagramContainer, { opacity: fadeAnim }]}>
-      <Text style={st.scoreGroupLabel}>{'🔄'} YOUR CYCLE POSITION</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+        <RefreshIcon size={16} color={Colors.textMuted} />
+        <Text style={st.scoreGroupLabel}>YOUR CYCLE POSITION</Text>
+      </View>
       <View style={st.scoreGroupDivider} />
 
       {/* Animated cycle diagram */}
@@ -1474,7 +1502,7 @@ function LensesTab({ portrait }: { portrait: IndividualPortrait }) {
         <View style={st.card}>
           <View style={st.cardHeaderRow}>
             <View style={[st.lensIconCircle, { backgroundColor: Colors.depth + '20' }]}>
-              <Text style={{ fontSize: 16 }}>🌊</Text>
+              <WaveIcon size={16} color={Colors.depth} />
             </View>
             <Text style={[st.cardHeading, { flex: 1 }]}>Field Awareness</Text>
           </View>
@@ -1516,7 +1544,7 @@ function BigFiveReframesSection({ reframes }: { reframes: string[] }) {
       >
         <View style={st.cardHeaderRow}>
           <View style={[st.lensIconCircle, { backgroundColor: Colors.secondary + '20' }]}>
-            <Text style={{ fontSize: 16 }}>🔬</Text>
+            <SearchIcon size={16} color={Colors.secondary} />
           </View>
           <Text style={[st.cardHeading, { flex: 1 }]}>Personality Reframes</Text>
           <Text style={st.fieldExpandArrow}>{expanded ? '▲' : '▼'}</Text>
@@ -1575,7 +1603,7 @@ function CycleTab({ portrait }: { portrait: IndividualPortrait }) {
       {/* Triggers */}
       <View style={st.card}>
         <View style={st.cardHeaderRow}>
-          <Text style={{ fontSize: 16 }}>⚡</Text>
+          <LightningIcon size={16} color={Colors.warning} />
           <Text style={st.cardHeading}>Triggers</Text>
         </View>
         {nc.primaryTriggers.map((t, i) => (
@@ -1589,7 +1617,7 @@ function CycleTab({ portrait }: { portrait: IndividualPortrait }) {
       {/* Typical Moves */}
       <View style={st.card}>
         <View style={st.cardHeaderRow}>
-          <Text style={{ fontSize: 16 }}>🎭</Text>
+          <MasksIcon size={16} color={Colors.secondary} />
           <Text style={st.cardHeading}>Typical Moves</Text>
         </View>
         {nc.typicalMoves.map((m, i) => (
@@ -1603,7 +1631,7 @@ function CycleTab({ portrait }: { portrait: IndividualPortrait }) {
       {/* De-escalators */}
       <View style={st.card}>
         <View style={st.cardHeaderRow}>
-          <Text style={{ fontSize: 16 }}>🕊️</Text>
+          <DoveIcon size={16} color={Colors.calm} />
           <Text style={st.cardHeading}>De-escalators</Text>
         </View>
         {nc.deEscalators.map((d, i) => (
@@ -1766,7 +1794,9 @@ function GrowthTab({ portrait, router }: { portrait: IndividualPortrait; router:
                 return (
                   <View key={key} style={st.movementCard}>
                     <View style={st.movementCardHeader}>
-                      <Text style={st.movementIcon}>{explained?.icon || ''}</Text>
+                      {explained?.icon ? (
+                        (() => { const IconComp = explained.icon; return <IconComp size={22} color={Colors.primary} />; })()
+                      ) : null}
                       <View style={{ flex: 1 }}>
                         <Text style={st.movementName}>{m.name}</Text>
                         <Text style={st.movementQuestion}>{explained?.question || m.subtitle}</Text>
@@ -1873,7 +1903,7 @@ function GrowthTab({ portrait, router }: { portrait: IndividualPortrait; router:
                   {/* Phase completion summary card */}
                   {phaseIsComplete && (
                     <View style={st.phaseCompleteSummary}>
-                      <Text style={st.phaseCompleteIcon}>{'\u2728'}</Text>
+                      <View style={st.phaseCompleteIcon}><SparkleIcon size={20} color={Colors.secondary} /></View>
                       <Text style={st.phaseCompleteTitle}>
                         {phase.name} — Complete
                       </Text>
@@ -2008,11 +2038,11 @@ function AnchorsTab({
   }, []);
 
   const ANCHOR_ITEMS = [
-    { key: 'whenActivated' as const, label: 'When Activated', icon: '🔥', color: Colors.error },
-    { key: 'whenShutdown' as const, label: 'When Shutdown', icon: '🧊', color: Colors.depth },
-    { key: 'patternInterrupt' as const, label: 'Pattern Interrupt', icon: '⏸️', color: Colors.warning },
-    { key: 'repair' as const, label: 'Repair', icon: '🩹', color: Colors.secondary },
-    { key: 'selfCompassion' as const, label: 'Self-Compassion', icon: '💚', color: Colors.primary },
+    { key: 'whenActivated' as const, label: 'When Activated', Icon: FireIcon, color: Colors.error },
+    { key: 'whenShutdown' as const, label: 'When Shutdown', Icon: SnowflakeIcon, color: Colors.depth },
+    { key: 'patternInterrupt' as const, label: 'Pattern Interrupt', Icon: HourglassIcon, color: Colors.warning },
+    { key: 'repair' as const, label: 'Repair', Icon: HeartIcon, color: Colors.secondary },
+    { key: 'selfCompassion' as const, label: 'Self-Compassion', Icon: GreenHeartIcon, color: Colors.primary },
   ];
 
   return (
@@ -2021,11 +2051,11 @@ function AnchorsTab({
         Short phrases for difficult moments. Save the ones that resonate.
       </Text>
 
-      {ANCHOR_ITEMS.map(({ key, label, icon, color }) => (
+      {ANCHOR_ITEMS.map(({ key, label, Icon, color }) => (
         <View key={key} style={st.anchorCard}>
           <View style={st.anchorCardHeader}>
             <View style={[st.anchorIcon, { backgroundColor: color + '15' }]}>
-              <Text style={[st.anchorIconText, { color }]}>{icon}</Text>
+              <Icon size={18} color={color} />
             </View>
             <Text style={[st.anchorLabel, { color }]}>{label}</Text>
           </View>
@@ -2081,7 +2111,10 @@ function AnchorsTab({
         onPress={() => router.push('/(app)/chat' as any)}
         activeOpacity={0.8}
       >
-        <Text style={st.ctaButtonText}>Talk to Nuance ✦</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <Text style={st.ctaButtonText}>Talk to Nuance</Text>
+          <SparkleIcon size={14} color={Colors.white} />
+        </View>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -2187,8 +2220,8 @@ const st = StyleSheet.create({
     borderColor: 'transparent',
   },
   tabIcon: {
-    fontSize: 14,
-    color: Colors.textMuted,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
   },
   tabLabel: {
     fontSize: FontSizes.caption,
@@ -3213,7 +3246,8 @@ const st = StyleSheet.create({
     borderRadius: BorderRadius.sm,
   },
   partsMapSectionIcon: {
-    fontSize: 16,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
   },
   partsMapSectionTitle: {
     fontSize: FontSizes.bodySmall,

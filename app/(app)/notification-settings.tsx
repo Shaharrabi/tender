@@ -28,6 +28,14 @@ import {
   BorderRadius,
   Shadows,
 } from '@/constants/theme';
+import {
+  CalendarIcon,
+  MeditationIcon,
+  CompassIcon,
+  SparkleIcon,
+  CoupleIcon,
+} from '@/assets/graphics/icons';
+import type { IconProps } from '@/assets/graphics/icons';
 
 // ─── Settings Types ──────────────────────────────────────
 
@@ -130,7 +138,7 @@ export default function NotificationSettingsScreen() {
         <Text style={styles.sectionLabel}>REMINDERS</Text>
 
         <ToggleRow
-          icon="📅"
+          IconComponent={CalendarIcon}
           title="Daily Check-In"
           description="A gentle reminder to notice how you're feeling"
           value={prefs.dailyCheckInReminder}
@@ -138,7 +146,7 @@ export default function NotificationSettingsScreen() {
         />
 
         <ToggleRow
-          icon="🧘"
+          IconComponent={MeditationIcon}
           title="Practice Reminders"
           description="Nudges to complete your weekly practices"
           value={prefs.practiceReminders}
@@ -146,7 +154,7 @@ export default function NotificationSettingsScreen() {
         />
 
         <ToggleRow
-          icon="🧭"
+          IconComponent={CompassIcon}
           title="Assessment Nudges"
           description="Reminders to continue your assessments"
           value={prefs.assessmentNudges}
@@ -157,7 +165,7 @@ export default function NotificationSettingsScreen() {
         <Text style={styles.sectionLabel}>INSIGHTS & UPDATES</Text>
 
         <ToggleRow
-          icon="✦"
+          IconComponent={SparkleIcon}
           title="Nuance Insights"
           description="Personalized reflections from your AI relationship guide"
           value={prefs.nuanceInsights}
@@ -165,7 +173,7 @@ export default function NotificationSettingsScreen() {
         />
 
         <ToggleRow
-          icon="💑"
+          IconComponent={CoupleIcon}
           title="Partner Activity"
           description="Know when your partner completes a practice or assessment"
           value={prefs.partnerActivity}
@@ -173,7 +181,7 @@ export default function NotificationSettingsScreen() {
         />
 
         <ToggleRow
-          icon="✨"
+          IconComponent={SparkleIcon}
           title="Daily Wisdom"
           description="Motivational quotes and relationship insights"
           value={prefs.motivationalQuotes}
@@ -233,13 +241,13 @@ export default function NotificationSettingsScreen() {
 // ─── Toggle Row ──────────────────────────────────────────
 
 function ToggleRow({
-  icon,
+  IconComponent,
   title,
   description,
   value,
   onToggle,
 }: {
-  icon: string;
+  IconComponent: React.ComponentType<IconProps>;
   title: string;
   description: string;
   value: boolean;
@@ -247,7 +255,9 @@ function ToggleRow({
 }) {
   return (
     <View style={styles.toggleRow}>
-      <Text style={styles.toggleIcon}>{icon}</Text>
+      <View style={styles.toggleIcon}>
+        <IconComponent size={20} color={Colors.text} />
+      </View>
       <View style={styles.toggleInfo}>
         <Text style={styles.toggleTitle}>{title}</Text>
         <Text style={styles.toggleDescription}>{description}</Text>
@@ -329,7 +339,9 @@ const styles = StyleSheet.create({
     ...Shadows.subtle,
   },
   toggleIcon: {
-    fontSize: 20,
+    width: 24,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
   },
   toggleInfo: {
     flex: 1,

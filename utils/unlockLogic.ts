@@ -7,6 +7,24 @@
 
 import type { AssessmentType } from '@/types';
 import { Colors } from '@/constants/theme';
+import type { ComponentType } from 'react';
+import type { IconProps } from '@/assets/graphics/icons';
+import {
+  HeartDoubleIcon,
+  BrainIcon,
+  MasksIcon,
+  ScaleIcon,
+  LeafIcon,
+  CompassIcon,
+  SparkleIcon,
+  ChatBubbleIcon,
+  TargetIcon,
+  BookOpenIcon,
+  ClipboardIcon,
+  SearchIcon,
+  HandshakeIcon,
+  CoupleIcon,
+} from '@/assets/graphics/icons';
 
 export interface UnlockState {
   // Individual assessment result cards
@@ -65,7 +83,7 @@ export interface FeatureCard {
   key: FeatureKey;
   title: string;
   subtitle: string;
-  icon: string;
+  icon: ComponentType<IconProps>;
   color: string;
   unlockHint: string;  // What's needed to unlock
   route: string;       // Where to navigate
@@ -78,7 +96,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     key: 'attachmentResults',
     title: 'How You Connect',
     subtitle: 'Your attachment patterns and how you reach for closeness or create distance',
-    icon: '💕',
+    icon: HeartDoubleIcon,
     color: Colors.secondary,
     unlockHint: 'Complete the assessment',
     route: '/(app)/results',
@@ -88,7 +106,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     key: 'personalityResults',
     title: 'Who You Are',
     subtitle: 'Your personality and how it shapes the way you show up',
-    icon: '🧠',
+    icon: BrainIcon,
     color: '#5B6B8A',
     unlockHint: 'Complete the assessment',
     route: '/(app)/results',
@@ -98,7 +116,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     key: 'emotionalIntelligence',
     title: 'How You Feel',
     subtitle: 'How you sense, name, and navigate what you feel',
-    icon: '🎭',
+    icon: MasksIcon,
     color: '#6BA3A0',
     unlockHint: 'Complete the assessment',
     route: '/(app)/results',
@@ -108,7 +126,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     key: 'conflictStyle',
     title: 'How You Fight',
     subtitle: 'Your approach to conflict and what you do when things get hard',
-    icon: '⚖️',
+    icon: ScaleIcon,
     color: Colors.accent,
     unlockHint: 'Complete the assessment',
     route: '/(app)/results',
@@ -118,7 +136,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     key: 'differentiation',
     title: 'How You Hold Your Ground',
     subtitle: 'Your boundaries and ability to stay yourself while staying close',
-    icon: '🌿',
+    icon: LeafIcon,
     color: Colors.primary,
     unlockHint: 'Complete the assessment',
     route: '/(app)/results',
@@ -128,7 +146,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     key: 'valuesProfile',
     title: 'What Matters to You',
     subtitle: 'Your values and what you want to move toward together',
-    icon: '🧭',
+    icon: CompassIcon,
     color: '#8B6914',
     unlockHint: 'Complete the assessment',
     route: '/(app)/results',
@@ -140,7 +158,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     key: 'fullPortrait',
     title: 'Full Relational Portrait',
     subtitle: 'Your complete pattern analysis across 4 lenses',
-    icon: '✨',
+    icon: SparkleIcon,
     color: Colors.primary,
     unlockHint: 'Complete all 6 assessments',
     route: '/(app)/portrait',
@@ -150,7 +168,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     key: 'aiCoach',
     title: 'Talk to Nuance',
     subtitle: 'Your AI relationship guide — always here',
-    icon: '✦',
+    icon: ChatBubbleIcon,
     color: Colors.primary,
     unlockHint: 'Complete 1 assessment to start',
     route: '/(app)/chat',
@@ -160,7 +178,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     key: 'practices',
     title: 'Practices & Exercises',
     subtitle: '32 guided practices across 7 modalities',
-    icon: '🎯',
+    icon: TargetIcon,
     color: Colors.secondary,
     unlockHint: '',
     route: '/(app)/exercises',
@@ -170,7 +188,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     key: 'courses',
     title: 'Learning Courses',
     subtitle: '6 micro-courses to deepen your understanding',
-    icon: '📚',
+    icon: BookOpenIcon,
     color: '#6B5B8A',
     unlockHint: 'Complete 1 assessment to unlock',
     route: '/(app)/courses',
@@ -180,7 +198,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     key: 'treatmentPlan',
     title: 'Growth Plan',
     subtitle: 'Your personalized growth pathway',
-    icon: '📋',
+    icon: ClipboardIcon,
     color: '#5B6B8A',
     unlockHint: 'Complete 3+ assessments',
     route: '/(app)/treatment-plan',
@@ -190,7 +208,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     key: 'findTherapist',
     title: 'Find a Therapist',
     subtitle: 'Matched to your assessment patterns',
-    icon: '🔍',
+    icon: SearchIcon,
     color: '#6BA3A0',
     unlockHint: '',
     route: '/(app)/find-therapist',
@@ -200,7 +218,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     key: 'community',
     title: 'Community',
     subtitle: 'Anonymous stories and curated resources',
-    icon: '🤝',
+    icon: HandshakeIcon,
     color: '#7B8F6B',
     unlockHint: 'Complete 1 assessment to unlock',
     route: '/(app)/community',
@@ -210,7 +228,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     key: 'couplesPortal',
     title: 'Couple Portal',
     subtitle: 'Shared portrait, couple assessments, and coaching',
-    icon: '💑',
+    icon: CoupleIcon,
     color: Colors.secondary,
     unlockHint: 'Both partners must complete their portraits',
     route: '/(app)/couple-portal',

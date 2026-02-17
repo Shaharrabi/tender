@@ -10,12 +10,14 @@ import { useRouter } from 'expo-router';
 import { useOnboarding } from '@/context/OnboardingContext';
 import { SoundHaptics } from '@/services/SoundHapticsService';
 import { Colors, Spacing, FontSizes, FontFamilies, ButtonSizes, BorderRadius } from '@/constants/theme';
+import { HeartDoubleIcon, SeedlingIcon, WaveIcon, WhiteHeartIcon } from '@/assets/graphics/icons';
+import type { IconProps } from '@/assets/graphics/icons';
 
-const OPTIONS = [
-  { id: 'in-relationship', label: 'In a relationship', emoji: '💕' },
-  { id: 'single', label: 'Single', emoji: '🌱' },
-  { id: 'complicated', label: 'It\'s complicated', emoji: '🌊' },
-  { id: 'prefer-not-to-say', label: 'Prefer not to say', emoji: '🤍' },
+const OPTIONS: { id: string; label: string; Icon: React.ComponentType<IconProps> }[] = [
+  { id: 'in-relationship', label: 'In a relationship', Icon: HeartDoubleIcon },
+  { id: 'single', label: 'Single', Icon: SeedlingIcon },
+  { id: 'complicated', label: 'It\'s complicated', Icon: WaveIcon },
+  { id: 'prefer-not-to-say', label: 'Prefer not to say', Icon: WhiteHeartIcon },
 ];
 
 export default function StatusScreen() {
@@ -59,7 +61,9 @@ export default function StatusScreen() {
                   onPress={() => handleSelect(option.id)}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.optionEmoji}>{option.emoji}</Text>
+                  <View style={styles.optionIconWrapper}>
+                    <option.Icon size={24} color={isSelected ? Colors.primaryDark : Colors.primary} />
+                  </View>
                   <Text style={[styles.optionLabel, isSelected && styles.optionLabelSelected]}>
                     {option.label}
                   </Text>
@@ -138,8 +142,10 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
     backgroundColor: Colors.primaryFaded,
   },
-  optionEmoji: {
-    fontSize: 24,
+  optionIconWrapper: {
+    width: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   optionLabel: {
     fontSize: FontSizes.body,

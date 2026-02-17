@@ -34,6 +34,13 @@ import ExerciseCard, {
   CATEGORY_ACCENT_COLORS,
 } from '@/components/intervention/ExerciseCard';
 import { CATEGORY_ICONS, DIFFICULTY_ICONS } from '@/constants/icons';
+import type { IconComponent } from '@/constants/icons';
+import {
+  TargetIcon,
+  CheckmarkIcon,
+  ClipboardIcon,
+  SearchIcon,
+} from '@/assets/graphics/icons';
 import { useAuth } from '@/context/AuthContext';
 import { getCompletions } from '@/services/intervention';
 import type { InterventionCategory } from '@/types/intervention';
@@ -174,19 +181,19 @@ export default function ExercisesScreen() {
           <StatCard
             value={allExercises.length.toString()}
             label="Practices"
-            icon="🏋️"
+            IconComponent={TargetIcon}
             accentColor={Colors.primary}
           />
           <StatCard
             value={categoriesCount.toString()}
             label="Categories"
-            icon="🎯"
+            IconComponent={TargetIcon}
             accentColor={Colors.accent}
           />
           <StatCard
             value={completedCount.toString()}
             label="Completed"
-            icon="✅"
+            IconComponent={CheckmarkIcon}
             accentColor={Colors.calm}
             subtitle={completedCount > 0 ? `${Object.values(completionMap).reduce((a, b) => a + b, 0)} total sessions` : 'Start your journey'}
           />
@@ -216,7 +223,7 @@ export default function ExercisesScreen() {
               const total = allExercises.length;
               const pct = Math.round((count / total) * 100);
               const color = CATEGORY_ACCENT_COLORS[cat] || Colors.primary;
-              const icon = CATEGORY_ICONS[cat] || '📋';
+              const CatIcon = CATEGORY_ICONS[cat] || ClipboardIcon;
               return (
                 <TouchableOpacity
                   key={cat}
@@ -225,7 +232,7 @@ export default function ExercisesScreen() {
                   activeOpacity={0.7}
                 >
                   <View style={[styles.breakdownCircle, { borderColor: color }]}>
-                    <Text style={styles.breakdownIcon}>{icon}</Text>
+                    <CatIcon size={18} color={color} />
                   </View>
                   <Text style={styles.breakdownCount}>{count}</Text>
                   <Text style={[styles.breakdownLabel, { color }]}>
@@ -263,7 +270,9 @@ export default function ExercisesScreen() {
           ]}
         >
           <View style={styles.searchContainer}>
-            <Text style={styles.searchIcon}>{'\u{1F50D}'}</Text>
+            <View style={styles.searchIcon}>
+              <SearchIcon size={15} color={Colors.textMuted} />
+            </View>
             <TextInput
               style={styles.searchInput}
               placeholder="Search exercises..."
@@ -357,7 +366,9 @@ export default function ExercisesScreen() {
         {/* ─── Empty State ────────────────────────────────── */}
         {filteredExercises.length === 0 && (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyIcon}>{'\u{1F50E}'}</Text>
+            <View style={styles.emptyIcon}>
+              <SearchIcon size={40} color={Colors.textMuted} />
+            </View>
             <Text style={styles.emptyTitle}>No exercises found</Text>
             <Text style={styles.emptyText}>
               {searchQuery
@@ -391,20 +402,20 @@ export default function ExercisesScreen() {
 function StatCard({
   value,
   label,
-  icon,
+  IconComponent,
   accentColor,
   subtitle,
 }: {
   value: string;
   label: string;
-  icon: string;
+  IconComponent: React.ComponentType<{ size?: number; color?: string }>;
   accentColor: string;
   subtitle?: string;
 }) {
   return (
     <View style={statStyles.card}>
       <View style={[statStyles.iconCircle, { backgroundColor: accentColor + '18' }]}>
-        <Text style={statStyles.icon}>{icon}</Text>
+        <IconComponent size={16} color={accentColor} />
       </View>
       <Text style={[statStyles.value, { color: accentColor }]}>{value}</Text>
       <Text style={statStyles.label}>{label}</Text>
@@ -434,7 +445,6 @@ const statStyles = StyleSheet.create({
     marginBottom: 2,
   },
   icon: {
-    fontSize: 16,
   },
   value: {
     fontSize: FontSizes.headingL,
@@ -498,7 +508,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surfaceElevated,
   },
   breakdownIcon: {
-    fontSize: 18,
   },
   breakdownCount: {
     fontSize: FontSizes.bodySmall,
@@ -580,7 +589,7 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   searchIcon: {
-    fontSize: 15,
+    justifyContent: 'center' as const,
   },
   searchInput: {
     flex: 1,
@@ -657,7 +666,6 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   emptyIcon: {
-    fontSize: 40,
     marginBottom: Spacing.sm,
   },
   emptyTitle: {

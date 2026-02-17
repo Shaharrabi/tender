@@ -24,6 +24,7 @@ import {
   BorderRadius,
   Shadows,
 } from '@/constants/theme';
+import { LightbulbIcon } from '@/assets/graphics/icons';
 import { useAuth } from '@/context/AuthContext';
 import {
   MICRO_COURSES,
@@ -240,7 +241,7 @@ export default function CoursesScreen() {
 
         {/* Prerequisite explainer */}
         <View style={styles.infoBox}>
-          <Text style={styles.infoIcon}>{'\u{1F4A1}'}</Text>
+          <LightbulbIcon size={18} color={Colors.primary} />
           <Text style={styles.infoText}>
             Courses unlock as you complete assessments and earlier courses.
             Start with "Understanding Your Attachment Pattern" after completing

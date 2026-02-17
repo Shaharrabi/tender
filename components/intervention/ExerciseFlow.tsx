@@ -41,6 +41,14 @@ import {
   Shadows,
 } from '@/constants/theme';
 import type { Intervention, ExerciseStep } from '@/types/intervention';
+import {
+  BookOpenIcon,
+  PenIcon,
+  CheckmarkIcon,
+  QuestionIcon,
+  NotepadIcon,
+  StarIcon,
+} from '@/assets/graphics/icons';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -322,7 +330,7 @@ export default function ExerciseFlow({
               </>
             ) : (
               <View style={summaryStyles.emptyState}>
-                <Text style={summaryStyles.emptyIcon}>{'\u{1F4DD}'}</Text>
+                <NotepadIcon size={48} color={Colors.textMuted} />
                 <Text style={summaryStyles.emptyTitle}>No written responses</Text>
                 <Text style={summaryStyles.emptyText}>
                   This exercise focused on experiential practice.
@@ -377,7 +385,7 @@ export default function ExerciseFlow({
             },
           ]}
         >
-          <Text style={styles.checkMark}>{'\u2713'}</Text>
+          <CheckmarkIcon size={48} color={Colors.textOnPrimary} />
         </Animated.View>
 
         <Animated.View
@@ -405,14 +413,10 @@ export default function ExerciseFlow({
                     activeOpacity={0.6}
                     style={styles.starButton}
                   >
-                    <Text
-                      style={[
-                        styles.starText,
-                        isFilled && styles.starActive,
-                      ]}
-                    >
-                      {isFilled ? '\u2605' : '\u2606'}
-                    </Text>
+                    <StarIcon
+                      size={36}
+                      color={isFilled ? Colors.accent : Colors.borderLight}
+                    />
                   </TouchableOpacity>
                 );
               })}
@@ -723,7 +727,7 @@ function InstructionStep({ step }: { step: ExerciseStep }) {
   return (
     <View style={stepStyles.instructionCard}>
       <View style={stepStyles.instructionIconCircle}>
-        <Text style={stepStyles.instructionIcon}>{'\u{1F4D6}'}</Text>
+        <BookOpenIcon size={22} color={Colors.primary} />
       </View>
       <Text style={stepStyles.stepTitle}>{step.title}</Text>
       <Text style={stepStyles.stepContent}>{step.content}</Text>
@@ -745,7 +749,7 @@ function ReflectionStep({
   return (
     <View style={stepStyles.reflectionCard}>
       <View style={stepStyles.reflectionHeader}>
-        <Text style={stepStyles.reflectionIcon}>{'\u{270D}\uFE0F'}</Text>
+        <PenIcon size={20} color={Colors.text} />
         <Text style={stepStyles.stepTitle}>{step.title}</Text>
       </View>
       <Text style={stepStyles.stepContent}>{step.content}</Text>
@@ -854,14 +858,13 @@ function TimerStep({ step }: { step: ExerciseStep }) {
 
         {/* Center content */}
         <View style={stepStyles.timerCenter}>
-          <Text
-            style={[
-              stepStyles.timerTime,
-              remaining === 0 && { color: Colors.success },
-            ]}
-          >
-            {remaining === 0 ? '\u2713' : timeStr}
-          </Text>
+          {remaining === 0 ? (
+            <CheckmarkIcon size={42} color={Colors.success} />
+          ) : (
+            <Text style={stepStyles.timerTime}>
+              {timeStr}
+            </Text>
+          )}
           {remaining > 0 && (
             <Text style={stepStyles.timerSubtitle}>
               {isRunning ? 'breathing...' : 'tap to start'}
@@ -984,7 +987,7 @@ function PromptStep({
   return (
     <View style={stepStyles.promptCard}>
       <View style={stepStyles.promptQuestionWrapper}>
-        <Text style={stepStyles.promptIcon}>{'\u{2753}'}</Text>
+        <QuestionIcon size={20} color={Colors.text} />
         <Text style={stepStyles.promptQuestion}>{step.title}</Text>
       </View>
       <Text style={stepStyles.stepContent}>{step.content}</Text>
@@ -1080,7 +1083,6 @@ const summaryStyles = StyleSheet.create({
     gap: Spacing.sm,
   },
   emptyIcon: {
-    fontSize: 48,
     marginBottom: Spacing.sm,
   },
   emptyTitle: {
@@ -1138,7 +1140,6 @@ const stepStyles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   instructionIcon: {
-    fontSize: 22,
   },
 
   // ─── Reflection ──────────────────────────
@@ -1157,7 +1158,6 @@ const stepStyles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   reflectionIcon: {
-    fontSize: 20,
   },
   journalWrapper: {
     borderRadius: BorderRadius.md,
@@ -1239,7 +1239,6 @@ const stepStyles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   promptIcon: {
-    fontSize: 20,
     marginTop: 2,
   },
   promptQuestion: {
@@ -1371,9 +1370,6 @@ const styles = StyleSheet.create({
     ...Shadows.elevated,
   },
   checkMark: {
-    fontSize: 48,
-    color: Colors.textOnPrimary,
-    fontWeight: '300',
   },
   celebrationContent: {
     width: '100%',
@@ -1414,11 +1410,8 @@ const styles = StyleSheet.create({
     padding: Spacing.xs,
   },
   starText: {
-    fontSize: 36,
-    color: Colors.borderLight,
   },
   starActive: {
-    color: Colors.accent,
   },
   ratingFeedback: {
     fontSize: FontSizes.bodySmall,

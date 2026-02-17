@@ -52,7 +52,7 @@ export default function StepJourney({
     <View style={styles.container}>
       {/* Phase Banner */}
       <View style={[styles.phaseBanner, { backgroundColor: phase.color + '20', borderLeftColor: phase.color }]}>
-        <Text style={[styles.phaseIcon]}>{phase.icon}</Text>
+        <phase.icon size={22} color={phase.color} />
         <View style={styles.phaseInfo}>
           <Text style={[styles.phaseLabel, { color: phase.color }]}>
             PHASE: {phase.name.toUpperCase()}

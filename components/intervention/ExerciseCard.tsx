@@ -30,6 +30,14 @@ import type {
   InterventionCategory,
   ExerciseMode,
 } from '@/types/intervention';
+import {
+  MeditationIcon,
+  CoupleIcon,
+  RefreshIcon,
+  CheckmarkIcon,
+  HourglassIcon,
+} from '@/assets/graphics/icons';
+import type { IconProps } from '@/assets/graphics/icons';
 
 interface ExerciseCardProps {
   exercise: Intervention;
@@ -82,25 +90,25 @@ const DIFFICULTY_CONFIG: Record<
   },
 };
 
-// ─── Mode Icons (text-based) ─────────────────────────────
+// ─── Mode Icons (SVG components) ─────────────────────────
 const MODE_CONFIG: Record<
   ExerciseMode,
-  { icon: string; label: string; color: string; bg: string }
+  { Icon: React.ComponentType<IconProps>; label: string; color: string; bg: string }
 > = {
   solo: {
-    icon: '\u{1F9D8}',
+    Icon: MeditationIcon,
     label: 'Solo',
     color: '#3D7A77',
     bg: '#E0F0F0',
   },
   together: {
-    icon: '\u{1F491}',
+    Icon: CoupleIcon,
     label: 'Together',
     color: '#9E5B3C',
     bg: '#FAEAE3',
   },
   either: {
-    icon: '\u{1F504}',
+    Icon: RefreshIcon,
     label: 'Either',
     color: '#4A5872',
     bg: '#E3E8F0',
@@ -169,7 +177,7 @@ export default function ExerciseCard({
             </View>
             {completionCount > 0 && (
               <View style={styles.completionBadge}>
-                <Text style={styles.completionIcon}>{'\u2714'}</Text>
+                <CheckmarkIcon size={11} color="#4A6F50" />
                 <Text style={styles.completionText}>
                   {completionCount === 1 ? 'Done' : `${completionCount}×`}
                 </Text>
@@ -189,7 +197,7 @@ export default function ExerciseCard({
           <View style={styles.bottomRow}>
             {/* Duration */}
             <View style={styles.badge}>
-              <Text style={styles.badgeIcon}>{'\u23F1'}</Text>
+              <HourglassIcon size={11} color={Colors.textSecondary} />
               <Text style={styles.badgeText}>{exercise.duration} min</Text>
             </View>
 
@@ -204,7 +212,7 @@ export default function ExerciseCard({
 
             {/* Mode */}
             <View style={[styles.badge, { backgroundColor: mode.bg }]}>
-              <Text style={styles.badgeIcon}>{mode.icon}</Text>
+              <mode.Icon size={11} color={mode.color} />
               <Text style={[styles.badgeText, { color: mode.color }]}>
                 {mode.label}
               </Text>
@@ -274,8 +282,6 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   completionIcon: {
-    fontSize: 11,
-    color: '#4A6F50',
   },
   completionText: {
     fontSize: 11,
@@ -317,7 +323,6 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   badgeIcon: {
-    fontSize: 11,
   },
   badgeText: {
     fontSize: 11,

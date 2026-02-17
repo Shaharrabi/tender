@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
 import { AssessmentSection } from '@/types';
 import { Colors, Spacing, FontSizes, ButtonSizes } from '@/constants/theme';
+import { CheckmarkIcon } from '@/assets/graphics/icons';
 
 interface SectionBreakProps {
   section: AssessmentSection;
@@ -33,7 +34,7 @@ export default function SectionBreak({
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.checkmark}>&#10003;</Text>
+          <CheckmarkIcon size={48} color={Colors.success} />
           {sectionName ? (
             <Text style={styles.completedLabel}>{sectionName} complete</Text>
           ) : null}

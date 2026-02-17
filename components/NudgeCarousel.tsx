@@ -89,7 +89,9 @@ export default function NudgeCarousel({ nudges }: NudgeCarouselProps) {
             onPress={() => handleCardPress(nudge)}
             disabled={!nudge.actionRoute}
           >
-            <Text style={styles.icon}>{nudge.icon}</Text>
+            <View style={styles.iconContainer}>
+              <nudge.icon size={22} color={Colors.primary} />
+            </View>
             <View style={styles.textContainer}>
               <Text style={styles.title} numberOfLines={1}>
                 {nudge.title}
@@ -152,6 +154,9 @@ const styles = StyleSheet.create({
   },
   icon: {
     fontSize: 32,
+    marginRight: Spacing.md,
+  },
+  iconContainer: {
     marginRight: Spacing.md,
   },
   textContainer: {

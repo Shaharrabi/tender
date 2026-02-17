@@ -21,6 +21,7 @@ import {
   Shadows,
 } from '@/constants/theme';
 import { xpToNextLevel, LEVEL_THRESHOLDS } from '@/services/gamification';
+import { FireIcon } from '@/assets/graphics/icons';
 
 interface XPProgressBarProps {
   compact?: boolean;
@@ -69,7 +70,10 @@ export function XPProgressBar({ compact = false }: XPProgressBarProps) {
           />
         </View>
         {streak && streak.days > 0 && (
-          <Text style={styles.compactStreak}>🔥 {streak.days}</Text>
+          <View style={styles.compactStreakRow}>
+            <FireIcon size={12} color={Colors.accentGold} />
+            <Text style={styles.compactStreak}>{streak.days}</Text>
+          </View>
         )}
       </View>
     );
@@ -99,7 +103,7 @@ export function XPProgressBar({ compact = false }: XPProgressBarProps) {
 
         {streak && streak.days > 0 && (
           <View style={styles.streakBadge}>
-            <Text style={styles.streakEmoji}>🔥</Text>
+            <FireIcon size={18} color={Colors.accentGold} />
             <Text style={styles.streakNumber}>{streak.days}</Text>
             <Text style={styles.streakLabel}>
               {streak.days === 1 ? 'day' : 'days'}
@@ -188,9 +192,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: Spacing.sm,
   },
-  streakEmoji: {
-    fontSize: 18,
-  },
   streakNumber: {
     fontSize: 16,
     fontFamily: 'PlayfairDisplay_700Bold',
@@ -252,6 +253,11 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: Colors.primary,
     borderRadius: BorderRadius.pill,
+  },
+  compactStreakRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
   },
   compactStreak: {
     fontSize: 12,

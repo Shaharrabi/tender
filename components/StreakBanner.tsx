@@ -9,6 +9,7 @@ import {
   Shadows,
 } from '@/constants/theme';
 import type { StreakData } from '@/services/streaks';
+import { SparkleIcon, LeafIcon, CheckmarkIcon, StarIcon } from '@/assets/graphics/icons';
 
 const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 
@@ -106,20 +107,27 @@ export default function StreakBanner({ streak, previousStreak, isNewDay }: Strea
             },
           ]}
         >
-          <Text style={styles.celebrationText}>
-            {'\uD83C\uDF89'} Day {currentStreak} — Keep going!
-          </Text>
+          <View style={styles.celebrationRow}>
+            <SparkleIcon size={14} color={Colors.primaryDark} />
+            <Text style={styles.celebrationText}>
+              Day {currentStreak} — Keep going!
+            </Text>
+          </View>
         </Animated.View>
       )}
 
       {/* Streak number with laurels */}
       <View style={styles.streakHeader}>
-        <Text style={styles.laurelLeft}>{'\uD83C\uDF3F'}</Text>
+        <View style={styles.laurelLeft}>
+          <LeafIcon size={22} color={Colors.primary} />
+        </View>
         <View style={styles.streakCenter}>
           <Text style={styles.streakNumber}>{currentStreak}</Text>
           <Text style={styles.streakLabel}>consecutive days</Text>
         </View>
-        <Text style={styles.laurelRight}>{'\uD83C\uDF3F'}</Text>
+        <View style={styles.laurelRight}>
+          <LeafIcon size={22} color={Colors.primary} />
+        </View>
       </View>
 
       {/* Weekly dots */}
@@ -137,7 +145,7 @@ export default function StreakBanner({ streak, previousStreak, isNewDay }: Strea
                 day.isFuture && styles.weekDotFuture,
               ]}
             >
-              {day.isDone && <Text style={styles.weekDotCheck}>{'\u2713'}</Text>}
+              {day.isDone && <CheckmarkIcon size={11} color={Colors.white} />}
             </View>
           </View>
         ))}
@@ -152,7 +160,9 @@ export default function StreakBanner({ streak, previousStreak, isNewDay }: Strea
         <View style={styles.commitTrack}>
           <View style={[styles.commitFill, { width: `${commitProgress * 100}%` }]} />
           {commitmentDay >= 30 && (
-            <Text style={styles.commitStar}>{'\u2B50'}</Text>
+            <View style={styles.commitStar}>
+              <StarIcon size={16} color={Colors.accentGold} />
+            </View>
           )}
         </View>
       </View>
@@ -191,6 +201,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.xs,
   },
+  celebrationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
   celebrationText: {
     fontSize: FontSizes.caption,
     fontWeight: '700',
@@ -206,11 +222,9 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   laurelLeft: {
-    fontSize: 22,
     transform: [{ scaleX: -1 }],
   },
   laurelRight: {
-    fontSize: 22,
   },
   streakCenter: {
     alignItems: 'center',
@@ -270,9 +284,6 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   weekDotCheck: {
-    fontSize: 11,
-    color: Colors.white,
-    fontWeight: '700',
   },
 
   // Commitment
@@ -312,7 +323,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: -2,
     top: -9,
-    fontSize: 16,
   },
 
   // Message

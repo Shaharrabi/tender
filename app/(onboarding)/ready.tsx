@@ -22,6 +22,7 @@ import {
   ButtonSizes,
   BorderRadius,
 } from '@/constants/theme';
+import { LeafIcon } from '@/assets/graphics/icons';
 
 export default function ReadyScreen() {
   const router = useRouter();
@@ -89,7 +90,7 @@ export default function ReadyScreen() {
 
       <View style={styles.content}>
         <Animated.View entering={FadeIn.duration(1500)} style={styles.emojiSection}>
-          <Text style={styles.emoji}>🌿</Text>
+          <LeafIcon size={56} color={Colors.primary} />
         </Animated.View>
 
         <Animated.View entering={FadeInDown.duration(1200).delay(500)}>
@@ -149,9 +150,7 @@ const styles = StyleSheet.create({
   },
   emojiSection: {
     marginBottom: Spacing.lg,
-  },
-  emoji: {
-    fontSize: 56,
+    alignItems: 'center',
   },
   title: {
     fontSize: 36,

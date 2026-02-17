@@ -32,6 +32,7 @@ import {
   BorderRadius,
   Shadows,
 } from '@/constants/theme';
+import { CheckmarkIcon } from '@/assets/graphics/icons';
 import type { DailyCheckIn } from '@/types/growth';
 
 // ─── Anchor descriptions ────────────────────────────────
@@ -76,7 +77,7 @@ export default function CheckInCard({
       <View style={styles.card}>
         <View style={styles.checkedInHeader}>
           <View style={styles.checkCircle}>
-            <Text style={styles.checkMark}>{'✓'}</Text>
+            <CheckmarkIcon size={16} color={Colors.textOnPrimary} />
           </View>
           <Text style={styles.checkedInTitle}>Checked in today</Text>
         </View>
@@ -228,7 +229,7 @@ export default function CheckInCard({
             practiced && styles.toggleIndicatorActive,
           ]}
         >
-          {practiced && <Text style={styles.toggleCheck}>{'✓'}</Text>}
+          {practiced && <CheckmarkIcon size={14} color={Colors.textOnPrimary} />}
         </View>
         <Text style={styles.toggleLabel}>
           I practiced a growth edge today

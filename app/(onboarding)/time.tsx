@@ -12,12 +12,14 @@ import { useRouter } from 'expo-router';
 import { useOnboarding } from '@/context/OnboardingContext';
 import { SoundHaptics } from '@/services/SoundHapticsService';
 import { Colors, Spacing, FontSizes, FontFamilies, BorderRadius } from '@/constants/theme';
+import { CoffeeIcon, MeditationIcon, BookOpenIcon, WaveIcon } from '@/assets/graphics/icons';
+import type { IconProps } from '@/assets/graphics/icons';
 
-const OPTIONS = [
-  { id: '5-min', label: '5 minutes a day', desc: 'Quick daily check-ins', emoji: '☕' },
-  { id: '10-15-min', label: '10–15 minutes a day', desc: 'Practices + reflection', emoji: '🧘' },
-  { id: '20-plus-min', label: '20+ minutes a day', desc: 'Deep exploration', emoji: '📖' },
-  { id: 'whenever', label: 'When I feel like it', desc: 'No pressure, your pace', emoji: '🌊' },
+const OPTIONS: { id: string; label: string; desc: string; Icon: React.ComponentType<IconProps> }[] = [
+  { id: '5-min', label: '5 minutes a day', desc: 'Quick daily check-ins', Icon: CoffeeIcon },
+  { id: '10-15-min', label: '10–15 minutes a day', desc: 'Practices + reflection', Icon: MeditationIcon },
+  { id: '20-plus-min', label: '20+ minutes a day', desc: 'Deep exploration', Icon: BookOpenIcon },
+  { id: 'whenever', label: 'When I feel like it', desc: 'No pressure, your pace', Icon: WaveIcon },
 ];
 
 export default function TimeScreen() {
@@ -60,7 +62,9 @@ export default function TimeScreen() {
                   onPress={() => handleSelect(option.id)}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.optionEmoji}>{option.emoji}</Text>
+                  <View style={styles.optionIconWrapper}>
+                    <option.Icon size={22} color={isSelected ? Colors.primaryDark : Colors.primary} />
+                  </View>
                   <View style={styles.optionTextContainer}>
                     <Text style={[styles.optionLabel, isSelected && styles.optionLabelSelected]}>
                       {option.label}
@@ -144,10 +148,10 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
     backgroundColor: Colors.primaryFaded,
   },
-  optionEmoji: {
-    fontSize: 22,
+  optionIconWrapper: {
     width: 32,
-    textAlign: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   optionTextContainer: {
     flex: 1,

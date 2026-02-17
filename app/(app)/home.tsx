@@ -83,6 +83,29 @@ import {
   BorderRadius,
   Shadows,
 } from '@/constants/theme';
+import {
+  SunIcon,
+  MoonIcon,
+  SeedlingIcon,
+  LeafIcon,
+  SearchIcon,
+  SparkleIcon,
+  BookOpenIcon,
+  LockIcon,
+  HeartDoubleIcon,
+  FireIcon,
+  ChatBubbleIcon,
+  TargetIcon,
+  ClipboardIcon,
+  HandshakeIcon,
+  CoupleIcon,
+  BrainIcon,
+  MasksIcon,
+  ScaleIcon,
+  CompassIcon,
+} from '@/assets/graphics/icons';
+import type { ComponentType } from 'react';
+import type { IconProps } from '@/assets/graphics/icons';
 import type { AssessmentConfig, AllAssessmentScores, AssessmentType } from '@/types';
 import type { IndividualPortrait } from '@/types/portrait';
 import type { WEAREProfile } from '@/types/weare';
@@ -113,11 +136,24 @@ interface CardStatus {
 
 // ─── Helpers ────────────────────────────────────────────
 
-function getTimeGreeting(): { greeting: string; emoji: string } {
+function getTimeGreeting(): { greeting: string; icon: 'sun' | 'sunAfternoon' | 'moon' } {
   const hour = new Date().getHours();
-  if (hour < 12) return { greeting: 'Good morning', emoji: '\u2600\uFE0F' };
-  if (hour < 17) return { greeting: 'Good afternoon', emoji: '\uD83C\uDF24\uFE0F' };
-  return { greeting: 'Good evening', emoji: '\uD83C\uDF19' };
+  if (hour < 12) return { greeting: 'Good morning', icon: 'sun' };
+  if (hour < 17) return { greeting: 'Good afternoon', icon: 'sunAfternoon' };
+  return { greeting: 'Good evening', icon: 'moon' };
+}
+
+function TimeGreetingIcon({ iconName, size = 22 }: { iconName: 'sun' | 'sunAfternoon' | 'moon'; size?: number }) {
+  switch (iconName) {
+    case 'sun': return <SunIcon size={size} color={Colors.text} />;
+    case 'sunAfternoon': return <SunIcon size={size} color={Colors.text} />;
+    case 'moon': return <MoonIcon size={size} color={Colors.text} />;
+  }
+}
+
+/** Renders a FeatureCard icon — now directly a ComponentType<IconProps> from FEATURE_CARDS */
+function FeatureIcon({ Icon, size = 22, color = Colors.text }: { Icon: ComponentType<IconProps>; size?: number; color?: string }) {
+  return <Icon size={size} color={color} />;
 }
 
 const DAILY_GREETINGS = [
@@ -835,14 +871,17 @@ export default function HomeScreen() {
         <View style={styles.heroSection}>
           <View style={styles.heroBackground}>
             {(() => {
-              const { greeting, emoji } = getTimeGreeting();
+              const { greeting, icon } = getTimeGreeting();
               const emailFallback = user?.email?.split('@')[0]?.replace(/[._-]/g, ' ')?.split(' ')[0] || '';
               const capitalFallback = emailFallback.charAt(0).toUpperCase() + emailFallback.slice(1);
               const capitalName = displayName || capitalFallback;
               return (
                 <>
                   <Text style={styles.heroTagline}>
-                    {greeting}, {capitalName} {emoji}
+                    {greeting}, {capitalName}{' '}
+                    <View style={styles.inlineIconWrapper}>
+                      <TimeGreetingIcon iconName={icon} size={22} />
+                    </View>
                   </Text>
                   {hasPortrait ? (
                     <Text style={styles.heroSubtitle}>
@@ -1241,12 +1280,13 @@ export default function HomeScreen() {
                     ? { borderColor: Colors.secondary }
                     : { borderColor: Colors.textMuted },
               ]}>
-                <Text style={styles.wearePulseText}>
-                  {weareProfile.warmSummary === 'Deeply alive' ? '\u2728'
-                    : weareProfile.warmSummary === 'Growing stronger' ? '\u{1F331}'
-                    : weareProfile.warmSummary === 'Finding its way' ? '\u{1F50D}'
-                    : '\u{1F33F}'}
-                </Text>
+                {weareProfile.warmSummary === 'Deeply alive'
+                  ? <SparkleIcon size={20} color={Colors.primary} />
+                  : weareProfile.warmSummary === 'Growing stronger'
+                    ? <SeedlingIcon size={20} color={Colors.primary} />
+                    : weareProfile.warmSummary === 'Finding its way'
+                      ? <SearchIcon size={20} color={Colors.textSecondary} />
+                      : <LeafIcon size={20} color={Colors.textSecondary} />}
               </View>
 
               <View style={styles.weareSummaryContent}>
@@ -1256,9 +1296,9 @@ export default function HomeScreen() {
 
                 {/* Direction indicator */}
                 <Text style={styles.weareSummaryDirection}>
-                  {weareProfile.layers.emergenceDirection > 1 ? '\u2197\uFE0F Growing'
-                    : weareProfile.layers.emergenceDirection < -1 ? '\u2198\uFE0F Contracting'
-                    : '\u2794 Steady'}
+                  {weareProfile.layers.emergenceDirection > 1 ? 'Growing'
+                    : weareProfile.layers.emergenceDirection < -1 ? 'Contracting'
+                    : 'Steady'}
                   {weareProfile.trend ? ` \u00B7 ${weareProfile.trend.periodLabel}` : ''}
                 </Text>
 
@@ -1278,9 +1318,12 @@ export default function HomeScreen() {
         {/* ═══ 5. STREAK (Small, celebratory) ═════════════════ */}
         {streakData && streakData.currentStreak > 0 && (
           <View style={styles.streakMiniSection}>
-            <Text style={styles.streakMiniText}>
-              {'\u{1F33F}'} Day {streakData.currentStreak} {'\u00B7'} Keep going!
-            </Text>
+            <View style={styles.streakMiniRow}>
+              <LeafIcon size={16} color={Colors.primary} />
+              <Text style={styles.streakMiniText}>
+                Day {streakData.currentStreak} {'\u00B7'} Keep going!
+              </Text>
+            </View>
           </View>
         )}
 
@@ -1332,7 +1375,7 @@ export default function HomeScreen() {
                 activeOpacity={0.8}
               >
                 <View style={styles.featureCardHeader}>
-                  <Text style={styles.featureCardIcon}>{'\u{2728}'}</Text>
+                  <SparkleIcon size={22} color={Colors.text} />
                 </View>
                 <Text style={styles.featureCardTitle}>View Portrait</Text>
                 <Text style={styles.featureCardSubtitle} numberOfLines={2}>
@@ -1348,7 +1391,7 @@ export default function HomeScreen() {
               activeOpacity={0.8}
             >
               <View style={styles.featureCardHeader}>
-                <Text style={styles.featureCardIcon}>{'\u{1F4D6}'}</Text>
+                <BookOpenIcon size={22} color={Colors.text} />
               </View>
               <Text style={styles.featureCardTitle}>Journal</Text>
               <Text style={styles.featureCardSubtitle} numberOfLines={2}>
@@ -1373,11 +1416,9 @@ export default function HomeScreen() {
               activeOpacity={0.8}
             >
               <View style={styles.featureCardHeader}>
-                <Text style={styles.featureCardIcon}>{'\u2726'}</Text>
+                <ChatBubbleIcon size={22} color={Colors.text} />
                 {completedCount === 0 && (
-                  <Text style={styles.featureCardLockIcon}>
-                    {'\u{1F512}'}
-                  </Text>
+                  <LockIcon size={14} color={Colors.textMuted} />
                 )}
               </View>
               <Text style={styles.featureCardTitle}>Talk to Nuance</Text>
@@ -1405,11 +1446,9 @@ export default function HomeScreen() {
                   activeOpacity={isUnlocked ? 0.8 : 0.6}
                 >
                   <View style={styles.featureCardHeader}>
-                    <Text style={styles.featureCardIcon}>{card.icon}</Text>
+                    <FeatureIcon Icon={card.icon} size={22} color={Colors.text} />
                     {!isUnlocked && (
-                      <Text style={styles.featureCardLockIcon}>
-                        {'\u{1F512}'}
-                      </Text>
+                      <LockIcon size={14} color={Colors.textMuted} />
                     )}
                   </View>
                   <Text style={styles.featureCardTitle}>{card.title}</Text>
@@ -1454,7 +1493,7 @@ export default function HomeScreen() {
                       { backgroundColor: card.color + '20' },
                     ]}
                   >
-                    <Text style={styles.resultIcon}>{card.icon}</Text>
+                    <FeatureIcon Icon={card.icon} size={20} color={card.color} />
                   </View>
                   <Text style={styles.resultTitle} numberOfLines={1}>
                     {card.title}
@@ -1467,9 +1506,12 @@ export default function HomeScreen() {
                     onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/chat' as any); }}
                     activeOpacity={0.7}
                   >
-                    <Text style={styles.askNuanceText}>
-                      {'\u2726'} Ask Nuance
-                    </Text>
+                    <View style={styles.askNuanceContent}>
+                      <ChatBubbleIcon size={11} color={Colors.primary} />
+                      <Text style={styles.askNuanceText}>
+                        Ask Nuance
+                      </Text>
+                    </View>
                   </TouchableOpacity>
                 </TouchableOpacity>
                 );
@@ -2702,5 +2744,21 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     fontSize: FontSizes.bodySmall,
     fontWeight: '600',
+  },
+
+  // ── SVG Icon Helpers ──
+  inlineIconWrapper: {
+    marginBottom: -3,
+  },
+  streakMiniRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  askNuanceContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
 });

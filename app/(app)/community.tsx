@@ -42,6 +42,34 @@ import {
   Shadows,
   ButtonSizes,
 } from '@/constants/theme';
+import type { ComponentType } from 'react';
+import type { IconProps } from '@/assets/graphics/icons';
+import {
+  EyeIcon,
+  HeartIcon,
+  RefreshIcon,
+  PuzzleIcon,
+  SeedlingIcon,
+  LinkIcon,
+  ChatBubbleIcon,
+  BrainIcon,
+  ShieldIcon,
+  CompassIcon,
+  LeafIcon,
+  HandshakeIcon,
+  MasksIcon,
+  LightningIcon,
+  ChartBarIcon,
+  SearchIcon,
+  LightbulbIcon,
+  ThoughtBubbleIcon,
+  MailboxIcon,
+  FlagIcon,
+  WhiteHeartIcon,
+  ArrowLeftIcon,
+  PenIcon,
+  SparkleIcon,
+} from '@/assets/graphics/icons';
 
 // ─── Constants ──────────────────────────────────────────
 
@@ -66,24 +94,30 @@ const POST_CATEGORIES: PostCategory[] = [
   'Intimacy',
 ];
 
-const HEALING_PHASES: { key: HealingPhase; label: string; icon: string }[] = [
-  { key: 'seeing', label: 'Seeing', icon: '\u{1F441}\uFE0F' },
-  { key: 'feeling', label: 'Feeling', icon: '\u{1F49C}' },
-  { key: 'shifting', label: 'Shifting', icon: '\u{1F504}' },
-  { key: 'integrating', label: 'Integrating', icon: '\u{1F9E9}' },
-  { key: 'sustaining', label: 'Sustaining', icon: '\u{1F331}' },
+const HEALING_PHASES: { key: HealingPhase; label: string; Icon: ComponentType<IconProps> }[] = [
+  { key: 'seeing', label: 'Seeing', Icon: EyeIcon },
+  { key: 'feeling', label: 'Feeling', Icon: HeartIcon },
+  { key: 'shifting', label: 'Shifting', Icon: RefreshIcon },
+  { key: 'integrating', label: 'Integrating', Icon: PuzzleIcon },
+  { key: 'sustaining', label: 'Sustaining', Icon: SeedlingIcon },
 ];
 
 // ─── Curated Resources ──────────────────────────────────
 
-const CURATED_RESOURCES: ContentItem[] = [
+interface CuratedResource extends Omit<ContentItem, 'icon'> {
+  Icon: ComponentType<IconProps>;
+  iconColor: string;
+}
+
+const CURATED_RESOURCES: CuratedResource[] = [
   {
     id: '1',
     title: '5 Signs of a Secure Relationship',
     category: 'Attachment',
     description: 'Secure relationships share recognizable patterns. Learn the key indicators that signal a healthy, stable bond between partners.',
     readTime: '6 min read',
-    icon: '\u{1F517}',
+    Icon: LinkIcon,
+    iconColor: Colors.primary,
     source: 'The Gottman Institute',
   },
   {
@@ -92,7 +126,8 @@ const CURATED_RESOURCES: ContentItem[] = [
     category: 'Communication',
     description: 'The first three minutes of a conversation predict the outcome. Discover how a gentle approach changes everything.',
     readTime: '5 min read',
-    icon: '\u{1F4AC}',
+    Icon: ChatBubbleIcon,
+    iconColor: Colors.primary,
     source: 'The Gottman Institute',
   },
   {
@@ -101,7 +136,8 @@ const CURATED_RESOURCES: ContentItem[] = [
     category: 'Emotions',
     description: 'Your window of tolerance determines how well you handle stress. Learn to recognize when you are inside or outside your zone.',
     readTime: '7 min read',
-    icon: '\u{1F9E0}',
+    Icon: BrainIcon,
+    iconColor: '#5B6B8A',
     source: 'Dr. Dan Siegel',
   },
   {
@@ -110,7 +146,8 @@ const CURATED_RESOURCES: ContentItem[] = [
     category: 'Conflict',
     description: 'Criticism, contempt, defensiveness, and stonewalling predict relationship failure. Here are the antidotes that work.',
     readTime: '8 min read',
-    icon: '\u{1F6E1}\uFE0F',
+    Icon: ShieldIcon,
+    iconColor: Colors.secondary,
     source: 'The Gottman Institute',
   },
   {
@@ -119,7 +156,8 @@ const CURATED_RESOURCES: ContentItem[] = [
     category: 'Values',
     description: 'When partners align their daily actions with their deepest values, relationships become more meaningful and resilient.',
     readTime: '6 min read',
-    icon: '\u{1F9ED}',
+    Icon: CompassIcon,
+    iconColor: '#8B6914',
     source: 'Dr. Russ Harris',
   },
   {
@@ -128,7 +166,8 @@ const CURATED_RESOURCES: ContentItem[] = [
     category: 'Growth',
     description: 'Letting your guard down with your partner is not weakness. Research shows vulnerability is the birthplace of connection.',
     readTime: '5 min read',
-    icon: '\u{1F331}',
+    Icon: SeedlingIcon,
+    iconColor: Colors.primary,
     source: 'Brene Brown',
   },
   {
@@ -137,7 +176,8 @@ const CURATED_RESOURCES: ContentItem[] = [
     category: 'Emotions',
     description: 'Reactions are automatic; responses are chosen. Learn practical techniques to create space between stimulus and choice.',
     readTime: '4 min read',
-    icon: '\u23F8\uFE0F',
+    Icon: SparkleIcon,
+    iconColor: Colors.calm,
     source: 'Dr. Viktor Frankl',
   },
   {
@@ -146,7 +186,8 @@ const CURATED_RESOURCES: ContentItem[] = [
     category: 'Intimacy',
     description: 'Trust is built in the smallest of moments. Discover how everyday bids for connection strengthen your bond over time.',
     readTime: '5 min read',
-    icon: '\u{1F91D}',
+    Icon: HandshakeIcon,
+    iconColor: Colors.primary,
     source: 'The Gottman Institute',
   },
   {
@@ -155,7 +196,8 @@ const CURATED_RESOURCES: ContentItem[] = [
     category: 'Growth',
     description: 'Internal Family Systems offers a compassionate way to understand the different parts of yourself that show up in relationships.',
     readTime: '7 min read',
-    icon: '\u{1F3AD}',
+    Icon: MasksIcon,
+    iconColor: '#6BA3A0',
     source: 'Dr. Richard Schwartz',
   },
   {
@@ -164,7 +206,8 @@ const CURATED_RESOURCES: ContentItem[] = [
     category: 'Conflict',
     description: 'Your body keeps the score during arguments. Learn to notice flooding and use co-regulation to return to connection.',
     readTime: '6 min read',
-    icon: '\u26A1',
+    Icon: LightningIcon,
+    iconColor: Colors.accent,
     source: 'Dr. Stephen Porges',
   },
   {
@@ -173,7 +216,8 @@ const CURATED_RESOURCES: ContentItem[] = [
     category: 'Communication',
     description: 'Stable relationships maintain five positive interactions for every negative one. Learn how to shift your ratio intentionally.',
     readTime: '4 min read',
-    icon: '\u{1F4CA}',
+    Icon: ChartBarIcon,
+    iconColor: Colors.secondary,
     source: 'The Gottman Institute',
   },
   {
@@ -182,7 +226,8 @@ const CURATED_RESOURCES: ContentItem[] = [
     category: 'Growth',
     description: 'Healthy intimacy requires holding onto yourself while staying connected. Explore the balance of togetherness and autonomy.',
     readTime: '8 min read',
-    icon: '\u{1F33F}',
+    Icon: LeafIcon,
+    iconColor: Colors.primary,
     source: 'Dr. David Schnarch',
   },
 ];
@@ -259,8 +304,8 @@ export default function CommunityScreen() {
       Alert.alert(
         'We Care About You',
         'If you or someone you know is in crisis, please reach out:\n\n' +
-          '\u{1F4DE} National Suicide Prevention Lifeline: 988\n' +
-          '\u{1F4AC} Crisis Text Line: Text HOME to 741741\n\n' +
+          'National Suicide Prevention Lifeline: 988\n' +
+          'Crisis Text Line: Text HOME to 741741\n\n' +
           'Your story was not posted, but help is available.',
         [{ text: 'OK' }]
       );
@@ -345,7 +390,7 @@ export default function CommunityScreen() {
 
   // ── Filter resources ───────────────────────
 
-  const filteredResources =
+  const filteredResources: CuratedResource[] =
     activeCategory === 'All'
       ? CURATED_RESOURCES
       : CURATED_RESOURCES.filter((item) => item.category === activeCategory);
@@ -430,9 +475,7 @@ export default function CommunityScreen() {
           onPress={() => handleResonated(post.id)}
           activeOpacity={0.7}
         >
-          <Text style={st.resonatedIcon}>
-            {post.hasResonated ? '\u{1F49C}' : '\u{1F90D}'}
-          </Text>
+          <HeartIcon size={14} color={post.hasResonated ? Colors.primary : Colors.textMuted} />
           <Text style={[st.resonatedText, post.hasResonated && st.resonatedTextActive]}>
             {post.resonatedCount > 0 ? post.resonatedCount : ''} Resonated
           </Text>
@@ -445,7 +488,7 @@ export default function CommunityScreen() {
           activeOpacity={0.7}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Text style={st.reportText}>{'\u{1F6A9}'}</Text>
+          <FlagIcon size={14} color={Colors.textMuted} />
         </TouchableOpacity>
       </View>
     </View>
@@ -453,7 +496,7 @@ export default function CommunityScreen() {
 
   // ── Render: Resource card ──────────────────
 
-  const renderResourceCard = (item: ContentItem) => (
+  const renderResourceCard = (item: CuratedResource) => (
     <TouchableOpacity
       key={item.id}
       style={st.contentCard}
@@ -463,7 +506,7 @@ export default function CommunityScreen() {
       activeOpacity={0.7}
     >
       <View style={st.contentCardHeader}>
-        <Text style={st.contentCardIcon}>{item.icon}</Text>
+        <item.Icon size={24} color={item.iconColor} />
         <View style={st.categoryBadge}>
           <Text style={st.categoryBadgeText}>{item.category}</Text>
         </View>
@@ -577,8 +620,9 @@ export default function CommunityScreen() {
     <SafeAreaView style={st.container}>
       {/* Header */}
       <View style={st.header}>
-        <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7}>
-          <Text style={st.backText}>{'\u2190'} Back</Text>
+        <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          <ArrowLeftIcon size={16} color={Colors.primary} />
+          <Text style={st.backText}>Back</Text>
         </TouchableOpacity>
       </View>
 
@@ -613,7 +657,7 @@ export default function CommunityScreen() {
               <ActivityIndicator style={st.loader} color={Colors.primary} />
             ) : posts.length === 0 ? (
               <View style={st.emptyState}>
-                <Text style={st.emptyIcon}>{'\u{1F4AD}'}</Text>
+                <ThoughtBubbleIcon size={40} color={Colors.textMuted} />
                 <Text style={st.emptyTitle}>No stories yet</Text>
                 <Text style={st.emptyText}>
                   Be the first to share. Your experience might be exactly what someone
@@ -637,7 +681,7 @@ export default function CommunityScreen() {
 
             {filteredResources.length === 0 ? (
               <View style={st.emptyState}>
-                <Text style={st.emptyIcon}>{'\u{1F4ED}'}</Text>
+                <MailboxIcon size={40} color={Colors.textMuted} />
                 <Text style={st.emptyText}>
                   No articles in this category yet. Check back soon!
                 </Text>
@@ -648,7 +692,7 @@ export default function CommunityScreen() {
 
             {/* Request Content card */}
             <View style={st.requestCard}>
-              <Text style={st.requestIcon}>{'\u{1F4A1}'}</Text>
+              <LightbulbIcon size={32} color={Colors.depth} />
               <Text style={st.requestTitle}>
                 Have a topic you'd like us to cover?
               </Text>
@@ -682,7 +726,10 @@ export default function CommunityScreen() {
           onPress={() => setShowCompose(true)}
           activeOpacity={0.8}
         >
-          <Text style={st.fabText}>{'\u270F\uFE0F'} Share</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <PenIcon size={16} color={Colors.white} />
+            <Text style={st.fabText}>Share</Text>
+          </View>
         </TouchableOpacity>
       )}
 

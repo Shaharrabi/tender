@@ -34,51 +34,82 @@ import {
   Shadows,
 } from '@/constants/theme';
 import type { Couple } from '@/types/couples';
+import type { ComponentType } from 'react';
+import type { IconProps } from '@/assets/graphics/icons';
+import {
+  HeartDoubleIcon,
+  BrainIcon,
+  MasksIcon,
+  ScaleIcon,
+  LeafIcon,
+  CompassIcon,
+  SparkleIcon,
+  HandshakeIcon,
+  CommunityIcon,
+  LinkIcon,
+  ArrowLeftIcon,
+  ArrowRightIcon,
+} from '@/assets/graphics/icons';
 
 // ─── Sharing Item Definitions ──────────────────────────
 
-const SHARING_ITEMS = [
+interface SharingItem {
+  type: string;
+  Icon: ComponentType<IconProps>;
+  iconColor: string;
+  name: string;
+  desc: string;
+}
+
+const SHARING_ITEMS: SharingItem[] = [
   {
     type: 'ecr-r',
-    icon: '\u{1F495}',
+    Icon: HeartDoubleIcon,
+    iconColor: Colors.secondary,
     name: 'Attachment Style',
     desc: 'Your attachment pattern, anxiety and avoidance dimensions',
   },
   {
     type: 'ipip-neo-120',
-    icon: '\u{1F9E0}',
+    Icon: BrainIcon,
+    iconColor: '#5B6B8A',
     name: 'Personality Profile',
     desc: 'Big Five personality traits and facets',
   },
   {
     type: 'sseit',
-    icon: '\u{1F3AD}',
+    Icon: MasksIcon,
+    iconColor: '#6BA3A0',
     name: 'Emotional Intelligence',
     desc: 'How you perceive and manage emotions',
   },
   {
     type: 'dutch',
-    icon: '\u{2696}\u{FE0F}',
+    Icon: ScaleIcon,
+    iconColor: Colors.accent,
     name: 'Conflict Style',
     desc: 'Your conflict handling approach',
   },
   {
     type: 'dsi-r',
-    icon: '\u{1F33F}',
+    Icon: LeafIcon,
+    iconColor: Colors.primary,
     name: 'Differentiation',
     desc: 'Emotional boundaries and self-regulation',
   },
   {
     type: 'values',
-    icon: '\u{1F9ED}',
+    Icon: CompassIcon,
+    iconColor: '#8B6914',
     name: 'Values Profile',
     desc: 'Core values, priorities, and aspirational vision',
   },
 ];
 
-const PORTRAIT_ITEM = {
+const PORTRAIT_ITEM: SharingItem = {
   type: 'portrait',
-  icon: '\u{2728}',
+  Icon: SparkleIcon,
+  iconColor: Colors.primary,
   name: 'Full Relational Portrait',
   desc: 'Your complete 4-lens analysis',
 };
@@ -189,8 +220,9 @@ export default function SharingSettingsScreen() {
       >
         {/* ── Header ──────────────────── */}
         <View style={s.header}>
-          <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7}>
-            <Text style={s.backText}>{'\u2190'} Back</Text>
+          <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <ArrowLeftIcon size={16} color={Colors.primary} />
+            <Text style={s.backText}>Back</Text>
           </TouchableOpacity>
           <Text style={s.headerTitle}>Sharing Controls</Text>
           <View style={{ width: 48 }} />
@@ -198,7 +230,7 @@ export default function SharingSettingsScreen() {
 
         {/* ── Hero ────────────────────── */}
         <View style={s.heroSection}>
-          <Text style={s.heroIcon}>{'\u{1F91D}'}</Text>
+          <HandshakeIcon size={48} color={Colors.primary} />
           <Text style={s.heroTitle}>What You Share</Text>
           <Text style={s.heroSubtitle}>
             Control exactly which parts of your results your partner can see.
@@ -209,14 +241,14 @@ export default function SharingSettingsScreen() {
         {/* ── Partner Info ────────────── */}
         {couple ? (
           <View style={s.partnerCard}>
-            <Text style={s.partnerIcon}>{'\u{1F465}'}</Text>
+            <CommunityIcon size={22} color={Colors.secondary} />
             <Text style={s.partnerText}>
               Sharing with: <Text style={s.partnerName}>{partnerName}</Text>
             </Text>
           </View>
         ) : (
           <View style={s.partnerCardDisconnected}>
-            <Text style={s.partnerIcon}>{'\u{1F517}'}</Text>
+            <LinkIcon size={22} color={Colors.textSecondary} />
             <View style={{ flex: 1 }}>
               <Text style={s.partnerDisconnectedText}>
                 Connect with a partner to manage sharing settings
@@ -224,8 +256,10 @@ export default function SharingSettingsScreen() {
               <TouchableOpacity
                 onPress={() => router.push('/(app)/partner')}
                 activeOpacity={0.7}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: Spacing.xs }}
               >
-                <Text style={s.partnerLink}>Go to Partner Settings {'\u2192'}</Text>
+                <Text style={[s.partnerLink, { marginTop: 0 }]}>Go to Partner Settings</Text>
+                <ArrowRightIcon size={14} color={Colors.primary} />
               </TouchableOpacity>
             </View>
           </View>
@@ -237,7 +271,7 @@ export default function SharingSettingsScreen() {
         {SHARING_ITEMS.map((item) => (
           <View key={item.type} style={s.toggleCard}>
             <View style={s.toggleLeft}>
-              <Text style={s.toggleIcon}>{item.icon}</Text>
+              <item.Icon size={24} color={item.iconColor} />
               <View style={s.toggleInfo}>
                 <Text style={s.toggleName}>{item.name}</Text>
                 <Text style={s.toggleDesc}>{item.desc}</Text>
@@ -269,7 +303,7 @@ export default function SharingSettingsScreen() {
 
         <View style={s.toggleCard}>
           <View style={s.toggleLeft}>
-            <Text style={s.toggleIcon}>{PORTRAIT_ITEM.icon}</Text>
+            <PORTRAIT_ITEM.Icon size={24} color={PORTRAIT_ITEM.iconColor} />
             <View style={s.toggleInfo}>
               <Text style={s.toggleName}>{PORTRAIT_ITEM.name}</Text>
               <Text style={s.toggleDesc}>{PORTRAIT_ITEM.desc}</Text>

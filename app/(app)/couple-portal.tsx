@@ -44,6 +44,15 @@ import {
   BorderRadius,
   Shadows,
 } from '@/constants/theme';
+import {
+  SparkleIcon,
+  SeedlingIcon,
+  SearchIcon,
+  LeafIcon,
+  PersonIcon,
+  CommunityIcon,
+  MeditationIcon,
+} from '@/assets/graphics/icons';
 import type { Couple, UserProfile, RelationshipPortrait } from '@/types/couples';
 import type { IndividualPortrait } from '@/types/portrait';
 import type { WEAREProfile, WeeklyCheckIn, WEAREVariableName } from '@/types/weare';
@@ -311,8 +320,8 @@ export default function CouplePortalScreen() {
                   <View style={styles.weareDataModeBadge}>
                     <Text style={styles.weareDataModeText}>
                       {weareProfile.dataMode === 'single-partner'
-                        ? '\u{1F464} Based on your data only — more accurate when your partner completes their portrait'
-                        : '\u{1F50D} Preview — complete couple instruments for full picture'}
+                        ? 'Based on your data only — more accurate when your partner completes their portrait'
+                        : 'Preview — complete couple instruments for full picture'}
                     </Text>
                   </View>
                 )}
@@ -330,12 +339,14 @@ export default function CouplePortalScreen() {
                             ? { borderColor: Colors.accent }
                             : { borderColor: Colors.textMuted },
                     ]}>
-                      <Text style={styles.weareOverallEmoji}>
-                        {weareProfile.warmSummary === 'Deeply alive' ? '\u2728'
-                          : weareProfile.warmSummary === 'Growing stronger' ? '\u{1F331}'
-                          : weareProfile.warmSummary === 'Finding its way' ? '\u{1F50D}'
-                          : '\u{1F33F}'}
-                      </Text>
+                      {weareProfile.warmSummary === 'Deeply alive'
+                        ? <SparkleIcon size={28} color={Colors.primary} />
+                        : weareProfile.warmSummary === 'Growing stronger'
+                          ? <SeedlingIcon size={28} color={Colors.primary} />
+                          : weareProfile.warmSummary === 'Finding its way'
+                            ? <SearchIcon size={28} color={Colors.secondary} />
+                            : <LeafIcon size={28} color={Colors.primary} />
+                      }
                     </View>
                     <View style={styles.weareOverallInfo}>
                       <Text style={styles.weareOverallPhrase}>{weareProfile.warmSummary}</Text>
@@ -343,10 +354,10 @@ export default function CouplePortalScreen() {
                         Phase: {weareProfile.movementPhase.charAt(0).toUpperCase() + weareProfile.movementPhase.slice(1)}
                       </Text>
                       <Text style={styles.weareDirectionLabel}>
-                        {weareProfile.layers.emergenceDirection > 1 ? '\u2197\uFE0F Growing'
-                          : weareProfile.layers.emergenceDirection < -1 ? '\u2198\uFE0F Contracting'
-                          : '\u2794 Steady'}
-                        {weareProfile.trend ? ` \u00B7 ${weareProfile.trend.periodLabel}` : ''}
+                        {weareProfile.layers.emergenceDirection > 1 ? 'Growing'
+                          : weareProfile.layers.emergenceDirection < -1 ? 'Contracting'
+                          : 'Steady'}
+                        {weareProfile.trend ? ` · ${weareProfile.trend.periodLabel}` : ''}
                       </Text>
                     </View>
                   </View>
@@ -576,7 +587,7 @@ export default function CouplePortalScreen() {
                   <View style={styles.exerciseMeta}>
                     <Text style={styles.exerciseMetaText}>{exercise.duration} min</Text>
                     <Text style={styles.exerciseMetaText}>•</Text>
-                    <Text style={styles.exerciseMetaText}>{exercise.mode === 'together' ? '👥 Together' : '🧘 Solo'}</Text>
+                    <Text style={styles.exerciseMetaText}>{exercise.mode === 'together' ? 'Together' : 'Solo'}</Text>
                     <Text style={styles.exerciseMetaText}>•</Text>
                     <Text style={styles.exerciseMetaText}>{exercise.difficulty}</Text>
                   </View>

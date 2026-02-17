@@ -17,6 +17,15 @@ import {
   Shadows,
 } from '@/constants/theme';
 import type { JournalEntry, JournalEntryType } from '@/services/journal';
+import {
+  HeartIcon,
+  PenIcon,
+  SparkleIcon,
+  StarIcon,
+  ChatBubbleIcon,
+  BookOpenIcon,
+} from '@/assets/graphics/icons';
+import type { IconProps } from '@/assets/graphics/icons';
 
 interface JournalDayViewProps {
   date: string; // YYYY-MM-DD
@@ -30,43 +39,43 @@ const TYPE_CONFIG: Record<JournalEntryType, {
   color: string;
   bg: string;
   label: string;
-  icon: string;
+  Icon: React.ComponentType<IconProps>;
 }> = {
   checkin: {
     color: Colors.primary,
     bg: Colors.primaryFaded,
     label: 'Check-In',
-    icon: '\u2764',        // heart
+    Icon: HeartIcon,
   },
   exercise: {
     color: Colors.secondary,
     bg: Colors.secondaryLight,
     label: 'Exercise',
-    icon: '\u270E',        // pencil
+    Icon: PenIcon,
   },
   practice: {
     color: Colors.secondary,
     bg: Colors.secondaryLight,
     label: 'Practice',
-    icon: '\u2736',        // six-pointed star
+    Icon: SparkleIcon,
   },
   assessment: {
     color: Colors.accentGold,
     bg: '#FDF3E0',
     label: 'Assessment',
-    icon: '\u2605',        // star
+    Icon: StarIcon,
   },
   chat: {
     color: Colors.calm,
     bg: '#E0F0F0',
     label: 'Chat',
-    icon: '\u2726',        // four-pointed star
+    Icon: ChatBubbleIcon,
   },
   xp: {
     color: Colors.accent,
     bg: '#FDF0E6',
     label: 'XP',
-    icon: '\u2B50',        // sparkle
+    Icon: StarIcon,
   },
 };
 
@@ -106,9 +115,11 @@ function RatingStars({ rating, max = 5 }: { rating: number; max?: number }) {
   return (
     <View style={cardStyles.starsRow}>
       {Array.from({ length: max }, (_, i) => (
-        <Text key={i} style={[cardStyles.star, i < rating && cardStyles.starFilled]}>
-          {'\u2605'}
-        </Text>
+        <StarIcon
+          key={i}
+          size={14}
+          color={i < rating ? Colors.accentGold : Colors.borderLight}
+        />
       ))}
     </View>
   );
@@ -238,7 +249,7 @@ export default function JournalDayView({ date, entries, loading }: JournalDayVie
       <View style={styles.container}>
         <Text style={styles.dateHeader}>{dateLabel}</Text>
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyIcon}>{'\u{1F4D6}'}</Text>
+          <BookOpenIcon size={36} color={Colors.textMuted} />
           <Text style={styles.emptyTitle}>No entries yet</Text>
           <Text style={styles.emptySubtext}>
             Complete a check-in, exercise, or assessment{'\n'}to see it appear here.
@@ -269,7 +280,7 @@ export default function JournalDayView({ date, entries, loading }: JournalDayVie
               {/* Card header */}
               <View style={styles.entryHeader}>
                 <View style={[styles.typeBadge, { backgroundColor: config.bg }]}>
-                  <Text style={styles.typeIcon}>{config.icon}</Text>
+                  <config.Icon size={11} color={config.color} />
                   <Text style={[styles.typeLabel, { color: config.color }]}>
                     {config.label}
                   </Text>
@@ -362,7 +373,6 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.pill,
   },
   typeIcon: {
-    fontSize: 11,
   },
   typeLabel: {
     fontFamily: 'JosefinSans_500Medium',
@@ -407,7 +417,6 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   emptyIcon: {
-    fontSize: 36,
     marginBottom: Spacing.xs,
   },
   emptyTitle: {
@@ -478,11 +487,8 @@ const cardStyles = StyleSheet.create({
     gap: 2,
   },
   star: {
-    fontSize: 14,
-    color: Colors.borderLight,
   },
   starFilled: {
-    color: Colors.accentGold,
   },
 
   // Assessment badge

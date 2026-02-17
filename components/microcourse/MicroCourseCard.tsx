@@ -21,16 +21,28 @@ import {
   Shadows,
 } from '@/constants/theme';
 import type { MicroCourse, CourseProgress } from '@/utils/microcourses/course-registry';
+import {
+  HeartPulseIcon,
+  BrainIcon,
+  RefreshIcon,
+  ShieldIcon,
+  WindIcon,
+  CompassIcon,
+  BookOpenIcon,
+  LockIcon,
+  CheckmarkIcon,
+} from '@/assets/graphics/icons';
+import type { IconProps } from '@/assets/graphics/icons';
 
-// ─── Icons (emoji-based for simplicity) ─────────────────
+// ─── Icons (SVG components) ─────────────────────────────
 
-const COURSE_ICONS: Record<string, string> = {
-  'heart-pulse': '\u{1F493}',
-  'brain': '\u{1F9E0}',
-  'refresh-cw': '\u{1F504}',
-  'shield': '\u{1F6E1}\uFE0F',
-  'wind': '\u{1F32C}\uFE0F',
-  'compass': '\u{1F9ED}',
+const COURSE_ICONS: Record<string, React.ComponentType<IconProps>> = {
+  'heart-pulse': HeartPulseIcon,
+  'brain': BrainIcon,
+  'refresh-cw': RefreshIcon,
+  'shield': ShieldIcon,
+  'wind': WindIcon,
+  'compass': CompassIcon,
 };
 
 // ─── Props ──────────────────────────────────────────────
@@ -61,7 +73,7 @@ export default function MicroCourseCard({
       (course.estimatedMinutes / course.totalLessons)
   );
 
-  const icon = COURSE_ICONS[course.icon] ?? '\u{1F4D6}';
+  const IconComponent = COURSE_ICONS[course.icon] ?? BookOpenIcon;
 
   // ─── Compact mode (home screen) ──────────────────
 
@@ -74,16 +86,23 @@ export default function MicroCourseCard({
         disabled={isLocked}
       >
         <View style={styles.compactLeft}>
-          <Text style={styles.compactIcon}>{icon}</Text>
+          <View style={styles.compactIcon}>
+            <IconComponent size={20} color={Colors.primary} />
+          </View>
           <View style={styles.compactText}>
             <Text style={styles.compactTitle} numberOfLines={1}>
               {course.title}
             </Text>
-            <Text style={styles.compactSub}>
-              {isCompleted
-                ? 'Completed \u2713'
-                : `Lesson ${progress.lessonsCompleted + 1} of ${course.totalLessons}`}
-            </Text>
+            {isCompleted ? (
+              <View style={styles.completedRow}>
+                <Text style={styles.compactSub}>Completed</Text>
+                <CheckmarkIcon size={12} color={Colors.success} />
+              </View>
+            ) : (
+              <Text style={styles.compactSub}>
+                {`Lesson ${progress.lessonsCompleted + 1} of ${course.totalLessons}`}
+              </Text>
+            )}
           </View>
         </View>
 
@@ -117,9 +136,11 @@ export default function MicroCourseCard({
       {/* Header row */}
       <View style={styles.header}>
         <View style={[styles.iconCircle, isLocked && styles.iconCircleLocked]}>
-          <Text style={styles.iconText}>
-            {isLocked ? '\u{1F512}' : icon}
-          </Text>
+          {isLocked ? (
+            <LockIcon size={22} color={Colors.textMuted} />
+          ) : (
+            <IconComponent size={22} color={Colors.primary} />
+          )}
         </View>
         <View style={styles.headerText}>
           <Text
@@ -149,13 +170,20 @@ export default function MicroCourseCard({
           />
         </View>
         <View style={styles.progressInfo}>
-          <Text style={[styles.progressText, isLocked && styles.lockedText]}>
-            {isCompleted
-              ? 'Completed \u2713'
-              : isStarted
-                ? `${progress.lessonsCompleted}/${course.totalLessons} lessons`
-                : `${course.totalLessons} lessons`}
-          </Text>
+          <View style={styles.progressTextRow}>
+            {isCompleted ? (
+              <>
+                <Text style={[styles.progressText, isLocked && styles.lockedText]}>Completed</Text>
+                <CheckmarkIcon size={12} color={Colors.success} />
+              </>
+            ) : (
+              <Text style={[styles.progressText, isLocked && styles.lockedText]}>
+                {isStarted
+                  ? `${progress.lessonsCompleted}/${course.totalLessons} lessons`
+                  : `${course.totalLessons} lessons`}
+              </Text>
+            )}
+          </View>
           <Text style={[styles.timeText, isLocked && styles.lockedText]}>
             {isCompleted
               ? ''
@@ -239,7 +267,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.border,
   },
   iconText: {
-    fontSize: 22,
   },
   headerText: {
     flex: 1,
@@ -274,6 +301,11 @@ const styles = StyleSheet.create({
   },
   completedFill: {
     backgroundColor: Colors.success,
+  },
+  progressTextRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   progressInfo: {
     flexDirection: 'row',
@@ -339,7 +371,11 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   compactIcon: {
-    fontSize: 20,
+  },
+  completedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   compactText: {
     flex: 1,

@@ -26,6 +26,8 @@ import {
   BorderRadius,
   Shadows,
 } from '@/constants/theme';
+import { FireIcon, GreenHeartIcon, SnowflakeIcon } from '@/assets/graphics/icons';
+import type { IconProps } from '@/assets/graphics/icons';
 
 // ─── Zone Data ──────────────────────────────────────────
 
@@ -34,7 +36,7 @@ type Zone = 'hyperarousal' | 'inWindow' | 'hypoarousal';
 interface ZoneResponse {
   zone: Zone;
   label: string;
-  icon: string;
+  Icon: React.ComponentType<IconProps>;
   color: string;
   validation: string;
   bodySignals: string;
@@ -47,7 +49,7 @@ const ZONE_RESPONSES: ZoneResponse[] = [
   {
     zone: 'hyperarousal',
     label: 'Activated',
-    icon: '\u{1F525}', // 🔥
+    Icon: FireIcon,
     color: '#E07A5F',
     validation: 'Your system is activated right now. That makes sense.',
     bodySignals: 'Racing heart, tension, heat, restlessness, urgency.',
@@ -62,7 +64,7 @@ const ZONE_RESPONSES: ZoneResponse[] = [
   {
     zone: 'inWindow',
     label: 'Regulated',
-    icon: '\u{1F49A}', // 💚
+    Icon: GreenHeartIcon,
     color: '#8B9E7E',
     validation: 'You are in your window right now. This is where growth happens.',
     bodySignals: 'Breathing is steady, thinking is clear, body feels settled.',
@@ -77,7 +79,7 @@ const ZONE_RESPONSES: ZoneResponse[] = [
   {
     zone: 'hypoarousal',
     label: 'Shutdown',
-    icon: '\u{1F9CA}', // 🧊
+    Icon: SnowflakeIcon,
     color: '#7B9CC4',
     validation: 'Your system has moved into protection mode. That\u2019s okay.',
     bodySignals: 'Heaviness, fog, numbness, flatness, disconnection.',
@@ -147,7 +149,7 @@ export default function WindowOfTolerance({ onSelectPractice }: Props) {
               onPress={() => handleZoneSelect(zone.zone)}
               activeOpacity={0.7}
             >
-              <Text style={styles.zoneIcon}>{zone.icon}</Text>
+              <zone.Icon size={24} color={zone.color} />
               <View style={styles.zoneTextContainer}>
                 <Text
                   style={[
@@ -253,7 +255,6 @@ const styles = StyleSheet.create({
     ...Shadows.subtle,
   },
   zoneIcon: {
-    fontSize: 24,
   },
   zoneTextContainer: {
     flex: 1,

@@ -33,6 +33,12 @@ import {
   ButtonSizes,
   Shadows,
 } from '@/constants/theme';
+import {
+  BookOpenIcon,
+  TargetIcon,
+  PenIcon,
+  CheckmarkIcon,
+} from '@/assets/graphics/icons';
 import { useAuth } from '@/context/AuthContext';
 import { useGamification } from '@/context/GamificationContext';
 import { saveCompletion } from '@/services/intervention';
@@ -282,7 +288,7 @@ export default function MicroCourseScreen() {
               },
             ]}
           >
-            <Text style={styles.checkMark}>{'\u2713'}</Text>
+            <CheckmarkIcon size={48} color={Colors.textOnPrimary} />
           </Animated.View>
 
           <Text style={styles.completionTitle}>
@@ -433,7 +439,7 @@ function ReadStep({ title, content }: { title: string; content: string }) {
   return (
     <View style={stepStyles.readCard}>
       <View style={stepStyles.iconCircle}>
-        <Text style={stepStyles.icon}>{'\u{1F4D6}'}</Text>
+        <BookOpenIcon size={22} color={Colors.primary} />
       </View>
       <Text style={stepStyles.readTitle}>{title}</Text>
       <Text style={stepStyles.readContent}>{content}</Text>
@@ -445,7 +451,7 @@ function ExerciseStep({ content }: { content: string }) {
   return (
     <View style={stepStyles.exerciseCard}>
       <View style={stepStyles.exerciseHeader}>
-        <Text style={stepStyles.icon}>{'\u{1F3AF}'}</Text>
+        <TargetIcon size={22} color={Colors.calm} />
         <Text style={stepStyles.exerciseLabel}>Your Practice</Text>
       </View>
       <Text style={stepStyles.exerciseContent}>{content}</Text>
@@ -467,7 +473,7 @@ function ReflectionStep({
   return (
     <View style={stepStyles.reflectionCard}>
       <View style={stepStyles.reflectionHeader}>
-        <Text style={stepStyles.icon}>{'\u{270D}\uFE0F'}</Text>
+        <PenIcon size={22} color={Colors.secondary} />
         <Text style={stepStyles.reflectionLabel}>Your Reflection</Text>
       </View>
 

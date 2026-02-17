@@ -10,14 +10,16 @@ import { useRouter } from 'expo-router';
 import { useOnboarding } from '@/context/OnboardingContext';
 import { SoundHaptics } from '@/services/SoundHapticsService';
 import { Colors, Spacing, FontSizes, FontFamilies, BorderRadius } from '@/constants/theme';
+import { SeedlingIcon, LeafIcon, TreeIcon, HomeIcon, StarIcon, WhiteHeartIcon } from '@/assets/graphics/icons';
+import type { IconProps } from '@/assets/graphics/icons';
 
-const OPTIONS = [
-  { id: 'less-than-1', label: 'Less than 1 year', emoji: '🌱' },
-  { id: '1-3', label: '1–3 years', emoji: '🌿' },
-  { id: '3-7', label: '3–7 years', emoji: '🌳' },
-  { id: '7-15', label: '7–15 years', emoji: '🏡' },
-  { id: '15-plus', label: '15+ years', emoji: '💎' },
-  { id: 'not-applicable', label: 'Not applicable', emoji: '🤍' },
+const OPTIONS: { id: string; label: string; Icon: React.ComponentType<IconProps> }[] = [
+  { id: 'less-than-1', label: 'Less than 1 year', Icon: SeedlingIcon },
+  { id: '1-3', label: '1–3 years', Icon: LeafIcon },
+  { id: '3-7', label: '3–7 years', Icon: TreeIcon },
+  { id: '7-15', label: '7–15 years', Icon: HomeIcon },
+  { id: '15-plus', label: '15+ years', Icon: StarIcon },
+  { id: 'not-applicable', label: 'Not applicable', Icon: WhiteHeartIcon },
 ];
 
 export default function DurationScreen() {
@@ -60,7 +62,9 @@ export default function DurationScreen() {
                   onPress={() => handleSelect(option.id)}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.optionEmoji}>{option.emoji}</Text>
+                  <View style={styles.optionIconWrapper}>
+                    <option.Icon size={22} color={isSelected ? Colors.primaryDark : Colors.primary} />
+                  </View>
                   <Text style={[styles.optionLabel, isSelected && styles.optionLabelSelected]}>
                     {option.label}
                   </Text>
@@ -138,8 +142,10 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
     backgroundColor: Colors.primaryFaded,
   },
-  optionEmoji: {
-    fontSize: 22,
+  optionIconWrapper: {
+    width: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   optionLabel: {
     fontSize: FontSizes.body,

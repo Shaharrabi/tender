@@ -38,6 +38,17 @@
 
 import type { HealingStep, HealingPhase } from '@/types/growth';
 import { Colors } from '@/constants/theme';
+import type { ComponentType } from 'react';
+import type { IconProps } from '@/assets/graphics/icons';
+import {
+  EyeIcon,
+  HeartIcon,
+  RefreshIcon,
+  BookOpenIcon,
+  SunIcon,
+  SparkleIcon,
+  SeedlingIcon,
+} from '@/assets/graphics/icons';
 
 // ─── Practice-to-Step Mapping ───────────────────────────
 // Maps exercise IDs from the intervention registry to their primary step.
@@ -395,7 +406,7 @@ export interface PhaseDefinition {
   name: string;
   subtitle: string;
   weekRange: [number, number | null];
-  icon: string;
+  icon: ComponentType<IconProps>;
   color: string;
   stepRange: [number, number];
   stepFocus: string;
@@ -407,7 +418,7 @@ export const HEALING_PHASES: PhaseDefinition[] = [
     name: 'Seeing',
     subtitle: 'Understanding what\u2019s here',
     weekRange: [1, 2],
-    icon: '\uD83D\uDC41\uFE0F',
+    icon: EyeIcon,
     color: '#8B9E7E',
     stepRange: [1, 2],
     stepFocus: 'Acknowledge the Strain + Trust the Relational Field',
@@ -417,7 +428,7 @@ export const HEALING_PHASES: PhaseDefinition[] = [
     name: 'Feeling',
     subtitle: 'Making contact with what\u2019s underneath',
     weekRange: [3, 4],
-    icon: '\u2764\uFE0F',
+    icon: HeartIcon,
     color: Colors.secondary,
     stepRange: [3, 4],
     stepFocus: 'Release Certainty + Examine Our Part',
@@ -427,7 +438,7 @@ export const HEALING_PHASES: PhaseDefinition[] = [
     name: 'Shifting',
     subtitle: 'Trying new moves',
     weekRange: [5, 8],
-    icon: '\uD83D\uDD04',
+    icon: RefreshIcon,
     color: '#D4A574',
     stepRange: [5, 9],
     stepFocus: 'Share Truths \u2192 Release Enemy Story \u2192 Commit \u2192 Prepare \u2192 Act',
@@ -437,7 +448,7 @@ export const HEALING_PHASES: PhaseDefinition[] = [
     name: 'Integrating',
     subtitle: 'Making it stick',
     weekRange: [9, 12],
-    icon: '\uD83D\uDCDA',
+    icon: BookOpenIcon,
     color: '#9B8EC4',
     stepRange: [9, 11],
     stepFocus: 'Maintain Awareness + Seek Shared Insight',
@@ -447,7 +458,7 @@ export const HEALING_PHASES: PhaseDefinition[] = [
     name: 'Sustaining',
     subtitle: 'Living it',
     weekRange: [13, null],
-    icon: '\u2600\uFE0F',
+    icon: SunIcon,
     color: '#E8C87A',
     stepRange: [11, 12],
     stepFocus: 'Carry the Message of Connection',
@@ -662,10 +673,17 @@ export const STEP_MOVEMENTS: Record<number, { primary: string; secondary?: strin
  * Used in the homepage and growth plan UI to explain what
  * each movement means in plain language.
  */
-export const FOUR_MOVEMENTS_EXPLAINED = {
+export const FOUR_MOVEMENTS_EXPLAINED: Record<string, {
+  name: string;
+  icon: ComponentType<IconProps>;
+  question: string;
+  description: string;
+  howItFeels: string;
+  steps: readonly number[];
+}> = {
   recognition: {
     name: 'Recognition',
-    icon: '👁️',
+    icon: EyeIcon,
     question: 'Can I see what\'s happening?',
     description:
       'The ability to see your patterns clearly — without blame, without shame. ' +
@@ -678,7 +696,7 @@ export const FOUR_MOVEMENTS_EXPLAINED = {
   },
   release: {
     name: 'Release',
-    icon: '🫧',
+    icon: SparkleIcon,
     question: 'Can I let go of being right?',
     description:
       'The willingness to loosen your grip on certainty — about your partner, ' +
@@ -691,7 +709,7 @@ export const FOUR_MOVEMENTS_EXPLAINED = {
   },
   resonance: {
     name: 'Resonance',
-    icon: '💫',
+    icon: SparkleIcon,
     question: 'Can I be moved by your experience?',
     description:
       'The capacity to let your partner\'s world touch yours — to feel WITH them, ' +
@@ -703,7 +721,7 @@ export const FOUR_MOVEMENTS_EXPLAINED = {
   },
   embodiment: {
     name: 'Embodiment',
-    icon: '🌱',
+    icon: SeedlingIcon,
     question: 'Can I live this daily?',
     description:
       'Turning insight into habit. Embodiment is when the new way of being becomes ' +
@@ -714,7 +732,7 @@ export const FOUR_MOVEMENTS_EXPLAINED = {
       'about it. When the repair attempt comes naturally. When your values are lived, not just believed.',
     steps: [7, 9, 12],
   },
-} as const;
+};
 
 /**
  * Get a personalized step order based on intervention protocol emphasis.

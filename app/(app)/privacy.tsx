@@ -28,6 +28,16 @@ import {
   Shadows,
   ButtonSizes,
 } from '@/constants/theme';
+import type { IconProps } from '@/assets/graphics/icons';
+import {
+  LockIcon,
+  ClipboardIcon,
+  ShieldIcon,
+  PersonIcon,
+  RefreshIcon,
+  SettingsIcon,
+  CloseIcon,
+} from '@/assets/graphics/icons';
 
 // ─── Component ────────────────────────────────────────
 
@@ -99,7 +109,7 @@ export default function PrivacyScreen() {
     {
       id: 'what_we_store',
       title: 'What We Store',
-      icon: '📋',
+      Icon: ClipboardIcon,
       items: [
         'Your email address (for login)',
         'Your assessment responses and scores',
@@ -113,7 +123,7 @@ export default function PrivacyScreen() {
     {
       id: 'what_we_never_do',
       title: 'What We Never Do',
-      icon: '🚫',
+      Icon: ShieldIcon,
       items: [
         'Sell your data to anyone, ever',
         'Share your data without your explicit permission',
@@ -126,7 +136,7 @@ export default function PrivacyScreen() {
     {
       id: 'security',
       title: 'How We Protect Your Data',
-      icon: '🔒',
+      Icon: LockIcon,
       items: [
         'All data encrypted in transit (HTTPS/TLS)',
         'Data stored in encrypted database (Supabase)',
@@ -139,7 +149,7 @@ export default function PrivacyScreen() {
     {
       id: 'who_sees',
       title: 'Who Can See My Data?',
-      icon: '👤',
+      Icon: PersonIcon,
       items: [
         'Only you (by default)',
         'Your partner (only if you both grant permission)',
@@ -163,7 +173,9 @@ export default function PrivacyScreen() {
         </View>
 
         <View style={s.heroSection}>
-          <Text style={s.heroIcon}>{'🔐'}</Text>
+          <View style={s.heroIcon}>
+            <LockIcon size={48} color={Colors.primary} />
+          </View>
           <Text style={s.heroTitle}>Your Privacy</Text>
           <Text style={s.heroSubtitle}>
             You're in control of your data. Here's everything you need to know.
@@ -180,7 +192,9 @@ export default function PrivacyScreen() {
                 onPress={() => toggleSection(section.id)}
                 activeOpacity={0.7}
               >
-                <Text style={s.sectionIcon}>{section.icon}</Text>
+                <View style={s.sectionIcon}>
+                  <section.Icon size={22} color={Colors.text} />
+                </View>
                 <Text style={s.sectionTitle}>{section.title}</Text>
                 <Text style={s.sectionArrow}>{isExpanded ? '▴' : '▾'}</Text>
               </TouchableOpacity>
@@ -206,7 +220,7 @@ export default function PrivacyScreen() {
           onPress={() => router.push('/(app)/sharing-settings' as any)}
           activeOpacity={0.7}
         >
-          <Text style={s.controlIcon}>{'🔄'}</Text>
+          <View style={s.controlIcon}><RefreshIcon size={22} color={Colors.text} /></View>
           <View style={{ flex: 1 }}>
             <Text style={s.controlTitle}>Sharing Settings</Text>
             <Text style={s.controlSubtitle}>Control what your partner can see</Text>
@@ -219,7 +233,7 @@ export default function PrivacyScreen() {
           onPress={() => router.push('/(app)/notification-settings' as any)}
           activeOpacity={0.7}
         >
-          <Text style={s.controlIcon}>{'🔔'}</Text>
+          <View style={s.controlIcon}><SettingsIcon size={22} color={Colors.text} /></View>
           <View style={{ flex: 1 }}>
             <Text style={s.controlTitle}>Notification Settings</Text>
             <Text style={s.controlSubtitle}>Manage reminders and nudges</Text>
@@ -232,7 +246,7 @@ export default function PrivacyScreen() {
           onPress={handleDownloadData}
           activeOpacity={0.7}
         >
-          <Text style={s.controlIcon}>{'📥'}</Text>
+          <View style={s.controlIcon}><ClipboardIcon size={22} color={Colors.text} /></View>
           <View style={{ flex: 1 }}>
             <Text style={s.controlTitle}>Download My Data</Text>
             <Text style={s.controlSubtitle}>Get a copy of all your data</Text>
@@ -250,7 +264,7 @@ export default function PrivacyScreen() {
             <ActivityIndicator color={Colors.error} size="small" />
           ) : (
             <>
-              <Text style={s.controlIcon}>{'🗑️'}</Text>
+              <View style={s.controlIcon}><CloseIcon size={22} color={Colors.error} /></View>
               <View style={{ flex: 1 }}>
                 <Text style={[s.controlTitle, { color: Colors.error }]}>
                   Delete All My Data
@@ -265,7 +279,9 @@ export default function PrivacyScreen() {
 
         {/* ── Footer ──────────────────── */}
         <View style={s.footer}>
-          <Text style={s.footerIcon}>{'🔒'}</Text>
+          <View style={s.footerIcon}>
+            <LockIcon size={24} color={Colors.textMuted} />
+          </View>
           <Text style={s.footerText}>
             All data encrypted in transit and at rest.{'\n'}
             Your privacy is our priority.
@@ -296,7 +312,7 @@ const s = StyleSheet.create({
     gap: Spacing.sm,
     marginBottom: Spacing.xl,
   },
-  heroIcon: { fontSize: 48 },
+  heroIcon: { },
   heroTitle: {
     fontSize: FontSizes.headingL,
     fontWeight: '700',
@@ -321,7 +337,7 @@ const s = StyleSheet.create({
     marginBottom: 2,
     ...Shadows.subtle,
   },
-  sectionIcon: { fontSize: 22 },
+  sectionIcon: { justifyContent: 'center' as const },
   sectionTitle: {
     fontSize: FontSizes.body,
     fontWeight: '600',
@@ -379,7 +395,7 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.error + '30',
   },
-  controlIcon: { fontSize: 22 },
+  controlIcon: { justifyContent: 'center' as const },
   controlTitle: {
     fontSize: FontSizes.body,
     fontWeight: '600',
@@ -402,7 +418,7 @@ const s = StyleSheet.create({
     marginTop: Spacing.xl,
     paddingVertical: Spacing.lg,
   },
-  footerIcon: { fontSize: 24 },
+  footerIcon: { },
   footerText: {
     fontSize: FontSizes.caption,
     color: Colors.textMuted,
