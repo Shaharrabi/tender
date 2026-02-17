@@ -40,6 +40,12 @@ export default function AssessmentScreen() {
     );
   }
 
+  // User-scoped progress key to prevent cross-user data leakage
+  const PROGRESS_KEY = user?.id
+    ? `${config.progressKey}_${user.id}`
+    : config.progressKey;
+  const LEGACY_KEY = config.progressKey; // un-scoped key to clean up
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [responses, setResponses] = useState<(any | null)[]>(
     new Array(config.totalQuestions).fill(null)
@@ -54,7 +60,10 @@ export default function AssessmentScreen() {
 
   const loadProgress = async () => {
     try {
-      const saved = await AsyncStorage.getItem(config.progressKey);
+      // Clear legacy un-scoped key to prevent cross-user leakage
+      await AsyncStorage.removeItem(LEGACY_KEY).catch(() => {});
+
+      const saved = await AsyncStorage.getItem(PROGRESS_KEY);
       if (saved) {
         const data = JSON.parse(saved);
         setResponses(data.responses);
@@ -69,7 +78,7 @@ export default function AssessmentScreen() {
   const saveProgress = async (newResponses: (any | null)[], newIndex: number) => {
     try {
       await AsyncStorage.setItem(
-        config.progressKey,
+        PROGRESS_KEY,
         JSON.stringify({ responses: newResponses, currentIndex: newIndex })
       );
     } catch {
@@ -168,7 +177,8 @@ export default function AssessmentScreen() {
         return;
       }
 
-      await AsyncStorage.removeItem(config.progressKey);
+      await AsyncStorage.removeItem(PROGRESS_KEY);
+      await AsyncStorage.removeItem(LEGACY_KEY).catch(() => {});
 
       router.replace({
         pathname: '/(app)/results',

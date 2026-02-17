@@ -1,9 +1,9 @@
 /**
- * JournalCover — Book-like cover page for the Journal screen.
+ * JournalCover — Online journal header for the Journal screen.
  *
- * Wes Anderson aesthetic: warm parchment, serif typography,
- * geometric dividers, vintage warmth. Shows user name and
- * journey stats in an elegant, minimal layout.
+ * Wes Anderson aesthetic with lobby blue accent: warm parchment,
+ * geometric typography (no italics), blue accents. Feels like
+ * an elegant online journal, not a physical book.
  */
 
 import React from 'react';
@@ -14,9 +14,11 @@ import {
   FontSizes,
   BorderRadius,
   Shadows,
-  Typography,
 } from '@/constants/theme';
 import type { JournalStats } from '@/services/journal';
+
+// ─── Blue accent color for journal ─────────────────────
+const JOURNAL_BLUE = Colors.secondary; // #7294D4 — Lobby Blue
 
 interface JournalCoverProps {
   displayName: string;
@@ -39,7 +41,7 @@ export default function JournalCover({ displayName, stats }: JournalCoverProps) 
 
   return (
     <View style={styles.cover}>
-      {/* Decorative top line */}
+      {/* Decorative top line — blue */}
       <View style={styles.topAccent} />
 
       {/* Title section */}
@@ -102,7 +104,7 @@ const styles = StyleSheet.create({
   topAccent: {
     width: 60,
     height: 2,
-    backgroundColor: Colors.accentGold,
+    backgroundColor: JOURNAL_BLUE,
     borderRadius: 1,
     marginBottom: Spacing.xl,
   },
@@ -112,26 +114,29 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xl,
   },
   ownerName: {
-    ...Typography.serifHeading,
+    fontFamily: 'Jost_600SemiBold',
+    fontSize: 24,
+    letterSpacing: 1.2,
+    lineHeight: 32,
     color: Colors.text,
     marginBottom: Spacing.xs,
   },
   journalTitle: {
-    fontFamily: 'PlayfairDisplay_400Regular_Italic',
+    fontFamily: 'Jost_400Regular',
     fontSize: 20,
-    color: Colors.textSecondary,
-    letterSpacing: 0.5,
+    color: JOURNAL_BLUE,
+    letterSpacing: 1,
     lineHeight: 28,
   },
   divider: {
     width: 40,
     height: 1.5,
-    backgroundColor: Colors.primary,
+    backgroundColor: JOURNAL_BLUE,
     marginVertical: Spacing.md,
     borderRadius: 1,
   },
   subtitle: {
-    fontFamily: 'JosefinSans_300Light',
+    fontFamily: 'JosefinSans_400Regular',
     fontSize: FontSizes.bodySmall,
     color: Colors.textMuted,
     letterSpacing: 0.5,
@@ -149,9 +154,9 @@ const styles = StyleSheet.create({
     minWidth: 50,
   },
   statNumber: {
-    fontFamily: 'PlayfairDisplay_700Bold',
+    fontFamily: 'Jost_700Bold',
     fontSize: 28,
-    color: Colors.text,
+    color: JOURNAL_BLUE,
     lineHeight: 34,
   },
   statDate: {
@@ -162,7 +167,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   statLabel: {
-    fontFamily: 'JosefinSans_300Light',
+    fontFamily: 'JosefinSans_400Regular',
     fontSize: FontSizes.caption,
     color: Colors.textMuted,
     letterSpacing: 0.5,
@@ -180,10 +185,9 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
   },
   emptyStatsText: {
-    fontFamily: 'JosefinSans_300Light',
+    fontFamily: 'JosefinSans_400Regular',
     fontSize: FontSizes.bodySmall,
     color: Colors.textMuted,
-    fontStyle: 'italic',
     textAlign: 'center',
   },
 

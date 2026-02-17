@@ -47,16 +47,23 @@ function localDateString(d: Date = new Date()): string {
   return `${yyyy}-${mm}-${dd}`;
 }
 
-/** Get start of day (midnight) in ISO format for a YYYY-MM-DD string. */
+/**
+ * Get start of day (midnight) in ISO format for a YYYY-MM-DD string.
+ * Uses 'T00:00:00' (local) instead of bare date (UTC) to avoid timezone shift.
+ */
 function startOfDayISO(dateStr: string): string {
-  return `${dateStr}T00:00:00.000Z`;
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toISOString();
 }
 
-/** Get start of next day in ISO format. */
+/**
+ * Get start of next day in ISO format.
+ * Parses as local midnight, adds 1 day, converts to ISO.
+ */
 function endOfDayISO(dateStr: string): string {
-  const d = new Date(dateStr);
+  const d = new Date(dateStr + 'T00:00:00');
   d.setDate(d.getDate() + 1);
-  return `${localDateString(d)}T00:00:00.000Z`;
+  return d.toISOString();
 }
 
 /** Get first and last day of a month as YYYY-MM-DD. */
@@ -454,4 +461,136 @@ export async function getJournalStats(
     totalEntries,
     firstEntryDate,
   };
+}
+
+// ─── Daily Reflections ──────────────────────────────────
+
+export interface QuestionResponse {
+  question: string;
+  answer: string;
+}
+
+export interface DailyReflection {
+  id?: string;
+  userId: string;
+  reflectionDate: string; // YYYY-MM-DD
+  questionResponses: QuestionResponse[];
+  freeText: string;
+  dayTags: string[];
+  updatedAt?: string;
+}
+
+/**
+ * WEARE-inspired daily reflection questions.
+ * Rotates based on the day of the week.
+ */
+const REFLECTION_QUESTION_SETS: string[][] = [
+  // Monday — Attunement & Connection
+  [
+    'What moment today made you feel most connected to your partner?',
+    'How attuned were you to your own feelings today?',
+    'What is one thing you noticed about your partner that you didn\'t say out loud?',
+  ],
+  // Tuesday — Co-Creation & Growth
+  [
+    'What\'s one way you and your partner created something together today?',
+    'How did your differences show up today — as friction or as fuel?',
+    'What small step did you take toward growth in your relationship?',
+  ],
+  // Wednesday — Space & Boundaries
+  [
+    'Did the space between you and your partner feel expansive or constricted today?',
+    'How well did you honor your own needs while staying connected?',
+    'What\'s one boundary you held or wished you had held today?',
+  ],
+  // Thursday — Letting Go & Change
+  [
+    'What story about your relationship are you holding onto that might not be true?',
+    'How are you allowing yourself to be changed by this relationship?',
+    'What would you like to release from today?',
+  ],
+  // Friday — Gratitude & Resonance
+  [
+    'What are you most grateful for about your partner today?',
+    'When did the connection between you feel most alive?',
+    'What made you smile about your relationship today?',
+  ],
+  // Saturday — Reflection & Insight
+  [
+    'What pattern did you notice in yourself this week?',
+    'How well are your insights translating into changed behavior?',
+    'What surprised you about your relationship this week?',
+  ],
+  // Sunday — Intention & Vision
+  [
+    'What intention do you want to carry into next week?',
+    'How do you want to show up differently for your partner?',
+    'What\'s one thing you want to nurture in the space between you?',
+  ],
+];
+
+/**
+ * Get today's reflection questions based on the day of the week.
+ */
+export function getReflectionQuestions(date: string = localDateString()): string[] {
+  const d = new Date(date + 'T12:00:00');
+  const dayIndex = d.getDay(); // 0=Sunday
+  // Map: Sun=6, Mon=0, Tue=1, Wed=2, Thu=3, Fri=4, Sat=5
+  const setIndex = dayIndex === 0 ? 6 : dayIndex - 1;
+  return REFLECTION_QUESTION_SETS[setIndex];
+}
+
+/**
+ * Load a daily reflection for a specific date.
+ */
+export async function getDailyReflection(
+  userId: string,
+  date: string
+): Promise<DailyReflection | null> {
+  const { data, error } = await supabase
+    .from('daily_reflections')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('reflection_date', date)
+    .maybeSingle();
+
+  if (error || !data) return null;
+
+  return {
+    id: data.id,
+    userId: data.user_id,
+    reflectionDate: data.reflection_date,
+    questionResponses: data.question_responses || [],
+    freeText: data.free_text || '',
+    dayTags: data.day_tags || [],
+    updatedAt: data.updated_at,
+  };
+}
+
+/**
+ * Save or update a daily reflection (upsert by user + date).
+ */
+export async function saveDailyReflection(
+  reflection: DailyReflection
+): Promise<{ success: boolean; error?: string }> {
+  const { error } = await supabase
+    .from('daily_reflections')
+    .upsert(
+      {
+        user_id: reflection.userId,
+        reflection_date: reflection.reflectionDate,
+        question_responses: reflection.questionResponses,
+        free_text: reflection.freeText,
+        day_tags: reflection.dayTags,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'user_id,reflection_date' }
+    );
+
+  if (error) {
+    console.warn('[Journal] Save reflection error:', error.message);
+    return { success: false, error: error.message };
+  }
+
+  return { success: true };
 }

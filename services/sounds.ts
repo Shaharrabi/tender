@@ -4,6 +4,18 @@
  * Maps all sound names to their audio files.
  * Called once on app start to register sounds with SoundHapticsService.
  *
+ * Sound palette (ElevenLabs custom mix):
+ *   UIClick   — short, friendly click        → taps, toggles, selections
+ *   UIMvmt    — soft, subtle movement         → swipes, page turns
+ *   UIBeep    — very short tonal beep         → lesson start, exercise reveal
+ *   UIAlert-Short — bright, tonal alert       → notifications, reflection ding
+ *   UIAlert-Bubble — cute bubble pop          → confetti, mood select
+ *   UIAlert-SMS — smartphone notification     → lesson complete
+ *   UIAlert-HappyWin — happy win beep         → success, xp gain
+ *   UIAlert-Win — sound of the win            → level up, streak milestone
+ *
+ * Kept originals: badge_unlock.mp3, complete.mp3
+ *
  * Usage:
  *   import { registerAllAppSounds } from '@/services/sounds';
  *   registerAllAppSounds();
@@ -11,40 +23,50 @@
 
 import { SoundHaptics } from './SoundHapticsService';
 
+// ─── New ElevenLabs sound references ────────────────────────
+const CLICK   = require('@/assets/sounds/UIClick-Create_a_short,_frie-Elevenlabs.mp3');
+const MVMT    = require('@/assets/sounds/UIMvmt-Soft,_subtle_UI_text-Elevenlabs.mp3');
+const BEEP    = require('@/assets/sounds/UIBeep-Create_a_very_short_-Elevenlabs.mp3');
+const ALERT   = require('@/assets/sounds/UIAlert-Short,_bright,_tonal-Elevenlabs.mp3');
+const BUBBLE  = require('@/assets/sounds/UIAlert-Cute_bubble_pop,_cry-Elevenlabs.mp3');
+const SMS     = require('@/assets/sounds/UIAlert-Smartphone_SMS_notif-Elevenlabs.mp3');
+const WIN     = require('@/assets/sounds/UIAlert-happy_win_alert_beep-Elevenlabs.mp3');
+const BIG_WIN = require('@/assets/sounds/UIAlert-sound_of_the_win_or_-Elevenlabs.mp3');
+
 /**
  * Register all sound files with the SoundHapticsService.
  * Must be called after SoundHaptics.init().
  */
 export function registerAllAppSounds(): void {
   SoundHaptics.registerAllSounds({
-    // UI interactions
-    tap: require('@/assets/sounds/tap.mp3'),
-    tap_soft: require('@/assets/sounds/tap_soft.mp3'),
-    swipe: require('@/assets/sounds/swipe.mp3'),
-    toggle: require('@/assets/sounds/toggle.mp3'),
-    page_turn: require('@/assets/sounds/page_turn.mp3'),
+    // ─── UI interactions ─────────────────────────────────
+    tap:            CLICK,    // Short friendly click
+    tap_soft:       CLICK,    // Same click, played at lower volume via config
+    swipe:          MVMT,     // Soft subtle movement
+    toggle:         CLICK,    // Short click for toggles
+    page_turn:      MVMT,     // Soft movement — NOT the old jarring page turn
+    mood_select:    BUBBLE,   // Cute pop for mood dot selection
 
-    // Success / completion
-    success: require('@/assets/sounds/success.mp3'),
-    lesson_complete: require('@/assets/sounds/lesson_complete.mp3'),
+    // ─── Success / completion ────────────────────────────
+    success:          WIN,    // Happy win beep — app intro, generic success
+    lesson_complete:  SMS,    // Smartphone-style completion chime
 
-    // Gamification
-    xp_gain: require('@/assets/sounds/xp_gain.mp3'),
-    level_up: require('@/assets/sounds/level_up.mp3'),
-    badge_unlock: require('@/assets/sounds/badge_unlock.mp3'),
-    confetti: require('@/assets/sounds/confetti.mp3'),
-    streak_milestone: require('@/assets/sounds/streak_milestone.mp3'),
+    // ─── Gamification ────────────────────────────────────
+    xp_gain:          WIN,            // Happy win beep for XP
+    level_up:         BIG_WIN,        // Bigger win sound for level up
+    badge_unlock:     require('@/assets/sounds/badge_unlock.mp3'), // ← KEPT
+    confetti:         BUBBLE,         // Cute pop burst for confetti
+    streak_milestone: BIG_WIN,        // Big win for streak milestones
 
-    // Reflective
-    reflection_ding: require('@/assets/sounds/reflection_ding.mp3'),
-    mood_select: require('@/assets/sounds/mood_select.mp3'),
+    // ─── Reflective ──────────────────────────────────────
+    reflection_ding:  ALERT,  // Bright tonal alert for reflection submit
 
-    // Lessons
-    lesson_start: require('@/assets/sounds/lesson_start.mp3'),
-    exercise_reveal: require('@/assets/sounds/exercise_reveal.mp3'),
+    // ─── Lessons ─────────────────────────────────────────
+    lesson_start:     BEEP,   // Short beep to begin a lesson
+    exercise_reveal:  BEEP,   // Short beep when exercise card appears
 
-    // System
-    error: require('@/assets/sounds/error.mp3'),
-    notification: require('@/assets/sounds/notification.mp3'),
+    // ─── System ──────────────────────────────────────────
+    error:          ALERT,    // Bright alert for errors
+    notification:   SMS,      // Smartphone-style notification
   });
 }

@@ -257,11 +257,13 @@ export default function HomeScreen() {
           console.log('[Home] Clearing stuck demo data...');
           await clearDemoAssessments(user.id);
           await supabase.from('portraits').delete().eq('user_id', user.id);
-          // Clear stale assessment progress keys
+          // Clear stale assessment progress keys (both scoped and legacy)
           await AsyncStorage.removeItem('tender_assessment_progress').catch(() => {});
+          await AsyncStorage.removeItem(`tender_assessment_progress_${user.id}`).catch(() => {});
           const allConfigs = getAllAssessments();
           for (const config of allConfigs) {
             await AsyncStorage.removeItem(config.progressKey).catch(() => {});
+            await AsyncStorage.removeItem(`${config.progressKey}_${user.id}`).catch(() => {});
           }
           await AsyncStorage.removeItem('demo_mode');
           setIsDemo(false);
@@ -333,7 +335,12 @@ export default function HomeScreen() {
           };
         } else {
           try {
-            const saved = await AsyncStorage.getItem(config.progressKey);
+            // Check user-scoped key first, then fall back to legacy un-scoped key
+            const scopedKey = user ? `${config.progressKey}_${user.id}` : config.progressKey;
+            let saved = await AsyncStorage.getItem(scopedKey);
+            if (!saved) {
+              saved = await AsyncStorage.getItem(config.progressKey);
+            }
             if (saved) {
               const data = JSON.parse(saved);
               const answered = data.responses.filter(
@@ -760,8 +767,19 @@ export default function HomeScreen() {
   const handleLogout = async () => {
     const configs = getAllAssessments();
     for (const config of configs) {
-      await AsyncStorage.removeItem(config.progressKey);
+      // Clear both user-scoped and legacy un-scoped progress keys
+      await AsyncStorage.removeItem(config.progressKey).catch(() => {});
+      if (user) {
+        await AsyncStorage.removeItem(`${config.progressKey}_${user.id}`).catch(() => {});
+      }
     }
+    // Clear tender assessment orchestrator progress (user-scoped + legacy key)
+    if (user) {
+      await AsyncStorage.removeItem(`tender_assessment_progress_${user.id}`).catch(() => {});
+    }
+    await AsyncStorage.removeItem('tender_assessment_progress').catch(() => {});
+    // Clear demo mode flag
+    await AsyncStorage.removeItem('demo_mode').catch(() => {});
     // Clear guest mode data so it doesn't persist across sessions
     await clearGuestData();
     await signOut();
@@ -826,11 +844,17 @@ export default function HomeScreen() {
     try {
       await supabase.from('portraits').delete().eq('user_id', user.id);
       await clearDemoAssessments(user.id);
-      // Clear stale assessment progress keys
+      // Clear stale assessment progress keys (both scoped and legacy)
       await AsyncStorage.removeItem('tender_assessment_progress').catch(() => {});
+      if (user) {
+        await AsyncStorage.removeItem(`tender_assessment_progress_${user.id}`).catch(() => {});
+      }
       const allConfigs = getAllAssessments();
       for (const config of allConfigs) {
         await AsyncStorage.removeItem(config.progressKey).catch(() => {});
+        if (user) {
+          await AsyncStorage.removeItem(`${config.progressKey}_${user.id}`).catch(() => {});
+        }
       }
       await AsyncStorage.removeItem('demo_mode');
       setPortrait(null);

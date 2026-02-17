@@ -2,12 +2,13 @@
  * Journal Screen — Personal relationship timeline.
  *
  * Aggregates all user activity (check-ins, exercises, assessments,
- * chat, XP) into a beautiful book-like journal with:
- *   1. Cover — user name + journey stats
+ * chat, XP) into a beautiful online journal with:
+ *   1. Cover — user name + journey stats (blue accent)
  *   2. Calendar — month view with colored activity dots
- *   3. Day View — timeline of entries for the selected day
+ *   3. Activity Summary — today's practices, course, check-in
+ *   4. Day View — timeline of entries for the selected day
  *
- * Wes Anderson aesthetic: warm parchment, serif accents, dusty rose.
+ * Wes Anderson aesthetic: warm parchment, lobby blue accents.
  */
 
 import React, { useCallback, useState } from 'react';
@@ -31,13 +32,28 @@ import {
   getJournalEntriesForDate,
   getJournalCalendarData,
   getJournalStats,
+  getReflectionQuestions,
+  getDailyReflection,
+  saveDailyReflection,
   type JournalEntry,
   type JournalStats,
   type CalendarDayData,
+  type DailyReflection,
 } from '@/services/journal';
+import { getTodaysCheckIn } from '@/services/growth';
+import { getCompletions } from '@/services/intervention';
+import { getCurrentStepNumber } from '@/services/steps';
+import { getPracticesForStep } from '@/utils/steps/twelve-steps';
+import { getExerciseById } from '@/utils/interventions/registry';
+import { MICRO_COURSES } from '@/utils/microcourses/course-registry';
+import type { DailyCheckIn } from '@/types/growth';
+import type { Intervention } from '@/types/intervention';
+import type { CourseProgress } from '@/utils/microcourses/course-registry';
 import JournalCover from '@/components/journal/JournalCover';
 import JournalCalendar from '@/components/journal/JournalCalendar';
 import JournalDayView from '@/components/journal/JournalDayView';
+import JournalActivitySummary from '@/components/journal/JournalActivitySummary';
+import JournalReflection from '@/components/journal/JournalReflection';
 import { SoundHaptics } from '@/services/SoundHapticsService';
 import {
   Colors,
@@ -54,6 +70,11 @@ function todayString(): string {
   const mm = String(d.getMonth() + 1).padStart(2, '0');
   const dd = String(d.getDate()).padStart(2, '0');
   return `${yyyy}-${mm}-${dd}`;
+}
+
+function getDayOfWeek(): number {
+  const day = new Date().getDay();
+  return day === 0 ? 6 : day - 1; // Monday=0 based
 }
 
 // ─── Screen ─────────────────────────────────────────────
@@ -74,6 +95,21 @@ export default function JournalScreen() {
   const [dayEntries, setDayEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [dayLoading, setDayLoading] = useState(false);
+
+  // Reflection state
+  const [reflectionQuestions, setReflectionQuestions] = useState<string[]>(
+    getReflectionQuestions()
+  );
+  const [dailyReflection, setDailyReflection] = useState<DailyReflection | null>(null);
+  const [reflectionSaving, setReflectionSaving] = useState(false);
+
+  // Activity summary state
+  const [todaysCheckIn, setTodaysCheckIn] = useState<DailyCheckIn | null>(null);
+  const [todaysPractice, setTodaysPractice] = useState<Intervention | null>(null);
+  const [activeCourse, setActiveCourse] = useState<{
+    course: (typeof MICRO_COURSES)[number];
+    progress: CourseProgress;
+  } | null>(null);
 
   // ─── Load data on focus ──────────────────────────────
 
@@ -109,12 +145,28 @@ export default function JournalScreen() {
         // Get entries for selected date
         const entries = await getJournalEntriesForDate(user.id, selectedDate);
         setDayEntries(entries);
+
+        // Get reflection questions for selected date + load saved reflection
+        setReflectionQuestions(getReflectionQuestions(selectedDate));
+        try {
+          const refl = await getDailyReflection(user.id, selectedDate);
+          setDailyReflection(refl);
+        } catch {
+          setDailyReflection(null);
+        }
+
+        // ── Load activity summary data (non-blocking) ──
+        loadActivityData(user.id);
       } else {
         // Guest mode — no data
         setDisplayName('Guest');
         setStats(null);
         setCalendarData(new Map());
         setDayEntries([]);
+        setTodaysCheckIn(null);
+        setTodaysPractice(null);
+        setActiveCourse(null);
+        setDailyReflection(null);
       }
     } catch (err) {
       console.warn('[Journal] Load error:', err);
@@ -122,6 +174,67 @@ export default function JournalScreen() {
       setLoading(false);
     }
   }, [user, isGuest, calendarYear, calendarMonth, selectedDate]);
+
+  const loadActivityData = useCallback(async (userId: string) => {
+    // Load today's check-in
+    try {
+      const ci = await getTodaysCheckIn(userId);
+      setTodaysCheckIn(ci);
+    } catch {
+      setTodaysCheckIn(null);
+    }
+
+    // Load today's practice
+    try {
+      const stepNum = await getCurrentStepNumber(userId);
+      const practiceIds = getPracticesForStep(stepNum);
+      const practices = practiceIds
+        .map((id) => getExerciseById(id))
+        .filter((ex): ex is Intervention => ex != null);
+
+      if (practices.length > 0) {
+        // Pick today's practice from the rotation
+        const todayIdx = getDayOfWeek();
+        const practice = practices[todayIdx % practices.length];
+        setTodaysPractice(practice);
+      } else {
+        setTodaysPractice(null);
+      }
+    } catch {
+      setTodaysPractice(null);
+    }
+
+    // Load active micro-course
+    try {
+      const completions = await getCompletions(userId, 200);
+      const completedLessonIds = new Set(completions.map((c) => c.exerciseId));
+
+      let found = false;
+      for (const course of MICRO_COURSES) {
+        const courseLessons = Array.from({ length: course.totalLessons }, (_, i) =>
+          `${course.id}-lesson-${i + 1}`
+        );
+        const lessonsCompleted = courseLessons.filter((id) => completedLessonIds.has(id)).length;
+
+        if (lessonsCompleted > 0 && lessonsCompleted < course.totalLessons) {
+          setActiveCourse({
+            course,
+            progress: {
+              courseId: course.id,
+              lessonsCompleted,
+              totalLessons: course.totalLessons,
+              currentLesson: lessonsCompleted,
+            },
+          });
+          found = true;
+          break;
+        }
+      }
+      if (!found) setActiveCourse(null);
+    } catch {
+      setActiveCourse(null);
+    }
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -177,6 +290,7 @@ export default function JournalScreen() {
     SoundHaptics.tapSoft();
     setSelectedDate(date);
     setDayLoading(true);
+    setReflectionQuestions(getReflectionQuestions(date));
 
     if (user) {
       try {
@@ -186,9 +300,59 @@ export default function JournalScreen() {
         console.warn('[Journal] Day load error:', err);
         setDayEntries([]);
       }
+
+      // Load reflection for selected date
+      try {
+        const refl = await getDailyReflection(user.id, date);
+        setDailyReflection(refl);
+      } catch {
+        setDailyReflection(null);
+      }
     }
     setDayLoading(false);
   }, [user]);
+
+  // ─── Navigation callbacks ────────────────────────────
+
+  const handlePressPractice = useCallback(() => {
+    if (todaysPractice) {
+      SoundHaptics.tapSoft();
+      router.push(`/(app)/exercise/${todaysPractice.id}` as any);
+    }
+  }, [todaysPractice, router]);
+
+  const handlePressCourse = useCallback(() => {
+    if (activeCourse) {
+      SoundHaptics.tapSoft();
+      router.push(`/(app)/microcourse/${activeCourse.course.id}` as any);
+    }
+  }, [activeCourse, router]);
+
+  // ─── Reflection save handler ────────────────────────
+
+  const handleSaveReflection = useCallback(
+    async (partial: Partial<DailyReflection>) => {
+      if (!user) return;
+      setReflectionSaving(true);
+      try {
+        await saveDailyReflection({
+          userId: user.id,
+          reflectionDate: partial.reflectionDate || selectedDate,
+          questionResponses: partial.questionResponses || [],
+          freeText: partial.freeText || '',
+          dayTags: partial.dayTags || [],
+        });
+        // Refresh the reflection data
+        const refl = await getDailyReflection(user.id, selectedDate);
+        setDailyReflection(refl);
+      } catch (err) {
+        console.warn('[Journal] Save reflection error:', err);
+      } finally {
+        setReflectionSaving(false);
+      }
+    },
+    [user, selectedDate]
+  );
 
   // ─── Render ──────────────────────────────────────────
 
@@ -196,7 +360,7 @@ export default function JournalScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={Colors.secondary} />
         </View>
       </SafeAreaView>
     );
@@ -237,7 +401,26 @@ export default function JournalScreen() {
           onNextMonth={handleNextMonth}
         />
 
-        {/* 3. Day View */}
+        {/* 3. Activity Summary — practices, courses, check-in */}
+        <JournalActivitySummary
+          todaysCheckIn={todaysCheckIn}
+          todaysPractice={todaysPractice}
+          activeCourse={activeCourse}
+          onPressPractice={handlePressPractice}
+          onPressCourse={handlePressCourse}
+        />
+
+        {/* 4. Reflection — WEARE questions, tags, free journal */}
+        <JournalReflection
+          date={selectedDate}
+          questions={reflectionQuestions}
+          reflection={dailyReflection}
+          onSave={handleSaveReflection}
+          saving={reflectionSaving}
+          isToday={selectedDate === todayString()}
+        />
+
+        {/* 5. Day View — timeline entries for selected date */}
         <JournalDayView
           date={selectedDate}
           entries={dayEntries}

@@ -50,7 +50,14 @@ interface OrchestratorProgress {
   completedSections: string[];  // assessment types
 }
 
-const PROGRESS_KEY = 'tender_assessment_progress';
+/** User-scoped key to prevent assessment progress leaking between users. */
+function progressKey(userId?: string): string {
+  return userId
+    ? `tender_assessment_progress_${userId}`
+    : 'tender_assessment_progress';
+}
+// Legacy key used before user-scoping — cleared on load for safety
+const LEGACY_PROGRESS_KEY = 'tender_assessment_progress';
 
 // ─── Helpers ─────────────────────────────────────────────
 
@@ -134,8 +141,13 @@ export default function TenderAssessmentScreen() {
     loadProgress();
   }, []);
 
+  const PROGRESS_KEY = progressKey(user?.id);
+
   const loadProgress = async () => {
     try {
+      // Clear any legacy (un-scoped) key to prevent cross-user leakage
+      await AsyncStorage.removeItem(LEGACY_PROGRESS_KEY).catch(() => {});
+
       const saved = await AsyncStorage.getItem(PROGRESS_KEY);
       if (saved && startSectionIdx == null) {
         const data: OrchestratorProgress = JSON.parse(saved);
