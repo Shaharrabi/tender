@@ -186,7 +186,7 @@ export default function HomeScreen() {
   const { user, signOut } = useAuth();
   const { isGuest, clearGuestData } = useGuest();
   const { awardXP: awardGamificationXP } = useGamification();
-  const { state: ftueState, markTourCompleted, markFirstLaunchComplete } = useFirstTime();
+  const { state: ftueState, loading: ftueLoading, markTourCompleted, markFirstLaunchComplete } = useFirstTime();
   const router = useRouter();
   const [showTour, setShowTour] = useState(false);
 
@@ -653,9 +653,12 @@ export default function HomeScreen() {
     : null;
 
   // Show guided tour on first launch (works for both guests and auth users)
+  // Must wait for BOTH home data AND FTUE state to load from AsyncStorage,
+  // otherwise isFirstLaunch defaults to true and triggers for returning users.
   useEffect(() => {
     if (
       !loading &&
+      !ftueLoading &&
       ftueState.isFirstLaunch &&
       !ftueState.completedTours.includes('tour_home')
     ) {
@@ -663,7 +666,7 @@ export default function HomeScreen() {
       const timer = setTimeout(() => setShowTour(true), 800);
       return () => clearTimeout(timer);
     }
-  }, [loading, ftueState.isFirstLaunch, ftueState.completedTours]);
+  }, [loading, ftueLoading, ftueState.isFirstLaunch, ftueState.completedTours]);
 
   const handleTourComplete = useCallback(() => {
     setShowTour(false);

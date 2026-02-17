@@ -1,240 +1,81 @@
 /**
- * Community — Anonymous stories + curated resources.
+ * Community — Thin orchestrator for anonymous stories, reactions, and letter exchange.
  *
- * Two tabs:
- * 1. Stories — anonymous posts with "resonated" reactions, category filters
- * 2. Resources — curated articles (editorial content)
+ * 4 tabs:
+ * 1. For You  — stories filtered by attachment style (or all + gentle banner)
+ * 2. All Stories — all approved posts
+ * 3. Letters — anonymous letter exchange with weekly prompts
+ * 4. Circle  — coming soon (locked)
  *
- * Design principles:
- * - No usernames, no profiles, no DMs — fully anonymous
- * - "Resonated" (not "like") — validates shared experience
- * - Report button on every post
- * - AI safety pre-screen on new posts
+ * Components:
+ *   CommunityHeader, CommunityTabs, CategoryPills,
+ *   StoryCard, EmptyState, FAB, ComposeFlow, WelcomeModal,
+ *   LetterDesk, LetterFlow
  */
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View,
-  Text,
-  TouchableOpacity,
   StyleSheet,
   SafeAreaView,
   ScrollView,
   Alert,
-  TextInput,
-  Modal,
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { useGuest } from '@/context/GuestContext';
-import { EmptyState } from '@/components/ui/EmptyState';
+import { useGamification } from '@/context/GamificationContext';
+import {
+  getPosts,
+  createPost,
+  toggleReaction,
+  reportPost,
+  getOrCreateMembership,
+  rotateAlias,
+  getAlias,
+} from '@/services/community';
+import {
+  getActivePrompt,
+  createLetter,
+  getReceivedLetters,
+  getLetterStats,
+  markLetterRead,
+  matchLetterForUser,
+} from '@/services/letters';
+import { getPortrait } from '@/services/portrait';
+import { useSoundHaptics } from '@/services/SoundHapticsService';
+import { CATEGORIES } from '@/constants/community';
+import { Colors, Spacing } from '@/constants/theme';
+import type {
+  CommunityPost,
+  CommunityAlias,
+  CommunityMembership,
+  CommunityTab,
+  PostCategory,
+  ReactionType,
+  CommunityLetter,
+  WeeklyPrompt,
+} from '@/types/community';
+import type { AttachmentStyle } from '@/types';
+
+// ─── Components ─────────────────────────────────────────
+import { CommunityHeader } from '@/components/community/CommunityHeader';
+import { CommunityTabs } from '@/components/community/CommunityTabs';
+import { CategoryPills } from '@/components/community/CategoryPills';
+import { StoryCard } from '@/components/community/StoryCard';
+import { EmptyState } from '@/components/community/EmptyState';
+import { FAB } from '@/components/community/FAB';
+import { ComposeFlow } from '@/components/community/ComposeFlow';
+import { WelcomeModal } from '@/components/community/WelcomeModal';
+import { LetterDesk } from '@/components/community/LetterDesk';
+import { LetterFlow } from '@/components/community/LetterFlow';
+import { ThoughtBubbleIcon, LockIcon, SparkleIcon } from '@/assets/graphics/icons';
+
+// ─── FTUE ───────────────────────────────────────────────
 import { TooltipManager } from '@/components/ftue/TooltipManager';
 import { WelcomeAudio } from '@/components/ftue/WelcomeAudio';
-import { RefRegistry } from '@/utils/ftue/refRegistry';
-import { getPosts, createPost, toggleResonated, reportPost } from '@/services/community';
-import { checkSafety } from '@/utils/agent/safety-check';
-import { sanitizeTextInput } from '@/utils/security/validation';
-import type { CommunityPost, ContentItem, PostCategory, HealingPhase } from '@/types/community';
-import {
-  Colors,
-  Spacing,
-  FontSizes,
-  FontFamilies,
-  BorderRadius,
-  Shadows,
-  ButtonSizes,
-} from '@/constants/theme';
-import type { ComponentType } from 'react';
-import type { IconProps } from '@/assets/graphics/icons';
-import {
-  EyeIcon,
-  HeartIcon,
-  RefreshIcon,
-  PuzzleIcon,
-  SeedlingIcon,
-  LinkIcon,
-  ChatBubbleIcon,
-  BrainIcon,
-  ShieldIcon,
-  CompassIcon,
-  LeafIcon,
-  HandshakeIcon,
-  MasksIcon,
-  LightningIcon,
-  ChartBarIcon,
-  SearchIcon,
-  LightbulbIcon,
-  ThoughtBubbleIcon,
-  MailboxIcon,
-  FlagIcon,
-  WhiteHeartIcon,
-  ArrowLeftIcon,
-  PenIcon,
-  SparkleIcon,
-} from '@/assets/graphics/icons';
-
-// ─── Constants ──────────────────────────────────────────
-
-const CATEGORIES: string[] = [
-  'All',
-  'Attachment',
-  'Communication',
-  'Conflict',
-  'Emotions',
-  'Growth',
-  'Values',
-  'Intimacy',
-];
-
-const POST_CATEGORIES: PostCategory[] = [
-  'Attachment',
-  'Communication',
-  'Conflict',
-  'Emotions',
-  'Growth',
-  'Values',
-  'Intimacy',
-];
-
-const HEALING_PHASES: { key: HealingPhase; label: string; Icon: ComponentType<IconProps> }[] = [
-  { key: 'seeing', label: 'Seeing', Icon: EyeIcon },
-  { key: 'feeling', label: 'Feeling', Icon: HeartIcon },
-  { key: 'shifting', label: 'Shifting', Icon: RefreshIcon },
-  { key: 'integrating', label: 'Integrating', Icon: PuzzleIcon },
-  { key: 'sustaining', label: 'Sustaining', Icon: SeedlingIcon },
-];
-
-// ─── Curated Resources ──────────────────────────────────
-
-interface CuratedResource extends Omit<ContentItem, 'icon'> {
-  Icon: ComponentType<IconProps>;
-  iconColor: string;
-}
-
-const CURATED_RESOURCES: CuratedResource[] = [
-  {
-    id: '1',
-    title: '5 Signs of a Secure Relationship',
-    category: 'Attachment',
-    description: 'Secure relationships share recognizable patterns. Learn the key indicators that signal a healthy, stable bond between partners.',
-    readTime: '6 min read',
-    Icon: LinkIcon,
-    iconColor: Colors.primary,
-    source: 'The Gottman Institute',
-  },
-  {
-    id: '2',
-    title: 'The Soft Startup: How to Begin Difficult Conversations',
-    category: 'Communication',
-    description: 'The first three minutes of a conversation predict the outcome. Discover how a gentle approach changes everything.',
-    readTime: '5 min read',
-    Icon: ChatBubbleIcon,
-    iconColor: Colors.primary,
-    source: 'The Gottman Institute',
-  },
-  {
-    id: '3',
-    title: 'Understanding Your Window of Tolerance',
-    category: 'Emotions',
-    description: 'Your window of tolerance determines how well you handle stress. Learn to recognize when you are inside or outside your zone.',
-    readTime: '7 min read',
-    Icon: BrainIcon,
-    iconColor: '#5B6B8A',
-    source: 'Dr. Dan Siegel',
-  },
-  {
-    id: '4',
-    title: 'The Four Horsemen and How to Counter Them',
-    category: 'Conflict',
-    description: 'Criticism, contempt, defensiveness, and stonewalling predict relationship failure. Here are the antidotes that work.',
-    readTime: '8 min read',
-    Icon: ShieldIcon,
-    iconColor: Colors.secondary,
-    source: 'The Gottman Institute',
-  },
-  {
-    id: '5',
-    title: 'Values-Based Living in Relationships',
-    category: 'Values',
-    description: 'When partners align their daily actions with their deepest values, relationships become more meaningful and resilient.',
-    readTime: '6 min read',
-    Icon: CompassIcon,
-    iconColor: '#8B6914',
-    source: 'Dr. Russ Harris',
-  },
-  {
-    id: '6',
-    title: 'Why Vulnerability is Strength',
-    category: 'Growth',
-    description: 'Letting your guard down with your partner is not weakness. Research shows vulnerability is the birthplace of connection.',
-    readTime: '5 min read',
-    Icon: SeedlingIcon,
-    iconColor: Colors.primary,
-    source: 'Brene Brown',
-  },
-  {
-    id: '7',
-    title: 'The Difference Between Reacting and Responding',
-    category: 'Emotions',
-    description: 'Reactions are automatic; responses are chosen. Learn practical techniques to create space between stimulus and choice.',
-    readTime: '4 min read',
-    Icon: SparkleIcon,
-    iconColor: Colors.calm,
-    source: 'Dr. Viktor Frankl',
-  },
-  {
-    id: '8',
-    title: 'Turning Toward: Small Moments That Build Trust',
-    category: 'Intimacy',
-    description: 'Trust is built in the smallest of moments. Discover how everyday bids for connection strengthen your bond over time.',
-    readTime: '5 min read',
-    Icon: HandshakeIcon,
-    iconColor: Colors.primary,
-    source: 'The Gottman Institute',
-  },
-  {
-    id: '9',
-    title: 'IFS: Getting to Know Your Inner Parts',
-    category: 'Growth',
-    description: 'Internal Family Systems offers a compassionate way to understand the different parts of yourself that show up in relationships.',
-    readTime: '7 min read',
-    Icon: MasksIcon,
-    iconColor: '#6BA3A0',
-    source: 'Dr. Richard Schwartz',
-  },
-  {
-    id: '10',
-    title: 'When Conflict Triggers Your Nervous System',
-    category: 'Conflict',
-    description: 'Your body keeps the score during arguments. Learn to notice flooding and use co-regulation to return to connection.',
-    readTime: '6 min read',
-    Icon: LightningIcon,
-    iconColor: Colors.accent,
-    source: 'Dr. Stephen Porges',
-  },
-  {
-    id: '11',
-    title: 'The 5:1 Ratio in Happy Relationships',
-    category: 'Communication',
-    description: 'Stable relationships maintain five positive interactions for every negative one. Learn how to shift your ratio intentionally.',
-    readTime: '4 min read',
-    Icon: ChartBarIcon,
-    iconColor: Colors.secondary,
-    source: 'The Gottman Institute',
-  },
-  {
-    id: '12',
-    title: 'Differentiation: Being Close Without Losing Yourself',
-    category: 'Growth',
-    description: 'Healthy intimacy requires holding onto yourself while staying connected. Explore the balance of togetherness and autonomy.',
-    readTime: '8 min read',
-    Icon: LeafIcon,
-    iconColor: Colors.primary,
-    source: 'Dr. David Schnarch',
-  },
-];
 
 // ─── Component ──────────────────────────────────────────
 
@@ -242,501 +83,453 @@ export default function CommunityScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const { isGuest } = useGuest();
+  const { awardXP } = useGamification();
+  const haptics = useSoundHaptics();
 
-  // Tab state
-  const [activeTab, setActiveTab] = useState<'stories' | 'resources'>('stories');
+  // ── State ──────────────────────────────────
+  const [activeTab, setActiveTab] = useState<CommunityTab>('forYou');
   const [activeCategory, setActiveCategory] = useState('All');
-
-  // Stories state
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Compose modal
+  // Alias & membership
+  const [membership, setMembership] = useState<CommunityMembership | null>(null);
+  const [alias, setAlias] = useState<CommunityAlias | null>(null);
+  const [showWelcome, setShowWelcome] = useState(false);
+
+  // Compose (stories)
   const [showCompose, setShowCompose] = useState(false);
-  const [composeText, setComposeText] = useState('');
-  const [composeCategory, setComposeCategory] = useState<PostCategory>('Growth');
   const [submitting, setSubmitting] = useState(false);
 
-  // ── Load posts ──────────────────────────────
+  // Letter Desk
+  const [weeklyPrompt, setWeeklyPrompt] = useState<WeeklyPrompt | null>(null);
+  const [receivedLetters, setReceivedLetters] = useState<CommunityLetter[]>([]);
+  const [letterSentCount, setLetterSentCount] = useState(0);
+  const [loadingLetters, setLoadingLetters] = useState(false);
+  const [showLetterCompose, setShowLetterCompose] = useState(false);
+  const [letterSubmitting, setLetterSubmitting] = useState(false);
 
-  const loadPosts = useCallback(async () => {
+  // Portrait / attachment style for "For You" filtering + letter matching
+  const [attachmentStyle, setAttachmentStyle] = useState<AttachmentStyle | null>(null);
+
+  // Track if initial load done (avoid showing empty states prematurely)
+  const initialLoadDone = useRef(false);
+
+  // ── Init: membership + portrait ────────────
+  useEffect(() => {
     if (!user) return;
+
+    // Load membership (alias system)
+    getOrCreateMembership(user.id)
+      .then((m) => {
+        setMembership(m);
+        setAlias(getAlias(m));
+
+        // Show welcome modal if just joined (within last 10 seconds)
+        const joinedMs = Date.now() - new Date(m.joinedAt).getTime();
+        if (joinedMs < 10_000) {
+          setShowWelcome(true);
+        }
+      })
+      .catch((e) => console.error('[Community] Membership error:', e));
+
+    // Load portrait for attachment style filtering
+    getPortrait(user.id)
+      .then((portrait) => {
+        if (portrait?.negativeCycle?.position) {
+          const pos = portrait.negativeCycle.position;
+          if (pos === 'pursuer') setAttachmentStyle('anxious-preoccupied');
+          else if (pos === 'withdrawer') setAttachmentStyle('dismissive-avoidant');
+          else if (pos === 'mixed') setAttachmentStyle('fearful-avoidant');
+          else setAttachmentStyle('secure');
+        }
+      })
+      .catch(() => {}); // No portrait is fine — fallback to all posts
+
+    // Load weekly prompt for letters
+    getActivePrompt()
+      .then(setWeeklyPrompt)
+      .catch(() => {});
+  }, [user]);
+
+  // ── Load posts (supports guest browsing) ───
+  const loadPosts = useCallback(async () => {
     setLoadingPosts(true);
     try {
-      const data = await getPosts(user.id, {
-        category: activeCategory !== 'All' ? activeCategory : undefined,
+      const categoryFilter = activeCategory !== 'All' ? activeCategory : undefined;
+
+      // "For You" tab: filter by attachment style if available
+      const styleFilter =
+        activeTab === 'forYou' && attachmentStyle ? attachmentStyle : undefined;
+
+      // Pass userId if available, null for guests (skips reactions query)
+      const data = await getPosts(user?.id ?? null, {
+        category: categoryFilter,
+        attachmentStyle: styleFilter,
       });
       setPosts(data);
+      initialLoadDone.current = true;
     } catch (e) {
       console.error('[Community] Failed to load posts:', e);
     } finally {
       setLoadingPosts(false);
     }
-  }, [user, activeCategory]);
+  }, [user, activeCategory, activeTab, attachmentStyle]);
 
   useEffect(() => {
-    if (activeTab === 'stories' && user) {
+    if (activeTab === 'forYou' || activeTab === 'allStories') {
       loadPosts();
     }
-  }, [activeTab, user, activeCategory]);
+  }, [activeTab, activeCategory, attachmentStyle]);
+
+  // ── Load letters ───────────────────────────
+  const loadLetters = useCallback(async () => {
+    if (!user) return;
+    setLoadingLetters(true);
+    try {
+      // Try to match a letter for this user first
+      await matchLetterForUser(user.id, attachmentStyle).catch(() => {});
+
+      // Then load stats + received letters
+      const [stats, letters] = await Promise.all([
+        getLetterStats(user.id),
+        getReceivedLetters(user.id),
+      ]);
+
+      setLetterSentCount(stats.sentCount);
+      setReceivedLetters(letters);
+    } catch (e) {
+      console.error('[Community] Failed to load letters:', e);
+    } finally {
+      setLoadingLetters(false);
+    }
+  }, [user, attachmentStyle]);
+
+  useEffect(() => {
+    if (activeTab === 'letters' && user) {
+      loadLetters();
+    }
+  }, [activeTab, user]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await loadPosts();
+    if (activeTab === 'letters') {
+      await loadLetters();
+    } else {
+      await loadPosts();
+    }
     setRefreshing(false);
   };
 
-  // ── Submit story ────────────────────────────
-
-  const handleSubmitStory = async () => {
-    if (!user) return;
-
-    const sanitized = sanitizeTextInput(composeText);
-    if (!sanitized || sanitized.length < 10) {
-      Alert.alert('Too Short', 'Please share a bit more \u2014 at least a sentence or two.');
-      return;
-    }
-    if (sanitized.length > 1000) {
-      Alert.alert('Too Long', 'Please keep your story under 1000 characters.');
-      return;
-    }
-
-    // Safety pre-screen
-    const safety = checkSafety(sanitized);
-    if (!safety.safe && safety.category === 'self_harm') {
-      Alert.alert(
-        'We Care About You',
-        'If you or someone you know is in crisis, please reach out:\n\n' +
-          'National Suicide Prevention Lifeline: 988\n' +
-          'Crisis Text Line: Text HOME to 741741\n\n' +
-          'Your story was not posted, but help is available.',
-        [{ text: 'OK' }]
-      );
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      await createPost(user.id, sanitized, composeCategory);
-      setComposeText('');
-      setShowCompose(false);
-      await loadPosts();
-    } catch (e: any) {
-      Alert.alert('Error', e.message || 'Failed to share your story. Please try again.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  // ── Toggle resonated ───────────────────────
-
-  const handleResonated = async (postId: string) => {
+  // ── Alias rotation ─────────────────────────
+  const handleRotateAlias = useCallback(async () => {
     if (!user) return;
     try {
-      const nowResonated = await toggleResonated(postId, user.id);
-      setPosts((prev) =>
-        prev.map((p) =>
-          p.id === postId
-            ? {
-                ...p,
-                hasResonated: nowResonated,
-                resonatedCount: nowResonated
-                  ? p.resonatedCount + 1
-                  : Math.max(p.resonatedCount - 1, 0),
-              }
-            : p
-        )
-      );
+      const updated = await rotateAlias(user.id);
+      setMembership(updated);
+      setAlias(getAlias(updated));
+      haptics.success();
     } catch (e) {
-      console.error('[Community] Failed to toggle resonated:', e);
+      Alert.alert('Error', 'Failed to refresh your name. Please try again.');
     }
-  };
+  }, [user, haptics]);
 
-  // ── Report ─────────────────────────────────
+  // ── Submit story ───────────────────────────
+  const handleSubmitStory = useCallback(
+    async (content: string, category: PostCategory) => {
+      if (!user || !alias) return;
 
-  const handleReport = (postId: string) => {
-    Alert.alert(
-      'Report This Post',
-      'Are you sure you want to report this post? It will be reviewed and may be removed.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Report',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await reportPost(postId);
-              setPosts((prev) => prev.filter((p) => p.id !== postId));
-              Alert.alert('Reported', 'Thank you. We will review this post.');
-            } catch {
-              Alert.alert('Error', 'Failed to report. Please try again.');
-            }
-          },
-        },
-      ]
-    );
-  };
-
-  // ── Time ago helper ────────────────────────
-
-  const timeAgo = (dateStr: string): string => {
-    const diff = Date.now() - new Date(dateStr).getTime();
-    const mins = Math.floor(diff / 60000);
-    if (mins < 1) return 'just now';
-    if (mins < 60) return `${mins}m ago`;
-    const hours = Math.floor(mins / 60);
-    if (hours < 24) return `${hours}h ago`;
-    const days = Math.floor(hours / 24);
-    if (days < 7) return `${days}d ago`;
-    return `${Math.floor(days / 7)}w ago`;
-  };
-
-  // ── Filter resources ───────────────────────
-
-  const filteredResources: CuratedResource[] =
-    activeCategory === 'All'
-      ? CURATED_RESOURCES
-      : CURATED_RESOURCES.filter((item) => item.category === activeCategory);
-
-  // ── Render: Tab bar ────────────────────────
-
-  const renderTabBar = () => (
-    <View style={st.tabBar}>
-      <TouchableOpacity
-        style={[st.tab, activeTab === 'stories' && st.tabActive]}
-        onPress={() => setActiveTab('stories')}
-        activeOpacity={0.7}
-      >
-        <Text style={[st.tabText, activeTab === 'stories' && st.tabTextActive]}>
-          Stories
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[st.tab, activeTab === 'resources' && st.tabActive]}
-        onPress={() => setActiveTab('resources')}
-        activeOpacity={0.7}
-      >
-        <Text style={[st.tabText, activeTab === 'resources' && st.tabTextActive]}>
-          Resources
-        </Text>
-      </TouchableOpacity>
-    </View>
-  );
-
-  // ── Render: Category pills ─────────────────
-
-  const renderCategoryPills = () => (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={st.categoryRow}
-      style={st.categoryScroll}
-    >
-      {CATEGORIES.map((cat) => {
-        const isActive = activeCategory === cat;
-        return (
-          <TouchableOpacity
-            key={cat}
-            style={[st.categoryPill, isActive && st.categoryPillActive]}
-            onPress={() => setActiveCategory(cat)}
-            activeOpacity={0.7}
-          >
-            <Text style={[st.categoryPillText, isActive && st.categoryPillTextActive]}>
-              {cat}
-            </Text>
-          </TouchableOpacity>
+      setSubmitting(true);
+      try {
+        const newPost = await createPost(
+          user.id,
+          content,
+          category,
+          undefined, // healingPhase
+          attachmentStyle ?? undefined,
+          alias.name,
+          alias.color
         );
-      })}
-    </ScrollView>
-  );
 
-  // ── Render: Post card ──────────────────────
+        // Award XP (non-blocking)
+        awardXP('community_post', newPost.id, 'Shared a story').catch(() => {});
 
-  const renderPostCard = (post: CommunityPost) => (
-    <View key={post.id} style={st.postCard}>
-      {/* Category + phase badges */}
-      <View style={st.postBadgeRow}>
-        <View style={st.categoryBadge}>
-          <Text style={st.categoryBadgeText}>{post.category}</Text>
-        </View>
-        {post.healingPhase && (
-          <View style={st.phaseBadge}>
-            <Text style={st.phaseBadgeText}>
-              {HEALING_PHASES.find((h) => h.key === post.healingPhase)?.label ?? post.healingPhase}
-            </Text>
-          </View>
-        )}
-      </View>
-
-      {/* Content */}
-      <Text style={st.postContent}>{post.content}</Text>
-
-      {/* Footer: resonated + time + report */}
-      <View style={st.postFooter}>
-        <TouchableOpacity
-          style={[st.resonatedButton, post.hasResonated && st.resonatedButtonActive]}
-          onPress={() => handleResonated(post.id)}
-          activeOpacity={0.7}
-        >
-          <HeartIcon size={14} color={post.hasResonated ? Colors.primary : Colors.textMuted} />
-          <Text style={[st.resonatedText, post.hasResonated && st.resonatedTextActive]}>
-            {post.resonatedCount > 0 ? post.resonatedCount : ''} Resonated
-          </Text>
-        </TouchableOpacity>
-
-        <Text style={st.postTime}>{timeAgo(post.createdAt)}</Text>
-
-        <TouchableOpacity
-          onPress={() => handleReport(post.id)}
-          activeOpacity={0.7}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <FlagIcon size={14} color={Colors.textMuted} />
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-
-  // ── Render: Resource card ──────────────────
-
-  const renderResourceCard = (item: CuratedResource) => (
-    <TouchableOpacity
-      key={item.id}
-      style={st.contentCard}
-      onPress={() =>
-        Alert.alert('Coming Soon', 'Full articles coming soon in a future update.')
+        // Reload posts
+        await loadPosts();
+      } catch (e: any) {
+        Alert.alert('Error', e.message || 'Failed to share your story. Please try again.');
+        throw e; // Re-throw so ComposeFlow doesn't show celebration
+      } finally {
+        setSubmitting(false);
       }
-      activeOpacity={0.7}
-    >
-      <View style={st.contentCardHeader}>
-        <item.Icon size={24} color={item.iconColor} />
-        <View style={st.categoryBadge}>
-          <Text style={st.categoryBadgeText}>{item.category}</Text>
-        </View>
-      </View>
-      <Text style={st.contentCardTitle}>{item.title}</Text>
-      <Text style={st.contentCardDescription} numberOfLines={2}>
-        {item.description}
-      </Text>
-      <View style={st.contentCardFooter}>
-        <Text style={st.contentCardMeta}>{item.readTime}</Text>
-        <Text style={st.contentCardDot}>{'\u00B7'}</Text>
-        <Text style={st.contentCardMeta}>{item.source}</Text>
-      </View>
-    </TouchableOpacity>
+    },
+    [user, alias, attachmentStyle, awardXP, loadPosts]
   );
 
-  // ── Render: Compose modal ──────────────────
+  // ── Submit letter ──────────────────────────
+  const handleSubmitLetter = useCallback(
+    async (content: string, promptId: string | null) => {
+      if (!user || !alias) return;
 
-  const renderComposeModal = () => (
-    <Modal visible={showCompose} animationType="slide" transparent>
-      <View style={st.modalOverlay}>
-        <View style={st.modalContent}>
-          <View style={st.modalHeader}>
-            <Text style={st.modalTitle}>Share Your Story</Text>
-            <TouchableOpacity onPress={() => setShowCompose(false)}>
-              <Text style={st.modalClose}>{'\u2715'}</Text>
-            </TouchableOpacity>
-          </View>
+      setLetterSubmitting(true);
+      try {
+        const newLetter = await createLetter(
+          user.id,
+          content,
+          promptId,
+          attachmentStyle,
+          alias.name,
+          alias.color
+        );
 
-          <Text style={st.modalHint}>
-            Share anonymously. No one will know who wrote this {'\u2014'} just that someone else gets it.
-          </Text>
+        // Award XP (non-blocking)
+        awardXP('community_post', newLetter.id, 'Wrote a letter').catch(() => {});
 
-          <TextInput
-            style={st.composeInput}
-            placeholder="What's alive in your relationship right now?"
-            placeholderTextColor={Colors.textMuted}
-            value={composeText}
-            onChangeText={setComposeText}
-            multiline
-            maxLength={1000}
-            textAlignVertical="top"
-          />
-          <Text style={st.charCount}>{composeText.length}/1000</Text>
-
-          {/* Category picker */}
-          <Text style={st.pickerLabel}>Category</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={st.composeCategoryRow}
-          >
-            {POST_CATEGORIES.map((cat) => (
-              <TouchableOpacity
-                key={cat}
-                style={[
-                  st.composeCategoryPill,
-                  composeCategory === cat && st.composeCategoryPillActive,
-                ]}
-                onPress={() => setComposeCategory(cat)}
-                activeOpacity={0.7}
-              >
-                <Text
-                  style={[
-                    st.composeCategoryText,
-                    composeCategory === cat && st.composeCategoryTextActive,
-                  ]}
-                >
-                  {cat}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-
-          <TouchableOpacity
-            style={[st.submitButton, submitting && st.submitButtonDisabled]}
-            onPress={handleSubmitStory}
-            disabled={submitting || composeText.trim().length < 10}
-            activeOpacity={0.7}
-          >
-            {submitting ? (
-              <ActivityIndicator color={Colors.white} size="small" />
-            ) : (
-              <Text style={st.submitButtonText}>Share Anonymously</Text>
-            )}
-          </TouchableOpacity>
-        </View>
-      </View>
-    </Modal>
+        // Reload letters
+        await loadLetters();
+      } catch (e: any) {
+        Alert.alert('Error', e.message || 'Failed to send your letter. Please try again.');
+        throw e; // Re-throw so LetterFlow doesn't show celebration
+      } finally {
+        setLetterSubmitting(false);
+      }
+    },
+    [user, alias, attachmentStyle, awardXP, loadLetters]
   );
 
-  // ── Guest banner ───────────────────────────
-
-  const renderGuestBanner = () => (
-    <View style={st.guestBanner}>
-      <Text style={st.guestBannerText}>
-        Create an account to share your story and resonate with others.
-      </Text>
-      <TouchableOpacity
-        onPress={() => router.replace('/(auth)/login' as any)}
-        activeOpacity={0.7}
-      >
-        <Text style={st.guestBannerLink}>Create Account</Text>
-      </TouchableOpacity>
-    </View>
+  // ── Open letter (mark as read) ─────────────
+  const handleOpenLetter = useCallback(
+    async (letterId: string) => {
+      try {
+        await markLetterRead(letterId);
+        setReceivedLetters((prev) =>
+          prev.map((l) =>
+            l.id === letterId ? { ...l, isRead: true, readAt: new Date().toISOString() } : l
+          )
+        );
+      } catch (e) {
+        console.error('[Community] Failed to mark letter read:', e);
+      }
+    },
+    []
   );
 
-  // ── Main render ────────────────────────────
+  // ── Toggle reaction (resonated / felt_seen / been_there) ──
+  const handleReaction = useCallback(
+    async (postId: string, reactionType: ReactionType) => {
+      if (!user) return;
+      try {
+        const nowActive = await toggleReaction(postId, user.id, reactionType);
 
+        // Map reaction type to CommunityPost field names
+        const countKeyMap: Record<ReactionType, 'resonatedCount' | 'feltSeenCount' | 'beenThereCount'> = {
+          resonated: 'resonatedCount',
+          felt_seen: 'feltSeenCount',
+          been_there: 'beenThereCount',
+        };
+        const hasKeyMap: Record<ReactionType, 'hasResonated' | 'hasFeltSeen' | 'hasBeenThere'> = {
+          resonated: 'hasResonated',
+          felt_seen: 'hasFeltSeen',
+          been_there: 'hasBeenThere',
+        };
+
+        const countKey = countKeyMap[reactionType];
+        const hasKey = hasKeyMap[reactionType];
+
+        setPosts((prev) =>
+          prev.map((p) =>
+            p.id === postId
+              ? {
+                  ...p,
+                  [hasKey]: nowActive,
+                  [countKey]: nowActive
+                    ? p[countKey] + 1
+                    : Math.max(p[countKey] - 1, 0),
+                }
+              : p
+          )
+        );
+
+        // Award XP only when adding a reaction (non-blocking)
+        if (nowActive) {
+          const label =
+            reactionType === 'resonated' ? 'Resonated with a story'
+            : reactionType === 'felt_seen' ? 'Felt seen by a story'
+            : 'Been there with a story';
+          awardXP('community_reaction', postId, label).catch(() => {});
+        }
+      } catch (e) {
+        console.error('[Community] Failed to toggle reaction:', e);
+        Alert.alert('Error', 'Failed to update reaction. Please try again.');
+      }
+    },
+    [user, awardXP]
+  );
+
+  // ── Report ────────────────────────────────
+  const handleReport = useCallback(
+    (postId: string) => {
+      Alert.alert(
+        'Report This Post',
+        'Are you sure you want to report this post? It will be reviewed and may be removed.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Report',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await reportPost(postId);
+                setPosts((prev) => prev.filter((p) => p.id !== postId));
+                Alert.alert('Reported', 'Thank you. We will review this post.');
+              } catch {
+                Alert.alert('Error', 'Failed to report. Please try again.');
+              }
+            },
+          },
+        ]
+      );
+    },
+    []
+  );
+
+  // ── Tab change handler ─────────────────────
+  const handleTabChange = useCallback((tab: CommunityTab) => {
+    setActiveTab(tab);
+    setActiveCategory('All'); // Reset category on tab switch
+  }, []);
+
+  // ── Derived ────────────────────────────────
+  const isStoryTab = activeTab === 'forYou' || activeTab === 'allStories';
+  const showFab = isStoryTab && !!user && !isGuest;
+
+  // ── Render ─────────────────────────────────
   return (
     <SafeAreaView style={st.container}>
-      {/* Header */}
-      <View style={st.header}>
-        <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-          <ArrowLeftIcon size={16} color={Colors.primary} />
-          <Text style={st.backText}>Back</Text>
-        </TouchableOpacity>
-      </View>
+      {/* Header with alias chip */}
+      <CommunityHeader
+        alias={alias}
+        onBack={() => router.back()}
+        onRotateAlias={handleRotateAlias}
+      />
 
-      <View style={st.titleSection}>
-        <Text style={st.pageTitle}>Community</Text>
-        <Text style={st.pageSubtitle}>
-          Anonymous stories and curated resources for your journey.
-        </Text>
-      </View>
+      {/* Tab navigation */}
+      <CommunityTabs activeTab={activeTab} onTabChange={handleTabChange} />
 
-      {/* Tab bar */}
-      {renderTabBar()}
+      {/* Category filters (story tabs only) */}
+      {isStoryTab && (
+        <CategoryPills
+          activeCategory={activeCategory}
+          onCategoryChange={setActiveCategory}
+          categories={CATEGORIES}
+        />
+      )}
 
-      {/* Category filter */}
-      {renderCategoryPills()}
-
+      {/* Content area */}
       <ScrollView
         contentContainerStyle={st.scrollContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          activeTab === 'stories' ? (
-            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-          ) : undefined
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
       >
-        {/* ═══ Stories Tab ═══════════════════════ */}
-        {activeTab === 'stories' && (
+        {/* ═══ For You / All Stories ═══════════════ */}
+        {isStoryTab && (
           <>
-            {isGuest && !user && renderGuestBanner()}
+            {/* "For You" gentle banner when no portrait available */}
+            {activeTab === 'forYou' && !attachmentStyle && initialLoadDone.current && (
+              <EmptyState
+                Icon={SparkleIcon}
+                title="Personalized stories"
+                subtitle="Complete your Tender Assessment to see stories matched to your attachment style. Showing all stories for now."
+              />
+            )}
 
             {loadingPosts && posts.length === 0 ? (
               <ActivityIndicator style={st.loader} color={Colors.primary} />
-            ) : posts.length === 0 ? (
+            ) : posts.length === 0 && initialLoadDone.current ? (
               <EmptyState
-                icon={ThoughtBubbleIcon}
-                title="It's quiet here"
-                message="No stories match your filters right now. Check back soon, or be the first to share."
-                ctaText={user && !isGuest ? 'Share Your Story' : undefined}
-                ctaOnPress={user && !isGuest ? () => setShowCompose(true) : undefined}
+                Icon={ThoughtBubbleIcon}
+                title="No stories yet"
+                subtitle="Be the first to share. Your experience might be exactly what someone else needs to hear."
+                actionLabel={user && !isGuest ? 'Share a Story' : undefined}
+                onAction={user && !isGuest ? () => setShowCompose(true) : undefined}
               />
             ) : (
-              posts.map(renderPostCard)
+              posts.map((post) => (
+                <StoryCard
+                  key={post.id}
+                  post={post}
+                  onReaction={handleReaction}
+                  onReport={handleReport}
+                />
+              ))
             )}
           </>
         )}
 
-        {/* ═══ Resources Tab ════════════════════ */}
-        {activeTab === 'resources' && (
-          <>
-            <Text style={st.sectionLabel}>
-              {activeCategory === 'All'
-                ? 'ALL ARTICLES'
-                : activeCategory.toUpperCase()}
-            </Text>
+        {/* ═══ Letters ═════════════════════════════ */}
+        {activeTab === 'letters' && (
+          <LetterDesk
+            weeklyPrompt={weeklyPrompt}
+            receivedLetters={receivedLetters}
+            sentCount={letterSentCount}
+            loading={loadingLetters}
+            onCompose={() => setShowLetterCompose(true)}
+            onOpenLetter={handleOpenLetter}
+          />
+        )}
 
-            {filteredResources.length === 0 ? (
-              <EmptyState
-                icon={MailboxIcon}
-                title="Coming soon"
-                message="No articles in this category yet. Check back soon!"
-              />
-            ) : (
-              filteredResources.map(renderResourceCard)
-            )}
-
-            {/* Request Content card */}
-            <View style={st.requestCard}>
-              <LightbulbIcon size={32} color={Colors.depth} />
-              <Text style={st.requestTitle}>
-                Have a topic you'd like us to cover?
-              </Text>
-              <Text style={st.requestSubtitle}>
-                Let us know what relationship topics matter most to you.
-              </Text>
-              <TouchableOpacity
-                style={st.requestButton}
-                onPress={() =>
-                  Alert.alert(
-                    'Request Submitted',
-                    'Thanks for your interest! We will consider your suggestion.',
-                    [{ text: 'OK' }]
-                  )
-                }
-                activeOpacity={0.7}
-              >
-                <Text style={st.requestButtonText}>Request Content</Text>
-              </TouchableOpacity>
-            </View>
-          </>
+        {/* ═══ Circle (locked) ═══════════════════ */}
+        {activeTab === 'circle' && (
+          <EmptyState
+            Icon={LockIcon}
+            title="Circle — Coming Soon"
+            subtitle="Small, time-limited support groups where you can share openly and grow together."
+          />
         )}
 
         <View style={{ height: Spacing.xxl }} />
       </ScrollView>
 
-      {/* Compose FAB (stories tab only, authenticated only) */}
-      {activeTab === 'stories' && user && !isGuest && (
-        <TouchableOpacity
-          style={st.fab}
-          onPress={() => setShowCompose(true)}
-          activeOpacity={0.8}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <PenIcon size={16} color={Colors.white} />
-            <Text style={st.fabText}>Share</Text>
-          </View>
-        </TouchableOpacity>
+      {/* FAB (stories only) */}
+      <FAB
+        visible={showFab}
+        onPress={() => setShowCompose(true)}
+      />
+
+      {/* Compose flow (stories) */}
+      {alias && (
+        <ComposeFlow
+          visible={showCompose}
+          alias={alias}
+          onDismiss={() => setShowCompose(false)}
+          onSubmit={handleSubmitStory}
+          submitting={submitting}
+        />
       )}
 
-      {/* Compose modal */}
-      {renderComposeModal()}
+      {/* Letter compose flow */}
+      {alias && (
+        <LetterFlow
+          visible={showLetterCompose}
+          alias={alias}
+          weeklyPrompt={weeklyPrompt}
+          onDismiss={() => setShowLetterCompose(false)}
+          onSubmit={handleSubmitLetter}
+          submitting={letterSubmitting}
+        />
+      )}
+
+      {/* Welcome modal (first visit) */}
+      {alias && (
+        <WelcomeModal
+          visible={showWelcome}
+          alias={alias}
+          onDismiss={() => setShowWelcome(false)}
+        />
+      )}
 
       {/* FTUE Overlays */}
       <TooltipManager screen="community" />
@@ -748,427 +541,14 @@ export default function CommunityScreen() {
 // ─── Styles ─────────────────────────────────────────────
 
 const st = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background },
-  scrollContent: { paddingHorizontal: Spacing.xl, paddingBottom: Spacing.xxxl },
-
-  // Header
-  header: { paddingHorizontal: Spacing.xl, paddingTop: Spacing.md, marginBottom: Spacing.sm },
-  backText: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.primary,
-    fontWeight: '600',
-  },
-  titleSection: {
-    paddingHorizontal: Spacing.xl,
-    gap: Spacing.xs,
-    marginBottom: Spacing.md,
-  },
-  pageTitle: {
-    fontSize: FontSizes.headingL,
-    fontWeight: '700',
-    fontFamily: FontFamilies.heading,
-    color: Colors.text,
-  },
-  pageSubtitle: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.textSecondary,
-    lineHeight: 22,
-  },
-
-  // Tab bar
-  tabBar: {
-    flexDirection: 'row',
-    marginHorizontal: Spacing.xl,
-    marginBottom: Spacing.md,
-    backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.md,
-    padding: 3,
-  },
-  tab: {
+  container: {
     flex: 1,
-    paddingVertical: Spacing.sm,
-    alignItems: 'center',
-    borderRadius: BorderRadius.sm,
-  },
-  tabActive: {
-    backgroundColor: Colors.primary,
-  },
-  tabText: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '600',
-    color: Colors.textSecondary,
-  },
-  tabTextActive: {
-    color: Colors.white,
-  },
-
-  // Category pills
-  categoryScroll: {
-    marginBottom: Spacing.md,
-  },
-  categoryRow: {
-    paddingHorizontal: Spacing.xl,
-    gap: Spacing.sm,
-    flexDirection: 'row',
-  },
-  categoryPill: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.pill,
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
-  },
-  categoryPillActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  categoryPillText: {
-    fontSize: FontSizes.caption,
-    fontWeight: '600',
-    color: Colors.textSecondary,
-  },
-  categoryPillTextActive: {
-    color: Colors.white,
-  },
-
-  // Section label
-  sectionLabel: {
-    fontSize: FontSizes.caption,
-    fontWeight: '700',
-    color: Colors.textMuted,
-    letterSpacing: 1.5,
-    marginTop: Spacing.sm,
-    marginBottom: Spacing.md,
-  },
-
-  // ── Post cards (Stories) ──────────────────
-  postCard: {
-    backgroundColor: Colors.surfaceElevated,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
-    gap: Spacing.sm,
-    marginBottom: Spacing.sm,
-    ...Shadows.subtle,
-  },
-  postBadgeRow: {
-    flexDirection: 'row',
-    gap: Spacing.xs,
-  },
-  categoryBadge: {
-    backgroundColor: Colors.primary + '15',
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 2,
-    borderRadius: BorderRadius.pill,
-  },
-  categoryBadgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: Colors.primary,
-    letterSpacing: 0.3,
-  },
-  phaseBadge: {
-    backgroundColor: Colors.secondary + '15',
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 2,
-    borderRadius: BorderRadius.pill,
-  },
-  phaseBadgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: Colors.secondary,
-    letterSpacing: 0.3,
-  },
-  postContent: {
-    fontSize: FontSizes.body,
-    color: Colors.text,
-    lineHeight: 24,
-  },
-  postFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: Spacing.xs,
-  },
-  resonatedButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 4,
-    borderRadius: BorderRadius.pill,
-    backgroundColor: Colors.surface,
-  },
-  resonatedButtonActive: {
-    backgroundColor: Colors.secondary + '15',
-  },
-  resonatedIcon: {
-    fontSize: 14,
-  },
-  resonatedText: {
-    fontSize: FontSizes.caption,
-    color: Colors.textSecondary,
-    fontWeight: '500',
-  },
-  resonatedTextActive: {
-    color: Colors.secondary,
-    fontWeight: '600',
-  },
-  postTime: {
-    fontSize: FontSizes.caption,
-    color: Colors.textMuted,
-  },
-  reportText: {
-    fontSize: 14,
-    opacity: 0.5,
-  },
-
-  // ── Content cards (Resources) ─────────────
-  contentCard: {
-    backgroundColor: Colors.surfaceElevated,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
-    gap: Spacing.sm,
-    marginBottom: Spacing.sm,
-    ...Shadows.subtle,
-  },
-  contentCardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  contentCardIcon: { fontSize: 24 },
-  contentCardTitle: {
-    fontSize: FontSizes.body,
-    fontWeight: '600',
-    fontFamily: FontFamilies.heading,
-    color: Colors.text,
-    lineHeight: 22,
-  },
-  contentCardDescription: {
-    fontSize: FontSizes.caption,
-    color: Colors.textSecondary,
-    lineHeight: 18,
-  },
-  contentCardFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.xs,
-    marginTop: 2,
-  },
-  contentCardMeta: {
-    fontSize: 11,
-    color: Colors.textMuted,
-    fontWeight: '500',
-  },
-  contentCardDot: {
-    fontSize: 11,
-    color: Colors.textMuted,
-  },
-
-  // ── Empty state ───────────────────────────
-  emptyState: {
-    alignItems: 'center',
-    padding: Spacing.xxl,
-    gap: Spacing.sm,
-  },
-  emptyIcon: { fontSize: 40 },
-  emptyTitle: {
-    fontSize: FontSizes.body,
-    fontWeight: '600',
-    color: Colors.text,
-  },
-  emptyText: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-
-  // ── Guest banner ──────────────────────────
-  guestBanner: {
-    backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
-    gap: Spacing.sm,
-    marginBottom: Spacing.md,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
-  },
-  guestBannerText: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-  },
-  guestBannerLink: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.primary,
-    fontWeight: '700',
-  },
-
-  // ── Request content ───────────────────────
-  requestCard: {
-    backgroundColor: Colors.depth + '10',
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.lg,
-    gap: Spacing.sm,
-    marginTop: Spacing.lg,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.depth + '20',
-  },
-  requestIcon: { fontSize: 32 },
-  requestTitle: {
-    fontSize: FontSizes.body,
-    fontWeight: '700',
-    fontFamily: FontFamilies.heading,
-    color: Colors.text,
-    textAlign: 'center',
-  },
-  requestSubtitle: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  requestButton: {
-    borderWidth: 1,
-    borderColor: Colors.depth,
-    height: ButtonSizes.small,
-    borderRadius: BorderRadius.pill,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.lg,
-    marginTop: Spacing.xs,
-  },
-  requestButtonText: {
-    fontSize: FontSizes.caption,
-    fontWeight: '700',
-    color: Colors.depth,
-  },
-
-  // ── FAB ───────────────────────────────────
-  fab: {
-    position: 'absolute',
-    bottom: Spacing.xl,
-    right: Spacing.xl,
-    backgroundColor: Colors.primary,
-    borderRadius: BorderRadius.pill,
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
-    ...Shadows.elevated,
-  },
-  fabText: {
-    color: Colors.white,
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '700',
-  },
-
-  // ── Compose modal ─────────────────────────
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
     backgroundColor: Colors.background,
-    borderTopLeftRadius: BorderRadius.lg,
-    borderTopRightRadius: BorderRadius.lg,
-    padding: Spacing.xl,
-    maxHeight: '85%',
   },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.md,
+  scrollContent: {
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.xxxl,
   },
-  modalTitle: {
-    fontSize: FontSizes.headingM,
-    fontWeight: '700',
-    fontFamily: FontFamilies.heading,
-    color: Colors.text,
-  },
-  modalClose: {
-    fontSize: FontSizes.headingM,
-    color: Colors.textMuted,
-    padding: Spacing.xs,
-  },
-  modalHint: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.textSecondary,
-    lineHeight: 20,
-    marginBottom: Spacing.md,
-  },
-  composeInput: {
-    backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
-    fontSize: FontSizes.body,
-    color: Colors.text,
-    minHeight: 120,
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
-    lineHeight: 22,
-  },
-  charCount: {
-    fontSize: FontSizes.caption,
-    color: Colors.textMuted,
-    textAlign: 'right',
-    marginTop: 4,
-    marginBottom: Spacing.md,
-  },
-  pickerLabel: {
-    fontSize: FontSizes.caption,
-    fontWeight: '700',
-    color: Colors.textMuted,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-    marginBottom: Spacing.sm,
-  },
-  composeCategoryRow: {
-    gap: Spacing.xs,
-    flexDirection: 'row',
-    marginBottom: Spacing.lg,
-  },
-  composeCategoryPill: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.pill,
-    backgroundColor: Colors.surface,
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
-  },
-  composeCategoryPillActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  composeCategoryText: {
-    fontSize: FontSizes.caption,
-    fontWeight: '600',
-    color: Colors.textSecondary,
-  },
-  composeCategoryTextActive: {
-    color: Colors.white,
-  },
-  submitButton: {
-    backgroundColor: Colors.primary,
-    height: ButtonSizes.medium,
-    borderRadius: BorderRadius.pill,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  submitButtonDisabled: {
-    opacity: 0.6,
-  },
-  submitButtonText: {
-    color: Colors.white,
-    fontSize: FontSizes.body,
-    fontWeight: '600',
-  },
-
-  // ── Loader ────────────────────────────────
   loader: {
     marginTop: Spacing.xxl,
   },
