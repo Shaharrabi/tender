@@ -1,8 +1,12 @@
 /**
- * Tour Steps — Defines the guided walkthrough tour for first launch.
+ * Tour Steps — Short guided intro for first launch.
  *
- * The main app tour runs on the home screen the first time a user logs in.
- * It highlights key sections and explains what they do.
+ * Stripped down to 2 steps:
+ * 1. Welcome — centered modal, warm greeting
+ * 2. Assessment CTA — spotlight on the assessment card
+ *
+ * After these 2 steps, the app unlocks and the user can scroll freely.
+ * Highlights and tooltips then guide them to key features naturally.
  */
 
 export interface TourStep {
@@ -35,50 +39,15 @@ export const HOME_TOUR: Tour = {
       id: 'tour_welcome',
       targetRef: 'none',
       title: 'Welcome to Tender',
-      body: "Let me show you around. This will only take a minute.",
+      body: "A space for your relationship to grow. Let me show you where to start.",
       position: 'center',
     },
     {
       id: 'tour_assessment',
       targetRef: 'home_assessmentCta',
-      title: 'Start with the Assessment',
-      body: 'This is where your journey begins. Seven chapters that reveal how you show up in love.',
+      title: 'Start Here',
+      body: 'Your journey begins with the Tender Assessment \u2014 seven chapters that reveal how you show up in love. You can pause anytime.',
       position: 'bottom',
-    },
-    {
-      id: 'tour_portrait',
-      targetRef: 'home_portraitCard',
-      title: 'Your Portrait',
-      body: "Once you complete the assessment, you'll unlock a personalized map of your patterns.",
-      position: 'bottom',
-    },
-    {
-      id: 'tour_courses',
-      targetRef: 'home_coursesCard',
-      title: 'Courses',
-      body: 'Short lessons to help you understand and shift your patterns. Start anytime.',
-      position: 'bottom',
-    },
-    {
-      id: 'tour_journal',
-      targetRef: 'home_journalCard',
-      title: 'Your Journal',
-      body: 'Everything you do in Tender lives here. Your memory bank of growth.',
-      position: 'bottom',
-    },
-    {
-      id: 'tour_community',
-      targetRef: 'home_communityCard',
-      title: 'Community',
-      body: "You're not alone. Anonymous stories from people on a similar path.",
-      position: 'bottom',
-    },
-    {
-      id: 'tour_complete',
-      targetRef: 'none',
-      title: "You're ready",
-      body: "Whenever you're ready, start with the assessment. Take your time.",
-      position: 'center',
     },
   ],
 };

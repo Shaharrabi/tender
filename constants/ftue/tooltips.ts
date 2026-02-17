@@ -1,8 +1,11 @@
 /**
- * Tooltip Configs — All 27 contextual tooltips across the app.
+ * Tooltip Configs — Contextual tooltips across the app.
  *
  * Each tooltip shows once, then is tracked as "seen" in FirstTimeContext.
  * Tooltips are managed per-screen by the TooltipManager component.
+ *
+ * Home screen: Only 4 tooltips for key features (assessment, courses,
+ * journal, community). The app auto-scrolls to each target.
  */
 
 export type TooltipPosition = 'top' | 'bottom';
@@ -28,27 +31,17 @@ export interface TooltipConfig {
 
 export const TOOLTIP_CONFIGS: TooltipConfig[] = [
   // ═══════════════════════════════════════════════════════════
-  // HOME SCREEN
+  // HOME SCREEN — 4 key features only
   // ═══════════════════════════════════════════════════════════
   {
     id: 'tooltip_home_assessment',
     screen: 'home',
     targetRef: 'home_assessmentCta',
-    title: 'Start here ✨',
-    body: 'The Tender Assessment takes about an hour — but you can pause anytime and pick up where you left off.',
+    title: 'Start here',
+    body: 'The Tender Assessment takes about an hour \u2014 but you can pause anytime and pick up where you left off.',
     ctaText: 'Got it',
     position: 'bottom',
     order: 1,
-  },
-  {
-    id: 'tooltip_home_portrait',
-    screen: 'home',
-    targetRef: 'home_portraitCard',
-    title: 'Your Portrait awaits',
-    body: 'Complete the assessment to unlock a personalized map of how you love.',
-    ctaText: 'Got it',
-    position: 'bottom',
-    order: 2,
   },
   {
     id: 'tooltip_home_courses',
@@ -58,7 +51,7 @@ export const TOOLTIP_CONFIGS: TooltipConfig[] = [
     body: 'Each course is 5 short lessons. Start with whatever calls to you.',
     ctaText: 'Got it',
     position: 'bottom',
-    order: 3,
+    order: 2,
   },
   {
     id: 'tooltip_home_journal',
@@ -68,37 +61,17 @@ export const TOOLTIP_CONFIGS: TooltipConfig[] = [
     body: "Every practice and check-in lives here. Come back anytime to see how far you've come.",
     ctaText: 'Got it',
     position: 'bottom',
-    order: 4,
+    order: 3,
   },
   {
     id: 'tooltip_home_community',
     screen: 'home',
     targetRef: 'home_communityCard',
     title: "You're not alone",
-    body: 'Anonymous stories from people on a similar path — filtered just for you.',
+    body: 'Anonymous stories from people on a similar path \u2014 filtered just for you.',
     ctaText: 'Got it',
     position: 'bottom',
-    order: 5,
-  },
-  {
-    id: 'tooltip_home_xp',
-    screen: 'home',
-    targetRef: 'home_xpBar',
-    title: 'Rhythm, not perfection',
-    body: "This tracks your engagement — not to pressure you, just to celebrate showing up.",
-    ctaText: 'Got it',
-    position: 'bottom',
-    order: 6,
-  },
-  {
-    id: 'tooltip_home_streak',
-    screen: 'home',
-    targetRef: 'home_streakBanner',
-    title: 'Streaks are gentle here',
-    body: "Miss a day? No shame. Life happens. Just come back when you can.",
-    ctaText: 'Got it',
-    position: 'bottom',
-    order: 7,
+    order: 4,
   },
 
   // ═══════════════════════════════════════════════════════════
@@ -192,16 +165,6 @@ export const TOOLTIP_CONFIGS: TooltipConfig[] = [
     position: 'bottom',
     order: 1,
   },
-  {
-    id: 'tooltip_courses_reflection',
-    screen: 'courses',
-    targetRef: 'courses_reflectionInput',
-    title: 'Just for you',
-    body: 'What you write here helps Nuance understand your journey better.',
-    ctaText: 'Got it',
-    position: 'top',
-    order: 2,
-  },
 
   // ═══════════════════════════════════════════════════════════
   // JOURNAL SCREEN
@@ -215,16 +178,6 @@ export const TOOLTIP_CONFIGS: TooltipConfig[] = [
     ctaText: 'Got it',
     position: 'bottom',
     order: 1,
-  },
-  {
-    id: 'tooltip_journal_mood',
-    screen: 'journal',
-    targetRef: 'journal_moodCheckin',
-    title: 'Quick pulse check',
-    body: 'How are you feeling in your relationship right now? Track it over time.',
-    ctaText: 'Check in',
-    position: 'bottom',
-    order: 2,
   },
 
   // ═══════════════════════════════════════════════════════════
@@ -240,16 +193,6 @@ export const TOOLTIP_CONFIGS: TooltipConfig[] = [
     position: 'bottom',
     order: 1,
   },
-  {
-    id: 'tooltip_community_theme',
-    screen: 'community',
-    targetRef: 'community_weeklyTheme',
-    title: "This week's focus",
-    body: 'A shared theme the whole community is exploring. Join in if it speaks to you.',
-    ctaText: 'Got it',
-    position: 'bottom',
-    order: 2,
-  },
 
   // ═══════════════════════════════════════════════════════════
   // NUANCE CHAT
@@ -259,44 +202,10 @@ export const TOOLTIP_CONFIGS: TooltipConfig[] = [
     screen: 'chat',
     targetRef: 'chat_entry',
     title: 'Meet Nuance',
-    body: 'Your AI coach — here to help you make sense of your patterns and practice something new.',
+    body: 'Your AI coach \u2014 here to help you make sense of your patterns and practice something new.',
     ctaText: 'Say hi',
     position: 'top',
     order: 1,
-  },
-  {
-    id: 'tooltip_nuance_nudge',
-    screen: 'chat',
-    targetRef: 'chat_nudge',
-    title: 'A gentle nudge',
-    body: 'Nuance learns what you need. These suggestions are tailored just for you.',
-    ctaText: 'Got it',
-    position: 'top',
-    order: 2,
-  },
-
-  // ═══════════════════════════════════════════════════════════
-  // SETTINGS
-  // ═══════════════════════════════════════════════════════════
-  {
-    id: 'tooltip_settings_privacy',
-    screen: 'settings',
-    targetRef: 'settings_privacy',
-    title: "You're in control",
-    body: "Decide what's shared, what's private, and who sees what. Always.",
-    ctaText: 'Got it',
-    position: 'bottom',
-    order: 1,
-  },
-  {
-    id: 'tooltip_settings_notifications',
-    screen: 'settings',
-    targetRef: 'settings_notifications',
-    title: 'Your pace, your terms',
-    body: "Turn nudges on or off. We'll never spam you.",
-    ctaText: 'Got it',
-    position: 'bottom',
-    order: 2,
   },
 ];
 

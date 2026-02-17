@@ -189,6 +189,8 @@ export default function HomeScreen() {
   const { state: ftueState, loading: ftueLoading, markTourCompleted, markFirstLaunchComplete } = useFirstTime();
   const router = useRouter();
   const [showTour, setShowTour] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
+  const scrollOffset = useRef(0);
 
   // Assessment state
   const [statuses, setStatuses] = useState<Record<string, CardStatus>>({});
@@ -919,8 +921,11 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
+        ref={scrollRef}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        onScroll={(e) => { scrollOffset.current = e.nativeEvent.contentOffset.y; }}
+        scrollEventThrottle={16}
       >
         {/* ═══ 1. GREETING + JOURNEY CONTEXT ═══════════════════ */}
         <View style={styles.heroSection}>
@@ -1013,19 +1018,15 @@ export default function HomeScreen() {
         {/* ═══ XP & LEVEL PROGRESS ═══════════════════════════ */}
         {!isGuest && (
           <View
-            ref={(r) => RefRegistry.register('home_xpBar', r)}
             style={{ paddingHorizontal: Spacing.lg, marginBottom: Spacing.md }}
           >
-            <HighlightWrapper highlightId="home_xp_bar" enabled={!ftueState.isFirstLaunch}>
-              <XPProgressBar />
-            </HighlightWrapper>
+            <XPProgressBar />
           </View>
         )}
 
         {/* ═══ 2. TODAY'S FOCUS (ONE THING) ═══════════════════ */}
         {todaysExercise ? (
           <View style={styles.todaysFocusSection}>
-            <HighlightWrapper highlightId="home_practice_card">
             <TouchableOpacity
               style={styles.todaysFocusCard}
               onPress={() =>
@@ -1051,7 +1052,6 @@ export default function HomeScreen() {
                 </Text>
               </View>
             </TouchableOpacity>
-            </HighlightWrapper>
           </View>
         ) : completedCount > 0 ? (
           <View style={styles.todaysFocusSection}>
@@ -1510,7 +1510,11 @@ export default function HomeScreen() {
               const refKey = card.key === 'courses' ? 'home_coursesCard'
                 : card.key === 'community' ? 'home_communityCard'
                 : null;
-              return (
+              // Highlight IDs for post-tour gold pulse
+              const highlightId = card.key === 'courses' ? 'home_courses_card'
+                : card.key === 'community' ? 'home_community_card'
+                : null;
+              const cardContent = (
                 <TouchableOpacity
                   key={card.key}
                   ref={refKey ? (r: any) => RefRegistry.register(refKey, r) : undefined}
@@ -1537,6 +1541,13 @@ export default function HomeScreen() {
                     </Text>
                   )}
                 </TouchableOpacity>
+              );
+              return highlightId ? (
+                <HighlightWrapper key={card.key} highlightId={highlightId}>
+                  {cardContent}
+                </HighlightWrapper>
+              ) : (
+                <React.Fragment key={card.key}>{cardContent}</React.Fragment>
               );
             })}
           </View>
@@ -1664,7 +1675,7 @@ export default function HomeScreen() {
       {showTour && (
         <GuidedTour tour={HOME_TOUR} onComplete={handleTourComplete} />
       )}
-      <TooltipManager screen="home" />
+      <TooltipManager screen="home" scrollRef={scrollRef} scrollOffset={scrollOffset} />
       <WelcomeAudio screenKey="home" />
     </SafeAreaView>
   );

@@ -3,6 +3,9 @@
  *
  * Each highlight runs once on first view, then is tracked as "seen"
  * in FirstTimeContext and never replays.
+ *
+ * Post-tour, only 4 key home features get highlighted:
+ * Assessment, Courses, Journal, Community.
  */
 
 export interface HighlightConfig {
@@ -15,36 +18,26 @@ export interface HighlightConfig {
 }
 
 export const HIGHLIGHT_CONFIGS: HighlightConfig[] = [
-  // ─── Home Screen ─────────────────────────────────────────
+  // ─── Home Screen (4 key features) ─────────────────────
   {
     id: 'home_assessment_cta',
     screen: 'home',
     description: 'The main Tender Assessment CTA card',
   },
   {
-    id: 'home_practice_card',
+    id: 'home_courses_card',
     screen: 'home',
-    description: "Today's recommended practice card",
+    description: 'Courses feature card in explore grid',
   },
   {
-    id: 'home_journal',
+    id: 'home_journal_card',
     screen: 'home',
     description: 'Journal feature card in explore grid',
   },
   {
-    id: 'home_nuance',
+    id: 'home_community_card',
     screen: 'home',
-    description: 'Nuance AI coach feature card',
-  },
-  {
-    id: 'home_xp_bar',
-    screen: 'home',
-    description: 'XP progress bar at top',
-  },
-  {
-    id: 'home_streak',
-    screen: 'home',
-    description: 'Streak banner',
+    description: 'Community feature card in explore grid',
   },
 
   // ─── Assessment Screen ───────────────────────────────────
@@ -79,21 +72,11 @@ export const HIGHLIGHT_CONFIGS: HighlightConfig[] = [
     screen: 'community',
     description: 'First story card in the feed',
   },
-  {
-    id: 'community_resources',
-    screen: 'community',
-    description: 'Resources tab content',
-  },
 
   // ─── Journal Screen ──────────────────────────────────────
   {
     id: 'journal_calendar',
     screen: 'journal',
     description: 'Calendar section',
-  },
-  {
-    id: 'journal_checkin',
-    screen: 'journal',
-    description: 'Daily check-in section',
   },
 ];
