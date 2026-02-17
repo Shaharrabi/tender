@@ -45,6 +45,7 @@ import { saveCompletion } from '@/services/intervention';
 import { incrementPracticeCount, addInsight, upsertGrowthEdge } from '@/services/growth';
 import { getPortrait } from '@/services/portrait';
 import { getCourseById } from '@/utils/microcourses/course-registry';
+import { MC1CourseFlow } from '@/components/microcourse/mc1/MC1CourseFlow';
 import {
   getLesson,
   getLessonContent,
@@ -52,6 +53,7 @@ import {
   type ResolvedLessonContent,
 } from '@/utils/microcourses/course-content';
 import type { AttachmentStyle } from '@/types';
+import type { StepResponseEntry } from '@/types/intervention';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -180,17 +182,24 @@ export default function MicroCourseScreen() {
     }
   };
 
-  const handleComplete = async () => {
+  const handleComplete = async (stepResponses?: StepResponseEntry[]) => {
     if (!lesson || !user || saving) return;
     setSaving(true);
+
+    // If stepResponses provided (from MC1), extract reflection from them
+    const reflection = stepResponses
+      ? stepResponses.find(s => s.type === 'reflection')?.response || reflectionText.trim()
+      : reflectionText.trim();
 
     try {
       // Save lesson completion
       await saveCompletion(
         user.id,
         lesson.id,
-        reflectionText.trim() || undefined,
-        undefined
+        reflection || undefined,
+        undefined,
+        stepResponses,
+        lesson.title
       );
 
       // Update growth tracking
@@ -199,8 +208,8 @@ export default function MicroCourseScreen() {
         try {
           await upsertGrowthEdge(user.id, edgeId, {});
           await incrementPracticeCount(user.id, edgeId);
-          if (reflectionText.trim()) {
-            await addInsight(user.id, edgeId, reflectionText.trim());
+          if (reflection) {
+            await addInsight(user.id, edgeId, reflection);
           }
         } catch {
           // Growth tracking is best-effort
@@ -266,6 +275,24 @@ export default function MicroCourseScreen() {
           </TouchableOpacity>
         </View>
       </SafeAreaView>
+    );
+  }
+
+  // ─── MC1 Interactive Flow ────────────────────
+
+  if (courseId === 'mc-attachment-101' && !completed) {
+    return (
+      <MC1CourseFlow
+        lessonNumber={lessonNum}
+        totalLessons={totalLessons}
+        attachmentStyle={attachmentStyle}
+        content={content}
+        lesson={lesson}
+        course={course}
+        onComplete={handleComplete}
+        onExit={handleExit}
+        saving={saving}
+      />
     );
   }
 
