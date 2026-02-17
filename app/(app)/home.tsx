@@ -682,24 +682,12 @@ export default function HomeScreen() {
       card.category === 'result' && unlockState?.[card.key] === true
   );
 
-  // Feature cards for the grid
-  const featureGridCards = FEATURE_CARDS.filter(
-    (card) =>
-      card.category === 'feature' &&
-      ['treatmentPlan', 'findTherapist', 'practices', 'courses', 'couplesPortal', 'community'].includes(
-        card.key
-      )
-  );
-  // Also add couple portal
-  const couplePortalCard = FEATURE_CARDS.find(
-    (card) => card.key === 'couplesPortal'
-  );
-  const gridCards = [
-    ...featureGridCards,
-    ...(couplePortalCard && !featureGridCards.find((c) => c.key === 'couplesPortal')
-      ? [couplePortalCard]
-      : []),
-  ];
+  // Feature cards for the grid — ordered so tooltip targets (courses, community)
+  // appear right after the fixed cards (journal, nuance) for natural top-to-bottom flow.
+  const gridCardOrder = ['courses', 'community', 'practices', 'treatmentPlan', 'findTherapist', 'couplesPortal'];
+  const gridCards = gridCardOrder
+    .map((key) => FEATURE_CARDS.find((c) => c.key === key && (c.category === 'feature' || c.category === 'couple')))
+    .filter((c): c is NonNullable<typeof c> => c != null);
 
   // Recommended exercise — prioritize exercises from current Step
   const allExercises = getAllExercises();

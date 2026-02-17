@@ -31,7 +31,8 @@ export interface TooltipConfig {
 
 export const TOOLTIP_CONFIGS: TooltipConfig[] = [
   // ═══════════════════════════════════════════════════════════
-  // HOME SCREEN — 4 key features only
+  // HOME SCREEN — follows visual top-to-bottom layout order
+  // Assessment → Journal → Nuance AI → Courses → Community
   // ═══════════════════════════════════════════════════════════
   {
     id: 'tooltip_home_assessment',
@@ -44,16 +45,6 @@ export const TOOLTIP_CONFIGS: TooltipConfig[] = [
     order: 1,
   },
   {
-    id: 'tooltip_home_courses',
-    screen: 'home',
-    targetRef: 'home_coursesCard',
-    title: 'Bite-sized growth',
-    body: 'Each course is 5 short lessons. Start with whatever calls to you.',
-    ctaText: 'Got it',
-    position: 'bottom',
-    order: 2,
-  },
-  {
     id: 'tooltip_home_journal',
     screen: 'home',
     targetRef: 'home_journalCard',
@@ -61,7 +52,7 @@ export const TOOLTIP_CONFIGS: TooltipConfig[] = [
     body: "Every practice and check-in lives here. Come back anytime to see how far you've come.",
     ctaText: 'Got it',
     position: 'bottom',
-    order: 3,
+    order: 2,
   },
   {
     id: 'tooltip_home_nuance',
@@ -69,6 +60,16 @@ export const TOOLTIP_CONFIGS: TooltipConfig[] = [
     targetRef: 'home_nuanceCard',
     title: 'Meet Nuance AI',
     body: 'Your relationship coach \u2014 here to help you make sense of patterns and practice something new.',
+    ctaText: 'Got it',
+    position: 'bottom',
+    order: 3,
+  },
+  {
+    id: 'tooltip_home_courses',
+    screen: 'home',
+    targetRef: 'home_coursesCard',
+    title: 'Bite-sized growth',
+    body: 'Each course is 5 short lessons. Start with whatever calls to you.',
     ctaText: 'Got it',
     position: 'bottom',
     order: 4,
