@@ -5,16 +5,17 @@
  * and shows them one at a time in order. When one is dismissed,
  * the next one appears.
  *
+ * IMPORTANT: The tooltip queue is captured once on initialization.
+ * As tooltips are marked seen, the queue does NOT shrink — only the
+ * currentIndex advances. This prevents the off-by-one bug where
+ * marking a tooltip seen would shrink the array and skip the next one.
+ *
  * Auto-scroll: If a scrollRef + scrollOffset are provided, the manager
  * scrolls the target element into view before showing each tooltip.
  * The app "moves to" each feature naturally.
  *
- * For off-screen elements, uses measureLayout (which works regardless
- * of viewport position) combined with scroll offset to calculate
- * where to scroll.
- *
  * Flow order: Tour completes → isFirstLaunch becomes false →
- *             Highlights run (~1.2s) → Tooltips appear with scroll
+ *             Highlights run (~0.5s) → Tooltips appear with scroll
  *
  * Usage (add to any screen):
  *   const scrollOffset = useRef(0);
@@ -22,7 +23,7 @@
  *   <TooltipManager screen="home" scrollRef={scrollViewRef} scrollOffset={scrollOffset} />
  */
 
-import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ScrollView, Dimensions } from 'react-native';
 import { useFirstTime } from '@/context/FirstTimeContext';
 import { getTooltipsForScreen, TooltipConfig } from '@/constants/ftue/tooltips';
@@ -52,16 +53,28 @@ export const TooltipManager: React.FC<TooltipManagerProps> = ({
   const [scrolledAndReady, setScrolledAndReady] = useState(false);
   const wasFirstLaunch = useRef(state.isFirstLaunch);
 
-  // Get unseen tooltips for this screen
-  const unseenTooltips = useMemo(() => {
-    if (loading) return [];
+  // Capture the tooltip queue ONCE when we first become ready.
+  // This prevents the list from shrinking as we mark tooltips seen,
+  // which would cause index misalignment and skip tooltips.
+  const [tooltipQueue, setTooltipQueue] = useState<TooltipConfig[]>([]);
+  const queueInitialized = useRef(false);
+
+  // Initialize the queue once loading is done
+  useEffect(() => {
+    if (loading || queueInitialized.current) return;
+
     const all = getTooltipsForScreen(screen);
-    return all.filter((t) => !state.seenTooltips.includes(t.id));
-  }, [screen, state.seenTooltips, loading]);
+    const unseen = all.filter((t) => !state.seenTooltips.includes(t.id));
+
+    if (unseen.length > 0) {
+      setTooltipQueue(unseen);
+      queueInitialized.current = true;
+    }
+  }, [screen, loading, state.seenTooltips]);
 
   // Wait for the right moment to show tooltips
   useEffect(() => {
-    if (!enabled || loading || unseenTooltips.length === 0) {
+    if (!enabled || loading || tooltipQueue.length === 0) {
       setReady(false);
       return;
     }
@@ -71,7 +84,7 @@ export const TooltipManager: React.FC<TooltipManagerProps> = ({
       return;
     }
 
-    // After tour: short wait for highlights to finish (~1.2s animation)
+    // After tour: short wait for highlights to finish (~0.5s animation)
     // Then tooltips start. 500ms feels snappy after the welcome modal.
     const delay = wasFirstLaunch.current ? 500 : 400;
     wasFirstLaunch.current = false;
@@ -84,7 +97,7 @@ export const TooltipManager: React.FC<TooltipManagerProps> = ({
       clearTimeout(timer);
       setReady(false);
     };
-  }, [enabled, loading, unseenTooltips.length, state.isFirstLaunch]);
+  }, [enabled, loading, tooltipQueue.length, state.isFirstLaunch]);
 
   // Auto-scroll to target when ready or index changes
   const scrollToTarget = useCallback(async (tooltip: TooltipConfig) => {
@@ -129,31 +142,18 @@ export const TooltipManager: React.FC<TooltipManagerProps> = ({
 
     // Element is off-screen (measureInWindow returned null).
     // Use measureLayout which works for off-screen elements in ScrollViews.
-    // measureLayout gives the position relative to the root view, which for
-    // elements inside a ScrollView means the absolute content position.
     const layoutMeasurement = await RefRegistry.measureLayout(tooltip.targetRef);
 
     if (layoutMeasurement) {
-      // layoutMeasurement.y is the element's Y position in the scroll content
-      // (actually it's pageY which accounts for scroll offset already,
-      // but for off-screen elements it gives the content-absolute position)
-      // We want to scroll so the element ends up at desiredScreenY on screen.
-      // The element's content Y = currentOffset + layoutMeasurement.y (since it's off-screen,
-      // pageY may be negative or very large).
-      // Better approach: element's Y in content = currentOffset + screenY
-      // But if it's off-screen, we can estimate: the element is below the viewport
-      // so its content position ~ currentOffset + screenHeight + some amount.
-      // Actually, ref.measure() pageY gives position relative to root *including scroll*,
-      // so for a scrolled view, pageY = contentY - scrollOffset.
-      // If element is below viewport, pageY could be > screenHeight.
-      // ContentY = pageY + scrollOffset = layoutMeasurement.y + currentOffset
-      // To show it at desiredScreenY: scrollTo = contentY - desiredScreenY
+      // ref.measure() pageY gives position relative to root view.
+      // For scrolled content: pageY = contentY - scrollOffset
+      // ContentY = pageY + scrollOffset
+      // To show at desiredScreenY: scrollTo = contentY - desiredScreenY
       const contentY = layoutMeasurement.y + currentOffset;
       const newOffset = Math.max(0, contentY - desiredScreenY);
 
       try {
         scrollRef.current.scrollTo({ y: newOffset, animated: true });
-        // Wait for scroll to complete, then show tooltip
         setTimeout(() => setScrolledAndReady(true), 450);
       } catch {
         setScrolledAndReady(true);
@@ -161,25 +161,24 @@ export const TooltipManager: React.FC<TooltipManagerProps> = ({
       return;
     }
 
-    // Neither measurement worked — element not registered or truly not renderable.
-    // Skip this tooltip.
+    // Neither measurement worked — show tooltip anyway (Tooltip will retry)
     setScrolledAndReady(true);
   }, [scrollRef, scrollOffset]);
 
   // Trigger scroll when ready and index changes
   useEffect(() => {
-    if (!ready || currentIndex >= unseenTooltips.length) return;
+    if (!ready || currentIndex >= tooltipQueue.length) return;
 
-    scrollToTarget(unseenTooltips[currentIndex]);
-  }, [ready, currentIndex, unseenTooltips, scrollToTarget]);
+    scrollToTarget(tooltipQueue[currentIndex]);
+  }, [ready, currentIndex, tooltipQueue, scrollToTarget]);
 
   // Don't show while loading, disabled, not ready, or during first launch tour
   if (!enabled || !ready || !scrolledAndReady || loading || state.isFirstLaunch) return null;
 
-  // All tooltips seen for this screen
-  if (currentIndex >= unseenTooltips.length) return null;
+  // All tooltips done
+  if (currentIndex >= tooltipQueue.length) return null;
 
-  const currentTooltip = unseenTooltips[currentIndex];
+  const currentTooltip = tooltipQueue[currentIndex];
 
   const handleDismiss = () => {
     markTooltipSeen(currentTooltip.id);
