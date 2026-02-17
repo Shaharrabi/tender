@@ -30,7 +30,17 @@ import {
   PenIcon,
   SparkleIcon,
   CheckmarkIcon,
+  HeartIcon,
+  LinkIcon,
+  DoveIcon,
+  SeedlingIcon,
+  MoonIcon,
+  LightningIcon,
+  WhiteHeartIcon,
+  MirrorIcon,
+  LeafIcon,
 } from '@/assets/graphics/icons';
+import type { IconProps } from '@/assets/graphics/icons';
 import type { DailyReflection, QuestionResponse } from '@/services/journal';
 import { SoundHaptics } from '@/services/SoundHapticsService';
 
@@ -38,18 +48,18 @@ import { SoundHaptics } from '@/services/SoundHapticsService';
 
 const JOURNAL_BLUE = Colors.secondary; // #7294D4
 
-/** Quick-tap day summary tags */
-const DAY_TAGS = [
-  { label: 'Grateful', emoji: '🙏' },
-  { label: 'Connected', emoji: '💫' },
-  { label: 'Peaceful', emoji: '🕊' },
-  { label: 'Hopeful', emoji: '🌱' },
-  { label: 'Tired', emoji: '😴' },
-  { label: 'Stressed', emoji: '😤' },
-  { label: 'Tender', emoji: '🤍' },
-  { label: 'Playful', emoji: '✨' },
-  { label: 'Reflective', emoji: '🪞' },
-  { label: 'Growing', emoji: '🌿' },
+/** Quick-tap day summary tags — uses hand-drawn SVG icons */
+const DAY_TAGS: { label: string; Icon: React.ComponentType<IconProps> }[] = [
+  { label: 'Grateful', Icon: HeartIcon },
+  { label: 'Connected', Icon: LinkIcon },
+  { label: 'Peaceful', Icon: DoveIcon },
+  { label: 'Hopeful', Icon: SeedlingIcon },
+  { label: 'Tired', Icon: MoonIcon },
+  { label: 'Stressed', Icon: LightningIcon },
+  { label: 'Tender', Icon: WhiteHeartIcon },
+  { label: 'Playful', Icon: SparkleIcon },
+  { label: 'Reflective', Icon: MirrorIcon },
+  { label: 'Growing', Icon: LeafIcon },
 ];
 
 // ─── Props ───────────────────────────────────────────────
@@ -211,6 +221,7 @@ export default function JournalReflection({
         <View style={styles.tagsWrap}>
           {DAY_TAGS.map((tag) => {
             const isSelected = selectedTags.includes(tag.label);
+            const TagIcon = tag.Icon;
             return (
               <TouchableOpacity
                 key={tag.label}
@@ -219,7 +230,10 @@ export default function JournalReflection({
                 activeOpacity={0.7}
                 disabled={!isToday}
               >
-                <Text style={styles.tagEmoji}>{tag.emoji}</Text>
+                <TagIcon
+                  size={14}
+                  color={isSelected ? JOURNAL_BLUE : Colors.textSecondary}
+                />
                 <Text
                   style={[
                     styles.tagLabel,
@@ -376,9 +390,6 @@ const styles = StyleSheet.create({
   tagSelected: {
     backgroundColor: `${JOURNAL_BLUE}18`,
     borderColor: JOURNAL_BLUE,
-  },
-  tagEmoji: {
-    fontSize: 14,
   },
   tagLabel: {
     fontFamily: 'JosefinSans_400Regular',

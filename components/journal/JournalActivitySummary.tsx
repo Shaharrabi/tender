@@ -89,6 +89,11 @@ export default function JournalActivitySummary({
               </Text>
             </View>
           </View>
+          {todaysCheckIn.note ? (
+            <Text style={styles.checkInNote} numberOfLines={3}>
+              {todaysCheckIn.note}
+            </Text>
+          ) : null}
         </View>
       )}
 
@@ -249,6 +254,16 @@ const styles = StyleSheet.create({
     width: 1,
     height: 24,
     backgroundColor: Colors.borderLight,
+  },
+  checkInNote: {
+    fontFamily: 'JosefinSans_400Regular',
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    lineHeight: 20,
+    marginTop: Spacing.xs,
+    paddingTop: Spacing.xs,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderLight,
   },
 
   // Practice

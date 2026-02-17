@@ -317,14 +317,14 @@ export default function JournalScreen() {
   const handlePressPractice = useCallback(() => {
     if (todaysPractice) {
       SoundHaptics.tapSoft();
-      router.push(`/(app)/exercise/${todaysPractice.id}` as any);
+      router.push({ pathname: '/(app)/exercise', params: { id: todaysPractice.id } } as any);
     }
   }, [todaysPractice, router]);
 
   const handlePressCourse = useCallback(() => {
     if (activeCourse) {
       SoundHaptics.tapSoft();
-      router.push(`/(app)/microcourse/${activeCourse.course.id}` as any);
+      router.push({ pathname: '/(app)/microcourse', params: { courseId: activeCourse.course.id } } as any);
     }
   }, [activeCourse, router]);
 
