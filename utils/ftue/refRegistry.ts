@@ -60,6 +60,34 @@ class RefRegistryClass {
   }
 
   /**
+   * Measure a registered element's position relative to its parent.
+   * Unlike measureInWindow, this works for off-screen elements in ScrollViews.
+   * Returns { x, y, width, height } relative to the nearest native parent.
+   */
+  measureLayout(key: string): Promise<TargetMeasurement | null> {
+    const ref = this.refs.get(key);
+    if (!ref) return Promise.resolve(null);
+
+    return new Promise((resolve) => {
+      try {
+        // measure() gives (x, y, width, height, pageX, pageY) relative to root
+        (ref as any).measure(
+          (x: number, y: number, width: number, height: number, pageX: number, pageY: number) => {
+            if (width === 0 && height === 0) {
+              resolve(null);
+            } else {
+              // pageX/pageY are relative to the root view (absolute content position)
+              resolve({ x: pageX, y: pageY, width, height });
+            }
+          }
+        );
+      } catch {
+        resolve(null);
+      }
+    });
+  }
+
+  /**
    * Check if a ref is registered.
    */
   has(key: string): boolean {

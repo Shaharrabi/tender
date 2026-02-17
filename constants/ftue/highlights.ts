@@ -35,6 +35,11 @@ export const HIGHLIGHT_CONFIGS: HighlightConfig[] = [
     description: 'Journal feature card in explore grid',
   },
   {
+    id: 'home_nuance_card',
+    screen: 'home',
+    description: 'Nuance AI feature card in explore grid',
+  },
+  {
     id: 'home_community_card',
     screen: 'home',
     description: 'Community feature card in explore grid',

@@ -1066,7 +1066,7 @@ export default function HomeScreen() {
             >
               <Text style={styles.todaysFocusEyebrow}>TODAY'S FOCUS</Text>
               <Text style={styles.todaysFocusTitle}>
-                Talk to Nuance about your journey
+                Ask Nuance AI about your journey
               </Text>
               <Text style={styles.todaysFocusMeta}>
                 Your relationship guide {'\u00B7'} Always here
@@ -1470,8 +1470,9 @@ export default function HomeScreen() {
             </TouchableOpacity>
             </HighlightWrapper>
 
-            {/* Nuance Coach */}
+            {/* Nuance AI */}
             <TouchableOpacity
+              ref={(r: any) => RefRegistry.register('home_nuanceCard', r)}
               style={[
                 styles.featureCard,
                 completedCount === 0 && styles.featureCardLocked,
@@ -1492,7 +1493,7 @@ export default function HomeScreen() {
                   <LockIcon size={14} color={Colors.textMuted} />
                 )}
               </View>
-              <Text style={styles.featureCardTitle}>Talk to Nuance</Text>
+              <Text style={styles.featureCardTitle}>Nuance AI</Text>
               <Text style={styles.featureCardSubtitle} numberOfLines={2}>
                 Your relationship guide
               </Text>

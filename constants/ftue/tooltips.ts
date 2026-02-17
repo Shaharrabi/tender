@@ -64,6 +64,16 @@ export const TOOLTIP_CONFIGS: TooltipConfig[] = [
     order: 3,
   },
   {
+    id: 'tooltip_home_nuance',
+    screen: 'home',
+    targetRef: 'home_nuanceCard',
+    title: 'Meet Nuance AI',
+    body: 'Your relationship coach \u2014 here to help you make sense of patterns and practice something new.',
+    ctaText: 'Got it',
+    position: 'bottom',
+    order: 4,
+  },
+  {
     id: 'tooltip_home_community',
     screen: 'home',
     targetRef: 'home_communityCard',
@@ -71,7 +81,7 @@ export const TOOLTIP_CONFIGS: TooltipConfig[] = [
     body: 'Anonymous stories from people on a similar path \u2014 filtered just for you.',
     ctaText: 'Got it',
     position: 'bottom',
-    order: 4,
+    order: 5,
   },
 
   // ═══════════════════════════════════════════════════════════

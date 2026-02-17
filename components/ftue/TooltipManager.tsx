@@ -9,8 +9,12 @@
  * scrolls the target element into view before showing each tooltip.
  * The app "moves to" each feature naturally.
  *
+ * For off-screen elements, uses measureLayout (which works regardless
+ * of viewport position) combined with scroll offset to calculate
+ * where to scroll.
+ *
  * Flow order: Tour completes → isFirstLaunch becomes false →
- *             Highlights run (~2s) → Tooltips appear with scroll
+ *             Highlights run (~1.2s) → Tooltips appear with scroll
  *
  * Usage (add to any screen):
  *   const scrollOffset = useRef(0);
@@ -67,8 +71,9 @@ export const TooltipManager: React.FC<TooltipManagerProps> = ({
       return;
     }
 
-    // After tour: wait for highlights to finish (~1.6s animation)
-    const delay = wasFirstLaunch.current ? 1800 : 1500;
+    // After tour: short wait for highlights to finish (~1.2s animation)
+    // Then tooltips start. 500ms feels snappy after the welcome modal.
+    const delay = wasFirstLaunch.current ? 500 : 400;
     wasFirstLaunch.current = false;
 
     const timer = setTimeout(() => {
@@ -91,50 +96,74 @@ export const TooltipManager: React.FC<TooltipManagerProps> = ({
       return;
     }
 
-    // Measure where the target currently is on screen
-    const measurement = await RefRegistry.measure(tooltip.targetRef);
-    if (!measurement) {
-      // Element not registered or not measurable — show anyway
-      setScrolledAndReady(true);
-      return;
-    }
-
     const { height: screenHeight } = Dimensions.get('window');
-    const targetBottom = measurement.y + measurement.height;
-
-    // Check if the element is already nicely visible in the viewport
-    // We want it in the top 60% of the screen so the tooltip fits below
-    const comfortTop = screenHeight * 0.1;
-    const comfortBottom = screenHeight * 0.55;
-
-    if (measurement.y >= comfortTop && targetBottom <= comfortBottom) {
-      // Already visible and well-positioned — show tooltip immediately
-      setScrolledAndReady(true);
-      return;
-    }
-
-    // Need to scroll. Calculate the absolute content offset we need.
-    // measureInWindow gives screen coordinates.
-    // If element is at screen Y=800 and we want it at screen Y=200,
-    // we need to scroll down by 600 from current position.
     const currentOffset = scrollOffset?.current ?? 0;
     const desiredScreenY = screenHeight * 0.25; // Place element at ~25% from top
-    const scrollDelta = measurement.y - desiredScreenY;
-    const newOffset = Math.max(0, currentOffset + scrollDelta);
 
-    try {
-      scrollRef.current.scrollTo({
-        y: newOffset,
-        animated: true,
-      });
+    // First try measureInWindow (works for on-screen elements)
+    const windowMeasurement = await RefRegistry.measure(tooltip.targetRef);
 
-      // Wait for smooth scroll to finish, then re-measure and show
-      setTimeout(() => {
+    if (windowMeasurement) {
+      const targetBottom = windowMeasurement.y + windowMeasurement.height;
+      const comfortTop = screenHeight * 0.1;
+      const comfortBottom = screenHeight * 0.55;
+
+      if (windowMeasurement.y >= comfortTop && targetBottom <= comfortBottom) {
+        // Already visible and well-positioned — show tooltip immediately
         setScrolledAndReady(true);
-      }, 450);
-    } catch {
-      setScrolledAndReady(true);
+        return;
+      }
+
+      // On screen but not well-positioned — scroll to better position
+      const scrollDelta = windowMeasurement.y - desiredScreenY;
+      const newOffset = Math.max(0, currentOffset + scrollDelta);
+
+      try {
+        scrollRef.current.scrollTo({ y: newOffset, animated: true });
+        setTimeout(() => setScrolledAndReady(true), 400);
+      } catch {
+        setScrolledAndReady(true);
+      }
+      return;
     }
+
+    // Element is off-screen (measureInWindow returned null).
+    // Use measureLayout which works for off-screen elements in ScrollViews.
+    // measureLayout gives the position relative to the root view, which for
+    // elements inside a ScrollView means the absolute content position.
+    const layoutMeasurement = await RefRegistry.measureLayout(tooltip.targetRef);
+
+    if (layoutMeasurement) {
+      // layoutMeasurement.y is the element's Y position in the scroll content
+      // (actually it's pageY which accounts for scroll offset already,
+      // but for off-screen elements it gives the content-absolute position)
+      // We want to scroll so the element ends up at desiredScreenY on screen.
+      // The element's content Y = currentOffset + layoutMeasurement.y (since it's off-screen,
+      // pageY may be negative or very large).
+      // Better approach: element's Y in content = currentOffset + screenY
+      // But if it's off-screen, we can estimate: the element is below the viewport
+      // so its content position ~ currentOffset + screenHeight + some amount.
+      // Actually, ref.measure() pageY gives position relative to root *including scroll*,
+      // so for a scrolled view, pageY = contentY - scrollOffset.
+      // If element is below viewport, pageY could be > screenHeight.
+      // ContentY = pageY + scrollOffset = layoutMeasurement.y + currentOffset
+      // To show it at desiredScreenY: scrollTo = contentY - desiredScreenY
+      const contentY = layoutMeasurement.y + currentOffset;
+      const newOffset = Math.max(0, contentY - desiredScreenY);
+
+      try {
+        scrollRef.current.scrollTo({ y: newOffset, animated: true });
+        // Wait for scroll to complete, then show tooltip
+        setTimeout(() => setScrolledAndReady(true), 450);
+      } catch {
+        setScrolledAndReady(true);
+      }
+      return;
+    }
+
+    // Neither measurement worked — element not registered or truly not renderable.
+    // Skip this tooltip.
+    setScrolledAndReady(true);
   }, [scrollRef, scrollOffset]);
 
   // Trigger scroll when ready and index changes

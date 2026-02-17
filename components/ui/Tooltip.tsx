@@ -53,19 +53,32 @@ export const Tooltip: React.FC<TooltipProps> = ({ config, onDismiss }) => {
   const tooltipWidth = Math.min(screenWidth - 32, FTUELayout.tooltipMaxWidth);
 
   useEffect(() => {
-    // Measure target element after a short delay (let layout settle)
-    const timer = setTimeout(async () => {
+    let retryCount = 0;
+    const maxRetries = 3;
+
+    const tryMeasure = async () => {
       const layout = await RefRegistry.measure(config.targetRef);
       if (layout) {
         setTargetLayout(layout);
         setVisible(true);
+      } else if (retryCount < maxRetries) {
+        // Element may have just been scrolled into view — retry after a delay
+        retryCount++;
+        retryTimer = setTimeout(tryMeasure, 300);
       } else {
-        // Target not found — skip this tooltip
+        // Target not found after retries — skip this tooltip
         onDismiss();
       }
-    }, FTUETiming.measureDelay);
+    };
 
-    return () => clearTimeout(timer);
+    // Measure target element after a short delay (let layout settle)
+    let retryTimer: NodeJS.Timeout;
+    const timer = setTimeout(tryMeasure, FTUETiming.measureDelay);
+
+    return () => {
+      clearTimeout(timer);
+      if (retryTimer) clearTimeout(retryTimer);
+    };
   }, [config.targetRef]);
 
   useEffect(() => {

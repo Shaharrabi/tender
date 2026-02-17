@@ -166,7 +166,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
   },
   {
     key: 'aiCoach',
-    title: 'Talk to Nuance',
+    title: 'Nuance AI',
     subtitle: 'Your AI relationship guide — always here',
     icon: ChatBubbleIcon,
     color: Colors.primary,

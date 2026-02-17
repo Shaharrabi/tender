@@ -2118,7 +2118,7 @@ function AnchorsTab({
         activeOpacity={0.8}
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <Text style={st.ctaButtonText}>Talk to Nuance</Text>
+          <Text style={st.ctaButtonText}>Nuance AI</Text>
           <SparkleIcon size={14} color={Colors.white} />
         </View>
       </TouchableOpacity>

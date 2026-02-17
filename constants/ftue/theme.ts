@@ -73,12 +73,12 @@ export const FTUELayout = {
 // ─── FTUE Animation Timing ────────────────────────────────────────────────
 
 export const FTUETiming = {
-  /** Highlight animation (total ~1200ms — quick and light) */
-  highlightEnter: 150,
-  highlightHold: 800,
-  highlightExit: 150,
+  /** Highlight animation (total ~500ms — very quick flash) */
+  highlightEnter: 100,
+  highlightHold: 200,
+  highlightExit: 100,
   highlightPulseCount: 1,
-  highlightPulseDuration: 500,
+  highlightPulseDuration: 200,
 
   /** Tooltip */
   tooltipFadeIn: 200,
@@ -93,7 +93,7 @@ export const FTUETiming = {
   audioAutoPlayDelay: 400,
 
   /** General */
-  measureDelay: 200, // delay before measuring (let layout settle)
+  measureDelay: 100, // delay before measuring (let layout settle)
 };
 
 // ─── FTUE Typography ──────────────────────────────────────────────────────
