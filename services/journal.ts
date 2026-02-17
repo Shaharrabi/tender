@@ -182,7 +182,7 @@ export async function getJournalEntriesForDate(
         type: 'exercise',
         timestamp: row.completed_at,
         title: name,
-        subtitle: row.reflection ? row.reflection.slice(0, 80) + (row.reflection.length > 80 ? '...' : '') : undefined,
+        subtitle: undefined, // Full data shown in the card body
         data: {
           exerciseId: row.exercise_id,
           exerciseName: row.exercise_name,
@@ -224,10 +224,11 @@ export async function getJournalEntriesForDate(
         type: 'chat',
         timestamp: row.created_at,
         title: row.title || 'Chat with Nuance',
-        subtitle: firstMessage ? firstMessage.slice(0, 80) + (firstMessage.length > 80 ? '...' : '') : `${messages.length} messages`,
+        subtitle: undefined, // Full data shown in the card body
         data: {
           messageCount: messages.length,
           firstMessage,
+          allMessages: messages,
           mode: row.current_mode,
         },
       });

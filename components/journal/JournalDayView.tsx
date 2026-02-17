@@ -148,31 +148,54 @@ function MoodBar({ label, value, max = 10, color }: { label: string; value: numb
 // ─── Entry Cards ────────────────────────────────────────
 
 function CheckInCard({ entry }: { entry: JournalEntry }) {
-  const { moodRating, relationshipRating, note } = entry.data;
+  const { moodRating, relationshipRating, note, practicedGrowthEdge } = entry.data;
   return (
     <View style={cardStyles.cardBody}>
-      <MoodBar label="Mood" value={moodRating} color={Colors.primary} />
-      <MoodBar label="Relationship" value={relationshipRating} color={Colors.secondary} />
-      {note ? <Text style={cardStyles.note} numberOfLines={3}>{note}</Text> : null}
+      <MoodBar label="Inner State" value={moodRating} color={Colors.primary} />
+      <MoodBar label="Connection" value={relationshipRating} color={Colors.secondary} />
+      {practicedGrowthEdge != null && (
+        <View style={cardStyles.inlineRow}>
+          <Text style={cardStyles.inlineLabel}>Practiced growth edge:</Text>
+          <Text style={[cardStyles.inlineValue, { color: practicedGrowthEdge ? Colors.success : Colors.textMuted }]}>
+            {practicedGrowthEdge ? 'Yes' : 'No'}
+          </Text>
+        </View>
+      )}
+      {note ? <Text style={cardStyles.noteFullText}>{note}</Text> : null}
     </View>
   );
 }
 
 function ExerciseCard({ entry }: { entry: JournalEntry }) {
-  const { reflection, rating } = entry.data;
+  const { reflection, rating, stepResponses } = entry.data;
   return (
     <View style={cardStyles.cardBody}>
       {rating != null && <RatingStars rating={rating} />}
+
+      {/* Full step-by-step responses from the practice */}
+      {stepResponses && Array.isArray(stepResponses) && stepResponses.length > 0 && (
+        <View style={cardStyles.stepResponsesContainer}>
+          {stepResponses.map((sr: any, idx: number) => (
+            <View key={idx} style={cardStyles.stepResponseBlock}>
+              <Text style={cardStyles.stepPrompt}>{sr.prompt}</Text>
+              <Text style={cardStyles.stepResponse}>{sr.response}</Text>
+            </View>
+          ))}
+        </View>
+      )}
+
       {reflection ? (
-        <Text style={cardStyles.note} numberOfLines={3}>
-          {reflection}
-        </Text>
+        <View style={cardStyles.reflectionBlock}>
+          <Text style={cardStyles.reflectionLabel}>Reflection</Text>
+          <Text style={cardStyles.noteFullText}>{reflection}</Text>
+        </View>
       ) : null}
     </View>
   );
 }
 
 function AssessmentCard({ entry }: { entry: JournalEntry }) {
+  const scores = entry.data.scores;
   return (
     <View style={cardStyles.cardBody}>
       <View style={cardStyles.assessmentBadge}>
@@ -180,22 +203,55 @@ function AssessmentCard({ entry }: { entry: JournalEntry }) {
           {entry.data.assessmentType?.toUpperCase() || 'ASSESSMENT'}
         </Text>
       </View>
+      {/* Show all score dimensions */}
+      {scores && typeof scores === 'object' && (
+        <View style={cardStyles.scoresGrid}>
+          {Object.entries(scores).map(([key, value]) => (
+            <View key={key} style={cardStyles.scoreItem}>
+              <Text style={cardStyles.scoreLabel}>
+                {key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+              </Text>
+              <Text style={cardStyles.scoreValue}>
+                {typeof value === 'number' ? (value % 1 === 0 ? value : value.toFixed(1)) : String(value)}
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
     </View>
   );
 }
 
 function ChatCard({ entry }: { entry: JournalEntry }) {
-  const { messageCount, firstMessage } = entry.data;
+  const { messageCount, allMessages, mode } = entry.data;
   return (
     <View style={cardStyles.cardBody}>
-      <Text style={cardStyles.chatMeta}>
-        {messageCount} message{messageCount !== 1 ? 's' : ''}
-      </Text>
-      {firstMessage ? (
-        <Text style={cardStyles.note} numberOfLines={2}>
-          "{firstMessage}"
+      <View style={cardStyles.inlineRow}>
+        <Text style={cardStyles.chatMeta}>
+          {messageCount} message{messageCount !== 1 ? 's' : ''}
         </Text>
-      ) : null}
+        {mode ? (
+          <Text style={cardStyles.chatMode}>
+            {mode.replace(/_/g, ' ')}
+          </Text>
+        ) : null}
+      </View>
+      {/* Full chat transcript for print */}
+      {allMessages && Array.isArray(allMessages) && allMessages.length > 0 && (
+        <View style={cardStyles.chatTranscript}>
+          {allMessages.map((msg: any, idx: number) => (
+            <View key={msg.id || idx} style={cardStyles.chatMessage}>
+              <Text style={[
+                cardStyles.chatRole,
+                { color: msg.role === 'user' ? Colors.primary : Colors.secondary },
+              ]}>
+                {msg.role === 'user' ? 'You' : 'Nuance'}
+              </Text>
+              <Text style={cardStyles.chatContent}>{msg.content}</Text>
+            </View>
+          ))}
+        </View>
+      )}
     </View>
   );
 }
@@ -289,13 +345,13 @@ export default function JournalDayView({ date, entries, loading }: JournalDayVie
               </View>
 
               {/* Entry title */}
-              <Text style={styles.entryTitle} numberOfLines={2}>
+              <Text style={styles.entryTitle}>
                 {entry.title}
               </Text>
 
-              {/* Subtitle / preview */}
+              {/* Subtitle / preview — full text for print */}
               {entry.subtitle && entry.type !== 'xp' ? (
-                <Text style={styles.entrySubtitle} numberOfLines={2}>
+                <Text style={styles.entrySubtitle}>
                   {entry.subtitle}
                 </Text>
               ) : null}
@@ -472,13 +528,28 @@ const cardStyles = StyleSheet.create({
     textAlign: 'right',
   },
 
-  // Note
-  note: {
-    fontFamily: 'JosefinSans_300Light',
+  // Note (full text, no truncation)
+  noteFullText: {
+    fontFamily: 'JosefinSans_400Regular',
     fontSize: FontSizes.bodySmall,
     color: Colors.textSecondary,
     lineHeight: 20,
-    fontStyle: 'italic',
+  },
+
+  // Inline row (label + value)
+  inlineRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  inlineLabel: {
+    fontFamily: 'JosefinSans_400Regular',
+    fontSize: FontSizes.caption,
+    color: Colors.textSecondary,
+  },
+  inlineValue: {
+    fontFamily: 'Jost_500Medium',
+    fontSize: FontSizes.caption,
   },
 
   // Stars
@@ -486,12 +557,45 @@ const cardStyles = StyleSheet.create({
     flexDirection: 'row',
     gap: 2,
   },
-  star: {
+
+  // Step-by-step responses from exercises/practices
+  stepResponsesContainer: {
+    gap: Spacing.sm,
+    paddingTop: Spacing.xs,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderLight,
   },
-  starFilled: {
+  stepResponseBlock: {
+    gap: 2,
+  },
+  stepPrompt: {
+    fontFamily: 'JosefinSans_500Medium',
+    fontSize: FontSizes.caption,
+    color: Colors.textSecondary,
+    lineHeight: 18,
+  },
+  stepResponse: {
+    fontFamily: 'JosefinSans_400Regular',
+    fontSize: FontSizes.bodySmall,
+    color: Colors.text,
+    lineHeight: 20,
   },
 
-  // Assessment badge
+  // Reflection block
+  reflectionBlock: {
+    paddingTop: Spacing.xs,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderLight,
+    gap: 2,
+  },
+  reflectionLabel: {
+    fontFamily: 'JosefinSans_500Medium',
+    fontSize: FontSizes.caption,
+    color: Colors.secondary,
+    letterSpacing: 0.3,
+  },
+
+  // Assessment badge + scores
   assessmentBadge: {
     backgroundColor: '#FDF3E0',
     paddingHorizontal: Spacing.sm,
@@ -505,12 +609,60 @@ const cardStyles = StyleSheet.create({
     color: Colors.accentGold,
     letterSpacing: 0.8,
   },
+  scoresGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+    paddingTop: Spacing.xs,
+  },
+  scoreItem: {
+    alignItems: 'center',
+    minWidth: 70,
+    gap: 2,
+  },
+  scoreLabel: {
+    fontFamily: 'JosefinSans_400Regular',
+    fontSize: 10,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+  },
+  scoreValue: {
+    fontFamily: 'Jost_600SemiBold',
+    fontSize: FontSizes.body,
+    color: Colors.text,
+  },
 
   // Chat
   chatMeta: {
     fontFamily: 'JosefinSans_400Regular',
     fontSize: FontSizes.caption,
     color: Colors.textMuted,
+  },
+  chatMode: {
+    fontFamily: 'JosefinSans_400Regular',
+    fontSize: FontSizes.caption,
+    color: Colors.secondary,
+    textTransform: 'capitalize',
+  },
+  chatTranscript: {
+    gap: Spacing.sm,
+    paddingTop: Spacing.xs,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderLight,
+  },
+  chatMessage: {
+    gap: 2,
+  },
+  chatRole: {
+    fontFamily: 'Jost_500Medium',
+    fontSize: FontSizes.caption,
+    letterSpacing: 0.3,
+  },
+  chatContent: {
+    fontFamily: 'JosefinSans_400Regular',
+    fontSize: FontSizes.bodySmall,
+    color: Colors.text,
+    lineHeight: 20,
   },
 
   // XP

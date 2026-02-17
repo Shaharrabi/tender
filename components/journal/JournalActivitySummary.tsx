@@ -90,7 +90,7 @@ export default function JournalActivitySummary({
             </View>
           </View>
           {todaysCheckIn.note ? (
-            <Text style={styles.checkInNote} numberOfLines={3}>
+            <Text style={styles.checkInNote}>
               {todaysCheckIn.note}
             </Text>
           ) : null}
