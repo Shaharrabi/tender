@@ -86,11 +86,12 @@ interface GamificationContextType {
 
   // ─── Actions ───────────────────────────────────────────────────────────
 
-  /** Award XP for an action — plays sound + haptic automatically */
+  /** Award XP for an action — plays sound + haptic automatically unless silent */
   awardXP: (
     source: XPSource,
     sourceId?: string,
-    description?: string
+    description?: string,
+    options?: { silent?: boolean }
   ) => Promise<XPResult>;
 
   /** Complete a daily challenge */
@@ -186,7 +187,8 @@ export function GamificationProvider({
     async (
       source: XPSource,
       sourceId?: string,
-      description?: string
+      description?: string,
+      options?: { silent?: boolean }
     ): Promise<XPResult> => {
       if (!user) {
         return {
@@ -208,8 +210,10 @@ export function GamificationProvider({
       );
 
       if (result.success) {
-        // Play XP sound + haptic
-        SoundHaptics.playXPGain();
+        // Play XP sound + haptic (unless silent mode)
+        if (!options?.silent) {
+          SoundHaptics.playXPGain();
+        }
 
         // Refresh gamification state
         const updated = await getUserGamification(supabase, user.id);
@@ -218,7 +222,7 @@ export function GamificationProvider({
         const leveledUp =
           result.newLevel !== undefined && result.newLevel > previousLevel;
 
-        if (leveledUp) {
+        if (leveledUp && !options?.silent) {
           // Level up celebration!
           setTimeout(() => {
             SoundHaptics.playLevelUp();

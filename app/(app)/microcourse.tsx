@@ -47,6 +47,7 @@ import { getPortrait } from '@/services/portrait';
 import { getCourseById } from '@/utils/microcourses/course-registry';
 import { MC1CourseFlow } from '@/components/microcourse/mc1/MC1CourseFlow';
 import { MC2CourseFlow } from '@/components/microcourse/mc2/MC2CourseFlow';
+import { MC3CourseFlow } from '@/components/microcourse/mc3/MC3CourseFlow';
 import {
   getLesson,
   getLessonContent,
@@ -220,9 +221,9 @@ export default function MicroCourseScreen() {
       console.error('Failed to save lesson completion:', err);
     }
 
-    // Award XP for lesson completion (non-blocking)
+    // Award XP for lesson completion (non-blocking, silent to avoid sound on home)
     if (lesson) {
-      awardXP('lesson_complete', lesson.id, `Completed lesson: ${lesson.title}`).catch(() => {});
+      awardXP('lesson_complete', lesson.id, `Completed lesson: ${lesson.title}`, { silent: true }).catch(() => {});
     }
 
     setSaving(false);
@@ -302,6 +303,24 @@ export default function MicroCourseScreen() {
   if (courseId === 'mc-regulation' && !completed) {
     return (
       <MC2CourseFlow
+        lessonNumber={lessonNum}
+        totalLessons={totalLessons}
+        attachmentStyle={attachmentStyle}
+        content={content}
+        lesson={lesson}
+        course={course}
+        onComplete={handleComplete}
+        onExit={handleExit}
+        saving={saving}
+      />
+    );
+  }
+
+  // ─── MC3 Interactive Flow ────────────────────
+
+  if (courseId === 'mc-conflict-repair' && !completed) {
+    return (
+      <MC3CourseFlow
         lessonNumber={lessonNum}
         totalLessons={totalLessons}
         attachmentStyle={attachmentStyle}
