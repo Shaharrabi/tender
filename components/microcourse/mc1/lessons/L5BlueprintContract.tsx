@@ -195,7 +195,7 @@ export function L5BlueprintContract({ content, attachmentStyle, onComplete }: L5
         {/* Header */}
         <View style={styles.contractHeader}>
           <Text style={styles.contractDocTitle}>RELATIONSHIP BLUEPRINT</Text>
-          <Text style={styles.contractDocId}>MC1 \u2022 {new Date().getFullYear()}</Text>
+          <Text style={styles.contractDocId}>MC1 {'\u2022'} {new Date().getFullYear()}</Text>
         </View>
 
         {/* Body */}
@@ -256,8 +256,11 @@ export function L5BlueprintContract({ content, attachmentStyle, onComplete }: L5
           </TouchableOpacity>
         )}
 
-        {/* The Stamp */}
-        <Animated.View style={[styles.stampContainer, stampTransform]}>
+        {/* The Stamp — pointerEvents='none' until signed so it doesn't block the sign button */}
+        <Animated.View
+          style={[styles.stampContainer, stampTransform]}
+          pointerEvents={signed ? 'auto' : 'none'}
+        >
           <View style={styles.stampBorder}>
             <Text style={styles.stampText}>COMMITTED</Text>
           </View>

@@ -354,7 +354,7 @@ export default function MicroCourseScreen() {
               activeOpacity={0.7}
             >
               <Text style={styles.primaryButtonText}>
-                Next Lesson \u203A
+                Next Lesson {'\u203A'}
               </Text>
             </TouchableOpacity>
           ) : null}
