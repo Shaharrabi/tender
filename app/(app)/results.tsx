@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Colors, Spacing, FontSizes, ButtonSizes, BorderRadius } from '@/constants/theme';
+import { Colors, Spacing, FontSizes, FontFamilies, Typography, ButtonSizes, BorderRadius, Shadows } from '@/constants/theme';
 import ECRRResults from '@/components/results/ECRRResults';
 import DUTCHResults from '@/components/results/DUTCHResults';
 import SSEITResults from '@/components/results/SSEITResults';
@@ -75,6 +75,7 @@ const styles = StyleSheet.create({
     gap: Spacing.lg,
   },
   errorText: {
+    fontFamily: FontFamilies.body,
     fontSize: FontSizes.body,
     color: Colors.textSecondary,
     textAlign: 'center',
@@ -88,8 +89,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.xl,
   },
   buttonText: {
-    color: Colors.white,
-    fontSize: FontSizes.body,
-    fontWeight: '600',
+    ...Typography.button,
+    color: Colors.textOnPrimary,
   },
 });

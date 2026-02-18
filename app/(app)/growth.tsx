@@ -266,6 +266,7 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.borderLight,
   },
   backText: {
+    fontFamily: FontFamilies.body,
     fontSize: FontSizes.body,
     color: Colors.primary,
     fontWeight: '600',
@@ -316,6 +317,7 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.borderLight,
   },
   recentDate: {
+    fontFamily: FontFamilies.body,
     fontSize: FontSizes.bodySmall,
     color: Colors.text,
     fontWeight: '500',
@@ -336,21 +338,24 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.pill,
   },
   recentStatLabel: {
+    fontFamily: FontFamilies.body,
     fontSize: 11,
     color: Colors.textSecondary,
   },
   recentStatValue: {
+    fontFamily: FontFamilies.accent,
     fontSize: 11,
     fontWeight: '600',
     color: Colors.text,
   },
   practicedPill: {
-    backgroundColor: '#DFF0E0',
+    backgroundColor: Colors.success + '25',
   },
   practicedText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#2D5F34',
+    fontFamily: FontFamilies.body,
+    color: Colors.success,
   },
 
   // Treatment plan link
@@ -375,6 +380,7 @@ const styles = StyleSheet.create({
     color: Colors.primary,
   },
   treatmentPlanSubtitle: {
+    fontFamily: FontFamilies.body,
     fontSize: FontSizes.caption,
     color: Colors.textSecondary,
   },

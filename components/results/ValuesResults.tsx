@@ -19,7 +19,7 @@ import {
   getDomainFieldInsight,
   getValuesProfileInsight,
 } from '@/utils/assessments/interpretations/values';
-import { Colors, Spacing, FontSizes, ButtonSizes } from '@/constants/theme';
+import { Colors, Spacing, FontSizes, FontFamilies, Typography, ButtonSizes, BorderRadius, Shadows } from '@/constants/theme';
 
 interface Props {
   scores: ValuesScores;
@@ -111,7 +111,7 @@ export default function ValuesResults({ scores }: Props) {
                     <View
                       style={[
                         styles.barFill,
-                        { width: `${data.accordance * 10}%`, backgroundColor: '#10B981' },
+                        { width: `${data.accordance * 10}%`, backgroundColor: Colors.success },
                       ]}
                     />
                   </View>
@@ -196,43 +196,42 @@ const styles = StyleSheet.create({
   scrollContent: { padding: Spacing.xl, paddingBottom: 60 },
   header: { alignItems: 'center', marginBottom: Spacing.xl },
   title: {
-    fontSize: FontSizes.headingL,
-    fontWeight: 'bold',
+    ...Typography.headingL,
     color: Colors.text,
     marginBottom: Spacing.xs,
+    textAlign: 'center',
   },
-  subtitle: { fontSize: FontSizes.body, color: Colors.textSecondary, textAlign: 'center' },
+  subtitle: { ...Typography.body, color: Colors.textSecondary, textAlign: 'center' },
 
   overallSection: {
-    backgroundColor: '#EEF2FF',
+    backgroundColor: Colors.primaryFaded,
     padding: Spacing.md,
-    borderRadius: 12,
+    borderRadius: BorderRadius.lg,
     marginBottom: Spacing.xl,
+    ...Shadows.subtle,
   },
   overallText: {
-    fontSize: FontSizes.body,
+    ...Typography.body,
     color: Colors.text,
-    lineHeight: 24,
     textAlign: 'center',
   },
 
   section: { marginBottom: Spacing.xl, gap: Spacing.sm },
   sectionTitle: {
-    fontSize: FontSizes.headingM,
-    fontWeight: '600',
+    ...Typography.headingM,
     color: Colors.text,
   },
   sectionDesc: {
-    fontSize: FontSizes.bodySmall,
+    ...Typography.bodySmall,
     color: Colors.textSecondary,
-    lineHeight: 20,
   },
 
   rankCard: {
     backgroundColor: Colors.surface,
     padding: Spacing.md,
-    borderRadius: 12,
+    borderRadius: BorderRadius.lg,
     gap: Spacing.xs,
+    ...Shadows.card,
   },
   rankRow: {
     flexDirection: 'row',
@@ -248,19 +247,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   rankNum: {
-    color: Colors.white,
+    color: Colors.textOnPrimary,
+    fontFamily: FontFamilies.accent,
     fontSize: FontSizes.bodySmall,
     fontWeight: '700',
   },
   rankLabel: {
-    fontSize: FontSizes.body,
+    ...Typography.bodyMedium,
     color: Colors.text,
-    fontWeight: '500',
   },
   rankInsight: {
-    fontSize: FontSizes.caption,
+    ...Typography.caption,
     color: Colors.textSecondary,
-    lineHeight: 18,
     fontStyle: 'italic',
     marginLeft: 44,
   },
@@ -268,8 +266,9 @@ const styles = StyleSheet.create({
   domainCard: {
     backgroundColor: Colors.surface,
     padding: Spacing.md,
-    borderRadius: 12,
+    borderRadius: BorderRadius.lg,
     gap: 6,
+    ...Shadows.card,
   },
   domainHeaderRow: {
     flexDirection: 'row',
@@ -278,18 +277,19 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   domainName: {
+    ...Typography.bodyMedium,
     fontSize: FontSizes.bodySmall,
-    fontWeight: '600',
     color: Colors.text,
     flex: 1,
   },
   gapBadge: {
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 8,
+    borderRadius: BorderRadius.md,
   },
   gapBadgeText: {
-    color: Colors.white,
+    color: Colors.textOnPrimary,
+    fontFamily: FontFamilies.heading,
     fontSize: 10,
     fontWeight: '700',
   },
@@ -300,57 +300,53 @@ const styles = StyleSheet.create({
   },
   barLabel: {
     width: 70,
-    fontSize: FontSizes.caption,
+    ...Typography.caption,
     color: Colors.textSecondary,
   },
   barBg: {
     flex: 1,
     height: 8,
-    backgroundColor: Colors.border,
-    borderRadius: 4,
+    backgroundColor: Colors.progressTrack,
+    borderRadius: BorderRadius.sm,
     overflow: 'hidden',
   },
-  barFill: { height: '100%', borderRadius: 4 },
+  barFill: { height: '100%', borderRadius: BorderRadius.sm },
   barNum: {
     width: 20,
+    fontFamily: FontFamilies.accent,
     fontSize: FontSizes.caption,
     color: Colors.textSecondary,
     fontWeight: '600',
     textAlign: 'right',
   },
   gapDesc: {
-    fontSize: FontSizes.caption,
+    ...Typography.caption,
     color: Colors.textSecondary,
-    lineHeight: 18,
     fontStyle: 'italic',
     marginTop: 4,
   },
 
   highlightSection: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: Colors.accentCream + '30',
     padding: Spacing.md,
-    borderRadius: 12,
+    borderRadius: BorderRadius.lg,
     borderLeftWidth: 4,
-    borderLeftColor: '#F59E0B',
+    borderLeftColor: Colors.accentGold,
     marginBottom: Spacing.xl,
     gap: Spacing.xs,
+    ...Shadows.subtle,
   },
   highlightTitle: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '700',
-    color: '#92400E',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
+    ...Typography.label,
+    color: Colors.primaryDark,
   },
   highlightDesc: {
-    fontSize: FontSizes.bodySmall,
-    color: '#78350F',
-    lineHeight: 20,
+    ...Typography.bodySmall,
+    color: Colors.text,
   },
   highlightItem: {
-    fontSize: FontSizes.body,
-    color: '#78350F',
-    fontWeight: '600',
+    ...Typography.bodyMedium,
+    color: Colors.text,
     paddingLeft: Spacing.sm,
   },
 
@@ -360,55 +356,52 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: Colors.surface,
     padding: Spacing.md,
-    borderRadius: 8,
+    borderRadius: BorderRadius.md,
+    ...Shadows.subtle,
   },
   tendencyLabel: {
+    ...Typography.bodyMedium,
     fontSize: FontSizes.bodySmall,
     color: Colors.text,
-    fontWeight: '500',
   },
   tendencyValue: {
+    fontFamily: FontFamilies.accent,
     fontSize: FontSizes.bodySmall,
     color: Colors.textSecondary,
     fontWeight: '600',
   },
   tendencyDesc: {
-    fontSize: FontSizes.caption,
+    ...Typography.caption,
     color: Colors.textSecondary,
-    lineHeight: 18,
     fontStyle: 'italic',
   },
 
   reflectionCard: {
     backgroundColor: Colors.surface,
     padding: Spacing.md,
-    borderRadius: 12,
+    borderRadius: BorderRadius.lg,
     gap: Spacing.xs,
+    ...Shadows.card,
   },
   reflectionLabel: {
-    fontSize: FontSizes.caption,
-    fontWeight: '700',
+    ...Typography.label,
     color: Colors.primary,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
   },
   reflectionText: {
-    fontSize: FontSizes.body,
+    ...Typography.body,
     color: Colors.text,
-    lineHeight: 22,
   },
 
   actions: { marginTop: Spacing.md },
   primaryButton: {
     backgroundColor: Colors.primary,
     height: ButtonSizes.large,
-    borderRadius: 8,
+    borderRadius: BorderRadius.lg,
     justifyContent: 'center',
     alignItems: 'center',
   },
   primaryButtonText: {
-    color: Colors.white,
-    fontSize: FontSizes.body,
-    fontWeight: '600',
+    ...Typography.button,
+    color: Colors.textOnPrimary,
   },
 });

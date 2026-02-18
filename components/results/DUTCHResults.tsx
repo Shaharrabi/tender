@@ -14,18 +14,18 @@ import {
   getDUTCHSubscaleLabel,
   getDUTCHSubscaleWarmLabel,
 } from '@/utils/assessments/interpretations/dutch';
-import { Colors, Spacing, FontSizes, ButtonSizes } from '@/constants/theme';
+import { Colors, Spacing, FontSizes, FontFamilies, Typography, ButtonSizes, BorderRadius, Shadows } from '@/constants/theme';
 
 interface Props {
   scores: DUTCHScores;
 }
 
 const SUBSCALE_COLORS: Record<string, string> = {
-  yielding: '#8B5CF6',
-  compromising: '#3B82F6',
-  forcing: '#EF4444',
-  problemSolving: '#10B981',
-  avoiding: '#F59E0B',
+  yielding: Colors.depth,
+  compromising: Colors.secondary,
+  forcing: Colors.primary,
+  problemSolving: Colors.success,
+  avoiding: Colors.accentGold,
 };
 
 const SUBSCALE_ORDER = ['problemSolving', 'compromising', 'yielding', 'avoiding', 'forcing'];
@@ -140,40 +140,37 @@ const styles = StyleSheet.create({
   scrollContent: { padding: Spacing.xl, paddingBottom: 60 },
   header: { alignItems: 'center', marginBottom: Spacing.xl },
   title: {
-    fontSize: FontSizes.headingL,
-    fontWeight: 'bold',
+    ...Typography.headingL,
     color: Colors.text,
     marginBottom: Spacing.xs,
+    textAlign: 'center',
   },
-  subtitle: { fontSize: FontSizes.body, color: Colors.textSecondary },
+  subtitle: { ...Typography.body, color: Colors.textSecondary },
 
   primarySection: {
     alignItems: 'center',
     paddingVertical: Spacing.lg,
     marginBottom: Spacing.md,
-    backgroundColor: '#EEF2FF',
-    borderRadius: 12,
+    backgroundColor: Colors.primaryFaded,
+    borderRadius: BorderRadius.lg,
+    ...Shadows.subtle,
   },
   primaryLabel: {
-    fontSize: FontSizes.caption,
+    ...Typography.label,
     color: Colors.primary,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
   },
   primaryWarmLabel: {
-    fontSize: FontSizes.headingXL,
-    fontWeight: 'bold',
+    ...Typography.serifHeading,
     color: Colors.primary,
     marginTop: Spacing.xs,
   },
   primaryStyle: {
-    fontSize: FontSizes.bodySmall,
+    ...Typography.bodySmall,
     color: Colors.textSecondary,
     marginTop: 2,
   },
   secondaryNote: {
-    fontSize: FontSizes.bodySmall,
+    ...Typography.bodySmall,
     color: Colors.textSecondary,
     marginTop: Spacing.xs,
   },
@@ -186,25 +183,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   barLabel: {
+    ...Typography.bodyMedium,
     fontSize: FontSizes.bodySmall,
     color: Colors.text,
-    fontWeight: '500',
   },
   barLabelPrimary: { fontWeight: '700', color: Colors.primary },
   barValue: {
+    fontFamily: FontFamilies.accent,
     fontSize: FontSizes.bodySmall,
     color: Colors.textSecondary,
     fontWeight: '600',
   },
   barBg: {
     height: 10,
-    backgroundColor: Colors.border,
-    borderRadius: 5,
+    backgroundColor: Colors.progressTrack,
+    borderRadius: BorderRadius.sm + 1,
     overflow: 'hidden',
   },
-  barFill: { height: '100%', borderRadius: 5 },
+  barFill: { height: '100%', borderRadius: BorderRadius.sm + 1 },
   scaleNote: {
-    fontSize: FontSizes.caption,
+    ...Typography.caption,
     color: Colors.textSecondary,
     textAlign: 'right',
     marginTop: Spacing.xs,
@@ -212,107 +210,94 @@ const styles = StyleSheet.create({
 
   interpretationSection: { marginBottom: Spacing.lg },
   interpretationHeader: {
-    fontSize: FontSizes.headingM,
-    fontWeight: '600',
+    ...Typography.headingM,
     color: Colors.text,
     marginBottom: Spacing.sm,
   },
   interpretationText: {
-    fontSize: FontSizes.body,
+    ...Typography.body,
     color: Colors.text,
-    lineHeight: 24,
   },
 
   insightSection: {
     backgroundColor: Colors.surface,
     padding: Spacing.md,
-    borderRadius: 12,
+    borderRadius: BorderRadius.lg,
     borderLeftWidth: 4,
-    borderLeftColor: '#6BA3A0',
+    borderLeftColor: Colors.calm,
     marginBottom: Spacing.lg,
+    ...Shadows.subtle,
   },
   insightHeader: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '700',
-    color: '#6BA3A0',
+    ...Typography.label,
+    color: Colors.calm,
     marginBottom: Spacing.xs,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
   },
-  insightText: { fontSize: FontSizes.body, color: Colors.text, lineHeight: 22 },
+  insightText: { ...Typography.body, color: Colors.text },
 
   twoCol: { gap: Spacing.md, marginBottom: Spacing.lg },
   colCard: {
     backgroundColor: Colors.surface,
     padding: Spacing.md,
-    borderRadius: 12,
+    borderRadius: BorderRadius.lg,
     gap: Spacing.xs,
+    ...Shadows.card,
   },
   colHeader: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '700',
+    ...Typography.label,
     color: Colors.success,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
   },
   colText: {
-    fontSize: FontSizes.body,
+    ...Typography.body,
     color: Colors.text,
-    lineHeight: 22,
   },
 
   tipSection: {
     backgroundColor: Colors.surface,
     padding: Spacing.md,
-    borderRadius: 12,
+    borderRadius: BorderRadius.lg,
     borderLeftWidth: 4,
     borderLeftColor: Colors.success,
     marginBottom: Spacing.lg,
+    ...Shadows.subtle,
   },
   tipHeader: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '700',
+    ...Typography.label,
     color: Colors.success,
     marginBottom: Spacing.xs,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
   },
-  tipText: { fontSize: FontSizes.body, color: Colors.text, lineHeight: 22 },
+  tipText: { ...Typography.body, color: Colors.text },
 
   bodySection: {
-    backgroundColor: '#F5F0EB',
+    backgroundColor: Colors.backgroundAlt,
     padding: Spacing.md,
-    borderRadius: 12,
+    borderRadius: BorderRadius.lg,
     borderLeftWidth: 4,
     borderLeftColor: Colors.secondary,
     marginBottom: Spacing.xl,
+    ...Shadows.subtle,
   },
   bodyHeader: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '700',
+    ...Typography.label,
     color: Colors.secondary,
     marginBottom: Spacing.xs,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
   },
   bodyText: {
+    ...Typography.serifItalic,
     fontSize: FontSizes.body,
     color: Colors.text,
-    lineHeight: 22,
-    fontStyle: 'italic',
   },
 
   actions: { gap: Spacing.md },
   primaryButton: {
     backgroundColor: Colors.primary,
     height: ButtonSizes.large,
-    borderRadius: 8,
+    borderRadius: BorderRadius.lg,
     justifyContent: 'center',
     alignItems: 'center',
   },
   primaryButtonText: {
-    color: Colors.white,
-    fontSize: FontSizes.body,
-    fontWeight: '600',
+    ...Typography.button,
+    color: Colors.textOnPrimary,
   },
 });

@@ -14,17 +14,17 @@ import {
   getSSEITSubscaleLabel,
   getSSEITSubscaleDescription,
 } from '@/utils/assessments/interpretations/sseit';
-import { Colors, Spacing, FontSizes, ButtonSizes } from '@/constants/theme';
+import { Colors, Spacing, FontSizes, FontFamilies, Typography, ButtonSizes, BorderRadius, Shadows } from '@/constants/theme';
 
 interface Props {
   scores: SSEITScores;
 }
 
 const SUBSCALE_COLORS: Record<string, string> = {
-  perception: '#8B5CF6',
-  managingOwn: '#3B82F6',
-  managingOthers: '#10B981',
-  utilization: '#F59E0B',
+  perception: Colors.depth,
+  managingOwn: Colors.secondary,
+  managingOthers: Colors.success,
+  utilization: Colors.accentGold,
 };
 
 const SUBSCALE_ORDER = ['perception', 'managingOwn', 'managingOthers', 'utilization'];
@@ -122,15 +122,15 @@ export default function SSEITResults({ scores }: Props) {
 function getLevelColor(level: string): string {
   switch (level) {
     case 'High':
-      return '#10B981';
+      return Colors.success;
     case 'Above Average':
-      return '#3B82F6';
+      return Colors.secondary;
     case 'Average':
-      return '#6B7280';
+      return Colors.textSecondary;
     case 'Below Average':
-      return '#F59E0B';
+      return Colors.accentGold;
     case 'Low':
-      return '#EF4444';
+      return Colors.error;
     default:
       return Colors.primary;
   }
@@ -141,126 +141,117 @@ const styles = StyleSheet.create({
   scrollContent: { padding: Spacing.xl, paddingBottom: 60 },
   header: { alignItems: 'center', marginBottom: Spacing.xl },
   title: {
-    fontSize: FontSizes.headingL,
-    fontWeight: 'bold',
+    ...Typography.headingL,
     color: Colors.text,
     marginBottom: Spacing.xs,
+    textAlign: 'center',
   },
-  subtitle: { fontSize: FontSizes.body, color: Colors.textSecondary },
+  subtitle: { ...Typography.body, color: Colors.textSecondary },
 
   totalSection: {
     alignItems: 'center',
     paddingVertical: Spacing.lg,
     marginBottom: Spacing.md,
-    backgroundColor: '#EEF2FF',
-    borderRadius: 12,
+    backgroundColor: Colors.primaryFaded,
+    borderRadius: BorderRadius.lg,
+    ...Shadows.subtle,
   },
   totalLabel: {
-    fontSize: FontSizes.bodySmall,
+    ...Typography.label,
     color: Colors.primary,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
   },
   totalScore: {
-    fontSize: 48,
-    fontWeight: 'bold',
+    ...Typography.serifDisplay,
     color: Colors.primary,
     marginTop: Spacing.xs,
   },
   totalScale: {
-    fontSize: FontSizes.bodySmall,
+    ...Typography.bodySmall,
     color: Colors.textSecondary,
   },
   levelBadge: {
     marginTop: Spacing.sm,
     paddingHorizontal: Spacing.md,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: BorderRadius.lg,
   },
   levelText: {
-    color: Colors.white,
+    color: Colors.textOnPrimary,
+    fontFamily: FontFamilies.heading,
     fontSize: FontSizes.caption,
     fontWeight: '700',
+    letterSpacing: 1,
   },
 
   interpretationSection: { marginBottom: Spacing.lg },
   interpretationText: {
-    fontSize: FontSizes.body,
+    ...Typography.body,
     color: Colors.text,
-    lineHeight: 24,
   },
 
   insightSection: {
     backgroundColor: Colors.surface,
     padding: Spacing.md,
-    borderRadius: 12,
+    borderRadius: BorderRadius.lg,
     borderLeftWidth: 4,
-    borderLeftColor: '#6BA3A0',
+    borderLeftColor: Colors.calm,
     marginBottom: Spacing.lg,
+    ...Shadows.subtle,
   },
   insightHeader: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '700',
-    color: '#6BA3A0',
+    ...Typography.label,
+    color: Colors.calm,
     marginBottom: Spacing.xs,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
   },
-  insightText: { fontSize: FontSizes.body, color: Colors.text, lineHeight: 22 },
+  insightText: { ...Typography.body, color: Colors.text },
 
   growthSection: {
     backgroundColor: Colors.surface,
     padding: Spacing.md,
-    borderRadius: 12,
+    borderRadius: BorderRadius.lg,
     borderLeftWidth: 4,
     borderLeftColor: Colors.primary,
     marginBottom: Spacing.lg,
+    ...Shadows.subtle,
   },
   growthHeader: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '700',
+    ...Typography.label,
     color: Colors.primary,
     marginBottom: Spacing.xs,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
   },
-  growthText: { fontSize: FontSizes.body, color: Colors.text, lineHeight: 22 },
+  growthText: { ...Typography.body, color: Colors.text },
 
   bodySection: {
-    backgroundColor: '#F5F0EB',
+    backgroundColor: Colors.backgroundAlt,
     padding: Spacing.md,
-    borderRadius: 12,
+    borderRadius: BorderRadius.lg,
     borderLeftWidth: 4,
     borderLeftColor: Colors.secondary,
     marginBottom: Spacing.xl,
+    ...Shadows.subtle,
   },
   bodyHeader: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '700',
+    ...Typography.label,
     color: Colors.secondary,
     marginBottom: Spacing.xs,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
   },
   bodyText: {
+    ...Typography.serifItalic,
     fontSize: FontSizes.body,
     color: Colors.text,
-    lineHeight: 22,
-    fontStyle: 'italic',
   },
 
   barsSection: { gap: Spacing.lg, marginBottom: Spacing.xl },
   sectionTitle: {
-    fontSize: FontSizes.headingM,
-    fontWeight: '600',
+    ...Typography.headingM,
     color: Colors.text,
   },
   subscaleCard: {
     backgroundColor: Colors.surface,
     padding: Spacing.md,
-    borderRadius: 12,
+    borderRadius: BorderRadius.lg,
     gap: 6,
+    ...Shadows.card,
   },
   barLabelRow: {
     flexDirection: 'row',
@@ -268,27 +259,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   barLabel: {
+    ...Typography.bodyMedium,
     fontSize: FontSizes.bodySmall,
     color: Colors.text,
-    fontWeight: '600',
     flex: 1,
   },
   barValue: {
+    fontFamily: FontFamilies.accent,
     fontSize: FontSizes.caption,
     color: Colors.textSecondary,
     fontWeight: '600',
   },
   barBg: {
     height: 10,
-    backgroundColor: Colors.border,
-    borderRadius: 5,
+    backgroundColor: Colors.progressTrack,
+    borderRadius: BorderRadius.sm + 1,
     overflow: 'hidden',
   },
-  barFill: { height: '100%', borderRadius: 5 },
+  barFill: { height: '100%', borderRadius: BorderRadius.sm + 1 },
   subscaleDesc: {
-    fontSize: FontSizes.caption,
+    ...Typography.caption,
     color: Colors.textSecondary,
-    lineHeight: 18,
     marginTop: 2,
   },
 
@@ -296,13 +287,12 @@ const styles = StyleSheet.create({
   primaryButton: {
     backgroundColor: Colors.primary,
     height: ButtonSizes.large,
-    borderRadius: 8,
+    borderRadius: BorderRadius.lg,
     justifyContent: 'center',
     alignItems: 'center',
   },
   primaryButtonText: {
-    color: Colors.white,
-    fontSize: FontSizes.body,
-    fontWeight: '600',
+    ...Typography.button,
+    color: Colors.textOnPrimary,
   },
 });

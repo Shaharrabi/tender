@@ -18,18 +18,18 @@ import {
   getIPIPPercentileLabel,
   getIPIPDomainInterpretation,
 } from '@/utils/assessments/interpretations/ipip-neo-120';
-import { Colors, Spacing, FontSizes, ButtonSizes } from '@/constants/theme';
+import { Colors, Spacing, FontSizes, FontFamilies, Typography, ButtonSizes, BorderRadius, Shadows } from '@/constants/theme';
 
 interface Props {
   scores: IPIPScores;
 }
 
 const DOMAIN_COLORS: Record<string, string> = {
-  neuroticism: '#EF4444',
-  extraversion: '#F59E0B',
-  openness: '#8B5CF6',
-  agreeableness: '#10B981',
-  conscientiousness: '#3B82F6',
+  neuroticism: Colors.primary,
+  extraversion: Colors.accentGold,
+  openness: Colors.depth,
+  agreeableness: Colors.success,
+  conscientiousness: Colors.secondary,
 };
 
 export default function IPIPResults({ scores }: Props) {
@@ -151,18 +151,19 @@ const styles = StyleSheet.create({
   scrollContent: { padding: Spacing.xl, paddingBottom: 60 },
   header: { alignItems: 'center', marginBottom: Spacing.xl },
   title: {
-    fontSize: FontSizes.headingL,
-    fontWeight: 'bold',
+    ...Typography.headingL,
     color: Colors.text,
     marginBottom: Spacing.xs,
+    textAlign: 'center',
   },
-  subtitle: { fontSize: FontSizes.body, color: Colors.textSecondary },
+  subtitle: { ...Typography.body, color: Colors.textSecondary },
 
   domainCard: {
     backgroundColor: Colors.surface,
-    borderRadius: 12,
+    borderRadius: BorderRadius.lg,
     marginBottom: Spacing.md,
     overflow: 'hidden',
+    ...Shadows.card,
   },
   domainHeader: { padding: Spacing.md },
   domainTitleRow: {
@@ -172,19 +173,17 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   domainWarmLabel: {
+    ...Typography.label,
     fontSize: FontSizes.caption,
     color: Colors.primary,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
     marginBottom: 2,
   },
   domainTitle: {
-    fontSize: FontSizes.headingM,
-    fontWeight: '700',
+    ...Typography.headingM,
     color: Colors.text,
   },
   expandIcon: {
+    fontFamily: FontFamilies.heading,
     fontSize: FontSizes.headingM,
     color: Colors.textSecondary,
     fontWeight: '600',
@@ -193,44 +192,44 @@ const styles = StyleSheet.create({
   percentileRow: { gap: 4, marginBottom: Spacing.sm },
   barBg: {
     height: 10,
-    backgroundColor: Colors.border,
-    borderRadius: 5,
+    backgroundColor: Colors.progressTrack,
+    borderRadius: BorderRadius.sm + 1,
     overflow: 'hidden',
   },
-  barFill: { height: '100%', borderRadius: 5 },
+  barFill: { height: '100%', borderRadius: BorderRadius.sm + 1 },
   percentileText: {
+    fontFamily: FontFamilies.accent,
     fontSize: FontSizes.caption,
     fontWeight: '600',
     textAlign: 'right',
   },
   domainDesc: {
-    fontSize: FontSizes.bodySmall,
+    ...Typography.bodySmall,
     color: Colors.text,
-    lineHeight: 20,
     marginBottom: Spacing.sm,
   },
   domainInsight: {
-    backgroundColor: '#F0F7F7',
+    backgroundColor: Colors.surfaceElevated,
     padding: Spacing.sm,
-    borderRadius: 8,
+    borderRadius: BorderRadius.md,
     borderLeftWidth: 3,
-    borderLeftColor: '#6BA3A0',
+    borderLeftColor: Colors.calm,
     marginBottom: Spacing.sm,
   },
   domainInsightText: {
-    fontSize: FontSizes.caption,
-    color: '#4A6B69',
-    lineHeight: 18,
+    ...Typography.caption,
+    color: Colors.calm,
     fontStyle: 'italic',
   },
   domainGrowth: {
-    backgroundColor: '#F0F5F1',
+    backgroundColor: Colors.surfaceElevated,
     padding: Spacing.sm,
-    borderRadius: 8,
+    borderRadius: BorderRadius.md,
     borderLeftWidth: 3,
     borderLeftColor: Colors.primary,
   },
   domainGrowthLabel: {
+    fontFamily: FontFamilies.heading,
     fontSize: 10,
     fontWeight: '700',
     color: Colors.primary,
@@ -239,9 +238,8 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   domainGrowthText: {
-    fontSize: FontSizes.caption,
-    color: '#4A6B4E',
-    lineHeight: 18,
+    ...Typography.caption,
+    color: Colors.textSecondary,
   },
 
   facetsSection: {
@@ -249,7 +247,7 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.md,
     gap: Spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
+    borderTopColor: Colors.borderLight,
     paddingTop: Spacing.md,
   },
   facetRow: { gap: 2 },
@@ -259,17 +257,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   facetLabel: {
-    fontSize: FontSizes.caption,
+    ...Typography.caption,
     color: Colors.text,
     fontWeight: '500',
   },
   facetValue: {
-    fontSize: FontSizes.caption,
+    ...Typography.caption,
     color: Colors.textSecondary,
   },
   facetBarBg: {
     height: 6,
-    backgroundColor: Colors.border,
+    backgroundColor: Colors.progressTrack,
     borderRadius: 3,
     overflow: 'hidden',
   },
@@ -279,13 +277,12 @@ const styles = StyleSheet.create({
   primaryButton: {
     backgroundColor: Colors.primary,
     height: ButtonSizes.large,
-    borderRadius: 8,
+    borderRadius: BorderRadius.lg,
     justifyContent: 'center',
     alignItems: 'center',
   },
   primaryButtonText: {
-    color: Colors.white,
-    fontSize: FontSizes.body,
-    fontWeight: '600',
+    ...Typography.button,
+    color: Colors.textOnPrimary,
   },
 });
