@@ -46,6 +46,7 @@ import { incrementPracticeCount, addInsight, upsertGrowthEdge } from '@/services
 import { getPortrait } from '@/services/portrait';
 import { getCourseById } from '@/utils/microcourses/course-registry';
 import { MC1CourseFlow } from '@/components/microcourse/mc1/MC1CourseFlow';
+import { MC2CourseFlow } from '@/components/microcourse/mc2/MC2CourseFlow';
 import {
   getLesson,
   getLessonContent,
@@ -283,6 +284,24 @@ export default function MicroCourseScreen() {
   if (courseId === 'mc-attachment-101' && !completed) {
     return (
       <MC1CourseFlow
+        lessonNumber={lessonNum}
+        totalLessons={totalLessons}
+        attachmentStyle={attachmentStyle}
+        content={content}
+        lesson={lesson}
+        course={course}
+        onComplete={handleComplete}
+        onExit={handleExit}
+        saving={saving}
+      />
+    );
+  }
+
+  // ─── MC2 Interactive Flow ────────────────────
+
+  if (courseId === 'mc-regulation' && !completed) {
+    return (
+      <MC2CourseFlow
         lessonNumber={lessonNum}
         totalLessons={totalLessons}
         attachmentStyle={attachmentStyle}
