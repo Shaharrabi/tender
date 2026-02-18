@@ -2,12 +2,12 @@
  * DimensionSlider — Horizontal score bar with optional interactive drag.
  *
  * Read-only mode: Shows score position as a thumb on a filled bar.
- * Interactive mode: Thumb becomes draggable via PanResponder, calls onValueChange.
+ * Interactive mode: Tap anywhere on the track OR drag the thumb to set value.
  *
- * Uses RN PanResponder (no extra gesture deps needed for web compat).
+ * Uses mutable refs so PanResponder always sees current props.
  */
 
-import React, { useRef, useCallback, useState } from 'react';
+import React, { useRef, useCallback, useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -45,47 +45,61 @@ export function DimensionSlider({
   const percent = ((value - min) / (max - min)) * 100;
   const thumbScale = useRef(new Animated.Value(1)).current;
 
+  // Mutable refs so PanResponder always sees current values
+  const propsRef = useRef({ value, min, max, trackWidth, interactive, onValueChange });
+  propsRef.current = { value, min, max, trackWidth, interactive, onValueChange };
+
+  // Store the value at gesture start so we can add dx to it
+  const startValueRef = useRef(value);
+
   const clamp = useCallback(
     (v: number) => Math.round(Math.max(min, Math.min(max, v)) * 10) / 10,
     [min, max]
   );
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => interactive,
-      onMoveShouldSetPanResponder: () => interactive,
-      onPanResponderGrant: () => {
-        Animated.spring(thumbScale, {
-          toValue: 1.3,
-          friction: 5,
-          useNativeDriver: true,
-        }).start();
-      },
-      onPanResponderMove: (_evt, gestureState) => {
-        if (!trackWidth || !onValueChange) return;
-        // Calculate value from horizontal offset relative to track
-        const currentPercent = ((value - min) / (max - min));
-        const currentX = currentPercent * trackWidth;
-        const newX = currentX + gestureState.dx;
-        const newPercent = newX / trackWidth;
-        const newValue = clamp(min + newPercent * (max - min));
-        onValueChange(newValue);
-      },
-      onPanResponderRelease: () => {
-        Animated.spring(thumbScale, {
-          toValue: 1,
-          friction: 5,
-          useNativeDriver: true,
-        }).start();
-      },
-    })
-  ).current;
+  const panResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => propsRef.current.interactive,
+        onMoveShouldSetPanResponder: (_, gs) =>
+          propsRef.current.interactive && Math.abs(gs.dx) > 2,
+        onPanResponderGrant: () => {
+          // Capture value at the start of the drag
+          startValueRef.current = propsRef.current.value;
+          Animated.spring(thumbScale, {
+            toValue: 1.3,
+            friction: 5,
+            useNativeDriver: true,
+          }).start();
+        },
+        onPanResponderMove: (_evt, gestureState) => {
+          const { trackWidth: tw, min: mn, max: mx, onValueChange: ovc } = propsRef.current;
+          if (!tw || !ovc) return;
+
+          // Convert dx pixels to value delta
+          const range = mx - mn;
+          const valueDelta = (gestureState.dx / tw) * range;
+          const newValue = Math.round(
+            Math.max(mn, Math.min(mx, startValueRef.current + valueDelta)) * 10
+          ) / 10;
+          ovc(newValue);
+        },
+        onPanResponderRelease: () => {
+          Animated.spring(thumbScale, {
+            toValue: 1,
+            friction: 5,
+            useNativeDriver: true,
+          }).start();
+        },
+      }),
+    [] // intentionally empty — uses propsRef for current values
+  );
 
   const handleTrackLayout = (e: LayoutChangeEvent) => {
     setTrackWidth(e.nativeEvent.layout.width);
   };
 
-  // For interactive: handle tap on track to jump to position
+  // Tap on track to jump to position
   const handleTrackPress = useCallback(
     (e: any) => {
       if (!interactive || !onValueChange || !trackWidth) return;

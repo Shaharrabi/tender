@@ -60,10 +60,12 @@ export function ExploreMode({
   const insightOpacity = useRef(new Animated.Value(0)).current;
   const [insightText, setInsightText] = useState('');
 
-  // Calculate explored style
+  // Calculate explored style — use actual scores as fallback for un-dragged dimension
+  const effectiveAnxiety = exploredAnxiety ?? anxietyScore;
+  const effectiveAvoidance = exploredAvoidance ?? avoidanceScore;
   const exploredStyle =
-    exploredAnxiety != null && exploredAvoidance != null
-      ? getStyleFromScores(exploredAnxiety, exploredAvoidance)
+    isExploring && (exploredAnxiety != null || exploredAvoidance != null)
+      ? getStyleFromScores(effectiveAnxiety, effectiveAvoidance)
       : attachmentStyle;
 
   // Update insight when quadrant changes

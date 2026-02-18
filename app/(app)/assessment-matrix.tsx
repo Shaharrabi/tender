@@ -19,7 +19,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
-import { fetchAllScores } from '@/services/portrait';
+import { supabase } from '@/services/supabase';
 import { getECRRInterpretation } from '@/utils/assessments/interpretations/ecr-r';
 import {
   Colors,
@@ -42,8 +42,8 @@ type Segment = 'matrix' | 'connections' | 'profile';
 
 const SEGMENTS: { key: Segment; label: string; minAssessments: number }[] = [
   { key: 'matrix', label: 'Matrix', minAssessments: 1 },
-  { key: 'connections', label: 'Connections', minAssessments: 3 },
-  { key: 'profile', label: 'Profile', minAssessments: 6 },
+  { key: 'connections', label: 'Connections', minAssessments: 2 },
+  { key: 'profile', label: 'Profile', minAssessments: 3 },
 ];
 
 export default function AssessmentMatrixScreen() {
@@ -74,8 +74,23 @@ export default function AssessmentMatrixScreen() {
     (async () => {
       try {
         setLoading(true);
-        const scores = await fetchAllScores(user.id);
-        setAllScores(scores);
+        // Fetch ALL assessment types (not just portrait's 6) so RFAS shows too
+        const { data, error: fetchErr } = await supabase
+          .from('assessments')
+          .select('id, type, scores')
+          .eq('user_id', user.id)
+          .order('completed_at', { ascending: false });
+
+        if (fetchErr) throw fetchErr;
+
+        // Take most recent per type
+        const latest: Record<string, { id: string; scores: any }> = {};
+        for (const row of data ?? []) {
+          if (!latest[row.type]) {
+            latest[row.type] = { id: row.id, scores: row.scores };
+          }
+        }
+        setAllScores(latest);
       } catch (err) {
         console.error('Failed to fetch scores:', err);
         setError('Unable to load your assessment data.');
