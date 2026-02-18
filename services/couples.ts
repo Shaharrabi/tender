@@ -225,6 +225,68 @@ export async function disconnectCouple(coupleId: string): Promise<boolean> {
   return !error;
 }
 
+export async function deleteCouple(coupleId: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('couples')
+    .delete()
+    .eq('id', coupleId);
+
+  return !error;
+}
+
+/**
+ * Clean up all couple-related data for a user.
+ * Deletes dyadic assessments, relationship portraits, and couple rows.
+ */
+export async function cleanupAllCouples(userId: string): Promise<void> {
+  const { data: allCouples } = await supabase
+    .from('couples')
+    .select('id')
+    .or(`partner_a_id.eq.${userId},partner_b_id.eq.${userId}`);
+
+  if (allCouples && allCouples.length > 0) {
+    for (const row of allCouples) {
+      await supabase.from('dyadic_assessments').delete().eq('couple_id', row.id);
+      await supabase.from('relationship_portraits').delete().eq('couple_id', row.id);
+      await supabase.from('sharing_preferences').delete().eq('couple_id', row.id);
+    }
+    await supabase
+      .from('couples')
+      .delete()
+      .or(`partner_a_id.eq.${userId},partner_b_id.eq.${userId}`);
+  }
+}
+
+/**
+ * Setup a demo partner as a virtual couple.
+ * Creates a self-couple (partner_a = partner_b = userId to satisfy RLS)
+ * and seeds dyadic assessment scores.
+ */
+export async function setupDemoPartnerCouple(
+  userId: string,
+): Promise<Couple | null> {
+  // 1. Clean up any existing couples for this user
+  await cleanupAllCouples(userId);
+
+  // 2. Create fresh self-couple
+  const { data: couple, error } = await supabase
+    .from('couples')
+    .insert({
+      partner_a_id: userId,
+      partner_b_id: userId,
+      status: 'active',
+    })
+    .select()
+    .single();
+
+  if (error || !couple) {
+    console.error('[Couples] Failed to create demo couple:', error);
+    return null;
+  }
+
+  return couple as Couple;
+}
+
 // ─── Dyadic Assessments ────────────────────────────────
 
 export async function saveDyadicAssessment(

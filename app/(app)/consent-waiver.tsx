@@ -24,6 +24,8 @@ import {
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { saveConsent } from '@/services/consent';
+import { getPortrait } from '@/services/portrait';
+import { generatePortraitPDF } from '@/services/pdf-export';
 import type { ConsentType } from '@/types/consent';
 import {
   Colors,
@@ -39,6 +41,7 @@ import {
   EyeIcon,
   CheckmarkIcon,
   ArrowLeftIcon,
+  SparkleIcon,
 } from '@/assets/graphics/icons';
 import type { ComponentType } from 'react';
 import type { IconProps } from '@/assets/graphics/icons';
@@ -148,6 +151,8 @@ export default function ConsentWaiverScreen() {
   const [agreed, setAgreed] = useState(false);
   const [signerName, setSignerName] = useState(user?.email?.split('@')[0] ?? '');
   const [saving, setSaving] = useState(false);
+  const [consentSaved, setConsentSaved] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const waiverText = useMemo(() => {
     if (!selectedOption) return '';
@@ -161,7 +166,7 @@ export default function ConsentWaiverScreen() {
     setSaving(true);
     try {
       await saveConsent(user.id, selectedOption, waiverText);
-      router.replace('/(app)/portrait' as any);
+      setConsentSaved(true);
     } catch (e: any) {
       console.error('[ConsentWaiver] Save failed:', e);
       Alert.alert(
@@ -171,6 +176,25 @@ export default function ConsentWaiverScreen() {
       );
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleExportPDF = async () => {
+    if (!user) return;
+    setExporting(true);
+    try {
+      const portrait = await getPortrait(user.id);
+      if (portrait) {
+        await generatePortraitPDF(portrait);
+      } else {
+        Alert.alert('No Portrait Yet', 'View your portrait first to generate a PDF.');
+        router.replace('/(app)/portrait' as any);
+      }
+    } catch (e: any) {
+      console.error('[ConsentWaiver] PDF export failed:', e);
+      Alert.alert('Export Failed', 'Could not generate PDF. Try again from the portrait screen.');
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -240,6 +264,71 @@ export default function ConsentWaiverScreen() {
       </TouchableOpacity>
     );
   };
+
+  // ─── Post-Consent Confirmation ────────────────────────────
+
+  if (consentSaved) {
+    return (
+      <SafeAreaView style={s.container}>
+        <ScrollView
+          contentContainerStyle={[s.scrollContent, { alignItems: 'center', justifyContent: 'center', flex: 1 }]}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={s.confirmationSection}>
+            <View style={s.confirmationIconWrap}>
+              <CheckmarkIcon size={48} color={Colors.primary} />
+            </View>
+            <Text style={s.heroTitle}>Consent Saved</Text>
+            <Text style={[s.heroSubtitle, { marginBottom: Spacing.xl }]}>
+              Your data preferences have been recorded.{'\n'}
+              {selectedOption === 'view_and_erase'
+                ? 'Your data will be erased after you view your results.'
+                : 'Your data is stored securely. You control who sees it.'}
+            </Text>
+
+            {/* View Portrait */}
+            <TouchableOpacity
+              style={s.submitButton}
+              onPress={() => router.replace('/(app)/portrait' as any)}
+              activeOpacity={0.8}
+            >
+              <SparkleIcon size={18} color={Colors.textOnPrimary} />
+              <Text style={s.submitButtonText}>  View Your Portrait</Text>
+            </TouchableOpacity>
+
+            {/* Export PDF */}
+            <TouchableOpacity
+              style={[s.submitButton, s.confirmationSecondaryBtn]}
+              onPress={handleExportPDF}
+              activeOpacity={0.8}
+              disabled={exporting}
+            >
+              {exporting ? (
+                <ActivityIndicator color={Colors.primary} size="small" />
+              ) : (
+                <Text style={[s.submitButtonText, { color: Colors.primary }]}>
+                  Export as PDF
+                </Text>
+              )}
+            </TouchableOpacity>
+
+            {/* Share with Therapist (store_and_share only) */}
+            {selectedOption === 'store_and_share' && (
+              <TouchableOpacity
+                style={[s.submitButton, s.confirmationSecondaryBtn]}
+                onPress={() => router.push('/(app)/sharing-settings' as any)}
+                activeOpacity={0.8}
+              >
+                <Text style={[s.submitButtonText, { color: Colors.primary }]}>
+                  Sharing Settings
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
 
   // ─── Main Render ─────────────────────────────────────────
 
@@ -636,5 +725,28 @@ const s = StyleSheet.create({
   },
   submitButtonTextDisabled: {
     color: Colors.textMuted,
+  },
+
+  // ── Post-Consent Confirmation ────────
+  confirmationSection: {
+    alignItems: 'center',
+    gap: Spacing.sm,
+    paddingTop: Spacing.xxxl,
+  },
+  confirmationIconWrap: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: Colors.primary + '15',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.md,
+  },
+  confirmationSecondaryBtn: {
+    backgroundColor: Colors.primary + '10',
+    marginTop: Spacing.sm,
+    borderWidth: 1,
+    borderColor: Colors.primary + '30',
+    ...Shadows.subtle,
   },
 });

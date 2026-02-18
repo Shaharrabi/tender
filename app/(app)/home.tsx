@@ -112,6 +112,7 @@ import {
   MasksIcon,
   ScaleIcon,
   CompassIcon,
+  ShieldIcon,
 } from '@/assets/graphics/icons';
 import type { ComponentType } from 'react';
 import type { IconProps } from '@/assets/graphics/icons';
@@ -223,6 +224,9 @@ export default function HomeScreen() {
   // Couple state
   const [couple, setCouple] = useState<Couple | null>(null);
   const [dyadicAllDone, setDyadicAllDone] = useState(false);
+
+  // Consent state
+  const [consentGiven, setConsentGiven] = useState(false);
 
   // WEARE profile state (Phase 4)
   const [weareProfile, setWeareProfile] = useState<WEAREProfile | null>(null);
@@ -539,6 +543,14 @@ export default function HomeScreen() {
       } catch {
         setCouple(null);
         setDyadicAllDone(false);
+      }
+
+      // 3b. Load consent status
+      try {
+        const consent = await getUserConsent(user.id);
+        setConsentGiven(!!consent);
+      } catch {
+        setConsentGiven(false);
       }
 
       // 4. Compute unlock state
@@ -1213,6 +1225,24 @@ export default function HomeScreen() {
             <Text style={styles.couplePortalReadyText}>
               Your couple portrait is ready — enter the portal
             </Text>
+            <Text style={styles.realPartnerPromptArrow}>{'\u2192'}</Text>
+          </TouchableOpacity>
+        )}
+
+        {/* ═══ CONSENT BANNER (all 6 assessments done, no consent yet) ═══ */}
+        {completedCount >= 6 && !consentGiven && (
+          <TouchableOpacity
+            style={styles.consentBanner}
+            onPress={() => router.push('/(app)/consent-waiver' as any)}
+            activeOpacity={0.7}
+          >
+            <ShieldIcon size={20} color={Colors.primary} />
+            <View style={styles.consentBannerContent}>
+              <Text style={styles.consentBannerTitle}>All Assessments Complete!</Text>
+              <Text style={styles.consentBannerDesc}>
+                Review your data choices before viewing your portrait.
+              </Text>
+            </View>
             <Text style={styles.realPartnerPromptArrow}>{'\u2192'}</Text>
           </TouchableOpacity>
         )}
@@ -3284,5 +3314,33 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.bodySmall,
     fontWeight: '600',
     color: Colors.secondary,
+  },
+  consentBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginHorizontal: Spacing.lg,
+    marginBottom: Spacing.md,
+    backgroundColor: Colors.primary + '10',
+    borderRadius: BorderRadius.lg,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.primary + '25',
+  },
+  consentBannerContent: {
+    flex: 1,
+    gap: 2,
+  },
+  consentBannerTitle: {
+    fontSize: FontSizes.body,
+    fontFamily: FontFamilies.heading,
+    fontWeight: '600',
+    color: Colors.primary,
+  },
+  consentBannerDesc: {
+    fontSize: FontSizes.caption,
+    fontFamily: 'JosefinSans_400Regular',
+    color: Colors.textSecondary,
   },
 });

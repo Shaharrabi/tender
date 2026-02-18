@@ -45,9 +45,10 @@ import {
 import { generatePortrait } from '@/utils/portrait/portrait-generator';
 import { getPortrait, savePortrait, fetchAllScores } from '@/services/portrait';
 import { eraseUserData } from '@/services/consent';
-import { getMyCouple, disconnectCouple } from '@/services/couples';
+import { getMyCouple, disconnectCouple, cleanupAllCouples, setupDemoPartnerCouple } from '@/services/couples';
 import { supabase } from '@/services/supabase';
 import type { AllAssessmentScores } from '@/types';
+import { DEMO_PARTNERS, type DemoPartnerId } from '@/constants/demoPartners';
 
 const ASSESSMENT_TYPES = [
   { type: 'ecr-r', label: 'How You Connect (ECR-R)' },
@@ -179,24 +180,22 @@ export default function AdminPanel({ userId, onDataChanged, onClose }: AdminPane
   const handleSetupTestCouple = async () => {
     setBusy('setup-couple');
     try {
-      // Check if couple already exists
-      let couple = await getMyCouple(userId);
+      // Clean up any existing couples first (including disconnected ones)
+      await cleanupAllCouples(userId);
 
-      if (!couple) {
-        // Create self-referencing couple (passes RLS: auth.uid() matches both)
-        const { data: newCouple, error: coupleErr } = await supabase
-          .from('couples')
-          .insert({
-            partner_a_id: userId,
-            partner_b_id: userId,
-            status: 'active',
-          })
-          .select()
-          .single();
+      // Create fresh self-referencing couple (passes RLS: auth.uid() matches both)
+      const { data: newCouple, error: coupleErr } = await supabase
+        .from('couples')
+        .insert({
+          partner_a_id: userId,
+          partner_b_id: userId,
+          status: 'active',
+        })
+        .select()
+        .single();
 
-        if (coupleErr) throw coupleErr;
-        couple = newCouple;
-      }
+      if (coupleErr) throw coupleErr;
+      const couple = newCouple;
 
       // Ensure user has a portrait for the couple portal
       const existingPortrait = await getPortrait(userId);
@@ -217,9 +216,20 @@ export default function AdminPanel({ userId, onDataChanged, onClose }: AdminPane
       // Seed dyadic assessments (both "partners" are the same user)
       await seedDyadicAssessments(couple.id, userId, userId);
 
+      // Check if user has a demo partner for context
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('demo_partner_id')
+        .eq('user_id', userId)
+        .single();
+
+      const partnerName = profile?.demo_partner_id
+        ? (DEMO_PARTNERS[profile.demo_partner_id as DemoPartnerId]?.name || 'Demo Partner')
+        : 'Test Partner';
+
       Alert.alert(
         'Test Couple Ready',
-        'Self-couple created with dyadic assessments. You can now access the couple portal.',
+        `Self-couple created with ${partnerName} dyadic assessments. You can now access the couple portal.`,
         [
           { text: 'Open Portal', onPress: () => router.push('/(app)/couple-portal' as any) },
           { text: 'OK' },
@@ -240,21 +250,10 @@ export default function AdminPanel({ userId, onDataChanged, onClose }: AdminPane
   const handleDisconnectCouple = async () => {
     setBusy('disconnect-couple');
     try {
-      const couple = await getMyCouple(userId);
-      if (!couple) {
-        Alert.alert('No Couple', 'No active couple to disconnect.');
-        setBusy(null);
-        return;
-      }
+      // Clean up ALL couple data (including disconnected rows)
+      await cleanupAllCouples(userId);
 
-      // Delete dyadic assessments for this couple
-      await supabase.from('dyadic_assessments').delete().eq('couple_id', couple.id);
-      // Delete relationship portrait
-      await supabase.from('relationship_portraits').delete().eq('couple_id', couple.id);
-      // Disconnect the couple
-      await disconnectCouple(couple.id);
-
-      Alert.alert('Done', 'Test couple disconnected and dyadic data cleared.');
+      Alert.alert('Done', 'Test couple deleted and all dyadic data cleared.');
       onDataChanged();
     } catch (e: any) {
       Alert.alert('Error', e.message || 'Failed to disconnect couple');

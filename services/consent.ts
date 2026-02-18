@@ -180,6 +180,27 @@ export async function getPartnerSharedAssessments(
 // ─── Data Erasure ─────────────────────────────────────────
 
 export async function eraseUserData(userId: string): Promise<void> {
+  // 0. Clean up couple-related data first (has foreign key dependencies)
+  const { data: myCouples } = await supabase
+    .from('couples')
+    .select('id')
+    .or(`partner_a_id.eq.${userId},partner_b_id.eq.${userId}`);
+
+  if (myCouples && myCouples.length > 0) {
+    for (const c of myCouples) {
+      await supabase.from('dyadic_assessments').delete().eq('couple_id', c.id);
+      await supabase.from('relationship_portraits').delete().eq('couple_id', c.id);
+      await supabase.from('sharing_preferences').delete().eq('couple_id', c.id);
+    }
+    await supabase
+      .from('couples')
+      .delete()
+      .or(`partner_a_id.eq.${userId},partner_b_id.eq.${userId}`);
+  }
+
+  // Also clean up couple invites
+  await supabase.from('couple_invites').delete().eq('inviter_id', userId);
+
   // 1. Delete chat messages via sessions owned by this user
   const { data: sessions } = await supabase
     .from('chat_sessions')

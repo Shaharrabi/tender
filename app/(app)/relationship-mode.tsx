@@ -19,6 +19,8 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/services/supabase';
 import { SoundHaptics } from '@/services/SoundHapticsService';
+import { setupDemoPartnerCouple, cleanupAllCouples, getMyCouple } from '@/services/couples';
+import { seedDyadicAssessments } from '@/utils/demo-data';
 import {
   Colors,
   Spacing,
@@ -134,6 +136,25 @@ export default function RelationshipModeScreen() {
         .upsert(updates, { onConflict: 'user_id' });
 
       if (error) throw error;
+
+      // Set up or tear down demo partner couple for couple portal access
+      if (selectedMode === 'demo_partner' || selectedMode === 'random_partner') {
+        // Create self-couple and seed dyadic assessments for demo partner
+        const couple = await setupDemoPartnerCouple(user.id);
+        if (couple) {
+          await seedDyadicAssessments(couple.id, user.id, user.id);
+        }
+      } else if (
+        (currentMode === 'demo_partner' || currentMode === 'random_partner') &&
+        selectedMode !== 'demo_partner' &&
+        selectedMode !== 'random_partner'
+      ) {
+        // Switching away from demo mode — clean up the self-couple
+        const myCouple = await getMyCouple(user.id);
+        if (myCouple && myCouple.partner_a_id === myCouple.partner_b_id) {
+          await cleanupAllCouples(user.id);
+        }
+      }
 
       SoundHaptics.success();
       router.back();

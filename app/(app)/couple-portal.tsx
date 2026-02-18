@@ -602,6 +602,23 @@ export default function CouplePortalScreen() {
           </>
         )}
 
+        {/* 12-Step Healing Journey */}
+        <TouchableOpacity
+          style={[styles.card, styles.journeyCard]}
+          onPress={() => router.push('/(app)/growth' as any)}
+          activeOpacity={0.7}
+        >
+          <View style={styles.journeyHeader}>
+            <SeedlingIcon size={22} color={Colors.primary} />
+            <Text style={styles.journeyTitle}>Continue Your Healing Journey</Text>
+          </View>
+          <Text style={styles.journeyDesc}>
+            Twelve steps of relational growth — practices, reflections, and milestones
+            designed around your unique patterns.
+          </Text>
+          <Text style={styles.journeyCta}>View Journey {'\u2192'}</Text>
+        </TouchableOpacity>
+
         {/* Couple Coach Chat Entry */}
         <TouchableOpacity
           style={[styles.card, styles.coachCard]}
@@ -613,7 +630,7 @@ export default function CouplePortalScreen() {
             Your AI guide now understands both of your portraits and your relationship
             patterns. Get personalized coaching for your journey together.
           </Text>
-          <Text style={styles.coachCta}>Start Conversation →</Text>
+          <Text style={styles.coachCta}>Start Conversation {'\u2192'}</Text>
         </TouchableOpacity>
 
         <View style={{ height: 40 }} />
@@ -719,8 +736,15 @@ const styles = StyleSheet.create({
   exerciseMeta: { flexDirection: 'row', gap: Spacing.sm },
   exerciseMetaText: { fontSize: FontSizes.caption, fontFamily: FontFamilies.body, color: Colors.textMuted },
 
+  // Journey
+  journeyCard: { borderColor: Colors.primary, borderWidth: 1, marginTop: Spacing.lg },
+  journeyHeader: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, marginBottom: Spacing.sm },
+  journeyTitle: { fontSize: FontSizes.headingM, fontFamily: FontFamilies.heading, color: Colors.primary, fontWeight: '600' },
+  journeyDesc: { fontSize: FontSizes.bodySmall, fontFamily: FontFamilies.body, color: Colors.textSecondary, lineHeight: 22, marginBottom: Spacing.md },
+  journeyCta: { fontSize: FontSizes.body, fontFamily: FontFamilies.body, color: Colors.primary, fontWeight: '600' },
+
   // Coach
-  coachCard: { borderColor: Colors.depth, borderWidth: 1, marginTop: Spacing.lg },
+  coachCard: { borderColor: Colors.depth, borderWidth: 1, marginTop: Spacing.md },
   coachTitle: { fontSize: FontSizes.headingM, fontFamily: FontFamilies.heading, color: Colors.depth, marginBottom: Spacing.xs },
   coachDesc: { fontSize: FontSizes.bodySmall, fontFamily: FontFamilies.body, color: Colors.textSecondary, lineHeight: 22, marginBottom: Spacing.md },
   coachCta: { fontSize: FontSizes.body, fontFamily: FontFamilies.body, color: Colors.depth, fontWeight: '600' },
