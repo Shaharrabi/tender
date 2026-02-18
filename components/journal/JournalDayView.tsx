@@ -166,6 +166,133 @@ function CheckInCard({ entry }: { entry: JournalEntry }) {
   );
 }
 
+/**
+ * Format a step response for display. Lesson components store structured
+ * data as JSON.stringify(). We parse it and render a human-readable summary
+ * instead of raw JSON text.
+ */
+function formatStepResponse(response: string): string {
+  // If it's not JSON, return as-is (plain text responses)
+  let parsed: any;
+  try {
+    parsed = JSON.parse(response);
+  } catch {
+    return response;
+  }
+
+  // Not an object — just return the string representation
+  if (typeof parsed !== 'object' || parsed === null) {
+    return String(parsed);
+  }
+
+  const parts: string[] = [];
+
+  // ─── MC1 L2: Body sensations (somatic heatmap) ───
+  if (parsed.regions && Array.isArray(parsed.regions)) {
+    const names = parsed.regions.map((r: any) => r.label || r.region).filter(Boolean);
+    if (names.length > 0) parts.push(`Sensations: ${names.join(', ')}`);
+  }
+
+  // ─── MC1 L3: Cycle awareness ───
+  if (parsed.cycleViewed != null) {
+    parts.push(`Cycle explored: ${parsed.variant || 'default'} pattern`);
+  }
+
+  // ─── MC1 L4: Timer practice ───
+  if (parsed.timerCompleted != null) {
+    const mins = parsed.durationSeconds ? Math.round(parsed.durationSeconds / 60) : null;
+    parts.push(
+      parsed.timerCompleted
+        ? `Practice completed${mins ? ` (${mins} min)` : ''}`
+        : 'Practice started'
+    );
+  }
+
+  // ─── MC1 L5: Commitment contract ───
+  if (parsed.signed != null && parsed.commitmentCount != null) {
+    parts.push(`Signed commitment: ${parsed.commitmentCount}x per week`);
+  }
+
+  // ─── MC2 L5: Co-regulation ───
+  if (parsed.mode && response.includes('co-regulation')) {
+    // Plain text responses are already handled above; this is a fallback
+  }
+
+  // ─── MC3 L1: Myth Buster ───
+  if (parsed.mythsBusted != null) {
+    parts.push(
+      parsed.allFlipped
+        ? `All ${parsed.mythsBusted} myths busted!`
+        : `${parsed.mythsBusted} myths explored`
+    );
+  }
+
+  // ─── MC3 L1: Content vs. Pattern reflection ───
+  if (parsed.content != null && parsed.pattern != null) {
+    if (parsed.content) parts.push(`Content: ${parsed.content}`);
+    if (parsed.pattern) parts.push(`Pattern: ${parsed.pattern}`);
+  }
+
+  // ─── MC3 L2: Horseman Matcher ───
+  if (parsed.allMatchedCorrectly != null) {
+    parts.push(
+      parsed.noMistakes
+        ? 'All horsemen matched correctly — no mistakes!'
+        : `All horsemen matched (${parsed.totalMistakes || 0} retries)`
+    );
+  }
+
+  // ─── MC3 L2: Horseman identification ───
+  if (parsed.myHorseman != null && parsed.partnerHorseman != null) {
+    const fmt = (s: string) => s.replace(/([A-Z])/g, ' $1').trim();
+    parts.push(`My horseman: ${fmt(parsed.myHorseman)}`);
+    parts.push(`Partner's horseman: ${fmt(parsed.partnerHorseman)}`);
+  }
+
+  // ─── MC3 L3: Repair Scenario ───
+  if (parsed.endingType != null) {
+    const ending = parsed.endingType === 'repaired'
+      ? 'Repair achieved'
+      : parsed.endingType === 'partial'
+        ? 'Partial repair'
+        : 'Unrepaired ending';
+    parts.push(`${ending} (${parsed.repairAttemptsMade || 0} repair attempts)`);
+  }
+
+  // ─── MC3 L4: Repair Sentence Builder ───
+  if (parsed.templates && Array.isArray(parsed.templates)) {
+    const completedCount = parsed.templates.filter((t: any) => t.completed).length;
+    parts.push(`Completed ${completedCount}/${parsed.templates.length} repair sentences`);
+  }
+
+  // ─── MC3 L5: Ritual Designer ───
+  if (parsed.ritual && typeof parsed.ritual === 'object') {
+    const ritualLabels: string[] = [];
+    if (parsed.ritual.timing) ritualLabels.push(`When: ${parsed.ritual.timing.replace(/_/g, ' ')}`);
+    if (parsed.ritual.location) ritualLabels.push(`Where: ${parsed.ritual.location}`);
+    if (parsed.ritual.opening) ritualLabels.push(`Opening: ${parsed.ritual.opening.replace(/_/g, ' ')}`);
+    if (parsed.ritual.gesture) ritualLabels.push(`Gesture: ${parsed.ritual.gesture.replace(/_/g, ' ')}`);
+    if (ritualLabels.length > 0) parts.push(ritualLabels.join('\n'));
+    if (parsed.commitment) parts.push(`Commitment: ${parsed.commitment}`);
+  }
+
+  // If we matched nothing, format key-value pairs generically
+  if (parts.length === 0) {
+    for (const [key, value] of Object.entries(parsed)) {
+      if (value == null || value === '' || value === false) continue;
+      const label = key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ').trim();
+      const displayLabel = label.charAt(0).toUpperCase() + label.slice(1);
+      if (typeof value === 'object') {
+        parts.push(`${displayLabel}: ${JSON.stringify(value)}`);
+      } else {
+        parts.push(`${displayLabel}: ${value}`);
+      }
+    }
+  }
+
+  return parts.join('\n') || response;
+}
+
 function ExerciseCard({ entry }: { entry: JournalEntry }) {
   const { reflection, rating, stepResponses } = entry.data;
   return (
@@ -178,7 +305,9 @@ function ExerciseCard({ entry }: { entry: JournalEntry }) {
           {stepResponses.map((sr: any, idx: number) => (
             <View key={idx} style={cardStyles.stepResponseBlock}>
               <Text style={cardStyles.stepPrompt}>{sr.prompt}</Text>
-              <Text style={cardStyles.stepResponse}>{sr.response}</Text>
+              <Text style={cardStyles.stepResponse}>
+                {formatStepResponse(sr.response)}
+              </Text>
             </View>
           ))}
         </View>

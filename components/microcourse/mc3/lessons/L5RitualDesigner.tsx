@@ -197,20 +197,20 @@ export function L5RitualDesigner({ content, attachmentStyle, onComplete }: L5Rit
         <Text style={styles.title}>YOUR REPAIR RITUAL</Text>
         <Text style={styles.body}>
           A single repair conversation is valuable. A repair CULTURE is transformative.
-          {"\n"}Let's build yours \u2014 a personalized ritual you and your partner can return to
+          {"\n"}Let's build yours {'\u2014'} a personalized ritual you and your partner can return to
           whenever things go sideways.
         </Text>
 
         <View style={styles.practicesCard}>
           <Text style={styles.practicesTitle}>THREE REPAIR PRACTICES</Text>
           <Text style={styles.practiceItem}>
-            1. The Daily Check-in \u2014 {'\u201C'}How are we?{'\u201D'} (2 minutes)
+            1. The Daily Check-in {'\u2014'} {'\u201C'}How are we?{'\u201D'} (2 minutes)
           </Text>
           <Text style={styles.practiceItem}>
-            2. The 24-Hour Repair Rule \u2014 attempt repair within a day
+            2. The 24-Hour Repair Rule {'\u2014'} attempt repair within a day
           </Text>
           <Text style={styles.practiceItem}>
-            3. The Weekly Weather Report \u2014 10-15 minutes together
+            3. The Weekly Weather Report {'\u2014'} 10-15 minutes together
           </Text>
         </View>
 

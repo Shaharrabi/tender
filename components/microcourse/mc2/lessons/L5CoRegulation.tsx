@@ -28,6 +28,11 @@ import {
 } from '@/constants/theme';
 import { MC2_PALETTE } from '@/constants/mc2Theme';
 import { useSoundHaptics } from '@/services/SoundHapticsService';
+import {
+  HeartPulseIcon,
+  CoupleIcon,
+  PersonIcon,
+} from '@/assets/graphics/icons';
 import type { ResolvedLessonContent } from '@/utils/microcourses/course-content';
 import type { AttachmentStyle } from '@/types';
 import type { StepResponseEntry } from '@/types/intervention';
@@ -193,7 +198,7 @@ export function L5CoRegulation({
             safe, safe.
           </Text>
           <Text style={styles.introHighlight}>
-            This is the couple bubble. Not a metaphor {'\u2014'} a physiological reality.
+            This is the couple bubble. Not a metaphor — a physiological reality.
           </Text>
         </View>
 
@@ -219,7 +224,9 @@ export function L5CoRegulation({
           onPress={() => startPractice('partner')}
           activeOpacity={0.7}
         >
-          <Text style={styles.modeEmoji}>{'👫'}</Text>
+          <View style={styles.modeIconWrap}>
+            <CoupleIcon size={40} color={Colors.primary} />
+          </View>
           <Text style={styles.modeTitle}>With Partner</Text>
           <Text style={styles.modeDesc}>
             Sit facing each other. Hand on heart. Breathe together.
@@ -231,7 +238,9 @@ export function L5CoRegulation({
           onPress={() => startPractice('solo')}
           activeOpacity={0.7}
         >
-          <Text style={styles.modeEmoji}>{'🤲'}</Text>
+          <View style={styles.modeIconWrap}>
+            <PersonIcon size={40} color={Colors.primary} />
+          </View>
           <Text style={styles.modeTitle}>Solo Practice</Text>
           <Text style={styles.modeDesc}>
             Hand on your own chest. Breathe slowly. Imagine safety.
@@ -262,16 +271,18 @@ export function L5CoRegulation({
         <Animated.View
           style={[styles.heartContainer, { transform: [{ scale: heartScale }] }]}
         >
-          <Text style={styles.heartEmoji}>{'💗'}</Text>
+          <HeartPulseIcon size={72} color="rgba(255,255,255,0.85)" />
         </Animated.View>
 
-        <Text style={styles.activeInstruction}>
-          {mode === 'partner'
-            ? 'Breathe together.\nNo talking. Just presence.'
-            : 'Hand on your chest.\nBreathe slowly. You are here.'}
-        </Text>
+        <View style={styles.activeTextBlock}>
+          <Text style={styles.activeInstruction}>
+            {mode === 'partner'
+              ? 'Breathe together.\nNo talking. Just presence.'
+              : 'Hand on your chest.\nBreathe slowly. You are here.'}
+          </Text>
 
-        <Text style={styles.timer}>{formatTime(timeLeft)}</Text>
+          <Text style={styles.timer}>{formatTime(timeLeft)}</Text>
+        </View>
       </View>
     );
   }
@@ -283,7 +294,9 @@ export function L5CoRegulation({
       contentContainerStyle={styles.centeredContent}
       showsVerticalScrollIndicator={false}
     >
-      <Text style={styles.doneEmoji}>{'💗'}</Text>
+      <View style={styles.doneIconWrap}>
+        <HeartPulseIcon size={48} color={Colors.primary} />
+      </View>
       <Text style={styles.title}>BEAUTIFUL</Text>
 
       <View style={styles.insightCard}>
@@ -385,8 +398,13 @@ const styles = StyleSheet.create({
     ...Shadows.subtle,
     gap: Spacing.xs,
   },
-  modeEmoji: {
-    fontSize: 36,
+  modeIconWrap: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: Colors.primaryFaded,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: Spacing.xs,
   },
   modeTitle: {
@@ -409,7 +427,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: Spacing.xl,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: Colors.depth,
   },
   glow: {
     position: 'absolute',
@@ -417,33 +435,35 @@ const styles = StyleSheet.create({
   },
   heartContainer: {
     zIndex: 1,
-    marginBottom: Spacing.xxxl,
+    width: 100,
+    height: 100,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  heartEmoji: {
-    fontSize: 80,
+  activeTextBlock: {
+    zIndex: 1,
+    alignItems: 'center',
+    marginTop: Spacing.xxl,
   },
   activeInstruction: {
     fontSize: FontSizes.body,
     fontFamily: FontFamilies.body,
-    color: 'rgba(255,255,255,0.75)',
+    color: 'rgba(255,255,255,0.8)',
     textAlign: 'center',
     lineHeight: 28,
     fontStyle: 'italic',
-    zIndex: 1,
   },
   timer: {
     fontSize: 36,
     fontWeight: '200',
     fontFamily: FontFamilies.accent,
     color: 'rgba(255,255,255,0.45)',
-    marginTop: Spacing.xl,
+    marginTop: Spacing.lg,
     fontVariant: ['tabular-nums'],
-    zIndex: 1,
   },
 
   // ─── Done ───────────────────────────
-  doneEmoji: {
-    fontSize: 48,
+  doneIconWrap: {
     marginBottom: Spacing.md,
   },
   insightCard: {
