@@ -18,7 +18,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
-import { supabase } from '@/services/supabase';
+import { eraseUserData } from '@/services/consent';
 import {
   Colors,
   Spacing,
@@ -54,7 +54,7 @@ export default function PrivacyScreen() {
   const handleDeleteAllData = () => {
     Alert.alert(
       'Delete All My Data',
-      'This will permanently delete your account, all assessment data, results, portraits, chat history, and practice data. This cannot be undone.',
+      'This will permanently delete all assessment data, results, portraits, chat history, and practice data. This cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -64,23 +64,7 @@ export default function PrivacyScreen() {
             if (!user) return;
             setDeleting(true);
             try {
-              // Delete all user data from each table
-              const tables = [
-                'assessments',
-                'portraits',
-                'chat_messages',
-                'daily_checkins',
-                'growth_edge_progress',
-                'couples',
-                'couple_invites',
-              ];
-
-              for (const table of tables) {
-                await supabase.from(table).delete().eq('user_id', user.id);
-              }
-
-              // Delete the user account via auth
-              // Note: This requires admin privileges; for now, sign out
+              await eraseUserData(user.id);
               await signOut();
               router.replace('/(auth)/login');
             } catch (e) {

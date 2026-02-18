@@ -202,42 +202,66 @@ export const DEMO_WEEKLY_CHECKIN: Omit<WeeklyCheckIn, 'id' | 'createdAt'> = {
   practiceHighlight: 'The grounding exercise helped me stay present during a difficult conversation.',
 };
 
-// ─── Seeder Function ────────────────────────────────────
+// ─── Assessment Type → Demo Scores Map ───────────────────
+
+const DEMO_SCORES_MAP: Record<string, any> = {
+  'ecr-r': DEMO_ECRR,
+  'dutch': DEMO_DUTCH,
+  'sseit': DEMO_SSEIT,
+  'dsi-r': DEMO_DSIR,
+  'ipip-neo-120': DEMO_IPIP,
+  'values': DEMO_VALUES,
+};
+
+// ─── Seeder Functions ───────────────────────────────────
+
+/**
+ * Seeds a single demo assessment record into Supabase.
+ * Returns the ID of the created record.
+ */
+export async function seedSingleAssessment(
+  userId: string,
+  assessmentType: string
+): Promise<string> {
+  const scores = DEMO_SCORES_MAP[assessmentType];
+  if (!scores) {
+    throw new Error(`Unknown assessment type: ${assessmentType}`);
+  }
+
+  const { data, error } = await supabase
+    .from('assessments')
+    .insert({
+      user_id: userId,
+      type: assessmentType,
+      responses: [],  // Demo mode — no raw responses
+      scores,
+      completed_at: new Date().toISOString(),
+    })
+    .select('id')
+    .single();
+
+  if (error) {
+    console.error(`Failed to seed ${assessmentType}:`, error);
+    throw error;
+  }
+  return data.id;
+}
 
 /**
  * Seeds all 6 demo assessment records into Supabase for the given user.
  * Returns the IDs of the created records.
  */
 export async function seedDemoAssessments(userId: string): Promise<string[]> {
-  const assessments = [
-    { type: 'ecr-r', scores: DEMO_ECRR },
-    { type: 'dutch', scores: DEMO_DUTCH },
-    { type: 'sseit', scores: DEMO_SSEIT },
-    { type: 'dsi-r', scores: DEMO_DSIR },
-    { type: 'ipip-neo-120', scores: DEMO_IPIP },
-    { type: 'values', scores: DEMO_VALUES },
-  ];
-
+  const types = Object.keys(DEMO_SCORES_MAP);
   const ids: string[] = [];
 
-  for (const assessment of assessments) {
-    const { data, error } = await supabase
-      .from('assessments')
-      .insert({
-        user_id: userId,
-        type: assessment.type,
-        responses: [],  // Demo mode — no raw responses
-        scores: assessment.scores,
-        completed_at: new Date().toISOString(),
-      })
-      .select('id')
-      .single();
-
-    if (error) {
-      console.error(`Failed to seed ${assessment.type}:`, error);
-      continue;
+  for (const type of types) {
+    try {
+      const id = await seedSingleAssessment(userId, type);
+      ids.push(id);
+    } catch {
+      // Continue seeding remaining assessments
     }
-    if (data) ids.push(data.id);
   }
 
   return ids;

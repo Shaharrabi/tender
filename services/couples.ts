@@ -378,9 +378,20 @@ export async function checkDyadicCompletion(
     .map((d: any) => d.assessment_type);
 
   const requiredTypes: DyadicAssessmentType[] = ['rdas', 'dci', 'csi-16'];
-  const allDone =
-    requiredTypes.every((t) => userComplete.includes(t)) &&
-    requiredTypes.every((t) => partnerComplete.includes(t));
 
-  return { userComplete, partnerComplete, allDone };
+  // Unlock portal after at least 1 dyadic assessment per partner (lower bar)
+  const allDone =
+    userComplete.length >= 1 && partnerComplete.length >= 1;
+
+  // Track depth for progressive messaging
+  const completionLevel: 'none' | 'preliminary' | 'partial' | 'full' =
+    !allDone ? 'none'
+    : (requiredTypes.every((t) => userComplete.includes(t)) &&
+       requiredTypes.every((t) => partnerComplete.includes(t)))
+      ? 'full'
+      : (userComplete.length + partnerComplete.length >= 4)
+        ? 'partial'
+        : 'preliminary';
+
+  return { userComplete, partnerComplete, allDone, completionLevel };
 }

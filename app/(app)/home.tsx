@@ -69,6 +69,8 @@ import { SoundHaptics } from '@/services/SoundHapticsService';
 import { XPProgressBar } from '@/components/gamification/XPProgressBar';
 import StreakBanner from '@/components/StreakBanner';
 import { useFirstTime } from '@/context/FirstTimeContext';
+import AdminPanel from '@/components/admin/AdminPanel';
+import LockedPortraitPreview from '@/components/portrait/LockedPortraitPreview';
 import { HighlightWrapper } from '@/components/ui/HighlightWrapper';
 import { TooltipManager } from '@/components/ftue/TooltipManager';
 import { GuidedTour } from '@/components/ftue/GuidedTour';
@@ -244,6 +246,10 @@ export default function HomeScreen() {
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [relationshipMode, setRelationshipMode] = useState<string>('solo');
   const [demoPartnerId, setDemoPartnerId] = useState<string | null>(null);
+
+  // Admin mode
+  const [adminMode, setAdminMode] = useState(false);
+  const adminTapRef = useRef<{ count: number; lastTap: number }>({ count: 0, lastTap: 0 });
 
   // Loading
   const [loading, setLoading] = useState(true);
@@ -839,6 +845,33 @@ export default function HomeScreen() {
     }
   };
 
+  // ─── Admin Mode ────────────────────────────────────────
+
+  // Load admin mode from AsyncStorage on mount
+  useEffect(() => {
+    AsyncStorage.getItem('admin_mode_enabled').then((val) => {
+      if (val === 'true') setAdminMode(true);
+    });
+  }, []);
+
+  const handleTaglineTripleTap = () => {
+    const now = Date.now();
+    const tap = adminTapRef.current;
+    if (now - tap.lastTap < 800) {
+      tap.count += 1;
+    } else {
+      tap.count = 1;
+    }
+    tap.lastTap = now;
+
+    if (tap.count >= 3) {
+      tap.count = 0;
+      const newVal = !adminMode;
+      setAdminMode(newVal);
+      AsyncStorage.setItem('admin_mode_enabled', String(newVal));
+    }
+  };
+
   // ─── Demo Mode ─────────────────────────────────────────
 
   const handleSkipToDemo = async () => {
@@ -961,7 +994,13 @@ export default function HomeScreen() {
                       })()}
                     </Text>
                   )}
-                  <Text style={styles.heroAppTagline}>The Science of Relationships</Text>
+                  <Text
+                    style={styles.heroAppTagline}
+                    onPress={handleTaglineTripleTap}
+                    suppressHighlighting
+                  >
+                    The Science of Relationships
+                  </Text>
                 </>
               );
             })()}
@@ -1030,6 +1069,18 @@ export default function HomeScreen() {
           </View>
         )}
 
+        {/* ═══ ADMIN PANEL (hidden until triple-tap) ══════════ */}
+        {adminMode && user && (
+          <AdminPanel
+            userId={user.id}
+            onDataChanged={loadData}
+            onClose={() => {
+              setAdminMode(false);
+              AsyncStorage.setItem('admin_mode_enabled', 'false');
+            }}
+          />
+        )}
+
         {/* ═══ 2. TODAY'S FOCUS (ONE THING) ═══════════════════ */}
         {todaysExercise ? (
           <View style={styles.todaysFocusSection}>
@@ -1086,6 +1137,47 @@ export default function HomeScreen() {
           </View>
         ) : null}
 
+        {/* ═══ DEMO PARTNER CARD (shown when mode is demo_partner) ═══ */}
+        {relationshipMode === 'demo_partner' && demoPartnerId && DEMO_PARTNERS[demoPartnerId as DemoPartnerId] && (
+          <View style={styles.demoPartnerSection}>
+            <TouchableOpacity
+              style={styles.demoPartnerCard}
+              onPress={() => router.push('/(app)/chat' as any)}
+              activeOpacity={0.8}
+            >
+              <View style={styles.demoPartnerInfo}>
+                <View style={[
+                  styles.demoPartnerAvatar,
+                  { backgroundColor: DEMO_PARTNERS[demoPartnerId as DemoPartnerId].color + '20' },
+                ]}>
+                  <CoupleIcon size={20} color={DEMO_PARTNERS[demoPartnerId as DemoPartnerId].color} />
+                </View>
+                <View style={styles.demoPartnerTextWrap}>
+                  <Text style={styles.demoPartnerName}>
+                    Practice with {DEMO_PARTNERS[demoPartnerId as DemoPartnerId].name}
+                  </Text>
+                  <Text style={styles.demoPartnerStyle}>
+                    {DEMO_PARTNERS[demoPartnerId as DemoPartnerId].attachmentStyle}
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.demoPartnerCta}>Start {'\u2192'}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        {relationshipMode === 'solo' && !hasPortrait && completedCount > 0 && (
+          <TouchableOpacity
+            style={styles.demoPartnerPrompt}
+            onPress={() => router.push('/(app)/relationship-mode' as any)}
+            activeOpacity={0.7}
+          >
+            <CoupleIcon size={16} color={Colors.primary} />
+            <Text style={styles.demoPartnerPromptText}>
+              Want to practice with an AI partner?
+            </Text>
+          </TouchableOpacity>
+        )}
+
         {/* ═══ 3. DAILY CHECK-IN (Collapsed by default) ═══════ */}
         {hasPortrait && (
           <View style={styles.section}>
@@ -1093,6 +1185,32 @@ export default function HomeScreen() {
               todaysCheckIn={todaysCheckIn}
               onSubmit={handleCheckInSubmit}
             />
+          </View>
+        )}
+
+        {/* ═══ JOURNEY VALUE MAP (first-time users) ═══════════ */}
+        {completedCount === 0 && !hasPortrait && !isDemo && (
+          <View style={styles.journeyMapCard}>
+            <Text style={styles.journeyMapTitle}>Your Journey Ahead</Text>
+            <View style={styles.journeyStepsColumn}>
+              {[
+                { num: '1', name: 'Discover', desc: '6 sections exploring how you connect, feel, and fight' },
+                { num: '2', name: 'Portrait', desc: 'A complete relational profile synthesizing all your results' },
+                { num: '3', name: 'Growth Plan', desc: 'Personalized pathways based on your unique patterns' },
+                { num: '4', name: 'Practice', desc: 'Guided exercises, micro-courses, and AI coaching' },
+                { num: '5', name: 'Progress', desc: 'Track your growth with milestones and insights' },
+              ].map((step) => (
+                <View key={step.num} style={styles.journeyStepRow}>
+                  <View style={styles.journeyStepNumber}>
+                    <Text style={styles.journeyStepNumberText}>{step.num}</Text>
+                  </View>
+                  <View style={styles.journeyStepContent}>
+                    <Text style={styles.journeyStepName}>{step.name}</Text>
+                    <Text style={styles.journeyStepDesc}>{step.desc}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
           </View>
         )}
 
@@ -1407,6 +1525,12 @@ export default function HomeScreen() {
               {'\u201C'}{stepTagline}{'\u201D'}
             </Text>
           </View>
+        )}
+        {!hasPortrait && completedCount > 0 && (
+          <LockedPortraitPreview
+            completedCount={completedCount}
+            completedTypes={completedTypes}
+          />
         )}
         {!hasPortrait && <NudgeCarousel nudges={nudges} />}
 
@@ -2953,5 +3077,120 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+  },
+
+  // ── Demo Partner Card ──
+  demoPartnerSection: {
+    paddingHorizontal: Spacing.lg,
+    marginBottom: Spacing.sm,
+  },
+  demoPartnerCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    ...Shadows.subtle,
+  },
+  demoPartnerInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    flex: 1,
+  },
+  demoPartnerAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  demoPartnerTextWrap: {
+    flex: 1,
+  },
+  demoPartnerName: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '700',
+    color: Colors.text,
+  },
+  demoPartnerStyle: {
+    fontSize: FontSizes.caption,
+    color: Colors.textSecondary,
+    marginTop: 1,
+  },
+  demoPartnerCta: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '600',
+    color: Colors.primary,
+  },
+  demoPartnerPrompt: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    marginBottom: Spacing.xs,
+  },
+  demoPartnerPromptText: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.primary,
+    fontWeight: '500',
+  },
+
+  // ── Journey Value Map ──
+  journeyMapCard: {
+    marginHorizontal: Spacing.lg,
+    marginBottom: Spacing.md,
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    ...Shadows.card,
+  },
+  journeyMapTitle: {
+    fontSize: FontSizes.body,
+    fontWeight: '700',
+    fontFamily: FontFamilies.heading,
+    color: Colors.text,
+    marginBottom: Spacing.md,
+  },
+  journeyStepsColumn: {
+    gap: Spacing.sm,
+  },
+  journeyStepRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  journeyStepNumber: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: Colors.primary + '15',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  journeyStepNumberText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.primary,
+  },
+  journeyStepContent: {
+    flex: 1,
+  },
+  journeyStepName: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '600',
+    color: Colors.text,
+  },
+  journeyStepDesc: {
+    fontSize: 11,
+    color: Colors.textSecondary,
+    marginTop: 1,
   },
 });

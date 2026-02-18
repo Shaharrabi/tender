@@ -34,6 +34,7 @@ import {
   Shadows,
 } from '@/constants/theme';
 import { getPortrait } from '@/services/portrait';
+import { getGrowthEdgeProgress } from '@/services/growth';
 import { generateTreatmentPlan } from '@/utils/treatment/plan-generator';
 import { getExerciseById } from '@/utils/interventions/registry';
 import MilestoneCard from '@/components/growth/MilestoneCard';
@@ -41,7 +42,35 @@ import SparkleIcon from '@/assets/graphics/icons/SparkleIcon';
 import TargetIcon from '@/assets/graphics/icons/TargetIcon';
 import CalendarIcon from '@/assets/graphics/icons/CalendarIcon';
 import CheckmarkIcon from '@/assets/graphics/icons/CheckmarkIcon';
-import type { TreatmentPlan, TreatmentPathway } from '@/types/growth';
+import type { TreatmentPlan, TreatmentPathway, GrowthEdgeProgress, GrowthStage } from '@/types/growth';
+
+/** Practice-count thresholds for milestone completion */
+const MILESTONE_THRESHOLDS = [1, 3, 6, 10, 15, 20];
+
+/** Stage → fractional progress for overall progress calculation */
+const STAGE_PERCENT: Record<GrowthStage, number> = {
+  emerging: 0,
+  practicing: 0.33,
+  integrating: 0.66,
+  integrated: 1.0,
+};
+
+/**
+ * Maps pathway names to growth edge IDs. Pathway names come from
+ * the treatment plan generator and align with portrait growth edge IDs.
+ */
+function findEdgeProgressForPathway(
+  pathway: TreatmentPathway,
+  growthProgress: GrowthEdgeProgress[]
+): GrowthEdgeProgress | undefined {
+  // Pathway name is in human-readable form like "Regulation Capacity"
+  // Edge IDs are like "regulation_capacity"
+  const normalizedName = pathway.name.toLowerCase().replace(/\s+/g, '_');
+  return growthProgress.find((ep) => {
+    const normalizedEdge = ep.edgeId.toLowerCase();
+    return normalizedEdge === normalizedName || normalizedName.includes(normalizedEdge) || normalizedEdge.includes(normalizedName);
+  });
+}
 
 // Enable LayoutAnimation on Android
 if (
@@ -311,18 +340,23 @@ function PathwayCard({
   index,
   onExercisePress,
   animDelay,
+  edgeProgress,
 }: {
   pathway: TreatmentPathway;
   index: number;
   onExercisePress: (id: string) => void;
   animDelay: number;
+  edgeProgress?: GrowthEdgeProgress;
 }) {
   const [expanded, setExpanded] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
   const color = PATHWAY_COLORS[index % PATHWAY_COLORS.length];
-  const completedMilestones = 0; // placeholder: no tracking yet
+  const practiceCount = edgeProgress?.practiceCount ?? 0;
   const totalMilestones = pathway.milestones.length;
+  const completedMilestones = pathway.milestones.filter(
+    (_, mi) => practiceCount >= (MILESTONE_THRESHOLDS[mi] ?? 999)
+  ).length;
   const progress =
     totalMilestones > 0 ? completedMilestones / totalMilestones : 0;
 
@@ -424,7 +458,7 @@ function PathwayCard({
                   <MilestoneCard
                     key={mi}
                     text={milestone}
-                    achieved={false}
+                    achieved={practiceCount >= (MILESTONE_THRESHOLDS[mi] ?? 999)}
                     index={mi}
                     total={pathway.milestones.length}
                     accentColor={color}
@@ -574,6 +608,7 @@ export default function TreatmentPlanScreen() {
 
   const [loading, setLoading] = useState(true);
   const [plan, setPlan] = useState<TreatmentPlan | null>(null);
+  const [growthProgress, setGrowthProgress] = useState<GrowthEdgeProgress[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [completedGoals, setCompletedGoals] = useState<Set<number>>(new Set());
 
@@ -596,7 +631,10 @@ export default function TreatmentPlanScreen() {
   const loadPlan = useCallback(async () => {
     if (!user) return;
     try {
-      const portrait = await getPortrait(user.id);
+      const [portrait, edgeProgress] = await Promise.all([
+        getPortrait(user.id),
+        getGrowthEdgeProgress(user.id).catch(() => [] as GrowthEdgeProgress[]),
+      ]);
       if (!portrait) {
         setError(
           'No portrait found. Complete all assessments to generate your treatment plan.'
@@ -605,6 +643,7 @@ export default function TreatmentPlanScreen() {
       }
       const generated = generateTreatmentPlan(portrait);
       setPlan(generated);
+      setGrowthProgress(edgeProgress);
     } catch (err) {
       console.error('Failed to load treatment plan:', err);
       setError('Something went wrong loading your treatment plan.');
@@ -798,7 +837,15 @@ export default function TreatmentPlanScreen() {
               </View>
             </View>
             <View style={styles.heroRight}>
-              <ProgressRing progress={0} size={90} strokeWidth={6} />
+              <ProgressRing
+                progress={
+                  growthProgress.length > 0
+                    ? growthProgress.reduce((sum, ep) => sum + (STAGE_PERCENT[ep.stage] ?? 0), 0) / growthProgress.length
+                    : 0
+                }
+                size={90}
+                strokeWidth={6}
+              />
             </View>
           </View>
         </Animated.View>
@@ -859,6 +906,7 @@ export default function TreatmentPlanScreen() {
               index={index}
               onExercisePress={handleExercisePress}
               animDelay={600 + index * 150}
+              edgeProgress={findEdgeProgressForPathway(pathway, growthProgress)}
             />
           ))}
         </Animated.View>

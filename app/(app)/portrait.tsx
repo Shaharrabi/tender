@@ -16,7 +16,9 @@ import {
   StyleSheet,
   SafeAreaView,
   ActivityIndicator,
+  Alert,
   Animated,
+  BackHandler,
   Dimensions,
   LayoutAnimation,
   Platform,
@@ -27,6 +29,7 @@ import { useAuth } from '@/context/AuthContext';
 import { TooltipManager } from '@/components/ftue/TooltipManager';
 import { WelcomeAudio } from '@/components/ftue/WelcomeAudio';
 import { getPortrait } from '@/services/portrait';
+import { getUserConsent, eraseUserData } from '@/services/consent';
 import {
   Colors,
   Spacing,
@@ -426,6 +429,8 @@ export default function PortraitScreen() {
   const initialTab = (params.tab as TabKey) || 'overview';
   const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
   const [exportMode, setExportMode] = useState(false);
+  const [isViewAndErase, setIsViewAndErase] = useState(false);
+  const viewAndEraseRef = useRef(false); // stable ref for cleanup
   const tabScrollRef = useRef<ScrollView>(null);
   const contentScrollRef = useRef<ScrollView>(null);
 
@@ -435,7 +440,39 @@ export default function PortraitScreen() {
       .then(setPortrait)
       .catch(() => {})
       .finally(() => setLoading(false));
+
+    // Check if consent is view-and-erase
+    getUserConsent(user.id).then((consent) => {
+      if (consent?.consentType === 'view_and_erase') {
+        setIsViewAndErase(true);
+        viewAndEraseRef.current = true;
+      }
+    });
   }, [user]);
+
+  // View-and-erase: erase data when navigating away
+  useEffect(() => {
+    if (!isViewAndErase || !user) return;
+
+    const handleBackPress = () => {
+      eraseUserData(user.id).catch((err) => {
+        if (__DEV__) console.warn('[ViewAndErase] Erase failed:', err);
+      });
+      return false; // allow default back behavior
+    };
+
+    const sub = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+
+    return () => {
+      sub.remove();
+      // Also erase on unmount (covers all navigation-away cases)
+      if (viewAndEraseRef.current && user) {
+        eraseUserData(user.id).catch((err) => {
+          if (__DEV__) console.warn('[ViewAndErase] Cleanup erase failed:', err);
+        });
+      }
+    };
+  }, [isViewAndErase, user]);
 
   const handleTabChange = (tab: TabKey) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -541,9 +578,32 @@ export default function PortraitScreen() {
             <Text style={st.headerBackText}>{exportMode ? 'Printing...' : 'Export All'}</Text>
           </TouchableOpacity>
         ) : (
-          <View style={st.headerBackBtn} />
+          <TouchableOpacity
+            onPress={async () => {
+              try {
+                const { generatePortraitPDF } = await import('@/services/pdf-export');
+                await generatePortraitPDF(portrait);
+              } catch (err) {
+                if (__DEV__) console.warn('[Export] Native PDF failed:', err);
+                Alert.alert('Export Error', 'Could not generate PDF. Please try again.');
+              }
+            }}
+            activeOpacity={0.7}
+            style={[st.headerBackBtn, { alignItems: 'flex-end' }]}
+          >
+            <Text style={st.headerBackText}>Export PDF</Text>
+          </TouchableOpacity>
         )}
       </View>
+
+      {/* ── View-and-Erase Warning ─────────────── */}
+      {isViewAndErase && (
+        <View style={st.viewAndEraseBanner}>
+          <Text style={st.viewAndEraseBannerText}>
+            One-time view — your data will be erased when you leave this screen
+          </Text>
+        </View>
+      )}
 
       {/* ── Tab Bar ───────────────────────────────── */}
       <View style={st.tabBarWrapper}>
@@ -2145,6 +2205,22 @@ const CIRCLE_BORDER = 6;
 
 const st = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
+  viewAndEraseBanner: {
+    backgroundColor: Colors.warning + '20',
+    borderWidth: 1,
+    borderColor: Colors.warning + '40',
+    marginHorizontal: Spacing.md,
+    marginBottom: Spacing.sm,
+    borderRadius: BorderRadius.sm,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+  },
+  viewAndEraseBannerText: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.warning,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
   center: {
     flex: 1,
     justifyContent: 'center',

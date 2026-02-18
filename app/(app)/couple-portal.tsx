@@ -191,11 +191,16 @@ export default function CouplePortalScreen() {
         <View style={styles.center}>
           <Text style={styles.heading}>Couple Portal</Text>
           <Text style={styles.subtitle}>
-            Complete all relationship assessments (both partners) to generate your
-            combined portrait.
+            Both partners need individual portraits (all 6 assessments each) to generate
+            your combined relationship portrait. Complete more assessments to unlock
+            deeper insights together.
+          </Text>
+          <Text style={[styles.subtitle, { marginTop: 8, fontStyle: 'italic', fontSize: 13 }]}>
+            Tip: Each partner can view their own results after completing each section.
+            The combined portrait requires both complete profiles.
           </Text>
           <TouchableOpacity onPress={() => router.back()} style={styles.backBtnCenter}>
-            <Text style={styles.backText}>← Go Back</Text>
+            <Text style={styles.backText}>{'\u2190'} Go Back</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>

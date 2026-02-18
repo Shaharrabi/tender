@@ -301,8 +301,8 @@ export default function PartnerScreen() {
             <View style={[styles.card, styles.portalLocked]}>
               <Text style={styles.portalLockedTitle}>Couple Portal</Text>
               <Text style={styles.portalLockedDesc}>
-                Complete all relationship assessments (both partners) to unlock your
-                combined relationship portrait and couple coaching.
+                Complete at least 1 relationship assessment together to unlock your
+                couple portal. More assessments unlock deeper insights.
               </Text>
             </View>
           )}

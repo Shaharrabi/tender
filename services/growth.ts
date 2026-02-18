@@ -91,16 +91,31 @@ export async function upsertGrowthEdge(
   return mapGrowthEdge(data);
 }
 
+/**
+ * Computes the growth stage based on accumulated practice count.
+ * Thresholds:
+ *   0    → emerging
+ *   3+   → practicing
+ *   8+   → integrating
+ *   15+  → integrated
+ */
+export function computeStage(practiceCount: number): GrowthStage {
+  if (practiceCount >= 15) return 'integrated';
+  if (practiceCount >= 8) return 'integrating';
+  if (practiceCount >= 3) return 'practicing';
+  return 'emerging';
+}
+
 export async function incrementPracticeCount(
   userId: string,
   edgeId: string
 ): Promise<void> {
   const now = new Date().toISOString();
 
-  // Fetch current count first
+  // Fetch current count + stage
   const { data: existing, error: fetchError } = await supabase
     .from('growth_edge_progress')
-    .select('practice_count')
+    .select('practice_count, stage')
     .eq('user_id', userId)
     .eq('edge_id', edgeId)
     .single();
@@ -108,14 +123,23 @@ export async function incrementPracticeCount(
   if (fetchError) throw fetchError;
 
   const newCount = (existing?.practice_count ?? 0) + 1;
+  const currentStage = existing?.stage ?? 'emerging';
+  const newStage = computeStage(newCount);
+
+  // Update practice count + last_practiced, and stage if it changed
+  const updatePayload: Record<string, any> = {
+    practice_count: newCount,
+    last_practiced: now,
+    updated_at: now,
+  };
+
+  if (newStage !== currentStage) {
+    updatePayload.stage = newStage;
+  }
 
   const { error } = await supabase
     .from('growth_edge_progress')
-    .update({
-      practice_count: newCount,
-      last_practiced: now,
-      updated_at: now,
-    })
+    .update(updatePayload)
     .eq('user_id', userId)
     .eq('edge_id', edgeId);
 
