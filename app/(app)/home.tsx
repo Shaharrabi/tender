@@ -1440,6 +1440,23 @@ export default function HomeScreen() {
               </TouchableOpacity>
             )}
 
+            {/* Explore Matrix — gated on ECR-R completion */}
+            {completedTypes.includes('ecr-r') && (
+              <TouchableOpacity
+                style={styles.featureCard}
+                onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/assessment-matrix' as any); }}
+                activeOpacity={0.8}
+              >
+                <View style={styles.featureCardHeader}>
+                  <CompassIcon size={22} color={Colors.text} />
+                </View>
+                <Text style={styles.featureCardTitle}>Explore Matrix</Text>
+                <Text style={styles.featureCardSubtitle} numberOfLines={2}>
+                  Interactive assessment map
+                </Text>
+              </TouchableOpacity>
+            )}
+
             {/* Journal — always unlocked */}
             <HighlightWrapper highlightId="home_journal_card">
             <TouchableOpacity

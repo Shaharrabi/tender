@@ -46,6 +46,7 @@ export default function AppLayout() {
       <Stack.Screen name="consent-waiver" options={{ animation: 'slide_from_bottom' }} />
       <Stack.Screen name="sharing-settings" options={{ animation: 'slide_from_bottom' }} />
       <Stack.Screen name="notification-settings" options={{ animation: 'slide_from_bottom' }} />
+      <Stack.Screen name="assessment-matrix" options={{ animation: 'fade_from_bottom' }} />
     </Stack>
   );
 }
