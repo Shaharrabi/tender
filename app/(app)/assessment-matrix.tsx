@@ -19,6 +19,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
+import { useGuest } from '@/context/GuestContext';
 import { supabase } from '@/services/supabase';
 import { getECRRInterpretation } from '@/utils/assessments/interpretations/ecr-r';
 import {
@@ -48,6 +49,7 @@ const SEGMENTS: { key: Segment; label: string; minAssessments: number }[] = [
 
 export default function AssessmentMatrixScreen() {
   const { user } = useAuth();
+  const { isGuest } = useGuest();
   const router = useRouter();
 
   // Data state
@@ -69,7 +71,11 @@ export default function AssessmentMatrixScreen() {
   // ─── Load Data ──────────────────────────────────────────
 
   useEffect(() => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      // Guest mode or no user — stop loading, show gate message
+      setLoading(false);
+      return;
+    }
 
     (async () => {
       try {

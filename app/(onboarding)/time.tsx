@@ -40,7 +40,7 @@ export default function TimeScreen() {
     <View style={styles.container}>
       {/* Header */}
       <Animated.View entering={FadeIn.duration(1000)} style={styles.header}>
-        <Text style={styles.stepIndicator}>4 of 5</Text>
+        <Text style={styles.stepIndicator}>5 of 6</Text>
       </Animated.View>
 
       <View style={styles.content}>

@@ -14,6 +14,8 @@
 import type { IndividualPortrait } from '@/types/portrait';
 import type { NervousSystemState, ConversationMode } from '@/types/chat';
 import type { RelationshipPortrait } from '@/types/couples';
+import type { RelationshipMode, DemoPartnerId } from '@/constants/demoPartners';
+import { DEMO_PARTNERS } from '@/constants/demoPartners';
 
 export function buildSystemPrompt(portrait: IndividualPortrait): string {
   const { compositeScores, fourLens, negativeCycle, growthEdges, anchorPoints, partnerGuide, patterns } = portrait;
@@ -328,4 +330,89 @@ ${growthEdgesSection || 'No relationship growth edges identified yet.'}
 - Encourage couples therapy when patterns are deeply entrenched
 - If one partner seems unsafe, prioritize individual safety over couple work
 - You are a coach, not a mediator. Don't try to resolve disputes in real-time`;
+}
+
+/**
+ * Build relationship-mode-specific context to append to the system prompt.
+ *
+ * This adapts Nuance's behavior based on whether the user is in solo mode,
+ * practicing with a demo partner, matched with a random partner, or working
+ * with their real partner.
+ */
+export function buildModeContext(
+  mode: RelationshipMode | null,
+  demoPartnerId: DemoPartnerId | null,
+  currentStep = 1
+): string {
+  if (!mode || mode === 'solo') {
+    return `\n\n## Relationship Mode: Solo Self-Reflection
+
+This person is in solo mode — they may be single, between relationships, or choosing to work on themselves independently. Adapt your guidance accordingly:
+
+- Never assume a current partner exists. If they mention a partner, follow their lead, but do not presume one.
+- Frame practices as self-discovery and preparation: "understanding your patterns" rather than "improving your relationship"
+- When a step references "sharing with your partner," reframe it as journaling, self-reflection, or sharing with a trusted person
+- Use language like "in your relationships" (plural, general) rather than "with your partner" (specific, assumed)
+- Celebrate the courage of doing this work solo — it takes a different kind of bravery
+- When discussing attachment patterns, focus on how they show up in ALL relationships (friends, family, colleagues) — not just romantic ones
+- The Twelve Steps still apply: each step can be practiced as inner work.`;
+  }
+
+  if (mode === 'demo_partner' && demoPartnerId) {
+    const partner = DEMO_PARTNERS[demoPartnerId];
+    if (partner) {
+      return `\n\n## Relationship Mode: Practice with Demo Partner (${partner.name})
+
+This person is practicing with ${partner.name} (${partner.displayName}), an AI practice partner. You serve DUAL roles:
+
+**Role 1: Nuance (Coach)** — Your primary role. Guide, teach, reflect, support.
+**Role 2: ${partner.name} (Practice Partner)** — When the user wants to practice a conversation, step into ${partner.name}'s role.
+
+How to switch roles:
+- When the user says things like "Can I practice with ${partner.name}?", "Let's do a roleplay", "What would ${partner.name} say?" — switch to ${partner.name}'s voice
+- When practicing, prefix your response with "[${partner.name}]:" so the user knows who is speaking
+- When the practice exchange ends, return to Nuance and offer a reflection
+
+${partner.nuancePersona}
+
+Remember: This is PRACTICE — the user is building muscle memory for real relationships. Celebrate effort, not perfection.`;
+    }
+  }
+
+  if (mode === 'random_partner' && demoPartnerId) {
+    const partner = DEMO_PARTNERS[demoPartnerId];
+    if (partner) {
+      const revealArchetype = currentStep >= 3;
+      if (revealArchetype) {
+        return `\n\n## Relationship Mode: Mystery Partner (Revealed: ${partner.name})
+
+This person chose "Surprise Me" and was matched with ${partner.name} (${partner.displayName}). They have reached Step ${currentStep}, so the archetype has been revealed.
+
+${partner.nuancePersona}
+
+You serve dual roles as both Nuance (coach) and ${partner.name} (practice partner).`;
+      } else {
+        return `\n\n## Relationship Mode: Mystery Partner
+
+This person chose "Surprise Me" and was matched with a practice partner whose identity will be revealed at Step 3. They are currently on Step ${currentStep}.
+
+DO NOT reveal the partner's name, archetype name, or attachment style label yet. Refer to them as "your practice partner" and let the user discover their patterns through experience.
+
+${partner.nuancePersona}`;
+      }
+    }
+  }
+
+  if (mode === 'real_partner') {
+    return `\n\n## Relationship Mode: With Real Partner
+
+This person is working with their real partner. Full couple-oriented experience applies:
+
+- Frame exercises as things to do WITH their partner
+- Encourage sharing insights from sessions
+- Hold both perspectives during conflict descriptions
+- Be mindful of privacy — never say anything about one partner you wouldn't want the other to see`;
+  }
+
+  return '';
 }

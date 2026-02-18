@@ -805,3 +805,116 @@ export function getStepRelevance(
 
   return relevance.join(' ');
 }
+
+// ─── Solo Mode Content Variants ─────────────────────────
+// These provide reframed subtitles for solo users.
+// The spec says: "12 Steps work for solo users with subtitle/framing changes."
+
+export const SOLO_STEP_SUBTITLES: Record<number, string> = {
+  1: 'Seeing your pattern \u2014 what you bring to every relationship',
+  2: 'Trusting that you can hold more than you think',
+  3: 'Choosing vulnerability \u2014 preparing to lead with openness',
+  4: 'Getting underneath \u2014 what drives your protective patterns',
+  5: 'Owning your pattern \u2014 seeing it clearly',
+  6: 'Releasing protective moves that keep connection at bay',
+  7: 'Preparing to invite someone into your inner world',
+  8: 'Designing the patterns you want to create',
+  9: 'Learning the repair moves you will need',
+  10: 'Committing to your relational growth',
+  11: 'Envisioning your rituals of connection',
+  12: 'Becoming someone who can be a refuge',
+};
+
+/** Get the step subtitle appropriate for the user's mode. */
+export function getStepSubtitle(stepNumber: number, mode?: string): string {
+  if (mode === 'solo') {
+    return SOLO_STEP_SUBTITLES[stepNumber] ?? TWELVE_STEPS[stepNumber - 1]?.subtitle ?? '';
+  }
+  return TWELVE_STEPS[stepNumber - 1]?.subtitle ?? '';
+}
+
+/** Solo mode Nuance opening prompts (reframed for individual work). */
+export const NUANCE_OPENING_PROMPTS_SOLO: Record<number, string[]> = {
+  1: [
+    'Help me see the patterns I bring to relationships',
+    'I keep ending up in the same dynamic',
+    'What does my attachment style look like in action?',
+  ],
+  2: [
+    'I want to believe I can have a healthy relationship',
+    'How do I build trust in myself?',
+    'Help me understand what co-regulation means',
+  ],
+  3: [
+    'I have a story about my ex I want to examine',
+    'I might be wrong about why relationships don\u2019t work for me',
+    'Help me see past patterns with fresh eyes',
+  ],
+  4: [
+    'What am I bringing to my relationship patterns?',
+    'Help me see what I\u2019m protecting underneath',
+    'I want to understand my part in past relationships',
+  ],
+  5: [
+    'I struggle to show my real feelings',
+    'I want to practice being more vulnerable',
+    'Help me find the words for what I\u2019m feeling inside',
+  ],
+  6: [
+    'I keep blaming my ex for everything',
+    'I want to stop seeing people as the enemy',
+    'Help me understand why they did what they did',
+  ],
+  7: [
+    'I want to build practices for when I\u2019m in a relationship',
+    'What daily habits make relationships healthy?',
+    'Help me turn my self-knowledge into action',
+  ],
+  8: [
+    'There are things from past relationships I haven\u2019t processed',
+    'I want to learn how to repair after a conflict',
+    'How do I prepare for difficult conversations?',
+  ],
+  9: [
+    'I want to learn how to show up differently',
+    'Help me practice repair skills',
+    'What does a soft startup look like?',
+  ],
+  10: [
+    'I caught myself falling into an old pattern',
+    'How do I stay aware of my patterns in daily life?',
+    'The old cycle came back \u2014 help me understand why',
+  ],
+  11: [
+    'What do I want a relationship to feel like?',
+    'Help me envision the connection I\u2019m building toward',
+    'What rituals would I bring to my next relationship?',
+  ],
+  12: [
+    'I want to reflect on how far I\u2019ve come',
+    'How has this work changed me?',
+    'Help me think about what I\u2019ll bring to my next relationship',
+  ],
+};
+
+/** Get opening prompts for Nuance, adjusted by mode. */
+export function getNuanceOpeningPromptsForMode(stepNumber: number, mode?: string): string[] {
+  if (mode === 'solo') {
+    return NUANCE_OPENING_PROMPTS_SOLO[stepNumber] ?? NUANCE_OPENING_PROMPTS_SOLO[1];
+  }
+  return NUANCE_OPENING_PROMPTS[stepNumber] ?? NUANCE_OPENING_PROMPTS[1];
+}
+
+// ─── Solo Mode Language Substitutions ──────────────────
+// Used by Nuance and UI copy to adapt language for solo users.
+
+export const SOLO_LANGUAGE_MAP: [RegExp, string][] = [
+  [/the space between you/gi, 'your relational patterns'],
+  [/your partner/gi, 'a partner'],
+  [/when you two/gi, 'when you\u2019re in relationship'],
+  [/your couple/gi, 'your relating style'],
+  [/share with your partner/gi, 'reflect on this'],
+  [/do together/gi, 'practice'],
+  [/both partners/gi, 'you'],
+  [/between you/gi, 'in your patterns'],
+];

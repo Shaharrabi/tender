@@ -119,6 +119,7 @@ import type { WEAREProfile } from '@/types/weare';
 import type { DailyCheckIn } from '@/types/growth';
 import type { Couple } from '@/types/couples';
 import { getLatestWEAREProfile } from '@/services/weare';
+import { getRelationshipModeLabel, DEMO_PARTNERS, type DemoPartnerId } from '@/constants/demoPartners';
 import {
   seedDemoAssessments,
   clearDemoAssessments,
@@ -239,8 +240,10 @@ export default function HomeScreen() {
     progress: CourseProgress;
   } | null>(null);
 
-  // Display name from user_profiles
+  // Display name + relationship mode from user_profiles
   const [displayName, setDisplayName] = useState<string | null>(null);
+  const [relationshipMode, setRelationshipMode] = useState<string>('solo');
+  const [demoPartnerId, setDemoPartnerId] = useState<string | null>(null);
 
   // Loading
   const [loading, setLoading] = useState(true);
@@ -284,13 +287,19 @@ export default function HomeScreen() {
         // Safe to ignore
       }
 
-      // 0b. Load display name from user_profiles
+      // 0b. Load display name + relationship mode from user_profiles
       try {
         const { data: profile } = await supabase
           .from('user_profiles')
-          .select('display_name')
+          .select('display_name, relationship_mode, demo_partner_id')
           .eq('user_id', user.id)
           .single();
+        if (profile?.relationship_mode) {
+          setRelationshipMode(profile.relationship_mode);
+        }
+        if (profile?.demo_partner_id) {
+          setDemoPartnerId(profile.demo_partner_id);
+        }
         if (profile?.display_name) {
           setDisplayName(profile.display_name);
         } else {
@@ -657,6 +666,8 @@ export default function HomeScreen() {
   // Show guided tour on first launch (works for both guests and auth users)
   // Must wait for BOTH home data AND FTUE state to load from AsyncStorage,
   // otherwise isFirstLaunch defaults to true and triggers for returning users.
+  // Extra guard: if the user has completed ANY assessments, they are definitely
+  // NOT first-time — skip the tour even if AsyncStorage lost the flag.
   useEffect(() => {
     if (
       !loading &&
@@ -664,11 +675,18 @@ export default function HomeScreen() {
       ftueState.isFirstLaunch &&
       !ftueState.completedTours.includes('tour_home')
     ) {
+      // If user already has completed assessments, they're a returning user
+      // whose FTUE flag was lost (e.g. web storage cleared). Auto-complete tour.
+      if (completedCount > 0) {
+        markTourCompleted('tour_home');
+        markFirstLaunchComplete();
+        return;
+      }
       // Small delay to let layout render before measuring
       const timer = setTimeout(() => setShowTour(true), 800);
       return () => clearTimeout(timer);
     }
-  }, [loading, ftueLoading, ftueState.isFirstLaunch, ftueState.completedTours]);
+  }, [loading, ftueLoading, ftueState.isFirstLaunch, ftueState.completedTours, completedCount]);
 
   const handleTourComplete = useCallback(() => {
     setShowTour(false);
@@ -1666,6 +1684,28 @@ export default function HomeScreen() {
             )}
           </View>
         )}
+
+        {/* ═══ Relationship Mode ════════════════════════════════ */}
+        <View style={styles.modeSection}>
+          <Text style={styles.modeSectionTitle}>Relationship Mode</Text>
+          <View style={styles.modeCard}>
+            <View style={styles.modeCardContent}>
+              <Text style={styles.modeLabel}>{getRelationshipModeLabel(relationshipMode as any)}</Text>
+              {relationshipMode === 'demo_partner' && demoPartnerId && DEMO_PARTNERS[demoPartnerId as DemoPartnerId] && (
+                <Text style={styles.modePartnerName}>
+                  Practicing with {DEMO_PARTNERS[demoPartnerId as DemoPartnerId].name}
+                </Text>
+              )}
+            </View>
+            <TouchableOpacity
+              style={styles.modeChangeButton}
+              onPress={() => router.push('/(app)/relationship-mode' as any)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.modeChangeText}>Change</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
         {/* ═══ Logout ═════════════════════════════════════════ */}
         <TouchableOpacity
@@ -2826,6 +2866,59 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     textAlign: 'center',
     lineHeight: 22,
+  },
+
+  // ── Relationship Mode ──
+  modeSection: {
+    marginHorizontal: Spacing.xl,
+    marginTop: Spacing.lg,
+    gap: Spacing.xs,
+  },
+  modeSectionTitle: {
+    fontSize: FontSizes.caption,
+    fontFamily: FontFamilies.heading,
+    fontWeight: '600',
+    color: Colors.textMuted,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+    marginBottom: Spacing.xs,
+  },
+  modeCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+  },
+  modeCardContent: {
+    flex: 1,
+    gap: 2,
+  },
+  modeLabel: {
+    fontSize: FontSizes.body,
+    fontFamily: FontFamilies.heading,
+    fontWeight: '600',
+    color: Colors.text,
+  },
+  modePartnerName: {
+    fontSize: FontSizes.caption,
+    fontFamily: FontFamilies.accent,
+    fontStyle: 'italic',
+    color: Colors.textSecondary,
+  },
+  modeChangeButton: {
+    paddingVertical: Spacing.xs,
+    paddingHorizontal: Spacing.md,
+    backgroundColor: Colors.primaryFaded,
+    borderRadius: BorderRadius.pill,
+  },
+  modeChangeText: {
+    fontSize: FontSizes.caption,
+    fontFamily: FontFamilies.heading,
+    fontWeight: '600',
+    color: Colors.primary,
   },
 
   // ── Logout ──

@@ -65,7 +65,7 @@ export default function GoalsScreen() {
     <View style={styles.container}>
       {/* Header */}
       <Animated.View entering={FadeIn.duration(1000)} style={styles.header}>
-        <Text style={styles.stepIndicator}>3 of 5</Text>
+        <Text style={styles.stepIndicator}>4 of 6</Text>
         <Text style={styles.title}>What brings you here?</Text>
         <Text style={styles.subtitle}>Select everything that resonates. No wrong answers.</Text>
       </Animated.View>

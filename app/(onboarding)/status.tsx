@@ -32,9 +32,10 @@ export default function StatusScreen() {
     // Brief delay so the user sees the selection highlight
     setTimeout(() => {
       if (id === 'single') {
-        // Skip "how long have you been together" — not relevant for single users
-        router.push('/(onboarding)/goals' as any);
+        // Singles skip duration, go straight to mode selection
+        router.push('/(onboarding)/mode-select' as any);
       } else {
+        // In-relationship users pick duration first, then mode
         router.push('/(onboarding)/duration' as any);
       }
     }, 200);
@@ -44,7 +45,7 @@ export default function StatusScreen() {
     <View style={styles.container}>
       {/* Header */}
       <Animated.View entering={FadeIn.duration(1000)} style={styles.header}>
-        <Text style={styles.stepIndicator}>1 of 5</Text>
+        <Text style={styles.stepIndicator}>1 of 6</Text>
       </Animated.View>
 
       <View style={styles.content}>
@@ -83,7 +84,7 @@ export default function StatusScreen() {
       <Animated.View entering={FadeIn.duration(800).delay(600)}>
         <TouchableOpacity
           style={styles.skipButton}
-          onPress={() => router.push('/(onboarding)/duration' as any)}
+          onPress={() => router.push('/(onboarding)/mode-select' as any)}
           activeOpacity={0.6}
         >
           <Text style={styles.skipText}>Skip for now</Text>

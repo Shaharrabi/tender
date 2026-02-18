@@ -47,6 +47,7 @@ export default function AppLayout() {
       <Stack.Screen name="sharing-settings" options={{ animation: 'slide_from_bottom' }} />
       <Stack.Screen name="notification-settings" options={{ animation: 'slide_from_bottom' }} />
       <Stack.Screen name="assessment-matrix" options={{ animation: 'fade_from_bottom' }} />
+      <Stack.Screen name="relationship-mode" options={{ animation: 'slide_from_bottom' }} />
     </Stack>
   );
 }

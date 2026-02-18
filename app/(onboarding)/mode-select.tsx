@@ -1,6 +1,9 @@
 /**
- * Onboarding — Relationship Duration
- * Placeholder screen.
+ * Onboarding -- How would you like to use Tender?
+ *
+ * Mode selection screen inserted after relationship status.
+ * Available options depend on the user's relationship status.
+ * Step 3 of 6 (or 2 of 6 for singles who skip duration).
  */
 
 import React, { useState } from 'react';
@@ -9,30 +12,52 @@ import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { useOnboarding } from '@/context/OnboardingContext';
 import { SoundHaptics } from '@/services/SoundHapticsService';
-import { Colors, Spacing, FontSizes, FontFamilies, BorderRadius } from '@/constants/theme';
-import { SeedlingIcon, LeafIcon, TreeIcon, HomeIcon, StarIcon, WhiteHeartIcon } from '@/assets/graphics/icons';
+import {
+  Colors,
+  Spacing,
+  FontSizes,
+  FontFamilies,
+  BorderRadius,
+} from '@/constants/theme';
+import {
+  SeedlingIcon,
+  CoupleIcon,
+  HeartDoubleIcon,
+  SparkleIcon,
+} from '@/assets/graphics/icons';
 import type { IconProps } from '@/assets/graphics/icons';
+import { getAvailableModes, type RelationshipMode } from '@/constants/demoPartners';
 
-const OPTIONS: { id: string; label: string; Icon: React.ComponentType<IconProps> }[] = [
-  { id: 'less-than-1', label: 'Less than 1 year', Icon: SeedlingIcon },
-  { id: '1-3', label: '1–3 years', Icon: LeafIcon },
-  { id: '3-7', label: '3–7 years', Icon: TreeIcon },
-  { id: '7-15', label: '7–15 years', Icon: HomeIcon },
-  { id: '15-plus', label: '15+ years', Icon: StarIcon },
-  { id: 'not-applicable', label: 'Not applicable', Icon: WhiteHeartIcon },
-];
+const MODE_ICONS: Record<RelationshipMode, React.ComponentType<IconProps>> = {
+  solo: SeedlingIcon,
+  demo_partner: CoupleIcon,
+  real_partner: HeartDoubleIcon,
+  random_partner: SparkleIcon,
+};
 
-export default function DurationScreen() {
+export default function ModeSelectScreen() {
   const router = useRouter();
-  const { data, setDuration } = useOnboarding();
-  const [selected, setSelected] = useState(data.relationshipDuration);
+  const { data, setRelationshipMode } = useOnboarding();
+  const [selected, setSelected] = useState<RelationshipMode | null>(data.relationshipMode);
 
-  const handleSelect = (id: string) => {
+  const availableModes = getAvailableModes(data.relationshipStatus);
+
+  const handleSelect = (mode: RelationshipMode) => {
     SoundHaptics.tap();
-    setSelected(id);
-    setDuration(id);
+    setSelected(mode);
+    setRelationshipMode(mode);
+
     setTimeout(() => {
-      router.push('/(onboarding)/mode-select' as any);
+      if (mode === 'demo_partner') {
+        // Go to partner selection screen
+        router.push('/(onboarding)/partner-select' as any);
+      } else if (mode === 'random_partner') {
+        // Auto-assign random partner, skip selection
+        router.push('/(onboarding)/goals' as any);
+      } else {
+        // Solo or real_partner -- continue to goals
+        router.push('/(onboarding)/goals' as any);
+      }
     }, 200);
   };
 
@@ -40,34 +65,43 @@ export default function DurationScreen() {
     <View style={styles.container}>
       {/* Header */}
       <Animated.View entering={FadeIn.duration(1000)} style={styles.header}>
-        <Text style={styles.stepIndicator}>2 of 6</Text>
+        <Text style={styles.stepIndicator}>3 of 6</Text>
       </Animated.View>
 
       <View style={styles.content}>
         <Animated.View entering={FadeInDown.duration(800)}>
-          <Text style={styles.title}>How long have you been together?</Text>
-          <Text style={styles.subtitle}>Or how long was your last relationship</Text>
+          <Text style={styles.title}>How would you like to use Tender?</Text>
+          <Text style={styles.subtitle}>
+            Choose what feels right for now.{'\n'}You can always change this later.
+          </Text>
         </Animated.View>
 
         <View style={styles.options}>
-          {OPTIONS.map((option, index) => {
-            const isSelected = selected === option.id;
+          {availableModes.map((option, index) => {
+            const isSelected = selected === option.mode;
+            const Icon = MODE_ICONS[option.mode];
+
             return (
               <Animated.View
-                key={option.id}
-                entering={FadeInDown.duration(600).delay(200 + index * 70)}
+                key={option.mode}
+                entering={FadeInDown.duration(600).delay(200 + index * 80)}
               >
                 <TouchableOpacity
                   style={[styles.optionButton, isSelected && styles.optionSelected]}
-                  onPress={() => handleSelect(option.id)}
+                  onPress={() => handleSelect(option.mode)}
                   activeOpacity={0.7}
                 >
                   <View style={styles.optionIconWrapper}>
-                    <option.Icon size={22} color={isSelected ? Colors.primaryDark : Colors.primary} />
+                    <Icon size={24} color={isSelected ? Colors.primaryDark : Colors.primary} />
                   </View>
-                  <Text style={[styles.optionLabel, isSelected && styles.optionLabelSelected]}>
-                    {option.label}
-                  </Text>
+                  <View style={styles.optionTextWrapper}>
+                    <Text style={[styles.optionLabel, isSelected && styles.optionLabelSelected]}>
+                      {option.label}
+                    </Text>
+                    <Text style={[styles.optionDesc, isSelected && styles.optionDescSelected]}>
+                      {option.description}
+                    </Text>
+                  </View>
                 </TouchableOpacity>
               </Animated.View>
             );
@@ -75,13 +109,17 @@ export default function DurationScreen() {
         </View>
       </View>
 
+      {/* Skip */}
       <Animated.View entering={FadeIn.duration(800).delay(600)}>
         <TouchableOpacity
           style={styles.skipButton}
-          onPress={() => router.push('/(onboarding)/mode-select' as any)}
+          onPress={() => {
+            setRelationshipMode('solo');
+            router.push('/(onboarding)/goals' as any);
+          }}
           activeOpacity={0.6}
         >
-          <Text style={styles.skipText}>Skip</Text>
+          <Text style={styles.skipText}>Skip for now</Text>
         </TouchableOpacity>
       </Animated.View>
     </View>
@@ -147,6 +185,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  optionTextWrapper: {
+    flex: 1,
+    gap: 2,
+  },
   optionLabel: {
     fontSize: FontSizes.body,
     fontFamily: 'JosefinSans_500Medium',
@@ -155,6 +197,14 @@ const styles = StyleSheet.create({
   optionLabelSelected: {
     color: Colors.primaryDark,
     fontFamily: 'JosefinSans_600SemiBold',
+  },
+  optionDesc: {
+    fontSize: FontSizes.caption,
+    fontFamily: 'JosefinSans_400Regular',
+    color: Colors.textMuted,
+  },
+  optionDescSelected: {
+    color: Colors.textSecondary,
   },
   skipButton: {
     alignItems: 'center',

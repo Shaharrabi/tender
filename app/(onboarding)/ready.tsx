@@ -51,6 +51,8 @@ export default function ReadyScreen() {
           relationship_duration: onboardingData.relationshipDuration || null,
           goals: onboardingData.goals.length > 0 ? onboardingData.goals : null,
           time_commitment: onboardingData.timeCommitment || null,
+          relationship_mode: onboardingData.relationshipMode || 'solo',
+          demo_partner_id: onboardingData.demoPartnerId || null,
         };
 
         // Only include display_name if we have one — avoid overwriting with null on re-onboarding
@@ -85,7 +87,7 @@ export default function ReadyScreen() {
     <View style={styles.container}>
       {/* Step indicator */}
       <Animated.View entering={FadeIn.duration(1000)} style={styles.headerSection}>
-        <Text style={styles.stepIndicator}>5 of 5</Text>
+        <Text style={styles.stepIndicator}>6 of 6</Text>
       </Animated.View>
 
       <View style={styles.content}>

@@ -6,6 +6,7 @@
  */
 
 import React, { createContext, useContext, useState, useCallback } from 'react';
+import type { RelationshipMode, DemoPartnerId } from '@/constants/demoPartners';
 
 export interface OnboardingData {
   displayName: string | null;
@@ -13,6 +14,8 @@ export interface OnboardingData {
   relationshipDuration: string | null;
   goals: string[];
   timeCommitment: string | null;
+  relationshipMode: RelationshipMode | null;
+  demoPartnerId: DemoPartnerId | null;
 }
 
 interface OnboardingContextValue {
@@ -23,6 +26,8 @@ interface OnboardingContextValue {
   toggleGoal: (goalId: string) => void;
   setGoals: (goals: string[]) => void;
   setTimeCommitment: (time: string) => void;
+  setRelationshipMode: (mode: RelationshipMode) => void;
+  setDemoPartnerId: (partnerId: DemoPartnerId | null) => void;
 }
 
 const defaultData: OnboardingData = {
@@ -31,6 +36,8 @@ const defaultData: OnboardingData = {
   relationshipDuration: null,
   goals: [],
   timeCommitment: null,
+  relationshipMode: null,
+  demoPartnerId: null,
 };
 
 const OnboardingCtx = createContext<OnboardingContextValue>({
@@ -41,6 +48,8 @@ const OnboardingCtx = createContext<OnboardingContextValue>({
   toggleGoal: () => {},
   setGoals: () => {},
   setTimeCommitment: () => {},
+  setRelationshipMode: () => {},
+  setDemoPartnerId: () => {},
 });
 
 export function OnboardingProvider({ children }: { children: React.ReactNode }) {
@@ -75,9 +84,27 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
     setData((prev) => ({ ...prev, timeCommitment: time }));
   }, []);
 
+  const setRelationshipMode = useCallback((mode: RelationshipMode) => {
+    setData((prev) => ({ ...prev, relationshipMode: mode }));
+  }, []);
+
+  const setDemoPartnerId = useCallback((partnerId: DemoPartnerId | null) => {
+    setData((prev) => ({ ...prev, demoPartnerId: partnerId }));
+  }, []);
+
   return (
     <OnboardingCtx.Provider
-      value={{ data, setDisplayName, setStatus, setDuration, toggleGoal, setGoals, setTimeCommitment }}
+      value={{
+        data,
+        setDisplayName,
+        setStatus,
+        setDuration,
+        toggleGoal,
+        setGoals,
+        setTimeCommitment,
+        setRelationshipMode,
+        setDemoPartnerId,
+      }}
     >
       {children}
     </OnboardingCtx.Provider>
