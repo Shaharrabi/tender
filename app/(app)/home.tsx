@@ -56,7 +56,7 @@ import { supabase } from '@/services/supabase';
 import { getPortrait, savePortrait, fetchAllScores, extractSupplementScores } from '@/services/portrait';
 import { generatePortrait } from '@/utils/portrait/portrait-generator';
 import { getTodaysCheckIn, saveDailyCheckIn } from '@/services/growth';
-import { getMyCouple } from '@/services/couples';
+import { getMyCouple, checkDyadicCompletion } from '@/services/couples';
 import { getAllExercises, getExerciseById } from '@/utils/interventions/registry';
 import { getCompletions } from '@/services/intervention';
 import { calculateGrowthProgress } from '@/utils/steps/intervention-protocols';
@@ -222,6 +222,7 @@ export default function HomeScreen() {
 
   // Couple state
   const [couple, setCouple] = useState<Couple | null>(null);
+  const [dyadicAllDone, setDyadicAllDone] = useState(false);
 
   // WEARE profile state (Phase 4)
   const [weareProfile, setWeareProfile] = useState<WEAREProfile | null>(null);
@@ -524,13 +525,20 @@ export default function HomeScreen() {
         setPortrait(null);
       }
 
-      // 3. Load couple
+      // 3. Load couple + dyadic status
       let loadedCouple: Couple | null = null;
       try {
         loadedCouple = await getMyCouple(user.id);
         setCouple(loadedCouple);
+        if (loadedCouple) {
+          const dyadicStatus = await checkDyadicCompletion(loadedCouple.id, user.id);
+          setDyadicAllDone(dyadicStatus.allDone);
+        } else {
+          setDyadicAllDone(false);
+        }
       } catch {
         setCouple(null);
+        setDyadicAllDone(false);
       }
 
       // 4. Compute unlock state
@@ -1175,6 +1183,37 @@ export default function HomeScreen() {
             <Text style={styles.demoPartnerPromptText}>
               Want to practice with an AI partner?
             </Text>
+          </TouchableOpacity>
+        )}
+        {/* Real partner mode — connect prompt */}
+        {relationshipMode === 'real_partner' && !couple && (
+          <TouchableOpacity
+            style={styles.realPartnerPrompt}
+            onPress={() => router.push('/(app)/partner' as any)}
+            activeOpacity={0.7}
+          >
+            <HeartDoubleIcon size={18} color={Colors.secondary} />
+            <View style={styles.realPartnerPromptContent}>
+              <Text style={styles.realPartnerPromptTitle}>Connect With Your Partner</Text>
+              <Text style={styles.realPartnerPromptDesc}>
+                Create an invite code or enter your partner's code to begin your journey together.
+              </Text>
+            </View>
+            <Text style={styles.realPartnerPromptArrow}>{'\u2192'}</Text>
+          </TouchableOpacity>
+        )}
+        {/* Couple portal ready nudge */}
+        {couple && dyadicAllDone && (
+          <TouchableOpacity
+            style={styles.couplePortalReadyBanner}
+            onPress={() => router.push('/(app)/couple-portal' as any)}
+            activeOpacity={0.7}
+          >
+            <SparkleIcon size={18} color={Colors.secondary} />
+            <Text style={styles.couplePortalReadyText}>
+              Your couple portrait is ready — enter the portal
+            </Text>
+            <Text style={styles.realPartnerPromptArrow}>{'\u2192'}</Text>
           </TouchableOpacity>
         )}
 
@@ -3192,5 +3231,58 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: Colors.textSecondary,
     marginTop: 1,
+  },
+
+  // ── Real Partner Connect Prompt ──
+  realPartnerPrompt: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginHorizontal: Spacing.lg,
+    marginBottom: Spacing.md,
+    backgroundColor: Colors.secondary + '08',
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.secondary + '25',
+  },
+  realPartnerPromptContent: {
+    flex: 1,
+  },
+  realPartnerPromptTitle: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '700',
+    color: Colors.text,
+  },
+  realPartnerPromptDesc: {
+    fontSize: FontSizes.caption,
+    color: Colors.textSecondary,
+    marginTop: 2,
+  },
+  realPartnerPromptArrow: {
+    fontSize: FontSizes.body,
+    fontWeight: '600',
+    color: Colors.secondary,
+  },
+
+  // ── Couple Portal Ready Banner ──
+  couplePortalReadyBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginHorizontal: Spacing.lg,
+    marginBottom: Spacing.md,
+    backgroundColor: Colors.secondary + '12',
+    borderRadius: BorderRadius.md,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.secondary + '30',
+  },
+  couplePortalReadyText: {
+    flex: 1,
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '600',
+    color: Colors.secondary,
   },
 });

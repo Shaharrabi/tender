@@ -13,6 +13,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import {
   Colors,
   Spacing,
@@ -26,10 +27,12 @@ import {
   SparkleIcon,
   TargetIcon,
   CloseIcon,
+  CoupleIcon,
 } from '@/assets/graphics/icons';
 import {
   seedDemoAssessments,
   seedSingleAssessment,
+  seedDyadicAssessments,
   clearDemoAssessments,
   DEMO_ECRR,
   DEMO_DUTCH,
@@ -42,6 +45,7 @@ import {
 import { generatePortrait } from '@/utils/portrait/portrait-generator';
 import { getPortrait, savePortrait, fetchAllScores } from '@/services/portrait';
 import { eraseUserData } from '@/services/consent';
+import { getMyCouple, disconnectCouple } from '@/services/couples';
 import { supabase } from '@/services/supabase';
 import type { AllAssessmentScores } from '@/types';
 
@@ -61,6 +65,7 @@ interface AdminPanelProps {
 }
 
 export default function AdminPanel({ userId, onDataChanged, onClose }: AdminPanelProps) {
+  const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
 
   const handleSeedAll = async () => {
@@ -169,6 +174,95 @@ export default function AdminPanel({ userId, onDataChanged, onClose }: AdminPane
     }
   };
 
+  // ─── Couple Testing Handlers ──────────────────────────
+
+  const handleSetupTestCouple = async () => {
+    setBusy('setup-couple');
+    try {
+      // Check if couple already exists
+      let couple = await getMyCouple(userId);
+
+      if (!couple) {
+        // Create self-referencing couple (passes RLS: auth.uid() matches both)
+        const { data: newCouple, error: coupleErr } = await supabase
+          .from('couples')
+          .insert({
+            partner_a_id: userId,
+            partner_b_id: userId,
+            status: 'active',
+          })
+          .select()
+          .single();
+
+        if (coupleErr) throw coupleErr;
+        couple = newCouple;
+      }
+
+      // Ensure user has a portrait for the couple portal
+      const existingPortrait = await getPortrait(userId);
+      if (!existingPortrait) {
+        const ids = await seedDemoAssessments(userId);
+        const scores: AllAssessmentScores = {
+          ecrr: DEMO_ECRR,
+          dutch: DEMO_DUTCH,
+          sseit: DEMO_SSEIT,
+          dsir: DEMO_DSIR,
+          ipip: DEMO_IPIP,
+          values: DEMO_VALUES,
+        };
+        const portrait = generatePortrait(userId, ids, scores, DEMO_SUPPLEMENTS);
+        await savePortrait(portrait);
+      }
+
+      // Seed dyadic assessments (both "partners" are the same user)
+      await seedDyadicAssessments(couple.id, userId, userId);
+
+      Alert.alert(
+        'Test Couple Ready',
+        'Self-couple created with dyadic assessments. You can now access the couple portal.',
+        [
+          { text: 'Open Portal', onPress: () => router.push('/(app)/couple-portal' as any) },
+          { text: 'OK' },
+        ]
+      );
+      onDataChanged();
+    } catch (e: any) {
+      Alert.alert('Error', e.message || 'Failed to setup test couple');
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleOpenCouplePortal = () => {
+    router.push('/(app)/couple-portal' as any);
+  };
+
+  const handleDisconnectCouple = async () => {
+    setBusy('disconnect-couple');
+    try {
+      const couple = await getMyCouple(userId);
+      if (!couple) {
+        Alert.alert('No Couple', 'No active couple to disconnect.');
+        setBusy(null);
+        return;
+      }
+
+      // Delete dyadic assessments for this couple
+      await supabase.from('dyadic_assessments').delete().eq('couple_id', couple.id);
+      // Delete relationship portrait
+      await supabase.from('relationship_portraits').delete().eq('couple_id', couple.id);
+      // Disconnect the couple
+      await disconnectCouple(couple.id);
+
+      Alert.alert('Done', 'Test couple disconnected and dyadic data cleared.');
+      onDataChanged();
+    } catch (e: any) {
+      Alert.alert('Error', e.message || 'Failed to disconnect couple');
+    } finally {
+      setBusy(null);
+    }
+  };
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -242,6 +336,39 @@ export default function AdminPanel({ userId, onDataChanged, onClose }: AdminPane
             <Text style={styles.seedLabel}>{label}</Text>
           </TouchableOpacity>
         ))}
+      </View>
+
+      {/* Couple Testing */}
+      <View style={styles.section}>
+        <Text style={styles.sectionLabel}>COUPLE TESTING</Text>
+        <View style={styles.buttonRow}>
+          <ActionButton
+            label="Setup Test Couple"
+            icon={<CoupleIcon size={14} color={Colors.white} />}
+            color={Colors.secondary}
+            busy={busy === 'setup-couple'}
+            onPress={handleSetupTestCouple}
+            disabled={!!busy}
+          />
+          <ActionButton
+            label="Open Couple Portal"
+            icon={<SparkleIcon size={14} color={Colors.white} />}
+            color={Colors.calm}
+            busy={false}
+            onPress={handleOpenCouplePortal}
+            disabled={!!busy}
+          />
+        </View>
+        <View style={styles.buttonRow}>
+          <ActionButton
+            label="Disconnect Couple"
+            icon={<CloseIcon size={14} color={Colors.white} />}
+            color="#C85A54"
+            busy={busy === 'disconnect-couple'}
+            onPress={handleDisconnectCouple}
+            disabled={!!busy}
+          />
+        </View>
       </View>
     </View>
   );

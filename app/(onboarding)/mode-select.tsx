@@ -7,7 +7,7 @@
  */
 
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Platform, Alert } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { useOnboarding } from '@/context/OnboardingContext';
@@ -54,8 +54,21 @@ export default function ModeSelectScreen() {
       } else if (mode === 'random_partner') {
         // Auto-assign random partner, skip selection
         router.push('/(onboarding)/goals' as any);
+      } else if (mode === 'real_partner') {
+        // Show info about what happens next for real partner mode
+        Alert.alert(
+          'Partner Connection',
+          'After completing your assessments, you\'ll find a "Connect With Your Partner" option on your home screen. Create an invite code there to share with your partner.\n\nFor now, let\'s set your goals.',
+          [
+            {
+              text: 'Got it',
+              onPress: () => router.push('/(onboarding)/goals' as any),
+            },
+          ],
+        );
+        return; // Skip the timeout since Alert handles navigation
       } else {
-        // Solo or real_partner -- continue to goals
+        // Solo -- continue to goals
         router.push('/(onboarding)/goals' as any);
       }
     }, 200);

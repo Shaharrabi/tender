@@ -42,6 +42,7 @@ import {
   BorderRadius,
   Shadows,
 } from '@/constants/theme';
+import { ShieldIcon, SparkleIcon } from '@/assets/graphics/icons';
 import type { Couple, CoupleInvite, UserProfile } from '@/types/couples';
 
 export default function PartnerScreen() {
@@ -240,6 +241,24 @@ export default function PartnerScreen() {
             </View>
           </TouchableOpacity>
 
+          {/* Data Consent Review */}
+          <TouchableOpacity
+            style={[styles.card, styles.sharingCard]}
+            onPress={() => router.push('/(app)/consent-waiver' as any)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.sharingRow}>
+              <ShieldIcon size={20} color={Colors.primary} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.sharingTitle}>Data Consent</Text>
+                <Text style={styles.sharingSubtitle}>
+                  Review or change your data storage preferences
+                </Text>
+              </View>
+              <Text style={styles.sharingArrow}>{'→'}</Text>
+            </View>
+          </TouchableOpacity>
+
           {/* Dyadic Assessments Progress */}
           <Text style={styles.sectionTitle}>Relationship Assessments</Text>
           <Text style={styles.sectionDesc}>
@@ -285,18 +304,27 @@ export default function PartnerScreen() {
 
           {/* Couple Portal Entry */}
           {dyadicStatus.allDone ? (
-            <TouchableOpacity
-              style={[styles.card, styles.portalCard]}
-              onPress={() => router.push('/(app)/couple-portal' as any)}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.portalTitle}>🌟 Couple Portal</Text>
-              <Text style={styles.portalDesc}>
-                Your combined relationship portrait is ready. Explore your patterns,
-                strengths, and growth edges together.
-              </Text>
-              <Text style={styles.portalCta}>Enter Portal →</Text>
-            </TouchableOpacity>
+            <View>
+              <View style={styles.celebrationBanner}>
+                <SparkleIcon size={16} color={Colors.secondary} />
+                <Text style={styles.celebrationText}>
+                  Your couple portrait is ready!
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={[styles.card, styles.portalCard]}
+                onPress={() => router.push('/(app)/couple-portal' as any)}
+                activeOpacity={0.7}
+              >
+                <SparkleIcon size={24} color={Colors.secondary} />
+                <Text style={styles.portalTitle}>Couple Portal</Text>
+                <Text style={styles.portalDesc}>
+                  Explore your combined relationship portrait, patterns,
+                  strengths, and growth edges together.
+                </Text>
+                <Text style={styles.portalCta}>Enter Portal {'\u2192'}</Text>
+              </TouchableOpacity>
+            </View>
           ) : (
             <View style={[styles.card, styles.portalLocked]}>
               <Text style={styles.portalLockedTitle}>Couple Portal</Text>
@@ -637,6 +665,26 @@ const styles = StyleSheet.create({
     fontFamily: FontFamilies.body,
     color: Colors.textMuted,
     lineHeight: 20,
+  },
+
+  celebrationBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    backgroundColor: Colors.secondary + '12',
+    borderRadius: BorderRadius.md,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.sm,
+    borderWidth: 1,
+    borderColor: Colors.secondary + '30',
+  },
+  celebrationText: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '700',
+    color: Colors.secondary,
   },
 
   // Invite flow

@@ -231,7 +231,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
     icon: CoupleIcon,
     color: Colors.secondary,
     unlockHint: 'Complete 4+ sections to explore your relationship together',
-    route: '/(app)/couple-portal',
+    route: '/(app)/partner',
     category: 'couple',
   },
 ];

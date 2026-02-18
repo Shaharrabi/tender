@@ -19,6 +19,13 @@ import type {
 } from '@/types';
 import type { SupplementScores } from '@/types/portrait';
 import type { WEAREProfile, WeeklyCheckIn } from '@/types/weare';
+import type {
+  DyadicAssessmentType,
+  RDASScores,
+  DCIScores,
+  CSI16Scores,
+} from '@/types/couples';
+import { saveDyadicAssessment, getDyadicAssessments } from '@/services/couples';
 
 // ─── Assessment Scores ──────────────────────────────────
 
@@ -276,4 +283,73 @@ export async function clearDemoAssessments(userId: string): Promise<void> {
     .delete()
     .eq('user_id', userId)
     .in('type', ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'ipip-neo-120', 'values', 'relational-field']);
+}
+
+// ─── Dyadic Demo Scores ────────────────────────────────
+
+export const DEMO_RDAS: RDASScores = {
+  total: 48,
+  consensus: 20,
+  satisfaction: 14,
+  cohesion: 14,
+  distressLevel: 'mild',
+};
+
+export const DEMO_DCI: DCIScores = {
+  totalPositive: 120,
+  stressCommunicationBySelf: 14,
+  stressCommunicationByPartner: 13,
+  supportiveBySelf: 18,
+  supportiveByPartner: 16,
+  delegatedBySelf: 6,
+  delegatedByPartner: 5,
+  negativeBySelf: 8,
+  negativeByPartner: 9,
+  commonCoping: 17,
+  evaluationBySelf: 7,
+  evaluationByPartner: 6,
+  copingQuality: 'adequate',
+};
+
+export const DEMO_CSI16: CSI16Scores = {
+  total: 55,
+  satisfactionLevel: 'moderate',
+  distressed: false,
+};
+
+const DEMO_DYADIC_SCORES: Record<string, any> = {
+  'rdas': DEMO_RDAS,
+  'dci': DEMO_DCI,
+  'csi-16': DEMO_CSI16,
+};
+
+/**
+ * Seeds all 3 core dyadic assessments for both partners in a couple.
+ * Skips types that already exist to avoid duplicates.
+ */
+export async function seedDyadicAssessments(
+  coupleId: string,
+  userAId: string,
+  userBId: string,
+): Promise<void> {
+  // Check what already exists
+  const existing = await getDyadicAssessments(coupleId);
+  const existingKeys = new Set(
+    (existing || []).map((r: any) => `${r.user_id}:${r.assessment_type}`)
+  );
+
+  const types: DyadicAssessmentType[] = ['rdas', 'dci', 'csi-16'];
+  for (const type of types) {
+    const scores = DEMO_DYADIC_SCORES[type];
+    if (!scores) continue;
+
+    // Seed for partner A if not exists
+    if (!existingKeys.has(`${userAId}:${type}`)) {
+      await saveDyadicAssessment(userAId, coupleId, type, [], scores);
+    }
+    // Seed for partner B if not exists
+    if (!existingKeys.has(`${userBId}:${type}`)) {
+      await saveDyadicAssessment(userBId, coupleId, type, [], scores);
+    }
+  }
 }

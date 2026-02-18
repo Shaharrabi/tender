@@ -67,9 +67,9 @@ export default function PartnerSelectScreen() {
       </Animated.View>
 
       <Animated.View entering={FadeInDown.duration(800)} style={styles.titleSection}>
-        <Text style={styles.title}>Choose Your Practice Partner</Text>
+        <Text style={styles.title}>Choose Your AI Practice Partner</Text>
         <Text style={styles.subtitle}>
-          Each brings different challenges{'\n'}and opportunities for growth.
+          Each AI partner brings different relational{'\n'}patterns for realistic practice.
         </Text>
       </Animated.View>
 
