@@ -21,7 +21,9 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { useGuest } from '@/context/GuestContext';
 import { supabase } from '@/services/supabase';
+import { getPortrait } from '@/services/portrait';
 import { getECRRInterpretation } from '@/utils/assessments/interpretations/ecr-r';
+import type { IndividualPortrait } from '@/types/portrait';
 import {
   Colors,
   Spacing,
@@ -37,9 +39,75 @@ import { ConnectionMap } from '@/components/visualizations/ConnectionMap';
 import { RippleEffectsCard } from '@/components/visualizations/RippleEffectsCard';
 import { CombinedProfileView } from '@/components/visualizations/CombinedProfileView';
 import { calculateRipples } from '@/utils/visualizations/rippleEffects';
+import { ASSESSMENT_LABELS, ASSESSMENT_COLORS } from '@/constants/connectionMatrix';
 import type { AttachmentStyle, ECRRScores } from '@/types';
 
 type Segment = 'matrix' | 'connections' | 'profile';
+
+/** Extract portrait-informed insight for a given assessment */
+function getPortraitInsightForAssessment(
+  assessmentKey: string,
+  portrait: IndividualPortrait
+): { narrative: string; growthEdges: string[] } | null {
+  const { fourLens, growthEdges, negativeCycle, compositeScores } = portrait;
+
+  switch (assessmentKey) {
+    case 'ecr-r':
+      return {
+        narrative: fourLens.attachment.narrative.slice(0, 200) + (fourLens.attachment.narrative.length > 200 ? '...' : ''),
+        growthEdges: growthEdges
+          .filter(e => e.category === 'attachment' || e.title.toLowerCase().includes('attach'))
+          .map(e => e.title)
+          .slice(0, 2),
+      };
+    case 'ipip-neo-120':
+      return {
+        narrative: fourLens.values?.narrative
+          ? fourLens.values.narrative.slice(0, 200) + (fourLens.values.narrative.length > 200 ? '...' : '')
+          : `Your personality profile shapes how you show up in relationships. Self-leadership: ${compositeScores.selfLeadership}/100.`,
+        growthEdges: growthEdges
+          .filter(e => e.category === 'personality' || e.category === 'values')
+          .map(e => e.title)
+          .slice(0, 2),
+      };
+    case 'sseit':
+      return {
+        narrative: `Your emotional intelligence shapes how you read and manage feelings in relationships. Regulation capacity: ${compositeScores.regulationScore}/100, Window width: ${compositeScores.windowWidth}/100.`,
+        growthEdges: growthEdges
+          .filter(e => e.category === 'regulation' || e.title.toLowerCase().includes('emotion'))
+          .map(e => e.title)
+          .slice(0, 2),
+      };
+    case 'dsi-r':
+      return {
+        narrative: `Your differentiation reflects the balance between staying connected and maintaining your sense of self. I-Position: strong self-definition without rigidity.`,
+        growthEdges: growthEdges
+          .filter(e => e.category === 'differentiation' || e.title.toLowerCase().includes('boundar'))
+          .map(e => e.title)
+          .slice(0, 2),
+      };
+    case 'dutch':
+      return {
+        narrative: `Your conflict style reveals protective patterns: "${negativeCycle.position}" position. Triggers: ${(negativeCycle.primaryTriggers || []).slice(0, 2).join(', ')}.`,
+        growthEdges: growthEdges
+          .filter(e => e.category === 'conflict' || e.category === 'communication')
+          .map(e => e.title)
+          .slice(0, 2),
+      };
+    case 'values':
+      return {
+        narrative: fourLens.values?.narrative
+          ? fourLens.values.narrative.slice(0, 200) + (fourLens.values.narrative.length > 200 ? '...' : '')
+          : `Values alignment: ${compositeScores.valuesCongruence}/100. Your values guide what you prioritize in relationships.`,
+        growthEdges: growthEdges
+          .filter(e => e.category === 'values' || e.title.toLowerCase().includes('value'))
+          .map(e => e.title)
+          .slice(0, 2),
+      };
+    default:
+      return null;
+  }
+}
 
 const SEGMENTS: { key: Segment; label: string; minAssessments: number }[] = [
   { key: 'matrix', label: 'Matrix', minAssessments: 1 },
@@ -67,6 +135,9 @@ export default function AssessmentMatrixScreen() {
 
   // Connection map state
   const [selectedAssessment, setSelectedAssessment] = useState<string | null>(null);
+
+  // Portrait context for enriched insights
+  const [portrait, setPortrait] = useState<IndividualPortrait | null>(null);
 
   // ─── Load Data ──────────────────────────────────────────
 
@@ -97,6 +168,12 @@ export default function AssessmentMatrixScreen() {
           }
         }
         setAllScores(latest);
+
+        // Also load portrait for enriched context
+        try {
+          const p = await getPortrait(user.id);
+          if (p) setPortrait(p);
+        } catch { /* Portrait is optional — matrix works without it */ }
       } catch (err) {
         console.error('Failed to fetch scores:', err);
         setError('Unable to load your assessment data.');
@@ -337,9 +414,37 @@ export default function AssessmentMatrixScreen() {
               onSelectAssessment={setSelectedAssessment}
             />
 
-            {/* Ripple effects for selected assessment */}
+            {/* Selected assessment detail panel */}
             {selectedAssessment && (
               <View style={styles.selectedAssessmentEffects}>
+                {/* Portrait insight — what this assessment reveals */}
+                {portrait && (() => {
+                  const insight = getPortraitInsightForAssessment(selectedAssessment, portrait);
+                  if (!insight) return null;
+                  const nodeColor = ASSESSMENT_COLORS[selectedAssessment] || Colors.primary;
+                  return (
+                    <View style={[styles.insightCard, { borderLeftColor: nodeColor }]}>
+                      <Text style={styles.insightTitle}>
+                        What This Reveals
+                      </Text>
+                      <Text style={styles.insightNarrative}>
+                        {insight.narrative}
+                      </Text>
+                      {insight.growthEdges.length > 0 && (
+                        <View style={styles.insightGrowthEdges}>
+                          <Text style={styles.insightGrowthLabel}>Growth Edges</Text>
+                          {insight.growthEdges.map((edge, i) => (
+                            <Text key={i} style={styles.insightGrowthText}>
+                              {'\u2022'} {edge}
+                            </Text>
+                          ))}
+                        </View>
+                      )}
+                    </View>
+                  );
+                })()}
+
+                {/* Ripple effects */}
                 {(() => {
                   const effects = calculateRipples(selectedAssessment, '', 'increase');
                   if (effects.length === 0) return null;
@@ -589,5 +694,50 @@ const styles = StyleSheet.create({
   // Selected assessment effects
   selectedAssessmentEffects: {
     marginTop: Spacing.xs,
+    gap: Spacing.sm,
+  },
+
+  // Portrait insight card
+  insightCard: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    borderLeftWidth: 4,
+    ...Shadows.card,
+  },
+  insightTitle: {
+    fontFamily: FontFamilies.heading,
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 1,
+    marginBottom: Spacing.xs,
+  },
+  insightNarrative: {
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.bodySmall,
+    color: Colors.text,
+    lineHeight: 20,
+  },
+  insightGrowthEdges: {
+    marginTop: Spacing.sm,
+    paddingTop: Spacing.xs,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderLight,
+  },
+  insightGrowthLabel: {
+    fontFamily: FontFamilies.heading,
+    fontSize: 10,
+    color: Colors.textMuted,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 0.8,
+    marginBottom: 4,
+  },
+  insightGrowthText: {
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    lineHeight: 18,
+    paddingLeft: 4,
   },
 });

@@ -23,6 +23,7 @@ import {
   Shadows,
 } from '@/constants/theme';
 import { getPracticesForStep, getStep } from '@/utils/steps/twelve-steps';
+import CheckmarkIcon from '@/assets/graphics/icons/CheckmarkIcon';
 import { getExerciseById } from '@/utils/interventions/registry';
 import type { Intervention, FourMovement } from '@/types/intervention';
 
@@ -203,7 +204,7 @@ export default function WeeklyPracticeSchedule({
                 ]}
               >
                 {isCompleted && (
-                  <Text style={styles.dayDotCheck}>{'\u2713'}</Text>
+                  <CheckmarkIcon size={11} color="#FFFFFF" />
                 )}
               </View>
 
@@ -297,7 +298,7 @@ export default function WeeklyPracticeSchedule({
                   ]}
                 >
                   {done && (
-                    <Text style={styles.practiceRowCheck}>{'\u2713'}</Text>
+                    <CheckmarkIcon size={11} color="#FFFFFF" />
                   )}
                 </View>
                 <View style={styles.practiceRowInfo}>

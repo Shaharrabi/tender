@@ -171,7 +171,14 @@ function CheckInCard({ entry }: { entry: JournalEntry }) {
  * data as JSON.stringify(). We parse it and render a human-readable summary
  * instead of raw JSON text.
  */
-function formatStepResponse(response: string): string {
+function formatStepResponse(response: any): string {
+  // If response is already an object (Supabase JSONB returns parsed), use it directly
+  if (typeof response === 'object' && response !== null) {
+    // Skip JSON.parse — it's already parsed
+    return formatParsedResponse(response);
+  }
+  // If it's not a string, convert to string
+  if (typeof response !== 'string') return String(response ?? '');
   // If it's not JSON, return as-is (plain text responses)
   let parsed: any;
   try {
@@ -185,6 +192,11 @@ function formatStepResponse(response: string): string {
     return String(parsed);
   }
 
+  return formatParsedResponse(parsed);
+}
+
+/** Inner helper that formats already-parsed response objects */
+function formatParsedResponse(parsed: Record<string, any>): string {
   const parts: string[] = [];
 
   // ─── MC1 L2: Body sensations (somatic heatmap) ───
@@ -282,8 +294,20 @@ function formatStepResponse(response: string): string {
       if (value == null || value === '' || value === false) continue;
       const label = key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ').trim();
       const displayLabel = label.charAt(0).toUpperCase() + label.slice(1);
-      if (typeof value === 'object') {
-        parts.push(`${displayLabel}: ${JSON.stringify(value)}`);
+      if (Array.isArray(value)) {
+        // Format arrays as comma-separated if items are simple
+        const items = value.map((v: any) =>
+          typeof v === 'object' ? (v.label || v.name || v.title || 'item') : String(v)
+        );
+        parts.push(`${displayLabel}: ${items.join(', ')}`);
+      } else if (typeof value === 'object') {
+        // Flatten nested objects into readable key-value summaries
+        const subParts = Object.entries(value)
+          .filter(([, v]) => v != null && v !== '' && typeof v !== 'object')
+          .map(([k, v]) => `${k.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ').trim()}: ${v}`);
+        if (subParts.length > 0) {
+          parts.push(`${displayLabel}: ${subParts.join(', ')}`);
+        }
       } else {
         parts.push(`${displayLabel}: ${value}`);
       }
@@ -323,8 +347,40 @@ function ExerciseCard({ entry }: { entry: JournalEntry }) {
   );
 }
 
+/** Format a score value for display — handles numbers, strings, and nested objects */
+function formatScoreValue(value: any): string {
+  if (value === null || value === undefined) return '-';
+  if (typeof value === 'number') return value % 1 === 0 ? String(value) : value.toFixed(1);
+  if (typeof value === 'string') return value;
+  if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+  // For arrays and objects, don't display raw — show a summary
+  if (Array.isArray(value)) return `${value.length} items`;
+  if (typeof value === 'object') return ''; // Will be rendered as sub-section
+  return String(value);
+}
+
+/** Check if a value is a nested object (not null, not array, not primitive) */
+function isNestedScoreObject(value: any): boolean {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
 function AssessmentCard({ entry }: { entry: JournalEntry }) {
   const scores = entry.data.scores;
+
+  // Separate top-level primitives from nested objects
+  const topLevelEntries: [string, any][] = [];
+  const nestedEntries: [string, Record<string, any>][] = [];
+
+  if (scores && typeof scores === 'object') {
+    for (const [key, value] of Object.entries(scores)) {
+      if (isNestedScoreObject(value)) {
+        nestedEntries.push([key, value as Record<string, any>]);
+      } else {
+        topLevelEntries.push([key, value]);
+      }
+    }
+  }
+
   return (
     <View style={cardStyles.cardBody}>
       <View style={cardStyles.assessmentBadge}>
@@ -332,21 +388,51 @@ function AssessmentCard({ entry }: { entry: JournalEntry }) {
           {entry.data.assessmentType?.toUpperCase() || 'ASSESSMENT'}
         </Text>
       </View>
-      {/* Show all score dimensions */}
-      {scores && typeof scores === 'object' && (
+
+      {/* Top-level score dimensions (numbers, strings) */}
+      {topLevelEntries.length > 0 && (
         <View style={cardStyles.scoresGrid}>
-          {Object.entries(scores).map(([key, value]) => (
+          {topLevelEntries.map(([key, value]) => (
             <View key={key} style={cardStyles.scoreItem}>
               <Text style={cardStyles.scoreLabel}>
-                {key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                {key.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').replace(/\b\w/g, (c) => c.toUpperCase()).trim()}
               </Text>
               <Text style={cardStyles.scoreValue}>
-                {typeof value === 'number' ? (value % 1 === 0 ? value : value.toFixed(1)) : String(value)}
+                {formatScoreValue(value)}
               </Text>
             </View>
           ))}
         </View>
       )}
+
+      {/* Nested sub-score sections (e.g. FacetScores, DomainScores) */}
+      {nestedEntries.map(([sectionKey, sectionObj]) => {
+        // Only show subsections that have renderable (non-object) children
+        const renderableChildren = Object.entries(sectionObj).filter(
+          ([, v]) => !isNestedScoreObject(v)
+        );
+        if (renderableChildren.length === 0) return null;
+
+        return (
+          <View key={sectionKey} style={cardStyles.nestedSection}>
+            <Text style={cardStyles.nestedSectionTitle}>
+              {sectionKey.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').replace(/\b\w/g, (c) => c.toUpperCase()).trim()}
+            </Text>
+            <View style={cardStyles.scoresGrid}>
+              {renderableChildren.map(([k, v]) => (
+                <View key={k} style={cardStyles.scoreItem}>
+                  <Text style={cardStyles.scoreLabel}>
+                    {k.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').replace(/\b\w/g, (c) => c.toUpperCase()).trim()}
+                  </Text>
+                  <Text style={cardStyles.scoreValue}>
+                    {formatScoreValue(v)}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        );
+      })}
     </View>
   );
 }
@@ -759,6 +845,20 @@ const cardStyles = StyleSheet.create({
     fontFamily: 'Jost_600SemiBold',
     fontSize: FontSizes.body,
     color: Colors.text,
+  },
+  nestedSection: {
+    marginTop: Spacing.sm,
+    paddingTop: Spacing.xs,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderLight,
+  },
+  nestedSectionTitle: {
+    fontFamily: 'Jost_500Medium',
+    fontSize: 10,
+    color: Colors.textMuted,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 0.8,
+    marginBottom: 4,
   },
 
   // Chat

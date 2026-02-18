@@ -13,6 +13,7 @@ import {
   FontFamilies,
   BorderRadius,
 } from '@/constants/theme';
+import CheckmarkIcon from '@/assets/graphics/icons/CheckmarkIcon';
 
 interface MilestoneCardProps {
   text: string;
@@ -48,7 +49,7 @@ export default function MilestoneCard({
           ]}
         >
           {achieved ? (
-            <Text style={styles.checkmark}>{'\u2713'}</Text>
+            <CheckmarkIcon size={13} color={Colors.textOnPrimary} />
           ) : (
             <View
               style={[

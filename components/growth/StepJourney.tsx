@@ -19,6 +19,7 @@ import {
   BorderRadius,
   Shadows,
 } from '@/constants/theme';
+import CheckmarkIcon from '@/assets/graphics/icons/CheckmarkIcon';
 import type { StepProgress } from '@/types/growth';
 import {
   TWELVE_STEPS,
@@ -108,7 +109,7 @@ export default function StepJourney({
                   ]}
                 >
                   {status === 'completed' && (
-                    <Text style={styles.dotCheck}>{'\u2713'}</Text>
+                    <CheckmarkIcon size={12} color="#FFFFFF" />
                   )}
                   {isCurrent && (
                     <View style={[styles.dotInner, { backgroundColor: stepPhase?.color ?? Colors.primary }]} />
@@ -139,7 +140,7 @@ export default function StepJourney({
           return (
             <View key={i} style={styles.goalRow}>
               <View style={styles.goalCheckbox}>
-                <Text style={styles.goalCheckboxText}>{'\u25A1'}</Text>
+                <View style={styles.goalCheckboxSquare} />
               </View>
               <Text style={styles.goalText}>{criteria}</Text>
             </View>
@@ -333,9 +334,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  goalCheckboxText: {
-    fontSize: 16,
-    color: Colors.textMuted,
+  goalCheckboxSquare: {
+    width: 14,
+    height: 14,
+    borderRadius: 3,
+    borderWidth: 1.5,
+    borderColor: Colors.textMuted,
   },
   goalText: {
     flex: 1,

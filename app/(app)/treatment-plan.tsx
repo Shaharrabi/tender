@@ -21,6 +21,7 @@ import {
   Platform,
   UIManager,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '@/context/AuthContext';
@@ -36,6 +37,10 @@ import { getPortrait } from '@/services/portrait';
 import { generateTreatmentPlan } from '@/utils/treatment/plan-generator';
 import { getExerciseById } from '@/utils/interventions/registry';
 import MilestoneCard from '@/components/growth/MilestoneCard';
+import SparkleIcon from '@/assets/graphics/icons/SparkleIcon';
+import TargetIcon from '@/assets/graphics/icons/TargetIcon';
+import CalendarIcon from '@/assets/graphics/icons/CalendarIcon';
+import CheckmarkIcon from '@/assets/graphics/icons/CheckmarkIcon';
 import type { TreatmentPlan, TreatmentPathway } from '@/types/growth';
 
 // Enable LayoutAnimation on Android
@@ -44,6 +49,16 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental
 ) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
+/** Get a stable week identifier (ISO week year-week) for goal persistence */
+function getWeekId(): string {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7));
+  const week1 = new Date(d.getFullYear(), 0, 4);
+  const weekNum = 1 + Math.round(((d.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7);
+  return `${d.getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
 }
 
 // Pathway accent colors cycling
@@ -73,7 +88,7 @@ function StatCard({
 }: {
   label: string;
   value: string;
-  icon: string;
+  icon: React.ReactNode;
   delay: number;
 }) {
   const animValue = useRef(new Animated.Value(0)).current;
@@ -109,7 +124,7 @@ function StatCard({
         },
       ]}
     >
-      <Text style={styles.statIcon}>{icon}</Text>
+      <View style={styles.statIconWrap}>{icon}</View>
       <Text style={styles.statValue}>{value}</Text>
       <Text style={styles.statLabel}>{label}</Text>
     </Animated.View>
@@ -560,6 +575,7 @@ export default function TreatmentPlanScreen() {
   const [loading, setLoading] = useState(true);
   const [plan, setPlan] = useState<TreatmentPlan | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [completedGoals, setCompletedGoals] = useState<Set<number>>(new Set());
 
   // Section fade-in animations
   const heroFade = useRef(new Animated.Value(0)).current;
@@ -596,6 +612,35 @@ export default function TreatmentPlanScreen() {
       setLoading(false);
     }
   }, [user]);
+
+  // Weekly goal completion — persisted per week via AsyncStorage
+  const weekKey = `weekly_goals_${user?.id}_${getWeekId()}`;
+
+  useEffect(() => {
+    // Load completed goals on mount
+    AsyncStorage.getItem(weekKey).then((stored) => {
+      if (stored) {
+        try {
+          const arr = JSON.parse(stored);
+          if (Array.isArray(arr)) setCompletedGoals(new Set(arr));
+        } catch { /* ignore */ }
+      }
+    });
+  }, [weekKey]);
+
+  const toggleGoal = useCallback(async (index: number) => {
+    setCompletedGoals((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      // Persist asynchronously
+      AsyncStorage.setItem(weekKey, JSON.stringify([...next]));
+      return next;
+    });
+  }, [weekKey]);
 
   useFocusEffect(
     useCallback(() => {
@@ -771,19 +816,19 @@ export default function TreatmentPlanScreen() {
           <StatCard
             label="Pathways"
             value={String(totalPathways)}
-            icon={'\u2728'}
+            icon={<SparkleIcon size={22} color={Colors.primary} />}
             delay={400}
           />
           <StatCard
             label="Milestones"
             value={String(totalMilestones)}
-            icon={'\u{1F3AF}'}
+            icon={<TargetIcon size={22} color={Colors.secondary} />}
             delay={550}
           />
           <StatCard
             label="Check-ins"
             value={plan.checkInFrequency === 'daily' ? 'Daily' : 'Weekly'}
-            icon={'\u{1F4C5}'}
+            icon={<CalendarIcon size={22} color={Colors.accent} />}
             delay={700}
           />
         </Animated.View>
@@ -838,17 +883,33 @@ export default function TreatmentPlanScreen() {
               </View>
             </View>
             <View style={styles.goalsCard}>
-              {plan.weeklyGoals.map((goal, i) => (
-                <View key={i} style={styles.goalRow}>
-                  <View style={styles.goalCheckbox}>
-                    <View style={styles.goalCheckboxInner} />
-                  </View>
-                  <Text style={styles.goalText}>{goal}</Text>
-                </View>
-              ))}
+              {plan.weeklyGoals.map((goal, i) => {
+                const isDone = completedGoals.has(i);
+                return (
+                  <TouchableOpacity
+                    key={i}
+                    style={styles.goalRow}
+                    onPress={() => toggleGoal(i)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={[
+                      styles.goalCheckbox,
+                      isDone && { backgroundColor: Colors.primary, borderColor: Colors.primary },
+                    ]}>
+                      {isDone && <CheckmarkIcon size={12} color="#FFFFFF" />}
+                    </View>
+                    <Text style={[
+                      styles.goalText,
+                      isDone && styles.goalTextDone,
+                    ]}>
+                      {goal}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
               <View style={styles.goalsFooter}>
                 <Text style={styles.goalsFooterText}>
-                  {plan.weeklyGoals.length} goals this week
+                  {completedGoals.size} of {plan.weeklyGoals.length} goals completed this week
                 </Text>
               </View>
             </View>
@@ -1120,9 +1181,9 @@ const styles = StyleSheet.create({
     gap: 4,
     ...Shadows.card,
   },
-  statIcon: {
-    fontSize: 22,
+  statIconWrap: {
     marginBottom: 2,
+    alignItems: 'center' as const,
   },
   statValue: {
     fontFamily: FontFamilies.heading,
@@ -1327,17 +1388,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 1,
   },
-  goalCheckboxInner: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'transparent',
-  },
   goalText: {
     flex: 1,
     fontSize: FontSizes.bodySmall,
     color: Colors.text,
     lineHeight: 22,
+  },
+  goalTextDone: {
+    textDecorationLine: 'line-through' as const,
+    color: Colors.textMuted,
   },
   goalsFooter: {
     borderTopWidth: 1,
