@@ -121,6 +121,29 @@ export function getPracticesForStep(stepNumber: number): string[] {
     .map(([id]) => id);
 }
 
+// ─── Step Audio Files ───────────────────────────────────
+// Maps step numbers to audio file requires.
+// Step 0 = Foundation (auto-plays on first visit)
+// Steps 1-12 = Per-step introduction audio
+// Step 13 = Closing track (after completing step 12)
+
+export const STEP_AUDIO_MAP: Record<number, any> = {
+  0:  require('@/assets/audio/twelve-steps-00-introduction.mp3'),
+  1:  require('@/assets/audio/twelve-steps-01-acknowledge-the-strain.mp3'),
+  2:  require('@/assets/audio/twelve-steps-02-trust-the-field.mp3'),
+  3:  require('@/assets/audio/twelve-steps-03-release-certainty.mp3'),
+  4:  require('@/assets/audio/twelve-steps-04-examine-our-part.mp3'),
+  5:  require('@/assets/audio/twelve-steps-05-share-our-truths.mp3'),
+  6:  require('@/assets/audio/twelve-steps-06-release-enemy-story.mp3'),
+  7:  require('@/assets/audio/twelve-steps-07-commit-to-practices.mp3'),
+  8:  require('@/assets/audio/twelve-steps-08-prepare-to-repair.mp3'),
+  9:  require('@/assets/audio/twelve-steps-09-act-to-rebuild.mp3'),
+  10: require('@/assets/audio/twelve-steps-10-maintain-awareness.mp3'),
+  11: require('@/assets/audio/twelve-steps-11-seek-shared-insight.mp3'),
+  12: require('@/assets/audio/twelve-steps-12-carry-the-message.mp3'),
+  13: require('@/assets/audio/twelve-steps-13-closing.mp3'),
+};
+
 // ─── The 12 Steps ──────────────────────────────────────
 
 export const TWELVE_STEPS: HealingStep[] = [
@@ -146,6 +169,9 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Couple can name their cycle without blaming',
     ],
     practices: ['window-check', 'recognize-cycle', 'protest-polka', 'emotional-inheritance-scan'],
+    introText:
+      'Every couple has patterns — ways you move around each other when things get hard. One reaches, the other retreats. Or both go loud. Or both go quiet. These patterns aren’t anyone’s fault. They developed for reasons that made sense once. In this step, you’ll learn to see your pattern together — not as blame, but as something that happens between you.',
+    miniGameId: 'pattern-spotter',
   },
   {
     stepNumber: 2,
@@ -169,6 +195,9 @@ export const TWELVE_STEPS: HealingStep[] = [
       'At least one "repair after missing a bid" moment acknowledged',
     ],
     practices: ['turning-toward', 'emotional-bid', 'love-maps', 'fondness-admiration', 'couple-bubble'],
+    introText:
+      'This step asks something that might feel hard: trust that something good can emerge when you both show up. Not trust that your partner will be perfect. But trust in the “we” — the space between you that comes alive when you’re both present. You don’t start with trust. You start with tiny experiments. Small moments of turning toward instead of away.',
+    miniGameId: 'bid-or-miss',
   },
   {
     stepNumber: 3,
@@ -191,6 +220,9 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Each partner identifies one "story I\'ve held that may not be the whole truth"',
     ],
     practices: ['defusion-from-stories', 'parts-check-in', 'unified-detachment'],
+    introText:
+      'What if the story you tell about your partner isn’t the whole truth? We all carry stories. Some have truth in them. But even true stories become traps when they prevent us from seeing our partner fresh. This step invites you to hold your certainty a little more loosely. Not to pretend you haven’t been hurt — but to wonder: what else might be true?',
+    miniGameId: 'story-vs-truth',
   },
   {
     stepNumber: 4,
@@ -214,6 +246,9 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Both partners can articulate their top 3 relationship values',
     ],
     practices: ['self-compassion-break', 'accessing-primary-emotions', 'protector-dialogue', 'emotional-inheritance-scan'],
+    introText:
+      'This step turns the spotlight inward — and that can be uncomfortable. But stay with it. Looking at your own patterns isn’t about blame. It’s about power. Because your part is the only part you can actually change. What rises in you before you even decide to respond? None of these reactions make you bad. They make you human.',
+    miniGameId: 'my-horseman',
   },
   {
     stepNumber: 5,
@@ -236,6 +271,9 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Both partners can name one fear they hadn\'t shared before this step',
     ],
     practices: ['bonding-through-vulnerability', 'hold-me-tight', 'empathic-joining'],
+    introText:
+      'This is the step of vulnerability. There are things you’ve never said. Maybe fears about the relationship itself. Maybe needs you’ve swallowed because asking felt too risky. Vulnerability is not weakness. It’s the foundation of intimacy. Without it, you’re two people performing closeness instead of living it.',
+    miniGameId: 'the-unsaid',
   },
   {
     stepNumber: 6,
@@ -258,6 +296,9 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Each partner can articulate one way their partner\'s "difficult" behavior makes sense given their history',
     ],
     practices: ['dreams-within-conflict', 'stress-reducing-conversation', 'willingness-stance', 'protest-polka'],
+    introText:
+      'When things are hard, it’s easy to cast your partner as the villain. But what if their walls came from protection, not malice? This step asks you to look behind your partner’s difficult behavior. Not to excuse it. But to understand it. When you understand, something shifts. You stop fighting each other and start fighting the pattern together.',
+    miniGameId: 'behind-the-wall',
   },
   {
     stepNumber: 7,
@@ -280,6 +321,9 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Both partners can name their "willingness edges"',
     ],
     practices: ['back-to-back-breathe', 'empathic-joining', 'hold-me-tight', 'little-you-photo-share', 'reassurance-menu', 'accessing-primary-emotions'],
+    introText:
+      'Understanding is not the same as change. You can know exactly why you fall into old patterns and still fall into them tomorrow. What makes the difference is practice. Not grand gestures, but small, sustainable rituals that keep you oriented toward connection even when life gets hard.',
+    miniGameId: 'ritual-builder',
   },
   {
     stepNumber: 8,
@@ -302,6 +346,9 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Both partners identify 1-2 "repair-worthy" moments not yet addressed',
     ],
     practices: ['soft-startup', 'opposite-action', 'dear-man', 'externalizing-the-problem', 'news-reporter-stance', 'values-compass', 'over-functioning-brake'],
+    introText:
+      'Every relationship has ruptures. Some get repaired. Some get buried — still there, still tender, just not talked about. This step is about bringing attention to what’s been wounded. Not to rip it open. But to finally tend to it properly. You don’t have to do it all at once. You just have to acknowledge that it’s there.',
+    miniGameId: 'repair-inventory',
   },
   {
     stepNumber: 9,
@@ -325,6 +372,9 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Both partners can name one concrete behavioral change they\'ve made',
     ],
     practices: ['grounding-5-4-3-2-1', 'distress-tolerance-together', 'assumption-audit', 'repair-attempt', 'aftermath-of-fight', 'four-horsemen-antidotes'],
+    introText:
+      'Apologies matter. But at some point, you have to show rather than tell. Trust isn’t rebuilt through words alone. It’s rebuilt through consistent action over time — showing up differently, again and again. This step gives you tools for repair and the skill of soft startup — how to begin hard conversations in a way that invites your partner closer.',
+    miniGameId: 'soft-startup-sim',
   },
   {
     stepNumber: 10,
@@ -347,6 +397,9 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Both partners have a personal regulation practice they do 3x/week',
     ],
     practices: ['rituals-of-connection', 'relationship-values-compass', 'relationship-bullseye', 'stress-reducing-conversation'],
+    introText:
+      'Here’s something important: you will slip back into old patterns. Not because you failed — because you’re human. The question isn’t whether you’ll stumble. It’s how quickly you catch yourself and how gently you return to connection. When you catch yourselves doing “that thing” again, it’s not defeat — it’s awareness.',
+    miniGameId: 'pattern-check-in',
   },
   {
     stepNumber: 11,
@@ -369,6 +422,9 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Both partners can describe what they sense the relationship "needs" right now',
     ],
     practices: ['radical-acceptance', 'eulogy-exercise'],
+    introText:
+      'By now, something has shifted. You’re not just two individuals managing a relationship — you’re learning to sense the relationship as its own living thing. What does it need right now? Where is it growing? Where is it still tender? This step asks you to create space for the relationship itself to speak.',
+    miniGameId: 'the-third-voice',
   },
   {
     stepNumber: 12,
@@ -391,6 +447,9 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Couple creates a "relationship mission statement" or commitment',
     ],
     practices: ['relationship-mission-statement', 'eulogy-exercise', 'back-to-back-breathe', 'fondness-admiration', 'bonding-through-vulnerability'],
+    introText:
+      'You’ve come a long way. The seeing. The softening. The rebuilding. The practicing. This final step isn’t about adding more work. It’s about integration — letting everything you’ve learned become part of who you are. Changed people change the world around them. Not by preaching, but by being.',
+    miniGameId: 'relationship-manifesto',
   },
 ];
 

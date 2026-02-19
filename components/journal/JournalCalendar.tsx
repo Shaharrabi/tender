@@ -38,6 +38,7 @@ const TYPE_COLORS: Record<JournalEntryType, string> = {
   assessment: Colors.accentGold,    // Concierge Gold
   chat: Colors.calm,                // Soft Teal
   xp: Colors.accent,               // Terracotta
+  minigame: Colors.accentGold,     // Concierge Gold
 };
 
 // Ordered for consistent dot layout

@@ -28,6 +28,7 @@ import {
   Shadows,
 } from '@/constants/theme';
 import HomeButton from '@/components/HomeButton';
+import FoundationOverlay, { hasHeardFoundation } from '@/components/growth/FoundationOverlay';
 import StepJourney from '@/components/growth/StepJourney';
 import GrowthTimeline from '@/components/growth/GrowthTimeline';
 import CheckInCard from '@/components/growth/CheckInCard';
@@ -54,6 +55,7 @@ export default function GrowthScreen() {
   const [stepProgress, setStepProgress] = useState<StepProgress[]>([]);
   const [currentStepNumber, setCurrentStepNumber] = useState(1);
   const [checkedCriteria, setCheckedCriteria] = useState<Record<number, number[]>>({});
+  const [showFoundation, setShowFoundation] = useState(false);
 
   const loadData = useCallback(async () => {
     if (!user) return;
@@ -82,6 +84,10 @@ export default function GrowthScreen() {
       // Find the current active step
       const activeStep = stepData.find((sp) => sp.status === 'active');
       setCurrentStepNumber(activeStep?.stepNumber ?? 1);
+
+      // Check if first visit — show Foundation audio
+      const heard = await hasHeardFoundation();
+      if (!heard) setShowFoundation(true);
     } catch (err) {
       console.error('Failed to load growth data:', err);
     } finally {
@@ -150,6 +156,16 @@ export default function GrowthScreen() {
     }
   };
 
+  const handleStepNavigate = (stepNumber: number) => {
+    // Only navigate if tapping the current/active step
+    if (stepNumber === currentStepNumber) {
+      router.push({
+        pathname: '/(app)/step-detail' as any,
+        params: { step: String(stepNumber) },
+      });
+    }
+  };
+
   const handlePracticeFromWoT = (practiceId: string) => {
     router.push({
       pathname: '/(app)/exercise' as any,
@@ -189,6 +205,7 @@ export default function GrowthScreen() {
           onSelectPractice={handlePracticeFromWoT}
           onCriteriaToggle={handleCriteriaToggle}
           checkedCriteria={checkedCriteria}
+          onStepPress={handleStepNavigate}
         />
 
         {/* Weekly Practice Schedule */}
@@ -274,6 +291,11 @@ export default function GrowthScreen() {
         </TouchableOpacity>
       </ScrollView>
       <HomeButton />
+
+      {/* Foundation audio overlay — first visit only */}
+      {showFoundation && (
+        <FoundationOverlay onDismiss={() => setShowFoundation(false)} />
+      )}
     </SafeAreaView>
   );
 }

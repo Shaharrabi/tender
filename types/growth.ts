@@ -74,6 +74,10 @@ export interface HealingStep {
   };
   completionCriteria: string[];
   practices: string[]; // exercise IDs assigned to this step
+  /** V3 — Warm intro text shown on the step detail screen */
+  introText?: string;
+  /** V3 — Mini-game identifier for this step */
+  miniGameId?: string;
 }
 
 export interface StepProgress {
@@ -100,4 +104,18 @@ export interface PracticeCompletion {
   aiCoachNotes?: string;
   completedAt: string;
   createdAt: string;
+}
+
+// ─── Mini-Game Output ──────────────────────────────────
+
+export interface MiniGameOutput {
+  id?: string;
+  userId: string;
+  stepNumber: number;
+  gameId: string;
+  title: string;
+  insights: string[];
+  data: Record<string, any>;
+  completedAt: string;
+  createdAt?: string;
 }

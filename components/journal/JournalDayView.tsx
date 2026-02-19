@@ -77,6 +77,12 @@ const TYPE_CONFIG: Record<JournalEntryType, {
     label: 'XP',
     Icon: StarIcon,
   },
+  minigame: {
+    color: Colors.accentGold,
+    bg: '#FDF3E0',
+    label: 'Mini-Game',
+    Icon: SparkleIcon,
+  },
 };
 
 // ─── Helpers ────────────────────────────────────────────
@@ -479,6 +485,32 @@ function XPCard({ entry }: { entry: JournalEntry }) {
   );
 }
 
+function MiniGameCard({ entry }: { entry: JournalEntry }) {
+  const { gameId, stepNumber, insights } = entry.data;
+  return (
+    <View style={cardStyles.cardBody}>
+      {stepNumber != null && (
+        <View style={cardStyles.inlineRow}>
+          <Text style={cardStyles.inlineLabel}>Step {stepNumber}</Text>
+          {gameId && (
+            <Text style={[cardStyles.inlineValue, { color: Colors.accentGold }]}>
+              {gameId.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())}
+            </Text>
+          )}
+        </View>
+      )}
+      {insights && Array.isArray(insights) && insights.length > 0 && (
+        <View style={{ gap: 4, marginTop: 4 }}>
+          <Text style={cardStyles.reflectionLabel}>Insights</Text>
+          {insights.map((insight: string, idx: number) => (
+            <Text key={idx} style={cardStyles.noteFullText}>• {insight}</Text>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+}
+
 // ─── Entry Card Router ──────────────────────────────────
 
 function EntryCardContent({ entry }: { entry: JournalEntry }) {
@@ -494,6 +526,8 @@ function EntryCardContent({ entry }: { entry: JournalEntry }) {
       return <ChatCard entry={entry} />;
     case 'xp':
       return <XPCard entry={entry} />;
+    case 'minigame':
+      return <MiniGameCard entry={entry} />;
     default:
       return null;
   }

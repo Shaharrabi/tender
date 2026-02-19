@@ -16,7 +16,8 @@ export type JournalEntryType =
   | 'practice'
   | 'chat'
   | 'assessment'
-  | 'xp';
+  | 'xp'
+  | 'minigame';
 
 export interface JournalEntry {
   id: string;
@@ -100,6 +101,7 @@ export async function getJournalEntriesForDate(
     chatSessionsResult,
     xpResult,
     assessmentsResult,
+    minigamesResult,
   ] = await Promise.allSettled([
     // 1. Daily check-ins (uses DATE type — exact match)
     supabase
@@ -147,6 +149,15 @@ export async function getJournalEntriesForDate(
     // 6. Assessments (TIMESTAMPTZ — range)
     supabase
       .from('assessments')
+      .select('*')
+      .eq('user_id', userId)
+      .gte('completed_at', dayStart)
+      .lt('completed_at', dayEnd)
+      .order('completed_at', { ascending: true }),
+
+    // 7. Mini-game outputs (TIMESTAMPTZ — range)
+    supabase
+      .from('step_minigame_outputs')
       .select('*')
       .eq('user_id', userId)
       .gte('completed_at', dayStart)
@@ -274,6 +285,26 @@ export async function getJournalEntriesForDate(
     }
   }
 
+  // Process mini-game outputs
+  if (minigamesResult.status === 'fulfilled' && minigamesResult.value.data) {
+    for (const row of minigamesResult.value.data) {
+      const output = row.output ?? {};
+      entries.push({
+        id: row.id,
+        type: 'minigame',
+        timestamp: row.completed_at,
+        title: output.title || 'Mini-Game',
+        subtitle: row.step_number ? `Step ${row.step_number}` : undefined,
+        data: {
+          gameId: row.game_id,
+          stepNumber: row.step_number,
+          insights: output.insights ?? [],
+          gameData: output.data ?? {},
+        },
+      });
+    }
+  }
+
   // Sort by timestamp
   entries.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
@@ -309,6 +340,7 @@ export async function getJournalCalendarData(
     practicesResult,
     chatSessionsResult,
     assessmentsResult,
+    minigamesResult,
   ] = await Promise.allSettled([
     supabase
       .from('daily_check_ins')
@@ -340,6 +372,13 @@ export async function getJournalCalendarData(
 
     supabase
       .from('assessments')
+      .select('completed_at')
+      .eq('user_id', userId)
+      .gte('completed_at', startISO)
+      .lt('completed_at', endISO),
+
+    supabase
+      .from('step_minigame_outputs')
       .select('completed_at')
       .eq('user_id', userId)
       .gte('completed_at', startISO)
@@ -378,6 +417,13 @@ export async function getJournalCalendarData(
   if (assessmentsResult.status === 'fulfilled' && assessmentsResult.value.data) {
     for (const row of assessmentsResult.value.data) {
       addDay(dateFromTimestamp(row.completed_at), 'assessment');
+    }
+  }
+
+  // Map mini-games
+  if (minigamesResult.status === 'fulfilled' && minigamesResult.value.data) {
+    for (const row of minigamesResult.value.data) {
+      addDay(dateFromTimestamp(row.completed_at), 'minigame');
     }
   }
 

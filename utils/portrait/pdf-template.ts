@@ -117,6 +117,7 @@ export function generatePortraitHTML(portrait: IndividualPortrait): string {
       display: flex;
       align-items: center;
       margin-bottom: 6px;
+      page-break-inside: avoid;
     }
     .score-label {
       width: 160px;
@@ -157,6 +158,7 @@ export function generatePortraitHTML(portrait: IndividualPortrait): string {
       border-radius: 8px;
       padding: 12px 14px;
       margin-bottom: 10px;
+      page-break-inside: avoid;
     }
     .card-title {
       font-weight: 700;
@@ -171,6 +173,7 @@ export function generatePortraitHTML(portrait: IndividualPortrait): string {
     .two-col {
       display: flex;
       gap: 16px;
+      page-break-inside: avoid;
     }
     .two-col > div { flex: 1; }
 

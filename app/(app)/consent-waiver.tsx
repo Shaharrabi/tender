@@ -325,6 +325,17 @@ export default function ConsentWaiverScreen() {
                 </Text>
               </TouchableOpacity>
             )}
+
+            {/* Couple Portal */}
+            <TouchableOpacity
+              style={[s.submitButton, s.confirmationSecondaryBtn]}
+              onPress={() => router.push('/(app)/couple-portal' as any)}
+              activeOpacity={0.8}
+            >
+              <Text style={[s.submitButtonText, { color: Colors.primary }]}>
+                Connect with Partner
+              </Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
         <HomeButton />
