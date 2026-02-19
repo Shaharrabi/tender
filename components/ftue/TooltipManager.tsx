@@ -36,7 +36,7 @@ interface TooltipManagerProps {
   /** Whether tooltips are enabled (e.g. disable during tour) */
   enabled?: boolean;
   /** ScrollView ref for auto-scrolling to off-screen targets */
-  scrollRef?: React.RefObject<ScrollView>;
+  scrollRef?: React.RefObject<ScrollView | null>;
   /** Current scroll Y offset (tracked via onScroll) */
   scrollOffset?: React.RefObject<number>;
 }

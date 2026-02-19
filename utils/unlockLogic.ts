@@ -25,6 +25,7 @@ import {
   HandshakeIcon,
   CoupleIcon,
   HeartIcon,
+  SeedlingIcon,
 } from '@/assets/graphics/icons';
 
 export interface UnlockState {
@@ -45,6 +46,9 @@ export interface UnlockState {
   treatmentPlan: boolean;         // Available after 3+ assessments
   findTherapist: boolean;         // Always available
   community: boolean;             // Always available
+
+  // Growth
+  healingJourney: boolean;      // Available after 1+ assessment
 
   // Dating
   datingWell: boolean;          // Always available
@@ -229,6 +233,16 @@ export const FEATURE_CARDS: FeatureCard[] = [
     category: 'feature',
   },
   {
+    key: 'healingJourney',
+    title: 'Your Healing Journey',
+    subtitle: 'Twelve steps, practices, and your growth arc',
+    icon: SeedlingIcon,
+    color: Colors.primary,
+    unlockHint: 'Complete 1 assessment to unlock',
+    route: '/(app)/growth',
+    category: 'feature',
+  },
+  {
     key: 'datingWell',
     title: 'Dating Well',
     subtitle: 'The Art of Beginning',
@@ -279,6 +293,7 @@ export function getUnlockState(
     treatmentPlan: completedCount >= 3,
     findTherapist: true,
     community: true,
+    healingJourney: completedCount >= 1,
     datingWell: true,
 
     // Counts
