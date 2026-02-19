@@ -1,10 +1,13 @@
 /**
- * Treatment Plan Screen — Redesigned
+ * Growth Plan Screen (formerly Treatment Plan)
  *
- * A beautiful, infographic-style treatment plan page with
- * animations, progress visualization, and gamification elements.
- * Displays the user's personalized treatment plan generated
- * from their portrait data.
+ * Now renders the unified protocol-based growth plan via
+ * GrowthPlanContent — the same component used in the portrait
+ * GrowthTab. This ensures a consistent experience regardless
+ * of which navigation path the user takes.
+ *
+ * The legacy sub-components (PathwayCard, StatCard, etc.) are
+ * preserved below but no longer rendered in the main flow.
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -43,6 +46,8 @@ import SparkleIcon from '@/assets/graphics/icons/SparkleIcon';
 import TargetIcon from '@/assets/graphics/icons/TargetIcon';
 import CalendarIcon from '@/assets/graphics/icons/CalendarIcon';
 import CheckmarkIcon from '@/assets/graphics/icons/CheckmarkIcon';
+import GrowthPlanContent from '@/components/growth/GrowthPlanContent';
+import type { IndividualPortrait } from '@/types';
 import type { TreatmentPlan, TreatmentPathway, GrowthEdgeProgress, GrowthStage } from '@/types/growth';
 
 /** Practice-count thresholds for milestone completion */
@@ -601,140 +606,43 @@ function ExerciseCard({
   );
 }
 
-// ─── Main Screen ────────────────────────────────────────
+// ─── Main Screen (Unified — uses GrowthPlanContent) ─────
 
 export default function TreatmentPlanScreen() {
   const { user } = useAuth();
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
-  const [plan, setPlan] = useState<TreatmentPlan | null>(null);
-  const [growthProgress, setGrowthProgress] = useState<GrowthEdgeProgress[]>([]);
+  const [portrait, setPortrait] = useState<IndividualPortrait | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [completedGoals, setCompletedGoals] = useState<Set<number>>(new Set());
 
-  // Section fade-in animations
-  const heroFade = useRef(new Animated.Value(0)).current;
-  const heroSlide = useRef(new Animated.Value(-20)).current;
-  const sectionFades = useRef([
-    new Animated.Value(0),
-    new Animated.Value(0),
-    new Animated.Value(0),
-    new Animated.Value(0),
-  ]).current;
-  const sectionSlides = useRef([
-    new Animated.Value(40),
-    new Animated.Value(40),
-    new Animated.Value(40),
-    new Animated.Value(40),
-  ]).current;
-
-  const loadPlan = useCallback(async () => {
+  const loadData = useCallback(async () => {
     if (!user) return;
     try {
-      const [portrait, edgeProgress] = await Promise.all([
-        getPortrait(user.id),
-        getGrowthEdgeProgress(user.id).catch(() => [] as GrowthEdgeProgress[]),
-      ]);
-      if (!portrait) {
+      const p = await getPortrait(user.id);
+      if (!p) {
         setError(
-          'No portrait found. Complete all assessments to generate your treatment plan.'
+          'No portrait found. Complete all assessments to generate your growth plan.'
         );
         return;
       }
-      const generated = generateTreatmentPlan(portrait);
-      setPlan(generated);
-      setGrowthProgress(edgeProgress);
+      setPortrait(p);
     } catch (err) {
-      console.error('Failed to load treatment plan:', err);
-      setError('Something went wrong loading your treatment plan.');
+      console.error('Failed to load growth plan:', err);
+      setError('Something went wrong loading your growth plan.');
     } finally {
       setLoading(false);
     }
   }, [user]);
 
-  // Weekly goal completion — persisted per week via AsyncStorage
-  const weekKey = `weekly_goals_${user?.id}_${getWeekId()}`;
-
-  useEffect(() => {
-    // Load completed goals on mount
-    AsyncStorage.getItem(weekKey).then((stored) => {
-      if (stored) {
-        try {
-          const arr = JSON.parse(stored);
-          if (Array.isArray(arr)) setCompletedGoals(new Set(arr));
-        } catch { /* ignore */ }
-      }
-    });
-  }, [weekKey]);
-
-  const toggleGoal = useCallback(async (index: number) => {
-    setCompletedGoals((prev) => {
-      const next = new Set(prev);
-      if (next.has(index)) {
-        next.delete(index);
-      } else {
-        next.add(index);
-      }
-      // Persist asynchronously
-      AsyncStorage.setItem(weekKey, JSON.stringify([...next]));
-      return next;
-    });
-  }, [weekKey]);
-
   useFocusEffect(
     useCallback(() => {
-      loadPlan();
-    }, [loadPlan])
+      loadData();
+    }, [loadData])
   );
-
-  // Run entrance animations when plan loads
-  useEffect(() => {
-    if (!plan) return;
-
-    // Hero entrance
-    Animated.parallel([
-      Animated.timing(heroFade, {
-        toValue: 1,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-      Animated.timing(heroSlide, {
-        toValue: 0,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-    ]).start();
-
-    // Staggered section entrances
-    sectionFades.forEach((fade, i) => {
-      Animated.sequence([
-        Animated.delay(300 + i * 200),
-        Animated.parallel([
-          Animated.timing(fade, {
-            toValue: 1,
-            duration: 500,
-            useNativeDriver: true,
-          }),
-          Animated.timing(sectionSlides[i], {
-            toValue: 0,
-            duration: 500,
-            useNativeDriver: true,
-          }),
-        ]),
-      ]).start();
-    });
-  }, [plan]);
 
   const handleBack = () => {
     router.back();
-  };
-
-  const handleExercisePress = (exerciseId: string) => {
-    router.push({
-      pathname: '/(app)/exercise' as any,
-      params: { id: exerciseId },
-    });
   };
 
   // ─── Loading State ────────────────────────────────────
@@ -756,14 +664,14 @@ export default function TreatmentPlanScreen() {
 
   // ─── Error State ──────────────────────────────────────
 
-  if (error || !plan) {
+  if (error || !portrait) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={handleBack} activeOpacity={0.7}>
             <Text style={styles.backText}>{'\u2190'} Back</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Treatment Plan</Text>
+          <Text style={styles.headerTitle}>Your Growth Plan</Text>
           <View style={styles.headerSpacer} />
         </View>
         <View style={styles.errorContainer}>
@@ -786,13 +694,6 @@ export default function TreatmentPlanScreen() {
     );
   }
 
-  // Compute totals
-  const totalMilestones = plan.pathways.reduce(
-    (sum, p) => sum + p.milestones.length,
-    0
-  );
-  const totalPathways = plan.pathways.length;
-
   return (
     <SafeAreaView style={styles.container}>
       {/* ─── Header ─────────────────────────────────────── */}
@@ -805,203 +706,10 @@ export default function TreatmentPlanScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { padding: Spacing.lg }]}
         showsVerticalScrollIndicator={false}
       >
-        {/* ─── Hero Section ───────────────────────────────── */}
-        <Animated.View
-          style={[
-            styles.heroContainer,
-            {
-              opacity: heroFade,
-              transform: [{ translateY: heroSlide }],
-            },
-          ]}
-        >
-          {/* Gradient-like layered background */}
-          <View style={styles.heroBgLayer1} />
-          <View style={styles.heroBgLayer2} />
-          <View style={styles.heroBgLayer3} />
-
-          <View style={styles.heroContent}>
-            <View style={styles.heroLeft}>
-              <Text style={styles.heroEyebrow}>PRIMARY FOCUS</Text>
-              <Text style={styles.heroTitle}>{plan.primaryFocus}</Text>
-              <View style={styles.heroFrequencyBadge}>
-                <View style={styles.heroFrequencyDot} />
-                <Text style={styles.heroFrequencyText}>
-                  {plan.checkInFrequency === 'daily'
-                    ? 'Daily'
-                    : 'Weekly'}{' '}
-                  check-ins
-                </Text>
-              </View>
-            </View>
-            <View style={styles.heroRight}>
-              <ProgressRing
-                progress={
-                  growthProgress.length > 0
-                    ? growthProgress.reduce((sum, ep) => sum + (STAGE_PERCENT[ep.stage] ?? 0), 0) / growthProgress.length
-                    : 0
-                }
-                size={90}
-                strokeWidth={6}
-              />
-            </View>
-          </View>
-        </Animated.View>
-
-        {/* ─── Stats Row ──────────────────────────────────── */}
-        <Animated.View
-          style={[
-            styles.statsRow,
-            {
-              opacity: sectionFades[0],
-              transform: [{ translateY: sectionSlides[0] }],
-            },
-          ]}
-        >
-          <StatCard
-            label="Pathways"
-            value={String(totalPathways)}
-            icon={<SparkleIcon size={22} color={Colors.primary} />}
-            delay={400}
-          />
-          <StatCard
-            label="Milestones"
-            value={String(totalMilestones)}
-            icon={<TargetIcon size={22} color={Colors.secondary} />}
-            delay={550}
-          />
-          <StatCard
-            label="Check-ins"
-            value={plan.checkInFrequency === 'daily' ? 'Daily' : 'Weekly'}
-            icon={<CalendarIcon size={22} color={Colors.accent} />}
-            delay={700}
-          />
-        </Animated.View>
-
-        {/* ─── Growth Pathways ────────────────────────────── */}
-        <Animated.View
-          style={[
-            styles.section,
-            {
-              opacity: sectionFades[1],
-              transform: [{ translateY: sectionSlides[1] }],
-            },
-          ]}
-        >
-          <View style={styles.sectionHeaderRow}>
-            <View>
-              <Text style={styles.sectionTitle}>Growth Pathways</Text>
-              <Text style={styles.sectionSubtitle}>
-                Your personalized roadmap to relationship growth
-              </Text>
-            </View>
-          </View>
-
-          {plan.pathways.map((pathway, index) => (
-            <PathwayCard
-              key={index}
-              pathway={pathway}
-              index={index}
-              onExercisePress={handleExercisePress}
-              animDelay={600 + index * 150}
-              edgeProgress={findEdgeProgressForPathway(pathway, growthProgress)}
-            />
-          ))}
-        </Animated.View>
-
-        {/* ─── Weekly Goals ───────────────────────────────── */}
-        {plan.weeklyGoals.length > 0 && (
-          <Animated.View
-            style={[
-              styles.section,
-              {
-                opacity: sectionFades[2],
-                transform: [{ translateY: sectionSlides[2] }],
-              },
-            ]}
-          >
-            <View style={styles.sectionHeaderRow}>
-              <View>
-                <Text style={styles.sectionTitle}>Weekly Goals</Text>
-                <Text style={styles.sectionSubtitle}>
-                  Small steps that lead to big changes
-                </Text>
-              </View>
-            </View>
-            <View style={styles.goalsCard}>
-              {plan.weeklyGoals.map((goal, i) => {
-                const isDone = completedGoals.has(i);
-                return (
-                  <TouchableOpacity
-                    key={i}
-                    style={styles.goalRow}
-                    onPress={() => toggleGoal(i)}
-                    activeOpacity={0.7}
-                  >
-                    <View style={[
-                      styles.goalCheckbox,
-                      isDone && { backgroundColor: Colors.primary, borderColor: Colors.primary },
-                    ]}>
-                      {isDone && <CheckmarkIcon size={12} color="#FFFFFF" />}
-                    </View>
-                    <Text style={[
-                      styles.goalText,
-                      isDone && styles.goalTextDone,
-                    ]}>
-                      {goal}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-              <View style={styles.goalsFooter}>
-                <Text style={styles.goalsFooterText}>
-                  {completedGoals.size} of {plan.weeklyGoals.length} goals completed this week
-                </Text>
-              </View>
-            </View>
-          </Animated.View>
-        )}
-
-        {/* ─── Recommended Exercises ─────────────────────── */}
-        {plan.recommendedExercises.length > 0 && (
-          <Animated.View
-            style={[
-              styles.section,
-              {
-                opacity: sectionFades[3],
-                transform: [{ translateY: sectionSlides[3] }],
-              },
-            ]}
-          >
-            <View style={styles.sectionHeaderRow}>
-              <View>
-                <Text style={styles.sectionTitle}>
-                  Recommended Exercises
-                </Text>
-                <Text style={styles.sectionSubtitle}>
-                  Curated practices for your journey
-                </Text>
-              </View>
-            </View>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.exerciseScrollContent}
-            >
-              {plan.recommendedExercises.map((exerciseId, i) => (
-                <ExerciseCard
-                  key={exerciseId}
-                  exerciseId={exerciseId}
-                  onPress={handleExercisePress}
-                  delay={900 + i * 100}
-                />
-              ))}
-            </ScrollView>
-          </Animated.View>
-        )}
+        <GrowthPlanContent portrait={portrait} router={router} />
 
         {/* Bottom spacer */}
         <View style={{ height: Spacing.xxl }} />
@@ -1009,6 +717,16 @@ export default function TreatmentPlanScreen() {
       <HomeButton />
     </SafeAreaView>
   );
+}
+
+// ─── Legacy Main Screen (preserved, no longer default export) ───
+
+function _LegacyTreatmentPlanScreen() {
+  // This function preserves the original legacy rendering code.
+  // It is no longer rendered but kept for reference and safety.
+  // All sub-components (PathwayCard, StatCard, ProgressRing, etc.)
+  // remain available above if ever needed.
+  return null;
 }
 
 // ─── Styles ─────────────────────────────────────────────

@@ -273,7 +273,7 @@ export default function GrowthScreen() {
           </View>
         )}
 
-        {/* Treatment Plan Link */}
+        {/* Growth Plan Link */}
         <TouchableOpacity
           style={styles.treatmentPlanLink}
           onPress={handleViewTreatmentPlan}
@@ -281,10 +281,10 @@ export default function GrowthScreen() {
         >
           <View style={styles.treatmentPlanContent}>
             <Text style={styles.treatmentPlanTitle}>
-              View Treatment Plan
+              View Growth Plan
             </Text>
             <Text style={styles.treatmentPlanSubtitle}>
-              Your personalized pathways, goals, and exercises
+              Your personalized growth pathway
             </Text>
           </View>
           <Text style={styles.treatmentPlanArrow}>{'\u203A'}</Text>
