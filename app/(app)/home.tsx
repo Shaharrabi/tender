@@ -662,7 +662,7 @@ export default function HomeScreen() {
   const featureGridCards = FEATURE_CARDS.filter(
     (card) =>
       card.category === 'feature' &&
-      ['treatmentPlan', 'findTherapist', 'practices', 'courses', 'couplesPortal', 'community'].includes(
+      ['treatmentPlan', 'findTherapist', 'practices', 'courses', 'couplesPortal', 'community', 'datingWell'].includes(
         card.key
       )
   );

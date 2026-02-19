@@ -315,6 +315,35 @@ export type {
   AppUnlockState,
 } from './couples';
 
+// ─── Dating Well Types ──────────────────────────────────
+
+export type {
+  GameAnswer,
+  ArchetypeScores,
+  ConstellationResult,
+  GameScenario,
+  GameOption,
+  DatingPreferences,
+  DatingProfile,
+  DatingLetter,
+  DatingRoomActivity,
+  DatingJournalEntry,
+  MeetingRoom,
+  HotelRoom,
+  HotelRoomContent,
+  HotelRoomContentType,
+  PreferenceField,
+  PreferenceSection,
+  CompatibilityDimension,
+  ArchetypeDefinition,
+  AttachmentPattern,
+  DatingPractice,
+  DateScenario,
+  DateScenarioOption,
+  DatingSignal,
+  TransitionGuidepost,
+} from './dating';
+
 // ─── WEARE Types (Phase 4) ─────────────────────────────
 
 export type {
