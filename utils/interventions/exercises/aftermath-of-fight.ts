@@ -40,18 +40,40 @@ export const aftermathOfFight: Intervention = {
       promptPlaceholder: 'During that incident, my experience was...',
     },
     {
-      type: 'prompt',
+      type: 'sentence_transform',
       title: 'Validate Each Other\'s Experience',
-      content:
-        'After both partners have shared, take turns validating. Validation does not mean agreement — it means acknowledging that your partner\'s experience makes sense given their perspective. Try: "It makes sense that you felt ___ because from your point of view, ___."\n\nWrite down what it felt like to be validated (or what was hard about validating).',
-      promptPlaceholder: 'When my partner validated me, I felt...',
+      content: 'Validation is not agreement \u2014 it\'s acknowledging your partner\'s reality. Build a validation statement:',
+      interactiveConfig: {
+        kind: 'sentence_transform',
+        stages: [
+          {
+            prefix: 'It makes sense that you felt',
+            placeholder: 'name their emotion...',
+            explanation: 'Reflect the feeling, not the content',
+          },
+          {
+            prefix: 'because from your point of view,',
+            placeholder: 'describe their perspective...',
+            explanation: 'Show you understand their reality without endorsing it as THE reality',
+          },
+        ],
+      },
     },
     {
-      type: 'prompt',
-      title: 'Identify Triggers',
-      content:
-        'Often our reactions in a fight are amplified by past experiences — from childhood, past relationships, or earlier moments in this relationship. What got triggered in you during this incident? Is there an older wound or sensitivity that made this feel bigger than the surface issue?',
-      promptPlaceholder: 'I think I was triggered because...',
+      type: 'scenario_choice',
+      title: 'What Got Triggered?',
+      content: 'Strong reactions in fights often have deeper roots. What made this feel bigger than the surface issue?',
+      interactiveConfig: {
+        kind: 'scenario_choice',
+        scenario: 'My reaction felt amplified because:',
+        choices: [
+          { id: 'childhood', text: 'It echoes something from my childhood', feedback: 'Early experiences create templates for how we interpret relationship events. Naming this helps separate then from now.' },
+          { id: 'past-rel', text: 'A past relationship had a similar pattern', feedback: 'Previous relationship wounds can make current conflicts feel more threatening than they are.' },
+          { id: 'this-rel', text: 'It connects to an earlier hurt in THIS relationship', feedback: 'Accumulated injuries stack. This fight may carry the weight of unrepaired earlier moments.' },
+          { id: 'core-fear', text: 'It touched a core fear (rejection, abandonment, inadequacy)', feedback: 'Core attachment fears are the deepest triggers. When these are activated, our nervous system floods.' },
+        ],
+        revealAll: false,
+      },
     },
     {
       type: 'prompt',

@@ -6,6 +6,7 @@
  */
 
 import React, { useState, useCallback, useMemo } from 'react';
+import HomeButton from '@/components/HomeButton';
 import {
   View,
   Text,
@@ -253,6 +254,8 @@ export default function CoursesScreen() {
 
         <View style={{ height: Spacing.xxxl }} />
       </ScrollView>
+
+      <HomeButton />
 
       {/* FTUE Overlays */}
       <TooltipManager screen="courses" />

@@ -55,63 +55,58 @@ import {
 // Some practices appear in multiple steps (e.g., window-check in Steps 1 & 10).
 
 export const PRACTICE_STEP_MAP: Record<string, number[]> = {
-  // Step 1: Acknowledge the Strain
-  'window-check': [1, 10],
-  'parts-check-in': [1, 10],
-  'recognize-cycle': [1],
-  'protest-polka': [1],
+  // ─── Regulation (8) ─────────────────────────────────────
+  'window-check':               [1, 4, 7, 11],        // Primary: Step 1  | Revisit: 4, 7, 11
+  'grounding-5-4-3-2-1':        [9, 3, 4, 11],        // Primary: Step 9  | Revisit: 3, 4, 11
+  'self-compassion-break':      [4, 6, 11],            // Primary: Step 4  | Revisit: 6, 11
+  'distress-tolerance-together': [9, 3, 7],            // Primary: Step 9  | Revisit: 3, 7
+  'opposite-action':            [8, 3, 6],             // Primary: Step 8  | Revisit: 3, 6
+  'radical-acceptance':         [11, 6, 9],            // Primary: Step 11 | Revisit: 6, 9
+  'assumption-audit':           [9, 3, 6],             // Primary: Step 9  | Revisit: 3, 6  (NEW)
+  'back-to-back-breathe':       [7, 5, 9, 12],        // Primary: Step 7  | Revisit: 5, 9, 12 (NEW)
 
-  // Step 2: Trust the Relational Field
-  'couple-bubble': [2],
-  'stress-reducing-conversation': [2],
-  'turning-toward': [2],
-  'emotional-bid': [2], // "Turning Toward Bids" maps to emotional-bid
+  // ─── Communication (12) ─────────────────────────────────
+  'soft-startup':               [8, 5, 9],             // Primary: Step 8  | Revisit: 5, 9
+  'repair-attempt':             [9, 6, 11],            // Primary: Step 9  | Revisit: 6, 11
+  'turning-toward':             [2, 5, 10],            // Primary: Step 2  | Revisit: 5, 10
+  'dreams-within-conflict':     [6, 9, 11],            // Primary: Step 6  | Revisit: 9, 11
+  'aftermath-of-fight':         [9, 6, 11],            // Primary: Step 9  | Revisit: 6, 11
+  'unified-detachment':         [3, 6, 8, 11],         // Primary: Step 3  | Revisit: 6, 8, 11
+  'empathic-joining':           [5, 7, 9, 12],         // Primary: Step 5,7| Revisit: 9, 12
+  'dear-man':                   [8, 4, 9],             // Primary: Step 8  | Revisit: 4, 9
+  'stress-reducing-conversation': [6, 10, 11, 12],     // Primary: Step 6,10| Revisit: 11, 12
+  'four-horsemen-antidotes':    [9, 3, 8],             // Primary: Step 9  | Revisit: 3, 8
+  'externalizing-the-problem':  [8, 6, 11],            // Primary: Step 8  | Revisit: 6, 11 (NEW)
+  'news-reporter-stance':       [8, 3, 6],             // Primary: Step 8  | Revisit: 3, 6  (NEW)
 
-  // Step 3: Release Certainty
-  'defusion-from-stories': [3],
-  'love-maps': [3],
-  'radical-acceptance': [3],
+  // ─── Attachment (12) ────────────────────────────────────
+  'emotional-bid':              [2, 5, 10],            // Primary: Step 2  | Revisit: 5, 10
+  'love-maps':                  [2, 7, 10],            // Primary: Step 2  | Revisit: 7, 10
+  'fondness-admiration':        [2, 10, 12],           // Primary: Step 2  | Revisit: 10, 12
+  'recognize-cycle':            [1, 6, 11],            // Primary: Step 1  | Revisit: 6, 11
+  'hold-me-tight':              [5, 7, 9, 12],         // Primary: Step 5,7| Revisit: 9, 12
+  'couple-bubble':              [2, 7, 10],            // Primary: Step 2  | Revisit: 7, 10
+  'accessing-primary-emotions': [4, 5, 7, 12],         // Primary: Step 4,7| Revisit: 5, 12
+  'bonding-through-vulnerability': [5, 7, 12],         // Primary: Step 5  | Revisit: 7, 12
+  'protest-polka':              [1, 6, 8, 11],         // Primary: Step 1,6| Revisit: 8, 11
+  'rituals-of-connection':      [10, 11, 12],          // Primary: Step 10 | Revisit: 11, 12
+  'little-you-photo-share':     [7, 5, 12],            // Primary: Step 7  | Revisit: 5, 12 (NEW)
+  'reassurance-menu':           [7, 9, 11],            // Primary: Step 7  | Revisit: 9, 11 (NEW)
 
-  // Step 4: Examine Our Part
-  'accessing-primary-emotions': [4],
-  'protector-dialogue': [4],
-  'four-horsemen-antidotes': [4],
-  'values-compass': [4],
+  // ─── Values (6) ─────────────────────────────────────────
+  'values-compass':             [8, 6, 11],            // Primary: Step 8  | Revisit: 6, 11
+  'relationship-values-compass': [10, 8, 12],          // Primary: Step 10 | Revisit: 8, 12
+  'willingness-stance':         [6, 3, 11],            // Primary: Step 6  | Revisit: 3, 11
+  'relationship-mission-statement': [12, 11],          // Primary: Step 12 | Revisit: 11
+  'relationship-bullseye':      [10, 8, 12],           // Primary: Step 10 | Revisit: 8, 12 (NEW)
+  'eulogy-exercise':            [11, 12],              // Primary: Step 11,12 (NEW)
 
-  // Step 5: Share Our Truths
-  'bonding-through-vulnerability': [5],
-  'hold-me-tight': [5],
-  'self-compassion-break': [5],
-
-  // Step 6: Release the Enemy Story
-  'unified-detachment': [6],
-  'empathic-joining': [6],
-  'fondness-admiration': [6],
-
-  // Step 7: Commit to Relational Practices
-  'rituals-of-connection': [7],
-  'relationship-values-compass': [7],
-  'willingness-stance': [7],
-  'grounding-5-4-3-2-1': [7],
-
-  // Step 8: Prepare to Repair Harm
-  'aftermath-of-fight': [8], // maps to "Processing a Regrettable Incident"
-  'distress-tolerance-together': [8], // maps to "TIPP Skills"
-
-  // Step 9: Act to Rebuild Trust
-  'repair-attempt': [9],
-  'soft-startup': [9],
-  'dear-man': [9],
-
-  // Step 10: Maintain Ongoing Awareness
-  // window-check and parts-check-in (revisited, already mapped above)
-
-  // Step 11: Seek Shared Insight
-  'dreams-within-conflict': [11],
-
-  // Step 12: Carry the Message
-  'relationship-mission-statement': [12],
-  'opposite-action': [12],
+  // ─── Differentiation (5) ────────────────────────────────
+  'parts-check-in':             [3, 4, 7],             // Primary: Step 3  | Revisit: 4, 7
+  'defusion-from-stories':      [3, 6, 11],            // Primary: Step 3  | Revisit: 6, 11
+  'protector-dialogue':         [4, 7, 11],            // Primary: Step 4  | Revisit: 7, 11
+  'emotional-inheritance-scan': [4, 1, 7],             // Primary: Step 4  | Revisit: 1, 7  (NEW)
+  'over-functioning-brake':     [8, 4, 11],            // Primary: Step 8  | Revisit: 4, 11 (NEW)
 };
 
 /** Get the primary step for a practice (first assigned step). */
@@ -150,7 +145,7 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Couple completes Recognizing Your Negative Cycle together',
       'Couple can name their cycle without blaming',
     ],
-    practices: ['window-check', 'parts-check-in', 'recognize-cycle', 'protest-polka'],
+    practices: ['window-check', 'recognize-cycle', 'protest-polka', 'emotional-inheritance-scan'],
   },
   {
     stepNumber: 2,
@@ -173,7 +168,7 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Both partners can identify 3+ types of bids they make',
       'At least one "repair after missing a bid" moment acknowledged',
     ],
-    practices: ['couple-bubble', 'stress-reducing-conversation', 'turning-toward', 'emotional-bid'],
+    practices: ['turning-toward', 'emotional-bid', 'love-maps', 'fondness-admiration', 'couple-bubble'],
   },
   {
     stepNumber: 3,
@@ -195,7 +190,7 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Love Maps exercise completed with at least 15 new learnings noted',
       'Each partner identifies one "story I\'ve held that may not be the whole truth"',
     ],
-    practices: ['defusion-from-stories', 'love-maps', 'radical-acceptance'],
+    practices: ['defusion-from-stories', 'parts-check-in', 'unified-detachment'],
   },
   {
     stepNumber: 4,
@@ -218,7 +213,7 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Four Horsemen Antidotes completed \u2014 each partner identifies their primary horseman',
       'Both partners can articulate their top 3 relationship values',
     ],
-    practices: ['accessing-primary-emotions', 'protector-dialogue', 'four-horsemen-antidotes', 'values-compass'],
+    practices: ['self-compassion-break', 'accessing-primary-emotions', 'protector-dialogue', 'emotional-inheritance-scan'],
   },
   {
     stepNumber: 5,
@@ -240,7 +235,7 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Hold Me Tight Conversation completed',
       'Both partners can name one fear they hadn\'t shared before this step',
     ],
-    practices: ['bonding-through-vulnerability', 'hold-me-tight', 'self-compassion-break'],
+    practices: ['bonding-through-vulnerability', 'hold-me-tight', 'empathic-joining'],
   },
   {
     stepNumber: 6,
@@ -262,7 +257,7 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Fondness & Admiration completed \u2014 21-day appreciation practice',
       'Each partner can articulate one way their partner\'s "difficult" behavior makes sense given their history',
     ],
-    practices: ['unified-detachment', 'empathic-joining', 'fondness-admiration'],
+    practices: ['dreams-within-conflict', 'stress-reducing-conversation', 'willingness-stance', 'protest-polka'],
   },
   {
     stepNumber: 7,
@@ -284,7 +279,7 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Relationship Values Compass completed \u2014 shared values articulated',
       'Both partners can name their "willingness edges"',
     ],
-    practices: ['rituals-of-connection', 'relationship-values-compass', 'willingness-stance', 'grounding-5-4-3-2-1'],
+    practices: ['back-to-back-breathe', 'empathic-joining', 'hold-me-tight', 'little-you-photo-share', 'reassurance-menu', 'accessing-primary-emotions'],
   },
   {
     stepNumber: 8,
@@ -294,7 +289,7 @@ export const TWELVE_STEPS: HealingStep[] = [
       'We bring our attention to the ruptures \u2014 the moments of betrayal, withdrawal, or harm \u2014 and prepare to face them together.',
     therapeuticGoal:
       'Surface unresolved wounds without re-traumatizing. Create readiness for repair.',
-    phase: 'shifting',
+    phase: 'integrating',
     fourMovementsEmphasis: 'Recognition',
     nuanceBehavior: {
       tone: 'grounded, careful, boundaried',
@@ -306,7 +301,7 @@ export const TWELVE_STEPS: HealingStep[] = [
       'At least one Regrettable Incident processed',
       'Both partners identify 1-2 "repair-worthy" moments not yet addressed',
     ],
-    practices: ['aftermath-of-fight', 'distress-tolerance-together'],
+    practices: ['soft-startup', 'opposite-action', 'dear-man', 'externalizing-the-problem', 'news-reporter-stance', 'values-compass', 'over-functioning-brake'],
   },
   {
     stepNumber: 9,
@@ -329,7 +324,7 @@ export const TWELVE_STEPS: HealingStep[] = [
       'DEAR MAN used by each partner at least once',
       'Both partners can name one concrete behavioral change they\'ve made',
     ],
-    practices: ['repair-attempt', 'soft-startup', 'dear-man'],
+    practices: ['grounding-5-4-3-2-1', 'distress-tolerance-together', 'assumption-audit', 'repair-attempt', 'aftermath-of-fight', 'four-horsemen-antidotes'],
   },
   {
     stepNumber: 10,
@@ -351,7 +346,7 @@ export const TWELVE_STEPS: HealingStep[] = [
       'At least one "we caught ourselves in the old pattern" moment processed',
       'Both partners have a personal regulation practice they do 3x/week',
     ],
-    practices: ['window-check', 'parts-check-in'],
+    practices: ['rituals-of-connection', 'relationship-values-compass', 'relationship-bullseye', 'stress-reducing-conversation'],
   },
   {
     stepNumber: 11,
@@ -373,7 +368,7 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Couple has established a regular "relationship check-in" ritual',
       'Both partners can describe what they sense the relationship "needs" right now',
     ],
-    practices: ['dreams-within-conflict'],
+    practices: ['radical-acceptance', 'eulogy-exercise'],
   },
   {
     stepNumber: 12,
@@ -395,7 +390,7 @@ export const TWELVE_STEPS: HealingStep[] = [
       'Each partner identifies how the journey has changed other relationships',
       'Couple creates a "relationship mission statement" or commitment',
     ],
-    practices: [],
+    practices: ['relationship-mission-statement', 'eulogy-exercise', 'back-to-back-breathe', 'fondness-admiration', 'bonding-through-vulnerability'],
   },
 ];
 
@@ -440,8 +435,8 @@ export const HEALING_PHASES: PhaseDefinition[] = [
     weekRange: [5, 8],
     icon: RefreshIcon,
     color: '#D4A574',
-    stepRange: [5, 9],
-    stepFocus: 'Share Truths \u2192 Release Enemy Story \u2192 Commit \u2192 Prepare \u2192 Act',
+    stepRange: [5, 7],
+    stepFocus: 'Share Truths \u2192 Release Enemy Story \u2192 Commit to Practices',
   },
   {
     id: 'integrating',
@@ -450,8 +445,8 @@ export const HEALING_PHASES: PhaseDefinition[] = [
     weekRange: [9, 12],
     icon: BookOpenIcon,
     color: '#9B8EC4',
-    stepRange: [9, 11],
-    stepFocus: 'Maintain Awareness + Seek Shared Insight',
+    stepRange: [8, 10],
+    stepFocus: 'Prepare to Repair \u2192 Act to Rebuild \u2192 Maintain Awareness',
   },
   {
     id: 'sustaining',

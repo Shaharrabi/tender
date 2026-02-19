@@ -10,6 +10,7 @@
  */
 
 import React, { useState, useMemo } from 'react';
+import HomeButton from '@/components/HomeButton';
 import {
   View,
   Text,
@@ -271,12 +272,12 @@ export default function ConsentWaiverScreen() {
     return (
       <SafeAreaView style={s.container}>
         <ScrollView
-          contentContainerStyle={[s.scrollContent, { alignItems: 'center', justifyContent: 'center', flex: 1 }]}
+          contentContainerStyle={[s.scrollContent, { alignItems: 'center', justifyContent: 'center', flexGrow: 1 }]}
           showsVerticalScrollIndicator={false}
         >
           <View style={s.confirmationSection}>
             <View style={s.confirmationIconWrap}>
-              <CheckmarkIcon size={48} color={Colors.primary} />
+              <CheckmarkIcon size={40} color={Colors.primary} />
             </View>
             <Text style={s.heroTitle}>Consent Saved</Text>
             <Text style={[s.heroSubtitle, { marginBottom: Spacing.xl }]}>
@@ -326,6 +327,7 @@ export default function ConsentWaiverScreen() {
             )}
           </View>
         </ScrollView>
+        <HomeButton />
       </SafeAreaView>
     );
   }
@@ -469,6 +471,7 @@ export default function ConsentWaiverScreen() {
         {/* Bottom spacing */}
         <View style={{ height: Spacing.xxxl }} />
       </ScrollView>
+      <HomeButton />
     </SafeAreaView>
   );
 }
@@ -732,15 +735,17 @@ const s = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.sm,
     paddingTop: Spacing.xxxl,
+    width: '100%' as any,
   },
   confirmationIconWrap: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 96,
+    height: 96,
+    borderRadius: 48,
     backgroundColor: Colors.primary + '15',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: Spacing.md,
+    overflow: 'hidden' as const,
   },
   confirmationSecondaryBtn: {
     backgroundColor: Colors.primary + '10',

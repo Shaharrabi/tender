@@ -184,6 +184,11 @@ export async function declineInvite(inviteId: string): Promise<boolean> {
 
 // ─── Couple Queries ────────────────────────────────────
 
+/** Returns true if this couple row is a self-couple (partner_a === partner_b) */
+export function isSelfCouple(couple: Couple): boolean {
+  return couple.partner_a_id === couple.partner_b_id;
+}
+
 export async function getMyCouple(userId: string): Promise<Couple | null> {
   const { data, error } = await supabase
     .from('couples')
@@ -199,6 +204,9 @@ export async function getMyCouple(userId: string): Promise<Couple | null> {
 export async function getPartnerProfile(userId: string): Promise<UserProfile | null> {
   const couple = await getMyCouple(userId);
   if (!couple) return null;
+
+  // Self-couple: no real partner exists
+  if (isSelfCouple(couple)) return null;
 
   const partnerId = couple.partner_a_id === userId
     ? couple.partner_b_id

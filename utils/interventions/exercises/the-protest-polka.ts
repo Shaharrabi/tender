@@ -40,11 +40,18 @@ export const protestPolka: Intervention = {
       promptPlaceholder: 'A recent conflict was...',
     },
     {
-      type: 'prompt',
-      title: 'Name What You Did on the Surface',
-      content:
-        'Each of you, think about your own behavior during that conflict. What did you do on the surface? Did you push for a conversation? Go quiet? Get critical? Walk away? Bring it up again later?\n\nBe honest about your own moves — not your partner\'s.',
-      promptPlaceholder: 'On the surface, I...',
+      type: 'scenario_choice',
+      title: 'Your Move in the Dance',
+      content: 'Which move do you tend to make when the polka starts?',
+      interactiveConfig: {
+        kind: 'scenario_choice',
+        scenario: 'When tension rises, I typically:',
+        choices: [
+          { id: 'pursue', text: 'Pursue \u2014 I reach harder, push for conversation, criticize', feedback: 'The pursuer\'s protest: "Please see me. Please respond. I\'m scared of losing you."' },
+          { id: 'withdraw', text: 'Withdraw \u2014 I go quiet, shut down, leave the room', feedback: 'The withdrawer\'s protection: "I\'m overwhelmed. I shut down to stop making it worse."' },
+        ],
+        revealAll: false,
+      },
     },
     {
       type: 'prompt',
@@ -68,11 +75,34 @@ export const protestPolka: Intervention = {
       promptPlaceholder: 'I wonder if my partner was feeling...',
     },
     {
-      type: 'prompt',
-      title: 'Write the Cycle Together',
-      content:
-        'Now put it all together. Try writing out your cycle as a loop:\n\n"When I [your surface behavior], you [their surface behavior]. But really, when I feel [your deeper feeling], I [your move], and when you feel [their deeper feeling], you [their move]. And round and round we go."\n\nThis is your protest polka. Name it. Own it together.',
-      promptPlaceholder: 'Our cycle is...',
+      type: 'sentence_transform',
+      title: 'Write Your Cycle Together',
+      content: 'Put the whole dance into one loop:',
+      interactiveConfig: {
+        kind: 'sentence_transform',
+        stages: [
+          {
+            prefix: 'When I',
+            placeholder: 'your surface move (pursue, withdraw...)',
+            explanation: 'Your automatic protective behavior',
+          },
+          {
+            prefix: 'you feel',
+            placeholder: 'your partner\'s deeper emotion...',
+            explanation: 'What your move triggers in them underneath',
+          },
+          {
+            prefix: 'so you',
+            placeholder: 'their surface move...',
+            explanation: 'Their automatic protective response',
+          },
+          {
+            prefix: 'which makes me feel',
+            placeholder: 'YOUR deeper emotion...',
+            explanation: 'The vulnerable feeling that restarts the loop',
+          },
+        ],
+      },
     },
     {
       type: 'reflection',

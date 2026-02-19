@@ -6,6 +6,7 @@
  */
 
 import React, { useState } from 'react';
+import HomeButton from '@/components/HomeButton';
 import {
   View,
   Text,
@@ -274,6 +275,7 @@ export default function PrivacyScreen() {
 
         <View style={{ height: Spacing.xxl }} />
       </ScrollView>
+      <HomeButton />
     </SafeAreaView>
   );
 }

@@ -61,11 +61,15 @@ export const holdMeTight: Intervention = {
       promptPlaceholder: 'My commitment to you is...',
     },
     {
-      type: 'timer',
+      type: 'breathing_guide',
       title: 'Physical Connection Moment',
-      content:
-        'Words lay the foundation, but physical connection seals it. Hold each other — hands, a hug, whatever feels right — in silence for two minutes. No talking, no phones, no agenda. Just two nervous systems calming in each other\'s presence. Let the conversation settle into your bodies.',
-      duration: 120,
+      content: 'Hold each other \u2014 hands, a hug, whatever feels right. Breathe together in silence. Let the conversation settle into your bodies.',
+      interactiveConfig: {
+        kind: 'breathing_guide',
+        pattern: { inhale: 4, exhale: 6 },
+        cycles: 12,
+        colorShift: { start: '#C4616E', end: '#8F9E8B' },
+      },
     },
     {
       type: 'reflection',

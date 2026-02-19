@@ -39,15 +39,19 @@ import {
   PenIcon,
   CheckmarkIcon,
 } from '@/assets/graphics/icons';
+import HomeButton from '@/components/HomeButton';
 import { useAuth } from '@/context/AuthContext';
 import { useGamification } from '@/context/GamificationContext';
-import { saveCompletion } from '@/services/intervention';
+import { saveCompletion, getCompletionByExerciseId } from '@/services/intervention';
 import { incrementPracticeCount, addInsight, upsertGrowthEdge } from '@/services/growth';
 import { getPortrait } from '@/services/portrait';
 import { getCourseById } from '@/utils/microcourses/course-registry';
 import { MC1CourseFlow } from '@/components/microcourse/mc1/MC1CourseFlow';
 import { MC2CourseFlow } from '@/components/microcourse/mc2/MC2CourseFlow';
 import { MC3CourseFlow } from '@/components/microcourse/mc3/MC3CourseFlow';
+import { MC4CourseFlow } from '@/components/microcourse/mc4/MC4CourseFlow';
+import { MC5CourseFlow } from '@/components/microcourse/mc5/MC5CourseFlow';
+import { MC6CourseFlow } from '@/components/microcourse/mc6/MC6CourseFlow';
 import {
   getLesson,
   getLessonContent,
@@ -98,6 +102,9 @@ export default function MicroCourseScreen() {
   // Completion state
   const [completed, setCompleted] = useState(false);
 
+  // Previous lesson data for cascading (MC5 L2 reads L1's story, MC6 L2/L3 reads L1's sort)
+  const [previousLessonData, setPreviousLessonData] = useState<string | undefined>();
+
   // Parse lesson
   const lessonNum = lessonNumber ? parseInt(lessonNumber, 10) : 1;
   const course = courseId ? getCourseById(courseId) : undefined;
@@ -127,6 +134,45 @@ export default function MicroCourseScreen() {
     }
     loadAttachmentStyle();
   }, [user]);
+
+  // Fetch previous lesson data for cascading (MC5 L2, MC6 L2/L3)
+  useEffect(() => {
+    async function loadPreviousLessonData() {
+      if (!user || !courseId) return;
+
+      // MC5 L2 needs L1's story text
+      if (courseId === 'mc-act-defusion' && lessonNum === 2) {
+        try {
+          const l1 = await getCompletionByExerciseId(user.id, 'mc-act-defusion-lesson-1');
+          if (l1?.stepResponses) {
+            const interactiveStep = l1.stepResponses.find((s: StepResponseEntry) => s.type === 'interactive');
+            if (interactiveStep) {
+              const parsed = JSON.parse(interactiveStep.response);
+              setPreviousLessonData(JSON.stringify({ storyText: parsed.storyText }));
+            }
+          }
+        } catch {
+          // Graceful fallback — L2 has fallback TextInput
+        }
+      }
+
+      // MC6 L2/L3 need L1's sort data
+      if (courseId === 'mc-values-alignment' && (lessonNum === 2 || lessonNum === 3)) {
+        try {
+          const l1 = await getCompletionByExerciseId(user.id, 'mc-values-alignment-lesson-1');
+          if (l1?.stepResponses) {
+            const interactiveStep = l1.stepResponses.find((s: StepResponseEntry) => s.type === 'interactive');
+            if (interactiveStep) {
+              setPreviousLessonData(interactiveStep.response);
+            }
+          }
+        } catch {
+          // Graceful fallback — L2/L3 have fallback data
+        }
+      }
+    }
+    loadPreviousLessonData();
+  }, [user, courseId, lessonNum]);
 
   // Resolve content for current attachment style
   const content: ResolvedLessonContent | null = lesson
@@ -334,6 +380,62 @@ export default function MicroCourseScreen() {
     );
   }
 
+  // ─── MC4 Interactive Flow ────────────────────
+
+  if (courseId === 'mc-boundaries' && !completed) {
+    return (
+      <MC4CourseFlow
+        lessonNumber={lessonNum}
+        totalLessons={totalLessons}
+        attachmentStyle={attachmentStyle}
+        content={content}
+        lesson={lesson}
+        course={course}
+        onComplete={handleComplete}
+        onExit={handleExit}
+        saving={saving}
+      />
+    );
+  }
+
+  // ─── MC5 Interactive Flow ────────────────────
+
+  if (courseId === 'mc-act-defusion' && !completed) {
+    return (
+      <MC5CourseFlow
+        lessonNumber={lessonNum}
+        totalLessons={totalLessons}
+        attachmentStyle={attachmentStyle}
+        content={content}
+        lesson={lesson}
+        course={course}
+        onComplete={handleComplete}
+        onExit={handleExit}
+        saving={saving}
+        previousLessonData={previousLessonData}
+      />
+    );
+  }
+
+  // ─── MC6 Interactive Flow ────────────────────
+
+  if (courseId === 'mc-values-alignment' && !completed) {
+    return (
+      <MC6CourseFlow
+        lessonNumber={lessonNum}
+        totalLessons={totalLessons}
+        attachmentStyle={attachmentStyle}
+        content={content}
+        lesson={lesson}
+        course={course}
+        onComplete={handleComplete}
+        onExit={handleExit}
+        saving={saving}
+        previousLessonData={previousLessonData}
+      />
+    );
+  }
+
   // ─── Completion Screen ───────────────────────
 
   if (completed) {
@@ -492,6 +594,7 @@ export default function MicroCourseScreen() {
           </Text>
         </TouchableOpacity>
       </View>
+      <HomeButton />
     </SafeAreaView>
   );
 }

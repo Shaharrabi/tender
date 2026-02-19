@@ -20,34 +20,40 @@ import type { TreatmentPlan, TreatmentPathway } from '@/types/growth';
 
 const EDGE_EXERCISE_MAP: Record<string, string[]> = {
   regulation_capacity: [
-    'grounding-5-4-3-2-1',
     'window-check',
+    'grounding-5-4-3-2-1',
     'self-compassion-break',
+    'distress-tolerance-together',
   ],
   values_gap: [
     'values-compass',
-    'soft-startup',
-    'emotional-bid',
+    'relationship-values-compass',
+    'willingness-stance',
+    'relationship-mission-statement',
   ],
   speak_truth: [
     'soft-startup',
-    'emotional-bid',
-    'repair-attempt',
+    'dear-man',
+    'four-horsemen-antidotes',
+    'unified-detachment',
   ],
   approach_closeness: [
     'emotional-bid',
-    'self-compassion-break',
-    'parts-check-in',
+    'hold-me-tight',
+    'bonding-through-vulnerability',
+    'turning-toward',
   ],
   reclaim_self: [
+    'protector-dialogue',
+    'defusion-from-stories',
     'parts-check-in',
-    'values-compass',
-    'self-compassion-break',
+    'radical-acceptance',
   ],
   differentiation_work: [
     'parts-check-in',
+    'defusion-from-stories',
+    'protector-dialogue',
     'values-compass',
-    'window-check',
   ],
 };
 
@@ -353,7 +359,7 @@ function getExercisesForEdge(edgeId: string): string[] {
     }
   }
 
-  return ['self-compassion-break', 'parts-check-in', 'window-check'];
+  return ['self-compassion-break', 'parts-check-in', 'window-check', 'grounding-5-4-3-2-1'];
 }
 
 function getEstimatedWeeks(edgeId: string): number {

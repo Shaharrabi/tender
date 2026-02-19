@@ -1,7 +1,7 @@
 /**
  * Intervention Registry
  *
- * Central registry of all 32 exercises with lookup,
+ * Central registry of all 43 exercises with lookup,
  * filtering, and recommendation functions.
  */
 
@@ -68,19 +68,33 @@ import { protectorDialogue } from './exercises/protector-dialogue';
 // ─── Step 12 Capstone ────────────────────────────────
 import { relationshipMissionStatement } from './exercises/relationship-mission-statement';
 
+// ─── New Interactive Exercises ───────────────────────
+import { emotionalInheritanceScan } from './exercises/emotional-inheritance-scan';
+import { assumptionAudit } from './exercises/assumption-audit';
+import { overFunctioningBrake } from './exercises/over-functioning-brake';
+import { backToBackBreathe } from './exercises/back-to-back-breathe';
+import { externalizingTheProblem } from './exercises/externalizing-the-problem';
+import { newsReporterStance } from './exercises/news-reporter-stance';
+import { littleYouPhotoShare } from './exercises/little-you-photo-share';
+import { reassuranceMenu } from './exercises/reassurance-menu';
+import { relationshipBullseye } from './exercises/relationship-bullseye';
+import { eulogyExercise } from './exercises/eulogy-exercise';
+
 // ─── Exercise Registry ──────────────────────────────────
 
 // Enrich all exercises with Four Movements + vulnerability metadata
 const EXERCISES: Intervention[] = [
-  // Regulation (6)
+  // Regulation (8)
   grounding54321,
   windowCheck,
   selfCompassionBreak,
   distressToleranceTogether,
   oppositeAction,
   radicalAcceptance,
+  assumptionAudit,
+  backToBackBreathe,
 
-  // Communication (10)
+  // Communication (12)
   softStartup,
   repairAttempt,
   turningToward,
@@ -91,8 +105,10 @@ const EXERCISES: Intervention[] = [
   dearMan,
   stressReducingConversation,
   fourHorsemenAntidotes,
+  externalizingTheProblem,
+  newsReporterStance,
 
-  // Attachment (10)
+  // Attachment (12)
   emotionalBid,
   loveMaps,
   fondnessAdmiration,
@@ -103,17 +119,23 @@ const EXERCISES: Intervention[] = [
   bondingThroughVulnerability,
   protestPolka,
   ritualsOfConnection,
+  littleYouPhotoShare,
+  reassuranceMenu,
 
-  // Values (4)
+  // Values (6)
   valuesCompass,
   relationshipValuesCompass,
   willingnessStance,
   relationshipMissionStatement,
+  relationshipBullseye,
+  eulogyExercise,
 
-  // Differentiation (3)
+  // Differentiation (5)
   partsCheckIn,
   defusionFromStories,
   protectorDialogue,
+  emotionalInheritanceScan,
+  overFunctioningBrake,
 ].map(enrichWithMetadata);
 
 const exerciseMap = new Map<string, Intervention>(

@@ -11,18 +11,21 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '@/context/AuthContext';
-import { getAssessmentConfig } from '@/utils/assessments/registry';
+import { getAssessmentConfig, isDyadicAssessment } from '@/utils/assessments/registry';
+import { saveDyadicAssessment } from '@/services/couples';
 import { supabase } from '@/services/supabase';
 import { Colors, Spacing, FontSizes, ButtonSizes, FontFamilies, BorderRadius } from '@/constants/theme';
+import HomeButton from '@/components/HomeButton';
 import SectionBreak from '@/components/assessment/SectionBreak';
 import QuestionRenderer from '@/components/assessment/QuestionRenderer';
-import type { AssessmentConfig, AssessmentSection, GenericQuestion } from '@/types';
+import type { AssessmentConfig, AssessmentSection, GenericQuestion, DyadicAssessmentType } from '@/types';
 
 export default function AssessmentScreen() {
   const { user } = useAuth();
   const router = useRouter();
-  const params = useLocalSearchParams<{ type: string }>();
+  const params = useLocalSearchParams<{ type: string; coupleId?: string }>();
   const assessmentType = params.type || 'ecr-r';
+  const coupleId = params.coupleId;
 
   let config: AssessmentConfig;
   try {
@@ -163,6 +166,7 @@ export default function AssessmentScreen() {
     try {
       const scores = config.scoringFn(responses);
 
+      // Always save to assessments table (backward compat + individual record)
       const { error } = await supabase.from('assessments').insert({
         user_id: user!.id,
         type: config.type,
@@ -175,6 +179,23 @@ export default function AssessmentScreen() {
         Alert.alert('Error', 'Failed to save results. Please try again.');
         setSubmitting(false);
         return;
+      }
+
+      // For dyadic assessments, ALSO save to dyadic_assessments table (couple-keyed)
+      // This is what checkDyadicCompletion() and getLatestDyadicScores() read from
+      if (isDyadicAssessment(config.type as any) && coupleId) {
+        try {
+          await saveDyadicAssessment(
+            user!.id,
+            coupleId,
+            config.type as DyadicAssessmentType,
+            responses,
+            scores,
+          );
+        } catch (dyadicErr) {
+          console.warn('[Assessment] Failed to save dyadic record (non-fatal):', dyadicErr);
+          // Non-fatal — the individual save succeeded, couple save is supplementary
+        }
       }
 
       await AsyncStorage.removeItem(PROGRESS_KEY);
@@ -332,6 +353,7 @@ export default function AssessmentScreen() {
           )}
         </View>
       </View>
+      <HomeButton />
     </SafeAreaView>
   );
 }

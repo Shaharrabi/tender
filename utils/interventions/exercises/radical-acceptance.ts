@@ -54,11 +54,29 @@ export const radicalAcceptance: Intervention = {
       duration: 90,
     },
     {
+      type: 'scale_slider',
+      title: 'Your Willingness Right Now',
+      content: 'On this scale, how willing are you to practice acceptance of this reality?',
+      interactiveConfig: {
+        kind: 'scale_slider',
+        labels: {
+          low: '0 \u2014 Not at all',
+          mid: '5 \u2014 Somewhat',
+          high: '10 \u2014 Fully willing',
+        },
+        zones: [
+          { range: [0, 30] as [number, number], label: 'Resistance is strong', content: 'That\'s honest. What would help you move one point closer?' },
+          { range: [31, 60] as [number, number], label: 'Opening to acceptance', content: 'You\'re willing to consider it. That\'s already a shift.' },
+          { range: [61, 100] as [number, number], label: 'Practicing acceptance', content: 'You\'re choosing to stop fighting what is. That takes real courage.' },
+        ],
+        initialValue: 30,
+      },
+    },
+    {
       type: 'reflection',
-      title: 'Willingness to Accept',
-      content:
-        'Radical acceptance is not a one-time event — it is a practice you return to again and again. On a scale from 0 to 10, how willing are you right now to practice acceptance of this reality? What would help you move one point closer?',
-      promptPlaceholder: 'My willingness right now is... and what would help is...',
+      title: 'What Would Help?',
+      content: 'What would help you move one point higher on that scale? What small step could shift you from fighting reality to accepting it?',
+      promptPlaceholder: 'What would help is...',
     },
   ],
 };

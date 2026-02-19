@@ -35,11 +35,22 @@ export const coupleBubble: Intervention = {
         'The couple bubble is an implicit agreement between partners: "We come first. We protect each other. We have each other\'s backs — in public, in private, and under stress." It does not mean isolating from the world; it means that the relationship is the secure base from which both partners operate. When the bubble is strong, external stress stays external. When it is weak, outside pressures leak in and corrode the bond.',
     },
     {
-      type: 'prompt',
+      type: 'checklist',
       title: 'Identify Threats to Your Bubble',
-      content:
-        'Together, identify the external forces that tend to weaken your couple bubble. Be specific and honest. Common threats include:\n\n- Work demands and overcommitment\n- Extended family expectations or interference\n- Financial stress\n- Social media and screen time\n- Friendships that compete with couple time\n- Individual stress that never gets shared\n\nWhich of these — or others — are currently pressing on your bubble?',
-      promptPlaceholder: 'The main threats to our bubble right now are...',
+      content: 'Which of these are currently pressing on your couple bubble?',
+      interactiveConfig: {
+        kind: 'checklist',
+        items: [
+          { id: 'work', text: 'Work demands and overcommitment', subtext: 'One or both of you being consumed by work' },
+          { id: 'family', text: 'Extended family expectations', subtext: 'In-laws, family obligations, interference' },
+          { id: 'money', text: 'Financial stress', subtext: 'Debt, income gaps, spending disagreements' },
+          { id: 'screens', text: 'Social media and screen time', subtext: 'Phones at dinner, scrolling in bed' },
+          { id: 'friends', text: 'Friendships that compete with couple time', subtext: 'One partner feeling deprioritized' },
+          { id: 'individual', text: 'Individual stress that never gets shared', subtext: 'Parallel suffering instead of co-regulation' },
+          { id: 'kids', text: 'Parenting demands', subtext: 'Kids consuming all available energy' },
+        ],
+        minRequired: 1,
+      },
     },
     {
       type: 'prompt',

@@ -8,6 +8,7 @@
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import HomeButton from '@/components/HomeButton';
 import {
   View,
   Text,
@@ -1005,6 +1006,7 @@ export default function TreatmentPlanScreen() {
         {/* Bottom spacer */}
         <View style={{ height: Spacing.xxl }} />
       </ScrollView>
+      <HomeButton />
     </SafeAreaView>
   );
 }

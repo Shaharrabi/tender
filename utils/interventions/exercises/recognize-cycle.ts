@@ -42,11 +42,20 @@ export const recognizeCycle: Intervention = {
       promptPlaceholder: 'The sequence went something like this...',
     },
     {
-      type: 'prompt',
-      title: 'Identify Your Moves',
-      content:
-        'Each partner: which of these moves do you tend to make when the cycle starts?\n\n- Pursue: reaching out more intensely, criticizing, demanding a response\n- Withdraw: going quiet, shutting down, leaving the room, getting busy\n- Attack: defending sharply, counter-criticizing, escalating\n- Freeze: going numb, feeling paralyzed, dissociating\n\nBe honest with yourself about your go-to move. There is no wrong answer — these are protective strategies, not character flaws.',
-      promptPlaceholder: 'My typical move in the cycle is...',
+      type: 'scenario_choice',
+      title: 'Identify Your Move',
+      content: 'When the cycle starts, which move do you tend to make?',
+      interactiveConfig: {
+        kind: 'scenario_choice',
+        scenario: 'When tension rises between us, my go-to move is:',
+        choices: [
+          { id: 'pursue', text: 'Pursue \u2014 reaching, criticizing, demanding a response', feedback: 'Pursuers are protesting disconnection. Underneath is usually fear: "Do I matter to you? Please respond to me."' },
+          { id: 'withdraw', text: 'Withdraw \u2014 going quiet, shutting down, leaving', feedback: 'Withdrawers are managing overwhelm. Underneath is usually fear: "I\'m afraid of failing you. I shut down to protect us."' },
+          { id: 'attack', text: 'Attack \u2014 defending sharply, counter-criticizing', feedback: 'Attackers are protecting against vulnerability. Underneath is usually pain that feels too raw to show.' },
+          { id: 'freeze', text: 'Freeze \u2014 going numb, feeling paralyzed', feedback: 'Freezing is the nervous system\'s "shutdown" response. It\'s not a choice \u2014 it\'s your body saying the threat is too much.' },
+        ],
+        revealAll: false,
+      },
     },
     {
       type: 'prompt',

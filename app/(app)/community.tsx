@@ -14,6 +14,7 @@
  */
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
+import HomeButton from '@/components/HomeButton';
 import {
   View,
   Text,
@@ -518,6 +519,8 @@ export default function CommunityScreen() {
 
         <View style={{ height: Spacing.xxl }} />
       </ScrollView>
+
+      <HomeButton />
 
       {/* FAB (stories only) */}
       <FAB

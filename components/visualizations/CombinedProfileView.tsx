@@ -14,7 +14,6 @@ import {
   LayoutChangeEvent,
   ScrollView,
 } from 'react-native';
-import Svg, { Line as SvgLine } from 'react-native-svg';
 import {
   ASSESSMENT_LABELS,
   ASSESSMENT_COLORS,
@@ -71,6 +70,12 @@ const ASSESSMENT_DIMENSIONS: Record<string, DimensionConfig[]> = {
   ],
   values: [
     { key: 'avoidanceTendency', label: 'Values Avoidance', min: 0, max: 100 },
+  ],
+  'relational-field': [
+    { key: 'fieldRecognition', label: 'Field Recognition', min: 1, max: 7 },
+    { key: 'creativeTension', label: 'Creative Tension', min: 1, max: 7 },
+    { key: 'presenceAttunement', label: 'Presence & Attunement', min: 1, max: 7 },
+    { key: 'emergentOrientation', label: 'Emergent Orientation', min: 1, max: 7 },
   ],
 };
 
@@ -169,6 +174,79 @@ export function CombinedProfileView({
     });
   }, [completedAssessments]);
 
+  // Render the connection info panel (reused inline after tapped card)
+  const renderConnectionPanel = () => {
+    if (!selectedDim || activeConnections.length === 0) return null;
+
+    return (
+      <View style={styles.connectionInfo}>
+        <Text style={styles.connectionInfoTitle}>
+          Connections ({activeConnections.length})
+        </Text>
+        {activeConnections.map((conn, i) => {
+          const isFrom =
+            conn.from.assessment === selectedDim.assessment &&
+            conn.from.dimension === selectedDim.dimension;
+          const otherSide = isFrom ? conn.to : conn.from;
+          const otherColor =
+            ASSESSMENT_COLORS[otherSide.assessment] || Colors.textMuted;
+
+          return (
+            <View key={i} style={styles.connectionRow}>
+              <View
+                style={[styles.connectionDot, { backgroundColor: otherColor }]}
+              />
+              <View style={styles.connectionText}>
+                <Text style={styles.connectionDimLabel}>
+                  {otherSide.label}
+                </Text>
+                <Text style={styles.connectionAssessment}>
+                  {ASSESSMENT_LABELS[otherSide.assessment]}
+                </Text>
+              </View>
+              <View style={styles.connectionMeta}>
+                <Text
+                  style={[
+                    styles.connectionDirection,
+                    {
+                      color:
+                        conn.direction === 'positive'
+                          ? Colors.success
+                          : Colors.error,
+                    },
+                  ]}
+                >
+                  {conn.direction === 'positive' ? '+' : '\u2212'}
+                </Text>
+                <View style={styles.strengthDots}>
+                  {[1, 2, 3].map((d) => (
+                    <View
+                      key={d}
+                      style={[
+                        styles.strengthDot,
+                        {
+                          backgroundColor:
+                            d <=
+                            (conn.strength === 'strong'
+                              ? 3
+                              : conn.strength === 'moderate'
+                              ? 2
+                              : 1)
+                              ? otherColor
+                              : Colors.progressTrack,
+                        },
+                      ]}
+                    />
+                  ))}
+                </View>
+              </View>
+            </View>
+          );
+        })}
+      </View>
+    );
+  };
+
   return (
     <View style={styles.container} ref={containerRef}>
       {sortedAssessments.map((assessment) => {
@@ -177,153 +255,94 @@ export function CombinedProfileView({
         const dimensions = ASSESSMENT_DIMENSIONS[assessment] || [];
         const color = ASSESSMENT_COLORS[assessment] || Colors.textMuted;
         const label = ASSESSMENT_LABELS[assessment] || assessment;
+        const isCardSelected = selectedDim?.assessment === assessment;
 
         return (
-          <View
-            key={assessment}
-            style={[
-              styles.assessmentCard,
-              !isCompleted && styles.assessmentCardLocked,
-              { borderLeftColor: color },
-            ]}
-          >
-            {/* Card header */}
-            <View style={styles.cardHeader}>
-              <View style={[styles.colorDot, { backgroundColor: color }]} />
-              <Text style={styles.cardTitle}>{label}</Text>
-              {!isCompleted && (
-                <Text style={styles.lockedBadge}>Not yet taken</Text>
+          <React.Fragment key={assessment}>
+            <View
+              style={[
+                styles.assessmentCard,
+                !isCompleted && styles.assessmentCardLocked,
+                { borderLeftColor: color },
+                isCardSelected && { borderColor: color, borderWidth: 2 },
+              ]}
+            >
+              {/* Card header */}
+              <View style={styles.cardHeader}>
+                <View style={[styles.colorDot, { backgroundColor: color }]} />
+                <Text style={styles.cardTitle}>{label}</Text>
+                {!isCompleted && (
+                  <Text style={styles.lockedBadge}>Not yet taken</Text>
+                )}
+              </View>
+
+              {/* Dimension bars */}
+              {isCompleted && (
+                <View style={styles.dimensionList}>
+                  {dimensions.map((dim) => {
+                    const rawVal = scores[dim.key];
+                    const value = typeof rawVal === 'number'
+                      ? rawVal
+                      : (rawVal && typeof rawVal === 'object' && typeof rawVal.mean === 'number')
+                        ? rawVal.mean
+                        : 0;
+                    const percent = ((value - dim.min) / (dim.max - dim.min)) * 100;
+                    const isHighlighted = isDimHighlighted(assessment, dim.key);
+                    const isSelected =
+                      selectedDim?.assessment === assessment &&
+                      selectedDim?.dimension === dim.key;
+
+                    return (
+                      <TouchableOpacity
+                        key={dim.key}
+                        style={[
+                          styles.dimensionRow,
+                          isSelected && { backgroundColor: color + '10' },
+                        ]}
+                        onPress={() => handleDimPress(assessment, dim.key)}
+                        onLayout={(e) => handleDimensionLayout(assessment, dim.key, e)}
+                        activeOpacity={0.7}
+                      >
+                        <Text
+                          style={[
+                            styles.dimensionLabel,
+                            isHighlighted && { color, fontWeight: '600' },
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {dim.label}
+                        </Text>
+                        <View style={styles.miniBar}>
+                          <View
+                            style={[
+                              styles.miniBarFill,
+                              {
+                                width: `${Math.max(percent, 2)}%`,
+                                backgroundColor: isHighlighted ? color : color + '60',
+                              },
+                            ]}
+                          />
+                        </View>
+                        <Text
+                          style={[
+                            styles.dimensionValue,
+                            isHighlighted && { color },
+                          ]}
+                        >
+                          {value.toFixed(1)}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
               )}
             </View>
 
-            {/* Dimension bars */}
-            {isCompleted && (
-              <View style={styles.dimensionList}>
-                {dimensions.map((dim) => {
-                  const rawValue = scores[dim.key];
-                  const value = typeof rawValue === 'number' ? rawValue : 0;
-                  const percent = ((value - dim.min) / (dim.max - dim.min)) * 100;
-                  const isHighlighted = isDimHighlighted(assessment, dim.key);
-                  const isSelected =
-                    selectedDim?.assessment === assessment &&
-                    selectedDim?.dimension === dim.key;
-
-                  return (
-                    <TouchableOpacity
-                      key={dim.key}
-                      style={[
-                        styles.dimensionRow,
-                        isSelected && { backgroundColor: color + '10' },
-                      ]}
-                      onPress={() => handleDimPress(assessment, dim.key)}
-                      onLayout={(e) => handleDimensionLayout(assessment, dim.key, e)}
-                      activeOpacity={0.7}
-                    >
-                      <Text
-                        style={[
-                          styles.dimensionLabel,
-                          isHighlighted && { color, fontWeight: '600' },
-                        ]}
-                        numberOfLines={1}
-                      >
-                        {dim.label}
-                      </Text>
-                      <View style={styles.miniBar}>
-                        <View
-                          style={[
-                            styles.miniBarFill,
-                            {
-                              width: `${Math.max(percent, 2)}%`,
-                              backgroundColor: isHighlighted ? color : color + '60',
-                            },
-                          ]}
-                        />
-                      </View>
-                      <Text
-                        style={[
-                          styles.dimensionValue,
-                          isHighlighted && { color },
-                        ]}
-                      >
-                        {value.toFixed(1)}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            )}
-          </View>
+            {/* Connection info — renders directly below the tapped card */}
+            {isCardSelected && renderConnectionPanel()}
+          </React.Fragment>
         );
       })}
-
-      {/* Connection info when dimension is selected */}
-      {selectedDim && activeConnections.length > 0 && (
-        <View style={styles.connectionInfo}>
-          <Text style={styles.connectionInfoTitle}>
-            Connections ({activeConnections.length})
-          </Text>
-          {activeConnections.map((conn, i) => {
-            const isFrom =
-              conn.from.assessment === selectedDim.assessment &&
-              conn.from.dimension === selectedDim.dimension;
-            const otherSide = isFrom ? conn.to : conn.from;
-            const otherColor =
-              ASSESSMENT_COLORS[otherSide.assessment] || Colors.textMuted;
-
-            return (
-              <View key={i} style={styles.connectionRow}>
-                <View
-                  style={[styles.connectionDot, { backgroundColor: otherColor }]}
-                />
-                <View style={styles.connectionText}>
-                  <Text style={styles.connectionDimLabel}>
-                    {otherSide.label}
-                  </Text>
-                  <Text style={styles.connectionAssessment}>
-                    {ASSESSMENT_LABELS[otherSide.assessment]}
-                  </Text>
-                </View>
-                <View style={styles.connectionMeta}>
-                  <Text
-                    style={[
-                      styles.connectionDirection,
-                      {
-                        color:
-                          conn.direction === 'positive'
-                            ? Colors.success
-                            : Colors.error,
-                      },
-                    ]}
-                  >
-                    {conn.direction === 'positive' ? '+' : '\u2212'}
-                  </Text>
-                  <View style={styles.strengthDots}>
-                    {[1, 2, 3].map((d) => (
-                      <View
-                        key={d}
-                        style={[
-                          styles.strengthDot,
-                          {
-                            backgroundColor:
-                              d <=
-                              (conn.strength === 'strong'
-                                ? 3
-                                : conn.strength === 'moderate'
-                                ? 2
-                                : 1)
-                                ? otherColor
-                                : Colors.progressTrack,
-                          },
-                        ]}
-                      />
-                    ))}
-                  </View>
-                </View>
-              </View>
-            );
-          })}
-        </View>
-      )}
     </View>
   );
 }

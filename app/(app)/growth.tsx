@@ -27,6 +27,7 @@ import {
   BorderRadius,
   Shadows,
 } from '@/constants/theme';
+import HomeButton from '@/components/HomeButton';
 import StepJourney from '@/components/growth/StepJourney';
 import GrowthTimeline from '@/components/growth/GrowthTimeline';
 import CheckInCard from '@/components/growth/CheckInCard';
@@ -38,8 +39,8 @@ import {
   getRecentCheckIns,
   saveDailyCheckIn,
 } from '@/services/growth';
-import { ensureStepProgress } from '@/services/steps';
-import { getPracticesForStep } from '@/utils/steps/twelve-steps';
+import { ensureStepProgress, toggleStepCriteria, completeStep } from '@/services/steps';
+import { getPracticesForStep, TWELVE_STEPS } from '@/utils/steps/twelve-steps';
 import type { GrowthEdgeProgress, DailyCheckIn, StepProgress } from '@/types/growth';
 
 export default function GrowthScreen() {
@@ -52,6 +53,7 @@ export default function GrowthScreen() {
   const [recentCheckIns, setRecentCheckIns] = useState<DailyCheckIn[]>([]);
   const [stepProgress, setStepProgress] = useState<StepProgress[]>([]);
   const [currentStepNumber, setCurrentStepNumber] = useState(1);
+  const [checkedCriteria, setCheckedCriteria] = useState<Record<number, number[]>>({});
 
   const loadData = useCallback(async () => {
     if (!user) return;
@@ -66,6 +68,16 @@ export default function GrowthScreen() {
       setTodaysCheckIn(todayData);
       setRecentCheckIns(recentData);
       setStepProgress(stepData);
+
+      // Extract checked criteria from reflectionNotes
+      const criteriaMap: Record<number, number[]> = {};
+      for (const sp of stepData) {
+        const notes = sp.reflectionNotes as Record<string, any> | undefined;
+        if (notes?.completedCriteria) {
+          criteriaMap[sp.stepNumber] = notes.completedCriteria;
+        }
+      }
+      setCheckedCriteria(criteriaMap);
 
       // Find the current active step
       const activeStep = stepData.find((sp) => sp.status === 'active');
@@ -97,11 +109,45 @@ export default function GrowthScreen() {
   };
 
   const handleBack = () => {
-    router.back();
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(app)/home' as any);
+    }
   };
 
   const handleViewTreatmentPlan = () => {
     router.push('/(app)/treatment-plan' as any);
+  };
+
+  const handleCriteriaToggle = async (stepNumber: number, criteriaIndex: number, checked: boolean) => {
+    if (!user) return;
+    try {
+      // Optimistic update
+      setCheckedCriteria((prev) => {
+        const current = prev[stepNumber] ?? [];
+        const updated = checked
+          ? [...current, criteriaIndex]
+          : current.filter((i) => i !== criteriaIndex);
+        return { ...prev, [stepNumber]: updated };
+      });
+
+      // Persist to DB
+      const updatedCriteria = await toggleStepCriteria(user.id, stepNumber, criteriaIndex, checked);
+
+      // Check if all criteria for this step are now completed
+      const stepDef = TWELVE_STEPS.find((s) => s.stepNumber === stepNumber);
+      if (stepDef && updatedCriteria.length >= stepDef.completionCriteria.length) {
+        // All criteria checked — complete this step and unlock next
+        await completeStep(user.id, stepNumber);
+        // Reload data to reflect new step states
+        await loadData();
+      }
+    } catch (err) {
+      console.error('[Growth] Failed to toggle criteria:', err);
+      // Revert optimistic update on error
+      await loadData();
+    }
   };
 
   const handlePracticeFromWoT = (practiceId: string) => {
@@ -134,12 +180,15 @@ export default function GrowthScreen() {
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
+        showsVerticalScrollIndicator={true}
       >
         {/* Twelve Steps Journey */}
         <StepJourney
           stepProgress={stepProgress}
           currentStepNumber={currentStepNumber}
+          onSelectPractice={handlePracticeFromWoT}
+          onCriteriaToggle={handleCriteriaToggle}
+          checkedCriteria={checkedCriteria}
         />
 
         {/* Weekly Practice Schedule */}
@@ -224,6 +273,7 @@ export default function GrowthScreen() {
           <Text style={styles.treatmentPlanArrow}>{'\u203A'}</Text>
         </TouchableOpacity>
       </ScrollView>
+      <HomeButton />
     </SafeAreaView>
   );
 }

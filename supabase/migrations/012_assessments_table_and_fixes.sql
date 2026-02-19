@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS assessments (
   user_id       UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   type          TEXT NOT NULL,                              -- e.g. 'ecr-r', 'dutch', 'tender'
   scores        JSONB,                                     -- assessment results
-  raw_responses JSONB,                                     -- individual answers
+  responses     JSONB,                                     -- individual answers
   completed_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );

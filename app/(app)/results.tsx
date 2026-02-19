@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
+import HomeButton from '@/components/HomeButton';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Colors, Spacing, FontSizes, FontFamilies, Typography, ButtonSizes, BorderRadius, Shadows } from '@/constants/theme';
 import ECRRResults from '@/components/results/ECRRResults';
@@ -8,6 +9,9 @@ import SSEITResults from '@/components/results/SSEITResults';
 import DSIRResults from '@/components/results/DSIRResults';
 import IPIPResults from '@/components/results/IPIPResults';
 import ValuesResults from '@/components/results/ValuesResults';
+import RDASResults from '@/components/results/RDASResults';
+import CSI16Results from '@/components/results/CSI16Results';
+import DCIResults from '@/components/results/DCIResults';
 
 export default function ResultsScreen() {
   const router = useRouter();
@@ -29,6 +33,7 @@ export default function ResultsScreen() {
             <Text style={styles.buttonText}>Back to Home</Text>
           </TouchableOpacity>
         </View>
+        <HomeButton />
       </SafeAreaView>
     );
   }
@@ -46,6 +51,12 @@ export default function ResultsScreen() {
       return <IPIPResults scores={scores} />;
     case 'values':
       return <ValuesResults scores={scores} />;
+    case 'rdas':
+      return <RDASResults scores={scores} />;
+    case 'csi-16':
+      return <CSI16Results scores={scores} />;
+    case 'dci':
+      return <DCIResults scores={scores} />;
     default:
       return (
         <SafeAreaView style={styles.container}>
@@ -60,6 +71,7 @@ export default function ResultsScreen() {
               <Text style={styles.buttonText}>Back to Home</Text>
             </TouchableOpacity>
           </View>
+          <HomeButton />
         </SafeAreaView>
       );
   }

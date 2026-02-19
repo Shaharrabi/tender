@@ -56,7 +56,7 @@ import { supabase } from '@/services/supabase';
 import { getPortrait, savePortrait, fetchAllScores, extractSupplementScores } from '@/services/portrait';
 import { generatePortrait } from '@/utils/portrait/portrait-generator';
 import { getTodaysCheckIn, saveDailyCheckIn } from '@/services/growth';
-import { getMyCouple, checkDyadicCompletion } from '@/services/couples';
+import { getMyCouple, checkDyadicCompletion, isSelfCouple } from '@/services/couples';
 import { getAllExercises, getExerciseById } from '@/utils/interventions/registry';
 import { getCompletions } from '@/services/intervention';
 import { calculateGrowthProgress } from '@/utils/steps/intervention-protocols';
@@ -275,6 +275,9 @@ export default function HomeScreen() {
     setLoading(true);
 
     try {
+      // Local var to track relationship mode across loadData steps
+      let userRelMode = 'solo';
+
       // 0a. Auto-clear stuck demo mode on startup
       try {
         const demoFlag = await AsyncStorage.getItem('demo_mode');
@@ -306,6 +309,7 @@ export default function HomeScreen() {
           .eq('user_id', user.id)
           .single();
         if (profile?.relationship_mode) {
+          userRelMode = profile.relationship_mode;
           setRelationshipMode(profile.relationship_mode);
         }
         if (profile?.demo_partner_id) {
@@ -533,6 +537,10 @@ export default function HomeScreen() {
       let loadedCouple: Couple | null = null;
       try {
         loadedCouple = await getMyCouple(user.id);
+        // For real_partner mode, self-couples (partner_a === partner_b) are not real couples
+        if (loadedCouple && isSelfCouple(loadedCouple) && userRelMode === 'real_partner') {
+          loadedCouple = null;
+        }
         setCouple(loadedCouple);
         if (loadedCouple) {
           const dyadicStatus = await checkDyadicCompletion(loadedCouple.id, user.id);
@@ -694,12 +702,15 @@ export default function HomeScreen() {
   // otherwise isFirstLaunch defaults to true and triggers for returning users.
   // Extra guard: if the user has completed ANY assessments, they are definitely
   // NOT first-time — skip the tour even if AsyncStorage lost the flag.
+  // hasShownTourRef prevents re-triggers from useFocusEffect loading cycles.
+  const hasShownTourRef = useRef(false);
   useEffect(() => {
     if (
       !loading &&
       !ftueLoading &&
       ftueState.isFirstLaunch &&
-      !ftueState.completedTours.includes('tour_home')
+      !ftueState.completedTours.includes('tour_home') &&
+      !hasShownTourRef.current
     ) {
       // If user already has completed assessments, they're a returning user
       // whose FTUE flag was lost (e.g. web storage cleared). Auto-complete tour.
@@ -709,6 +720,7 @@ export default function HomeScreen() {
         return;
       }
       // Small delay to let layout render before measuring
+      hasShownTourRef.current = true;
       const timer = setTimeout(() => setShowTour(true), 800);
       return () => clearTimeout(timer);
     }
@@ -867,13 +879,6 @@ export default function HomeScreen() {
 
   // ─── Admin Mode ────────────────────────────────────────
 
-  // Load admin mode from AsyncStorage on mount
-  useEffect(() => {
-    AsyncStorage.getItem('admin_mode_enabled').then((val) => {
-      if (val === 'true') setAdminMode(true);
-    });
-  }, []);
-
   const handleTaglineTripleTap = () => {
     const now = Date.now();
     const tap = adminTapRef.current;
@@ -886,9 +891,7 @@ export default function HomeScreen() {
 
     if (tap.count >= 3) {
       tap.count = 0;
-      const newVal = !adminMode;
-      setAdminMode(newVal);
-      AsyncStorage.setItem('admin_mode_enabled', String(newVal));
+      setAdminMode((prev) => !prev);
     }
   };
 
@@ -982,7 +985,7 @@ export default function HomeScreen() {
       <ScrollView
         ref={scrollRef}
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
+        showsVerticalScrollIndicator={true}
         onScroll={(e) => { scrollOffset.current = e.nativeEvent.contentOffset.y; }}
         scrollEventThrottle={16}
       >
@@ -1083,7 +1086,7 @@ export default function HomeScreen() {
         {/* ═══ XP & LEVEL PROGRESS ═══════════════════════════ */}
         {!isGuest && (
           <View
-            style={{ paddingHorizontal: Spacing.lg, marginBottom: Spacing.md }}
+            style={{ paddingHorizontal: Spacing.lg, marginBottom: Spacing.sm }}
           >
             <XPProgressBar />
           </View>
@@ -1094,10 +1097,7 @@ export default function HomeScreen() {
           <AdminPanel
             userId={user.id}
             onDataChanged={loadData}
-            onClose={() => {
-              setAdminMode(false);
-              AsyncStorage.setItem('admin_mode_enabled', 'false');
-            }}
+            onClose={() => setAdminMode(false)}
           />
         )}
 
@@ -1197,6 +1197,24 @@ export default function HomeScreen() {
             </Text>
           </TouchableOpacity>
         )}
+        {/* ═══ CONSENT BANNER (all 6 assessments done, no consent yet) ═══ */}
+        {completedCount >= 6 && !consentGiven && (
+          <TouchableOpacity
+            style={styles.consentBanner}
+            onPress={() => router.push('/(app)/consent-waiver' as any)}
+            activeOpacity={0.7}
+          >
+            <ShieldIcon size={20} color={Colors.primary} />
+            <View style={styles.consentBannerContent}>
+              <Text style={styles.consentBannerTitle}>All Assessments Complete!</Text>
+              <Text style={styles.consentBannerDesc}>
+                Review your data choices before viewing your portrait.
+              </Text>
+            </View>
+            <Text style={styles.realPartnerPromptArrow}>{'\u2192'}</Text>
+          </TouchableOpacity>
+        )}
+
         {/* Real partner mode — connect prompt */}
         {relationshipMode === 'real_partner' && !couple && (
           <TouchableOpacity
@@ -1215,7 +1233,7 @@ export default function HomeScreen() {
           </TouchableOpacity>
         )}
         {/* Couple portal ready nudge */}
-        {couple && dyadicAllDone && (
+        {couple && dyadicAllDone && consentGiven && (
           <TouchableOpacity
             style={styles.couplePortalReadyBanner}
             onPress={() => router.push('/(app)/couple-portal' as any)}
@@ -1225,24 +1243,6 @@ export default function HomeScreen() {
             <Text style={styles.couplePortalReadyText}>
               Your couple portrait is ready — enter the portal
             </Text>
-            <Text style={styles.realPartnerPromptArrow}>{'\u2192'}</Text>
-          </TouchableOpacity>
-        )}
-
-        {/* ═══ CONSENT BANNER (all 6 assessments done, no consent yet) ═══ */}
-        {completedCount >= 6 && !consentGiven && (
-          <TouchableOpacity
-            style={styles.consentBanner}
-            onPress={() => router.push('/(app)/consent-waiver' as any)}
-            activeOpacity={0.7}
-          >
-            <ShieldIcon size={20} color={Colors.primary} />
-            <View style={styles.consentBannerContent}>
-              <Text style={styles.consentBannerTitle}>All Assessments Complete!</Text>
-              <Text style={styles.consentBannerDesc}>
-                Review your data choices before viewing your portrait.
-              </Text>
-            </View>
             <Text style={styles.realPartnerPromptArrow}>{'\u2192'}</Text>
           </TouchableOpacity>
         )}
@@ -1412,36 +1412,11 @@ export default function HomeScreen() {
                 <Text style={styles.growthPlanHeadline}>
                   {journeyMap.headline}
                 </Text>
-                <Text style={styles.growthPlanRationale}>
-                  {journeyMap.whyThisPath.length > 150
-                    ? journeyMap.whyThisPath.slice(0, 147) + '...'
+                <Text style={styles.growthPlanRationale} numberOfLines={2}>
+                  {journeyMap.whyThisPath.length > 100
+                    ? journeyMap.whyThisPath.slice(0, 97) + '...'
                     : journeyMap.whyThisPath}
                 </Text>
-
-                {/* Four Movements mini-viz */}
-                <View style={styles.movementsRow}>
-                  {(['recognition', 'release', 'resonance', 'embodiment'] as const).map((key) => {
-                    const m = movements[key];
-                    return (
-                      <View key={key} style={styles.movementItem}>
-                        <View style={styles.movementBarTrack}>
-                          <View
-                            style={[
-                              styles.movementBarFill,
-                              { height: `${Math.max(m.readiness, 8)}%` },
-                            ]}
-                          />
-                        </View>
-                        <Text style={styles.movementLabel} numberOfLines={1}>
-                          {key === 'recognition' ? 'See' :
-                           key === 'release' ? 'Soften' :
-                           key === 'resonance' ? 'Feel' :
-                           'Practice'}
-                        </Text>
-                      </View>
-                    );
-                  })}
-                </View>
 
                 {/* Phases preview */}
                 <View style={styles.growthPlanPhases}>
@@ -1462,37 +1437,6 @@ export default function HomeScreen() {
                     </View>
                   ))}
                 </View>
-
-                {/* Quick-launch exercises from Phase 1 */}
-                {quickExercises.length > 0 && (
-                  <View style={styles.quickPracticeSection}>
-                    <Text style={styles.quickPracticeLabel}>Start a Practice</Text>
-                    {quickExercises.map((ex: any) => {
-                      const isDone = (exerciseCompletionMap[ex.id] ?? 0) > 0;
-                      return (
-                        <TouchableOpacity
-                          key={ex.id}
-                          style={[styles.quickPracticeRow, isDone && styles.quickPracticeRowDone]}
-                          activeOpacity={0.7}
-                          onPress={() => { SoundHaptics.tapSoft(); router.push({ pathname: '/(app)/exercise', params: { id: ex.id } } as any); }}
-                        >
-                          {isDone && (
-                            <Text style={styles.quickPracticeCheck}>{'\u2713'}</Text>
-                          )}
-                          <Text
-                            style={[styles.quickPracticeTitle, isDone && styles.quickPracticeTitleDone]}
-                            numberOfLines={1}
-                          >
-                            {ex.title}
-                          </Text>
-                          <Text style={styles.quickPracticeMeta}>
-                            {isDone ? 'Done' : `${ex.duration} min`} {'\u203A'}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
-                )}
 
                 <TouchableOpacity
                   style={styles.growthPlanCta}
@@ -2800,7 +2744,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
     backgroundColor: Colors.white,
     borderRadius: BorderRadius.lg,
-    padding: Spacing.lg,
+    padding: Spacing.md,
     ...Shadows.card,
   },
   growthPlanTitle: {
@@ -2811,17 +2755,17 @@ const styles = StyleSheet.create({
     letterSpacing: 1.2,
   },
   growthPlanHeadline: {
-    fontSize: FontSizes.headingM,
+    fontSize: FontSizes.body,
     fontWeight: '700' as const,
     color: Colors.text,
-    marginBottom: Spacing.sm,
-    lineHeight: 26,
+    marginBottom: Spacing.xs,
+    lineHeight: 22,
   },
   growthPlanRationale: {
-    fontSize: FontSizes.bodySmall,
+    fontSize: FontSizes.caption,
     color: Colors.textSecondary,
-    lineHeight: 20,
-    marginBottom: Spacing.md,
+    lineHeight: 18,
+    marginBottom: Spacing.sm,
   },
   movementsRow: {
     flexDirection: 'row' as const,
@@ -2856,17 +2800,17 @@ const styles = StyleSheet.create({
     textAlign: 'center' as const,
   },
   growthPlanPhases: {
-    marginBottom: Spacing.md,
+    marginBottom: Spacing.sm,
   },
   growthPlanPhaseRow: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    marginBottom: Spacing.sm,
+    marginBottom: Spacing.xs,
   },
   growthPlanPhaseDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: Colors.border,
     marginRight: Spacing.sm,
   },
@@ -2880,13 +2824,13 @@ const styles = StyleSheet.create({
   },
   growthPlanPhaseName: {
     flex: 1,
-    fontSize: FontSizes.bodySmall,
+    fontSize: FontSizes.caption,
     fontWeight: '600' as const,
     color: Colors.text,
     marginRight: Spacing.sm,
   },
   growthPlanPhaseWeeks: {
-    fontSize: FontSizes.bodySmall,
+    fontSize: FontSizes.caption,
     color: Colors.textSecondary,
     flexShrink: 0,
   },
@@ -2953,10 +2897,10 @@ const styles = StyleSheet.create({
   },
   growthPlanCta: {
     alignItems: 'center' as const,
-    paddingVertical: Spacing.sm,
+    paddingVertical: Spacing.xs,
   },
   growthPlanCtaText: {
-    fontSize: FontSizes.body,
+    fontSize: FontSizes.bodySmall,
     fontWeight: '600' as const,
     color: Colors.secondary,
   },

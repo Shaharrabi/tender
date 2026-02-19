@@ -145,8 +145,8 @@ export default function CheckInCard({
       </Text>
       <Text style={styles.formSubtitle}>
         {editing
-          ? 'Adjust your check-in to reflect where you are now.'
-          : 'Notice where you are right now -- there are no wrong answers.'}
+          ? 'Adjust where you are now.'
+          : 'Notice where you are right now.'}
       </Text>
 
       {/* ── Inner State (nervous-system regulation) ─── */}
@@ -155,11 +155,6 @@ export default function CheckInCard({
           <Text style={styles.sliderLabel}>How Regulated Do You Feel?</Text>
           <Text style={styles.sliderValue}>{mood}/10</Text>
         </View>
-
-        <Text style={styles.sliderDescription}>
-          Your nervous system moves between states throughout the day. Just
-          notice where it is right now.
-        </Text>
 
         <View style={styles.sliderTrack}>
           {Array.from({ length: 10 }, (_, i) => i + 1).map((val) => (
@@ -190,10 +185,6 @@ export default function CheckInCard({
           <Text style={styles.sliderLabel}>Connection With Partner</Text>
           <Text style={styles.sliderValue}>{relationship}/10</Text>
         </View>
-
-        <Text style={styles.sliderDescription}>
-          How safe and open does the space between you feel right now?
-        </Text>
 
         <View style={styles.sliderTrack}>
           {Array.from({ length: 10 }, (_, i) => i + 1).map((val) => (
@@ -283,8 +274,8 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: Colors.surface,
     borderRadius: BorderRadius.md,
-    padding: Spacing.md,
-    gap: Spacing.md,
+    padding: Spacing.sm,
+    gap: Spacing.sm,
     ...Shadows.card,
   },
 
@@ -295,9 +286,9 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   checkCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     backgroundColor: Colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
@@ -308,7 +299,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   checkedInTitle: {
-    fontSize: FontSizes.body,
+    fontSize: FontSizes.bodySmall,
     fontWeight: '600',
     fontFamily: FontFamilies.heading,
     color: Colors.text,
@@ -333,7 +324,7 @@ const styles = StyleSheet.create({
   },
   summaryDivider: {
     width: 1,
-    height: 28,
+    height: 22,
     backgroundColor: Colors.border,
   },
   notePreview: {
@@ -345,21 +336,21 @@ const styles = StyleSheet.create({
 
   // ── Form state ────────────────────────────────────────
   formTitle: {
-    fontSize: FontSizes.headingM,
+    fontSize: FontSizes.body,
     fontWeight: '600',
     fontFamily: FontFamilies.heading,
     color: Colors.text,
   },
   formSubtitle: {
-    fontSize: FontSizes.bodySmall,
+    fontSize: FontSizes.caption,
     color: Colors.textSecondary,
-    lineHeight: 20,
-    marginTop: -Spacing.sm,
+    lineHeight: 17,
+    marginTop: -Spacing.xs,
   },
 
   // ── Slider ────────────────────────────────────────────
   sliderSection: {
-    gap: Spacing.xs,
+    gap: 3,
   },
   sliderHeader: {
     flexDirection: 'row',
@@ -367,17 +358,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sliderLabel: {
-    fontSize: FontSizes.bodySmall,
+    fontSize: FontSizes.caption,
     fontWeight: '600',
     color: Colors.text,
   },
   sliderDescription: {
-    fontSize: FontSizes.caption,
+    fontSize: FontSizes.caption - 1,
     color: Colors.textSecondary,
-    lineHeight: 17,
+    lineHeight: 15,
   },
   sliderValue: {
-    fontSize: FontSizes.bodySmall,
+    fontSize: FontSizes.caption,
     fontWeight: '600',
     color: Colors.textSecondary,
   },
@@ -387,9 +378,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sliderDot: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     backgroundColor: Colors.borderLight,
     borderWidth: 1,
     borderColor: Colors.border,
@@ -403,22 +394,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginTop: 2,
+    marginTop: 1,
   },
   anchorLeft: {
-    fontSize: FontSizes.caption - 1,
+    fontSize: FontSizes.caption - 2,
     color: Colors.textMuted,
     textAlign: 'left',
     flex: 1,
   },
   anchorCenter: {
-    fontSize: FontSizes.caption - 1,
+    fontSize: FontSizes.caption - 2,
     color: Colors.textMuted,
     textAlign: 'center',
     flex: 1,
   },
   anchorRight: {
-    fontSize: FontSizes.caption - 1,
+    fontSize: FontSizes.caption - 2,
     color: Colors.textMuted,
     textAlign: 'right',
     flex: 1,
@@ -431,8 +422,8 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   toggleIndicator: {
-    width: 24,
-    height: 24,
+    width: 20,
+    height: 20,
     borderRadius: BorderRadius.sm,
     borderWidth: 2,
     borderColor: Colors.border,
@@ -449,7 +440,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   toggleLabel: {
-    fontSize: FontSizes.bodySmall,
+    fontSize: FontSizes.caption,
     color: Colors.text,
   },
 
@@ -459,17 +450,17 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.sm,
     borderWidth: 1,
     borderColor: Colors.borderLight,
-    padding: Spacing.sm,
-    fontSize: FontSizes.bodySmall,
+    padding: Spacing.xs,
+    fontSize: FontSizes.caption,
     color: Colors.text,
-    minHeight: 60,
+    minHeight: 44,
   },
 
   // ── Submit ────────────────────────────────────────────
   submitButton: {
     backgroundColor: Colors.primary,
     borderRadius: BorderRadius.sm,
-    paddingVertical: Spacing.sm + 2,
+    paddingVertical: Spacing.xs + 2,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -477,7 +468,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   submitText: {
-    fontSize: FontSizes.body,
+    fontSize: FontSizes.bodySmall,
     fontWeight: '600',
     color: Colors.textOnPrimary,
   },

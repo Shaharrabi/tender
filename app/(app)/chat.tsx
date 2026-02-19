@@ -16,7 +16,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { useGuest } from '@/context/GuestContext';
 import { useChat, ChatProvider } from '@/context/ChatContext';
@@ -24,6 +24,7 @@ import MessageFlow from '@/components/chat/MessageFlow';
 import UserInput from '@/components/chat/UserInput';
 import SafetyBanner from '@/components/chat/SafetyBanner';
 import SessionList from '@/components/chat/SessionList';
+import HomeButton from '@/components/HomeButton';
 import { COACH } from '@/constants/coach';
 import { Colors, Spacing, FontSizes, FontFamilies, BorderRadius } from '@/constants/theme';
 import { getCurrentStepNumber } from '@/services/steps';
@@ -198,6 +199,8 @@ function ChatScreenInner() {
         </KeyboardAvoidingView>
       )}
 
+      <HomeButton />
+
       {/* Session history modal */}
       <Modal
         visible={showSessions}
@@ -235,8 +238,16 @@ function ChatScreenInner() {
 }
 
 export default function ChatScreen() {
+  const { coupleMode, coupleId } = useLocalSearchParams<{
+    coupleMode?: string;
+    coupleId?: string;
+  }>();
+
   return (
-    <ChatProvider>
+    <ChatProvider
+      coupleMode={coupleMode === 'true'}
+      coupleId={coupleId || undefined}
+    >
       <ChatScreenInner />
     </ChatProvider>
   );

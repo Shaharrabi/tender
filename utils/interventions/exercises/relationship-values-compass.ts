@@ -34,6 +34,20 @@ export const relationshipValuesCompass: Intervention = {
         'In ACT, values are not goals you achieve — they are directions you move toward, like compass points. You never "arrive" at honesty or intimacy; you keep walking toward them. When couples share a sense of direction, they can tolerate the bumps along the way because they know where they are headed. This exercise helps you find your shared compass.',
     },
     {
+      type: 'scenario_choice',
+      title: 'Value or Goal?',
+      content: 'Values and goals are different. Which of these is a value?',
+      interactiveConfig: {
+        kind: 'scenario_choice',
+        scenario: 'Which of these is a VALUE (a direction) rather than a GOAL (a destination)?',
+        choices: [
+          { id: 'goal', text: '"We want to buy a house by next year"', feedback: 'This is a goal \u2014 a specific, achievable outcome. Once you buy the house, the goal is done.' },
+          { id: 'value', text: '"We want to build a life of security and stability"', feedback: 'This is a value \u2014 a direction you keep walking toward. You never "arrive" at security; you keep choosing it.', isRecommended: true },
+        ],
+        revealAll: true,
+      },
+    },
+    {
       type: 'prompt',
       title: 'Rank Your Relationship Values',
       content:

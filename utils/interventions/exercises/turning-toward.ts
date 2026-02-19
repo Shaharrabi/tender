@@ -34,6 +34,34 @@ export const turningToward: Intervention = {
         'A bid is any attempt one partner makes to get attention, affirmation, affection, or any other positive connection. Bids can be verbal ("Look at this sunset") or nonverbal (a touch, a sigh, a glance). You can respond in three ways:\n\n- Turning toward: engaging with the bid ("Wow, that is beautiful!")\n- Turning away: ignoring or missing it (staying on your phone)\n- Turning against: responding with hostility ("Can you stop interrupting me?")\n\nSmall moments of turning toward accumulate into trust and intimacy.',
     },
     {
+      type: 'scenario_choice',
+      title: 'Spot the Turn',
+      content: 'Your partner says "Look at this sunset." Which response turns toward?',
+      interactiveConfig: {
+        kind: 'scenario_choice',
+        scenario: 'Your partner looks up from their phone and says: "Wow, look at that sunset."',
+        choices: [
+          {
+            id: 'toward',
+            text: '"Oh wow, that\'s beautiful" (walks to window)',
+            feedback: 'Turning toward. You engaged with the bid \u2014 your partner feels seen and connected.',
+            isRecommended: true,
+          },
+          {
+            id: 'away',
+            text: '"Mm-hmm" (keeps scrolling)',
+            feedback: 'Turning away. The bid was missed. Your partner may not say anything, but a tiny withdrawal happens inside.',
+          },
+          {
+            id: 'against',
+            text: '"Can you stop interrupting? I\'m busy."',
+            feedback: 'Turning against. The bid was rejected with hostility. This erodes trust faster than turning away.',
+          },
+        ],
+        revealAll: true,
+      },
+    },
+    {
       type: 'prompt',
       title: 'Identify Recent Bids',
       content:

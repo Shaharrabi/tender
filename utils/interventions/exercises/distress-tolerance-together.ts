@@ -35,17 +35,30 @@ export const distressToleranceTogether: Intervention = {
         'When you are emotionally flooded — heart racing, muscles tense, thoughts spinning — your prefrontal cortex goes offline. You literally cannot think clearly or listen well. TIPP uses your body\'s built-in calming mechanisms to bring your nervous system back online:\n\n- Temperature: Cold activates the dive reflex, slowing your heart rate.\n- Intense exercise: Brief intense movement burns off stress hormones.\n- Paced breathing: Slow exhales activate the parasympathetic system.\n- Progressive relaxation: Tensing and releasing muscles signals safety.\n\nYou are going to learn and practice these together so you can use them before or during difficult conversations.',
     },
     {
-      type: 'instruction',
+      type: 'checklist',
       title: 'Temperature: Cold Water Reset',
-      content:
-        'Get a bowl of cold water or hold ice cubes. Together, splash cold water on your face or hold ice against your wrists or the back of your neck for 30 seconds. This triggers the mammalian dive reflex — an automatic response that slows your heart rate and redirects blood flow to your core organs. It sounds simple, but it is one of the fastest ways to interrupt an emotional hijack.\n\nNotice how your body responds. You may feel a slight shock, then a wave of calm.',
+      content: 'Choose one cold-activation technique to try right now:',
+      interactiveConfig: {
+        kind: 'checklist',
+        items: [
+          { id: 'splash', text: 'Splash cold water on your face', subtext: 'Triggers the dive reflex fastest' },
+          { id: 'ice-wrists', text: 'Hold ice against your wrists', subtext: 'Pulse points cool blood quickly' },
+          { id: 'ice-neck', text: 'Press ice to the back of your neck', subtext: 'Vagus nerve activation point' },
+          { id: 'cold-hands', text: 'Run cold water over your hands for 30 seconds', subtext: 'Accessible anywhere' },
+        ],
+        minRequired: 1,
+      },
     },
     {
-      type: 'timer',
+      type: 'breathing_guide',
       title: 'Paced Breathing Together',
-      content:
-        'Sit facing each other. You are going to breathe together for two minutes.\n\nInhale through your nose for 4 counts.\nHold for 2 counts.\nExhale through your mouth for 6 counts.\n\nThe longer exhale is key — it activates the vagus nerve and tells your body that you are safe. Try to synchronize your breathing with your partner. Breathing together co-regulates both nervous systems.',
-      duration: 120,
+      content: 'Sit facing each other. Breathe in sync.\n\nThe longer exhale activates the vagus nerve and tells your body that you are safe.',
+      interactiveConfig: {
+        kind: 'breathing_guide',
+        pattern: { inhale: 4, hold: 2, exhale: 6 },
+        cycles: 10,
+        colorShift: { start: '#E07A5F', end: '#8F9E8B' },
+      },
     },
     {
       type: 'prompt',

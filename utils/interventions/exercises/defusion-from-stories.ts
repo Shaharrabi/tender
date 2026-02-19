@@ -29,10 +29,29 @@ export const defusionFromStories: Intervention = {
       promptPlaceholder: 'The story my mind tells is...',
     },
     {
-      type: 'prompt',
+      type: 'sentence_transform',
       title: 'Defusion Practice',
-      content: 'Now rewrite that story starting with "I\'m having the thought that..." Notice the subtle shift when you add that prefix.',
-      promptPlaceholder: 'I\'m having the thought that...',
+      content: 'Transform the story by adding distance. Notice how the weight shifts with each version:',
+      interactiveConfig: {
+        kind: 'sentence_transform',
+        stages: [
+          {
+            prefix: 'The raw story:',
+            placeholder: 'the thought as it appears...',
+            explanation: 'Just write it straight \u2014 how your mind tells it',
+          },
+          {
+            prefix: 'I\'m having the thought that',
+            placeholder: 'the same thought with this prefix...',
+            explanation: 'Notice the subtle shift when you add distance',
+          },
+          {
+            prefix: 'I notice my mind is telling me a story about',
+            placeholder: 'rewrite it one more time...',
+            explanation: 'Even more distance \u2014 you are the observer, not the thought',
+          },
+        ],
+      },
     },
     {
       type: 'prompt',

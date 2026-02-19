@@ -40,11 +40,23 @@ export const valuesCompass: Intervention = {
       promptPlaceholder: 'The value that feels most alive for me right now is...',
     },
     {
-      type: 'prompt',
+      type: 'scale_slider',
       title: 'Rate Your Alignment',
-      content:
-        'On a scale of 1 to 10, how well have your actions this past week reflected this value? There is no judgment here — just honest observation. If you are at a 3, that is useful information. If you are at an 8, that is worth celebrating.',
-      promptPlaceholder: 'My alignment this week has been about a...',
+      content: 'How well have your actions this week reflected the value you named?',
+      interactiveConfig: {
+        kind: 'scale_slider',
+        labels: {
+          low: '1 \u2014 Way off course',
+          mid: '5 \u2014 Somewhat aligned',
+          high: '10 \u2014 Living it fully',
+        },
+        zones: [
+          { range: [0, 30] as [number, number], label: 'Off course', content: 'No judgment. This awareness IS the first step back.' },
+          { range: [31, 60] as [number, number], label: 'Some alignment', content: 'You\'ve been moving in the direction, even if imperfectly.' },
+          { range: [61, 100] as [number, number], label: 'Strong alignment', content: 'Your actions are reflecting your values. Worth celebrating.' },
+        ],
+        initialValue: 50,
+      },
     },
     {
       type: 'prompt',

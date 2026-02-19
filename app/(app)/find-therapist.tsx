@@ -6,6 +6,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
+import HomeButton from '@/components/HomeButton';
 import {
   View,
   Text,
@@ -415,6 +416,7 @@ export default function FindTherapistScreen() {
 
         <View style={{ height: Spacing.xxl }} />
       </ScrollView>
+      <HomeButton />
     </SafeAreaView>
   );
 }

@@ -23,28 +23,34 @@ export const protectorDialogue: Intervention = {
         'In IFS, the parts of us that show up strongest in relationships — the critic, the withdrawer, the controller, the people-pleaser — are protectors. They developed for good reasons, usually to keep you safe from pain. This exercise invites you to talk to one of these parts with curiosity rather than judgment.',
     },
     {
-      type: 'prompt',
-      title: 'Identify a Protector',
-      content: 'Think about how you act in your relationship when things get hard. What part shows up? The one who walls off? Gets angry? Tries to fix everything? Goes silent?',
-      promptPlaceholder: 'A protector I notice is the part that...',
-    },
-    {
-      type: 'prompt',
-      title: 'What Is It Protecting You From?',
-      content: 'Ask this part: what are you protecting me from? What would happen if you stepped back? Listen for the answer without judging.',
-      promptPlaceholder: 'It\'s protecting me from...',
-    },
-    {
-      type: 'prompt',
-      title: 'What Does It Fear?',
-      content: 'What does this part fear would happen if it let its guard down? Rejection? Being overwhelmed? Being hurt again?',
-      promptPlaceholder: 'It fears that...',
-    },
-    {
-      type: 'prompt',
-      title: 'Thank Your Protector',
-      content: 'This part has been working hard for you, probably for a long time. What would you like to say to it? Can you offer appreciation?',
-      promptPlaceholder: 'I want to say to this part...',
+      type: 'sentence_transform',
+      title: 'Dialogue with Your Protector',
+      content: 'Have a conversation with the protective part. Complete each line as if speaking to it:',
+      interactiveConfig: {
+        kind: 'sentence_transform',
+        stages: [
+          {
+            prefix: 'The protector I notice is the part that',
+            placeholder: 'describe what it does (walls off, gets angry, fixes...)',
+            explanation: 'Name the behavior without judging it',
+          },
+          {
+            prefix: 'It\'s protecting me from',
+            placeholder: 'what it\'s shielding you from...',
+            explanation: 'Every protector has a reason \u2014 what\'s it afraid of?',
+          },
+          {
+            prefix: 'What it fears most is',
+            placeholder: 'the worst case it imagines...',
+            explanation: 'The deep fear that keeps this part working overtime',
+          },
+          {
+            prefix: 'I want to say to this part:',
+            placeholder: '"Thank you for\u2026" or "I see you\u2026"',
+            explanation: 'Offer appreciation for its service, even if the method needs updating',
+          },
+        ],
+      },
     },
     {
       type: 'timer',

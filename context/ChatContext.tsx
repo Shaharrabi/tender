@@ -2,15 +2,18 @@
  * Chat context — manages active session, messages, and AI communication.
  */
 
-import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { getPortrait } from '@/services/portrait';
 import { supabase } from '@/services/supabase';
 import { sanitizeTextInput, isWithinLimit } from '@/utils/security/validation';
 import {
   createSession,
+  createCoupleSession,
   getUserSessions,
+  getCoupleSessionsForCouple,
   getMessages,
+  getCoupleMessages,
   addMessage,
   closeSession as closeSessionService,
 } from '@/services/chat';
@@ -41,9 +44,18 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined);
 const SUPABASE_URL =
   process.env.EXPO_PUBLIC_SUPABASE_URL ||
   'https://qwqclhzezyzeflxrtfjy.supabase.co';
+const SUPABASE_ANON_KEY =
+  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ||
+  'sb_publishable_X44nRh0JlS952CarvKJfcg_WAJLktxq';
 const CHAT_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/chat`;
 
-export function ChatProvider({ children }: { children: React.ReactNode }) {
+interface ChatProviderProps {
+  children: React.ReactNode;
+  coupleMode?: boolean;
+  coupleId?: string;
+}
+
+export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderProps) {
   const { user } = useAuth();
   const [activeSession, setActiveSession] = useState<ChatSession | null>(null);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
@@ -57,13 +69,27 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   // get stale in the closure
   const activeSessionRef = useRef<ChatSession | null>(null);
 
+  // Track couple mode in refs to avoid stale closures
+  const coupleModeRef = useRef(coupleMode ?? false);
+  const coupleIdRef = useRef(coupleId ?? '');
+
+  useEffect(() => {
+    coupleModeRef.current = coupleMode ?? false;
+    coupleIdRef.current = coupleId ?? '';
+  }, [coupleMode, coupleId]);
+
   const loadSessions = useCallback(async () => {
     if (!user) {
       console.warn('[Chat] loadSessions: No user — skipping');
       return;
     }
     try {
-      const list = await getUserSessions(user.id);
+      let list: ChatSession[];
+      if (coupleModeRef.current && coupleIdRef.current) {
+        list = await getCoupleSessionsForCouple(coupleIdRef.current);
+      } else {
+        list = await getUserSessions(user.id);
+      }
       setSessions(list);
     } catch (e: any) {
       console.error('Failed to load sessions:', e);
@@ -77,7 +103,12 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     setError(null);
     try {
       if (__DEV__) console.log('[Chat] Creating new session for user:', user.id);
-      const session = await createSession(user.id);
+      let session: ChatSession;
+      if (coupleModeRef.current && coupleIdRef.current) {
+        session = await createCoupleSession(coupleIdRef.current, user.id);
+      } else {
+        session = await createSession(user.id);
+      }
       if (__DEV__) console.log('[Chat] Session created:', session.id);
       setActiveSession(session);
       activeSessionRef.current = session;
@@ -94,7 +125,12 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const loadSession = useCallback(async (sessionId: string) => {
     setLoading(true);
     try {
-      const msgs = await getMessages(sessionId);
+      let msgs: ChatMessage[];
+      if (coupleModeRef.current && coupleIdRef.current) {
+        msgs = await getCoupleMessages(sessionId);
+      } else {
+        msgs = await getMessages(sessionId);
+      }
       setMessages(msgs);
 
       // Find session from list
@@ -134,7 +170,12 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       if (__DEV__) console.log('[Chat] No active session, creating one before sending...');
       setLoading(true);
       try {
-        const newSession = await createSession(user.id);
+        let newSession: ChatSession;
+        if (coupleModeRef.current && coupleIdRef.current) {
+          newSession = await createCoupleSession(coupleIdRef.current, user.id);
+        } else {
+          newSession = await createSession(user.id);
+        }
         if (__DEV__) console.log('[Chat] Auto-created session:', newSession.id);
         setActiveSession(newSession);
         activeSessionRef.current = newSession;
@@ -208,11 +249,16 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
+          'apikey': SUPABASE_ANON_KEY,
         },
         body: JSON.stringify({
           sessionId: session.id,
           message: text,
           userId: user!.id,
+          ...(coupleModeRef.current && coupleIdRef.current ? {
+            coupleMode: true,
+            coupleId: coupleIdRef.current,
+          } : {}),
         }),
       });
 

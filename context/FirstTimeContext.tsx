@@ -98,6 +98,11 @@ export function FirstTimeProvider({
   // Use user.id if authenticated, or 'guest' for guest mode
   const scopeId = user?.id ?? 'guest';
 
+  // Track previous scope to detect guest→user transitions.
+  // Keep loading=true while the scope is still 'guest' (auth resolving)
+  // to prevent stale guest defaults from triggering the tour.
+  const prevScopeRef = React.useRef<string>(scopeId);
+
   // ─── Load persisted state ──────────────────────────────────────────────
 
   const loadData = useCallback(async () => {
@@ -125,6 +130,9 @@ export function FirstTimeProvider({
       console.warn('[FirstTimeContext] Error loading data:', error);
       setState(DEFAULT_STATE);
     } finally {
+      // Only clear loading if we're in the user-scoped state
+      // (i.e., don't clear loading for 'guest' if the user is about to auth)
+      prevScopeRef.current = scopeId;
       setLoading(false);
     }
   }, [scopeId]);

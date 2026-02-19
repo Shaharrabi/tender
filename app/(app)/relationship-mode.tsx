@@ -6,6 +6,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import HomeButton from '@/components/HomeButton';
 import {
   View,
   Text,
@@ -274,6 +275,8 @@ export default function RelationshipModeScreen() {
           </Text>
         </View>
       </ScrollView>
+
+      <HomeButton />
 
       {/* Save button */}
       {hasChanges && (

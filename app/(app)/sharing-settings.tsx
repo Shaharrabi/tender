@@ -7,6 +7,7 @@
  */
 
 import React, { useEffect, useState, useCallback } from 'react';
+import HomeButton from '@/components/HomeButton';
 import {
   View,
   Text,
@@ -141,9 +142,10 @@ export default function SharingSettingsScreen() {
       setCouple(coupleData);
 
       if (coupleData) {
-        // Load partner display name
+        // Load partner display name (returns null for self-couples)
         const partner = await getPartnerProfile(user.id);
-        setPartnerName(partner?.display_name || 'Your Partner');
+        const isSelf = coupleData.partner_a_id === coupleData.partner_b_id;
+        setPartnerName(partner?.display_name || (isSelf ? 'Demo Partner' : 'Your Partner'));
 
         // Load sharing preferences
         let prefs = await getSharingPreferences(user.id, coupleData.id);
@@ -363,6 +365,7 @@ export default function SharingSettingsScreen() {
 
         <View style={{ height: Spacing.xxl }} />
       </ScrollView>
+      <HomeButton />
     </SafeAreaView>
   );
 }

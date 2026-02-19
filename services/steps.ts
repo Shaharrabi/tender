@@ -100,6 +100,45 @@ export async function updateStepStatus(
     .eq('step_number', stepNumber);
 }
 
+/** Toggle a completion criteria for a step. Stores in reflection_notes JSONB. */
+export async function toggleStepCriteria(
+  userId: string,
+  stepNumber: number,
+  criteriaIndex: number,
+  checked: boolean,
+): Promise<number[]> {
+  // Fetch current reflection_notes
+  const { data: row } = await supabase
+    .from('step_progress')
+    .select('reflection_notes')
+    .eq('user_id', userId)
+    .eq('step_number', stepNumber)
+    .single();
+
+  const notes = (row?.reflection_notes as Record<string, any>) ?? {};
+  const completedCriteria: number[] = notes.completedCriteria ?? [];
+
+  let updated: number[];
+  if (checked) {
+    updated = completedCriteria.includes(criteriaIndex)
+      ? completedCriteria
+      : [...completedCriteria, criteriaIndex];
+  } else {
+    updated = completedCriteria.filter((i: number) => i !== criteriaIndex);
+  }
+
+  await supabase
+    .from('step_progress')
+    .update({
+      reflection_notes: { ...notes, completedCriteria: updated },
+      updated_at: new Date().toISOString(),
+    })
+    .eq('user_id', userId)
+    .eq('step_number', stepNumber);
+
+  return updated;
+}
+
 // ─── Practice Completions ───────────────────────────────
 
 /** Record a practice completion with step context. */

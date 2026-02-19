@@ -34,6 +34,21 @@ export const emotionalBid: Intervention = {
         'An emotional bid is any attempt to connect — a look, a question, a sigh, a touch, a joke, a complaint. Research shows that couples who stay together turn toward each other\'s bids about 86% of the time. Couples who separate turn toward only about 33% of the time. It is not the grand gestures that build love. It is these small, everyday moments.',
     },
     {
+      type: 'scenario_choice',
+      title: 'Recognize the Response',
+      content: 'Your partner sighs loudly while reading an email. What do you do?',
+      interactiveConfig: {
+        kind: 'scenario_choice',
+        scenario: 'Your partner sighs loudly while reading an email on the couch.',
+        choices: [
+          { id: 'toward', text: '"Everything okay? That was a big sigh."', feedback: 'Turning toward. You noticed the bid and engaged. Your partner feels seen.', isRecommended: true },
+          { id: 'away', text: 'You don\'t look up from your phone.', feedback: 'Turning away. The bid was missed. Over time, missed bids accumulate into emotional distance.' },
+          { id: 'against', text: '"Can you be quieter? I\'m trying to focus."', feedback: 'Turning against. The bid was met with irritation. This erodes trust quickly.' },
+        ],
+        revealAll: true,
+      },
+    },
+    {
       type: 'prompt',
       title: 'Recall a Recent Bid',
       content:

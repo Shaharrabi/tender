@@ -35,6 +35,29 @@ export const unifiedDetachment: Intervention = {
         'When we are stuck in a conflict, it feels personal: "You always..." or "You never..." Unified detachment asks you to zoom out and look at the conflict as if you were researchers studying a pattern. The problem is not your partner. The problem is the pattern — and patterns can be understood, named, and managed without anyone being the villain.',
     },
     {
+      type: 'scenario_choice',
+      title: 'Personal or Pattern?',
+      content: 'Quick check \u2014 which framing externalizes the problem?',
+      interactiveConfig: {
+        kind: 'scenario_choice',
+        scenario: 'The dishes are piling up again. Which framing helps?',
+        choices: [
+          {
+            id: 'personal',
+            text: '"You are so lazy \u2014 you never clean up."',
+            feedback: 'This is personal attack. It makes your partner the problem and triggers defensiveness.',
+          },
+          {
+            id: 'pattern',
+            text: '"Our different tidiness standards are clashing again."',
+            feedback: 'This is unified detachment. The problem is external to both of you \u2014 a pattern you can examine together.',
+            isRecommended: true,
+          },
+        ],
+        revealAll: true,
+      },
+    },
+    {
       type: 'prompt',
       title: 'Choose a Recurring Conflict',
       content:

@@ -27,6 +27,7 @@ import {
   Shadows,
 } from '@/constants/theme';
 import {
+  ArrowLeftIcon,
   BrainIcon,
   HeartPulseIcon,
   LeafIcon,
@@ -63,7 +64,18 @@ export default function PartnerSelectScreen() {
     <View style={styles.container}>
       {/* Header */}
       <Animated.View entering={FadeIn.duration(1000)} style={styles.header}>
-        <Text style={styles.stepIndicator}>3 of 6</Text>
+        <View style={styles.headerRow}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            activeOpacity={0.7}
+            style={styles.backButton}
+          >
+            <ArrowLeftIcon size={16} color={Colors.primary} />
+            <Text style={styles.backText}>Back</Text>
+          </TouchableOpacity>
+          <Text style={styles.stepIndicator}>3 of 6</Text>
+          <View style={styles.headerSpacer} />
+        </View>
       </Animated.View>
 
       <Animated.View entering={FadeInDown.duration(800)} style={styles.titleSection}>
@@ -138,6 +150,26 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'ios' ? 70 : 50,
     paddingHorizontal: Spacing.xl,
     paddingBottom: Spacing.sm,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 4,
+  },
+  backText: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.primary,
+    fontWeight: '600',
+    fontFamily: 'JosefinSans_600SemiBold',
+  },
+  headerSpacer: {
+    width: 52,
   },
   stepIndicator: {
     fontSize: FontSizes.caption,

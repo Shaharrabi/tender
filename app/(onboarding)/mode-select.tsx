@@ -24,6 +24,7 @@ import {
   CoupleIcon,
   HeartDoubleIcon,
   SparkleIcon,
+  ArrowLeftIcon,
 } from '@/assets/graphics/icons';
 import type { IconProps } from '@/assets/graphics/icons';
 import { getAvailableModes, type RelationshipMode } from '@/constants/demoPartners';
@@ -46,39 +47,47 @@ export default function ModeSelectScreen() {
     SoundHaptics.tap();
     setSelected(mode);
     setRelationshipMode(mode);
+  };
 
-    setTimeout(() => {
-      if (mode === 'demo_partner') {
-        // Go to partner selection screen
-        router.push('/(onboarding)/partner-select' as any);
-      } else if (mode === 'random_partner') {
-        // Auto-assign random partner, skip selection
+  const handleContinue = () => {
+    if (!selected) return;
+    SoundHaptics.tap();
+
+    if (selected === 'demo_partner') {
+      router.push('/(onboarding)/partner-select' as any);
+    } else if (selected === 'real_partner') {
+      const msg =
+        'After completing your assessments, you\'ll find a "Connect With Your Partner" option on your home screen. Create an invite code there to share with your partner.\n\nFor now, let\'s set your goals.';
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        window.alert(msg);
         router.push('/(onboarding)/goals' as any);
-      } else if (mode === 'real_partner') {
-        // Show info about what happens next for real partner mode
-        Alert.alert(
-          'Partner Connection',
-          'After completing your assessments, you\'ll find a "Connect With Your Partner" option on your home screen. Create an invite code there to share with your partner.\n\nFor now, let\'s set your goals.',
-          [
-            {
-              text: 'Got it',
-              onPress: () => router.push('/(onboarding)/goals' as any),
-            },
-          ],
-        );
-        return; // Skip the timeout since Alert handles navigation
       } else {
-        // Solo -- continue to goals
-        router.push('/(onboarding)/goals' as any);
+        Alert.alert('Partner Connection', msg, [
+          { text: 'Got it', onPress: () => router.push('/(onboarding)/goals' as any) },
+        ]);
       }
-    }, 200);
+    } else {
+      // solo or random_partner
+      router.push('/(onboarding)/goals' as any);
+    }
   };
 
   return (
     <View style={styles.container}>
-      {/* Header */}
+      {/* Header with Back + Step Indicator */}
       <Animated.View entering={FadeIn.duration(1000)} style={styles.header}>
-        <Text style={styles.stepIndicator}>3 of 6</Text>
+        <View style={styles.headerRow}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            activeOpacity={0.7}
+            style={styles.backButton}
+          >
+            <ArrowLeftIcon size={16} color={Colors.primary} />
+            <Text style={styles.backText}>Back</Text>
+          </TouchableOpacity>
+          <Text style={styles.stepIndicator}>3 of 6</Text>
+          <View style={styles.headerSpacer} />
+        </View>
       </Animated.View>
 
       <View style={styles.content}>
@@ -122,8 +131,19 @@ export default function ModeSelectScreen() {
         </View>
       </View>
 
-      {/* Skip */}
-      <Animated.View entering={FadeIn.duration(800).delay(600)}>
+      {/* Continue + Skip */}
+      <Animated.View entering={FadeIn.duration(800).delay(600)} style={styles.bottomSection}>
+        <TouchableOpacity
+          style={[styles.continueButton, !selected && styles.continueButtonDisabled]}
+          onPress={handleContinue}
+          disabled={!selected}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.continueButtonText, !selected && styles.continueButtonTextDisabled]}>
+            Continue
+          </Text>
+        </TouchableOpacity>
+
         <TouchableOpacity
           style={styles.skipButton}
           onPress={() => {
@@ -148,6 +168,26 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === 'ios' ? 70 : 50,
     paddingHorizontal: Spacing.xl,
     paddingBottom: Spacing.sm,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 4,
+  },
+  backText: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.primary,
+    fontWeight: '600',
+    fontFamily: 'JosefinSans_600SemiBold',
+  },
+  headerSpacer: {
+    width: 52,
   },
   stepIndicator: {
     fontSize: FontSizes.caption,
@@ -219,10 +259,33 @@ const styles = StyleSheet.create({
   optionDescSelected: {
     color: Colors.textSecondary,
   },
+  bottomSection: {
+    paddingHorizontal: Spacing.xl,
+    paddingBottom: Platform.OS === 'ios' ? 50 : 30,
+  },
+  continueButton: {
+    backgroundColor: Colors.primary,
+    height: 52,
+    borderRadius: BorderRadius.pill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.sm,
+  },
+  continueButtonDisabled: {
+    backgroundColor: Colors.border,
+  },
+  continueButtonText: {
+    fontSize: FontSizes.body,
+    fontWeight: '700',
+    fontFamily: FontFamilies.heading,
+    color: '#fff',
+  },
+  continueButtonTextDisabled: {
+    color: Colors.textMuted,
+  },
   skipButton: {
     alignItems: 'center',
-    paddingVertical: Spacing.lg,
-    paddingBottom: Platform.OS === 'ios' ? 50 : 30,
+    paddingVertical: Spacing.sm,
   },
   skipText: {
     fontSize: FontSizes.bodySmall,

@@ -8,6 +8,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import HomeButton from '@/components/HomeButton';
 import {
   View,
   Text,
@@ -485,6 +486,7 @@ export default function AssessmentMatrixScreen() {
           </View>
         )}
       </ScrollView>
+      <HomeButton />
     </SafeAreaView>
   );
 }

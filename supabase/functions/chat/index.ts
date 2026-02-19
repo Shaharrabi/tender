@@ -134,6 +134,8 @@ serve(async (req: Request) => {
     // Create Supabase admin client (for DB operations)
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
+    console.log('[chat] Processing message for user:', userId, 'session:', sessionId);
+
     // 0. Fetch user's relationship mode + demo partner
     const { data: profileRow } = await supabase
       .from('user_profiles')
@@ -164,6 +166,48 @@ serve(async (req: Request) => {
     const activeStepRow = (stepRows ?? []).find((r: any) => r.status === 'active');
     const currentStepNumber = activeStepRow?.step_number ?? 1;
     const completedSteps = (stepRows ?? []).filter((r: any) => r.status === 'completed').length;
+
+    // ─── NEW: Fetch rich user data for context-aware coaching ──────
+
+    // 1c. Fetch recent daily check-ins (last 7 days of mood/relationship data)
+    const { data: checkInRows } = await supabase
+      .from('daily_check_ins')
+      .select('checkin_date, mood_rating, relationship_rating, practiced_growth_edge, note')
+      .eq('user_id', userId)
+      .order('checkin_date', { ascending: false })
+      .limit(7);
+
+    // 1d. Fetch recent exercise completions (last 10)
+    const { data: exerciseRows } = await supabase
+      .from('exercise_completions')
+      .select('exercise_id, exercise_name, reflection, rating, step_responses, completed_at')
+      .eq('user_id', userId)
+      .order('completed_at', { ascending: false })
+      .limit(10);
+
+    // 1e. Fetch recent daily reflections (last 5)
+    const { data: reflectionRows } = await supabase
+      .from('daily_reflections')
+      .select('reflection_date, question_responses, free_text, day_tags')
+      .eq('user_id', userId)
+      .order('reflection_date', { ascending: false })
+      .limit(5);
+
+    // 1f. Fetch assessment history (types and dates, not raw scores — just awareness)
+    const { data: assessmentRows } = await supabase
+      .from('assessments')
+      .select('type, completed_at')
+      .eq('user_id', userId)
+      .order('completed_at', { ascending: false })
+      .limit(10);
+
+    // 1g. Fetch growth edge progress
+    const { data: growthEdgeRows } = await supabase
+      .from('growth_edge_progress')
+      .select('edge_id, stage, practice_count, insights, milestones')
+      .eq('user_id', userId);
+
+    console.log('[chat] Context loaded — portrait:', !!hasPortrait, 'checkIns:', (checkInRows ?? []).length, 'exercises:', (exerciseRows ?? []).length, 'reflections:', (reflectionRows ?? []).length);
 
     // 2. Fetch recent messages (last 20)
     // For couple chat, check couple_chat_messages first, fall back to chat_messages
@@ -242,7 +286,10 @@ serve(async (req: Request) => {
       systemPrompt = buildSystemPromptFromRow(portraitRow, safetyResult, currentStepNumber, completedSteps);
     }
 
-    // 4b. Append relationship mode context
+    // 4b. Append rich user context (journal, exercises, check-ins, growth edges)
+    systemPrompt += buildUserContextBlock(checkInRows, exerciseRows, reflectionRows, assessmentRows, growthEdgeRows);
+
+    // 4c. Append relationship mode context
     systemPrompt += buildModeContext(relationshipMode, demoPartnerId, currentStepNumber);
 
     // 5. Diagnostic observation (internal — guides coaching, never shown to user)
@@ -261,6 +308,7 @@ serve(async (req: Request) => {
     ];
 
     // 7. Call Claude API
+    console.log('[chat] Calling Claude API — messages:', claudeMessages.length, 'system prompt length:', systemPrompt.length);
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -278,11 +326,23 @@ serve(async (req: Request) => {
 
     if (!claudeResponse.ok) {
       const errText = await claudeResponse.text();
-      throw new Error(`Claude API error: ${claudeResponse.status} - ${errText}`);
+      console.error('[chat] Claude API error:', claudeResponse.status, errText);
+      // Return a more specific error to help diagnose issues
+      const statusCode = claudeResponse.status;
+      if (statusCode === 401) {
+        throw new Error('Claude API authentication failed — the API key may be invalid or expired. Please check your ANTHROPIC_API_KEY secret.');
+      } else if (statusCode === 429) {
+        throw new Error('Claude API rate limit exceeded. Please wait a moment and try again.');
+      } else if (statusCode === 529 || statusCode === 503) {
+        throw new Error('Claude API is temporarily overloaded. Please try again in a moment.');
+      } else {
+        throw new Error(`Claude API error (${statusCode}): ${errText.substring(0, 200)}`);
+      }
     }
 
     const claudeData = await claudeResponse.json();
     const reply = claudeData.content?.[0]?.text ?? 'I\'m here with you, but I wasn\'t able to form a response just now. Can you try again?';
+    console.log('[chat] Claude replied — length:', reply.length);
 
     // 7. Detect state from user message (basic)
     const detectedState = detectStateBasic(message);
@@ -351,9 +411,11 @@ serve(async (req: Request) => {
       { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   } catch (error: any) {
-    console.error('Chat function error:', error);
+    console.error('[chat] Function error:', error?.message || error);
+    // Return the actual error message so the client can display something helpful
+    const errorMessage = error?.message || 'Something went wrong. Please try again.';
     return new Response(
-      JSON.stringify({ error: 'Something went wrong. Please try again.' }),
+      JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
     );
   }
@@ -860,6 +922,141 @@ function getStepContext(stepNumber: number): {
   };
 
   return steps[stepNumber] || steps[1];
+}
+
+// ─── Rich User Context (journal, exercises, check-ins, growth edges) ──────
+
+function buildUserContextBlock(
+  checkIns: any[] | null,
+  exercises: any[] | null,
+  reflections: any[] | null,
+  assessments: any[] | null,
+  growthEdges: any[] | null,
+): string {
+  const sections: string[] = [];
+
+  // ── Daily Check-Ins (mood + relationship trend) ──────────
+  if (checkIns && checkIns.length > 0) {
+    const entries = checkIns.map((c: any) => {
+      const date = c.checkin_date;
+      const mood = c.mood_rating;
+      const rel = c.relationship_rating;
+      const practiced = c.practiced_growth_edge ? ' (practiced growth edge)' : '';
+      const note = c.note ? ` — "${c.note}"` : '';
+      return `  ${date}: mood ${mood}/10, relationship ${rel}/10${practiced}${note}`;
+    }).join('\n');
+
+    // Calculate trends
+    const moods = checkIns.map((c: any) => c.mood_rating).reverse();
+    const rels = checkIns.map((c: any) => c.relationship_rating).reverse();
+    const moodTrend = moods.length >= 2 ? (moods[moods.length - 1] - moods[0] > 0 ? 'improving' : moods[moods.length - 1] - moods[0] < 0 ? 'declining' : 'stable') : 'insufficient data';
+    const relTrend = rels.length >= 2 ? (rels[rels.length - 1] - rels[0] > 0 ? 'improving' : rels[rels.length - 1] - rels[0] < 0 ? 'declining' : 'stable') : 'insufficient data';
+
+    sections.push(`### Recent Daily Check-Ins (last ${checkIns.length} days)
+${entries}
+Mood trend: ${moodTrend} | Relationship trend: ${relTrend}
+
+Use this to notice patterns — if mood is low, be gentle. If relationship ratings are dropping, be curious about what is happening. If they practiced their growth edge, celebrate that rhythm. Reference their own notes back to them when relevant — it shows you are paying attention.`);
+  }
+
+  // ── Recent Exercise Completions ──────────────────────────
+  if (exercises && exercises.length > 0) {
+    const entries = exercises.slice(0, 5).map((e: any) => {
+      const name = e.exercise_name || e.exercise_id;
+      const date = e.completed_at?.split('T')[0] || 'unknown';
+      const rating = e.rating ? ` (rated ${e.rating}/5)` : '';
+      const reflection = e.reflection ? ` — Reflection: "${e.reflection.substring(0, 150)}${e.reflection.length > 150 ? '...' : ''}"` : '';
+
+      // Include step responses summary for microcourse lessons
+      let stepsInfo = '';
+      if (e.step_responses && Array.isArray(e.step_responses) && e.step_responses.length > 0) {
+        const reflectionStep = e.step_responses.find((s: any) => s.type === 'reflection');
+        if (reflectionStep?.response) {
+          stepsInfo = ` — Their reflection: "${reflectionStep.response.substring(0, 150)}${reflectionStep.response.length > 150 ? '...' : ''}"`;
+        }
+      }
+
+      return `  ${date}: ${name}${rating}${reflection}${stepsInfo}`;
+    }).join('\n');
+
+    sections.push(`### Recent Exercises & Microcourses Completed
+${entries}
+
+When someone mentions a topic related to an exercise they recently completed, you can reference their own work back to them: "I notice you explored this in [exercise name] recently — what stayed with you from that?" This makes the coaching feel deeply personal and connected to their actual journey.`);
+  }
+
+  // ── Recent Journal Reflections ───────────────────────────
+  if (reflections && reflections.length > 0) {
+    const entries = reflections.slice(0, 3).map((r: any) => {
+      const date = r.reflection_date;
+      const tags = (r.day_tags && r.day_tags.length > 0) ? ` [${r.day_tags.join(', ')}]` : '';
+      const freeText = r.free_text ? `"${r.free_text.substring(0, 200)}${r.free_text.length > 200 ? '...' : ''}"` : '';
+
+      let qas = '';
+      if (r.question_responses && Array.isArray(r.question_responses) && r.question_responses.length > 0) {
+        qas = r.question_responses.map((qa: any) =>
+          `    Q: "${qa.question}" → A: "${(qa.answer || '').substring(0, 100)}${(qa.answer || '').length > 100 ? '...' : ''}"`
+        ).join('\n');
+      }
+
+      return `  ${date}${tags}:\n${qas ? qas + '\n' : ''}    ${freeText}`;
+    }).join('\n\n');
+
+    sections.push(`### Recent Journal Reflections
+${entries}
+
+Their journal is their private inner world. When you notice themes from their reflections showing up in conversation, gently name it: "There's something here that connects to what you've been sitting with in your journal..." Never quote their exact words unless they bring them up first — instead, reflect the themes and emotional tone.`);
+  }
+
+  // ── Assessment History ───────────────────────────────────
+  if (assessments && assessments.length > 0) {
+    const types = [...new Set(assessments.map((a: any) => a.type))];
+    const latestDate = assessments[0]?.completed_at?.split('T')[0] || 'unknown';
+    const assessmentLabels: Record<string, string> = {
+      'ecr-r': 'Attachment Style (ECR-R)',
+      'dutch': 'Interpersonal Reactivity (DUTCH)',
+      'tender': 'Tender Composite Assessment',
+      'rdas': 'Dyadic Adjustment (RDAS)',
+      'csi-16': 'Couple Satisfaction (CSI-16)',
+      'dci': 'Dyadic Coping (DCI)',
+    };
+
+    const typeList = types.map((t: any) => assessmentLabels[t] || t).join(', ');
+
+    sections.push(`### Assessment History
+Completed assessments: ${typeList}
+Most recent: ${latestDate} | Total: ${assessments.length}
+
+The user's portrait (above) is built from these assessments. If they ask about their results, you can discuss the patterns and insights from their portrait. If they haven't taken certain assessments yet, you can mention them naturally when relevant.`);
+  }
+
+  // ── Growth Edge Progress ─────────────────────────────────
+  if (growthEdges && growthEdges.length > 0) {
+    const entries = growthEdges.map((g: any) => {
+      const stage = g.stage || 'emerging';
+      const practices = g.practice_count || 0;
+      const insights = (g.insights && Array.isArray(g.insights)) ? g.insights.slice(-2) : [];
+      const insightText = insights.length > 0 ? ` — Recent insights: ${insights.map((i: any) => `"${(i.text || i).toString().substring(0, 80)}"`).join('; ')}` : '';
+      return `  ${g.edge_id}: ${stage} (${practices} practices)${insightText}`;
+    }).join('\n');
+
+    sections.push(`### Growth Edge Progress
+${entries}
+
+When you know someone's growth edge stage, you can calibrate your coaching. "Emerging" edges need gentle awareness. "Practicing" edges benefit from encouragement and rhythm. "Integrating" edges can be celebrated and deepened. Never rush someone past their current stage.`);
+  }
+
+  if (sections.length === 0) {
+    return ''; // No data yet — clean return
+  }
+
+  return `\n\n## This Person's Living Journey Data
+
+The following is real-time data from their daily check-ins, exercises, journal, and growth work. USE THIS to make your coaching deeply personal. Reference their actual data, notice patterns, celebrate consistency, and be curious about shifts.
+
+${sections.join('\n\n')}
+
+**IMPORTANT**: This data is what makes you different from a generic AI. Weave it into your responses naturally — not as a data dump, but as a wise friend who actually remembers what they've been going through. When they mention a struggle, connect it to their check-in trend. When they share a win, connect it to their growth edge practice count. When they express confusion, reference their own reflection back to them.`;
 }
 
 // ─── Relationship Mode Context ─────────────────────────────

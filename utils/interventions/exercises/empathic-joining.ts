@@ -41,18 +41,44 @@ export const empathicJoining: Intervention = {
       promptPlaceholder: 'Something that has been painful for me is...',
     },
     {
-      type: 'prompt',
-      title: 'Listen for the Emotion Beneath',
-      content:
-        'Listening partner: set aside your own perspective for a moment. What emotion do you hear underneath what your partner said? Not the topic, not the accusation — the feeling. Is it sadness? Fear? Loneliness? Feeling unseen?\n\nReflect back the emotion: "It sounds like you are feeling ___ about this. Is that right?"',
-      promptPlaceholder: 'The emotion I heard underneath was...',
+      type: 'scenario_choice',
+      title: 'Practice: What\'s the Emotion Underneath?',
+      content: 'Before you try it live, practice spotting the emotion beneath words:',
+      interactiveConfig: {
+        kind: 'scenario_choice',
+        scenario: 'Your partner says: "You\'re never home anymore. I\'m always doing everything alone."',
+        choices: [
+          { id: 'anger', text: 'They\'re angry and attacking', feedback: 'That\'s the surface read. Anger is usually a secondary emotion \u2014 a protest against something deeper.' },
+          { id: 'lonely', text: 'They\'re feeling lonely and unimportant', feedback: 'Yes \u2014 underneath the accusation is usually loneliness, a fear of not mattering, or grief over lost connection. This is what empathic joining responds to.', isRecommended: true },
+          { id: 'control', text: 'They\'re trying to control your time', feedback: 'This reads the worst intention into the words. IBCT invites us to hear the softer feeling first.' },
+        ],
+        revealAll: true,
+      },
     },
     {
-      type: 'prompt',
+      type: 'sentence_transform',
       title: 'Validate Without Agreeing',
-      content:
-        'Validation is not agreement. You can validate your partner\'s emotional experience without conceding your own position. Try:\n\n"I can see why you would feel that way, given how you experienced it."\n"It makes sense that you feel ___ — that sounds really hard."\n\nThe goal is to make your partner feel understood, not to settle who is right.',
-      promptPlaceholder: 'My validation was...',
+      content: 'Build a validation response that acknowledges emotion without conceding your position:',
+      interactiveConfig: {
+        kind: 'sentence_transform',
+        stages: [
+          {
+            prefix: 'I can see why you would feel',
+            placeholder: 'name the emotion you heard...',
+            explanation: 'Reflect the feeling, not the accusation',
+          },
+          {
+            prefix: 'given that from your experience,',
+            placeholder: 'describe their perspective...',
+            explanation: 'Show understanding without saying they\'re right',
+          },
+          {
+            prefix: 'That sounds',
+            placeholder: 'really hard / painful / lonely / scary...',
+            explanation: 'Land the empathy',
+          },
+        ],
+      },
     },
     {
       type: 'prompt',

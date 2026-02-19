@@ -9,6 +9,7 @@
  */
 
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import HomeButton from '@/components/HomeButton';
 import {
   View,
   Text,
@@ -393,6 +394,7 @@ export default function ExercisesScreen() {
         {/* Bottom padding */}
         <View style={{ height: Spacing.xxxl }} />
       </ScrollView>
+      <HomeButton />
     </SafeAreaView>
   );
 }

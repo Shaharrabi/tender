@@ -68,6 +68,27 @@ export async function getCompletionCount(
   return count ?? 0;
 }
 
+// ─── Get Completion by Exercise ID ─────────────────────
+// Used for data cascading between lessons (e.g., MC5 L2 reads L1's story)
+
+export async function getCompletionByExerciseId(
+  userId: string,
+  exerciseId: string
+): Promise<ExerciseCompletion | null> {
+  const { data, error } = await supabase
+    .from('exercise_completions')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('exercise_id', exerciseId)
+    .order('completed_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) return null;
+  return mapCompletion(data);
+}
+
 // ─── Helpers ────────────────────────────────────────────
 
 function mapCompletion(row: any): ExerciseCompletion {

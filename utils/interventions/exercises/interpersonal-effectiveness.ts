@@ -33,32 +33,34 @@ export const dearMan: Intervention = {
         'DEAR MAN is one of the most practical communication skills in DBT. It gives you a step-by-step way to express a need or set a boundary while keeping the relationship intact.\n\nHere is what each letter stands for:\n\nD — Describe the situation (facts only)\nE — Express how you feel about it\nA — Assert what you need\nR — Reinforce why it matters\n\nM — stay Mindful (stay on topic)\nA — Appear confident (even if you are nervous)\nN — Negotiate (be willing to find a middle ground)\n\nWe will walk through each step together. Think of a specific situation where you need to express something to your partner.',
     },
     {
-      type: 'prompt',
-      title: 'D — Describe the Situation',
-      content:
-        'Start with the facts. Describe the situation you want to address without adding judgment, interpretation, or emotion. Stick to what actually happened — what a video camera would have recorded.\n\nFor example: "When I came home last night, you were on your phone and did not look up for several minutes."',
-      promptPlaceholder: 'The situation is...',
-    },
-    {
-      type: 'prompt',
-      title: 'E — Express Your Feelings',
-      content:
-        'Now share how you feel about this situation using "I" statements. Own your feelings without blaming your partner.\n\nFor example: "I felt invisible and unimportant in that moment."',
-      promptPlaceholder: 'I feel...',
-    },
-    {
-      type: 'prompt',
-      title: 'A — Assert What You Need',
-      content:
-        'Clearly state what you are asking for. Be specific. Do not hint or hope they figure it out. A good assertion is concrete and doable.\n\nFor example: "I would like us to have a moment of connection when one of us comes home — even just a hug or eye contact."',
-      promptPlaceholder: 'What I need is...',
-    },
-    {
-      type: 'prompt',
-      title: 'R — Reinforce Why It Matters',
-      content:
-        'Help your partner understand why this matters to you and what the positive outcome would be. Reinforcement connects your request to the health of the relationship.\n\nFor example: "When we greet each other warmly, I feel like we are a team. It sets the tone for the whole evening."',
-      promptPlaceholder: 'This matters because...',
+      type: 'sentence_transform',
+      title: 'Build Your DEAR Statement',
+      content: 'Walk through each letter to construct your message:',
+      interactiveConfig: {
+        kind: 'sentence_transform',
+        stages: [
+          {
+            prefix: 'D \u2014 Describe (facts only):',
+            placeholder: '"When I came home, you were on your phone for 20 minutes..."',
+            explanation: 'What a camera would record \u2014 no judgment, no mind-reading',
+          },
+          {
+            prefix: 'E \u2014 Express (your feelings):',
+            placeholder: '"I felt invisible and unimportant..."',
+            explanation: 'Own your emotion with "I feel\u2026" \u2014 no blame',
+          },
+          {
+            prefix: 'A \u2014 Assert (what you need):',
+            placeholder: '"I would like a moment of connection when I get home..."',
+            explanation: 'Specific and doable \u2014 don\'t hint, ask clearly',
+          },
+          {
+            prefix: 'R \u2014 Reinforce (why it matters):',
+            placeholder: '"When we greet each other warmly, I feel like we\'re a team..."',
+            explanation: 'Connect your request to the relationship\'s health',
+          },
+        ],
+      },
     },
     {
       type: 'prompt',

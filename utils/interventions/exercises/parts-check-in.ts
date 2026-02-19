@@ -33,6 +33,22 @@ export const partsCheckIn: Intervention = {
         'We all have different "parts" — inner voices, feelings, or impulses that show up in different situations. There is the part that gets anxious, the part that wants to fix everything, the part that shuts down. None of them are bad; they are all trying to protect you. This exercise helps you notice which part is active right now and relate to it with curiosity instead of judgment.',
     },
     {
+      type: 'scenario_choice',
+      title: 'Which Part Is Loudest?',
+      content: 'Which of these inner voices sounds most familiar right now?',
+      interactiveConfig: {
+        kind: 'scenario_choice',
+        scenario: 'Turn inward. The part of you that\'s most active right now is probably:',
+        choices: [
+          { id: 'critic', text: 'The Inner Critic \u2014 "You\'re not enough"', feedback: 'The critic tries to protect you by pushing you to be better. But its methods can be harsh. What is it really afraid of?' },
+          { id: 'fixer', text: 'The Fixer \u2014 "Let me handle everything"', feedback: 'The fixer takes over to prevent things from falling apart. It\'s exhausting work. What would happen if it rested?' },
+          { id: 'withdrawer', text: 'The Withdrawer \u2014 "Just shut down, it\'s safer"', feedback: 'The withdrawer protects you from overwhelm by going numb. It learned this a long time ago. What is it shielding you from?' },
+          { id: 'pleaser', text: 'The People-Pleaser \u2014 "Keep everyone happy"', feedback: 'The pleaser sacrifices your needs to maintain connection. It fears that your real self won\'t be enough.' },
+        ],
+        revealAll: false,
+      },
+    },
+    {
       type: 'prompt',
       title: 'Notice What Part Is Active',
       content:

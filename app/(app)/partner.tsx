@@ -32,6 +32,7 @@ import {
   getPartnerProfile,
   getOrCreateProfile,
   checkDyadicCompletion,
+  isSelfCouple,
 } from '@/services/couples';
 import { getDyadicAssessments } from '@/utils/assessments/registry';
 import {
@@ -42,6 +43,7 @@ import {
   BorderRadius,
   Shadows,
 } from '@/constants/theme';
+import HomeButton from '@/components/HomeButton';
 import { ShieldIcon, SparkleIcon } from '@/assets/graphics/icons';
 import type { Couple, CoupleInvite, UserProfile } from '@/types/couples';
 
@@ -65,6 +67,14 @@ export default function PartnerScreen() {
   const [processing, setProcessing] = useState(false);
   const [displayName, setDisplayName] = useState('');
   const [showNameInput, setShowNameInput] = useState(false);
+
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(app)/home' as any);
+    }
+  };
 
   const loadData = useCallback(async () => {
     if (!user) return;
@@ -198,13 +208,13 @@ export default function PartnerScreen() {
       <SafeAreaView style={styles.container}>
         <ScrollView contentContainerStyle={styles.scroll}>
           {/* Header */}
-          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <TouchableOpacity onPress={handleBack} style={styles.backBtn}>
             <Text style={styles.backText}>{'< Back'}</Text>
           </TouchableOpacity>
 
           <Text style={styles.heading}>Your Partnership</Text>
           <Text style={styles.subtitle}>
-            Connected with {partnerProfile?.display_name || 'your partner'}
+            Connected with {partnerProfile?.display_name || (couple && isSelfCouple(couple) ? 'Demo Partner' : 'your partner')}
           </Text>
 
           {/* Connection Status Card */}
@@ -216,7 +226,7 @@ export default function PartnerScreen() {
               <View style={styles.connectionLine} />
               <View style={[styles.partnerAvatar, styles.partnerAvatarB]}>
                 <Text style={styles.avatarText}>
-                  {(partnerProfile?.display_name || 'P')[0]}
+                  {(partnerProfile?.display_name || (couple && isSelfCouple(couple) ? 'D' : 'P'))[0]}
                 </Text>
               </View>
             </View>
@@ -234,7 +244,7 @@ export default function PartnerScreen() {
               <View style={{ flex: 1 }}>
                 <Text style={styles.sharingTitle}>Sharing Settings</Text>
                 <Text style={styles.sharingSubtitle}>
-                  Control which assessments {partnerProfile?.display_name || 'your partner'} can see
+                  Control which assessments {partnerProfile?.display_name || (couple && isSelfCouple(couple) ? 'Demo Partner' : 'your partner')} can see
                 </Text>
               </View>
               <Text style={styles.sharingArrow}>{'→'}</Text>
@@ -273,8 +283,8 @@ export default function PartnerScreen() {
                 key={assessment.type}
                 style={[styles.card, styles.assessmentCard]}
                 onPress={() => {
-                  if (!myDone) {
-                    router.push(`/(app)/assessment?type=${assessment.type}` as any);
+                  if (!myDone && couple) {
+                    router.push(`/(app)/assessment?type=${assessment.type}&coupleId=${couple.id}` as any);
                   }
                 }}
                 activeOpacity={myDone ? 1 : 0.7}
@@ -335,6 +345,7 @@ export default function PartnerScreen() {
             </View>
           )}
         </ScrollView>
+        <HomeButton />
       </SafeAreaView>
     );
   }
@@ -344,7 +355,7 @@ export default function PartnerScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+        <TouchableOpacity onPress={handleBack} style={styles.backBtn}>
           <Text style={styles.backText}>{'< Back'}</Text>
         </TouchableOpacity>
 
@@ -463,6 +474,7 @@ export default function PartnerScreen() {
           </Text>
         </View>
       </ScrollView>
+      <HomeButton />
     </SafeAreaView>
   );
 }

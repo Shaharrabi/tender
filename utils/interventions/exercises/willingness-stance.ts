@@ -41,10 +41,23 @@ export const willingnessStance: Intervention = {
       promptPlaceholder: 'If I were willing, I would...',
     },
     {
-      type: 'prompt',
-      title: 'The Value It Serves',
-      content: 'What value or what matters to you would this willingness serve? Connection? Honesty? Growth?',
-      promptPlaceholder: 'This serves my value of...',
+      type: 'scale_slider',
+      title: 'Your Willingness Right Now',
+      content: 'How willing are you to feel this discomfort \u2014 not wanting it, just allowing it \u2014 because it serves something that matters?',
+      interactiveConfig: {
+        kind: 'scale_slider',
+        labels: {
+          low: 'Not willing yet',
+          mid: 'Somewhat willing',
+          high: 'Fully willing',
+        },
+        zones: [
+          { range: [0, 30] as [number, number], label: 'The avoidance is still winning', content: 'Honest. What would it take to move from unwilling to slightly open?' },
+          { range: [31, 60] as [number, number], label: 'Opening the door', content: 'You\'re willing to consider it. That crack of openness is where change begins.' },
+          { range: [61, 100] as [number, number], label: 'Choosing to show up', content: 'You\'re choosing discomfort in service of something bigger. That\'s courage.' },
+        ],
+        initialValue: 30,
+      },
     },
     {
       type: 'reflection',

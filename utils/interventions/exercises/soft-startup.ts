@@ -41,11 +41,29 @@ export const softStartup: Intervention = {
       promptPlaceholder: 'What has been bothering me is...',
     },
     {
-      type: 'prompt',
-      title: 'Reframe with "I Feel...When...I Need..."',
-      content:
-        'Now rewrite your complaint using this structure:\n\n"I feel [emotion] when [specific situation]. I need [positive request]."\n\nFor example: "I feel lonely when we eat dinner in silence. I need us to have at least a few minutes of real conversation."',
-      promptPlaceholder: 'I feel...when...I need...',
+      type: 'sentence_transform',
+      title: 'Reframe with "I Feel\u2026When\u2026I Need\u2026"',
+      content: 'Transform your complaint into a soft startup:',
+      interactiveConfig: {
+        kind: 'sentence_transform',
+        stages: [
+          {
+            prefix: 'I feel',
+            placeholder: 'name one emotion (lonely, frustrated, hurt...)',
+            explanation: 'Lead with YOUR feeling, not their behavior',
+          },
+          {
+            prefix: 'when',
+            placeholder: 'describe the specific situation...',
+            explanation: 'Observable behavior, not character judgment',
+          },
+          {
+            prefix: 'I need',
+            placeholder: 'a positive, specific request...',
+            explanation: 'What you want TO happen, not what you want to stop',
+          },
+        ],
+      },
     },
     {
       type: 'instruction',

@@ -41,6 +41,7 @@ import {
   Shadows,
 } from '@/constants/theme';
 import type { Intervention, ExerciseStep } from '@/types/intervention';
+import type { ChecklistConfig } from '@/types/interactive-step-types';
 import {
   BookOpenIcon,
   PenIcon,
@@ -49,6 +50,14 @@ import {
   NotepadIcon,
   StarIcon,
 } from '@/assets/graphics/icons';
+
+// ─── Interactive Step Components ───────────────────────────
+import SentenceTransformStep from '@/components/exercises/SentenceTransformStep';
+import ScenarioChoiceStep from '@/components/exercises/ScenarioChoiceStep';
+import ChecklistStep from '@/components/exercises/ChecklistStep';
+import ScaleSliderStep from '@/components/exercises/ScaleSliderStep';
+import BreathingGuideStep from '@/components/exercises/BreathingGuideStep';
+import CardFlipStep from '@/components/exercises/CardFlipStep';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -317,7 +326,7 @@ export default function ExerciseFlow({
                       </Text>
                     </View>
                     <Text style={summaryStyles.responseText}>
-                      {item.response}
+                      {formatResponseForDisplay(item.response, item.type)}
                     </Text>
                   </View>
                 ))}
@@ -563,6 +572,42 @@ export default function ExerciseFlow({
   );
 }
 
+// ─── Format Interactive Responses for Display ─────────────
+function formatResponseForDisplay(response: string, type: string): string {
+  if (!response) return '';
+
+  try {
+    const parsed = JSON.parse(response);
+
+    switch (type) {
+      case 'scenario_choice':
+        return parsed.text || response;
+
+      case 'checklist':
+        if (parsed.checkedLabels) {
+          return parsed.checkedLabels.join(', ');
+        }
+        return `${parsed.count || 0} items selected`;
+
+      case 'scale_slider':
+        return `${parsed.value ?? '—'} — ${parsed.zone || ''}`;
+
+      case 'breathing_guide':
+        return parsed.completed
+          ? `✓ ${parsed.cycles} breath cycles completed`
+          : 'In progress...';
+
+      case 'card_flip':
+        return `${parsed.count || 0} of ${parsed.total || 0} cards revealed`;
+
+      default:
+        return response;
+    }
+  } catch {
+    return response;
+  }
+}
+
 // ═══════════════════════════════════════════════════════════
 //  PreviousResponses — cascading display of earlier answers
 // ═══════════════════════════════════════════════════════════
@@ -588,7 +633,7 @@ function PreviousResponses({ responses }: { responses: StepResponse[] }) {
           </View>
           <View style={cascadeStyles.responseContent}>
             <Text style={cascadeStyles.promptLabel}>{item.prompt}</Text>
-            <Text style={cascadeStyles.responseText}>{item.response}</Text>
+            <Text style={cascadeStyles.responseText}>{formatResponseForDisplay(item.response, item.type)}</Text>
           </View>
         </View>
       ))}
@@ -668,6 +713,53 @@ const cascadeStyles = StyleSheet.create({
 //  StepRenderer — renders each step type with unique styling
 // ═══════════════════════════════════════════════════════════
 
+// ─── Step Completeness Check ─────────────────────────────
+function isStepComplete(step: ExerciseStep, response?: string): boolean {
+  if (!response || !response.trim()) {
+    // instruction and timer steps don't need responses
+    if (step.type === 'instruction' || step.type === 'timer') return true;
+    // breathing_guide auto-completes via its own logic
+    if (step.type === 'breathing_guide') return false;
+    return false;
+  }
+
+  switch (step.type) {
+    case 'checklist': {
+      const checklistConfig = step.interactiveConfig as ChecklistConfig | undefined;
+      const minRequired = checklistConfig?.minRequired ?? 0;
+      if (minRequired === 0) return true;
+      try {
+        const parsed = JSON.parse(response);
+        return (parsed.count || 0) >= minRequired;
+      } catch {
+        return false;
+      }
+    }
+
+    case 'breathing_guide': {
+      try {
+        const parsed = JSON.parse(response);
+        return parsed.completed === true;
+      } catch {
+        return false;
+      }
+    }
+
+    case 'scale_slider':
+    case 'scenario_choice':
+    case 'card_flip':
+    case 'sentence_transform':
+      return true; // Any non-empty response is valid
+
+    case 'instruction':
+    case 'timer':
+      return true; // No response required
+
+    default:
+      return response.trim().length > 0;
+  }
+}
+
 function StepRenderer({
   step,
   value,
@@ -716,6 +808,63 @@ function StepRenderer({
           <PromptStep step={step} value={value} onChangeText={onChangeText} />
         </>
       );
+
+    // ─── Interactive Step Types ──────────────────────────
+    case 'sentence_transform':
+      return (
+        <>
+          {previousResponses.length > 0 && (
+            <PreviousResponses responses={previousResponses} />
+          )}
+          <SentenceTransformStep step={step} value={value} onChangeText={onChangeText} />
+        </>
+      );
+    case 'scenario_choice':
+      return (
+        <>
+          {previousResponses.length > 0 && (
+            <PreviousResponses responses={previousResponses} />
+          )}
+          <ScenarioChoiceStep step={step} value={value} onChangeText={onChangeText} />
+        </>
+      );
+    case 'checklist':
+      return (
+        <>
+          {previousResponses.length > 0 && (
+            <PreviousResponses responses={previousResponses} />
+          )}
+          <ChecklistStep step={step} value={value} onChangeText={onChangeText} />
+        </>
+      );
+    case 'scale_slider':
+      return (
+        <>
+          {previousResponses.length > 0 && (
+            <PreviousResponses responses={previousResponses} />
+          )}
+          <ScaleSliderStep step={step} value={value} onChangeText={onChangeText} />
+        </>
+      );
+    case 'breathing_guide':
+      return (
+        <>
+          {previousResponses.length > 0 && (
+            <PreviousResponses responses={previousResponses} />
+          )}
+          <BreathingGuideStep step={step} value={value} onChangeText={onChangeText} />
+        </>
+      );
+    case 'card_flip':
+      return (
+        <>
+          {previousResponses.length > 0 && (
+            <PreviousResponses responses={previousResponses} />
+          )}
+          <CardFlipStep step={step} value={value} onChangeText={onChangeText} />
+        </>
+      );
+
     default:
       return <InstructionStep step={step} />;
   }

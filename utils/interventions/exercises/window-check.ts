@@ -41,11 +41,23 @@ export const windowCheck: Intervention = {
       duration: 30,
     },
     {
-      type: 'prompt',
-      title: 'Rate Where You Are',
-      content:
-        'On a scale of 1 to 10, where are you right now?\n\n1-3: Below the window (shut down, numb, disconnected)\n4-7: Inside the window (present, regulated, able to think)\n8-10: Above the window (activated, anxious, reactive)\n\nThere is no wrong answer.',
-      promptPlaceholder: 'I am at about a...',
+      type: 'scale_slider',
+      title: 'Where Are You Right Now?',
+      content: 'Drag the marker to where your nervous system feels right now:',
+      interactiveConfig: {
+        kind: 'scale_slider',
+        labels: {
+          low: 'Shutdown / Frozen',
+          mid: 'In My Window',
+          high: 'Activated / Flooded',
+        },
+        zones: [
+          { range: [0, 25] as [number, number], label: 'Hypoarousal', content: 'You might feel numb, flat, disconnected, foggy. Gentle movement or warmth can help.' },
+          { range: [26, 75] as [number, number], label: 'Window of Tolerance', content: 'You can think clearly, feel your feelings, and make choices. This is where growth happens.' },
+          { range: [76, 100] as [number, number], label: 'Hyperarousal', content: 'You might feel racing thoughts, tight chest, hot face. Grounding or breathing can help.' },
+        ],
+        initialValue: 50,
+      },
     },
     {
       type: 'instruction',

@@ -156,6 +156,58 @@ export async function getRecentMessages(
   return (data ?? []).map(mapMessage).reverse();
 }
 
+// ─── Couple Sessions ────────────────────────────────────
+
+export async function createCoupleSession(
+  coupleId: string,
+  createdBy: string,
+  title = 'Couple Conversation'
+): Promise<ChatSession> {
+  const { data, error } = await supabase
+    .from('couple_chat_sessions')
+    .insert({
+      couple_id: coupleId,
+      created_by: createdBy,
+      title,
+      status: 'active',
+      current_mode: 'EXPLORATION',
+      message_count: 0,
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return mapSession(data);
+}
+
+export async function getCoupleSessionsForCouple(
+  coupleId: string
+): Promise<ChatSession[]> {
+  const { data, error } = await supabase
+    .from('couple_chat_sessions')
+    .select('*')
+    .eq('couple_id', coupleId)
+    .order('updated_at', { ascending: false });
+
+  if (error) throw error;
+  return (data ?? []).map(mapSession);
+}
+
+export async function getCoupleMessages(
+  sessionId: string,
+  limit = 50
+): Promise<ChatMessage[]> {
+  const { data, error } = await supabase
+    .from('couple_chat_messages')
+    .select('*')
+    .eq('session_id', sessionId)
+    .order('created_at', { ascending: true })
+    .limit(limit);
+
+  if (error) throw error;
+  return (data ?? []).map(mapMessage);
+}
+
 // ─── Helpers ─────────────────────────────────────────────
 
 function mapSession(row: any): ChatSession {

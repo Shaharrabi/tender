@@ -31,6 +31,7 @@ import {
   getRelationshipPortrait,
   saveRelationshipPortrait,
   getLatestDyadicScores,
+  isSelfCouple,
 } from '@/services/couples';
 import { getPartnerSharedAssessments } from '@/services/consent';
 import { getPortrait } from '@/services/portrait';
@@ -53,6 +54,7 @@ import {
   CommunityIcon,
   MeditationIcon,
 } from '@/assets/graphics/icons';
+import HomeButton from '@/components/HomeButton';
 import type { Couple, UserProfile, RelationshipPortrait } from '@/types/couples';
 import type { IndividualPortrait } from '@/types/portrait';
 import type { WEAREProfile, WeeklyCheckIn, WEAREVariableName } from '@/types/weare';
@@ -70,6 +72,16 @@ export default function CouplePortalScreen() {
   const [portrait, setPortrait] = useState<RelationshipPortrait | null>(null);
   const [expandedSection, setExpandedSection] = useState<string | null>('patterns');
   const [partnerSharedAssessments, setPartnerSharedAssessments] = useState<string[]>([]);
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState<'portraits' | 'scores'>('portraits');
+
+  // Dyadic scores state for Tab 2
+  const [dyadicScores, setDyadicScores] = useState<{
+    rdas: { partnerA: any | null; partnerB: any | null };
+    dci: { partnerA: any | null; partnerB: any | null };
+    csi16: { partnerA: any | null; partnerB: any | null };
+  } | null>(null);
 
   // WEARE state (Phase 4)
   const [weareProfile, setWeareProfile] = useState<WEAREProfile | null>(null);
@@ -144,6 +156,18 @@ export default function CouplePortalScreen() {
       }
 
       setPortrait(rp);
+
+      // Load dyadic scores for the Relationship Scores tab
+      try {
+        const [rdas, dci, csi16] = await Promise.all([
+          getLatestDyadicScores(myCouple.id, 'rdas'),
+          getLatestDyadicScores(myCouple.id, 'dci'),
+          getLatestDyadicScores(myCouple.id, 'csi-16'),
+        ]);
+        setDyadicScores({ rdas, dci, csi16 });
+      } catch {
+        setDyadicScores(null);
+      }
 
       // Load WEARE profile + weekly check-in
       try {
@@ -244,7 +268,7 @@ export default function CouplePortalScreen() {
 
   // ─── Main Render ─────────────────────────────────────
 
-  const partnerName = partnerProfile?.display_name || 'Your partner';
+  const partnerName = partnerProfile?.display_name || (couple && isSelfCouple(couple) ? 'Demo Partner' : 'Your partner');
   const patterns = portrait.relationship_patterns || [];
   const discrepancy = portrait.discrepancy_analysis;
   const growthEdges = portrait.relationship_growth_edges || [];
@@ -277,6 +301,31 @@ export default function CouplePortalScreen() {
           </View>
         )}
 
+        {/* Tab Bar */}
+        <View style={styles.tabBar}>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'portraits' && styles.tabActive]}
+            onPress={() => setActiveTab('portraits')}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.tabText, activeTab === 'portraits' && styles.tabTextActive]}>
+              Your Portraits
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'scores' && styles.tabActive]}
+            onPress={() => setActiveTab('scores')}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.tabText, activeTab === 'scores' && styles.tabTextActive]}>
+              Relationship Scores
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* ════════ TAB 1: Your Portraits ════════ */}
+        {activeTab === 'portraits' && (
+          <>
         {/* Summary Card */}
         <View style={[styles.card, styles.summaryCard]}>
           <View style={styles.scoreRow}>
@@ -622,7 +671,10 @@ export default function CouplePortalScreen() {
         {/* Couple Coach Chat Entry */}
         <TouchableOpacity
           style={[styles.card, styles.coachCard]}
-          onPress={() => router.push('/(app)/chat' as any)}
+          onPress={() => router.push({
+            pathname: '/(app)/chat' as any,
+            params: { coupleMode: 'true', coupleId: couple?.id || '' },
+          })}
           activeOpacity={0.7}
         >
           <Text style={styles.coachTitle}>Talk to Your Couple Coach</Text>
@@ -632,9 +684,296 @@ export default function CouplePortalScreen() {
           </Text>
           <Text style={styles.coachCta}>Start Conversation {'\u2192'}</Text>
         </TouchableOpacity>
+          </>
+        )}
+
+        {/* ════════ TAB 2: Relationship Scores ════════ */}
+        {activeTab === 'scores' && (
+          <View style={styles.scoresTab}>
+            <Text style={styles.scoresTabIntro}>
+              These are the assessments you and {partnerName} take together about your relationship.
+              Each score reflects your individual experience.
+            </Text>
+
+            {/* RDAS Card */}
+            <View style={[styles.card, styles.dyadicCard]}>
+              <Text style={styles.dyadicCardTitle}>Relationship Adjustment (RDAS)</Text>
+              <Text style={styles.dyadicCardDesc}>
+                How well you agree on important matters, your satisfaction, and how connected you feel.
+              </Text>
+              {dyadicScores?.rdas.partnerA || dyadicScores?.rdas.partnerB ? (
+                <View style={styles.dyadicScoresGrid}>
+                  {/* Partner A (you) */}
+                  <View style={styles.dyadicPartnerCol}>
+                    <Text style={styles.dyadicPartnerLabel}>You</Text>
+                    {dyadicScores?.rdas.partnerA ? (
+                      <>
+                        <Text style={styles.dyadicMainScore}>{dyadicScores.rdas.partnerA.total}</Text>
+                        <Text style={styles.dyadicMaxLabel}>/ 69</Text>
+                        <View style={styles.dyadicSubScores}>
+                          <Text style={styles.dyadicSubText}>Consensus: {dyadicScores.rdas.partnerA.consensus}</Text>
+                          <Text style={styles.dyadicSubText}>Satisfaction: {dyadicScores.rdas.partnerA.satisfaction}</Text>
+                          <Text style={styles.dyadicSubText}>Cohesion: {dyadicScores.rdas.partnerA.cohesion}</Text>
+                        </View>
+                        <View style={[styles.dyadicLevelBadge,
+                          dyadicScores.rdas.partnerA.distressLevel === 'non-distressed'
+                            ? styles.dyadicBadgeGood : styles.dyadicBadgeAlert
+                        ]}>
+                          <Text style={styles.dyadicLevelText}>
+                            {dyadicScores.rdas.partnerA.distressLevel === 'non-distressed' ? 'Well-Adjusted' : 'Needs Attention'}
+                          </Text>
+                        </View>
+                      </>
+                    ) : (
+                      <>
+                        <Text style={styles.dyadicNotDone}>Not yet completed</Text>
+                        <TouchableOpacity
+                          style={[styles.dyadicStartBtn, { marginTop: Spacing.sm }]}
+                          onPress={() => couple && router.push(`/(app)/assessment?type=rdas&coupleId=${couple.id}` as any)}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={styles.dyadicStartBtnText}>Take Now {'\u2192'}</Text>
+                        </TouchableOpacity>
+                      </>
+                    )}
+                  </View>
+
+                  {/* Divider */}
+                  <View style={styles.dyadicDivider} />
+
+                  {/* Partner B */}
+                  <View style={styles.dyadicPartnerCol}>
+                    <Text style={styles.dyadicPartnerLabel}>{partnerName}</Text>
+                    {dyadicScores?.rdas.partnerB ? (
+                      <>
+                        <Text style={styles.dyadicMainScore}>{dyadicScores.rdas.partnerB.total}</Text>
+                        <Text style={styles.dyadicMaxLabel}>/ 69</Text>
+                        <View style={styles.dyadicSubScores}>
+                          <Text style={styles.dyadicSubText}>Consensus: {dyadicScores.rdas.partnerB.consensus}</Text>
+                          <Text style={styles.dyadicSubText}>Satisfaction: {dyadicScores.rdas.partnerB.satisfaction}</Text>
+                          <Text style={styles.dyadicSubText}>Cohesion: {dyadicScores.rdas.partnerB.cohesion}</Text>
+                        </View>
+                        <View style={[styles.dyadicLevelBadge,
+                          dyadicScores.rdas.partnerB.distressLevel === 'non-distressed'
+                            ? styles.dyadicBadgeGood : styles.dyadicBadgeAlert
+                        ]}>
+                          <Text style={styles.dyadicLevelText}>
+                            {dyadicScores.rdas.partnerB.distressLevel === 'non-distressed' ? 'Well-Adjusted' : 'Needs Attention'}
+                          </Text>
+                        </View>
+                      </>
+                    ) : (
+                      <Text style={styles.dyadicNotDone}>Not yet completed</Text>
+                    )}
+                  </View>
+                </View>
+              ) : (
+                <View style={styles.dyadicEmpty}>
+                  <Text style={styles.dyadicEmptyText}>Neither partner has completed this assessment yet.</Text>
+                  <TouchableOpacity
+                    style={styles.dyadicStartBtn}
+                    onPress={() => couple && router.push(`/(app)/assessment?type=rdas&coupleId=${couple.id}` as any)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.dyadicStartBtnText}>Start Assessment {'\u2192'}</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+
+            {/* CSI-16 Card */}
+            <View style={[styles.card, styles.dyadicCard]}>
+              <Text style={styles.dyadicCardTitle}>Couple Satisfaction (CSI-16)</Text>
+              <Text style={styles.dyadicCardDesc}>
+                How satisfied each of you feels in the relationship overall.
+              </Text>
+              {dyadicScores?.csi16.partnerA || dyadicScores?.csi16.partnerB ? (
+                <View style={styles.dyadicScoresGrid}>
+                  <View style={styles.dyadicPartnerCol}>
+                    <Text style={styles.dyadicPartnerLabel}>You</Text>
+                    {dyadicScores?.csi16.partnerA ? (
+                      <>
+                        <Text style={styles.dyadicMainScore}>{dyadicScores.csi16.partnerA.total}</Text>
+                        <Text style={styles.dyadicMaxLabel}>/ 81</Text>
+                        <View style={[styles.dyadicLevelBadge,
+                          dyadicScores.csi16.partnerA.satisfactionLevel === 'high' ? styles.dyadicBadgeGood
+                            : dyadicScores.csi16.partnerA.satisfactionLevel === 'moderate' ? styles.dyadicBadgeOk
+                            : styles.dyadicBadgeAlert
+                        ]}>
+                          <Text style={styles.dyadicLevelText}>
+                            {dyadicScores.csi16.partnerA.satisfactionLevel === 'high' ? 'Highly Satisfied'
+                              : dyadicScores.csi16.partnerA.satisfactionLevel === 'moderate' ? 'Satisfied'
+                              : dyadicScores.csi16.partnerA.satisfactionLevel === 'low' ? 'Struggling'
+                              : 'In Distress'}
+                          </Text>
+                        </View>
+                      </>
+                    ) : (
+                      <>
+                        <Text style={styles.dyadicNotDone}>Not yet completed</Text>
+                        <TouchableOpacity
+                          style={[styles.dyadicStartBtn, { marginTop: Spacing.sm }]}
+                          onPress={() => couple && router.push(`/(app)/assessment?type=csi-16&coupleId=${couple.id}` as any)}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={styles.dyadicStartBtnText}>Take Now {'\u2192'}</Text>
+                        </TouchableOpacity>
+                      </>
+                    )}
+                  </View>
+
+                  <View style={styles.dyadicDivider} />
+
+                  <View style={styles.dyadicPartnerCol}>
+                    <Text style={styles.dyadicPartnerLabel}>{partnerName}</Text>
+                    {dyadicScores?.csi16.partnerB ? (
+                      <>
+                        <Text style={styles.dyadicMainScore}>{dyadicScores.csi16.partnerB.total}</Text>
+                        <Text style={styles.dyadicMaxLabel}>/ 81</Text>
+                        <View style={[styles.dyadicLevelBadge,
+                          dyadicScores.csi16.partnerB.satisfactionLevel === 'high' ? styles.dyadicBadgeGood
+                            : dyadicScores.csi16.partnerB.satisfactionLevel === 'moderate' ? styles.dyadicBadgeOk
+                            : styles.dyadicBadgeAlert
+                        ]}>
+                          <Text style={styles.dyadicLevelText}>
+                            {dyadicScores.csi16.partnerB.satisfactionLevel === 'high' ? 'Highly Satisfied'
+                              : dyadicScores.csi16.partnerB.satisfactionLevel === 'moderate' ? 'Satisfied'
+                              : dyadicScores.csi16.partnerB.satisfactionLevel === 'low' ? 'Struggling'
+                              : 'In Distress'}
+                          </Text>
+                        </View>
+                      </>
+                    ) : (
+                      <Text style={styles.dyadicNotDone}>Not yet completed</Text>
+                    )}
+                  </View>
+                </View>
+              ) : (
+                <View style={styles.dyadicEmpty}>
+                  <Text style={styles.dyadicEmptyText}>Neither partner has completed this assessment yet.</Text>
+                  <TouchableOpacity
+                    style={styles.dyadicStartBtn}
+                    onPress={() => couple && router.push(`/(app)/assessment?type=csi-16&coupleId=${couple.id}` as any)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.dyadicStartBtnText}>Start Assessment {'\u2192'}</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+
+            {/* DCI Card */}
+            <View style={[styles.card, styles.dyadicCard]}>
+              <Text style={styles.dyadicCardTitle}>Dyadic Coping (DCI)</Text>
+              <Text style={styles.dyadicCardDesc}>
+                How you and your partner cope with stress together — support, communication, and teamwork.
+              </Text>
+              {dyadicScores?.dci.partnerA || dyadicScores?.dci.partnerB ? (
+                <View style={styles.dyadicScoresGrid}>
+                  <View style={styles.dyadicPartnerCol}>
+                    <Text style={styles.dyadicPartnerLabel}>You</Text>
+                    {dyadicScores?.dci.partnerA ? (
+                      <>
+                        <Text style={[styles.dyadicMainScore, { fontSize: 20 }]}>
+                          {dyadicScores.dci.partnerA.copingQuality === 'strong' ? 'Strong'
+                            : dyadicScores.dci.partnerA.copingQuality === 'adequate' ? 'Moderate'
+                            : 'Needs Work'}
+                        </Text>
+                        <View style={styles.dyadicSubScores}>
+                          <Text style={styles.dyadicSubText}>Supportive: {dyadicScores.dci.partnerA.supportiveBySelf + dyadicScores.dci.partnerA.supportiveByPartner}</Text>
+                          <Text style={styles.dyadicSubText}>Common: {dyadicScores.dci.partnerA.commonCoping}</Text>
+                          <Text style={styles.dyadicSubText}>Negative: {dyadicScores.dci.partnerA.negativeBySelf + dyadicScores.dci.partnerA.negativeByPartner}</Text>
+                        </View>
+                        <View style={[styles.dyadicLevelBadge,
+                          dyadicScores.dci.partnerA.copingQuality === 'strong' ? styles.dyadicBadgeGood
+                            : dyadicScores.dci.partnerA.copingQuality === 'adequate' ? styles.dyadicBadgeOk
+                            : styles.dyadicBadgeAlert
+                        ]}>
+                          <Text style={styles.dyadicLevelText}>
+                            {dyadicScores.dci.partnerA.copingQuality === 'strong' ? 'Strong Coping'
+                              : dyadicScores.dci.partnerA.copingQuality === 'adequate' ? 'Moderate Coping'
+                              : 'Needs Strengthening'}
+                          </Text>
+                        </View>
+                      </>
+                    ) : (
+                      <>
+                        <Text style={styles.dyadicNotDone}>Not yet completed</Text>
+                        <TouchableOpacity
+                          style={[styles.dyadicStartBtn, { marginTop: Spacing.sm }]}
+                          onPress={() => couple && router.push(`/(app)/assessment?type=dci&coupleId=${couple.id}` as any)}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={styles.dyadicStartBtnText}>Take Now {'\u2192'}</Text>
+                        </TouchableOpacity>
+                      </>
+                    )}
+                  </View>
+
+                  <View style={styles.dyadicDivider} />
+
+                  <View style={styles.dyadicPartnerCol}>
+                    <Text style={styles.dyadicPartnerLabel}>{partnerName}</Text>
+                    {dyadicScores?.dci.partnerB ? (
+                      <>
+                        <Text style={[styles.dyadicMainScore, { fontSize: 20 }]}>
+                          {dyadicScores.dci.partnerB.copingQuality === 'strong' ? 'Strong'
+                            : dyadicScores.dci.partnerB.copingQuality === 'adequate' ? 'Moderate'
+                            : 'Needs Work'}
+                        </Text>
+                        <View style={styles.dyadicSubScores}>
+                          <Text style={styles.dyadicSubText}>Supportive: {dyadicScores.dci.partnerB.supportiveBySelf + dyadicScores.dci.partnerB.supportiveByPartner}</Text>
+                          <Text style={styles.dyadicSubText}>Common: {dyadicScores.dci.partnerB.commonCoping}</Text>
+                          <Text style={styles.dyadicSubText}>Negative: {dyadicScores.dci.partnerB.negativeBySelf + dyadicScores.dci.partnerB.negativeByPartner}</Text>
+                        </View>
+                        <View style={[styles.dyadicLevelBadge,
+                          dyadicScores.dci.partnerB.copingQuality === 'strong' ? styles.dyadicBadgeGood
+                            : dyadicScores.dci.partnerB.copingQuality === 'adequate' ? styles.dyadicBadgeOk
+                            : styles.dyadicBadgeAlert
+                        ]}>
+                          <Text style={styles.dyadicLevelText}>
+                            {dyadicScores.dci.partnerB.copingQuality === 'strong' ? 'Strong Coping'
+                              : dyadicScores.dci.partnerB.copingQuality === 'adequate' ? 'Moderate Coping'
+                              : 'Needs Strengthening'}
+                          </Text>
+                        </View>
+                      </>
+                    ) : (
+                      <Text style={styles.dyadicNotDone}>Not yet completed</Text>
+                    )}
+                  </View>
+                </View>
+              ) : (
+                <View style={styles.dyadicEmpty}>
+                  <Text style={styles.dyadicEmptyText}>Neither partner has completed this assessment yet.</Text>
+                  <TouchableOpacity
+                    style={styles.dyadicStartBtn}
+                    onPress={() => couple && router.push(`/(app)/assessment?type=dci&coupleId=${couple.id}` as any)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.dyadicStartBtnText}>Start Assessment {'\u2192'}</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+
+            {/* Note about how these relate to portraits */}
+            <View style={[styles.card, { borderColor: Colors.calm, borderWidth: 1 }]}>
+              <Text style={{ fontSize: FontSizes.caption, color: Colors.calm, fontWeight: '700', letterSpacing: 1, marginBottom: Spacing.xs }}>
+                HOW THESE CONNECT
+              </Text>
+              <Text style={{ fontSize: FontSizes.bodySmall, color: Colors.textSecondary, lineHeight: 20 }}>
+                These relationship scores are woven into your Relationship Portrait on the "Your Portraits" tab.
+                They add context about how satisfied, adjusted, and supported you each feel — enriching the
+                picture your individual assessments paint together.
+              </Text>
+            </View>
+          </View>
+        )}
 
         <View style={{ height: 40 }} />
       </ScrollView>
+      <HomeButton />
     </SafeAreaView>
   );
 }
@@ -895,6 +1234,162 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
   },
   weareBottleneckPracticeName: {
+    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    color: Colors.primary,
+    fontWeight: '600',
+  },
+
+  // ── Tab Bar ──
+  tabBar: {
+    flexDirection: 'row',
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.lg,
+    padding: 4,
+    marginBottom: Spacing.lg,
+    ...Shadows.subtle,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: Spacing.sm + 2,
+    alignItems: 'center',
+    borderRadius: BorderRadius.md,
+  },
+  tabActive: {
+    backgroundColor: Colors.primary,
+  },
+  tabText: {
+    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.heading,
+    color: Colors.textSecondary,
+    fontWeight: '600',
+  },
+  tabTextActive: {
+    color: Colors.white,
+  },
+
+  // ── Relationship Scores Tab ──
+  scoresTab: {
+    gap: Spacing.md,
+  },
+  scoresTabIntro: {
+    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    color: Colors.textSecondary,
+    lineHeight: 22,
+    marginBottom: Spacing.sm,
+  },
+  dyadicCard: {
+    borderColor: Colors.secondary,
+    borderWidth: 1,
+  },
+  dyadicCardTitle: {
+    fontSize: FontSizes.headingM,
+    fontFamily: FontFamilies.heading,
+    color: Colors.text,
+    fontWeight: '600',
+    marginBottom: Spacing.xs,
+  },
+  dyadicCardDesc: {
+    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    color: Colors.textSecondary,
+    lineHeight: 20,
+    marginBottom: Spacing.md,
+  },
+  dyadicScoresGrid: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  dyadicPartnerCol: {
+    flex: 1,
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  dyadicPartnerLabel: {
+    fontSize: FontSizes.caption,
+    fontFamily: FontFamilies.heading,
+    color: Colors.depth,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    marginBottom: Spacing.xs,
+  },
+  dyadicMainScore: {
+    fontSize: 32,
+    fontFamily: FontFamilies.heading,
+    color: Colors.secondary,
+    fontWeight: '700',
+  },
+  dyadicMaxLabel: {
+    fontSize: FontSizes.caption,
+    fontFamily: FontFamilies.body,
+    color: Colors.textMuted,
+    marginTop: -4,
+  },
+  dyadicSubScores: {
+    gap: 2,
+    marginTop: Spacing.xs,
+  },
+  dyadicSubText: {
+    fontSize: FontSizes.caption,
+    fontFamily: FontFamilies.body,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+  },
+  dyadicLevelBadge: {
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    marginTop: Spacing.xs,
+  },
+  dyadicBadgeGood: {
+    backgroundColor: Colors.success + '20',
+  },
+  dyadicBadgeOk: {
+    backgroundColor: Colors.accentGold + '20',
+  },
+  dyadicBadgeAlert: {
+    backgroundColor: Colors.accent + '20',
+  },
+  dyadicLevelText: {
+    fontSize: FontSizes.caption,
+    fontFamily: FontFamilies.body,
+    color: Colors.text,
+    fontWeight: '500',
+  },
+  dyadicDivider: {
+    width: 1,
+    backgroundColor: Colors.border,
+    marginHorizontal: Spacing.sm,
+    alignSelf: 'stretch',
+  },
+  dyadicNotDone: {
+    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    color: Colors.textMuted,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    marginTop: Spacing.md,
+  },
+  dyadicEmpty: {
+    alignItems: 'center',
+    paddingVertical: Spacing.md,
+    gap: Spacing.md,
+  },
+  dyadicEmptyText: {
+    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    color: Colors.textMuted,
+    textAlign: 'center',
+  },
+  dyadicStartBtn: {
+    backgroundColor: Colors.primary + '10',
+    borderRadius: BorderRadius.md,
+    paddingVertical: Spacing.xs + 2,
+    paddingHorizontal: Spacing.md,
+  },
+  dyadicStartBtnText: {
     fontSize: FontSizes.bodySmall,
     fontFamily: FontFamilies.body,
     color: Colors.primary,

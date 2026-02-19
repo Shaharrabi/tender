@@ -48,11 +48,34 @@ export const repairAttempt: Intervention = {
       promptPlaceholder: 'My part in this was...',
     },
     {
-      type: 'prompt',
+      type: 'sentence_transform',
       title: 'Craft Your Repair Statement',
-      content:
-        'Write a repair statement you could say to your partner. Good repairs often include:\n\n- Acknowledgment of what happened\n- Ownership of your part\n- Expression of what you wish you had done differently\n- A statement of care or commitment\n\nExample: "I know I shut down last night when you were trying to talk. That was not fair to you. I wish I had stayed present. You matter to me and I want to do better."',
-      promptPlaceholder: 'My repair statement...',
+      content: 'Build your repair statement piece by piece:',
+      interactiveConfig: {
+        kind: 'sentence_transform',
+        stages: [
+          {
+            prefix: 'I know that',
+            placeholder: 'acknowledge what happened...',
+            explanation: 'Show your partner you see what occurred',
+          },
+          {
+            prefix: 'My part was',
+            placeholder: 'own your contribution honestly...',
+            explanation: 'Even a small piece of ownership opens the door',
+          },
+          {
+            prefix: 'I wish I had',
+            placeholder: 'what you\'d do differently...',
+            explanation: 'Shows growth intention, not just regret',
+          },
+          {
+            prefix: 'What matters to me is',
+            placeholder: 'your care or commitment...',
+            explanation: 'End with connection, not obligation',
+          },
+        ],
+      },
     },
     {
       type: 'instruction',

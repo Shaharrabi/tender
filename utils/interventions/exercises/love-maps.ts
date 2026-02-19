@@ -33,6 +33,23 @@ export const loveMaps: Intervention = {
         'A love map is the part of your brain where you store everything you know about your partner — their fears, hopes, favorite things, stressors, and dreams. Couples with detailed love maps navigate rough patches more easily because they truly know each other. Today, you will update your maps by asking questions you might not usually ask.',
     },
     {
+      type: 'checklist',
+      title: 'Quick Love Map Quiz',
+      content: 'Without asking your partner \u2014 check the ones you know the answer to right now:',
+      interactiveConfig: {
+        kind: 'checklist',
+        items: [
+          { id: 'worry', text: 'Their biggest worry this week' },
+          { id: 'dream', text: 'A dream they haven\'t told many people' },
+          { id: 'stress', text: 'Their biggest source of stress at work' },
+          { id: 'friend', text: 'Who they\'d call if they had bad news' },
+          { id: 'joy', text: 'What made them laugh recently' },
+          { id: 'song', text: 'A song that means something to them right now' },
+        ],
+        minRequired: 0,
+      },
+    },
+    {
       type: 'prompt',
       title: 'Ask: What\'s on Your Mind Lately?',
       content:

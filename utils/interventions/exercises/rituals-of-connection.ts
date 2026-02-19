@@ -22,16 +22,22 @@ export const ritualsOfConnection: Intervention = {
         'Research shows that couples who maintain intentional rituals of connection — small, predictable moments of togetherness — have significantly stronger relationships. These are not grand gestures. They are the quiet, reliable rhythms of everyday love.',
     },
     {
-      type: 'prompt',
-      title: 'Your Current Goodbye',
-      content: 'How do you currently say goodbye in the morning? Is there a kiss, a hug, words? Or does it happen on autopilot?',
-      promptPlaceholder: 'Our current goodbye looks like...',
-    },
-    {
-      type: 'prompt',
-      title: 'Your Current Reunion',
-      content: 'How do you reconnect at the end of the day? Do you have a ritual — or does it just happen?',
-      promptPlaceholder: 'When we reunite, we usually...',
+      type: 'checklist',
+      title: 'Your Current Rituals',
+      content: 'Which of these do you currently do regularly? Be honest:',
+      interactiveConfig: {
+        kind: 'checklist',
+        items: [
+          { id: 'goodbye-kiss', text: 'A real kiss (not a peck) when leaving' },
+          { id: 'goodbye-words', text: 'Saying "I love you" or something warm' },
+          { id: 'reunion-hug', text: 'A hug or embrace when reuniting' },
+          { id: 'reunion-ask', text: 'Asking "How was your day?" with genuine interest' },
+          { id: 'dinner-talk', text: 'Conversation at dinner (screens away)' },
+          { id: 'bedtime', text: 'A moment of connection before sleep' },
+          { id: 'weekend', text: 'Intentional couple time on weekends' },
+        ],
+        minRequired: 0,
+      },
     },
     {
       type: 'prompt',

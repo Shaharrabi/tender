@@ -34,6 +34,25 @@ export const dreamsWithinConflict: Intervention = {
         'Most recurring arguments are not about the surface issue. They are about underlying dreams — a vision for your life, a core need for identity, or a story from your past that shaped who you are. When we argue about money, chores, or parenting, we are often arguing about freedom, respect, security, or belonging. This exercise will help you uncover the dream hidden inside a stuck conflict.',
     },
     {
+      type: 'scale_slider',
+      title: 'How Gridlocked Does This Feel?',
+      content: 'Before we explore the dream underneath, rate how stuck this issue feels:',
+      interactiveConfig: {
+        kind: 'scale_slider',
+        labels: {
+          low: 'Slightly stuck',
+          mid: 'Moderately gridlocked',
+          high: 'Completely unmovable',
+        },
+        zones: [
+          { range: [0, 33] as [number, number], label: 'Some flexibility', content: 'There may still be room for compromise on the surface issue.' },
+          { range: [34, 66] as [number, number], label: 'Feels stuck', content: 'The positions have hardened. Time to look underneath for the dream.' },
+          { range: [67, 100] as [number, number], label: 'Deep gridlock', content: 'This issue carries a lot of meaning. The dream underneath is probably very important to both of you.' },
+        ],
+        initialValue: 60,
+      },
+    },
+    {
       type: 'prompt',
       title: 'Identify a Gridlocked Issue',
       content:

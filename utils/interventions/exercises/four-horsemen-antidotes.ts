@@ -23,17 +23,55 @@ export const fourHorsemenAntidotes: Intervention = {
         'John Gottman identified four communication patterns that predict relationship breakdown with over 90% accuracy: Criticism (attacking character), Contempt (superiority and disgust), Defensiveness (counter-attacking or playing victim), and Stonewalling (shutting down). Each has a powerful antidote.',
     },
     {
-      type: 'prompt',
-      title: 'Which Horseman Visits Most?',
-      content: 'Which of these four patterns shows up most for YOU? Be honest — we all have a default.',
-      promptPlaceholder: 'The one I notice most in myself is...',
+      type: 'card_flip',
+      title: 'Match Horseman to Antidote',
+      content: 'Each destructive pattern has a powerful antidote. Tap each card to reveal the match.',
+      interactiveConfig: {
+        kind: 'card_flip',
+        mode: 'flip',
+        cards: [
+          {
+            id: 'criticism',
+            front: 'CRITICISM\n"You always forget everything."',
+            back: 'ANTIDOTE: Gentle Startup\n"I noticed the dishes. Could we figure out a system?"',
+          },
+          {
+            id: 'contempt',
+            front: 'CONTEMPT\n"You\'re so pathetic."',
+            back: 'ANTIDOTE: Build Culture of Appreciation\n"I appreciate that you tried, even if it didn\'t work."',
+          },
+          {
+            id: 'defensiveness',
+            front: 'DEFENSIVENESS\n"That\'s not my fault!"',
+            back: 'ANTIDOTE: Accept Responsibility\n"You\'re right, I did forget. I\'m sorry."',
+          },
+          {
+            id: 'stonewalling',
+            front: 'STONEWALLING\n*shuts down, leaves room*',
+            back: 'ANTIDOTE: Physiological Self-Soothing\n"I need 20 minutes. I\'ll come back."',
+          },
+        ],
+      },
     },
     {
-      type: 'prompt',
-      title: 'Practice the Antidote',
-      content:
-        'Rewrite a recent moment using the antidote. Criticism → gentle startup. Contempt → appreciation. Defensiveness → take responsibility. Stonewalling → ask for a break.',
-      promptPlaceholder: 'Instead, I could say...',
+      type: 'sentence_transform',
+      title: 'Rewrite a Recent Moment',
+      content: 'Think of a recent moment when a Horseman showed up. Transform it using the antidote:',
+      interactiveConfig: {
+        kind: 'sentence_transform',
+        stages: [
+          {
+            prefix: 'What I said/did (the Horseman):',
+            placeholder: 'the destructive version...',
+            explanation: 'Name the pattern honestly',
+          },
+          {
+            prefix: 'What I could say instead (the Antidote):',
+            placeholder: 'the constructive version...',
+            explanation: 'Apply the matching antidote',
+          },
+        ],
+      },
     },
     {
       type: 'timer',

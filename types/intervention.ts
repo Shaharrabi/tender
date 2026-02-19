@@ -4,6 +4,7 @@
  */
 
 import type { NervousSystemState } from './chat';
+import type { InteractiveStepConfig } from './interactive-step-types';
 
 // ─── Intervention Categories ────────────────────────────
 
@@ -18,7 +19,20 @@ export type InterventionDifficulty = 'beginner' | 'intermediate' | 'advanced';
 
 // ─── Exercise Steps ─────────────────────────────────────
 
-export type ExerciseStepType = 'instruction' | 'reflection' | 'timer' | 'prompt';
+export type ExerciseStepType =
+  | 'instruction'
+  | 'reflection'
+  | 'timer'
+  | 'prompt'
+  // Interactive types
+  | 'sentence_transform'
+  | 'scenario_choice'
+  | 'checklist'
+  | 'scale_slider'
+  | 'breathing_guide'
+  | 'card_flip'
+  | 'body_scan'
+  | 'card_sort';
 
 export interface ExerciseStep {
   type: ExerciseStepType;
@@ -26,6 +40,8 @@ export interface ExerciseStep {
   content: string;
   duration?: number; // seconds for timer steps
   promptPlaceholder?: string;
+  /** Configuration for interactive step types */
+  interactiveConfig?: InteractiveStepConfig;
 }
 
 // ─── Four Movements ────────────────────────────────────

@@ -33,25 +33,49 @@ export const grounding54321: Intervention = {
         'This is a quick sensory grounding exercise. It works by gently shifting your attention from internal distress to the world around you. Find a comfortable position and take one slow breath before we begin.',
     },
     {
-      type: 'prompt',
+      type: 'checklist',
       title: '5 Things You See',
-      content:
-        'Look around you slowly. Name five things you can see right now. They can be anything — a color on the wall, the texture of your sleeve, the light coming through a window.',
-      promptPlaceholder: 'I can see...',
+      content: 'Look around you slowly. Tap each thing you notice:',
+      interactiveConfig: {
+        kind: 'checklist',
+        items: [
+          { id: 'see1', text: 'A color on the wall or floor' },
+          { id: 'see2', text: 'Something with texture' },
+          { id: 'see3', text: 'Light coming through a window or from a screen' },
+          { id: 'see4', text: 'Something you hadn\'t noticed before' },
+          { id: 'see5', text: 'Your own hands or body' },
+        ],
+        minRequired: 3,
+      },
     },
     {
-      type: 'prompt',
+      type: 'checklist',
       title: '4 Things You Hear',
-      content:
-        'Close your eyes if you like, and listen carefully. Name four things you can hear. Include subtle sounds — the hum of a fan, distant traffic, your own breathing.',
-      promptPlaceholder: 'I can hear...',
+      content: 'Close your eyes if you like. Tap each sound you notice:',
+      interactiveConfig: {
+        kind: 'checklist',
+        items: [
+          { id: 'hear1', text: 'A mechanical hum (fan, fridge, AC)' },
+          { id: 'hear2', text: 'Something distant (traffic, wind, voices)' },
+          { id: 'hear3', text: 'Your own breathing' },
+          { id: 'hear4', text: 'Something unexpected or subtle' },
+        ],
+        minRequired: 2,
+      },
     },
     {
-      type: 'prompt',
+      type: 'checklist',
       title: '3 Things You Can Touch',
-      content:
-        'Reach out and notice three things you can physically touch. Feel the texture, temperature, and weight. The fabric of your clothing, the surface beneath you, the air on your skin.',
-      promptPlaceholder: 'I can touch...',
+      content: 'Reach out and feel. Tap as you notice each:',
+      interactiveConfig: {
+        kind: 'checklist',
+        items: [
+          { id: 'touch1', text: 'The surface beneath you (chair, floor, bed)' },
+          { id: 'touch2', text: 'The fabric of your clothing' },
+          { id: 'touch3', text: 'The temperature of the air on your skin' },
+        ],
+        minRequired: 2,
+      },
     },
     {
       type: 'prompt',
