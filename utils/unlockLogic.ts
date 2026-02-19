@@ -24,6 +24,7 @@ import {
   SearchIcon,
   HandshakeIcon,
   CoupleIcon,
+  HeartIcon,
 } from '@/assets/graphics/icons';
 
 export interface UnlockState {
@@ -44,6 +45,9 @@ export interface UnlockState {
   treatmentPlan: boolean;         // Available after 3+ assessments
   findTherapist: boolean;         // Always available
   community: boolean;             // Always available
+
+  // Dating
+  datingWell: boolean;          // Always available
 
   // Counts
   completedCount: number;
@@ -225,6 +229,16 @@ export const FEATURE_CARDS: FeatureCard[] = [
     category: 'feature',
   },
   {
+    key: 'datingWell',
+    title: 'Dating Well',
+    subtitle: 'The Art of Beginning',
+    icon: HeartIcon,
+    color: Colors.primaryLight,
+    unlockHint: '',
+    route: '/(app)/dating-well',
+    category: 'feature',
+  },
+  {
     key: 'couplesPortal',
     title: 'Couple Portal',
     subtitle: 'Shared portrait, couple assessments, and coaching',
@@ -265,6 +279,7 @@ export function getUnlockState(
     treatmentPlan: completedCount >= 3,
     findTherapist: true,
     community: true,
+    datingWell: true,
 
     // Counts
     completedCount,

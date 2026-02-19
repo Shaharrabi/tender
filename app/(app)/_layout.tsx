@@ -37,6 +37,7 @@ export default function AppLayout() {
       <Stack.Screen name="exercise" options={{ animation: 'slide_from_bottom' }} />
       <Stack.Screen name="journal" options={{ animation: 'fade_from_bottom' }} />
       <Stack.Screen name="growth" />
+      <Stack.Screen name="step-detail" options={{ animation: 'slide_from_bottom' }} />
       <Stack.Screen name="treatment-plan" />
       <Stack.Screen name="partner" options={{ animation: 'slide_from_bottom' }} />
       <Stack.Screen name="couple-portal" options={{ animation: 'fade_from_bottom' }} />
@@ -48,7 +49,7 @@ export default function AppLayout() {
       <Stack.Screen name="notification-settings" options={{ animation: 'slide_from_bottom' }} />
       <Stack.Screen name="assessment-matrix" options={{ animation: 'fade_from_bottom' }} />
       <Stack.Screen name="relationship-mode" options={{ animation: 'slide_from_bottom' }} />
-      <Stack.Screen name="step-detail" options={{ animation: 'slide_from_bottom' }} />
+      <Stack.Screen name="dating-well" options={{ animation: 'fade_from_bottom' }} />
     </Stack>
   );
 }
