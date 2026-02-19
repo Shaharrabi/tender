@@ -40,8 +40,8 @@ import {
   getRecentCheckIns,
   saveDailyCheckIn,
 } from '@/services/growth';
-import { ensureStepProgress, toggleStepCriteria, completeStep } from '@/services/steps';
-import { getPracticesForStep, TWELVE_STEPS } from '@/utils/steps/twelve-steps';
+import { ensureStepProgress } from '@/services/steps';
+import { getPracticesForStep } from '@/utils/steps/twelve-steps';
 import { getMyCouple } from '@/services/couples';
 import { getThisWeeksCheckIn, saveWeeklyCheckIn } from '@/services/weare';
 import WeeklyCheckInCard from '@/components/weare/WeeklyCheckInCard';
@@ -59,7 +59,6 @@ export default function GrowthScreen() {
   const [recentCheckIns, setRecentCheckIns] = useState<DailyCheckIn[]>([]);
   const [stepProgress, setStepProgress] = useState<StepProgress[]>([]);
   const [currentStepNumber, setCurrentStepNumber] = useState(1);
-  const [checkedCriteria, setCheckedCriteria] = useState<Record<number, number[]>>({});
   const [showFoundation, setShowFoundation] = useState(false);
   const [couple, setCouple] = useState<Couple | null>(null);
   const [weeklyCheckIn, setWeeklyCheckIn] = useState<WeeklyCheckIn | null>(null);
@@ -77,16 +76,6 @@ export default function GrowthScreen() {
       setTodaysCheckIn(todayData);
       setRecentCheckIns(recentData);
       setStepProgress(stepData);
-
-      // Extract checked criteria from reflectionNotes
-      const criteriaMap: Record<number, number[]> = {};
-      for (const sp of stepData) {
-        const notes = sp.reflectionNotes as Record<string, any> | undefined;
-        if (notes?.completedCriteria) {
-          criteriaMap[sp.stepNumber] = notes.completedCriteria;
-        }
-      }
-      setCheckedCriteria(criteriaMap);
 
       // Find the current active step
       const activeStep = stepData.find((sp) => sp.status === 'active');
@@ -146,39 +135,10 @@ export default function GrowthScreen() {
     router.push('/(app)/treatment-plan' as any);
   };
 
-  const handleCriteriaToggle = async (stepNumber: number, criteriaIndex: number, checked: boolean) => {
-    if (!user) return;
-    try {
-      // Optimistic update
-      setCheckedCriteria((prev) => {
-        const current = prev[stepNumber] ?? [];
-        const updated = checked
-          ? [...current, criteriaIndex]
-          : current.filter((i) => i !== criteriaIndex);
-        return { ...prev, [stepNumber]: updated };
-      });
-
-      // Persist to DB
-      const updatedCriteria = await toggleStepCriteria(user.id, stepNumber, criteriaIndex, checked);
-
-      // Check if all criteria for this step are now completed
-      const stepDef = TWELVE_STEPS.find((s) => s.stepNumber === stepNumber);
-      if (stepDef && updatedCriteria.length >= stepDef.completionCriteria.length) {
-        // All criteria checked — complete this step and unlock next
-        await completeStep(user.id, stepNumber);
-        // Reload data to reflect new step states
-        await loadData();
-      }
-    } catch (err) {
-      console.error('[Growth] Failed to toggle criteria:', err);
-      // Revert optimistic update on error
-      await loadData();
-    }
-  };
-
   const handleStepNavigate = (stepNumber: number) => {
-    // Only navigate if tapping the current/active step
-    if (stepNumber === currentStepNumber) {
+    // Navigate to step detail for any non-locked step (current or completed)
+    const progress = stepProgress.find((sp) => sp.stepNumber === stepNumber);
+    if (progress && progress.status !== 'locked') {
       router.push({
         pathname: '/(app)/step-detail' as any,
         params: { step: String(stepNumber) },
@@ -223,8 +183,6 @@ export default function GrowthScreen() {
           stepProgress={stepProgress}
           currentStepNumber={currentStepNumber}
           onSelectPractice={handlePracticeFromWoT}
-          onCriteriaToggle={handleCriteriaToggle}
-          checkedCriteria={checkedCriteria}
           onStepPress={handleStepNavigate}
         />
 

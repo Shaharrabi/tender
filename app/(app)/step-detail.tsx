@@ -32,6 +32,7 @@ import {
 } from '@/constants/theme';
 import StepAudioPlayer from '@/components/growth/StepAudioPlayer';
 import StepMiniGame from '@/components/growth/StepMiniGame';
+import CheckmarkIcon from '@/assets/graphics/icons/CheckmarkIcon';
 import {
   TWELVE_STEPS,
   STEP_AUDIO_MAP,
@@ -40,9 +41,14 @@ import {
   getPracticesForStep,
 } from '@/utils/steps/twelve-steps';
 import { getMiniGameOutput } from '@/services/minigames';
-import { getPracticeCompletions } from '@/services/steps';
+import {
+  getPracticeCompletions,
+  ensureStepProgress,
+  toggleStepCriteria,
+  completeStep,
+} from '@/services/steps';
 import { useSoundHaptics } from '@/services/SoundHapticsService';
-import type { MiniGameOutput } from '@/types/growth';
+import type { MiniGameOutput, StepProgress } from '@/types/growth';
 
 export default function StepDetailScreen() {
   const { user } = useAuth();
@@ -55,6 +61,9 @@ export default function StepDetailScreen() {
   const [miniGameOutput, setMiniGameOutput] = useState<MiniGameOutput | null>(null);
   const [showMiniGame, setShowMiniGame] = useState(false);
   const [practiceCount, setPracticeCount] = useState(0);
+  const [checkedCriteria, setCheckedCriteria] = useState<number[]>([]);
+  const [stepProgress, setStepProgress] = useState<StepProgress[]>([]);
+  const [currentStepNumber, setCurrentStepNumber] = useState(1);
 
   const step = TWELVE_STEPS.find((s) => s.stepNumber === stepNumber);
   const phase = getPhaseForStep(stepNumber);
@@ -62,15 +71,32 @@ export default function StepDetailScreen() {
   const audioSource = STEP_AUDIO_MAP[stepNumber];
   const nextStep = TWELVE_STEPS.find((s) => s.stepNumber === stepNumber + 1);
 
+  // Determine if this step's checklist is interactive
+  const thisStepProgress = stepProgress.find((sp) => sp.stepNumber === stepNumber);
+  const isCurrentStep = stepNumber === currentStepNumber;
+  const isCompletedStep = thisStepProgress?.status === 'completed';
+  const canToggleCriteria = isCurrentStep || isCompletedStep;
+
   const loadData = useCallback(async () => {
     if (!user) return;
     try {
-      const [mgOutput, completions] = await Promise.all([
+      const [mgOutput, completions, spData] = await Promise.all([
         getMiniGameOutput(user.id, stepNumber),
         getPracticeCompletions(user.id, stepNumber, 100),
+        ensureStepProgress(user.id),
       ]);
       setMiniGameOutput(mgOutput);
       setPracticeCount(completions.length);
+      setStepProgress(spData);
+
+      // Find current active step
+      const activeStep = spData.find((sp) => sp.status === 'active');
+      setCurrentStepNumber(activeStep?.stepNumber ?? 1);
+
+      // Extract checked criteria for THIS step from reflectionNotes
+      const thisStep = spData.find((sp) => sp.stepNumber === stepNumber);
+      const notes = thisStep?.reflectionNotes as Record<string, any> | undefined;
+      setCheckedCriteria(notes?.completedCriteria ?? []);
     } catch (err) {
       console.warn('[StepDetail] Load error:', err);
     } finally {
@@ -96,6 +122,50 @@ export default function StepDetailScreen() {
       pathname: '/(app)/exercise' as any,
       params: { id: practiceId },
     });
+  };
+
+  const handleCriteriaToggle = async (criteriaIndex: number, checked: boolean) => {
+    if (!user || !canToggleCriteria) return;
+    haptics.tap();
+    try {
+      // Optimistic update
+      setCheckedCriteria((prev) => {
+        return checked
+          ? [...prev, criteriaIndex]
+          : prev.filter((i) => i !== criteriaIndex);
+      });
+
+      // Persist to DB
+      const updatedCriteria = await toggleStepCriteria(user.id, stepNumber, criteriaIndex, checked);
+
+      // Check if all criteria for this step are now completed
+      if (step && updatedCriteria.length >= step.completionCriteria.length) {
+        // All criteria checked — complete this step and unlock next
+        await completeStep(user.id, stepNumber);
+        haptics.success();
+        // Reload data to reflect new step states
+        await loadData();
+      }
+    } catch (err) {
+      console.error('[StepDetail] Failed to toggle criteria:', err);
+      // Revert optimistic update on error
+      await loadData();
+    }
+  };
+
+  const handleNextStep = () => {
+    if (nextStep) {
+      haptics.tap();
+      router.replace({
+        pathname: '/(app)/step-detail' as any,
+        params: { step: String(nextStep.stepNumber) },
+      });
+    }
+  };
+
+  const handleBackToJourney = () => {
+    haptics.tap();
+    router.push('/(app)/growth' as any);
   };
 
   if (!step || !phase) {
@@ -245,18 +315,60 @@ export default function StepDetailScreen() {
           </Text>
         </Animated.View>
 
-        {/* Completion Criteria */}
+        {/* Completion Criteria — Interactive Checklist */}
         <Animated.View entering={FadeIn.delay(800).duration(500)} style={styles.goalsCard}>
           <Text style={styles.goalsTitle}>Step {step.stepNumber} Goals</Text>
           <Text style={styles.goalsSubtitle}>
-            {practiceCount} practice{practiceCount !== 1 ? 's' : ''} completed
+            {checkedCriteria.length} of {step.completionCriteria.length} goals completed
+            {' \u00B7 '}
+            {practiceCount} practice{practiceCount !== 1 ? 's' : ''} done
           </Text>
-          {step.completionCriteria.map((criteria, i) => (
-            <View key={i} style={styles.goalRow}>
-              <View style={[styles.goalDot, { borderColor: phase.color }]} />
-              <Text style={styles.goalText}>{criteria}</Text>
+          {step.completionCriteria.map((criteria, i) => {
+            const isChecked = checkedCriteria.includes(i);
+            return (
+              <TouchableOpacity
+                key={i}
+                style={styles.goalRow}
+                activeOpacity={canToggleCriteria ? 0.6 : 1}
+                disabled={!canToggleCriteria}
+                onPress={() => handleCriteriaToggle(i, !isChecked)}
+              >
+                <View style={styles.criteriaCheckbox}>
+                  <View
+                    style={[
+                      styles.criteriaSquare,
+                      { borderColor: phase.color },
+                      isChecked && [styles.criteriaSquareChecked, { backgroundColor: phase.color, borderColor: phase.color }],
+                    ]}
+                  >
+                    {isChecked && (
+                      <CheckmarkIcon size={10} color={Colors.white} />
+                    )}
+                  </View>
+                </View>
+                <Text
+                  style={[
+                    styles.goalText,
+                    isChecked && styles.goalTextChecked,
+                  ]}
+                >
+                  {criteria}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+          {!canToggleCriteria && (
+            <Text style={styles.criteriaHint}>
+              These goals become active when you reach this step
+            </Text>
+          )}
+          {isCompletedStep && (
+            <View style={[styles.completedBadge, { backgroundColor: phase.color + '18' }]}>
+              <Text style={[styles.completedBadgeText, { color: phase.color }]}>
+                Step Complete
+              </Text>
             </View>
-          ))}
+          )}
         </Animated.View>
 
         {/* Practices */}
@@ -287,19 +399,31 @@ export default function StepDetailScreen() {
           })}
         </Animated.View>
 
-        {/* Coming Next */}
+        {/* Coming Next — tappable to navigate to next step */}
         {nextStep && (
-          <View style={styles.nextSection}>
+          <TouchableOpacity
+            style={styles.nextSection}
+            onPress={handleNextStep}
+            activeOpacity={0.7}
+          >
             <Text style={styles.nextLabel}>
-              COMING NEXT: Step {nextStep.stepNumber}
+              {isCompletedStep || stepNumber < currentStepNumber
+                ? 'NEXT STEP'
+                : 'COMING NEXT'}
+              : Step {nextStep.stepNumber}
             </Text>
             <Text style={styles.nextTitle}>
               &ldquo;{nextStep.title}&rdquo;
             </Text>
             <Text style={styles.nextHint}>
-              Unlocks after completing Step {step.stepNumber} goals
+              {isCompletedStep || stepNumber < currentStepNumber
+                ? 'Tap to explore this step'
+                : `Unlocks after completing Step ${step.stepNumber} goals`}
             </Text>
-          </View>
+            <Text style={[styles.nextArrow, { color: phase.color }]}>
+              {'\u203A'}
+            </Text>
+          </TouchableOpacity>
         )}
 
         {/* Closing track available after step 12 */}
@@ -312,6 +436,17 @@ export default function StepDetailScreen() {
             />
           </View>
         )}
+
+        {/* Back to Your Journey */}
+        <TouchableOpacity
+          style={styles.backToJourneyButton}
+          onPress={handleBackToJourney}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.backToJourneyText}>
+            {'\u2039'} Back to Your Journey
+          </Text>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -503,7 +638,7 @@ const styles = StyleSheet.create({
     lineHeight: 26,
   },
 
-  // Goals
+  // Goals / Checklist
   goalsCard: {
     backgroundColor: Colors.surfaceElevated,
     borderRadius: BorderRadius.lg,
@@ -524,19 +659,53 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: Spacing.sm,
-  },
-  goalDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    borderWidth: 1.5,
-    marginTop: 5,
+    paddingVertical: 4,
   },
   goalText: {
     flex: 1,
     ...Typography.bodySmall,
     color: Colors.text,
     lineHeight: 22,
+  },
+  goalTextChecked: {
+    color: Colors.textSecondary,
+    textDecorationLine: 'line-through' as const,
+  },
+  criteriaCheckbox: {
+    width: 22,
+    height: 22,
+    marginTop: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  criteriaSquare: {
+    width: 18,
+    height: 18,
+    borderRadius: 4,
+    borderWidth: 2,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  criteriaSquareChecked: {
+    // backgroundColor and borderColor set dynamically via phase.color
+  },
+  criteriaHint: {
+    ...Typography.caption,
+    color: Colors.textMuted,
+    fontStyle: 'italic',
+    marginTop: Spacing.xs,
+  },
+  completedBadge: {
+    borderRadius: BorderRadius.pill,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    alignSelf: 'center',
+    marginTop: Spacing.xs,
+  },
+  completedBadgeText: {
+    fontSize: FontSizes.caption,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
 
   // Practices
@@ -574,7 +743,7 @@ const styles = StyleSheet.create({
     marginLeft: Spacing.sm,
   },
 
-  // Coming next
+  // Coming next — tappable
   nextSection: {
     backgroundColor: Colors.surface,
     borderRadius: BorderRadius.md,
@@ -582,7 +751,7 @@ const styles = StyleSheet.create({
     gap: 4,
     borderWidth: 1,
     borderColor: Colors.borderLight,
-    borderStyle: 'dashed',
+    position: 'relative',
   },
   nextLabel: {
     ...Typography.label,
@@ -593,10 +762,30 @@ const styles = StyleSheet.create({
     ...Typography.headingS,
     color: Colors.text,
     fontStyle: 'italic',
+    paddingRight: Spacing.xl,
   },
   nextHint: {
     ...Typography.caption,
     color: Colors.textSecondary,
+  },
+  nextArrow: {
+    position: 'absolute',
+    right: Spacing.md,
+    top: 20,
+    fontSize: FontSizes.headingL,
+    fontWeight: '300',
+  },
+
+  // Back to journey
+  backToJourneyButton: {
+    alignItems: 'center',
+    paddingVertical: Spacing.md,
+    marginTop: Spacing.sm,
+  },
+  backToJourneyText: {
+    fontSize: FontSizes.body,
+    fontWeight: '600',
+    color: Colors.primary,
   },
 
   // Closing

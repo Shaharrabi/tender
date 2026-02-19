@@ -50,10 +50,6 @@ interface Props {
   currentStepNumber: number;
   onStepPress?: (stepNumber: number) => void;
   onSelectPractice?: (practiceId: string) => void;
-  /** Called when a criteria checkbox is toggled. Returns the criteria index and new checked state. */
-  onCriteriaToggle?: (stepNumber: number, criteriaIndex: number, checked: boolean) => void;
-  /** Map of stepNumber -> array of checked criteria indices */
-  checkedCriteria?: Record<number, number[]>;
 }
 
 export default function StepJourney({
@@ -61,8 +57,6 @@ export default function StepJourney({
   currentStepNumber,
   onStepPress,
   onSelectPractice,
-  onCriteriaToggle,
-  checkedCriteria = {},
 }: Props) {
   const [expandedStep, setExpandedStep] = useState<number | null>(
     currentStepNumber
@@ -258,59 +252,6 @@ export default function StepJourney({
                           {step.therapeuticGoal}
                         </Text>
                       </View>
-
-                      {/* Completion Criteria */}
-                      {step.completionCriteria.length > 0 && (
-                        <View style={styles.criteriaSection}>
-                          <Text style={styles.detailLabel}>
-                            GOALS FOR THIS STEP
-                          </Text>
-                          {step.completionCriteria.map((criteria, i) => {
-                            const isChecked = (checkedCriteria[step.stepNumber] ?? []).includes(i);
-                            const canToggle = isCurrent || isCompleted;
-                            return (
-                              <TouchableOpacity
-                                key={i}
-                                style={styles.criteriaRow}
-                                activeOpacity={canToggle ? 0.6 : 1}
-                                disabled={!canToggle}
-                                onPress={() => {
-                                  if (canToggle && onCriteriaToggle) {
-                                    onCriteriaToggle(step.stepNumber, i, !isChecked);
-                                  }
-                                }}
-                              >
-                                <View style={styles.criteriaCheckbox}>
-                                  <View
-                                    style={[
-                                      styles.criteriaSquare,
-                                      isChecked && styles.criteriaSquareChecked,
-                                    ]}
-                                  >
-                                    {isChecked && (
-                                      <CheckmarkIcon size={9} color={Colors.textOnPrimary} />
-                                    )}
-                                  </View>
-                                </View>
-                                <Text
-                                  style={[
-                                    styles.criteriaText,
-                                    isLocked && styles.textDimmed,
-                                    isChecked && styles.criteriaTextChecked,
-                                  ]}
-                                >
-                                  {criteria}
-                                </Text>
-                              </TouchableOpacity>
-                            );
-                          })}
-                          {!isCurrent && !isCompleted && (
-                            <Text style={styles.criteriaHint}>
-                              These goals become active when you reach this step
-                            </Text>
-                          )}
-                        </View>
-                      )}
 
                       {/* Practices */}
                       {step.practices.length > 0 && (
@@ -598,54 +539,6 @@ const styles = StyleSheet.create({
     fontFamily: FontFamilies.body,
     color: Colors.text,
     lineHeight: 20,
-  },
-
-  // Criteria
-  criteriaSection: {
-    gap: Spacing.xs,
-  },
-  criteriaRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: Spacing.sm,
-  },
-  criteriaCheckbox: {
-    width: 16,
-    height: 16,
-    marginTop: 3,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  criteriaSquare: {
-    width: 14,
-    height: 14,
-    borderRadius: 3,
-    borderWidth: 1.5,
-    borderColor: Colors.textMuted,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-  },
-  criteriaSquareChecked: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  criteriaText: {
-    flex: 1,
-    fontSize: FontSizes.caption,
-    fontFamily: FontFamilies.body,
-    color: Colors.text,
-    lineHeight: 18,
-  },
-  criteriaTextChecked: {
-    color: Colors.textSecondary,
-    textDecorationLine: 'line-through' as const,
-  },
-  criteriaHint: {
-    fontSize: FontSizes.caption,
-    fontFamily: FontFamilies.body,
-    color: Colors.textMuted,
-    fontStyle: 'italic',
-    marginTop: Spacing.xs,
   },
 
   // Practices
