@@ -225,14 +225,17 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
     try {
       // Get auth token — try getSession first, then refreshSession as fallback
       let token: string | undefined;
-      const { data: authData } = await supabase.auth.getSession();
+      const { data: authData, error: sessionError } = await supabase.auth.getSession();
       token = authData.session?.access_token;
+
+      console.log('[Chat] getSession result:', !!authData.session, sessionError?.message || 'no error');
 
       // If no token, attempt a session refresh (handles expired JWTs)
       if (!token) {
-        if (__DEV__) console.log('[Chat] No token from getSession, attempting refresh...');
-        const { data: refreshData } = await supabase.auth.refreshSession();
+        console.log('[Chat] No token from getSession, attempting refresh...');
+        const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
         token = refreshData.session?.access_token;
+        console.log('[Chat] refreshSession result:', !!refreshData.session, refreshError?.message || 'no error');
       }
 
       // If still no token after refresh, the user isn't authenticated
@@ -240,10 +243,10 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
         throw new Error('Your session has expired. Please sign in again to chat with Nuance.');
       }
 
-      if (__DEV__) console.log('[Chat] Sending message to edge function...');
-      if (__DEV__) console.log('[Chat] URL:', CHAT_FUNCTION_URL);
-      if (__DEV__) console.log('[Chat] Session ID:', session.id);
-      if (__DEV__) console.log('[Chat] Has auth token:', !!token);
+      console.log('[Chat] Sending message to edge function...');
+      console.log('[Chat] URL:', CHAT_FUNCTION_URL);
+      console.log('[Chat] Session ID:', session.id);
+      console.log('[Chat] Has auth token:', !!token, 'Token length:', token?.length);
 
       // Detect streaming support — only request SSE if ReadableStream is available
       const supportsStreaming = typeof ReadableStream !== 'undefined' && typeof TextDecoder !== 'undefined';
@@ -273,10 +276,15 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
 
       if (!response.ok) {
         let errorMessage = `Server error (${response.status})`;
+        let rawError = '';
         try {
-          const errorData = await response.json();
-          errorMessage = errorData.error || errorMessage;
-        } catch {}
+          rawError = await response.text();
+          const errorData = JSON.parse(rawError);
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        } catch {
+          if (rawError) errorMessage += `: ${rawError.substring(0, 100)}`;
+        }
+        console.error('[Chat] Response error:', response.status, rawError.substring(0, 200));
         // Give user-friendly messages for common errors
         if (response.status === 401) {
           errorMessage = 'Your session has expired. Please sign out and sign back in.';
