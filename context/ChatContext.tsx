@@ -245,6 +245,9 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
       if (__DEV__) console.log('[Chat] Session ID:', session.id);
       if (__DEV__) console.log('[Chat] Has auth token:', !!token);
 
+      // Detect streaming support — only request SSE if ReadableStream is available
+      const supportsStreaming = typeof ReadableStream !== 'undefined' && typeof TextDecoder !== 'undefined';
+
       // Call edge function
       const response = await fetch(CHAT_FUNCTION_URL, {
         method: 'POST',
@@ -252,11 +255,13 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
           'apikey': SUPABASE_ANON_KEY,
+          ...(supportsStreaming ? { 'Accept': 'text/event-stream' } : {}),
         },
         body: JSON.stringify({
           sessionId: session.id,
           message: text,
           userId: user!.id,
+          ...(supportsStreaming ? { stream: true } : {}),
           ...(coupleModeRef.current && coupleIdRef.current ? {
             coupleMode: true,
             coupleId: coupleIdRef.current,

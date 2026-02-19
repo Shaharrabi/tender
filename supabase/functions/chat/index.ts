@@ -88,7 +88,11 @@ serve(async (req: Request) => {
 
     // Parse request
     // coupleMode + coupleId are optional — only for couple coaching sessions
-    const { sessionId, message, userId, coupleMode, coupleId } = await req.json();
+    // stream flag — client requests streaming via Accept header or body param
+    const acceptHeader = req.headers.get('Accept') || '';
+    const body = await req.json();
+    const { sessionId, message, userId, coupleMode, coupleId } = body;
+    const clientWantsStream = acceptHeader.includes('text/event-stream') || body.stream === true;
 
     if (!sessionId || !message || !userId) {
       return new Response(
@@ -411,7 +415,8 @@ serve(async (req: Request) => {
     }
     await supabase.from(messageTable).insert(userMsgInsert);
 
-    // ─── STREAMING: Call Claude with stream: true ─────────
+    // ─── Call Claude API ────────────────────────────────────
+    console.log('[chat] Client wants stream:', clientWantsStream);
     const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -422,7 +427,7 @@ serve(async (req: Request) => {
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1024,
-        stream: true,
+        ...(clientWantsStream ? { stream: true } : {}),
         system: systemBlocks,
         messages: claudeMessages,
       }),
@@ -443,130 +448,182 @@ serve(async (req: Request) => {
       }
     }
 
-    // Stream the response from Claude → Client as SSE
-    const encoder = new TextEncoder();
-    const decoder = new TextDecoder();
-    let fullReply = '';
+    // ═══ PATH A: STREAMING (client opted in) ══════════════
+    if (clientWantsStream) {
+      const encoder = new TextEncoder();
+      const decoder = new TextDecoder();
+      let fullReply = '';
 
-    const readableStream = new ReadableStream({
-      async start(controller) {
-        const reader = claudeResponse.body!.getReader();
-        let buffer = '';
-        let inputTokens = 0;
-        let outputTokens = 0;
-        let cacheRead = 0;
-        let cacheCreate = 0;
+      const readableStream = new ReadableStream({
+        async start(controller) {
+          const reader = claudeResponse.body!.getReader();
+          let buffer = '';
+          let inputTokens = 0;
+          let outputTokens = 0;
+          let cacheRead = 0;
+          let cacheCreate = 0;
 
-        try {
-          // Send initial metadata event
-          const metaEvent = `data: ${JSON.stringify({
-            type: 'metadata',
-            detectedState,
-            safetyTriggered: !safetyResult.safe,
-            safetyCategory: safetyResult.category || undefined,
-            sessionTitle,
-          })}\n\n`;
-          controller.enqueue(encoder.encode(metaEvent));
+          try {
+            // Send initial metadata event
+            const metaEvent = `data: ${JSON.stringify({
+              type: 'metadata',
+              detectedState,
+              safetyTriggered: !safetyResult.safe,
+              safetyCategory: safetyResult.category || undefined,
+              sessionTitle,
+            })}\n\n`;
+            controller.enqueue(encoder.encode(metaEvent));
 
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
 
-            buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split('\n');
-            buffer = lines.pop() || ''; // Keep incomplete line in buffer
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split('\n');
+              buffer = lines.pop() || ''; // Keep incomplete line in buffer
 
-            for (const line of lines) {
-              if (!line.startsWith('data: ')) continue;
-              const data = line.slice(6).trim();
-              if (data === '[DONE]') continue;
+              for (const line of lines) {
+                if (!line.startsWith('data: ')) continue;
+                const data = line.slice(6).trim();
+                if (data === '[DONE]') continue;
 
-              try {
-                const event = JSON.parse(data);
+                try {
+                  const event = JSON.parse(data);
 
-                // Extract text deltas from content_block_delta events
-                if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
-                  const text = event.delta.text;
-                  fullReply += text;
-                  // Forward text chunk to client
-                  const chunk = `data: ${JSON.stringify({ type: 'text', text })}\n\n`;
-                  controller.enqueue(encoder.encode(chunk));
+                  // Extract text deltas from content_block_delta events
+                  if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
+                    const text = event.delta.text;
+                    fullReply += text;
+                    // Forward text chunk to client
+                    const chunk = `data: ${JSON.stringify({ type: 'text', text })}\n\n`;
+                    controller.enqueue(encoder.encode(chunk));
+                  }
+
+                  // Capture usage from message_delta (end of stream)
+                  if (event.type === 'message_delta' && event.usage) {
+                    outputTokens = event.usage.output_tokens || 0;
+                  }
+
+                  // Capture usage from message_start
+                  if (event.type === 'message_start' && event.message?.usage) {
+                    inputTokens = event.message.usage.input_tokens || 0;
+                    cacheRead = event.message.usage.cache_read_input_tokens || 0;
+                    cacheCreate = event.message.usage.cache_creation_input_tokens || 0;
+                  }
+                } catch {
+                  // Skip unparseable SSE lines
                 }
-
-                // Capture usage from message_delta (end of stream)
-                if (event.type === 'message_delta' && event.usage) {
-                  outputTokens = event.usage.output_tokens || 0;
-                }
-
-                // Capture usage from message_start
-                if (event.type === 'message_start' && event.message?.usage) {
-                  inputTokens = event.message.usage.input_tokens || 0;
-                  cacheRead = event.message.usage.cache_read_input_tokens || 0;
-                  cacheCreate = event.message.usage.cache_creation_input_tokens || 0;
-                }
-              } catch {
-                // Skip unparseable SSE lines
               }
             }
+
+            // Log cache performance
+            console.log('[chat] Claude replied (streamed) — length:', fullReply.length,
+              '| tokens in:', inputTokens, 'out:', outputTokens,
+              'cache_read:', cacheRead, 'cache_create:', cacheCreate,
+              cacheRead > 0 ? '(CACHE HIT ✓)' : cacheCreate > 0 ? '(CACHE WRITE)' : '(NO CACHE)');
+
+            // Send done event
+            const doneEvent = `data: ${JSON.stringify({ type: 'done' })}\n\n`;
+            controller.enqueue(encoder.encode(doneEvent));
+
+            // ─── Persist after stream completes ───
+            const finalReply = fullReply || "I'm here with you, but I wasn't able to form a response just now. Can you try again?";
+
+            // Save assistant reply
+            const assistantMsgInsert: any = {
+              session_id: sessionId,
+              role: 'assistant',
+              content: finalReply,
+              metadata: { detectedState },
+            };
+            if (coupleMode && coupleId) {
+              assistantMsgInsert.user_id = userId;
+            }
+            await supabase.from(messageTable).insert(assistantMsgInsert);
+
+            // Update session timestamp + title
+            if (sessionTitle) {
+              await supabase.from(sessionTable).update({
+                updated_at: new Date().toISOString(),
+                title: sessionTitle,
+              }).eq('id', sessionId);
+            } else {
+              await supabase.from(sessionTable).update({
+                updated_at: new Date().toISOString(),
+              }).eq('id', sessionId);
+            }
+          } catch (streamErr: any) {
+            console.error('[chat] Stream error:', streamErr?.message || streamErr);
+            const errorEvent = `data: ${JSON.stringify({
+              type: 'error',
+              error: streamErr?.message || 'Stream interrupted',
+            })}\n\n`;
+            controller.enqueue(encoder.encode(errorEvent));
+          } finally {
+            controller.close();
           }
+        },
+      });
 
-          // Log cache performance
-          console.log('[chat] Claude replied (streamed) — length:', fullReply.length,
-            '| tokens in:', inputTokens, 'out:', outputTokens,
-            'cache_read:', cacheRead, 'cache_create:', cacheCreate,
-            cacheRead > 0 ? '(CACHE HIT ✓)' : cacheCreate > 0 ? '(CACHE WRITE)' : '(NO CACHE)');
+      return new Response(readableStream, {
+        headers: {
+          ...getCorsHeaders(req),
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+        },
+      });
+    }
 
-          // Send done event
-          const doneEvent = `data: ${JSON.stringify({ type: 'done' })}\n\n`;
-          controller.enqueue(encoder.encode(doneEvent));
+    // ═══ PATH B: NON-STREAMING (default — JSON response) ══
+    const claudeData = await claudeResponse.json();
+    const reply = claudeData.content?.[0]?.text ?? "I'm here with you, but I wasn't able to form a response just now. Can you try again?";
 
-          // ─── Persist after stream completes (non-blocking for client) ───
-          const finalReply = fullReply || "I'm here with you, but I wasn't able to form a response just now. Can you try again?";
+    // Log cache performance
+    const usage = claudeData.usage || {};
+    const cacheRead = usage.cache_read_input_tokens || 0;
+    const cacheCreate = usage.cache_creation_input_tokens || 0;
+    const inputTokens = usage.input_tokens || 0;
+    console.log('[chat] Claude replied — length:', reply.length,
+      '| tokens in:', inputTokens, 'cache_read:', cacheRead, 'cache_create:', cacheCreate,
+      cacheRead > 0 ? '(CACHE HIT ✓)' : cacheCreate > 0 ? '(CACHE WRITE)' : '(NO CACHE)');
 
-          // Save assistant reply
-          const assistantMsgInsert: any = {
-            session_id: sessionId,
-            role: 'assistant',
-            content: finalReply,
-            metadata: { detectedState },
-          };
-          if (coupleMode && coupleId) {
-            assistantMsgInsert.user_id = userId;
-          }
-          await supabase.from(messageTable).insert(assistantMsgInsert);
+    // Save assistant reply
+    const assistantMsgInsert: any = {
+      session_id: sessionId,
+      role: 'assistant',
+      content: reply,
+      metadata: { detectedState },
+    };
+    if (coupleMode && coupleId) {
+      assistantMsgInsert.user_id = userId;
+    }
+    await supabase.from(messageTable).insert(assistantMsgInsert);
 
-          // Update session timestamp + title
-          if (sessionTitle) {
-            await supabase.from(sessionTable).update({
-              updated_at: new Date().toISOString(),
-              title: sessionTitle,
-            }).eq('id', sessionId);
-          } else {
-            await supabase.from(sessionTable).update({
-              updated_at: new Date().toISOString(),
-            }).eq('id', sessionId);
-          }
-        } catch (streamErr: any) {
-          console.error('[chat] Stream error:', streamErr?.message || streamErr);
-          const errorEvent = `data: ${JSON.stringify({
-            type: 'error',
-            error: streamErr?.message || 'Stream interrupted',
-          })}\n\n`;
-          controller.enqueue(encoder.encode(errorEvent));
-        } finally {
-          controller.close();
-        }
-      },
-    });
+    // Update session timestamp + title
+    if (sessionTitle) {
+      await supabase.from(sessionTable).update({
+        updated_at: new Date().toISOString(),
+        title: sessionTitle,
+      }).eq('id', sessionId);
+    } else {
+      await supabase.from(sessionTable).update({
+        updated_at: new Date().toISOString(),
+      }).eq('id', sessionId);
+    }
 
-    return new Response(readableStream, {
-      headers: {
-        ...getCorsHeaders(req),
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
-      },
-    });
+    return new Response(
+      JSON.stringify({
+        reply,
+        metadata: {
+          detectedState,
+          safetyTriggered: !safetyResult.safe,
+          safetyCategory: safetyResult.category || undefined,
+        },
+        sessionTitle,
+      }),
+      { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
+    );
   } catch (error: any) {
     console.error('[chat] Function error:', error?.message || error);
     // Return the actual error message so the client can display something helpful
