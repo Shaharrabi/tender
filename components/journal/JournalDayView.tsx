@@ -77,6 +77,18 @@ const TYPE_CONFIG: Record<JournalEntryType, {
     label: 'XP',
     Icon: StarIcon,
   },
+  minigame: {
+    color: Colors.accentGold,
+    bg: '#FFF8E8',
+    label: 'Step Exercise',
+    Icon: SparkleIcon,
+  },
+  step_milestone: {
+    color: Colors.success,
+    bg: '#E8F5E9',
+    label: 'Step Milestone',
+    Icon: StarIcon,
+  },
 };
 
 // ─── Helpers ────────────────────────────────────────────
@@ -264,6 +276,26 @@ function XPCard({ entry }: { entry: JournalEntry }) {
   );
 }
 
+function MiniGameCard({ entry }: { entry: JournalEntry }) {
+  const { insights, stepNumber, gameId } = entry.data;
+  return (
+    <View style={cardStyles.cardBody}>
+      {stepNumber && (
+        <Text style={cardStyles.miniGameStep}>Step {stepNumber}</Text>
+      )}
+      {insights && Array.isArray(insights) && insights.length > 0 && (
+        <View style={cardStyles.miniGameInsights}>
+          {insights.map((insight: string, i: number) => (
+            <Text key={i} style={cardStyles.miniGameInsightText}>
+              {'\u2022'} {insight}
+            </Text>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+}
+
 // ─── Entry Card Router ──────────────────────────────────
 
 function EntryCardContent({ entry }: { entry: JournalEntry }) {
@@ -279,6 +311,8 @@ function EntryCardContent({ entry }: { entry: JournalEntry }) {
       return <ChatCard entry={entry} />;
     case 'xp':
       return <XPCard entry={entry} />;
+    case 'minigame':
+      return <MiniGameCard entry={entry} />;
     default:
       return null;
   }
@@ -670,5 +704,23 @@ const cardStyles = StyleSheet.create({
     fontFamily: 'PlayfairDisplay_700Bold',
     fontSize: FontSizes.headingM,
     color: Colors.accent,
+  },
+
+  // Mini-game
+  miniGameStep: {
+    fontFamily: 'Jost_500Medium',
+    fontSize: FontSizes.caption,
+    color: Colors.textMuted,
+    letterSpacing: 1,
+    marginBottom: 4,
+  },
+  miniGameInsights: {
+    gap: 4,
+  },
+  miniGameInsightText: {
+    fontFamily: 'JosefinSans_400Regular',
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    lineHeight: 20,
   },
 });

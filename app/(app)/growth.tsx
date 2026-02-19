@@ -6,7 +6,7 @@
  * The Steps are the transformational arc; everything else serves them.
  */
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -32,6 +32,7 @@ import GrowthTimeline from '@/components/growth/GrowthTimeline';
 import CheckInCard from '@/components/growth/CheckInCard';
 import WindowOfTolerance from '@/components/growth/WindowOfTolerance';
 import WeeklyPracticeSchedule from '@/components/growth/WeeklyPracticeSchedule';
+import FoundationOverlay, { hasHeardFoundation } from '@/components/growth/FoundationOverlay';
 import {
   ensureGrowthEdgesFromPortrait,
   getTodaysCheckIn,
@@ -39,8 +40,13 @@ import {
   saveDailyCheckIn,
 } from '@/services/growth';
 import { ensureStepProgress } from '@/services/steps';
+import { getMyCouple } from '@/services/couples';
+import { getThisWeeksCheckIn, saveWeeklyCheckIn } from '@/services/weare';
+import WeeklyCheckInCard from '@/components/weare/WeeklyCheckInCard';
 import { getPracticesForStep } from '@/utils/steps/twelve-steps';
 import type { GrowthEdgeProgress, DailyCheckIn, StepProgress } from '@/types/growth';
+import type { Couple } from '@/types/couples';
+import type { WeeklyCheckIn } from '@/types/weare';
 
 export default function GrowthScreen() {
   const { user } = useAuth();
@@ -52,6 +58,16 @@ export default function GrowthScreen() {
   const [recentCheckIns, setRecentCheckIns] = useState<DailyCheckIn[]>([]);
   const [stepProgress, setStepProgress] = useState<StepProgress[]>([]);
   const [currentStepNumber, setCurrentStepNumber] = useState(1);
+  const [couple, setCouple] = useState<Couple | null>(null);
+  const [weeklyCheckIn, setWeeklyCheckIn] = useState<WeeklyCheckIn | null>(null);
+  const [showFoundation, setShowFoundation] = useState(false);
+
+  // Check if Foundation audio should auto-play on first visit
+  useEffect(() => {
+    hasHeardFoundation().then((heard) => {
+      if (!heard) setShowFoundation(true);
+    });
+  }, []);
 
   const loadData = useCallback(async () => {
     if (!user) return;
@@ -70,6 +86,19 @@ export default function GrowthScreen() {
       // Find the current active step
       const activeStep = stepData.find((sp) => sp.status === 'active');
       setCurrentStepNumber(activeStep?.stepNumber ?? 1);
+
+      // Load couple + weekly check-in (non-blocking)
+      try {
+        const myCouple = await getMyCouple(user.id);
+        setCouple(myCouple);
+        if (myCouple) {
+          const wci = await getThisWeeksCheckIn(myCouple.id, user.id);
+          setWeeklyCheckIn(wci);
+        }
+      } catch {
+        setCouple(null);
+        setWeeklyCheckIn(null);
+      }
     } catch (err) {
       console.error('Failed to load growth data:', err);
     } finally {
@@ -111,6 +140,17 @@ export default function GrowthScreen() {
     });
   };
 
+  const handleStepPress = (stepNumber: number) => {
+    // Only allow navigation to active or completed steps
+    const progress = stepProgress.find((sp) => sp.stepNumber === stepNumber);
+    if (progress?.status === 'active' || progress?.status === 'completed') {
+      router.push({
+        pathname: '/(app)/step-detail' as any,
+        params: { step: stepNumber.toString() },
+      });
+    }
+  };
+
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
@@ -123,6 +163,11 @@ export default function GrowthScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Foundation Audio Overlay — first visit only */}
+      {showFoundation && (
+        <FoundationOverlay onDismiss={() => setShowFoundation(false)} />
+      )}
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleBack} activeOpacity={0.7}>
@@ -140,6 +185,7 @@ export default function GrowthScreen() {
         <StepJourney
           stepProgress={stepProgress}
           currentStepNumber={currentStepNumber}
+          onStepPress={handleStepPress}
         />
 
         {/* Weekly Practice Schedule */}
@@ -163,6 +209,23 @@ export default function GrowthScreen() {
             onSubmit={handleCheckInSubmit}
           />
         </View>
+
+        {/* Weekly Check-In */}
+        {couple && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Weekly Check-In</Text>
+            <WeeklyCheckInCard
+              existingCheckIn={weeklyCheckIn}
+              onSubmit={async (stress, support, satisfaction, highlight) => {
+                if (!user || !couple) return;
+                const saved = await saveWeeklyCheckIn(
+                  user.id, couple.id, stress, support, satisfaction, highlight
+                );
+                setWeeklyCheckIn(saved);
+              }}
+            />
+          </View>
+        )}
 
         {/* Growth Timeline */}
         {edges.length > 0 && (

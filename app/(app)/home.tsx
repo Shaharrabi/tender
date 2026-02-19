@@ -10,7 +10,7 @@
  * 3. Daily Check-In — collapsed habit tracker
  * 4. Your Journey — progress bar + next assessment integrated
  * 5. Streak — small, celebratory, not guilt-inducing
- * 6. Inspiration — rotating quote or nudge carousel
+ * 6. Inspiration — rotating quote or insight carousel
  * 7. Explore — feature grid (Portrait, Nuance, Growth, etc.)
  * 8. Results — completed assessment scores
  * 9. Individual Assessments — collapsible list
@@ -57,12 +57,13 @@ import { getPortrait, savePortrait, fetchAllScores, extractSupplementScores } fr
 import { generatePortrait } from '@/utils/portrait/portrait-generator';
 import { getTodaysCheckIn, saveDailyCheckIn } from '@/services/growth';
 import { getMyCouple } from '@/services/couples';
+import { getThisWeeksCheckIn } from '@/services/weare';
 import { getAllExercises, getExerciseById } from '@/utils/interventions/registry';
 import { getCompletions } from '@/services/intervention';
 import { calculateGrowthProgress } from '@/utils/steps/intervention-protocols';
 import CheckInCard from '@/components/growth/CheckInCard';
-import NudgeCarousel from '@/components/NudgeCarousel';
-import { getNudges } from '@/utils/nudges';
+import InsightCarousel from '@/components/InsightCarousel';
+import { getInsights } from '@/utils/insights';
 import { getUserConsent } from '@/services/consent';
 import { recordDailyEngagement, getStreakData, type StreakData } from '@/services/streaks';
 import { SoundHaptics } from '@/services/SoundHapticsService';
@@ -208,6 +209,7 @@ export default function HomeScreen() {
 
   // Couple state
   const [couple, setCouple] = useState<Couple | null>(null);
+  const [hasWeeklyCheckIn, setHasWeeklyCheckIn] = useState(false);
 
   // WEARE profile state (Phase 4)
   const [weareProfile, setWeareProfile] = useState<WEAREProfile | null>(null);
@@ -498,13 +500,20 @@ export default function HomeScreen() {
         setPortrait(null);
       }
 
-      // 3. Load couple
+      // 3. Load couple + weekly check-in status
       let loadedCouple: Couple | null = null;
       try {
         loadedCouple = await getMyCouple(user.id);
         setCouple(loadedCouple);
+        if (loadedCouple) {
+          const wci = await getThisWeeksCheckIn(loadedCouple.id, user.id);
+          setHasWeeklyCheckIn(wci !== null);
+        } else {
+          setHasWeeklyCheckIn(false);
+        }
       } catch {
         setCouple(null);
+        setHasWeeklyCheckIn(false);
       }
 
       // 4. Compute unlock state
@@ -680,7 +689,7 @@ export default function HomeScreen() {
       ? exercisePool[Math.floor(Date.now() / 86400000) % exercisePool.length]
       : null;
 
-  // Compute days since last assessment for nudges
+  // Compute days since last assessment for insights
   const daysSinceLastAssessment = (() => {
     const completedEntries = Object.values(statuses).filter(
       (s) => s.state === 'completed' && s.completedAt
@@ -693,12 +702,14 @@ export default function HomeScreen() {
     return Math.floor(diff / (1000 * 60 * 60 * 24));
   })();
 
-  // Nudges for the carousel
-  const nudges = getNudges(
+  // Insights for the carousel
+  const insights = getInsights(
     completedCount,
     hasPortrait,
     todaysCheckIn !== null,
     daysSinceLastAssessment,
+    weareProfile?.bottleneck?.variable,
+    hasWeeklyCheckIn,
   );
 
   // ─── Handlers ──────────────────────────────────────────
@@ -1326,8 +1337,8 @@ export default function HomeScreen() {
                   {weareProfile.trend ? ` \u00B7 ${weareProfile.trend.periodLabel}` : ''}
                 </Text>
 
-                {/* Bottleneck nudge */}
-                <Text style={styles.weareSummaryNudge}>
+                {/* Bottleneck insight */}
+                <Text style={styles.weareSummaryInsight}>
                   Where the invitation is: {weareProfile.bottleneck.label}
                 </Text>
               </View>
@@ -1351,7 +1362,7 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* ═══ 6. INSPIRATION (Rotating nudge) ════════════════ */}
+        {/* ═══ 6. INSPIRATION (Rotating insight) ═══════════════ */}
         {stepTagline && hasPortrait && (
           <View style={styles.inspirationSection}>
             <Text style={styles.inspirationText}>
@@ -1359,7 +1370,7 @@ export default function HomeScreen() {
             </Text>
           </View>
         )}
-        {!hasPortrait && <NudgeCarousel nudges={nudges} />}
+        {!hasPortrait && <InsightCarousel insights={insights} />}
 
         {/* ═══ 6b. MICRO-COURSE (Continue Course card) ═══════ */}
         {activeCourse && (() => {
@@ -1781,8 +1792,8 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
 
-  // ── Nudge Card ──
-  nudgeCard: {
+  // ── Insight Card ──
+  insightCard: {
     marginHorizontal: Spacing.xl,
     marginBottom: Spacing.lg,
     backgroundColor: Colors.surfaceElevated,
@@ -1795,10 +1806,10 @@ const styles = StyleSheet.create({
     borderColor: Colors.borderLight,
     ...Shadows.subtle,
   },
-  nudgeIcon: {
+  insightIcon: {
     fontSize: 24,
   },
-  nudgeText: {
+  insightText: {
     fontSize: FontSizes.bodySmall,
     color: Colors.text,
     flex: 1,
@@ -2715,7 +2726,7 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.bodySmall,
     color: Colors.textSecondary,
   },
-  weareSummaryNudge: {
+  weareSummaryInsight: {
     fontSize: FontSizes.caption,
     color: Colors.secondary,
     fontStyle: 'italic' as const,
