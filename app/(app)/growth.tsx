@@ -6,7 +6,7 @@
  * The Steps are the transformational arc; everything else serves them.
  */
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -27,13 +27,12 @@ import {
   BorderRadius,
   Shadows,
 } from '@/constants/theme';
-import HomeButton from '@/components/HomeButton';
-import FoundationOverlay, { hasHeardFoundation } from '@/components/growth/FoundationOverlay';
 import StepJourney from '@/components/growth/StepJourney';
 import GrowthTimeline from '@/components/growth/GrowthTimeline';
 import CheckInCard from '@/components/growth/CheckInCard';
 import WindowOfTolerance from '@/components/growth/WindowOfTolerance';
 import WeeklyPracticeSchedule from '@/components/growth/WeeklyPracticeSchedule';
+import FoundationOverlay, { hasHeardFoundation } from '@/components/growth/FoundationOverlay';
 import {
   ensureGrowthEdgesFromPortrait,
   getTodaysCheckIn,
@@ -41,13 +40,13 @@ import {
   saveDailyCheckIn,
 } from '@/services/growth';
 import { ensureStepProgress } from '@/services/steps';
-import { getPracticesForStep } from '@/utils/steps/twelve-steps';
 import { getMyCouple } from '@/services/couples';
 import { getThisWeeksCheckIn, saveWeeklyCheckIn } from '@/services/weare';
 import WeeklyCheckInCard from '@/components/weare/WeeklyCheckInCard';
+import { getPracticesForStep } from '@/utils/steps/twelve-steps';
 import type { GrowthEdgeProgress, DailyCheckIn, StepProgress } from '@/types/growth';
-import type { WeeklyCheckIn } from '@/types/weare';
 import type { Couple } from '@/types/couples';
+import type { WeeklyCheckIn } from '@/types/weare';
 
 export default function GrowthScreen() {
   const { user } = useAuth();
@@ -59,9 +58,16 @@ export default function GrowthScreen() {
   const [recentCheckIns, setRecentCheckIns] = useState<DailyCheckIn[]>([]);
   const [stepProgress, setStepProgress] = useState<StepProgress[]>([]);
   const [currentStepNumber, setCurrentStepNumber] = useState(1);
-  const [showFoundation, setShowFoundation] = useState(false);
   const [couple, setCouple] = useState<Couple | null>(null);
   const [weeklyCheckIn, setWeeklyCheckIn] = useState<WeeklyCheckIn | null>(null);
+  const [showFoundation, setShowFoundation] = useState(false);
+
+  // Check if Foundation audio should auto-play on first visit
+  useEffect(() => {
+    hasHeardFoundation().then((heard) => {
+      if (!heard) setShowFoundation(true);
+    });
+  }, []);
 
   const loadData = useCallback(async () => {
     if (!user) return;
@@ -81,11 +87,7 @@ export default function GrowthScreen() {
       const activeStep = stepData.find((sp) => sp.status === 'active');
       setCurrentStepNumber(activeStep?.stepNumber ?? 1);
 
-      // Check if first visit — show Foundation audio
-      const heard = await hasHeardFoundation();
-      if (!heard) setShowFoundation(true);
-
-      // Load couple + weekly check-in (non-blocking for individual users)
+      // Load couple + weekly check-in (non-blocking)
       try {
         const myCouple = await getMyCouple(user.id);
         setCouple(myCouple);
@@ -124,26 +126,11 @@ export default function GrowthScreen() {
   };
 
   const handleBack = () => {
-    if (router.canGoBack()) {
-      router.back();
-    } else {
-      router.replace('/(app)/home' as any);
-    }
+    router.back();
   };
 
   const handleViewTreatmentPlan = () => {
     router.push('/(app)/treatment-plan' as any);
-  };
-
-  const handleStepNavigate = (stepNumber: number) => {
-    // Navigate to step detail for any non-locked step (current or completed)
-    const progress = stepProgress.find((sp) => sp.stepNumber === stepNumber);
-    if (progress && progress.status !== 'locked') {
-      router.push({
-        pathname: '/(app)/step-detail' as any,
-        params: { step: String(stepNumber) },
-      });
-    }
   };
 
   const handlePracticeFromWoT = (practiceId: string) => {
@@ -151,6 +138,17 @@ export default function GrowthScreen() {
       pathname: '/(app)/exercise' as any,
       params: { id: practiceId },
     });
+  };
+
+  const handleStepPress = (stepNumber: number) => {
+    // Only allow navigation to active or completed steps
+    const progress = stepProgress.find((sp) => sp.stepNumber === stepNumber);
+    if (progress?.status === 'active' || progress?.status === 'completed') {
+      router.push({
+        pathname: '/(app)/step-detail' as any,
+        params: { step: stepNumber.toString() },
+      });
+    }
   };
 
   if (loading) {
@@ -165,6 +163,11 @@ export default function GrowthScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Foundation Audio Overlay — first visit only */}
+      {showFoundation && (
+        <FoundationOverlay onDismiss={() => setShowFoundation(false)} />
+      )}
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={handleBack} activeOpacity={0.7}>
@@ -176,14 +179,13 @@ export default function GrowthScreen() {
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={true}
+        showsVerticalScrollIndicator={false}
       >
         {/* Twelve Steps Journey */}
         <StepJourney
           stepProgress={stepProgress}
           currentStepNumber={currentStepNumber}
-          onSelectPractice={handlePracticeFromWoT}
-          onStepPress={handleStepNavigate}
+          onStepPress={handleStepPress}
         />
 
         {/* Weekly Practice Schedule */}
@@ -208,13 +210,10 @@ export default function GrowthScreen() {
           />
         </View>
 
-        {/* Weekly Check-In (shown only when user has a couple) */}
+        {/* Weekly Check-In */}
         {couple && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Weekly Check-In</Text>
-            <Text style={styles.sectionSubtitle}>
-              Notice the space between you and your partner this week.
-            </Text>
             <WeeklyCheckInCard
               existingCheckIn={weeklyCheckIn}
               onSubmit={async (stress, support, satisfaction, highlight) => {
@@ -271,7 +270,7 @@ export default function GrowthScreen() {
           </View>
         )}
 
-        {/* Growth Plan Link */}
+        {/* Treatment Plan Link */}
         <TouchableOpacity
           style={styles.treatmentPlanLink}
           onPress={handleViewTreatmentPlan}
@@ -279,21 +278,15 @@ export default function GrowthScreen() {
         >
           <View style={styles.treatmentPlanContent}>
             <Text style={styles.treatmentPlanTitle}>
-              View Growth Plan
+              View Treatment Plan
             </Text>
             <Text style={styles.treatmentPlanSubtitle}>
-              Your personalized growth pathway
+              Your personalized pathways, goals, and exercises
             </Text>
           </View>
           <Text style={styles.treatmentPlanArrow}>{'\u203A'}</Text>
         </TouchableOpacity>
       </ScrollView>
-      <HomeButton />
-
-      {/* Foundation audio overlay — first visit only */}
-      {showFoundation && (
-        <FoundationOverlay onDismiss={() => setShowFoundation(false)} />
-      )}
     </SafeAreaView>
   );
 }
@@ -336,7 +329,6 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.borderLight,
   },
   backText: {
-    fontFamily: FontFamilies.body,
     fontSize: FontSizes.body,
     color: Colors.primary,
     fontWeight: '600',
@@ -369,13 +361,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: Colors.text,
   },
-  sectionSubtitle: {
-    fontFamily: FontFamilies.body,
-    fontSize: FontSizes.bodySmall,
-    color: Colors.textSecondary,
-    lineHeight: 20,
-    marginTop: -Spacing.xs,
-  },
 
   // Recent check-ins
   recentList: {
@@ -394,7 +379,6 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.borderLight,
   },
   recentDate: {
-    fontFamily: FontFamilies.body,
     fontSize: FontSizes.bodySmall,
     color: Colors.text,
     fontWeight: '500',
@@ -415,24 +399,21 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.pill,
   },
   recentStatLabel: {
-    fontFamily: FontFamilies.body,
     fontSize: 11,
     color: Colors.textSecondary,
   },
   recentStatValue: {
-    fontFamily: FontFamilies.accent,
     fontSize: 11,
     fontWeight: '600',
     color: Colors.text,
   },
   practicedPill: {
-    backgroundColor: Colors.success + '25',
+    backgroundColor: '#DFF0E0',
   },
   practicedText: {
     fontSize: 11,
     fontWeight: '600',
-    fontFamily: FontFamilies.body,
-    color: Colors.success,
+    color: '#2D5F34',
   },
 
   // Treatment plan link
@@ -457,7 +438,6 @@ const styles = StyleSheet.create({
     color: Colors.primary,
   },
   treatmentPlanSubtitle: {
-    fontFamily: FontFamilies.body,
     fontSize: FontSizes.caption,
     color: Colors.textSecondary,
   },

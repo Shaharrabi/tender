@@ -64,6 +64,12 @@ interface StepMiniGameProps {
 export default function StepMiniGame({ stepNumber, onComplete, onSkip }: StepMiniGameProps) {
   const { user } = useAuth();
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
+  const [pendingResult, setPendingResult] = useState<{
+    title: string;
+    insights: string[];
+    data: Record<string, any>;
+  } | null>(null);
 
   const step = TWELVE_STEPS.find((s) => s.stepNumber === stepNumber);
   const gameId = step?.miniGameId;
@@ -81,27 +87,51 @@ export default function StepMiniGame({ stepNumber, onComplete, onSkip }: StepMin
     async (result: { title: string; insights: string[]; data: Record<string, any> }) => {
       if (!user || !gameId || saving) return;
       setSaving(true);
+      setSaveError(false);
       try {
         const output = await saveMiniGameOutput(user.id, stepNumber, gameId, result);
         onComplete(output);
       } catch (err) {
-        console.warn('[StepMiniGame] Save error:', err);
-        // Still complete the game locally
-        onComplete({
-          userId: user.id,
-          stepNumber,
-          gameId,
-          title: result.title,
-          insights: result.insights,
-          data: result.data,
-          completedAt: new Date().toISOString(),
-        });
+        console.error('[StepMiniGame] Save error:', err);
+        setSaveError(true);
+        setPendingResult(result);
       } finally {
         setSaving(false);
       }
     },
     [user, stepNumber, gameId, saving, onComplete]
   );
+
+  const handleRetry = useCallback(async () => {
+    if (!user || !gameId || !pendingResult || saving) return;
+    setSaving(true);
+    setSaveError(false);
+    try {
+      const output = await saveMiniGameOutput(user.id, stepNumber, gameId, pendingResult);
+      setPendingResult(null);
+      onComplete(output);
+    } catch (err) {
+      console.error('[StepMiniGame] Retry save error:', err);
+      setSaveError(true);
+    } finally {
+      setSaving(false);
+    }
+  }, [user, stepNumber, gameId, pendingResult, saving, onComplete]);
+
+  const handleSkipSave = useCallback(() => {
+    if (!user || !gameId || !pendingResult) return;
+    onComplete({
+      userId: user.id,
+      stepNumber,
+      gameId,
+      title: pendingResult.title,
+      insights: pendingResult.insights,
+      data: pendingResult.data,
+      completedAt: new Date().toISOString(),
+    });
+    setPendingResult(null);
+    setSaveError(false);
+  }, [user, stepNumber, gameId, pendingResult, onComplete]);
 
   if (!GameComponent) {
     return (
@@ -121,6 +151,26 @@ export default function StepMiniGame({ stepNumber, onComplete, onSkip }: StepMin
       <Animated.View entering={FadeIn.duration(300)} style={styles.savingContainer}>
         <ActivityIndicator size="large" color={phaseColor} />
         <Text style={styles.savingText}>Saving your insight...</Text>
+      </Animated.View>
+    );
+  }
+
+  if (saveError && pendingResult) {
+    return (
+      <Animated.View entering={FadeIn.duration(300)} style={styles.errorContainer}>
+        <Text style={styles.errorTitle}>Could not save your insight</Text>
+        <Text style={styles.errorBody}>
+          Check your connection and try again so your journal stays complete.
+        </Text>
+        <TouchableOpacity
+          style={[styles.retryButton, { backgroundColor: phaseColor }]}
+          onPress={handleRetry}
+        >
+          <Text style={styles.retryButtonText}>Try Again</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.skipSaveButton} onPress={handleSkipSave}>
+          <Text style={styles.skipSaveText}>Continue without saving</Text>
+        </TouchableOpacity>
       </Animated.View>
     );
   }
@@ -163,5 +213,44 @@ const styles = StyleSheet.create({
     ...Typography.bodySmall,
     color: Colors.textMuted,
     fontStyle: 'italic',
+  },
+  errorContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.xl,
+    gap: Spacing.md,
+  },
+  errorTitle: {
+    ...Typography.headingM,
+    color: Colors.text,
+    textAlign: 'center',
+  },
+  errorBody: {
+    ...Typography.body,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: Spacing.sm,
+  },
+  retryButton: {
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
+    minWidth: 160,
+    alignItems: 'center' as const,
+  },
+  retryButtonText: {
+    ...Typography.button,
+    color: '#FFFFFF',
+  },
+  skipSaveButton: {
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    marginTop: Spacing.xs,
+  },
+  skipSaveText: {
+    ...Typography.bodySmall,
+    color: Colors.textMuted,
+    textDecorationLine: 'underline' as const,
   },
 });

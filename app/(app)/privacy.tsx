@@ -221,7 +221,7 @@ export default function PrivacyScreen() {
           <View style={s.controlIcon}><SettingsIcon size={22} color={Colors.text} /></View>
           <View style={{ flex: 1 }}>
             <Text style={s.controlTitle}>Notification Settings</Text>
-            <Text style={s.controlSubtitle}>Manage reminders and nudges</Text>
+            <Text style={s.controlSubtitle}>Manage reminders and insights</Text>
           </View>
           <Text style={s.controlArrow}>{'→'}</Text>
         </TouchableOpacity>

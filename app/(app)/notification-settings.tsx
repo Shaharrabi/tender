@@ -1,7 +1,7 @@
 /**
  * Notification Settings Screen
  *
- * Allows users to configure which types of reminders and nudges
+ * Allows users to configure which types of reminders and insights
  * they want to receive. Settings are stored in AsyncStorage.
  * Push notifications require native setup with expo-notifications,
  * but this screen manages preference state.
@@ -149,14 +149,14 @@ export default function NotificationSettingsScreen() {
         <ToggleRow
           IconComponent={MeditationIcon}
           title="Practice Reminders"
-          description="Nudges to complete your weekly practices"
+          description="Reminders to complete your weekly practices"
           value={prefs.practiceReminders}
           onToggle={(v) => updatePref('practiceReminders', v)}
         />
 
         <ToggleRow
           IconComponent={CompassIcon}
-          title="Assessment Nudges"
+          title="Assessment Insights"
           description="Reminders to continue your assessments"
           value={prefs.assessmentNudges}
           onToggle={(v) => updatePref('assessmentNudges', v)}

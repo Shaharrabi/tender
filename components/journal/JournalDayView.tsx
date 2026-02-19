@@ -79,9 +79,15 @@ const TYPE_CONFIG: Record<JournalEntryType, {
   },
   minigame: {
     color: Colors.accentGold,
-    bg: '#FDF3E0',
-    label: 'Mini-Game',
+    bg: '#FFF8E8',
+    label: 'Step Exercise',
     Icon: SparkleIcon,
+  },
+  step_milestone: {
+    color: Colors.success,
+    bg: '#E8F5E9',
+    label: 'Step Milestone',
+    Icon: StarIcon,
   },
 };
 
@@ -172,157 +178,6 @@ function CheckInCard({ entry }: { entry: JournalEntry }) {
   );
 }
 
-/**
- * Format a step response for display. Lesson components store structured
- * data as JSON.stringify(). We parse it and render a human-readable summary
- * instead of raw JSON text.
- */
-function formatStepResponse(response: any): string {
-  // If response is already an object (Supabase JSONB returns parsed), use it directly
-  if (typeof response === 'object' && response !== null) {
-    // Skip JSON.parse — it's already parsed
-    return formatParsedResponse(response);
-  }
-  // If it's not a string, convert to string
-  if (typeof response !== 'string') return String(response ?? '');
-  // If it's not JSON, return as-is (plain text responses)
-  let parsed: any;
-  try {
-    parsed = JSON.parse(response);
-  } catch {
-    return response;
-  }
-
-  // Not an object — just return the string representation
-  if (typeof parsed !== 'object' || parsed === null) {
-    return String(parsed);
-  }
-
-  return formatParsedResponse(parsed);
-}
-
-/** Inner helper that formats already-parsed response objects */
-function formatParsedResponse(parsed: Record<string, any>): string {
-  const parts: string[] = [];
-
-  // ─── MC1 L2: Body sensations (somatic heatmap) ───
-  if (parsed.regions && Array.isArray(parsed.regions)) {
-    const names = parsed.regions.map((r: any) => r.label || r.region).filter(Boolean);
-    if (names.length > 0) parts.push(`Sensations: ${names.join(', ')}`);
-  }
-
-  // ─── MC1 L3: Cycle awareness ───
-  if (parsed.cycleViewed != null) {
-    parts.push(`Cycle explored: ${parsed.variant || 'default'} pattern`);
-  }
-
-  // ─── MC1 L4: Timer practice ───
-  if (parsed.timerCompleted != null) {
-    const mins = parsed.durationSeconds ? Math.round(parsed.durationSeconds / 60) : null;
-    parts.push(
-      parsed.timerCompleted
-        ? `Practice completed${mins ? ` (${mins} min)` : ''}`
-        : 'Practice started'
-    );
-  }
-
-  // ─── MC1 L5: Commitment contract ───
-  if (parsed.signed != null && parsed.commitmentCount != null) {
-    parts.push(`Signed commitment: ${parsed.commitmentCount}x per week`);
-  }
-
-  // ─── MC2 L5: Co-regulation ───
-  if (parsed.mode && response.includes('co-regulation')) {
-    // Plain text responses are already handled above; this is a fallback
-  }
-
-  // ─── MC3 L1: Myth Buster ───
-  if (parsed.mythsBusted != null) {
-    parts.push(
-      parsed.allFlipped
-        ? `All ${parsed.mythsBusted} myths busted!`
-        : `${parsed.mythsBusted} myths explored`
-    );
-  }
-
-  // ─── MC3 L1: Content vs. Pattern reflection ───
-  if (parsed.content != null && parsed.pattern != null) {
-    if (parsed.content) parts.push(`Content: ${parsed.content}`);
-    if (parsed.pattern) parts.push(`Pattern: ${parsed.pattern}`);
-  }
-
-  // ─── MC3 L2: Horseman Matcher ───
-  if (parsed.allMatchedCorrectly != null) {
-    parts.push(
-      parsed.noMistakes
-        ? 'All horsemen matched correctly — no mistakes!'
-        : `All horsemen matched (${parsed.totalMistakes || 0} retries)`
-    );
-  }
-
-  // ─── MC3 L2: Horseman identification ───
-  if (parsed.myHorseman != null && parsed.partnerHorseman != null) {
-    const fmt = (s: string) => s.replace(/([A-Z])/g, ' $1').trim();
-    parts.push(`My horseman: ${fmt(parsed.myHorseman)}`);
-    parts.push(`Partner's horseman: ${fmt(parsed.partnerHorseman)}`);
-  }
-
-  // ─── MC3 L3: Repair Scenario ───
-  if (parsed.endingType != null) {
-    const ending = parsed.endingType === 'repaired'
-      ? 'Repair achieved'
-      : parsed.endingType === 'partial'
-        ? 'Partial repair'
-        : 'Unrepaired ending';
-    parts.push(`${ending} (${parsed.repairAttemptsMade || 0} repair attempts)`);
-  }
-
-  // ─── MC3 L4: Repair Sentence Builder ───
-  if (parsed.templates && Array.isArray(parsed.templates)) {
-    const completedCount = parsed.templates.filter((t: any) => t.completed).length;
-    parts.push(`Completed ${completedCount}/${parsed.templates.length} repair sentences`);
-  }
-
-  // ─── MC3 L5: Ritual Designer ───
-  if (parsed.ritual && typeof parsed.ritual === 'object') {
-    const ritualLabels: string[] = [];
-    if (parsed.ritual.timing) ritualLabels.push(`When: ${parsed.ritual.timing.replace(/_/g, ' ')}`);
-    if (parsed.ritual.location) ritualLabels.push(`Where: ${parsed.ritual.location}`);
-    if (parsed.ritual.opening) ritualLabels.push(`Opening: ${parsed.ritual.opening.replace(/_/g, ' ')}`);
-    if (parsed.ritual.gesture) ritualLabels.push(`Gesture: ${parsed.ritual.gesture.replace(/_/g, ' ')}`);
-    if (ritualLabels.length > 0) parts.push(ritualLabels.join('\n'));
-    if (parsed.commitment) parts.push(`Commitment: ${parsed.commitment}`);
-  }
-
-  // If we matched nothing, format key-value pairs generically
-  if (parts.length === 0) {
-    for (const [key, value] of Object.entries(parsed)) {
-      if (value == null || value === '' || value === false) continue;
-      const label = key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ').trim();
-      const displayLabel = label.charAt(0).toUpperCase() + label.slice(1);
-      if (Array.isArray(value)) {
-        // Format arrays as comma-separated if items are simple
-        const items = value.map((v: any) =>
-          typeof v === 'object' ? (v.label || v.name || v.title || 'item') : String(v)
-        );
-        parts.push(`${displayLabel}: ${items.join(', ')}`);
-      } else if (typeof value === 'object') {
-        // Flatten nested objects into readable key-value summaries
-        const subParts = Object.entries(value)
-          .filter(([, v]) => v != null && v !== '' && typeof v !== 'object')
-          .map(([k, v]) => `${k.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ').trim()}: ${v}`);
-        if (subParts.length > 0) {
-          parts.push(`${displayLabel}: ${subParts.join(', ')}`);
-        }
-      } else {
-        parts.push(`${displayLabel}: ${value}`);
-      }
-    }
-  }
-
-  return parts.join('\n') || response;
-}
-
 function ExerciseCard({ entry }: { entry: JournalEntry }) {
   const { reflection, rating, stepResponses } = entry.data;
   return (
@@ -335,9 +190,7 @@ function ExerciseCard({ entry }: { entry: JournalEntry }) {
           {stepResponses.map((sr: any, idx: number) => (
             <View key={idx} style={cardStyles.stepResponseBlock}>
               <Text style={cardStyles.stepPrompt}>{sr.prompt}</Text>
-              <Text style={cardStyles.stepResponse}>
-                {formatStepResponse(sr.response)}
-              </Text>
+              <Text style={cardStyles.stepResponse}>{sr.response}</Text>
             </View>
           ))}
         </View>
@@ -353,40 +206,8 @@ function ExerciseCard({ entry }: { entry: JournalEntry }) {
   );
 }
 
-/** Format a score value for display — handles numbers, strings, and nested objects */
-function formatScoreValue(value: any): string {
-  if (value === null || value === undefined) return '-';
-  if (typeof value === 'number') return value % 1 === 0 ? String(value) : value.toFixed(1);
-  if (typeof value === 'string') return value;
-  if (typeof value === 'boolean') return value ? 'Yes' : 'No';
-  // For arrays and objects, don't display raw — show a summary
-  if (Array.isArray(value)) return `${value.length} items`;
-  if (typeof value === 'object') return ''; // Will be rendered as sub-section
-  return String(value);
-}
-
-/** Check if a value is a nested object (not null, not array, not primitive) */
-function isNestedScoreObject(value: any): boolean {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
-}
-
 function AssessmentCard({ entry }: { entry: JournalEntry }) {
   const scores = entry.data.scores;
-
-  // Separate top-level primitives from nested objects
-  const topLevelEntries: [string, any][] = [];
-  const nestedEntries: [string, Record<string, any>][] = [];
-
-  if (scores && typeof scores === 'object') {
-    for (const [key, value] of Object.entries(scores)) {
-      if (isNestedScoreObject(value)) {
-        nestedEntries.push([key, value as Record<string, any>]);
-      } else {
-        topLevelEntries.push([key, value]);
-      }
-    }
-  }
-
   return (
     <View style={cardStyles.cardBody}>
       <View style={cardStyles.assessmentBadge}>
@@ -394,51 +215,21 @@ function AssessmentCard({ entry }: { entry: JournalEntry }) {
           {entry.data.assessmentType?.toUpperCase() || 'ASSESSMENT'}
         </Text>
       </View>
-
-      {/* Top-level score dimensions (numbers, strings) */}
-      {topLevelEntries.length > 0 && (
+      {/* Show all score dimensions */}
+      {scores && typeof scores === 'object' && (
         <View style={cardStyles.scoresGrid}>
-          {topLevelEntries.map(([key, value]) => (
+          {Object.entries(scores).map(([key, value]) => (
             <View key={key} style={cardStyles.scoreItem}>
               <Text style={cardStyles.scoreLabel}>
-                {key.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').replace(/\b\w/g, (c) => c.toUpperCase()).trim()}
+                {key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
               </Text>
               <Text style={cardStyles.scoreValue}>
-                {formatScoreValue(value)}
+                {typeof value === 'number' ? (value % 1 === 0 ? value : value.toFixed(1)) : String(value)}
               </Text>
             </View>
           ))}
         </View>
       )}
-
-      {/* Nested sub-score sections (e.g. FacetScores, DomainScores) */}
-      {nestedEntries.map(([sectionKey, sectionObj]) => {
-        // Only show subsections that have renderable (non-object) children
-        const renderableChildren = Object.entries(sectionObj).filter(
-          ([, v]) => !isNestedScoreObject(v)
-        );
-        if (renderableChildren.length === 0) return null;
-
-        return (
-          <View key={sectionKey} style={cardStyles.nestedSection}>
-            <Text style={cardStyles.nestedSectionTitle}>
-              {sectionKey.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').replace(/\b\w/g, (c) => c.toUpperCase()).trim()}
-            </Text>
-            <View style={cardStyles.scoresGrid}>
-              {renderableChildren.map(([k, v]) => (
-                <View key={k} style={cardStyles.scoreItem}>
-                  <Text style={cardStyles.scoreLabel}>
-                    {k.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').replace(/\b\w/g, (c) => c.toUpperCase()).trim()}
-                  </Text>
-                  <Text style={cardStyles.scoreValue}>
-                    {formatScoreValue(v)}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        );
-      })}
     </View>
   );
 }
@@ -486,24 +277,18 @@ function XPCard({ entry }: { entry: JournalEntry }) {
 }
 
 function MiniGameCard({ entry }: { entry: JournalEntry }) {
-  const { gameId, stepNumber, insights } = entry.data;
+  const { insights, stepNumber, gameId } = entry.data;
   return (
     <View style={cardStyles.cardBody}>
-      {stepNumber != null && (
-        <View style={cardStyles.inlineRow}>
-          <Text style={cardStyles.inlineLabel}>Step {stepNumber}</Text>
-          {gameId && (
-            <Text style={[cardStyles.inlineValue, { color: Colors.accentGold }]}>
-              {gameId.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())}
-            </Text>
-          )}
-        </View>
+      {stepNumber && (
+        <Text style={cardStyles.miniGameStep}>Step {stepNumber}</Text>
       )}
       {insights && Array.isArray(insights) && insights.length > 0 && (
-        <View style={{ gap: 4, marginTop: 4 }}>
-          <Text style={cardStyles.reflectionLabel}>Insights</Text>
-          {insights.map((insight: string, idx: number) => (
-            <Text key={idx} style={cardStyles.noteFullText}>• {insight}</Text>
+        <View style={cardStyles.miniGameInsights}>
+          {insights.map((insight: string, i: number) => (
+            <Text key={i} style={cardStyles.miniGameInsightText}>
+              {'\u2022'} {insight}
+            </Text>
           ))}
         </View>
       )}
@@ -880,20 +665,6 @@ const cardStyles = StyleSheet.create({
     fontSize: FontSizes.body,
     color: Colors.text,
   },
-  nestedSection: {
-    marginTop: Spacing.sm,
-    paddingTop: Spacing.xs,
-    borderTopWidth: 1,
-    borderTopColor: Colors.borderLight,
-  },
-  nestedSectionTitle: {
-    fontFamily: 'Jost_500Medium',
-    fontSize: 10,
-    color: Colors.textMuted,
-    textTransform: 'uppercase' as const,
-    letterSpacing: 0.8,
-    marginBottom: 4,
-  },
 
   // Chat
   chatMeta: {
@@ -933,5 +704,23 @@ const cardStyles = StyleSheet.create({
     fontFamily: 'PlayfairDisplay_700Bold',
     fontSize: FontSizes.headingM,
     color: Colors.accent,
+  },
+
+  // Mini-game
+  miniGameStep: {
+    fontFamily: 'Jost_500Medium',
+    fontSize: FontSizes.caption,
+    color: Colors.textMuted,
+    letterSpacing: 1,
+    marginBottom: 4,
+  },
+  miniGameInsights: {
+    gap: 4,
+  },
+  miniGameInsightText: {
+    fontFamily: 'JosefinSans_400Regular',
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    lineHeight: 20,
   },
 });

@@ -10,7 +10,7 @@
  * 3. Daily Check-In — collapsed habit tracker
  * 4. Your Journey — progress bar + next assessment integrated
  * 5. Streak — small, celebratory, not guilt-inducing
- * 6. Inspiration — rotating quote or nudge carousel
+ * 6. Inspiration — rotating quote or insight carousel
  * 7. Explore — feature grid (Portrait, Nuance, Growth, etc.)
  * 8. Results — completed assessment scores
  * 9. Individual Assessments — collapsible list
@@ -56,27 +56,19 @@ import { supabase } from '@/services/supabase';
 import { getPortrait, savePortrait, fetchAllScores, extractSupplementScores } from '@/services/portrait';
 import { generatePortrait } from '@/utils/portrait/portrait-generator';
 import { getTodaysCheckIn, saveDailyCheckIn } from '@/services/growth';
-import { getMyCouple, checkDyadicCompletion, isSelfCouple } from '@/services/couples';
+import { getMyCouple } from '@/services/couples';
+import { getThisWeeksCheckIn } from '@/services/weare';
 import { getAllExercises, getExerciseById } from '@/utils/interventions/registry';
 import { getCompletions } from '@/services/intervention';
 import { calculateGrowthProgress } from '@/utils/steps/intervention-protocols';
 import CheckInCard from '@/components/growth/CheckInCard';
-import NudgeCarousel from '@/components/NudgeCarousel';
-import { getNudges } from '@/utils/nudges';
+import InsightCarousel from '@/components/InsightCarousel';
+import { getInsights } from '@/utils/insights';
 import { getUserConsent } from '@/services/consent';
 import { recordDailyEngagement, getStreakData, type StreakData } from '@/services/streaks';
 import { SoundHaptics } from '@/services/SoundHapticsService';
 import { XPProgressBar } from '@/components/gamification/XPProgressBar';
 import StreakBanner from '@/components/StreakBanner';
-import { useFirstTime } from '@/context/FirstTimeContext';
-import AdminPanel from '@/components/admin/AdminPanel';
-import LockedPortraitPreview from '@/components/portrait/LockedPortraitPreview';
-import { HighlightWrapper } from '@/components/ui/HighlightWrapper';
-import { TooltipManager } from '@/components/ftue/TooltipManager';
-import { GuidedTour } from '@/components/ftue/GuidedTour';
-import { WelcomeAudio } from '@/components/ftue/WelcomeAudio';
-import { HOME_TOUR } from '@/constants/ftue/tourSteps';
-import { RefRegistry } from '@/utils/ftue/refRegistry';
 import { getCurrentStepNumber } from '@/services/steps';
 import { getTaglineForStep, getPracticesForStep, getStep } from '@/utils/steps/twelve-steps';
 import { MICRO_COURSES, calculateCourseProgress, type CourseProgress } from '@/utils/microcourses/course-registry';
@@ -112,17 +104,15 @@ import {
   MasksIcon,
   ScaleIcon,
   CompassIcon,
-  ShieldIcon,
 } from '@/assets/graphics/icons';
 import type { ComponentType } from 'react';
 import type { IconProps } from '@/assets/graphics/icons';
 import type { AssessmentConfig, AllAssessmentScores, AssessmentType } from '@/types';
 import type { IndividualPortrait } from '@/types/portrait';
-import type { WEAREProfile, WeeklyCheckIn } from '@/types/weare';
+import type { WEAREProfile } from '@/types/weare';
 import type { DailyCheckIn } from '@/types/growth';
 import type { Couple } from '@/types/couples';
-import { getLatestWEAREProfile, getThisWeeksCheckIn } from '@/services/weare';
-import { getRelationshipModeLabel, DEMO_PARTNERS, type DemoPartnerId } from '@/constants/demoPartners';
+import { getLatestWEAREProfile } from '@/services/weare';
 import {
   seedDemoAssessments,
   clearDemoAssessments,
@@ -190,11 +180,7 @@ export default function HomeScreen() {
   const { user, signOut } = useAuth();
   const { isGuest, clearGuestData } = useGuest();
   const { awardXP: awardGamificationXP } = useGamification();
-  const { state: ftueState, loading: ftueLoading, markTourCompleted, markFirstLaunchComplete } = useFirstTime();
   const router = useRouter();
-  const [showTour, setShowTour] = useState(false);
-  const scrollRef = useRef<ScrollView>(null);
-  const scrollOffset = useRef(0);
 
   // Assessment state
   const [statuses, setStatuses] = useState<Record<string, CardStatus>>({});
@@ -223,14 +209,10 @@ export default function HomeScreen() {
 
   // Couple state
   const [couple, setCouple] = useState<Couple | null>(null);
-  const [dyadicAllDone, setDyadicAllDone] = useState(false);
-
-  // Consent state
-  const [consentGiven, setConsentGiven] = useState(false);
+  const [hasWeeklyCheckIn, setHasWeeklyCheckIn] = useState(false);
 
   // WEARE profile state (Phase 4)
   const [weareProfile, setWeareProfile] = useState<WEAREProfile | null>(null);
-  const [weeklyCheckIn, setWeeklyCheckIn] = useState<WeeklyCheckIn | null>(null);
 
   // Unlock state
   const [unlockState, setUnlockState] = useState<UnlockState | null>(null);
@@ -248,14 +230,8 @@ export default function HomeScreen() {
     progress: CourseProgress;
   } | null>(null);
 
-  // Display name + relationship mode from user_profiles
+  // Display name from user_profiles
   const [displayName, setDisplayName] = useState<string | null>(null);
-  const [relationshipMode, setRelationshipMode] = useState<string>('solo');
-  const [demoPartnerId, setDemoPartnerId] = useState<string | null>(null);
-
-  // Admin mode
-  const [adminMode, setAdminMode] = useState(false);
-  const adminTapRef = useRef<{ count: number; lastTap: number }>({ count: 0, lastTap: 0 });
 
   // Loading
   const [loading, setLoading] = useState(true);
@@ -276,9 +252,6 @@ export default function HomeScreen() {
     setLoading(true);
 
     try {
-      // Local var to track relationship mode across loadData steps
-      let userRelMode = 'solo';
-
       // 0a. Auto-clear stuck demo mode on startup
       try {
         const demoFlag = await AsyncStorage.getItem('demo_mode');
@@ -302,20 +275,13 @@ export default function HomeScreen() {
         // Safe to ignore
       }
 
-      // 0b. Load display name + relationship mode from user_profiles
+      // 0b. Load display name from user_profiles
       try {
         const { data: profile } = await supabase
           .from('user_profiles')
-          .select('display_name, relationship_mode, demo_partner_id')
+          .select('display_name')
           .eq('user_id', user.id)
           .single();
-        if (profile?.relationship_mode) {
-          userRelMode = profile.relationship_mode;
-          setRelationshipMode(profile.relationship_mode);
-        }
-        if (profile?.demo_partner_id) {
-          setDemoPartnerId(profile.demo_partner_id);
-        }
         if (profile?.display_name) {
           setDisplayName(profile.display_name);
         } else {
@@ -534,32 +500,20 @@ export default function HomeScreen() {
         setPortrait(null);
       }
 
-      // 3. Load couple + dyadic status
+      // 3. Load couple + weekly check-in status
       let loadedCouple: Couple | null = null;
       try {
         loadedCouple = await getMyCouple(user.id);
-        // For real_partner mode, self-couples (partner_a === partner_b) are not real couples
-        if (loadedCouple && isSelfCouple(loadedCouple) && userRelMode === 'real_partner') {
-          loadedCouple = null;
-        }
         setCouple(loadedCouple);
         if (loadedCouple) {
-          const dyadicStatus = await checkDyadicCompletion(loadedCouple.id, user.id);
-          setDyadicAllDone(dyadicStatus.allDone);
+          const wci = await getThisWeeksCheckIn(loadedCouple.id, user.id);
+          setHasWeeklyCheckIn(wci !== null);
         } else {
-          setDyadicAllDone(false);
+          setHasWeeklyCheckIn(false);
         }
       } catch {
         setCouple(null);
-        setDyadicAllDone(false);
-      }
-
-      // 3b. Load consent status
-      try {
-        const consent = await getUserConsent(user.id);
-        setConsentGiven(!!consent);
-      } catch {
-        setConsentGiven(false);
+        setHasWeeklyCheckIn(false);
       }
 
       // 4. Compute unlock state
@@ -617,18 +571,13 @@ export default function HomeScreen() {
         setStepTagline(getTaglineForStep(1));
       }
 
-      // 8. Load WEARE profile + weekly check-in if couple exists
+      // 8. Load WEARE profile if couple exists
       if (loadedCouple) {
         try {
-          const [wp, wci] = await Promise.all([
-            getLatestWEAREProfile(loadedCouple.id),
-            getThisWeeksCheckIn(loadedCouple.id, user.id),
-          ]);
+          const wp = await getLatestWEAREProfile(loadedCouple.id);
           setWeareProfile(wp);
-          setWeeklyCheckIn(wci);
         } catch {
           setWeareProfile(null);
-          setWeeklyCheckIn(null);
         }
       }
 
@@ -703,53 +652,30 @@ export default function HomeScreen() {
       })()
     : null;
 
-  // Show guided tour on first launch (works for both guests and auth users)
-  // Must wait for BOTH home data AND FTUE state to load from AsyncStorage,
-  // otherwise isFirstLaunch defaults to true and triggers for returning users.
-  // Extra guard: if the user has completed ANY assessments, they are definitely
-  // NOT first-time — skip the tour even if AsyncStorage lost the flag.
-  // hasShownTourRef prevents re-triggers from useFocusEffect loading cycles.
-  const hasShownTourRef = useRef(false);
-  useEffect(() => {
-    if (
-      !loading &&
-      !ftueLoading &&
-      ftueState.isFirstLaunch &&
-      !ftueState.completedTours.includes('tour_home') &&
-      !hasShownTourRef.current
-    ) {
-      // If user already has completed assessments, they're a returning user
-      // whose FTUE flag was lost (e.g. web storage cleared). Auto-complete tour.
-      if (completedCount > 0) {
-        markTourCompleted('tour_home');
-        markFirstLaunchComplete();
-        return;
-      }
-      // Small delay to let layout render before measuring
-      hasShownTourRef.current = true;
-      const timer = setTimeout(() => setShowTour(true), 800);
-      return () => clearTimeout(timer);
-    }
-  }, [loading, ftueLoading, ftueState.isFirstLaunch, ftueState.completedTours, completedCount]);
-
-  const handleTourComplete = useCallback(() => {
-    setShowTour(false);
-    markTourCompleted('tour_home');
-    markFirstLaunchComplete();
-  }, [markTourCompleted, markFirstLaunchComplete]);
-
   // Result cards — only show completed ones
   const resultCards = FEATURE_CARDS.filter(
     (card) =>
       card.category === 'result' && unlockState?.[card.key] === true
   );
 
-  // Feature cards for the grid — ordered so tooltip targets (courses, community)
-  // appear right after the fixed cards (journal, nuance) for natural top-to-bottom flow.
-  const gridCardOrder = ['courses', 'community', 'practices', 'treatmentPlan', 'findTherapist', 'couplesPortal'];
-  const gridCards = gridCardOrder
-    .map((key) => FEATURE_CARDS.find((c) => c.key === key && (c.category === 'feature' || c.category === 'couple')))
-    .filter((c): c is NonNullable<typeof c> => c != null);
+  // Feature cards for the grid
+  const featureGridCards = FEATURE_CARDS.filter(
+    (card) =>
+      card.category === 'feature' &&
+      ['treatmentPlan', 'findTherapist', 'practices', 'courses', 'couplesPortal', 'community'].includes(
+        card.key
+      )
+  );
+  // Also add couple portal
+  const couplePortalCard = FEATURE_CARDS.find(
+    (card) => card.key === 'couplesPortal'
+  );
+  const gridCards = [
+    ...featureGridCards,
+    ...(couplePortalCard && !featureGridCards.find((c) => c.key === 'couplesPortal')
+      ? [couplePortalCard]
+      : []),
+  ];
 
   // Recommended exercise — prioritize exercises from current Step
   const allExercises = getAllExercises();
@@ -763,7 +689,7 @@ export default function HomeScreen() {
       ? exercisePool[Math.floor(Date.now() / 86400000) % exercisePool.length]
       : null;
 
-  // Compute days since last assessment for nudges
+  // Compute days since last assessment for insights
   const daysSinceLastAssessment = (() => {
     const completedEntries = Object.values(statuses).filter(
       (s) => s.state === 'completed' && s.completedAt
@@ -776,12 +702,14 @@ export default function HomeScreen() {
     return Math.floor(diff / (1000 * 60 * 60 * 24));
   })();
 
-  // Nudges for the carousel
-  const nudges = getNudges(
+  // Insights for the carousel
+  const insights = getInsights(
     completedCount,
     hasPortrait,
     todaysCheckIn !== null,
     daysSinceLastAssessment,
+    weareProfile?.bottleneck?.variable,
+    hasWeeklyCheckIn,
   );
 
   // ─── Handlers ──────────────────────────────────────────
@@ -883,24 +811,6 @@ export default function HomeScreen() {
     }
   };
 
-  // ─── Admin Mode ────────────────────────────────────────
-
-  const handleTaglineTripleTap = () => {
-    const now = Date.now();
-    const tap = adminTapRef.current;
-    if (now - tap.lastTap < 800) {
-      tap.count += 1;
-    } else {
-      tap.count = 1;
-    }
-    tap.lastTap = now;
-
-    if (tap.count >= 3) {
-      tap.count = 0;
-      setAdminMode((prev) => !prev);
-    }
-  };
-
   // ─── Demo Mode ─────────────────────────────────────────
 
   const handleSkipToDemo = async () => {
@@ -989,11 +899,8 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
-        ref={scrollRef}
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={true}
-        onScroll={(e) => { scrollOffset.current = e.nativeEvent.contentOffset.y; }}
-        scrollEventThrottle={16}
+        showsVerticalScrollIndicator={false}
       >
         {/* ═══ 1. GREETING + JOURNEY CONTEXT ═══════════════════ */}
         <View style={styles.heroSection}>
@@ -1023,13 +930,7 @@ export default function HomeScreen() {
                       })()}
                     </Text>
                   )}
-                  <Text
-                    style={styles.heroAppTagline}
-                    onPress={handleTaglineTripleTap}
-                    suppressHighlighting
-                  >
-                    The Science of Relationships
-                  </Text>
+                  <Text style={styles.heroAppTagline}>The Science of Relationships</Text>
                 </>
               );
             })()}
@@ -1091,20 +992,9 @@ export default function HomeScreen() {
 
         {/* ═══ XP & LEVEL PROGRESS ═══════════════════════════ */}
         {!isGuest && (
-          <View
-            style={{ paddingHorizontal: Spacing.lg, marginBottom: Spacing.sm }}
-          >
+          <View style={{ paddingHorizontal: Spacing.lg, marginBottom: Spacing.md }}>
             <XPProgressBar />
           </View>
-        )}
-
-        {/* ═══ ADMIN PANEL (hidden until triple-tap) ══════════ */}
-        {adminMode && user && (
-          <AdminPanel
-            userId={user.id}
-            onDataChanged={loadData}
-            onClose={() => setAdminMode(false)}
-          />
         )}
 
         {/* ═══ 2. TODAY'S FOCUS (ONE THING) ═══════════════════ */}
@@ -1149,7 +1039,7 @@ export default function HomeScreen() {
             >
               <Text style={styles.todaysFocusEyebrow}>TODAY'S FOCUS</Text>
               <Text style={styles.todaysFocusTitle}>
-                Ask Nuance AI about your journey
+                Talk to Nuance about your journey
               </Text>
               <Text style={styles.todaysFocusMeta}>
                 Your relationship guide {'\u00B7'} Always here
@@ -1163,96 +1053,6 @@ export default function HomeScreen() {
           </View>
         ) : null}
 
-        {/* ═══ DEMO PARTNER CARD (shown when mode is demo_partner) ═══ */}
-        {relationshipMode === 'demo_partner' && demoPartnerId && DEMO_PARTNERS[demoPartnerId as DemoPartnerId] && (
-          <View style={styles.demoPartnerSection}>
-            <TouchableOpacity
-              style={styles.demoPartnerCard}
-              onPress={() => router.push('/(app)/chat' as any)}
-              activeOpacity={0.8}
-            >
-              <View style={styles.demoPartnerInfo}>
-                <View style={[
-                  styles.demoPartnerAvatar,
-                  { backgroundColor: DEMO_PARTNERS[demoPartnerId as DemoPartnerId].color + '20' },
-                ]}>
-                  <CoupleIcon size={20} color={DEMO_PARTNERS[demoPartnerId as DemoPartnerId].color} />
-                </View>
-                <View style={styles.demoPartnerTextWrap}>
-                  <Text style={styles.demoPartnerName}>
-                    Practice with {DEMO_PARTNERS[demoPartnerId as DemoPartnerId].name}
-                  </Text>
-                  <Text style={styles.demoPartnerStyle}>
-                    {DEMO_PARTNERS[demoPartnerId as DemoPartnerId].attachmentStyle}
-                  </Text>
-                </View>
-              </View>
-              <Text style={styles.demoPartnerCta}>Start {'\u2192'}</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-        {relationshipMode === 'solo' && !hasPortrait && completedCount > 0 && (
-          <TouchableOpacity
-            style={styles.demoPartnerPrompt}
-            onPress={() => router.push('/(app)/relationship-mode' as any)}
-            activeOpacity={0.7}
-          >
-            <CoupleIcon size={16} color={Colors.primary} />
-            <Text style={styles.demoPartnerPromptText}>
-              Want to practice with an AI partner?
-            </Text>
-          </TouchableOpacity>
-        )}
-        {/* ═══ CONSENT BANNER (all 6 assessments done, no consent yet) ═══ */}
-        {completedCount >= 6 && !consentGiven && (
-          <TouchableOpacity
-            style={styles.consentBanner}
-            onPress={() => router.push('/(app)/consent-waiver' as any)}
-            activeOpacity={0.7}
-          >
-            <ShieldIcon size={20} color={Colors.primary} />
-            <View style={styles.consentBannerContent}>
-              <Text style={styles.consentBannerTitle}>All Assessments Complete!</Text>
-              <Text style={styles.consentBannerDesc}>
-                Review your data choices before viewing your portrait.
-              </Text>
-            </View>
-            <Text style={styles.realPartnerPromptArrow}>{'\u2192'}</Text>
-          </TouchableOpacity>
-        )}
-
-        {/* Real partner mode — connect prompt */}
-        {relationshipMode === 'real_partner' && !couple && (
-          <TouchableOpacity
-            style={styles.realPartnerPrompt}
-            onPress={() => router.push('/(app)/partner' as any)}
-            activeOpacity={0.7}
-          >
-            <HeartDoubleIcon size={18} color={Colors.secondary} />
-            <View style={styles.realPartnerPromptContent}>
-              <Text style={styles.realPartnerPromptTitle}>Connect With Your Partner</Text>
-              <Text style={styles.realPartnerPromptDesc}>
-                Create an invite code or enter your partner's code to begin your journey together.
-              </Text>
-            </View>
-            <Text style={styles.realPartnerPromptArrow}>{'\u2192'}</Text>
-          </TouchableOpacity>
-        )}
-        {/* Couple portal ready nudge */}
-        {couple && dyadicAllDone && consentGiven && (
-          <TouchableOpacity
-            style={styles.couplePortalReadyBanner}
-            onPress={() => router.push('/(app)/couple-portal' as any)}
-            activeOpacity={0.7}
-          >
-            <SparkleIcon size={18} color={Colors.secondary} />
-            <Text style={styles.couplePortalReadyText}>
-              Your couple portrait is ready — enter the portal
-            </Text>
-            <Text style={styles.realPartnerPromptArrow}>{'\u2192'}</Text>
-          </TouchableOpacity>
-        )}
-
         {/* ═══ 3. DAILY CHECK-IN (Collapsed by default) ═══════ */}
         {hasPortrait && (
           <View style={styles.section}>
@@ -1260,32 +1060,6 @@ export default function HomeScreen() {
               todaysCheckIn={todaysCheckIn}
               onSubmit={handleCheckInSubmit}
             />
-          </View>
-        )}
-
-        {/* ═══ JOURNEY VALUE MAP (first-time users) ═══════════ */}
-        {completedCount === 0 && !hasPortrait && !isDemo && (
-          <View style={styles.journeyMapCard}>
-            <Text style={styles.journeyMapTitle}>Your Journey Ahead</Text>
-            <View style={styles.journeyStepsColumn}>
-              {[
-                { num: '1', name: 'Discover', desc: '6 sections exploring how you connect, feel, and fight' },
-                { num: '2', name: 'Portrait', desc: 'A complete relational profile synthesizing all your results' },
-                { num: '3', name: 'Growth Plan', desc: 'Personalized pathways based on your unique patterns' },
-                { num: '4', name: 'Practice', desc: 'Guided exercises, micro-courses, and AI coaching' },
-                { num: '5', name: 'Progress', desc: 'Track your growth with milestones and insights' },
-              ].map((step) => (
-                <View key={step.num} style={styles.journeyStepRow}>
-                  <View style={styles.journeyStepNumber}>
-                    <Text style={styles.journeyStepNumberText}>{step.num}</Text>
-                  </View>
-                  <View style={styles.journeyStepContent}>
-                    <Text style={styles.journeyStepName}>{step.name}</Text>
-                    <Text style={styles.journeyStepDesc}>{step.desc}</Text>
-                  </View>
-                </View>
-              ))}
-            </View>
           </View>
         )}
 
@@ -1313,11 +1087,7 @@ export default function HomeScreen() {
 
           {/* Tender Assessment card */}
           {tenderStatus.state !== 'completed' && !isDemo && (
-            <HighlightWrapper highlightId="home_assessment_cta">
-            <View
-              ref={(r) => RefRegistry.register('home_assessmentCta', r)}
-              style={styles.tenderCard}
-            >
+            <View style={styles.tenderCard}>
               {tenderStatus.state === 'not_started' && (
                 <>
                   <Text style={styles.tenderCardTitle}>The Tender Assessment</Text>
@@ -1356,7 +1126,6 @@ export default function HomeScreen() {
                 </>
               )}
             </View>
-            </HighlightWrapper>
           )}
 
           {/* Portrait generation prompt — part of journey */}
@@ -1418,11 +1187,36 @@ export default function HomeScreen() {
                 <Text style={styles.growthPlanHeadline}>
                   {journeyMap.headline}
                 </Text>
-                <Text style={styles.growthPlanRationale} numberOfLines={2}>
-                  {journeyMap.whyThisPath.length > 100
-                    ? journeyMap.whyThisPath.slice(0, 97) + '...'
+                <Text style={styles.growthPlanRationale}>
+                  {journeyMap.whyThisPath.length > 150
+                    ? journeyMap.whyThisPath.slice(0, 147) + '...'
                     : journeyMap.whyThisPath}
                 </Text>
+
+                {/* Four Movements mini-viz */}
+                <View style={styles.movementsRow}>
+                  {(['recognition', 'release', 'resonance', 'embodiment'] as const).map((key) => {
+                    const m = movements[key];
+                    return (
+                      <View key={key} style={styles.movementItem}>
+                        <View style={styles.movementBarTrack}>
+                          <View
+                            style={[
+                              styles.movementBarFill,
+                              { height: `${Math.max(m.readiness, 8)}%` },
+                            ]}
+                          />
+                        </View>
+                        <Text style={styles.movementLabel} numberOfLines={1}>
+                          {key === 'recognition' ? 'See' :
+                           key === 'release' ? 'Soften' :
+                           key === 'resonance' ? 'Feel' :
+                           'Practice'}
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
 
                 {/* Phases preview */}
                 <View style={styles.growthPlanPhases}>
@@ -1443,6 +1237,37 @@ export default function HomeScreen() {
                     </View>
                   ))}
                 </View>
+
+                {/* Quick-launch exercises from Phase 1 */}
+                {quickExercises.length > 0 && (
+                  <View style={styles.quickPracticeSection}>
+                    <Text style={styles.quickPracticeLabel}>Start a Practice</Text>
+                    {quickExercises.map((ex: any) => {
+                      const isDone = (exerciseCompletionMap[ex.id] ?? 0) > 0;
+                      return (
+                        <TouchableOpacity
+                          key={ex.id}
+                          style={[styles.quickPracticeRow, isDone && styles.quickPracticeRowDone]}
+                          activeOpacity={0.7}
+                          onPress={() => { SoundHaptics.tapSoft(); router.push({ pathname: '/(app)/exercise', params: { id: ex.id } } as any); }}
+                        >
+                          {isDone && (
+                            <Text style={styles.quickPracticeCheck}>{'\u2713'}</Text>
+                          )}
+                          <Text
+                            style={[styles.quickPracticeTitle, isDone && styles.quickPracticeTitleDone]}
+                            numberOfLines={1}
+                          >
+                            {ex.title}
+                          </Text>
+                          <Text style={styles.quickPracticeMeta}>
+                            {isDone ? 'Done' : `${ex.duration} min`} {'\u203A'}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                )}
 
                 <TouchableOpacity
                   style={styles.growthPlanCta}
@@ -1512,8 +1337,8 @@ export default function HomeScreen() {
                   {weareProfile.trend ? ` \u00B7 ${weareProfile.trend.periodLabel}` : ''}
                 </Text>
 
-                {/* Bottleneck nudge */}
-                <Text style={styles.weareSummaryNudge}>
+                {/* Bottleneck insight */}
+                <Text style={styles.weareSummaryInsight}>
                   Where the invitation is: {weareProfile.bottleneck.label}
                 </Text>
               </View>
@@ -1522,31 +1347,6 @@ export default function HomeScreen() {
             <Text style={styles.weareSummaryArrow}>
               See full picture {'\u2192'}
             </Text>
-          </TouchableOpacity>
-        )}
-
-        {/* ═══ 4c. WEEKLY CHECK-IN NUDGE ═══════════════════════ */}
-        {couple && !weeklyCheckIn && (
-          <TouchableOpacity
-            style={styles.weeklyCheckInNudge}
-            onPress={() => {
-              SoundHaptics.tapSoft();
-              router.push('/(app)/couple-portal' as any);
-            }}
-            activeOpacity={0.8}
-          >
-            <View style={styles.weeklyCheckInNudgeIcon}>
-              <HeartDoubleIcon size={18} color={Colors.secondary} />
-            </View>
-            <View style={styles.weeklyCheckInNudgeContent}>
-              <Text style={styles.weeklyCheckInNudgeTitle}>
-                Weekly Check-In
-              </Text>
-              <Text style={styles.weeklyCheckInNudgeDesc}>
-                How is the space between you this week? Take a moment to notice.
-              </Text>
-            </View>
-            <Text style={styles.weeklyCheckInNudgeArrow}>{'\u203A'}</Text>
           </TouchableOpacity>
         )}
 
@@ -1562,7 +1362,7 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* ═══ 6. INSPIRATION (Rotating nudge) ════════════════ */}
+        {/* ═══ 6. INSPIRATION (Rotating insight) ═══════════════ */}
         {stepTagline && hasPortrait && (
           <View style={styles.inspirationSection}>
             <Text style={styles.inspirationText}>
@@ -1570,13 +1370,7 @@ export default function HomeScreen() {
             </Text>
           </View>
         )}
-        {!hasPortrait && completedCount > 0 && (
-          <LockedPortraitPreview
-            completedCount={completedCount}
-            completedTypes={completedTypes}
-          />
-        )}
-        {!hasPortrait && <NudgeCarousel nudges={nudges} />}
+        {!hasPortrait && <InsightCarousel insights={insights} />}
 
         {/* ═══ 6b. MICRO-COURSE (Continue Course card) ═══════ */}
         {activeCourse && (() => {
@@ -1611,7 +1405,6 @@ export default function HomeScreen() {
             {/* View Portrait — always show if exists */}
             {hasPortrait && (
               <TouchableOpacity
-                ref={(r) => RefRegistry.register('home_portraitCard', r)}
                 style={styles.featureCard}
                 onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/portrait' as any); }}
                 activeOpacity={0.8}
@@ -1626,27 +1419,8 @@ export default function HomeScreen() {
               </TouchableOpacity>
             )}
 
-            {/* Explore Matrix — gated on ECR-R completion */}
-            {completedTypes.includes('ecr-r') && (
-              <TouchableOpacity
-                style={styles.featureCard}
-                onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/assessment-matrix' as any); }}
-                activeOpacity={0.8}
-              >
-                <View style={styles.featureCardHeader}>
-                  <CompassIcon size={22} color={Colors.text} />
-                </View>
-                <Text style={styles.featureCardTitle}>Explore Matrix</Text>
-                <Text style={styles.featureCardSubtitle} numberOfLines={2}>
-                  Interactive assessment map
-                </Text>
-              </TouchableOpacity>
-            )}
-
             {/* Journal — always unlocked */}
-            <HighlightWrapper highlightId="home_journal_card">
             <TouchableOpacity
-              ref={(r) => RefRegistry.register('home_journalCard', r)}
               style={styles.featureCard}
               onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/journal' as any); }}
               activeOpacity={0.8}
@@ -1659,11 +1433,9 @@ export default function HomeScreen() {
                 Your relationship timeline
               </Text>
             </TouchableOpacity>
-            </HighlightWrapper>
 
-            {/* Nuance AI */}
+            {/* Nuance Coach */}
             <TouchableOpacity
-              ref={(r: any) => RefRegistry.register('home_nuanceCard', r)}
               style={[
                 styles.featureCard,
                 completedCount === 0 && styles.featureCardLocked,
@@ -1684,7 +1456,7 @@ export default function HomeScreen() {
                   <LockIcon size={14} color={Colors.textMuted} />
                 )}
               </View>
-              <Text style={styles.featureCardTitle}>Nuance AI</Text>
+              <Text style={styles.featureCardTitle}>Talk to Nuance</Text>
               <Text style={styles.featureCardSubtitle} numberOfLines={2}>
                 Your relationship guide
               </Text>
@@ -1698,18 +1470,9 @@ export default function HomeScreen() {
             {/* Other feature cards */}
             {gridCards.map((card) => {
               const isUnlocked = unlockState?.[card.key] === true;
-              // Register refs for FTUE tooltips (courses, community)
-              const refKey = card.key === 'courses' ? 'home_coursesCard'
-                : card.key === 'community' ? 'home_communityCard'
-                : null;
-              // Highlight IDs for post-tour gold pulse
-              const highlightId = card.key === 'courses' ? 'home_courses_card'
-                : card.key === 'community' ? 'home_community_card'
-                : null;
-              const cardContent = (
+              return (
                 <TouchableOpacity
                   key={card.key}
-                  ref={refKey ? (r: any) => RefRegistry.register(refKey, r) : undefined}
                   style={[
                     styles.featureCard,
                     !isUnlocked && styles.featureCardLocked,
@@ -1733,13 +1496,6 @@ export default function HomeScreen() {
                     </Text>
                   )}
                 </TouchableOpacity>
-              );
-              return highlightId ? (
-                <HighlightWrapper key={card.key} highlightId={highlightId}>
-                  {cardContent}
-                </HighlightWrapper>
-              ) : (
-                <React.Fragment key={card.key}>{cardContent}</React.Fragment>
               );
             })}
           </View>
@@ -1853,28 +1609,6 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* ═══ Relationship Mode ════════════════════════════════ */}
-        <View style={styles.modeSection}>
-          <Text style={styles.modeSectionTitle}>Relationship Mode</Text>
-          <View style={styles.modeCard}>
-            <View style={styles.modeCardContent}>
-              <Text style={styles.modeLabel}>{getRelationshipModeLabel(relationshipMode as any)}</Text>
-              {relationshipMode === 'demo_partner' && demoPartnerId && DEMO_PARTNERS[demoPartnerId as DemoPartnerId] && (
-                <Text style={styles.modePartnerName}>
-                  Practicing with {DEMO_PARTNERS[demoPartnerId as DemoPartnerId].name}
-                </Text>
-              )}
-            </View>
-            <TouchableOpacity
-              style={styles.modeChangeButton}
-              onPress={() => router.push('/(app)/relationship-mode' as any)}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.modeChangeText}>Change</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
         {/* ═══ Logout ═════════════════════════════════════════ */}
         <TouchableOpacity
           style={styles.logoutButton}
@@ -1884,13 +1618,6 @@ export default function HomeScreen() {
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </ScrollView>
-
-      {/* ═══ FTUE Overlays ═══════════════════════════════════ */}
-      {showTour && (
-        <GuidedTour tour={HOME_TOUR} onComplete={handleTourComplete} />
-      )}
-      <TooltipManager screen="home" scrollRef={scrollRef} scrollOffset={scrollOffset} />
-      <WelcomeAudio screenKey="home" />
     </SafeAreaView>
   );
 }
@@ -2065,8 +1792,8 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
 
-  // ── Nudge Card ──
-  nudgeCard: {
+  // ── Insight Card ──
+  insightCard: {
     marginHorizontal: Spacing.xl,
     marginBottom: Spacing.lg,
     backgroundColor: Colors.surfaceElevated,
@@ -2079,10 +1806,10 @@ const styles = StyleSheet.create({
     borderColor: Colors.borderLight,
     ...Shadows.subtle,
   },
-  nudgeIcon: {
+  insightIcon: {
     fontSize: 24,
   },
-  nudgeText: {
+  insightText: {
     fontSize: FontSizes.bodySmall,
     color: Colors.text,
     flex: 1,
@@ -2775,7 +2502,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
     backgroundColor: Colors.white,
     borderRadius: BorderRadius.lg,
-    padding: Spacing.md,
+    padding: Spacing.lg,
     ...Shadows.card,
   },
   growthPlanTitle: {
@@ -2786,17 +2513,17 @@ const styles = StyleSheet.create({
     letterSpacing: 1.2,
   },
   growthPlanHeadline: {
-    fontSize: FontSizes.body,
+    fontSize: FontSizes.headingM,
     fontWeight: '700' as const,
     color: Colors.text,
-    marginBottom: Spacing.xs,
-    lineHeight: 22,
+    marginBottom: Spacing.sm,
+    lineHeight: 26,
   },
   growthPlanRationale: {
-    fontSize: FontSizes.caption,
+    fontSize: FontSizes.bodySmall,
     color: Colors.textSecondary,
-    lineHeight: 18,
-    marginBottom: Spacing.sm,
+    lineHeight: 20,
+    marginBottom: Spacing.md,
   },
   movementsRow: {
     flexDirection: 'row' as const,
@@ -2831,17 +2558,17 @@ const styles = StyleSheet.create({
     textAlign: 'center' as const,
   },
   growthPlanPhases: {
-    marginBottom: Spacing.sm,
+    marginBottom: Spacing.md,
   },
   growthPlanPhaseRow: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    marginBottom: Spacing.xs,
+    marginBottom: Spacing.sm,
   },
   growthPlanPhaseDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     backgroundColor: Colors.border,
     marginRight: Spacing.sm,
   },
@@ -2855,13 +2582,13 @@ const styles = StyleSheet.create({
   },
   growthPlanPhaseName: {
     flex: 1,
-    fontSize: FontSizes.caption,
+    fontSize: FontSizes.bodySmall,
     fontWeight: '600' as const,
     color: Colors.text,
     marginRight: Spacing.sm,
   },
   growthPlanPhaseWeeks: {
-    fontSize: FontSizes.caption,
+    fontSize: FontSizes.bodySmall,
     color: Colors.textSecondary,
     flexShrink: 0,
   },
@@ -2928,10 +2655,10 @@ const styles = StyleSheet.create({
   },
   growthPlanCta: {
     alignItems: 'center' as const,
-    paddingVertical: Spacing.xs,
+    paddingVertical: Spacing.sm,
   },
   growthPlanCtaText: {
-    fontSize: FontSizes.bodySmall,
+    fontSize: FontSizes.body,
     fontWeight: '600' as const,
     color: Colors.secondary,
   },
@@ -2999,7 +2726,7 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.bodySmall,
     color: Colors.textSecondary,
   },
-  weareSummaryNudge: {
+  weareSummaryInsight: {
     fontSize: FontSizes.caption,
     color: Colors.secondary,
     fontStyle: 'italic' as const,
@@ -3009,51 +2736,6 @@ const styles = StyleSheet.create({
     fontWeight: '600' as const,
     color: Colors.primary,
     textAlign: 'right' as const,
-  },
-
-  // ── Weekly Check-In Nudge ──
-  weeklyCheckInNudge: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.md,
-    borderWidth: 1,
-    borderColor: Colors.secondary + '40',
-    borderLeftWidth: 3,
-    borderLeftColor: Colors.secondary,
-    ...Shadows.subtle,
-  },
-  weeklyCheckInNudgeIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: Colors.secondary + '15',
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-    marginRight: Spacing.sm,
-  },
-  weeklyCheckInNudgeContent: {
-    flex: 1,
-    gap: 2,
-  },
-  weeklyCheckInNudgeTitle: {
-    fontSize: FontSizes.body,
-    fontWeight: '600' as const,
-    fontFamily: FontFamilies.heading,
-    color: Colors.secondary,
-  },
-  weeklyCheckInNudgeDesc: {
-    fontSize: FontSizes.caption,
-    fontFamily: FontFamilies.body,
-    color: Colors.textSecondary,
-    lineHeight: 17,
-  },
-  weeklyCheckInNudgeArrow: {
-    fontSize: FontSizes.headingL,
-    color: Colors.secondary,
-    fontWeight: '300' as const,
-    marginLeft: Spacing.xs,
   },
 
   // ── Streak Mini ──
@@ -3079,59 +2761,6 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     textAlign: 'center',
     lineHeight: 22,
-  },
-
-  // ── Relationship Mode ──
-  modeSection: {
-    marginHorizontal: Spacing.xl,
-    marginTop: Spacing.lg,
-    gap: Spacing.xs,
-  },
-  modeSectionTitle: {
-    fontSize: FontSizes.caption,
-    fontFamily: FontFamilies.heading,
-    fontWeight: '600',
-    color: Colors.textMuted,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase',
-    marginBottom: Spacing.xs,
-  },
-  modeCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.surfaceElevated,
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.md,
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
-  },
-  modeCardContent: {
-    flex: 1,
-    gap: 2,
-  },
-  modeLabel: {
-    fontSize: FontSizes.body,
-    fontFamily: FontFamilies.heading,
-    fontWeight: '600',
-    color: Colors.text,
-  },
-  modePartnerName: {
-    fontSize: FontSizes.caption,
-    fontFamily: FontFamilies.accent,
-    fontStyle: 'italic',
-    color: Colors.textSecondary,
-  },
-  modeChangeButton: {
-    paddingVertical: Spacing.xs,
-    paddingHorizontal: Spacing.md,
-    backgroundColor: Colors.primaryFaded,
-    borderRadius: BorderRadius.pill,
-  },
-  modeChangeText: {
-    fontSize: FontSizes.caption,
-    fontFamily: FontFamilies.heading,
-    fontWeight: '600',
-    color: Colors.primary,
   },
 
   // ── Logout ──
@@ -3166,201 +2795,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-  },
-
-  // ── Demo Partner Card ──
-  demoPartnerSection: {
-    paddingHorizontal: Spacing.lg,
-    marginBottom: Spacing.sm,
-  },
-  demoPartnerCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: Colors.surfaceElevated,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    ...Shadows.subtle,
-  },
-  demoPartnerInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    flex: 1,
-  },
-  demoPartnerAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  demoPartnerTextWrap: {
-    flex: 1,
-  },
-  demoPartnerName: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '700',
-    color: Colors.text,
-  },
-  demoPartnerStyle: {
-    fontSize: FontSizes.caption,
-    color: Colors.textSecondary,
-    marginTop: 1,
-  },
-  demoPartnerCta: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '600',
-    color: Colors.primary,
-  },
-  demoPartnerPrompt: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm,
-    marginBottom: Spacing.xs,
-  },
-  demoPartnerPromptText: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.primary,
-    fontWeight: '500',
-  },
-
-  // ── Journey Value Map ──
-  journeyMapCard: {
-    marginHorizontal: Spacing.lg,
-    marginBottom: Spacing.md,
-    backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.lg,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    ...Shadows.card,
-  },
-  journeyMapTitle: {
-    fontSize: FontSizes.body,
-    fontWeight: '700',
-    fontFamily: FontFamilies.heading,
-    color: Colors.text,
-    marginBottom: Spacing.md,
-  },
-  journeyStepsColumn: {
-    gap: Spacing.sm,
-  },
-  journeyStepRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  journeyStepNumber: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: Colors.primary + '15',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  journeyStepNumberText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: Colors.primary,
-  },
-  journeyStepContent: {
-    flex: 1,
-  },
-  journeyStepName: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '600',
-    color: Colors.text,
-  },
-  journeyStepDesc: {
-    fontSize: 11,
-    color: Colors.textSecondary,
-    marginTop: 1,
-  },
-
-  // ── Real Partner Connect Prompt ──
-  realPartnerPrompt: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    marginHorizontal: Spacing.lg,
-    marginBottom: Spacing.md,
-    backgroundColor: Colors.secondary + '08',
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
-    borderWidth: 1,
-    borderColor: Colors.secondary + '25',
-  },
-  realPartnerPromptContent: {
-    flex: 1,
-  },
-  realPartnerPromptTitle: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '700',
-    color: Colors.text,
-  },
-  realPartnerPromptDesc: {
-    fontSize: FontSizes.caption,
-    color: Colors.textSecondary,
-    marginTop: 2,
-  },
-  realPartnerPromptArrow: {
-    fontSize: FontSizes.body,
-    fontWeight: '600',
-    color: Colors.secondary,
-  },
-
-  // ── Couple Portal Ready Banner ──
-  couplePortalReadyBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    marginHorizontal: Spacing.lg,
-    marginBottom: Spacing.md,
-    backgroundColor: Colors.secondary + '12',
-    borderRadius: BorderRadius.md,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    borderWidth: 1,
-    borderColor: Colors.secondary + '30',
-  },
-  couplePortalReadyText: {
-    flex: 1,
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '600',
-    color: Colors.secondary,
-  },
-  consentBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    marginHorizontal: Spacing.lg,
-    marginBottom: Spacing.md,
-    backgroundColor: Colors.primary + '10',
-    borderRadius: BorderRadius.lg,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.md,
-    borderWidth: 1,
-    borderColor: Colors.primary + '25',
-  },
-  consentBannerContent: {
-    flex: 1,
-    gap: 2,
-  },
-  consentBannerTitle: {
-    fontSize: FontSizes.body,
-    fontFamily: FontFamilies.heading,
-    fontWeight: '600',
-    color: Colors.primary,
-  },
-  consentBannerDesc: {
-    fontSize: FontSizes.caption,
-    fontFamily: 'JosefinSans_400Regular',
-    color: Colors.textSecondary,
   },
 });

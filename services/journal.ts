@@ -3,7 +3,8 @@
  * into a unified timeline for the Journal screen.
  *
  * Reads from: daily_check_ins, exercise_completions, practice_completions,
- *             chat_sessions, xp_transactions, assessments
+ *             chat_sessions, xp_transactions, assessments, step_minigame_outputs,
+ *             step_progress
  */
 
 import { supabase } from './supabase';
@@ -17,7 +18,8 @@ export type JournalEntryType =
   | 'chat'
   | 'assessment'
   | 'xp'
-  | 'minigame';
+  | 'minigame'
+  | 'step_milestone';
 
 export interface JournalEntry {
   id: string;
@@ -101,7 +103,8 @@ export async function getJournalEntriesForDate(
     chatSessionsResult,
     xpResult,
     assessmentsResult,
-    minigamesResult,
+    minigameResult,
+    stepProgressResult,
   ] = await Promise.allSettled([
     // 1. Daily check-ins (uses DATE type — exact match)
     supabase
@@ -160,6 +163,16 @@ export async function getJournalEntriesForDate(
       .from('step_minigame_outputs')
       .select('*')
       .eq('user_id', userId)
+      .gte('completed_at', dayStart)
+      .lt('completed_at', dayEnd)
+      .order('completed_at', { ascending: true }),
+
+    // 8. Step progress milestones (TIMESTAMPTZ — completed steps only)
+    supabase
+      .from('step_progress')
+      .select('*')
+      .eq('user_id', userId)
+      .not('completed_at', 'is', null)
       .gte('completed_at', dayStart)
       .lt('completed_at', dayEnd)
       .order('completed_at', { ascending: true }),
@@ -286,20 +299,39 @@ export async function getJournalEntriesForDate(
   }
 
   // Process mini-game outputs
-  if (minigamesResult.status === 'fulfilled' && minigamesResult.value.data) {
-    for (const row of minigamesResult.value.data) {
+  if (minigameResult.status === 'fulfilled' && minigameResult.value.data) {
+    for (const row of minigameResult.value.data) {
       const output = row.output ?? {};
       entries.push({
         id: row.id,
         type: 'minigame',
         timestamp: row.completed_at,
-        title: output.title || 'Mini-Game',
-        subtitle: row.step_number ? `Step ${row.step_number}` : undefined,
+        title: output.title || `Step ${row.step_number} Exercise`,
+        subtitle: `Step ${row.step_number}`,
         data: {
-          gameId: row.game_id,
           stepNumber: row.step_number,
+          gameId: row.game_id,
           insights: output.insights ?? [],
           gameData: output.data ?? {},
+        },
+      });
+    }
+  }
+
+  // Process step progress milestones
+  if (stepProgressResult.status === 'fulfilled' && stepProgressResult.value.data) {
+    for (const row of stepProgressResult.value.data) {
+      entries.push({
+        id: row.id,
+        type: 'step_milestone',
+        timestamp: row.completed_at,
+        title: `Step ${row.step_number} Completed`,
+        subtitle: 'Healing Journey Milestone',
+        data: {
+          stepNumber: row.step_number,
+          status: row.status,
+          startedAt: row.started_at,
+          completedAt: row.completed_at,
         },
       });
     }
@@ -340,7 +372,8 @@ export async function getJournalCalendarData(
     practicesResult,
     chatSessionsResult,
     assessmentsResult,
-    minigamesResult,
+    minigameCalResult,
+    stepProgressCalResult,
   ] = await Promise.allSettled([
     supabase
       .from('daily_check_ins')
@@ -383,6 +416,14 @@ export async function getJournalCalendarData(
       .eq('user_id', userId)
       .gte('completed_at', startISO)
       .lt('completed_at', endISO),
+
+    supabase
+      .from('step_progress')
+      .select('completed_at')
+      .eq('user_id', userId)
+      .not('completed_at', 'is', null)
+      .gte('completed_at', startISO)
+      .lt('completed_at', endISO),
   ]);
 
   // Map check-ins (DATE type)
@@ -420,10 +461,17 @@ export async function getJournalCalendarData(
     }
   }
 
-  // Map mini-games
-  if (minigamesResult.status === 'fulfilled' && minigamesResult.value.data) {
-    for (const row of minigamesResult.value.data) {
+  // Map mini-game outputs
+  if (minigameCalResult.status === 'fulfilled' && minigameCalResult.value.data) {
+    for (const row of minigameCalResult.value.data) {
       addDay(dateFromTimestamp(row.completed_at), 'minigame');
+    }
+  }
+
+  // Map step milestones
+  if (stepProgressCalResult.status === 'fulfilled' && stepProgressCalResult.value.data) {
+    for (const row of stepProgressCalResult.value.data) {
+      addDay(dateFromTimestamp(row.completed_at), 'step_milestone');
     }
   }
 

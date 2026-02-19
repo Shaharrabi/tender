@@ -221,7 +221,7 @@ export default function TheUnsaid({ onComplete, onSkip, phaseColor }: MiniGameCo
               style={styles.writingAreaOuter}
             >
               <View style={styles.writingArea}>
-                <View style={styles.linedPaper}>
+                <View style={styles.linedPaper} pointerEvents="none">
                   {[0, 1, 2, 3, 4, 5].map(i => (
                     <View key={i} style={styles.paperLine} />
                   ))}
@@ -459,7 +459,6 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
     borderWidth: 1,
     borderColor: Colors.borderLight,
-    overflow: 'hidden',
     ...Shadows.subtle,
   },
   linedPaper: {

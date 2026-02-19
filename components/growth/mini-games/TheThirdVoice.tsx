@@ -224,7 +224,7 @@ export default function TheThirdVoice({ onComplete, onSkip, phaseColor }: MiniGa
             >
               <View style={styles.writingArea}>
                 {/* Subtle lined paper effect */}
-                <View style={styles.linedPaper}>
+                <View style={styles.linedPaper} pointerEvents="none">
                   {[0, 1, 2, 3, 4, 5, 6].map(i => (
                     <View key={i} style={styles.paperLine} />
                   ))}
@@ -471,7 +471,6 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
     borderWidth: 1,
     borderColor: Colors.borderLight,
-    overflow: 'hidden',
     ...Shadows.subtle,
   },
   linedPaper: {
