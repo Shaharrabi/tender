@@ -118,10 +118,10 @@ import type { ComponentType } from 'react';
 import type { IconProps } from '@/assets/graphics/icons';
 import type { AssessmentConfig, AllAssessmentScores, AssessmentType } from '@/types';
 import type { IndividualPortrait } from '@/types/portrait';
-import type { WEAREProfile } from '@/types/weare';
+import type { WEAREProfile, WeeklyCheckIn } from '@/types/weare';
 import type { DailyCheckIn } from '@/types/growth';
 import type { Couple } from '@/types/couples';
-import { getLatestWEAREProfile } from '@/services/weare';
+import { getLatestWEAREProfile, getThisWeeksCheckIn } from '@/services/weare';
 import { getRelationshipModeLabel, DEMO_PARTNERS, type DemoPartnerId } from '@/constants/demoPartners';
 import {
   seedDemoAssessments,
@@ -230,6 +230,7 @@ export default function HomeScreen() {
 
   // WEARE profile state (Phase 4)
   const [weareProfile, setWeareProfile] = useState<WEAREProfile | null>(null);
+  const [weeklyCheckIn, setWeeklyCheckIn] = useState<WeeklyCheckIn | null>(null);
 
   // Unlock state
   const [unlockState, setUnlockState] = useState<UnlockState | null>(null);
@@ -616,13 +617,18 @@ export default function HomeScreen() {
         setStepTagline(getTaglineForStep(1));
       }
 
-      // 8. Load WEARE profile if couple exists
+      // 8. Load WEARE profile + weekly check-in if couple exists
       if (loadedCouple) {
         try {
-          const wp = await getLatestWEAREProfile(loadedCouple.id);
+          const [wp, wci] = await Promise.all([
+            getLatestWEAREProfile(loadedCouple.id),
+            getThisWeeksCheckIn(loadedCouple.id, user.id),
+          ]);
           setWeareProfile(wp);
+          setWeeklyCheckIn(wci);
         } catch {
           setWeareProfile(null);
+          setWeeklyCheckIn(null);
         }
       }
 
@@ -1516,6 +1522,31 @@ export default function HomeScreen() {
             <Text style={styles.weareSummaryArrow}>
               See full picture {'\u2192'}
             </Text>
+          </TouchableOpacity>
+        )}
+
+        {/* ═══ 4c. WEEKLY CHECK-IN NUDGE ═══════════════════════ */}
+        {couple && !weeklyCheckIn && (
+          <TouchableOpacity
+            style={styles.weeklyCheckInNudge}
+            onPress={() => {
+              SoundHaptics.tapSoft();
+              router.push('/(app)/couple-portal' as any);
+            }}
+            activeOpacity={0.8}
+          >
+            <View style={styles.weeklyCheckInNudgeIcon}>
+              <HeartDoubleIcon size={18} color={Colors.secondary} />
+            </View>
+            <View style={styles.weeklyCheckInNudgeContent}>
+              <Text style={styles.weeklyCheckInNudgeTitle}>
+                Weekly Check-In
+              </Text>
+              <Text style={styles.weeklyCheckInNudgeDesc}>
+                How is the space between you this week? Take a moment to notice.
+              </Text>
+            </View>
+            <Text style={styles.weeklyCheckInNudgeArrow}>{'\u203A'}</Text>
           </TouchableOpacity>
         )}
 
@@ -2978,6 +3009,51 @@ const styles = StyleSheet.create({
     fontWeight: '600' as const,
     color: Colors.primary,
     textAlign: 'right' as const,
+  },
+
+  // ── Weekly Check-In Nudge ──
+  weeklyCheckInNudge: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.secondary + '40',
+    borderLeftWidth: 3,
+    borderLeftColor: Colors.secondary,
+    ...Shadows.subtle,
+  },
+  weeklyCheckInNudgeIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.secondary + '15',
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    marginRight: Spacing.sm,
+  },
+  weeklyCheckInNudgeContent: {
+    flex: 1,
+    gap: 2,
+  },
+  weeklyCheckInNudgeTitle: {
+    fontSize: FontSizes.body,
+    fontWeight: '600' as const,
+    fontFamily: FontFamilies.heading,
+    color: Colors.secondary,
+  },
+  weeklyCheckInNudgeDesc: {
+    fontSize: FontSizes.caption,
+    fontFamily: FontFamilies.body,
+    color: Colors.textSecondary,
+    lineHeight: 17,
+  },
+  weeklyCheckInNudgeArrow: {
+    fontSize: FontSizes.headingL,
+    color: Colors.secondary,
+    fontWeight: '300' as const,
+    marginLeft: Spacing.xs,
   },
 
   // ── Streak Mini ──

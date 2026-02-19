@@ -42,7 +42,12 @@ import {
 } from '@/services/growth';
 import { ensureStepProgress, toggleStepCriteria, completeStep } from '@/services/steps';
 import { getPracticesForStep, TWELVE_STEPS } from '@/utils/steps/twelve-steps';
+import { getMyCouple } from '@/services/couples';
+import { getThisWeeksCheckIn, saveWeeklyCheckIn } from '@/services/weare';
+import WeeklyCheckInCard from '@/components/weare/WeeklyCheckInCard';
 import type { GrowthEdgeProgress, DailyCheckIn, StepProgress } from '@/types/growth';
+import type { WeeklyCheckIn } from '@/types/weare';
+import type { Couple } from '@/types/couples';
 
 export default function GrowthScreen() {
   const { user } = useAuth();
@@ -56,6 +61,8 @@ export default function GrowthScreen() {
   const [currentStepNumber, setCurrentStepNumber] = useState(1);
   const [checkedCriteria, setCheckedCriteria] = useState<Record<number, number[]>>({});
   const [showFoundation, setShowFoundation] = useState(false);
+  const [couple, setCouple] = useState<Couple | null>(null);
+  const [weeklyCheckIn, setWeeklyCheckIn] = useState<WeeklyCheckIn | null>(null);
 
   const loadData = useCallback(async () => {
     if (!user) return;
@@ -88,6 +95,19 @@ export default function GrowthScreen() {
       // Check if first visit — show Foundation audio
       const heard = await hasHeardFoundation();
       if (!heard) setShowFoundation(true);
+
+      // Load couple + weekly check-in (non-blocking for individual users)
+      try {
+        const myCouple = await getMyCouple(user.id);
+        setCouple(myCouple);
+        if (myCouple) {
+          const wci = await getThisWeeksCheckIn(myCouple.id, user.id);
+          setWeeklyCheckIn(wci);
+        }
+      } catch {
+        setCouple(null);
+        setWeeklyCheckIn(null);
+      }
     } catch (err) {
       console.error('Failed to load growth data:', err);
     } finally {
@@ -230,6 +250,26 @@ export default function GrowthScreen() {
           />
         </View>
 
+        {/* Weekly Check-In (shown only when user has a couple) */}
+        {couple && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Weekly Check-In</Text>
+            <Text style={styles.sectionSubtitle}>
+              Notice the space between you and your partner this week.
+            </Text>
+            <WeeklyCheckInCard
+              existingCheckIn={weeklyCheckIn}
+              onSubmit={async (stress, support, satisfaction, highlight) => {
+                if (!user || !couple) return;
+                const saved = await saveWeeklyCheckIn(
+                  user.id, couple.id, stress, support, satisfaction, highlight
+                );
+                setWeeklyCheckIn(saved);
+              }}
+            />
+          </View>
+        )}
+
         {/* Growth Timeline */}
         {edges.length > 0 && (
           <View style={styles.section}>
@@ -370,6 +410,13 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.headingM,
     fontWeight: '700',
     color: Colors.text,
+  },
+  sectionSubtitle: {
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    lineHeight: 20,
+    marginTop: -Spacing.xs,
   },
 
   // Recent check-ins

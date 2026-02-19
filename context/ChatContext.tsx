@@ -72,6 +72,8 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
   // Track couple mode in refs to avoid stale closures
   const coupleModeRef = useRef(coupleMode ?? false);
   const coupleIdRef = useRef(coupleId ?? '');
+  // Streaming lock — prevents double-sends during streaming (separate from `sending` UI state)
+  const streamingLockRef = useRef(false);
 
   useEffect(() => {
     coupleModeRef.current = coupleMode ?? false;
@@ -153,7 +155,7 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
       setError('Please sign in to use the chat.');
       return;
     }
-    if (sending) return;
+    if (sending || streamingLockRef.current) return;
 
     // Sanitize and validate input
     const sanitized = sanitizeTextInput(text);
@@ -277,25 +279,126 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
         throw new Error(errorMessage);
       }
 
-      const data = await response.json();
-      if (__DEV__) console.log('[Chat] Got reply, length:', data.reply?.length);
+      // ─── Handle SSE streaming response ─────────────────
+      const contentType = response.headers.get('content-type') || '';
+      if (contentType.includes('text/event-stream') && response.body) {
+        // Create a placeholder assistant message for streaming
+        const streamMsgId = `stream-${Date.now()}`;
+        const streamMsg: ChatMessage = {
+          id: streamMsgId,
+          sessionId: session.id,
+          role: 'assistant',
+          content: '',
+          createdAt: new Date().toISOString(),
+        };
+        setMessages((prev) => [...prev, streamMsg]);
 
-      // Add assistant response
-      const assistantMsg: ChatMessage = {
-        id: `reply-${Date.now()}`,
-        sessionId: session.id,
-        role: 'assistant',
-        content: data.reply,
-        metadata: data.metadata,
-        createdAt: new Date().toISOString(),
-      };
-      setMessages((prev) => [...prev, assistantMsg]);
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let fullContent = '';
+        let firstChunkReceived = false;
+        streamingLockRef.current = true;
 
-      // Update session title if provided
-      if (data.sessionTitle) {
-        const updatedSession = { ...session, title: data.sessionTitle };
-        setActiveSession(updatedSession);
-        activeSessionRef.current = updatedSession;
+        try {
+          while (true) {
+            const { done, value } = reader.read
+              ? await reader.read()
+              : { done: true, value: undefined };
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+              if (!line.startsWith('data: ')) continue;
+              const data = line.slice(6).trim();
+              if (!data) continue;
+
+              try {
+                const event = JSON.parse(data);
+
+                if (event.type === 'text') {
+                  fullContent += event.text;
+                  // Hide typing indicator on first text chunk
+                  if (!firstChunkReceived) {
+                    firstChunkReceived = true;
+                    setSending(false);
+                  }
+                  // Update the streaming message progressively
+                  setMessages((prev) =>
+                    prev.map((msg) =>
+                      msg.id === streamMsgId
+                        ? { ...msg, content: fullContent }
+                        : msg
+                    )
+                  );
+                } else if (event.type === 'metadata') {
+                  // Update session title if provided
+                  if (event.sessionTitle) {
+                    const updatedSession = { ...session, title: event.sessionTitle };
+                    setActiveSession(updatedSession);
+                    activeSessionRef.current = updatedSession;
+                  }
+                  // Store metadata on the message
+                  setMessages((prev) =>
+                    prev.map((msg) =>
+                      msg.id === streamMsgId
+                        ? {
+                            ...msg,
+                            metadata: {
+                              detectedState: event.detectedState,
+                              safetyTriggered: event.safetyTriggered,
+                            },
+                          }
+                        : msg
+                    )
+                  );
+                } else if (event.type === 'error') {
+                  throw new Error(event.error || 'Stream interrupted');
+                }
+                // 'done' type — stream complete, nothing to do
+              } catch (parseErr: any) {
+                if (parseErr.message?.includes('Stream interrupted')) throw parseErr;
+                // Skip unparseable SSE lines
+              }
+            }
+          }
+        } catch (streamErr: any) {
+          // If we got some content, keep it; otherwise show error
+          if (!fullContent) {
+            setMessages((prev) =>
+              prev.map((msg) =>
+                msg.id === streamMsgId
+                  ? { ...msg, content: `I wasn't able to connect just now. ${streamErr.message || 'Please try again.'}` }
+                  : msg
+              )
+            );
+          }
+        }
+
+        if (__DEV__) console.log('[Chat] Stream complete, length:', fullContent.length);
+      } else {
+        // ─── Fallback: non-streaming JSON response ─────────
+        const data = await response.json();
+        if (__DEV__) console.log('[Chat] Got reply (non-stream), length:', data.reply?.length);
+
+        const assistantMsg: ChatMessage = {
+          id: `reply-${Date.now()}`,
+          sessionId: session.id,
+          role: 'assistant',
+          content: data.reply,
+          metadata: data.metadata,
+          createdAt: new Date().toISOString(),
+        };
+        setMessages((prev) => [...prev, assistantMsg]);
+
+        if (data.sessionTitle) {
+          const updatedSession = { ...session, title: data.sessionTitle };
+          setActiveSession(updatedSession);
+          activeSessionRef.current = updatedSession;
+        }
       }
     } catch (e: any) {
       console.error('[Chat] Send message error:', e);
@@ -310,6 +413,7 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
       setMessages((prev) => [...prev, errorMsg]);
     } finally {
       setSending(false);
+      streamingLockRef.current = false;
     }
   };
 

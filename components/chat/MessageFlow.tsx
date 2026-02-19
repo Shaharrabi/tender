@@ -58,12 +58,16 @@ export default function MessageFlow({
   const starters = suggestedStarters ?? DEFAULT_STARTERS;
   const scrollRef = useRef<ScrollView>(null);
 
+  // Track streaming content growth for auto-scroll (throttled to every ~200 chars)
+  const lastMsg = messages.length > 0 ? messages[messages.length - 1] : null;
+  const streamScrollKey = lastMsg ? Math.floor(lastMsg.content.length / 200) : 0;
+
   useEffect(() => {
-    // Auto-scroll to bottom when new messages arrive
+    // Auto-scroll to bottom when new messages arrive or streaming content grows
     setTimeout(() => {
       scrollRef.current?.scrollToEnd({ animated: true });
     }, 100);
-  }, [messages.length, sending]);
+  }, [messages.length, sending, streamScrollKey]);
 
   // ── Empty state: welcome screen ──
 

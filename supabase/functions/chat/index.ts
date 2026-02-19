@@ -207,6 +207,18 @@ serve(async (req: Request) => {
       .select('edge_id, stage, practice_count, insights, milestones')
       .eq('user_id', userId);
 
+    // 1h. Fetch all exercise completion IDs (for protocol growth progress)
+    const { data: allCompletionIds } = await supabase
+      .from('exercise_completions')
+      .select('exercise_id')
+      .eq('user_id', userId);
+
+    // 1i. Fetch all practice completion IDs
+    const { data: allPracticeIds } = await supabase
+      .from('practice_completions')
+      .select('practice_id')
+      .eq('user_id', userId);
+
     console.log('[chat] Context loaded — portrait:', !!hasPortrait, 'checkIns:', (checkInRows ?? []).length, 'exercises:', (exerciseRows ?? []).length, 'reflections:', (reflectionRows ?? []).length);
 
     // 2. Fetch recent messages (last 20)
@@ -234,11 +246,19 @@ serve(async (req: Request) => {
     const safetyResult = checkSafetyBasic(message);
 
     // 4. Build system prompt — individual or couple mode, with generic fallback
-    let systemPrompt: string;
+    //
+    // We split into two layers for Anthropic prompt caching:
+    //   stablePrompt  — portrait, coaching rules, protocol context (cached)
+    //   dynamicPrompt — check-ins, exercises, journal, mode context (not cached)
+    //
+    // The stable portion is identical across messages in a session, so caching
+    // saves ~90% on input tokens after the first turn.
+    let stablePrompt: string;
+    let dynamicPrompt = '';
 
     if (!hasPortrait) {
       // No portrait yet — use generic prompt so Nuance is still usable
-      systemPrompt = buildGenericSystemPrompt(safetyResult, currentStepNumber);
+      stablePrompt = buildGenericSystemPrompt(safetyResult, currentStepNumber);
     } else if (coupleMode && coupleId) {
       // Couple coaching mode: fetch partner portrait + relationship portrait
       const { data: coupleRow } = await supabase
@@ -271,7 +291,7 @@ serve(async (req: Request) => {
         .maybeSingle();
 
       if (partnerPortraitRow && relationshipPortraitRow) {
-        systemPrompt = buildCoupleSystemPromptFromRows(
+        stablePrompt = buildCoupleSystemPromptFromRows(
           portraitRow,
           partnerPortraitRow,
           relationshipPortraitRow,
@@ -280,22 +300,48 @@ serve(async (req: Request) => {
         );
       } else {
         // Fall back to individual mode if couple data incomplete
-        systemPrompt = buildSystemPromptFromRow(portraitRow, safetyResult);
+        stablePrompt = buildSystemPromptFromRow(portraitRow, safetyResult);
       }
     } else {
-      systemPrompt = buildSystemPromptFromRow(portraitRow, safetyResult, currentStepNumber, completedSteps);
+      stablePrompt = buildSystemPromptFromRow(portraitRow, safetyResult, currentStepNumber, completedSteps);
+    }
+
+    // 4a-bis. Append protocol-specific coaching context (individual mode only)
+    // Protocol context is stable per user — goes into the cached block
+    if (hasPortrait && !(coupleMode && coupleId)) {
+      try {
+        const cs = portraitRow.composite_scores;
+        const patterns = portraitRow.patterns || [];
+        const nc = portraitRow.negative_cycle || {};
+
+        const protocol = matchProtocolInline(cs, patterns, nc);
+        const movements = assessFourMovementsInline(cs, patterns);
+        const completionMap = buildCompletionMap(allCompletionIds, allPracticeIds);
+        const progress = calculateGrowthProgressInline(protocol, completionMap);
+        const currentPhaseIdx = determineCurrentPhase(protocol, progress.phases);
+
+        stablePrompt += buildProtocolContextBlock(
+          protocol, movements, progress, currentPhaseIdx
+        );
+
+        console.log('[chat] Protocol:', protocol.id, 'Phase:', currentPhaseIdx, 'Progress:', progress.overall + '%');
+      } catch (e) {
+        console.error('[chat] Protocol context failed (non-fatal):', e);
+        // Non-fatal — Nuance continues without protocol context
+      }
     }
 
     // 4b. Append rich user context (journal, exercises, check-ins, growth edges)
-    systemPrompt += buildUserContextBlock(checkInRows, exerciseRows, reflectionRows, assessmentRows, growthEdgeRows);
+    // This changes between messages (new check-ins, exercises) — dynamic block
+    dynamicPrompt += buildUserContextBlock(checkInRows, exerciseRows, reflectionRows, assessmentRows, growthEdgeRows);
 
     // 4c. Append relationship mode context
-    systemPrompt += buildModeContext(relationshipMode, demoPartnerId, currentStepNumber);
+    dynamicPrompt += buildModeContext(relationshipMode, demoPartnerId, currentStepNumber);
 
     // 5. Diagnostic observation (internal — guides coaching, never shown to user)
     const diagnosticObs = detectDiagnosticObservation(message);
     if (diagnosticObs) {
-      systemPrompt += `\n\n## Internal Observation (do not mention this to the user)\nDetected: ${diagnosticObs.observation}. Suggested move: "${diagnosticObs.move}"`;
+      dynamicPrompt += `\n\n## Internal Observation (do not mention this to the user)\nDetected: ${diagnosticObs.observation}. Suggested move: "${diagnosticObs.move}"`;
     }
 
     // 6. Build conversation for Claude
@@ -307,51 +353,49 @@ serve(async (req: Request) => {
       { role: 'user', content: message },
     ];
 
-    // 7. Call Claude API
-    console.log('[chat] Calling Claude API — messages:', claudeMessages.length, 'system prompt length:', systemPrompt.length);
-    const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
+    // 7. Call Claude API with prompt caching
+    //
+    // System prompt is split into two content blocks:
+    //   Block 1 (cached): Portrait + coaching rules + protocol context
+    //     → Stable across messages in a session. ~3000-5000 tokens.
+    //     → cache_control: {"type": "ephemeral"} (5-minute TTL, refreshed on hit)
+    //   Block 2 (uncached): User context + mode context + diagnostic observations
+    //     → Changes per message (new check-ins, exercises, etc.)
+    //
+    // After the first message, Block 1 is read from cache at 0.1x cost.
+    // This typically saves ~$0.003/message for a 4000-token system prompt.
+    const systemBlocks: Array<{ type: string; text: string; cache_control?: { type: string } }> = [
+      {
+        type: 'text',
+        text: stablePrompt,
+        cache_control: { type: 'ephemeral' },
       },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1024,
-        system: systemPrompt,
-        messages: claudeMessages,
-      }),
-    });
-
-    if (!claudeResponse.ok) {
-      const errText = await claudeResponse.text();
-      console.error('[chat] Claude API error:', claudeResponse.status, errText);
-      // Return a more specific error to help diagnose issues
-      const statusCode = claudeResponse.status;
-      if (statusCode === 401) {
-        throw new Error('Claude API authentication failed — the API key may be invalid or expired. Please check your ANTHROPIC_API_KEY secret.');
-      } else if (statusCode === 429) {
-        throw new Error('Claude API rate limit exceeded. Please wait a moment and try again.');
-      } else if (statusCode === 529 || statusCode === 503) {
-        throw new Error('Claude API is temporarily overloaded. Please try again in a moment.');
-      } else {
-        throw new Error(`Claude API error (${statusCode}): ${errText.substring(0, 200)}`);
-      }
+    ];
+    // Only add the dynamic block if there's content
+    if (dynamicPrompt.trim()) {
+      systemBlocks.push({
+        type: 'text',
+        text: dynamicPrompt,
+      });
     }
 
-    const claudeData = await claudeResponse.json();
-    const reply = claudeData.content?.[0]?.text ?? 'I\'m here with you, but I wasn\'t able to form a response just now. Can you try again?';
-    console.log('[chat] Claude replied — length:', reply.length);
+    const totalPromptLength = stablePrompt.length + dynamicPrompt.length;
+    console.log('[chat] Calling Claude API — messages:', claudeMessages.length, 'system prompt length:', totalPromptLength, '(stable:', stablePrompt.length, '+ dynamic:', dynamicPrompt.length, ')');
 
     // 7. Detect state from user message (basic)
     const detectedState = detectStateBasic(message);
 
-    // 8. Save messages to correct table
+    // 8. Determine tables for persistence
     const messageTable = coupleMode && coupleId ? 'couple_chat_messages' : 'chat_messages';
     const sessionTable = coupleMode && coupleId ? 'couple_chat_sessions' : 'chat_sessions';
 
-    // Save user message
+    // Generate title from first message if session is new
+    let sessionTitle: string | undefined;
+    if (history.length === 0) {
+      sessionTitle = message.length > 60 ? message.substring(0, 57) + '...' : message;
+    }
+
+    // Save user message immediately (before streaming starts)
     const userMsgInsert: any = {
       session_id: sessionId,
       role: 'user',
@@ -367,49 +411,162 @@ serve(async (req: Request) => {
     }
     await supabase.from(messageTable).insert(userMsgInsert);
 
-    // 9. Save assistant reply
-    const assistantMsgInsert: any = {
-      session_id: sessionId,
-      role: 'assistant',
-      content: reply,
-      metadata: {
-        detectedState: detectedState,
+    // ─── STREAMING: Call Claude with stream: true ─────────
+    const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
       },
-    };
-    if (coupleMode && coupleId) {
-      assistantMsgInsert.user_id = userId;
-    }
-    await supabase.from(messageTable).insert(assistantMsgInsert);
-
-    // 10. Update session
-    await supabase
-      .from(sessionTable)
-      .update({ updated_at: new Date().toISOString() })
-      .eq('id', sessionId);
-
-    // 11. Generate title from first message if session is new
-    let sessionTitle: string | undefined;
-    if (history.length === 0) {
-      sessionTitle = message.length > 60 ? message.substring(0, 57) + '...' : message;
-      await supabase
-        .from(sessionTable)
-        .update({ title: sessionTitle })
-        .eq('id', sessionId);
-    }
-
-    // 12. Return response
-    return new Response(
-      JSON.stringify({
-        reply,
-        metadata: {
-          detectedState,
-          safetyTriggered: !safetyResult.safe,
-          safetyCategory: safetyResult.category || undefined,
-        },
-        sessionTitle,
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1024,
+        stream: true,
+        system: systemBlocks,
+        messages: claudeMessages,
       }),
-      { headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
-    );
+    });
+
+    if (!claudeResponse.ok) {
+      const errText = await claudeResponse.text();
+      console.error('[chat] Claude API error:', claudeResponse.status, errText);
+      const statusCode = claudeResponse.status;
+      if (statusCode === 401) {
+        throw new Error('Claude API authentication failed — the API key may be invalid or expired. Please check your ANTHROPIC_API_KEY secret.');
+      } else if (statusCode === 429) {
+        throw new Error('Claude API rate limit exceeded. Please wait a moment and try again.');
+      } else if (statusCode === 529 || statusCode === 503) {
+        throw new Error('Claude API is temporarily overloaded. Please try again in a moment.');
+      } else {
+        throw new Error(`Claude API error (${statusCode}): ${errText.substring(0, 200)}`);
+      }
+    }
+
+    // Stream the response from Claude → Client as SSE
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
+    let fullReply = '';
+
+    const readableStream = new ReadableStream({
+      async start(controller) {
+        const reader = claudeResponse.body!.getReader();
+        let buffer = '';
+        let inputTokens = 0;
+        let outputTokens = 0;
+        let cacheRead = 0;
+        let cacheCreate = 0;
+
+        try {
+          // Send initial metadata event
+          const metaEvent = `data: ${JSON.stringify({
+            type: 'metadata',
+            detectedState,
+            safetyTriggered: !safetyResult.safe,
+            safetyCategory: safetyResult.category || undefined,
+            sessionTitle,
+          })}\n\n`;
+          controller.enqueue(encoder.encode(metaEvent));
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || ''; // Keep incomplete line in buffer
+
+            for (const line of lines) {
+              if (!line.startsWith('data: ')) continue;
+              const data = line.slice(6).trim();
+              if (data === '[DONE]') continue;
+
+              try {
+                const event = JSON.parse(data);
+
+                // Extract text deltas from content_block_delta events
+                if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
+                  const text = event.delta.text;
+                  fullReply += text;
+                  // Forward text chunk to client
+                  const chunk = `data: ${JSON.stringify({ type: 'text', text })}\n\n`;
+                  controller.enqueue(encoder.encode(chunk));
+                }
+
+                // Capture usage from message_delta (end of stream)
+                if (event.type === 'message_delta' && event.usage) {
+                  outputTokens = event.usage.output_tokens || 0;
+                }
+
+                // Capture usage from message_start
+                if (event.type === 'message_start' && event.message?.usage) {
+                  inputTokens = event.message.usage.input_tokens || 0;
+                  cacheRead = event.message.usage.cache_read_input_tokens || 0;
+                  cacheCreate = event.message.usage.cache_creation_input_tokens || 0;
+                }
+              } catch {
+                // Skip unparseable SSE lines
+              }
+            }
+          }
+
+          // Log cache performance
+          console.log('[chat] Claude replied (streamed) — length:', fullReply.length,
+            '| tokens in:', inputTokens, 'out:', outputTokens,
+            'cache_read:', cacheRead, 'cache_create:', cacheCreate,
+            cacheRead > 0 ? '(CACHE HIT ✓)' : cacheCreate > 0 ? '(CACHE WRITE)' : '(NO CACHE)');
+
+          // Send done event
+          const doneEvent = `data: ${JSON.stringify({ type: 'done' })}\n\n`;
+          controller.enqueue(encoder.encode(doneEvent));
+
+          // ─── Persist after stream completes (non-blocking for client) ───
+          const finalReply = fullReply || "I'm here with you, but I wasn't able to form a response just now. Can you try again?";
+
+          // Save assistant reply
+          const assistantMsgInsert: any = {
+            session_id: sessionId,
+            role: 'assistant',
+            content: finalReply,
+            metadata: { detectedState },
+          };
+          if (coupleMode && coupleId) {
+            assistantMsgInsert.user_id = userId;
+          }
+          await supabase.from(messageTable).insert(assistantMsgInsert);
+
+          // Update session timestamp + title
+          if (sessionTitle) {
+            await supabase.from(sessionTable).update({
+              updated_at: new Date().toISOString(),
+              title: sessionTitle,
+            }).eq('id', sessionId);
+          } else {
+            await supabase.from(sessionTable).update({
+              updated_at: new Date().toISOString(),
+            }).eq('id', sessionId);
+          }
+        } catch (streamErr: any) {
+          console.error('[chat] Stream error:', streamErr?.message || streamErr);
+          const errorEvent = `data: ${JSON.stringify({
+            type: 'error',
+            error: streamErr?.message || 'Stream interrupted',
+          })}\n\n`;
+          controller.enqueue(encoder.encode(errorEvent));
+        } finally {
+          controller.close();
+        }
+      },
+    });
+
+    return new Response(readableStream, {
+      headers: {
+        ...getCorsHeaders(req),
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
+    });
   } catch (error: any) {
     console.error('[chat] Function error:', error?.message || error);
     // Return the actual error message so the client can display something helpful
@@ -922,6 +1079,445 @@ function getStepContext(stepNumber: number): {
   };
 
   return steps[stepNumber] || steps[1];
+}
+
+// ─── Inline Protocol Matching (ported from utils/steps/intervention-protocols.ts) ──
+
+// The Edge Function (Deno) cannot import from the React Native app.
+// These are pure functions with zero external dependencies.
+
+interface InlineProtocol {
+  id: string;
+  name: string;
+  description: string;
+  rationale: string;
+  regulationFirst: boolean;
+  phases: Array<{
+    name: string;
+    weekRange: string;
+    focus: string;
+    practices: string[];
+    nuanceGuidance: string;
+  }>;
+  stepEmphasis: number[];
+  priorityPractices: string[];
+  contraindications: string[];
+}
+
+interface InlineGrowthProgress {
+  overall: number;
+  phases: Array<{ name: string; completed: number; total: number; pct: number; isComplete: boolean }>;
+}
+
+interface InlineFourMovements {
+  recognition: number;
+  release: number;
+  resonance: number;
+  embodiment: number;
+}
+
+/** Priority-ordered protocol matching based on composite scores. */
+function matchProtocolInline(
+  cs: any,
+  patterns: any[],
+  negativeCycle: any
+): InlineProtocol {
+  const patternFlags = (patterns || []).flatMap((p: any) => p.flags || []);
+  const position = negativeCycle?.position || '';
+
+  // Priority 1: Regulation foundation
+  if (cs.regulationScore < 35 || cs.windowWidth < 35) {
+    return buildRegulationFoundationInline(cs);
+  }
+
+  // Priority 2: Anxious-Reactive
+  if (cs.windowWidth < 50 && cs.engagement > 55 && cs.regulationScore < 50 && position === 'pursuer') {
+    return buildAnxiousReactiveInline(cs);
+  }
+
+  // Priority 3: Avoidant-Withdrawn
+  if (cs.accessibility < 45 && cs.engagement < 50 && position === 'withdrawer') {
+    return buildAvoidantWithdrawnInline(cs);
+  }
+
+  // Priority 4: Low differentiation
+  if (cs.selfLeadership < 45 && patternFlags.includes('self_abandonment_risk')) {
+    return buildLowDiffReactiveInline(cs, patternFlags);
+  }
+
+  // Priority 5: Values misalignment
+  if (cs.valuesCongruence < 55 && patternFlags.includes('core_values_conflict')) {
+    return buildValuesMisalignedInline(cs);
+  }
+
+  // Default: Balanced growth
+  return buildBalancedGrowthInline(cs);
+}
+
+function buildRegulationFoundationInline(cs: any): InlineProtocol {
+  return {
+    id: 'regulation_foundation',
+    name: 'Building Your Foundation',
+    description: 'Regulation — the ability to stay grounded under stress — is your foundational growth area.',
+    rationale: `Your regulation score (${cs.regulationScore}/100) and window width (${cs.windowWidth}/100) indicate your nervous system reaches its limit quickly. Building regulation capacity first creates the foundation for all other growth.`,
+    regulationFirst: true,
+    phases: [
+      {
+        name: 'Stabilize', weekRange: 'Weeks 1-3',
+        focus: 'Learn to recognize early signs of activation. Build a daily grounding practice.',
+        practices: ['window-check', 'grounding-5-4-3-2-1', 'parts-check-in'],
+        nuanceGuidance: 'Prioritize regulation. If the user is activated or shutdown, don\'t push for insight. Meet them where they are. Teach the window of tolerance concept.',
+      },
+      {
+        name: 'Expand', weekRange: 'Weeks 4-6',
+        focus: 'Practice staying regulated during low-stakes conversations. Build co-regulation skills.',
+        practices: ['recognize-cycle', 'stress-reducing-conversation', 'self-compassion-break'],
+        nuanceGuidance: 'Start gently connecting patterns to their portrait. Use "I notice" language. Celebrate any moment they catch themselves before flooding.',
+      },
+      {
+        name: 'Connect', weekRange: 'Weeks 7-10',
+        focus: 'Now that your window is wider, begin the emotional work: sharing feelings, practicing repair.',
+        practices: ['soft-startup', 'repair-attempt', 'turning-toward', 'emotional-bid'],
+        nuanceGuidance: 'They\'re ready for deeper work now. Connect growth edges to practices. Reference their values and anchors.',
+      },
+    ],
+    stepEmphasis: [1, 7, 2, 4, 9],
+    priorityPractices: ['window-check', 'grounding-5-4-3-2-1', 'parts-check-in', 'recognize-cycle', 'self-compassion-break'],
+    contraindications: [
+      'Don\'t push for vulnerable disclosure early — their window is too narrow',
+      'Avoid intensive conflict processing until regulation is more stable',
+      'Don\'t interpret their shutting down as resistance — it\'s their nervous system protecting them',
+    ],
+  };
+}
+
+function buildAnxiousReactiveInline(cs: any): InlineProtocol {
+  return {
+    id: 'anxious_reactive',
+    name: 'From Reactivity to Connection',
+    description: 'You feel relationships deeply and move toward connection instinctively. Your growth path is about channeling that energy more skillfully.',
+    rationale: `Your profile combines deep relational investment (engagement: ${cs.engagement}/100) with a narrow regulation window (${cs.windowWidth}/100) and reactive nervous system (regulation: ${cs.regulationScore}/100). Emotion regulation training first, then attachment-focused work.`,
+    regulationFirst: true,
+    phases: [
+      {
+        name: 'Stabilize Affect', weekRange: 'Weeks 1-3',
+        focus: 'Learn to slow down your nervous system before engaging.',
+        practices: ['window-check', 'grounding-5-4-3-2-1', 'parts-check-in', 'recognize-cycle'],
+        nuanceGuidance: 'When they come in activated, validate first then redirect to regulation. Use their anchor points. Don\'t analyze the content of the fight yet.',
+      },
+      {
+        name: 'Emotion Labeling & Reappraisal', weekRange: 'Weeks 4-6',
+        focus: 'Build emotional vocabulary. Name what\'s happening underneath the urgency.',
+        practices: ['accessing-primary-emotions', 'protector-dialogue', 'self-compassion-break'],
+        nuanceGuidance: 'Help them identify primary emotions under secondary ones. "Underneath your frustration, what are you really feeling? Fear? Longing?"',
+      },
+      {
+        name: 'Attachment-Focused Connection', weekRange: 'Weeks 7-10',
+        focus: 'Practice reaching for your partner from a grounded place. Express needs without urgency.',
+        practices: ['bonding-through-vulnerability', 'hold-me-tight', 'soft-startup', 'emotional-bid'],
+        nuanceGuidance: 'Connect their reaching behavior to attachment needs. Help them express needs from their primary emotions rather than their protest behavior.',
+      },
+      {
+        name: 'Maintenance & Relapse Prevention', weekRange: 'Weeks 11-12',
+        focus: 'Build sustainable daily practices. Create a personalized relapse plan.',
+        practices: ['rituals-of-connection', 'relationship-values-compass'],
+        nuanceGuidance: 'Normalize setbacks. Help them build a "when I notice the old pattern" plan. Celebrate growth.',
+      },
+    ],
+    stepEmphasis: [1, 4, 5, 2, 9, 7],
+    priorityPractices: ['window-check', 'accessing-primary-emotions', 'soft-startup', 'bonding-through-vulnerability', 'self-compassion-break', 'recognize-cycle'],
+    contraindications: [
+      'Don\'t encourage them to "just talk to their partner" when they\'re flooded',
+      'Avoid exploring partner\'s perspective before they\'ve processed their own primary emotions',
+      'Don\'t validate pursuit behavior as "just wanting connection" — name the pattern gently',
+    ],
+  };
+}
+
+function buildAvoidantWithdrawnInline(cs: any): InlineProtocol {
+  return {
+    id: 'avoidant_withdrawn',
+    name: 'From Distance to Presence',
+    description: 'You manage relational stress by creating space. Your growth is about learning to stay present in the discomfort of closeness, in gradual doses.',
+    rationale: `Your profile shows low emotional accessibility (${cs.accessibility}/100) and engagement (${cs.engagement}/100) with a withdrawer position. Graded intimacy exposures with an autonomy-supportive approach — pacing is everything.`,
+    regulationFirst: false,
+    phases: [
+      {
+        name: 'Engagement Preparation', weekRange: 'Weeks 1-3',
+        focus: 'Explore your beliefs about closeness. Practice brief toleration of emotional arousal.',
+        practices: ['parts-check-in', 'protector-dialogue', 'window-check'],
+        nuanceGuidance: 'Use autonomy-supportive language. Don\'t push for feelings. Normalize their protective distance. Help them see avoidance as adaptive, then name its cost.',
+      },
+      {
+        name: 'Graded Intimacy', weekRange: 'Weeks 4-8',
+        focus: 'Short timed sharing exercises. Start factual, progress to mildly vulnerable. The goal: 10% more open.',
+        practices: ['stress-reducing-conversation', 'love-maps', 'turning-toward', 'emotional-bid'],
+        nuanceGuidance: 'Celebrate any disclosure. Don\'t ask "how do you feel?" directly — ask "what was that like?" Frame sharing as brave, not expected.',
+      },
+      {
+        name: 'Differentiation Coaching', weekRange: 'Weeks 9-12',
+        focus: 'Build the I-Position: "I think..." "I feel..." "I want..." without reactivity.',
+        practices: ['values-compass', 'relationship-values-compass', 'self-compassion-break'],
+        nuanceGuidance: 'Help them differentiate between "I don\'t feel" and "I don\'t want to feel." Connect withdrawal to what it costs.',
+      },
+      {
+        name: 'Conflict Structure & Integration', weekRange: 'Weeks 13-14',
+        focus: 'Structured turn-taking. Negotiated time-outs with re-engagement commitment.',
+        practices: ['repair-attempt', 'soft-startup', 'dear-man', 'rituals-of-connection'],
+        nuanceGuidance: 'They can handle more now. Practice repair scripts. Help them see the connection between showing up emotionally and getting what they want.',
+      },
+    ],
+    stepEmphasis: [1, 3, 6, 5, 7, 2],
+    priorityPractices: ['protector-dialogue', 'love-maps', 'stress-reducing-conversation', 'values-compass', 'turning-toward', 'self-compassion-break'],
+    contraindications: [
+      'Don\'t force emotion-focused exposure too quickly — it increases withdrawal',
+      'Avoid "why don\'t you just share how you feel?" — this is exactly what their system resists',
+      'Don\'t interpret their distance as not caring — their distance IS their caring strategy',
+      'Emphasize autonomy and choice, not obligation',
+    ],
+  };
+}
+
+function buildLowDiffReactiveInline(cs: any, flags: string[]): InlineProtocol {
+  return {
+    id: 'low_diff_reactive',
+    name: 'Finding Your Center',
+    description: 'You tend to lose yourself in relationships. Your growth is about building a stronger "I" that can stay connected without disappearing.',
+    rationale: `Your self-leadership score (${cs.selfLeadership}/100) suggests your sense of self in relationships needs strengthening. ${flags.includes('self_abandonment_risk') ? 'Multiple assessments flag self-abandonment risk: you accommodate to maintain connection, which builds resentment over time.' : 'Your differentiation patterns suggest difficulty maintaining your position under relational pressure.'}`,
+    regulationFirst: cs.regulationScore < 45,
+    phases: [
+      {
+        name: 'Self-Compassion Foundation', weekRange: 'Weeks 1-3',
+        focus: 'Before you can hold a clear position, you need self-compassion.',
+        practices: ['self-compassion-break', 'parts-check-in', 'protector-dialogue'],
+        nuanceGuidance: 'Watch for shame. Their pattern of self-abandonment probably comes with deep self-criticism. Validate before everything.',
+      },
+      {
+        name: 'Building the I-Position', weekRange: 'Weeks 4-7',
+        focus: 'Practice knowing and stating what you think, feel, want, and need.',
+        practices: ['values-compass', 'accessing-primary-emotions', 'defusion-from-stories'],
+        nuanceGuidance: 'Help them practice "I think..." statements. Celebrate any moment they state a preference before checking with their partner.',
+      },
+      {
+        name: 'Negotiation Skills', weekRange: 'Weeks 8-10',
+        focus: 'Learn structured negotiation. Tolerate the tension of "we see this differently."',
+        practices: ['soft-startup', 'dear-man', 'four-horsemen-antidotes'],
+        nuanceGuidance: 'Frame disagreement as healthy differentiation, not threat. Help them see that their partner can handle their truth.',
+      },
+      {
+        name: 'Integration & Forgiveness', weekRange: 'Weeks 11-12',
+        focus: 'Consolidate the new "I" position. Practice repair for times you lost yourself.',
+        practices: ['repair-attempt', 'relationship-values-compass', 'rituals-of-connection'],
+        nuanceGuidance: 'Help them forgive themselves for the accommodating. Celebrate the courage of the new position.',
+      },
+    ],
+    stepEmphasis: [4, 3, 1, 5, 7, 9],
+    priorityPractices: ['self-compassion-break', 'values-compass', 'accessing-primary-emotions', 'soft-startup', 'dear-man', 'protector-dialogue'],
+    contraindications: [
+      'Don\'t push for immediate confrontation with partner — build internal capacity first',
+      'Avoid framing their accommodation as "codependency" — it\'s a learned survival strategy',
+      'Don\'t let them use new assertiveness skills as a weapon — it must come from self-leadership, not reactivity',
+    ],
+  };
+}
+
+function buildValuesMisalignedInline(cs: any): InlineProtocol {
+  return {
+    id: 'values_misaligned',
+    name: 'Aligning Heart and Action',
+    description: 'Your values are clear but your behavior doesn\'t always match. This creates quiet tension that erodes satisfaction from the inside.',
+    rationale: `Your values congruence score (${cs.valuesCongruence}/100) reveals a gap between intention and action. Your protective patterns pull you away from what you value most.`,
+    regulationFirst: cs.regulationScore < 45,
+    phases: [
+      {
+        name: 'Values Clarity', weekRange: 'Weeks 1-2',
+        focus: 'Get crystal clear on your top values. See the gap with compassion.',
+        practices: ['values-compass', 'defusion-from-stories'],
+        nuanceGuidance: 'Use ACT-style values exploration. Don\'t moralize. Help them see the gap with compassion: "Your values are real. So is the pattern that overrides them."',
+      },
+      {
+        name: 'Understanding the Protective Pattern', weekRange: 'Weeks 3-5',
+        focus: 'Why does the pattern win? What is it protecting you from?',
+        practices: ['protector-dialogue', 'parts-check-in', 'accessing-primary-emotions'],
+        nuanceGuidance: 'IFS-style exploration. Help them have compassion for the part that protects. Name the fear underneath.',
+      },
+      {
+        name: 'Values-Aligned Action', weekRange: 'Weeks 6-8',
+        focus: 'Start taking small values-aligned actions. Tolerate the discomfort of living your values.',
+        practices: ['willingness-stance', 'soft-startup', 'bonding-through-vulnerability'],
+        nuanceGuidance: 'Use their top value as a compass. When they describe a situation, ask: "What would [their top value] have you do here?"',
+      },
+      {
+        name: 'Sustainability', weekRange: 'Weeks 9-10',
+        focus: 'Build sustainable practices that keep you aligned. Create value-based rituals.',
+        practices: ['relationship-values-compass', 'rituals-of-connection'],
+        nuanceGuidance: 'Celebrate alignment moments. Build a library of "I chose my value" stories.',
+      },
+    ],
+    stepEmphasis: [4, 3, 7, 5, 1],
+    priorityPractices: ['values-compass', 'protector-dialogue', 'willingness-stance', 'bonding-through-vulnerability', 'relationship-values-compass'],
+    contraindications: [
+      'Don\'t shame them for the gap — they already feel it deeply',
+      'Avoid "just be authentic" advice — the pattern has a function they need to understand first',
+      'Don\'t push for big values-aligned actions before they understand what they\'re protecting against',
+    ],
+  };
+}
+
+function buildBalancedGrowthInline(cs: any): InlineProtocol {
+  return {
+    id: 'balanced_growth',
+    name: 'Deepening Your Connection',
+    description: 'Your profile shows no critical deficits — a solid foundation to build from. Your growth is about deepening and stretching into new territory.',
+    rationale: 'Your scores show adequate regulation, reasonable accessibility, and clear values. This is enrichment territory — intentional deepening, not crisis management.',
+    regulationFirst: false,
+    phases: [
+      {
+        name: 'Deepen Awareness', weekRange: 'Weeks 1-2',
+        focus: 'Understand your patterns, your cycle, your parts.',
+        practices: ['recognize-cycle', 'parts-check-in', 'love-maps'],
+        nuanceGuidance: 'Explore with curiosity. Help them see nuance in their patterns.',
+      },
+      {
+        name: 'Stretch & Grow', weekRange: 'Weeks 3-5',
+        focus: 'Work your growth edges. Take the 10% different action.',
+        practices: ['bonding-through-vulnerability', 'soft-startup', 'hold-me-tight'],
+        nuanceGuidance: 'Challenge gently. They can handle more depth. Push into growth edges.',
+      },
+      {
+        name: 'Sustain & Celebrate', weekRange: 'Weeks 6-8',
+        focus: 'Build rituals. Create your relationship mission. Celebrate the journey.',
+        practices: ['rituals-of-connection', 'relationship-values-compass', 'fondness-admiration'],
+        nuanceGuidance: 'Help them build sustainable practices. Celebrate growth.',
+      },
+    ],
+    stepEmphasis: [1, 4, 5, 7, 11, 12],
+    priorityPractices: ['recognize-cycle', 'bonding-through-vulnerability', 'soft-startup', 'rituals-of-connection', 'love-maps'],
+    contraindications: [
+      'Don\'t assume "no critical deficits" means "no problems" — stay attuned to what surfaces',
+    ],
+  };
+}
+
+/** Compute Four Movements readiness from composite scores. */
+function assessFourMovementsInline(cs: any, patterns: any[]): InlineFourMovements {
+  // Recognition = can you see the pattern?
+  const patternAwareness = Math.min((patterns || []).length * 15, 50);
+  const recognition = Math.round(Math.min(patternAwareness + cs.selfLeadership * 0.3 + cs.regulationScore * 0.2, 100));
+
+  // Release = can you let go of certainty?
+  const flags = (patterns || []).flatMap((p: any) => p.flags || []);
+  const managerPenalty = flags.filter((f: string) =>
+    f === 'false_differentiation' || f === 'intellectual_bypass_risk'
+  ).length * 10;
+  const release = Math.round(Math.min(Math.max(cs.valuesCongruence * 0.4 + cs.selfLeadership * 0.3 - managerPenalty + 20, 0), 100));
+
+  // Resonance = can you be moved by your partner?
+  const resonance = Math.round(cs.accessibility * 0.3 + cs.responsiveness * 0.4 + cs.engagement * 0.3);
+
+  // Embodiment = can you live it daily?
+  const embodiment = Math.round(cs.regulationScore * 0.3 + cs.selfLeadership * 0.3 + cs.valuesCongruence * 0.4);
+
+  return { recognition, release, resonance, embodiment };
+}
+
+/** Build completion map from exercise + practice completion rows. */
+function buildCompletionMap(exerciseRows: any[] | null, practiceRows: any[] | null): Record<string, number> {
+  const map: Record<string, number> = {};
+  for (const row of exerciseRows ?? []) {
+    const id = row.exercise_id;
+    if (id) map[id] = (map[id] || 0) + 1;
+  }
+  for (const row of practiceRows ?? []) {
+    const id = row.practice_id;
+    if (id) map[id] = (map[id] || 0) + 1;
+  }
+  return map;
+}
+
+/** Calculate growth progress based on exercise completions relative to protocol phases. */
+function calculateGrowthProgressInline(protocol: InlineProtocol, completionMap: Record<string, number>): InlineGrowthProgress {
+  const phases = protocol.phases.map((phase) => {
+    const total = phase.practices.length;
+    const completed = phase.practices.filter(id => (completionMap[id] ?? 0) > 0).length;
+    return {
+      name: phase.name,
+      completed,
+      total,
+      pct: total > 0 ? Math.round((completed / total) * 100) : 0,
+      isComplete: total > 0 && completed >= total,
+    };
+  });
+
+  // Weighted average: earlier phases count more
+  let weightedSum = 0;
+  let weightTotal = 0;
+  phases.forEach((p, i) => {
+    const weight = phases.length - i;
+    weightedSum += p.pct * weight;
+    weightTotal += weight;
+  });
+
+  return {
+    overall: weightTotal > 0 ? Math.round(weightedSum / weightTotal) : 0,
+    phases,
+  };
+}
+
+/** Determine the current phase (first incomplete phase index). */
+function determineCurrentPhase(protocol: InlineProtocol, phaseProgress: InlineGrowthProgress['phases']): number {
+  for (let i = 0; i < phaseProgress.length; i++) {
+    if (!phaseProgress[i].isComplete) return i;
+  }
+  return phaseProgress.length - 1; // All complete — stay on last phase
+}
+
+/** Build the protocol context block for injection into the system prompt. */
+function buildProtocolContextBlock(
+  protocol: InlineProtocol,
+  movements: InlineFourMovements,
+  progress: InlineGrowthProgress,
+  currentPhaseIdx: number
+): string {
+  const phase = protocol.phases[currentPhaseIdx] || protocol.phases[0];
+
+  // Find strongest and weakest movements
+  const mvEntries = Object.entries(movements) as [string, number][];
+  const sorted = [...mvEntries].sort((a, b) => a[1] - b[1]);
+  const weakest = sorted[0];
+  const strongest = sorted[sorted.length - 1];
+
+  const mvLabels: Record<string, string> = {
+    recognition: 'Recognition (seeing patterns clearly)',
+    release: 'Release (letting go of old stories)',
+    resonance: 'Resonance (feeling with each other)',
+    embodiment: 'Embodiment (living it daily)',
+  };
+
+  let block = `\n\n## Your Coaching Protocol for This Person: ${protocol.name}
+
+${protocol.rationale}
+
+### Current Phase: ${phase.name} (${phase.weekRange})
+${phase.focus}
+
+### YOUR COACHING GUIDANCE FOR THIS PHASE
+${phase.nuanceGuidance}
+
+### What to Avoid With This Person
+${protocol.contraindications.map(c => `- ${c}`).join('\n')}
+
+### Priority Practices
+${protocol.priorityPractices.join(', ')}
+
+### Four Movements Readiness
+Recognition: ${movements.recognition}/100 | Release: ${movements.release}/100 | Resonance: ${movements.resonance}/100 | Embodiment: ${movements.embodiment}/100
+Strongest movement: ${mvLabels[strongest[0]] || strongest[0]}. Growth frontier: ${mvLabels[weakest[0]] || weakest[0]}.
+
+### Growth Progress: ${progress.overall}%
+${progress.phases.map(p => `- ${p.name}: ${p.pct}% (${p.completed}/${p.total} practices${p.isComplete ? ' ✓' : ''})`).join('\n')}`;
+
+  return block;
 }
 
 // ─── Rich User Context (journal, exercises, check-ins, growth edges) ──────
