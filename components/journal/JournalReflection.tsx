@@ -43,6 +43,8 @@ import {
 import type { IconProps } from '@/assets/graphics/icons';
 import type { DailyReflection, QuestionResponse } from '@/services/journal';
 import { SoundHaptics } from '@/services/SoundHapticsService';
+import { useWritingTimer } from '@/utils/hooks/useWritingTimer';
+import WritingMilestoneBanner from './WritingMilestoneBanner';
 
 // ─── Constants ───────────────────────────────────────────
 
@@ -83,6 +85,15 @@ export default function JournalReflection({
   saving = false,
   isToday,
 }: JournalReflectionProps) {
+  // Writing timer — tracks active writing time for milestone celebrations
+  const {
+    milestone,
+    onFieldFocus,
+    onFieldBlur,
+    onTextChange,
+    clearMilestone,
+  } = useWritingTimer();
+
   // Local state
   const [selectedTags, setSelectedTags] = useState<string[]>(
     reflection?.dayTags || []
@@ -169,6 +180,7 @@ export default function JournalReflection({
     newAnswers[index] = text;
     setAnswers(newAnswers);
     triggerSave({ questionAnswers: newAnswers });
+    onTextChange(); // Track writing time
   };
 
   // ─── Free text change ────────────────────────────────
@@ -176,6 +188,7 @@ export default function JournalReflection({
   const handleFreeTextChange = (text: string) => {
     setFreeText(text);
     triggerSave({ text });
+    onTextChange(); // Track writing time
   };
 
   // ─── Read-only for past dates ────────────────────────
@@ -191,6 +204,14 @@ export default function JournalReflection({
 
   return (
     <View style={styles.container}>
+      {/* Writing Milestone Banner */}
+      {milestone && isToday && (
+        <WritingMilestoneBanner
+          milestone={milestone}
+          onDismiss={clearMilestone}
+        />
+      )}
+
       {/* Header */}
       <View style={styles.headerRow}>
         <View style={styles.headerLeft}>
@@ -261,6 +282,8 @@ export default function JournalReflection({
               style={styles.answerInput}
               value={answers[index]}
               onChangeText={(text) => handleAnswerChange(index, text)}
+              onFocus={onFieldFocus}
+              onBlur={onFieldBlur}
               placeholder={isToday ? 'Tap to write...' : ''}
               placeholderTextColor={Colors.textMuted}
               multiline
@@ -278,6 +301,8 @@ export default function JournalReflection({
           style={styles.freeTextInput}
           value={freeText}
           onChangeText={handleFreeTextChange}
+          onFocus={onFieldFocus}
+          onBlur={onFieldBlur}
           placeholder={
             isToday
               ? 'Write anything on your mind — this is your space...'
