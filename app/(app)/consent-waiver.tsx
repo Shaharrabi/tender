@@ -277,7 +277,7 @@ export default function ConsentWaiverScreen() {
         >
           <View style={s.confirmationSection}>
             <View style={s.confirmationIconWrap}>
-              <CheckmarkIcon size={40} color={Colors.primary} />
+              <CheckmarkIcon size={32} color={Colors.primary} />
             </View>
             <Text style={s.heroTitle}>Consent Saved</Text>
             <Text style={[s.heroSubtitle, { marginBottom: Spacing.xl }]}>
