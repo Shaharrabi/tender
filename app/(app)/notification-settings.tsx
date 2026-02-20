@@ -35,8 +35,21 @@ import {
   CompassIcon,
   SparkleIcon,
   CoupleIcon,
+  BookOpenIcon,
+  LightbulbIcon,
+  MasksIcon,
+  TargetIcon,
+  SeedlingIcon,
+  HeartDoubleIcon,
+  FireIcon,
 } from '@/assets/graphics/icons';
 import type { IconProps } from '@/assets/graphics/icons';
+import {
+  getEngagementPrefs,
+  saveEngagementPrefs,
+} from '@/utils/notification-selector';
+import type { EngagementNotificationPreferences } from '@/types/notifications';
+import { DEFAULT_ENGAGEMENT_PREFS } from '@/constants/engagement-prompts';
 
 // ─── Settings Types ──────────────────────────────────────
 
@@ -73,6 +86,7 @@ const TIME_OPTIONS: { key: NotificationPreferences['reminderTime']; label: strin
 export default function NotificationSettingsScreen() {
   const router = useRouter();
   const [prefs, setPrefs] = useState<NotificationPreferences>(DEFAULT_PREFS);
+  const [engagementPrefs, setEngagementPrefs] = useState<EngagementNotificationPreferences>(DEFAULT_ENGAGEMENT_PREFS);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -85,6 +99,8 @@ export default function NotificationSettingsScreen() {
       if (stored) {
         setPrefs({ ...DEFAULT_PREFS, ...JSON.parse(stored) });
       }
+      const engStored = await getEngagementPrefs();
+      setEngagementPrefs(engStored);
     } catch {
       // Use defaults
     }
@@ -99,6 +115,19 @@ export default function NotificationSettingsScreen() {
     setPrefs(updated);
     try {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    } catch {
+      // Silently fail
+    }
+  };
+
+  const updateEngagementPref = async <K extends keyof EngagementNotificationPreferences>(
+    key: K,
+    value: boolean
+  ) => {
+    const updated = { ...engagementPrefs, [key]: value };
+    setEngagementPrefs(updated);
+    try {
+      await saveEngagementPrefs(updated);
     } catch {
       // Silently fail
     }
@@ -187,6 +216,68 @@ export default function NotificationSettingsScreen() {
           description="Motivational quotes and relationship insights"
           value={prefs.motivationalQuotes}
           onToggle={(v) => updatePref('motivationalQuotes', v)}
+        />
+
+        {/* Toggle Section: Engagement Content */}
+        <Text style={styles.sectionLabel}>ENGAGEMENT CONTENT</Text>
+        <Text style={styles.sectionDescription}>
+          Banners and tips that appear on your home screen. Toggle off any category you don't want to see.
+        </Text>
+
+        <ToggleRow
+          IconComponent={BookOpenIcon}
+          title="Science Drops"
+          description="Research-backed relationship facts"
+          value={engagementPrefs.scienceDrops}
+          onToggle={(v) => updateEngagementPref('scienceDrops', v)}
+        />
+
+        <ToggleRow
+          IconComponent={LightbulbIcon}
+          title="Micro-Insights"
+          description="Perspective shifts from relationship science"
+          value={engagementPrefs.microInsights}
+          onToggle={(v) => updateEngagementPref('microInsights', v)}
+        />
+
+        <ToggleRow
+          IconComponent={MasksIcon}
+          title="Playful Prompts"
+          description="Lighthearted relationship humor"
+          value={engagementPrefs.duolingoWit}
+          onToggle={(v) => updateEngagementPref('duolingoWit', v)}
+        />
+
+        <ToggleRow
+          IconComponent={TargetIcon}
+          title="Practice Nudges"
+          description="Reminders to try an exercise"
+          value={engagementPrefs.practiceNudges}
+          onToggle={(v) => updateEngagementPref('practiceNudges', v)}
+        />
+
+        <ToggleRow
+          IconComponent={SeedlingIcon}
+          title="Growth Mirrors"
+          description="Reflections on your progress"
+          value={engagementPrefs.growthMirrors}
+          onToggle={(v) => updateEngagementPref('growthMirrors', v)}
+        />
+
+        <ToggleRow
+          IconComponent={HeartDoubleIcon}
+          title="Couple Warmth"
+          description="Messages celebrating your connection"
+          value={engagementPrefs.coupleBubble}
+          onToggle={(v) => updateEngagementPref('coupleBubble', v)}
+        />
+
+        <ToggleRow
+          IconComponent={FireIcon}
+          title="Milestones"
+          description="Celebrations for streaks and achievements"
+          value={engagementPrefs.milestoneStreak}
+          onToggle={(v) => updateEngagementPref('milestoneStreak', v)}
         />
 
         {/* Preferred Time */}

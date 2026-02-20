@@ -42,6 +42,7 @@ import {
   recordAttendance,
   getGroupMemberCount,
   getECRRScores,
+  leaveGroup,
 } from '@/services/support-groups';
 
 // ─── Component imports ─────────────────────────────────
@@ -189,10 +190,6 @@ export default function SupportGroupsScreen() {
     setSelectedGroupType((prev) => (prev === 'anxious' ? 'avoidant' : 'anxious'));
   };
 
-  const handleStartAssessment = () => {
-    router.push('/(app)/assessment' as any);
-  };
-
   const handleSubmitRegistration = async (formData: RegistrationFormData) => {
     if (!user || !selectedGroupType) return;
 
@@ -233,6 +230,26 @@ export default function SupportGroupsScreen() {
       }
     } catch (err) {
       console.warn('Attendance error', err);
+    }
+  };
+
+  const handleLeaveGroup = async () => {
+    if (!user || !membership) return;
+    try {
+      await leaveGroup(user.id, membership.groupId);
+      setMembership(null);
+      setNextSession(null);
+      setSessionHistory([]);
+      setAdaptedStep(null);
+      setScreen('landing');
+      // Refresh member counts
+      const counts: Record<string, number> = {};
+      for (const g of groups) {
+        counts[g.id] = await getGroupMemberCount(g.id);
+      }
+      setMemberCounts(counts);
+    } catch (err) {
+      console.warn('Leave group error', err);
     }
   };
 
@@ -288,7 +305,6 @@ export default function SupportGroupsScreen() {
               recommendation={recommendation}
               memberCounts={memberCounts}
               onSelectGroup={handleSelectGroup}
-              onStartAssessment={handleStartAssessment}
             />
           </Animated.View>
         )}
@@ -358,8 +374,10 @@ export default function SupportGroupsScreen() {
               adaptedStep={adaptedStep}
               onRecordAttendance={handleRecordAttendance}
               onNavigateToStep={() =>
-                router.push('/(app)/step-detail' as any)
+                router.push({ pathname: '/(app)/step-detail', params: { step: memberGroup.currentStep.toString() } } as any)
               }
+              onLeaveGroup={handleLeaveGroup}
+              userId={user!.id}
             />
           </Animated.View>
         )}

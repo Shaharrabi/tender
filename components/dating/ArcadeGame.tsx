@@ -1,5 +1,5 @@
 /**
- * The Field — 80s Arcade Self-Discovery Game
+ * The Field — Self-Discovery Game
  *
  * Instead of filling out a form, you play a tiny game.
  * Your choices build your dating constellation — the pattern
@@ -28,20 +28,11 @@ import Animated, {
   withTiming,
   withSequence,
 } from 'react-native-reanimated';
-import { Colors, Spacing, BorderRadius, Typography, Shadows } from '@/constants/theme';
+import { Colors, Spacing, BorderRadius, Typography, Shadows, FontFamilies, FontSizes } from '@/constants/theme';
+import { TargetIcon } from '@/assets/graphics/icons';
 import { GAME_SCENARIOS, ARCHETYPE_NAMES } from '@/constants/dating/gameScenarios';
 import { calculateConstellation, calculateArchetypeScores } from '@/utils/dating/constellationCalc';
 import type { GameAnswer, ConstellationResult, ArchetypeScores } from '@/types/dating';
-
-// ─── Arcade color palette ────────────────────────────────────
-const ARCADE = {
-  bg: '#1a0a2e',
-  bgGlow: '#2d1b4e',
-  neon: '#FF6EC7',
-  cyan: '#00FFFF',
-  lime: '#39FF14',
-  purple: '#BF40BF',
-};
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -53,50 +44,50 @@ interface ArcadeGameProps {
   ) => void;
 }
 
-// ─── Starfield Background ────────────────────────────────────
-// Replaces canvas with animated React Native Views
+// ─── Decorative Dots Background ─────────────────────────────
+// Subtle floating dots on warm linen background
 
-function Starfield() {
-  const stars = useMemo(
+function DotField() {
+  const dots = useMemo(
     () =>
-      Array.from({ length: 40 }, (_, i) => ({
+      Array.from({ length: 30 }, (_, i) => ({
         id: i,
         x: Math.random() * 100,
         y: Math.random() * 100,
-        size: Math.random() * 2.5 + 1,
+        size: Math.random() * 2 + 1,
         delay: Math.random() * 2000,
       })),
     [],
   );
 
   return (
-    <View style={styles.starfield} pointerEvents="none">
-      {/* Grid lines */}
-      {Array.from({ length: 12 }, (_, i) => (
+    <View style={styles.dotField} pointerEvents="none">
+      {/* Subtle grid lines */}
+      {Array.from({ length: 8 }, (_, i) => (
         <View
           key={`grid-${i}`}
           style={[
             styles.gridLine,
-            { top: `${(i + 1) * 8}%` },
+            { top: `${(i + 1) * 12}%` },
           ]}
         />
       ))}
-      {/* Stars */}
-      {stars.map((star) => (
-        <Star key={star.id} {...star} />
+      {/* Dots */}
+      {dots.map((dot) => (
+        <Dot key={dot.id} {...dot} />
       ))}
     </View>
   );
 }
 
-function Star({ x, y, size, delay }: { x: number; y: number; size: number; delay: number }) {
-  const opacity = useSharedValue(0.3);
+function Dot({ x, y, size, delay }: { x: number; y: number; size: number; delay: number }) {
+  const opacity = useSharedValue(0.15);
 
   useEffect(() => {
     opacity.value = withRepeat(
       withSequence(
-        withTiming(0.9, { duration: 1000 + delay }),
-        withTiming(0.3, { duration: 1000 + delay }),
+        withTiming(0.4, { duration: 1200 + delay }),
+        withTiming(0.15, { duration: 1200 + delay }),
       ),
       -1,
       true,
@@ -110,7 +101,7 @@ function Star({ x, y, size, delay }: { x: number; y: number; size: number; delay
   return (
     <Animated.View
       style={[
-        styles.star,
+        styles.dot,
         animStyle,
         {
           left: `${x}%`,
@@ -195,8 +186,8 @@ export default function ArcadeGame({ onComplete }: ArcadeGameProps) {
     const topTraits = constellation.topTraits;
 
     return (
-      <View style={styles.arcadeContainer}>
-        <Starfield />
+      <View style={styles.gameContainer}>
+        <DotField />
         <View style={styles.contentOverlay}>
           <Animated.View entering={FadeInDown.duration(500)} style={styles.resultContent}>
             <Text style={styles.monoBadge}>Field Analysis Complete</Text>
@@ -228,7 +219,7 @@ export default function ArcadeGame({ onComplete }: ArcadeGameProps) {
             </Text>
 
             <TouchableOpacity style={styles.enterLobbyButton} onPress={handleComplete}>
-              <Text style={styles.enterLobbyText}>Enter The Lobby →</Text>
+              <Text style={styles.enterLobbyText}>Enter The Lobby</Text>
             </TouchableOpacity>
           </Animated.View>
         </View>
@@ -239,11 +230,11 @@ export default function ArcadeGame({ onComplete }: ArcadeGameProps) {
   // ─── Intro Screen ───
   if (step === -1) {
     return (
-      <View style={styles.arcadeContainer}>
-        <Starfield />
+      <View style={styles.gameContainer}>
+        <DotField />
         <View style={styles.contentOverlay}>
           <Animated.View entering={FadeIn.duration(600)} style={styles.introContent}>
-            <Text style={styles.introEmoji}>🕹️</Text>
+            <TargetIcon size={36} color={Colors.primary} />
             <Text style={styles.introTitle}>THE FIELD</Text>
             <Text style={styles.introSubtitle}>
               A game about how you show up for connection
@@ -262,7 +253,7 @@ export default function ArcadeGame({ onComplete }: ArcadeGameProps) {
               style={styles.startButton}
               onPress={() => setStep(0)}
             >
-              <Text style={styles.startButtonText}>▶ START</Text>
+              <Text style={styles.startButtonText}>BEGIN</Text>
             </TouchableOpacity>
           </Animated.View>
         </View>
@@ -272,10 +263,11 @@ export default function ArcadeGame({ onComplete }: ArcadeGameProps) {
 
   // ─── Game Screen ───
   const scenario = GAME_SCENARIOS[step];
+  const ScenarioIcon = scenario.icon;
 
   return (
-    <View style={[styles.arcadeContainer, flash && styles.arcadeFlash]}>
-      <Starfield />
+    <View style={[styles.gameContainer, flash && styles.gameFlash]}>
+      <DotField />
       <View style={styles.contentOverlay}>
         <ProgressDots current={step} total={GAME_SCENARIOS.length} />
 
@@ -284,7 +276,7 @@ export default function ArcadeGame({ onComplete }: ArcadeGameProps) {
           entering={FadeIn.duration(400)}
           style={styles.scenarioContent}
         >
-          <Text style={styles.scenarioEmoji}>{scenario.emoji}</Text>
+          <ScenarioIcon size={32} color={Colors.primary} />
           <Text style={styles.scenarioBadge}>
             Scenario {step + 1} of {GAME_SCENARIOS.length}
           </Text>
@@ -322,21 +314,22 @@ export default function ArcadeGame({ onComplete }: ArcadeGameProps) {
 // ─── Styles ──────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  arcadeContainer: {
+  gameContainer: {
     borderRadius: BorderRadius.lg,
     overflow: 'hidden',
     minHeight: 440,
-    backgroundColor: ARCADE.bg,
+    backgroundColor: Colors.backgroundAlt || Colors.background,
     position: 'relative',
+    ...Shadows.card,
   },
-  arcadeFlash: {
-    shadowColor: ARCADE.neon,
+  gameFlash: {
+    shadowColor: Colors.primary,
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 15,
-    elevation: 10,
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 6,
   },
-  starfield: {
+  dotField: {
     ...StyleSheet.absoluteFillObject,
   },
   gridLine: {
@@ -344,11 +337,11 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 1,
-    backgroundColor: `${ARCADE.purple}14`,
+    backgroundColor: Colors.borderLight || `${Colors.border}22`,
   },
-  star: {
+  dot: {
     position: 'absolute',
-    backgroundColor: ARCADE.neon,
+    backgroundColor: Colors.primaryFaded || `${Colors.primary}30`,
     borderRadius: 1,
   },
   contentOverlay: {
@@ -368,18 +361,14 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: `${ARCADE.purple}44`,
+    backgroundColor: Colors.primaryLight || `${Colors.primary}30`,
   },
   progressDotComplete: {
-    backgroundColor: ARCADE.neon,
+    backgroundColor: Colors.primary,
   },
   progressDotActive: {
     width: 24,
-    backgroundColor: ARCADE.cyan,
-    shadowColor: ARCADE.cyan,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
+    backgroundColor: Colors.secondary,
   },
 
   // Intro
@@ -387,60 +376,58 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: Spacing.xl,
   },
-  introEmoji: {
-    fontSize: 40,
-    marginBottom: Spacing.sm,
-  },
   introTitle: {
-    fontFamily: 'Jost_500Medium',
-    fontSize: 22,
-    color: ARCADE.cyan,
+    fontFamily: FontFamilies.heading,
+    fontSize: FontSizes.headingL,
+    color: Colors.text,
     letterSpacing: 4,
     textTransform: 'uppercase',
+    marginTop: Spacing.sm,
     marginBottom: 4,
   },
   introSubtitle: {
-    fontFamily: 'PlayfairDisplay_600SemiBold',
-    fontSize: 15,
-    color: 'rgba(255,255,255,0.6)',
+    fontFamily: FontFamilies.accent,
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
     fontStyle: 'italic',
     marginBottom: Spacing.xl,
     textAlign: 'center',
   },
   howItWorks: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: Colors.surfaceElevated,
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
     maxWidth: 340,
     borderWidth: 1,
-    borderColor: `${ARCADE.purple}33`,
+    borderColor: Colors.border,
     marginBottom: Spacing.lg,
+    ...Shadows.card,
   },
   howItWorksLabel: {
-    fontFamily: 'Jost_500Medium',
-    fontSize: 11,
-    color: ARCADE.lime,
+    fontFamily: FontFamilies.heading,
+    fontSize: FontSizes.caption,
+    color: Colors.success,
     letterSpacing: 2,
     marginBottom: Spacing.sm,
   },
   howItWorksText: {
-    fontFamily: 'JosefinSans_400Regular',
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.7)',
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.caption,
+    color: Colors.textSecondary,
     lineHeight: 20,
   },
   startButton: {
     borderWidth: 2,
-    borderColor: ARCADE.neon,
-    borderRadius: BorderRadius.sm,
+    borderColor: Colors.primary,
+    borderRadius: BorderRadius.pill,
     paddingVertical: 14,
     paddingHorizontal: 40,
   },
   startButtonText: {
-    fontFamily: 'Jost_500Medium',
-    fontSize: 14,
+    fontFamily: FontFamilies.heading,
+    fontSize: FontSizes.bodySmall,
     fontWeight: '700',
-    color: ARCADE.neon,
+    color: Colors.primary,
     letterSpacing: 3,
     textTransform: 'uppercase',
   },
@@ -449,22 +436,19 @@ const styles = StyleSheet.create({
   scenarioContent: {
     alignItems: 'center',
   },
-  scenarioEmoji: {
-    fontSize: 40,
-    marginBottom: Spacing.md,
-  },
   scenarioBadge: {
-    fontFamily: 'Jost_500Medium',
+    fontFamily: FontFamilies.heading,
     fontSize: 10,
-    color: ARCADE.neon,
+    color: Colors.primary,
     letterSpacing: 3,
     textTransform: 'uppercase',
+    marginTop: Spacing.sm,
     marginBottom: Spacing.sm,
   },
   scenarioText: {
-    fontFamily: 'PlayfairDisplay_600SemiBold',
+    fontFamily: FontFamilies.accent,
     fontSize: 19,
-    color: '#fff',
+    color: Colors.text,
     lineHeight: 30,
     maxWidth: 380,
     textAlign: 'center',
@@ -479,28 +463,29 @@ const styles = StyleSheet.create({
   optionButton: {
     paddingVertical: 14,
     paddingHorizontal: 18,
-    borderRadius: BorderRadius.sm,
+    borderRadius: BorderRadius.md,
     borderWidth: 1,
-    borderColor: `${ARCADE.purple}44`,
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderColor: Colors.border,
+    backgroundColor: Colors.surfaceElevated,
   },
   optionButtonSelected: {
     borderWidth: 2,
-    borderColor: ARCADE.neon,
-    backgroundColor: `${ARCADE.neon}22`,
-    shadowColor: ARCADE.neon,
+    borderColor: Colors.primary,
+    backgroundColor: Colors.primaryFaded || `${Colors.primary}15`,
+    shadowColor: Colors.primary,
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.15,
     shadowRadius: 6,
   },
   optionText: {
-    fontFamily: 'JosefinSans_400Regular',
-    fontSize: 14,
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.bodySmall,
     lineHeight: 21,
-    color: 'rgba(255,255,255,0.8)',
+    color: Colors.textSecondary,
   },
   optionTextSelected: {
-    color: ARCADE.neon,
+    color: Colors.primary,
+    fontWeight: '600',
   },
 
   // Result
@@ -509,17 +494,17 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.xl,
   },
   monoBadge: {
-    fontFamily: 'Jost_500Medium',
-    fontSize: 11,
-    color: ARCADE.neon,
+    fontFamily: FontFamilies.heading,
+    fontSize: FontSizes.caption,
+    color: Colors.primary,
     letterSpacing: 3,
     textTransform: 'uppercase',
     marginBottom: Spacing.sm,
   },
   resultTitle: {
-    fontFamily: 'PlayfairDisplay_600SemiBold',
-    fontSize: 28,
-    color: '#fff',
+    fontFamily: FontFamilies.accent,
+    fontSize: FontSizes.headingL,
+    color: Colors.text,
     fontWeight: '300',
     letterSpacing: 2,
     marginBottom: Spacing.lg,
@@ -533,62 +518,56 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xl,
   },
   traitCard: {
-    backgroundColor: `${ARCADE.neon}11`,
+    backgroundColor: Colors.surfaceElevated,
     borderWidth: 1,
-    borderColor: `${ARCADE.purple}66`,
+    borderColor: Colors.border,
     borderRadius: BorderRadius.md,
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.md,
     minWidth: 130,
     alignItems: 'center',
+    ...Shadows.card,
   },
   traitCardPrimary: {
-    borderColor: ARCADE.neon,
-    backgroundColor: `${ARCADE.neon}15`,
-    shadowColor: ARCADE.neon,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
+    borderColor: Colors.primary,
+    backgroundColor: Colors.primaryFaded || `${Colors.primary}10`,
   },
   traitRank: {
-    fontFamily: 'Jost_500Medium',
+    fontFamily: FontFamilies.heading,
     fontSize: 10,
-    color: ARCADE.cyan,
+    color: Colors.secondary,
     letterSpacing: 2,
     textTransform: 'uppercase',
   },
   traitName: {
-    fontFamily: 'PlayfairDisplay_600SemiBold',
-    fontSize: 16,
-    color: '#fff',
+    fontFamily: FontFamilies.accent,
+    fontSize: FontSizes.body,
+    color: Colors.text,
     fontWeight: '600',
     marginTop: 4,
     textAlign: 'center',
   },
   resultDescription: {
-    fontFamily: 'JosefinSans_400Regular',
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.7)',
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
     lineHeight: 22,
     maxWidth: 400,
     textAlign: 'center',
     marginBottom: Spacing.lg,
   },
   enterLobbyButton: {
-    backgroundColor: ARCADE.neon,
-    borderRadius: BorderRadius.sm,
+    backgroundColor: Colors.primary,
+    borderRadius: BorderRadius.pill,
     paddingVertical: 14,
     paddingHorizontal: 32,
-    shadowColor: ARCADE.neon,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
+    ...Shadows.card,
   },
   enterLobbyText: {
-    fontFamily: 'Jost_500Medium',
-    fontSize: 13,
+    fontFamily: FontFamilies.heading,
+    fontSize: FontSizes.bodySmall,
     fontWeight: '700',
-    color: ARCADE.bg,
+    color: Colors.white,
     letterSpacing: 2,
     textTransform: 'uppercase',
   },

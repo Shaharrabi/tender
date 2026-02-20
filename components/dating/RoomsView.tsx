@@ -15,9 +15,11 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
+  Platform,
 } from 'react-native';
 import Animated, { FadeIn, FadeInDown, SlideInUp } from 'react-native-reanimated';
 import { Colors, Spacing, BorderRadius, Typography, Shadows } from '@/constants/theme';
+import { CompassIcon, ChatBubbleIcon, SparkleIcon } from '@/assets/graphics/icons';
 import { MEETING_ROOMS, HOTEL_ROOMS } from '@/constants/dating/rooms';
 import RoomContent from './rooms/RoomContent';
 import FloorIndicator from './rooms/FloorIndicator';
@@ -36,6 +38,10 @@ export default function RoomsView() {
   const goToRoom = (index: number) => {
     setActiveRoom(index);
     setVisitedRooms((prev) => new Set([...prev, index]));
+    // Scroll the parent page to top when switching rooms
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
     scrollRef.current?.scrollTo({ y: 0, animated: true });
   };
 
@@ -47,17 +53,23 @@ export default function RoomsView() {
           style={[styles.toggleButton, viewSection === 'hotel' && styles.toggleActive]}
           onPress={() => setViewSection('hotel')}
         >
-          <Text style={[styles.toggleText, viewSection === 'hotel' && styles.toggleTextActive]}>
-            🏨 Self-Guided Journey
-          </Text>
+          <View style={styles.toggleInner}>
+            <CompassIcon size={14} color={viewSection === 'hotel' ? Colors.primary : Colors.textSecondary} />
+            <Text style={[styles.toggleText, viewSection === 'hotel' && styles.toggleTextActive]}>
+              Self-Guided Journey
+            </Text>
+          </View>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.toggleButton, viewSection === 'meeting' && styles.toggleActive]}
           onPress={() => setViewSection('meeting')}
         >
-          <Text style={[styles.toggleText, viewSection === 'meeting' && styles.toggleTextActive]}>
-            💬 Meeting Rooms
-          </Text>
+          <View style={styles.toggleInner}>
+            <ChatBubbleIcon size={14} color={viewSection === 'meeting' ? Colors.primary : Colors.textSecondary} />
+            <Text style={[styles.toggleText, viewSection === 'meeting' && styles.toggleTextActive]}>
+              Meeting Rooms
+            </Text>
+          </View>
         </TouchableOpacity>
       </View>
 
@@ -101,7 +113,11 @@ function MeetingRoomsSection() {
 
               <View style={styles.meetingCardRow}>
                 <View style={styles.meetingIconBox}>
-                  <Text style={styles.meetingIcon}>{room.icon}</Text>
+                  {room.Icon ? (
+                    <room.Icon size={22} color={Colors.primary} />
+                  ) : (
+                    <ChatBubbleIcon size={22} color={Colors.primary} />
+                  )}
                 </View>
                 <View style={styles.meetingCardBody}>
                   <Text style={styles.meetingName}>{room.name}</Text>
@@ -175,7 +191,11 @@ function HotelRoomsSection({
         entering={SlideInUp.duration(400)}
         style={styles.roomHeader}
       >
-        <Text style={styles.roomEmoji}>{room.icon}</Text>
+        {room.Icon ? (
+          <room.Icon size={32} color={room.color} />
+        ) : (
+          <SparkleIcon size={32} color={room.color} />
+        )}
         <Text style={styles.roomFloor}>Floor {room.floor}</Text>
         <Text style={styles.roomName}>{room.name}</Text>
         <Text style={[styles.roomSubtitle, { color: room.color }]}>{room.subtitle}</Text>
@@ -185,7 +205,7 @@ function HotelRoomsSection({
       {/* Divider */}
       <View style={styles.divider}>
         <View style={styles.dividerLine} />
-        <Text style={styles.dividerSymbol}>✦</Text>
+        <SparkleIcon size={10} color={Colors.textMuted} />
         <View style={styles.dividerLine} />
       </View>
 
@@ -258,6 +278,11 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
     backgroundColor: Colors.primaryFaded,
   },
+  toggleInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   toggleText: {
     ...Typography.bodySmall,
     color: Colors.textSecondary,
@@ -314,7 +339,7 @@ const styles = StyleSheet.create({
     fontSize: 9,
     letterSpacing: 1.5,
     textTransform: 'uppercase',
-    color: '#1a0a2e',
+    color: Colors.text,
   },
   meetingCardRow: {
     flexDirection: 'row',
@@ -328,9 +353,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.backgroundAlt,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  meetingIcon: {
-    fontSize: 24,
   },
   meetingCardBody: {
     flex: 1,
@@ -397,10 +419,7 @@ const styles = StyleSheet.create({
   roomHeader: {
     alignItems: 'center',
     paddingHorizontal: Spacing.md,
-  },
-  roomEmoji: {
-    fontSize: 32,
-    marginBottom: Spacing.sm,
+    gap: Spacing.xs,
   },
   roomFloor: {
     fontFamily: 'PlayfairDisplay_600SemiBold',
@@ -442,12 +461,6 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 1,
     backgroundColor: Colors.border,
-  },
-  dividerSymbol: {
-    color: Colors.textMuted,
-    fontSize: 10,
-    letterSpacing: 2,
-    fontFamily: 'PlayfairDisplay_600SemiBold',
   },
   navRow: {
     flexDirection: 'row',

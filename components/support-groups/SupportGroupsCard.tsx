@@ -65,7 +65,7 @@ export default function SupportGroupsCard({
           </Text>
         ) : (
           <Text style={styles.subtitle}>
-            Take your attachment assessment to get matched
+            Explore our attachment-based support groups
           </Text>
         )}
       </View>

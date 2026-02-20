@@ -27,6 +27,85 @@ import {
   BorderRadius,
   Shadows,
 } from '@/constants/theme';
+import type { IndividualPortrait } from '@/types/portrait';
+
+// ─── Portrait insight helper (mirrors assessment-matrix.tsx) ──
+
+function getPortraitInsightForCard(
+  assessmentKey: string,
+  portrait: IndividualPortrait
+): { narrative: string; growthEdges: Array<{ title: string; description: string }> } | null {
+  const { fourLens, growthEdges, negativeCycle, compositeScores } = portrait;
+
+  switch (assessmentKey) {
+    case 'ecr-r':
+      return {
+        narrative: fourLens.attachment.narrative.slice(0, 500) + (fourLens.attachment.narrative.length > 500 ? '...' : ''),
+        growthEdges: growthEdges
+          .filter(e => e.category === 'attachment' || e.title.toLowerCase().includes('attach'))
+          .map(e => ({ title: e.title, description: e.description }))
+          .slice(0, 2),
+      };
+    case 'ipip-neo-120':
+      return {
+        narrative: fourLens.values?.narrative
+          ? fourLens.values.narrative.slice(0, 500) + (fourLens.values.narrative.length > 500 ? '...' : '')
+          : `Your personality profile shapes how you show up in relationships. Self-leadership: ${compositeScores.selfLeadership}/100.`,
+        growthEdges: growthEdges
+          .filter(e => e.category === 'personality' || e.category === 'values')
+          .map(e => ({ title: e.title, description: e.description }))
+          .slice(0, 2),
+      };
+    case 'sseit':
+      return {
+        narrative: fourLens.regulation?.narrative
+          ? fourLens.regulation.narrative.slice(0, 500) + (fourLens.regulation.narrative.length > 500 ? '...' : '')
+          : `Regulation capacity: ${compositeScores.regulationScore}/100, Window width: ${compositeScores.windowWidth}/100.`,
+        growthEdges: growthEdges
+          .filter(e => e.category === 'regulation' || e.title.toLowerCase().includes('emotion'))
+          .map(e => ({ title: e.title, description: e.description }))
+          .slice(0, 2),
+      };
+    case 'dsi-r':
+      return {
+        narrative: `Your differentiation reflects the balance between staying connected and maintaining your sense of self.`,
+        growthEdges: growthEdges
+          .filter(e => e.category === 'differentiation' || e.title.toLowerCase().includes('boundar'))
+          .map(e => ({ title: e.title, description: e.description }))
+          .slice(0, 2),
+      };
+    case 'dutch':
+      return {
+        narrative: `Your conflict style reveals protective patterns: "${negativeCycle.position}" position. Triggers: ${(negativeCycle.primaryTriggers || []).slice(0, 2).join(', ')}.`,
+        growthEdges: growthEdges
+          .filter(e => e.category === 'conflict' || e.category === 'communication')
+          .map(e => ({ title: e.title, description: e.description }))
+          .slice(0, 2),
+      };
+    case 'values':
+      return {
+        narrative: fourLens.values?.narrative
+          ? fourLens.values.narrative.slice(0, 500) + (fourLens.values.narrative.length > 500 ? '...' : '')
+          : `Values alignment: ${compositeScores.valuesCongruence}/100.`,
+        growthEdges: growthEdges
+          .filter(e => e.category === 'values' || e.title.toLowerCase().includes('value'))
+          .map(e => ({ title: e.title, description: e.description }))
+          .slice(0, 2),
+      };
+    case 'relational-field':
+      return {
+        narrative: fourLens.fieldAwareness?.narrative
+          ? fourLens.fieldAwareness.narrative.slice(0, 500) + (fourLens.fieldAwareness.narrative.length > 500 ? '...' : '')
+          : `Your relational field awareness reflects how attuned you are to the space between you and your partner.`,
+        growthEdges: growthEdges
+          .filter(e => e.title.toLowerCase().includes('field') || e.title.toLowerCase().includes('presence'))
+          .map(e => ({ title: e.title, description: e.description }))
+          .slice(0, 2),
+      };
+    default:
+      return null;
+  }
+}
 
 // ─── Assessment dimension configs ──────────────────────────
 
@@ -83,6 +162,7 @@ interface CombinedProfileViewProps {
   /** All assessment scores: { 'ecr-r': { id, scores }, ... } */
   allScores: Record<string, { id: string; scores: any }>;
   completedAssessments: string[];
+  portrait?: IndividualPortrait | null;
 }
 
 // Position tracking for connection lines
@@ -97,6 +177,7 @@ interface DimensionPosition {
 export function CombinedProfileView({
   allScores,
   completedAssessments,
+  portrait,
 }: CombinedProfileViewProps) {
   const [selectedDim, setSelectedDim] = useState<{
     assessment: string;
@@ -192,54 +273,59 @@ export function CombinedProfileView({
             ASSESSMENT_COLORS[otherSide.assessment] || Colors.textMuted;
 
           return (
-            <View key={i} style={styles.connectionRow}>
-              <View
-                style={[styles.connectionDot, { backgroundColor: otherColor }]}
-              />
-              <View style={styles.connectionText}>
-                <Text style={styles.connectionDimLabel}>
-                  {otherSide.label}
-                </Text>
-                <Text style={styles.connectionAssessment}>
-                  {ASSESSMENT_LABELS[otherSide.assessment]}
-                </Text>
-              </View>
-              <View style={styles.connectionMeta}>
-                <Text
-                  style={[
-                    styles.connectionDirection,
-                    {
-                      color:
-                        conn.direction === 'positive'
-                          ? Colors.success
-                          : Colors.error,
-                    },
-                  ]}
-                >
-                  {conn.direction === 'positive' ? '+' : '\u2212'}
-                </Text>
-                <View style={styles.strengthDots}>
-                  {[1, 2, 3].map((d) => (
-                    <View
-                      key={d}
-                      style={[
-                        styles.strengthDot,
-                        {
-                          backgroundColor:
-                            d <=
-                            (conn.strength === 'strong'
-                              ? 3
-                              : conn.strength === 'moderate'
-                              ? 2
-                              : 1)
-                              ? otherColor
-                              : Colors.progressTrack,
-                        },
-                      ]}
-                    />
-                  ))}
+            <View key={i} style={styles.connectionRowContainer}>
+              <View style={styles.connectionRow}>
+                <View
+                  style={[styles.connectionDot, { backgroundColor: otherColor }]}
+                />
+                <View style={styles.connectionText}>
+                  <Text style={styles.connectionDimLabel}>
+                    {otherSide.label}
+                  </Text>
+                  <Text style={styles.connectionAssessment}>
+                    {ASSESSMENT_LABELS[otherSide.assessment]}
+                  </Text>
+                </View>
+                <View style={styles.connectionMeta}>
+                  <Text
+                    style={[
+                      styles.connectionDirection,
+                      {
+                        color:
+                          conn.direction === 'positive'
+                            ? Colors.success
+                            : Colors.error,
+                      },
+                    ]}
+                  >
+                    {conn.direction === 'positive' ? '+' : '\u2212'}
+                  </Text>
+                  <View style={styles.strengthDots}>
+                    {[1, 2, 3].map((d) => (
+                      <View
+                        key={d}
+                        style={[
+                          styles.strengthDot,
+                          {
+                            backgroundColor:
+                              d <=
+                              (conn.strength === 'strong'
+                                ? 3
+                                : conn.strength === 'moderate'
+                                ? 2
+                                : 1)
+                                ? otherColor
+                                : Colors.progressTrack,
+                          },
+                        ]}
+                      />
+                    ))}
+                  </View>
                 </View>
               </View>
+              {conn.insight ? (
+                <Text style={styles.connectionInsight}>{conn.insight}</Text>
+              ) : null}
             </View>
           );
         })}
@@ -337,6 +423,34 @@ export function CombinedProfileView({
                 </View>
               )}
             </View>
+
+            {/* Portrait context — what this assessment reveals */}
+            {isCompleted && portrait && (() => {
+              const insight = getPortraitInsightForCard(assessment, portrait);
+              if (!insight) return null;
+              return (
+                <View style={[styles.portraitCard, { borderLeftColor: color }]}>
+                  <Text style={styles.portraitCardTitle}>What This Reveals</Text>
+                  <Text style={styles.portraitCardNarrative}>{insight.narrative}</Text>
+                  {insight.growthEdges.length > 0 && (
+                    <View style={styles.portraitGrowthEdges}>
+                      {insight.growthEdges.map((edge, i) => (
+                        <View key={i} style={{ marginBottom: 3 }}>
+                          <Text style={styles.portraitGrowthText}>
+                            {'\u2022'} {edge.title}
+                          </Text>
+                          {edge.description ? (
+                            <Text style={styles.portraitGrowthDescription}>
+                              {edge.description}
+                            </Text>
+                          ) : null}
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                </View>
+              );
+            })()}
 
             {/* Connection info — renders directly below the tapped card */}
             {isCardSelected && renderConnectionPanel()}
@@ -441,11 +555,14 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     marginBottom: Spacing.xs,
   },
+  connectionRowContainer: {
+    gap: 4,
+    paddingVertical: 4,
+  },
   connectionRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.sm,
-    paddingVertical: 4,
   },
   connectionDot: {
     width: 8,
@@ -484,5 +601,57 @@ const styles = StyleSheet.create({
     width: 5,
     height: 5,
     borderRadius: 2.5,
+  },
+  connectionInsight: {
+    fontSize: FontSizes.caption,
+    fontFamily: FontFamilies.body,
+    color: Colors.textMuted,
+    lineHeight: 16,
+    paddingLeft: 20,
+    fontStyle: 'italic',
+  },
+  // Portrait context card per assessment
+  portraitCard: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    borderLeftWidth: 3,
+    ...Shadows.subtle,
+  },
+  portraitCardTitle: {
+    fontFamily: FontFamilies.heading,
+    fontSize: FontSizes.caption,
+    color: Colors.textSecondary,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 1,
+    marginBottom: Spacing.xs,
+  },
+  portraitCardNarrative: {
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.bodySmall,
+    color: Colors.text,
+    lineHeight: 20,
+  },
+  portraitGrowthEdges: {
+    marginTop: Spacing.sm,
+    paddingTop: Spacing.xs,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderLight,
+    gap: 2,
+  },
+  portraitGrowthText: {
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.caption,
+    color: Colors.textSecondary,
+    lineHeight: 18,
+    paddingLeft: 4,
+  },
+  portraitGrowthDescription: {
+    fontFamily: FontFamilies.body,
+    fontSize: 11,
+    color: Colors.textMuted,
+    lineHeight: 16,
+    paddingLeft: 12,
+    marginTop: 1,
   },
 });

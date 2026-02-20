@@ -5,6 +5,8 @@
  * Covers: The Field game, My Shape profile, Discover, Rooms, Letters, Journal
  */
 
+import type React from 'react';
+
 // ─── Game Types ──────────────────────────────────────────────
 
 /** A single answer in The Field game */
@@ -28,11 +30,17 @@ export interface ConstellationResult {
   weareMapping: Record<string, number>;
 }
 
+/** Icon component props for scenario icons */
+export interface IconProps {
+  size: number;
+  color: string;
+}
+
 /** A single game scenario with 3 options */
 export interface GameScenario {
   id: string;
   scene: string;
-  emoji: string;
+  icon: React.ComponentType<IconProps>;
   options: GameOption[];
 }
 
@@ -115,6 +123,7 @@ export interface MeetingRoom {
   desc: string;
   people: number;
   icon: string;
+  Icon?: React.ComponentType<IconProps>;
   status: 'active' | 'upcoming' | 'closed';
   prompt: string;
 }
@@ -126,6 +135,7 @@ export interface HotelRoom {
   name: string;
   subtitle: string;
   icon: string;
+  Icon?: React.ComponentType<IconProps>;
   color: string;
   description: string;
   content: HotelRoomContent;
@@ -176,6 +186,7 @@ export interface PreferenceSection {
   title: string;
   subtitle: string;
   icon: string;
+  Icon?: React.ComponentType<IconProps>;
   fields: PreferenceField[];
 }
 

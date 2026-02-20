@@ -7,7 +7,8 @@
 
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Colors, Spacing, BorderRadius, Typography } from '@/constants/theme';
+import { Colors, Spacing, BorderRadius, Typography, FontFamilies, FontSizes, Shadows } from '@/constants/theme';
+import { SparkleIcon } from '@/assets/graphics/icons';
 import { ARCHETYPE_NAMES } from '@/constants/dating/gameScenarios';
 
 interface ConstellationBadgeProps {
@@ -24,17 +25,17 @@ export default function ConstellationBadge({ topTraits, compact = false }: Const
     return (
       <View style={styles.compactContainer}>
         <Text style={styles.compactLabel}>Your Constellation</Text>
-        <Text style={styles.compactTraits}>{traitNames.join(' · ')}</Text>
+        <Text style={styles.compactTraits}>{traitNames.join(' \u00B7 ')}</Text>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.emoji}>🌌</Text>
+      <SparkleIcon size={28} color={Colors.accentGold} />
       <View style={styles.textContainer}>
         <Text style={styles.label}>Your Constellation</Text>
-        <Text style={styles.traits}>{traitNames.join(' · ')}</Text>
+        <Text style={styles.traits}>{traitNames.join(' \u00B7 ')}</Text>
       </View>
     </View>
   );
@@ -42,31 +43,31 @@ export default function ConstellationBadge({ topTraits, compact = false }: Const
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#1a0a2e',
+    backgroundColor: Colors.surfaceElevated,
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
     marginBottom: Spacing.md,
-  },
-  emoji: {
-    fontSize: 28,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    ...Shadows.card,
   },
   textContainer: {
     flex: 1,
   },
   label: {
-    fontFamily: 'Jost_500Medium',
+    fontFamily: FontFamilies.heading,
     fontSize: 10,
-    color: '#FF6EC7',
+    color: Colors.primary,
     letterSpacing: 2,
     textTransform: 'uppercase',
   },
   traits: {
-    fontFamily: 'PlayfairDisplay_600SemiBold',
+    fontFamily: FontFamilies.accent,
     fontSize: 15,
-    color: '#fff',
+    color: Colors.text,
     fontWeight: '600',
     marginTop: 2,
   },
@@ -84,7 +85,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   compactTraits: {
-    fontFamily: 'PlayfairDisplay_600SemiBold',
+    fontFamily: FontFamilies.accent,
     fontSize: 13,
     color: Colors.text,
     marginTop: 2,

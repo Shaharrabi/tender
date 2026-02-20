@@ -39,8 +39,12 @@ import type {
   SupportGroupAttendance,
   AdaptedStep,
 } from '@/types/support-groups';
+import CrisisFooter from './CrisisFooter';
+import GroupCommunityRoom from './GroupCommunityRoom';
 
 // ─── Props ─────────────────────────────────────────────
+
+type SessionTab = 'sessions' | 'room';
 
 interface GroupSessionViewProps {
   group: SupportGroup;
@@ -50,6 +54,8 @@ interface GroupSessionViewProps {
   adaptedStep: AdaptedStep | null;
   onRecordAttendance: (sessionId: string, notes?: string) => void;
   onNavigateToStep: () => void;
+  onLeaveGroup: () => void;
+  userId: string;
 }
 
 // ─── Component ─────────────────────────────────────────
@@ -62,13 +68,30 @@ export default function GroupSessionView({
   adaptedStep,
   onRecordAttendance,
   onNavigateToStep,
+  onLeaveGroup,
+  userId,
 }: GroupSessionViewProps) {
+  const [activeTab, setActiveTab] = useState<SessionTab>('sessions');
   const [noteSessionId, setNoteSessionId] = useState<string | null>(null);
   const [noteText, setNoteText] = useState('');
 
   const accentColor = group.groupType === 'avoidant'
     ? Colors.attachmentAvoidant
     : Colors.attachmentAnxious;
+
+  // ── Group Room tab ──────────────────────
+  if (activeTab === 'room') {
+    return (
+      <View style={{ flex: 1 }}>
+        <SessionTabs
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          accentColor={accentColor}
+        />
+        <GroupCommunityRoom group={group} userId={userId} />
+      </View>
+    );
+  }
 
   const handleJoinZoom = async () => {
     const link = nextSession?.zoomLink || group.zoomLink;
@@ -98,6 +121,12 @@ export default function GroupSessionView({
   };
 
   return (
+    <View style={{ flex: 1 }}>
+      <SessionTabs
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        accentColor={accentColor}
+      />
     <ScrollView
       contentContainerStyle={styles.scrollContent}
       showsVerticalScrollIndicator={false}
@@ -107,9 +136,7 @@ export default function GroupSessionView({
         {group.name}
       </Text>
       <Text style={styles.groupMeta}>
-        {group.groupType === 'anxious' ? 'Your Anxious Attachment Group' : 'Your Avoidant Attachment Group'}
-        {' \u00B7 '}
-        Cohort #{group.cohortNumber} \u00B7 Step {group.currentStep} of 12
+        Cohort #{group.cohortNumber} {'\u00B7'} Step {group.currentStep} of 12
       </Text>
 
       {/* Next Session Card */}
@@ -285,8 +312,85 @@ export default function GroupSessionView({
         </Text>
       </View>
 
+      {/* Leave group link */}
+      <TouchableOpacity
+        onPress={() => {
+          const msg = `Are you sure you want to leave ${group.name}? You can rejoin later if a spot is available.`;
+          if (Platform.OS === 'web') {
+            if (confirm(msg)) onLeaveGroup();
+          } else {
+            Alert.alert(
+              'Leave Group',
+              msg,
+              [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Leave', style: 'destructive', onPress: onLeaveGroup },
+              ],
+            );
+          }
+        }}
+        activeOpacity={0.7}
+        style={styles.leaveBtn}
+      >
+        <Text style={styles.leaveBtnText}>Leave Group</Text>
+      </TouchableOpacity>
+
+      <CrisisFooter />
+
       <View style={{ height: Spacing.xxl }} />
     </ScrollView>
+    </View>
+  );
+}
+
+// ─── Session Tabs ─────────────────────────────────────
+
+function SessionTabs({
+  activeTab,
+  onTabChange,
+  accentColor,
+}: {
+  activeTab: SessionTab;
+  onTabChange: (tab: SessionTab) => void;
+  accentColor: string;
+}) {
+  return (
+    <View style={styles.tabRow}>
+      <TouchableOpacity
+        style={[
+          styles.tab,
+          activeTab === 'sessions' && { borderBottomColor: accentColor },
+        ]}
+        onPress={() => onTabChange('sessions')}
+        activeOpacity={0.7}
+      >
+        <Text
+          style={[
+            styles.tabText,
+            activeTab === 'sessions' && { color: accentColor, fontWeight: '600' },
+          ]}
+        >
+          Sessions
+        </Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[
+          styles.tab,
+          activeTab === 'room' && { borderBottomColor: accentColor },
+        ]}
+        onPress={() => onTabChange('room')}
+        activeOpacity={0.7}
+      >
+        <Text
+          style={[
+            styles.tabText,
+            activeTab === 'room' && { color: accentColor, fontWeight: '600' },
+          ]}
+        >
+          Group Room
+        </Text>
+      </TouchableOpacity>
+    </View>
   );
 }
 
@@ -308,6 +412,26 @@ function formatDate(dateStr: string): string {
 // ─── Styles ────────────────────────────────────────────
 
 const styles = StyleSheet.create({
+  // Tab row
+  tabRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+    marginBottom: Spacing.lg,
+  },
+  tab: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: Spacing.sm,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+  },
+  tabText: {
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textMuted,
+  },
+
   scrollContent: {
     paddingBottom: Spacing.xxxl,
   },
@@ -572,5 +696,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontStyle: 'italic',
     lineHeight: FontSizes.bodySmall * 1.6,
+  },
+
+  // Leave group
+  leaveBtn: {
+    alignSelf: 'center',
+    paddingVertical: Spacing.md,
+    marginTop: Spacing.md,
+  },
+  leaveBtnText: {
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.caption,
+    color: Colors.textMuted,
+    textDecorationLine: 'underline',
   },
 });

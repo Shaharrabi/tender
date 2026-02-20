@@ -272,4 +272,50 @@ export const ASSESSMENT_CONNECTIONS: AssessmentConnection[] = [
     insight:
       'Values avoidance and fusion patterns share a root — difficulty holding your own ground in the face of relationship pressure.',
   },
+
+  // ─── Relational Field Connections ─────────────────────────
+
+  // Presence & Attunement → Empathy (SSEIT)
+  {
+    from: { assessment: 'relational-field', dimension: 'presenceAttunement', label: 'Presence & Attunement' },
+    to: { assessment: 'sseit', dimension: 'percievingOthers', label: 'Empathy' },
+    direction: 'positive',
+    strength: 'strong',
+    strengthValue: 0.7,
+    insight:
+      'Deep relational presence enhances your ability to perceive your partner\'s emotional states — attunement is empathy in action.',
+  },
+
+  // Field Recognition → Attachment Avoidance (ECR-R) — inverse
+  {
+    from: { assessment: 'relational-field', dimension: 'fieldRecognition', label: 'Field Recognition' },
+    to: { assessment: 'ecr-r', dimension: 'avoidanceScore', label: 'Attachment Avoidance' },
+    direction: 'negative',
+    strength: 'moderate',
+    strengthValue: 0.6,
+    insight:
+      'Avoidant patterns can dim field awareness — the wall that protects you from emotional intensity also blocks your sensitivity to the relational space.',
+  },
+
+  // Creative Tension → I-Position (DSI-R)
+  {
+    from: { assessment: 'relational-field', dimension: 'creativeTension', label: 'Creative Tension' },
+    to: { assessment: 'dsi-r', dimension: 'iPosition', label: 'I-Position' },
+    direction: 'positive',
+    strength: 'moderate',
+    strengthValue: 0.5,
+    insight:
+      'Holding creative tension in the relationship requires a strong I-Position — knowing where you end and your partner begins, without collapsing the difference.',
+  },
+
+  // Emergent Orientation → Problem-Solving (DUTCH)
+  {
+    from: { assessment: 'relational-field', dimension: 'emergentOrientation', label: 'Emergent Orientation' },
+    to: { assessment: 'dutch', dimension: 'problemSolving', label: 'Problem-Solving' },
+    direction: 'positive',
+    strength: 'moderate',
+    strengthValue: 0.5,
+    insight:
+      'Trusting what emerges between you naturally supports collaborative problem-solving — you can follow the conversation rather than forcing an outcome.',
+  },
 ];

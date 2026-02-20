@@ -304,6 +304,132 @@ export async function recordAttendance(
   return mapAttendance(data);
 }
 
+// ─── Leave Group ─────────────────────────────────────
+
+/** Deactivate a user's membership so they can re-choose a group. */
+export async function leaveGroup(userId: string, groupId: string): Promise<void> {
+  const { error } = await supabase
+    .from('support_group_members')
+    .update({ status: 'inactive', updated_at: new Date().toISOString() })
+    .eq('user_id', userId)
+    .eq('group_id', groupId)
+    .in('status', ['active', 'waitlisted', 'pending']);
+
+  if (error) throw error;
+}
+
+// ─── Group Community Room ────────────────────────────
+
+/**
+ * Fetch community posts scoped to a specific support group.
+ * Only returns posts where group_id matches (RLS enforces membership).
+ */
+export async function getGroupPosts(
+  userId: string,
+  groupId: string,
+  options: { limit?: number } = {}
+): Promise<any[]> {
+  const { limit = 50 } = options;
+
+  const { data, error } = await supabase
+    .from('community_posts')
+    .select('*')
+    .eq('group_id', groupId)
+    .eq('is_approved', true)
+    .eq('is_flagged', false)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+
+  // Fetch user reactions for these posts
+  const postIds = (data ?? []).map((p: any) => p.id);
+  const userReactions = new Map<string, Set<string>>();
+
+  if (userId && postIds.length > 0) {
+    const { data: reactions } = await supabase
+      .from('community_reactions')
+      .select('post_id, reaction_type')
+      .eq('user_id', userId)
+      .in('post_id', postIds);
+
+    for (const r of reactions ?? []) {
+      if (!userReactions.has(r.post_id)) {
+        userReactions.set(r.post_id, new Set());
+      }
+      userReactions.get(r.post_id)!.add(r.reaction_type);
+    }
+  }
+
+  return (data ?? []).map((row: any) => {
+    const reactions = userReactions.get(row.id);
+    return {
+      id: row.id,
+      authorId: row.author_id,
+      content: row.content,
+      category: row.category,
+      healingPhase: row.healing_phase ?? undefined,
+      attachmentStyle: row.attachment_style ?? undefined,
+      isApproved: row.is_approved,
+      isFlagged: row.is_flagged,
+      resonatedCount: row.resonated_count ?? 0,
+      feltSeenCount: row.felt_seen_count ?? 0,
+      beenThereCount: row.been_there_count ?? 0,
+      createdAt: row.created_at,
+      hasResonated: reactions ? reactions.has('resonated') : false,
+      hasFeltSeen: reactions ? reactions.has('felt_seen') : false,
+      hasBeenThere: reactions ? reactions.has('been_there') : false,
+      aliasName: row.alias_name ?? undefined,
+      aliasColor: row.alias_color ?? undefined,
+    };
+  });
+}
+
+/**
+ * Create a community post scoped to a support group.
+ * RLS enforces that only active group members can insert.
+ */
+export async function createGroupPost(
+  userId: string,
+  groupId: string,
+  content: string,
+  category: string,
+  aliasName?: string,
+  aliasColor?: string
+): Promise<any> {
+  const { data, error } = await supabase
+    .from('community_posts')
+    .insert({
+      author_id: userId,
+      group_id: groupId,
+      content,
+      category,
+      alias_name: aliasName ?? null,
+      alias_color: aliasColor ?? null,
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return {
+    id: data.id,
+    authorId: data.author_id,
+    content: data.content,
+    category: data.category,
+    createdAt: data.created_at,
+    aliasName: data.alias_name ?? undefined,
+    aliasColor: data.alias_color ?? undefined,
+    resonatedCount: 0,
+    feltSeenCount: 0,
+    beenThereCount: 0,
+    isApproved: true,
+    isFlagged: false,
+    hasResonated: false,
+    hasFeltSeen: false,
+    hasBeenThere: false,
+  };
+}
+
 // ─── Mappers (snake_case DB → camelCase TS) ───────────
 
 function mapGroup(row: any): SupportGroup {

@@ -26,7 +26,13 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 import { useAuth } from '@/context/AuthContext';
 import { Colors, Spacing, BorderRadius, Typography, Shadows } from '@/constants/theme';
 import { getDatingProfile, saveGameResults, updateDatingProfile } from '@/services/dating';
-import { ArrowLeftIcon } from '@/assets/graphics/icons';
+import {
+  ArrowLeftIcon,
+  TargetIcon,
+  SparkleIcon,
+  SearchIcon,
+  CommunityIcon,
+} from '@/assets/graphics/icons';
 import ArcadeGame from '@/components/dating/ArcadeGame';
 import ProfileBuilder from '@/components/dating/ProfileBuilder';
 import DiscoverView from '@/components/dating/DiscoverView';
@@ -40,11 +46,11 @@ import type {
 
 type TabKey = 'game' | 'profile' | 'discover' | 'rooms';
 
-const TABS: { id: TabKey; label: string; icon: string }[] = [
-  { id: 'game', label: 'The Field', icon: '🕹️' },
-  { id: 'profile', label: 'My Shape', icon: '✦' },
-  { id: 'discover', label: 'Discover', icon: '🔭' },
-  { id: 'rooms', label: 'Rooms', icon: '🏨' },
+const TABS: { id: TabKey; label: string; Icon: React.ComponentType<{ size: number; color: string }> }[] = [
+  { id: 'game', label: 'The Field', Icon: TargetIcon },
+  { id: 'profile', label: 'My Shape', Icon: SparkleIcon },
+  { id: 'discover', label: 'Discover', Icon: SearchIcon },
+  { id: 'rooms', label: 'Rooms', Icon: CommunityIcon },
 ];
 
 export default function DatingWellScreen() {
@@ -193,6 +199,11 @@ export default function DatingWellScreen() {
         {TABS.map((t) => {
           const locked = !gameComplete && t.id !== 'game';
           const active = activeTab === t.id;
+          const iconColor = locked
+            ? Colors.textMuted
+            : active
+              ? Colors.primary
+              : Colors.textSecondary;
           return (
             <TouchableOpacity
               key={t.id}
@@ -201,9 +212,9 @@ export default function DatingWellScreen() {
               disabled={locked}
               activeOpacity={locked ? 1 : 0.7}
             >
-              <Text style={[styles.tabIcon, locked && styles.tabIconLocked]}>
-                {t.icon}
-              </Text>
+              <View style={[styles.tabIconWrap, locked && styles.tabIconLocked]}>
+                <t.Icon size={16} color={iconColor} />
+              </View>
               <Text
                 style={[
                   styles.tabLabel,
@@ -277,7 +288,7 @@ function GameCompleteView({
 }) {
   return (
     <View style={styles.completeContainer}>
-      <Text style={styles.completeEmoji}>✨</Text>
+      <SparkleIcon size={40} color={Colors.accentGold} />
       <Text style={styles.completeTitle}>Your Field Has Been Mapped</Text>
       <Text style={styles.completeDesc}>
         Your constellation is alive in your profile. Now shape the practical
@@ -376,8 +387,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderBottomColor: Colors.primary,
   },
-  tabIcon: {
-    fontSize: 16,
+  tabIconWrap: {
     marginBottom: 2,
   },
   tabIconLocked: {
@@ -418,10 +428,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 40,
     paddingHorizontal: Spacing.md,
-  },
-  completeEmoji: {
-    fontSize: 48,
-    marginBottom: 12,
+    gap: Spacing.sm,
   },
   completeTitle: {
     fontFamily: 'PlayfairDisplay_600SemiBold',

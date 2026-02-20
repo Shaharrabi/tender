@@ -62,6 +62,7 @@ import { getCompletions } from '@/services/intervention';
 import { calculateGrowthProgress } from '@/utils/steps/intervention-protocols';
 import CheckInCard from '@/components/growth/CheckInCard';
 import NudgeCarousel from '@/components/NudgeCarousel';
+import HomeNotificationLayer from '@/components/notifications/HomeNotificationLayer';
 import { getNudges } from '@/utils/nudges';
 import { getUserConsent } from '@/services/consent';
 import { recordDailyEngagement, getStreakData, type StreakData } from '@/services/streaks';
@@ -252,6 +253,7 @@ export default function HomeScreen() {
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [relationshipMode, setRelationshipMode] = useState<string>('solo');
   const [demoPartnerId, setDemoPartnerId] = useState<string | null>(null);
+  const [onboardedAsPartner, setOnboardedAsPartner] = useState(false);
 
   // Admin mode
   const [adminMode, setAdminMode] = useState(false);
@@ -309,7 +311,7 @@ export default function HomeScreen() {
       try {
         const { data: profile } = await supabase
           .from('user_profiles')
-          .select('display_name, relationship_mode, demo_partner_id')
+          .select('display_name, relationship_mode, demo_partner_id, relationship_status')
           .eq('user_id', user.id)
           .single();
         if (profile?.relationship_mode) {
@@ -318,6 +320,10 @@ export default function HomeScreen() {
         }
         if (profile?.demo_partner_id) {
           setDemoPartnerId(profile.demo_partner_id);
+        }
+        // Users who onboarded as "in-relationship" can never access Dating Well
+        if (profile?.relationship_status === 'in-relationship') {
+          setOnboardedAsPartner(true);
         }
         if (profile?.display_name) {
           setDisplayName(profile.display_name);
@@ -755,7 +761,14 @@ export default function HomeScreen() {
   const gridCardOrder = ['healingJourney', 'courses', 'community', 'practices', 'treatmentPlan', 'findTherapist', 'couplesPortal', 'datingWell'];
   const gridCards = gridCardOrder
     .map((key) => FEATURE_CARDS.find((c) => c.key === key && (c.category === 'feature' || c.category === 'couple')))
-    .filter((c): c is NonNullable<typeof c> => c != null);
+    .filter((c): c is NonNullable<typeof c> => c != null)
+    .filter((c) => {
+      // Users who onboarded as partnered can NEVER see Dating Well, even if they
+      // later change relationship mode. Single users see it when mode is 'solo'.
+      if (c.key === 'datingWell' && (onboardedAsPartner || relationshipMode !== 'solo')) return false;
+      if (c.key === 'couplesPortal' && relationshipMode === 'solo') return false;
+      return true;
+    });
 
   // Recommended exercise — prioritize exercises from current Step
   const allExercises = getAllExercises();
@@ -1105,6 +1118,12 @@ export default function HomeScreen() {
             </TouchableOpacity>
           )}
         </View>
+
+        {/* ═══ ENGAGEMENT NOTIFICATIONS ═══════════════════════ */}
+        <HomeNotificationLayer
+          userId={user?.id}
+          weareBottleneck={weareProfile?.bottleneck?.variable}
+        />
 
         {/* ═══ XP & LEVEL PROGRESS ═══════════════════════════ */}
         {!isGuest && (

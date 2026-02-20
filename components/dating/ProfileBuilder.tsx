@@ -84,7 +84,11 @@ export default function ProfileBuilder({
             style={[styles.tab, activeSection === i && styles.tabActive]}
             onPress={() => setActiveSection(i)}
           >
-            <Text style={styles.tabIcon}>{s.icon}</Text>
+            {s.Icon ? (
+              <s.Icon size={16} color={activeSection === i ? Colors.primary : Colors.textSecondary} />
+            ) : (
+              <Text style={styles.tabIcon}>{s.icon}</Text>
+            )}
             <Text style={[styles.tabLabel, activeSection === i && styles.tabLabelActive]}>
               {s.title.split(' ').slice(1).join(' ')}
             </Text>

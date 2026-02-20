@@ -25,6 +25,7 @@ import {
 } from '@/assets/graphics/icons';
 import { SoundHaptics } from '@/services/SoundHapticsService';
 import type { SupportGroup, SupportGroupMember, SupportGroupSession } from '@/types/support-groups';
+import CrisisFooter from './CrisisFooter';
 
 // ─── Props ─────────────────────────────────────────────
 
@@ -114,7 +115,7 @@ export default function ConfirmationView({
         </Text>
         <Text style={styles.prepText}>
           Before your first session, you might revisit Step 1 in your
-          healing journey: "Acknowledge the Strain"
+          healing journey: {'\u201C'}Acknowledge the Strain{'\u201D'}
         </Text>
         <TouchableOpacity
           style={[styles.reviewBtn, { borderColor: accentColor }]}
@@ -144,6 +145,8 @@ export default function ConfirmationView({
       >
         <Text style={styles.secondaryBtnText}>Back to Therapy Page</Text>
       </TouchableOpacity>
+
+      <CrisisFooter />
     </View>
   );
 }
@@ -222,6 +225,8 @@ function WaitlistView({
       >
         <Text style={styles.secondaryBtnText}>Back to Therapy Page</Text>
       </TouchableOpacity>
+
+      <CrisisFooter />
     </View>
   );
 }

@@ -51,6 +51,7 @@ export default function AppLayout() {
       <Stack.Screen name="relationship-mode" options={{ animation: 'slide_from_bottom' }} />
       <Stack.Screen name="dating-well" options={{ animation: 'fade_from_bottom' }} />
       <Stack.Screen name="support-groups" options={{ animation: 'slide_from_bottom' }} />
+      <Stack.Screen name="notification-feed" options={{ animation: 'slide_from_bottom' }} />
     </Stack>
   );
 }

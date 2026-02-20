@@ -60,6 +60,7 @@ export { default as CloseIcon } from './CloseIcon';
 export { default as MenuIcon } from './MenuIcon';
 export { default as HomeIcon } from './HomeIcon';
 export { default as SettingsIcon } from './SettingsIcon';
+export { default as BellIcon } from './BellIcon';
 
 // Data / Objects
 export { default as BookOpenIcon } from './BookOpenIcon';

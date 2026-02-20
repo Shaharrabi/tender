@@ -5,6 +5,7 @@
  * Three sections: The Practical Things, The Life Shape, The Deeper Stuff
  */
 
+import { CompassIcon, SeedlingIcon, SparkleIcon } from '@/assets/graphics/icons';
 import type { PreferenceSection } from '@/types/dating';
 
 export const PREFERENCE_SECTIONS: PreferenceSection[] = [
@@ -12,7 +13,8 @@ export const PREFERENCE_SECTIONS: PreferenceSection[] = [
     id: 'basics',
     title: 'The Practical Things',
     subtitle: 'Because bodies exist in the real world',
-    icon: '🗺️',
+    icon: 'compass',
+    Icon: CompassIcon,
     fields: [
       {
         id: 'gender_identity',
@@ -55,7 +57,8 @@ export const PREFERENCE_SECTIONS: PreferenceSection[] = [
     id: 'lifestyle',
     title: 'The Life Shape',
     subtitle: 'Not dealbreakers — just the shape of your days',
-    icon: '🌿',
+    icon: 'seedling',
+    Icon: SeedlingIcon,
     fields: [
       {
         id: 'kids',
@@ -99,7 +102,8 @@ export const PREFERENCE_SECTIONS: PreferenceSection[] = [
     id: 'depth',
     title: 'The Deeper Stuff',
     subtitle: 'What your nervous system cares about',
-    icon: '🔮',
+    icon: 'sparkle',
+    Icon: SparkleIcon,
     fields: [
       {
         id: 'therapy',

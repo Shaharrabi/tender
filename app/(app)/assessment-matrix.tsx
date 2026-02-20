@@ -45,65 +45,82 @@ import type { AttachmentStyle, ECRRScores } from '@/types';
 
 type Segment = 'matrix' | 'connections' | 'profile';
 
-/** Extract portrait-informed insight for a given assessment */
+/** Portrait insight for a given assessment — narrative, growth edges with descriptions, patterns */
+interface PortraitInsight {
+  narrative: string;
+  growthEdges: Array<{ title: string; description: string }>;
+}
+
 function getPortraitInsightForAssessment(
   assessmentKey: string,
   portrait: IndividualPortrait
-): { narrative: string; growthEdges: string[] } | null {
+): PortraitInsight | null {
   const { fourLens, growthEdges, negativeCycle, compositeScores } = portrait;
 
   switch (assessmentKey) {
     case 'ecr-r':
       return {
-        narrative: fourLens.attachment.narrative.slice(0, 200) + (fourLens.attachment.narrative.length > 200 ? '...' : ''),
+        narrative: fourLens.attachment.narrative.slice(0, 500) + (fourLens.attachment.narrative.length > 500 ? '...' : ''),
         growthEdges: growthEdges
           .filter(e => e.category === 'attachment' || e.title.toLowerCase().includes('attach'))
-          .map(e => e.title)
-          .slice(0, 2),
+          .map(e => ({ title: e.title, description: e.description }))
+          .slice(0, 3),
       };
     case 'ipip-neo-120':
       return {
         narrative: fourLens.values?.narrative
-          ? fourLens.values.narrative.slice(0, 200) + (fourLens.values.narrative.length > 200 ? '...' : '')
+          ? fourLens.values.narrative.slice(0, 500) + (fourLens.values.narrative.length > 500 ? '...' : '')
           : `Your personality profile shapes how you show up in relationships. Self-leadership: ${compositeScores.selfLeadership}/100.`,
         growthEdges: growthEdges
           .filter(e => e.category === 'personality' || e.category === 'values')
-          .map(e => e.title)
-          .slice(0, 2),
+          .map(e => ({ title: e.title, description: e.description }))
+          .slice(0, 3),
       };
     case 'sseit':
       return {
-        narrative: `Your emotional intelligence shapes how you read and manage feelings in relationships. Regulation capacity: ${compositeScores.regulationScore}/100, Window width: ${compositeScores.windowWidth}/100.`,
+        narrative: fourLens.regulation?.narrative
+          ? fourLens.regulation.narrative.slice(0, 500) + (fourLens.regulation.narrative.length > 500 ? '...' : '')
+          : `Your emotional intelligence shapes how you read and manage feelings in relationships. Regulation capacity: ${compositeScores.regulationScore}/100, Window width: ${compositeScores.windowWidth}/100.`,
         growthEdges: growthEdges
           .filter(e => e.category === 'regulation' || e.title.toLowerCase().includes('emotion'))
-          .map(e => e.title)
-          .slice(0, 2),
+          .map(e => ({ title: e.title, description: e.description }))
+          .slice(0, 3),
       };
     case 'dsi-r':
       return {
         narrative: `Your differentiation reflects the balance between staying connected and maintaining your sense of self. I-Position: strong self-definition without rigidity.`,
         growthEdges: growthEdges
           .filter(e => e.category === 'differentiation' || e.title.toLowerCase().includes('boundar'))
-          .map(e => e.title)
-          .slice(0, 2),
+          .map(e => ({ title: e.title, description: e.description }))
+          .slice(0, 3),
       };
     case 'dutch':
       return {
         narrative: `Your conflict style reveals protective patterns: "${negativeCycle.position}" position. Triggers: ${(negativeCycle.primaryTriggers || []).slice(0, 2).join(', ')}.`,
         growthEdges: growthEdges
           .filter(e => e.category === 'conflict' || e.category === 'communication')
-          .map(e => e.title)
-          .slice(0, 2),
+          .map(e => ({ title: e.title, description: e.description }))
+          .slice(0, 3),
       };
     case 'values':
       return {
         narrative: fourLens.values?.narrative
-          ? fourLens.values.narrative.slice(0, 200) + (fourLens.values.narrative.length > 200 ? '...' : '')
+          ? fourLens.values.narrative.slice(0, 500) + (fourLens.values.narrative.length > 500 ? '...' : '')
           : `Values alignment: ${compositeScores.valuesCongruence}/100. Your values guide what you prioritize in relationships.`,
         growthEdges: growthEdges
           .filter(e => e.category === 'values' || e.title.toLowerCase().includes('value'))
-          .map(e => e.title)
-          .slice(0, 2),
+          .map(e => ({ title: e.title, description: e.description }))
+          .slice(0, 3),
+      };
+    case 'relational-field':
+      return {
+        narrative: fourLens.fieldAwareness?.narrative
+          ? fourLens.fieldAwareness.narrative.slice(0, 500) + (fourLens.fieldAwareness.narrative.length > 500 ? '...' : '')
+          : `Your relational field awareness reflects how attuned you are to the space between you and your partner.`,
+        growthEdges: growthEdges
+          .filter(e => e.title.toLowerCase().includes('field') || e.title.toLowerCase().includes('presence') || e.title.toLowerCase().includes('attune'))
+          .map(e => ({ title: e.title, description: e.description }))
+          .slice(0, 3),
       };
     default:
       return null;
@@ -428,6 +445,10 @@ export default function AssessmentMatrixScreen() {
                       <Text style={styles.insightTitle}>
                         What This Reveals
                       </Text>
+                      {/* Warm label for ECR-R */}
+                      {selectedAssessment === 'ecr-r' && interpretation && (
+                        <Text style={styles.insightWarmLabel}>{interpretation.warmLabel}</Text>
+                      )}
                       <Text style={styles.insightNarrative}>
                         {insight.narrative}
                       </Text>
@@ -435,12 +456,49 @@ export default function AssessmentMatrixScreen() {
                         <View style={styles.insightGrowthEdges}>
                           <Text style={styles.insightGrowthLabel}>Growth Edges</Text>
                           {insight.growthEdges.map((edge, i) => (
-                            <Text key={i} style={styles.insightGrowthText}>
-                              {'\u2022'} {edge}
-                            </Text>
+                            <View key={i} style={{ marginBottom: 4 }}>
+                              <Text style={styles.insightGrowthText}>
+                                {'\u2022'} {edge.title}
+                              </Text>
+                              {edge.description ? (
+                                <Text style={styles.insightGrowthDescription}>
+                                  {edge.description}
+                                </Text>
+                              ) : null}
+                            </View>
                           ))}
                         </View>
                       )}
+                      {/* Detected cross-assessment patterns */}
+                      {(() => {
+                        const categoryMap: Record<string, string[]> = {
+                          'ecr-r': ['attachment-conflict'],
+                          'sseit': ['regulation'],
+                          'dsi-r': ['differentiation'],
+                          'dutch': ['attachment-conflict'],
+                          'values': ['values-behavior'],
+                          'ipip-neo-120': ['values-behavior', 'differentiation'],
+                          'relational-field': ['field-awareness'],
+                        };
+                        const cats = categoryMap[selectedAssessment] || [];
+                        const relevant = (portrait.patterns || [])
+                          .filter(p => cats.includes(p.category))
+                          .slice(0, 2);
+                        if (relevant.length === 0) return null;
+                        return (
+                          <View style={styles.insightPatterns}>
+                            <Text style={styles.insightGrowthLabel}>Detected Patterns</Text>
+                            {relevant.map((p, i) => (
+                              <View key={i} style={{ marginBottom: 4 }}>
+                                <Text style={styles.insightGrowthText}>{'\u2022'} {p.description}</Text>
+                                {p.interpretation ? (
+                                  <Text style={styles.insightGrowthDescription}>{p.interpretation}</Text>
+                                ) : null}
+                              </View>
+                            ))}
+                          </View>
+                        );
+                      })()}
                     </View>
                   );
                 })()}
@@ -482,6 +540,7 @@ export default function AssessmentMatrixScreen() {
             <CombinedProfileView
               allScores={allScores}
               completedAssessments={completedAssessments}
+              portrait={portrait}
             />
           </View>
         )}
@@ -741,5 +800,26 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     lineHeight: 18,
     paddingLeft: 4,
+  },
+  insightWarmLabel: {
+    fontFamily: FontFamilies.accent,
+    fontSize: FontSizes.body,
+    color: Colors.primary,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  insightGrowthDescription: {
+    fontFamily: FontFamilies.body,
+    fontSize: 11,
+    color: Colors.textMuted,
+    lineHeight: 16,
+    paddingLeft: 12,
+    marginTop: 1,
+  },
+  insightPatterns: {
+    marginTop: Spacing.sm,
+    paddingTop: Spacing.xs,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderLight,
   },
 });

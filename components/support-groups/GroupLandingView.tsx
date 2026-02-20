@@ -1,9 +1,8 @@
 /**
- * GroupLandingView — Group selection page with ECR-R routing.
+ * GroupLandingView — Group selection page with optional ECR-R routing.
  *
- * Shows both support groups (The Reach + The Retreat), auto-highlights
- * the recommended group based on attachment assessment results.
- * If no ECR-R completed, shows a prompt to take the assessment.
+ * Always shows both support groups (The Reach + The Retreat).
+ * Auto-highlights the recommended group if ECR-R assessment is available.
  */
 
 import React from 'react';
@@ -22,9 +21,9 @@ import {
   SparkleIcon,
   CalendarIcon,
   PersonIcon,
-  ClipboardIcon,
 } from '@/assets/graphics/icons';
 import type { SupportGroup, GroupRecommendation, SupportGroupType } from '@/types/support-groups';
+import CrisisFooter from './CrisisFooter';
 
 // ─── Props ─────────────────────────────────────────────
 
@@ -33,7 +32,6 @@ interface GroupLandingViewProps {
   recommendation: GroupRecommendation | null;
   memberCounts: Record<string, number>;
   onSelectGroup: (groupType: SupportGroupType) => void;
-  onStartAssessment: () => void;
 }
 
 // ─── Group Card Config ─────────────────────────────────
@@ -72,29 +70,13 @@ export default function GroupLandingView({
   recommendation,
   memberCounts,
   onSelectGroup,
-  onStartAssessment,
 }: GroupLandingViewProps) {
-  const hasAssessment = recommendation?.attachmentStyle != null;
-  const recGroup = recommendation?.recommendedGroup;
+  const recGroup = recommendation?.recommendedGroup ?? null;
 
-  // No ECR-R completed
-  if (!hasAssessment) {
-    return (
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        <HeroSection />
-        <NoAssessmentCard onStart={onStartAssessment} />
-        <QuoteCard />
-      </ScrollView>
-    );
-  }
-
-  // Sort: recommended group first
+  // Sort: recommended group first (if any)
   const sortedGroups = [...groups].sort((a, b) => {
-    if (a.groupType === recGroup) return -1;
-    if (b.groupType === recGroup) return 1;
+    if (recGroup && a.groupType === recGroup) return -1;
+    if (recGroup && b.groupType === recGroup) return 1;
     return 0;
   });
 
@@ -111,7 +93,7 @@ export default function GroupLandingView({
           <SparkleIcon size={14} color={Colors.accentGold} />
           <Text style={styles.faText}>
             Your pattern has elements of both reaching and retreating.
-            We have suggested a starting group based on your assessment,
+            We've suggested a starting group based on your assessment,
             but you can switch anytime.
           </Text>
         </View>
@@ -138,6 +120,7 @@ export default function GroupLandingView({
         const config = GROUP_CONFIG[group.groupType];
         const isRecommended = group.groupType === recGroup;
         const count = memberCounts[group.id] ?? 0;
+        const isFull = count >= group.maxMembers;
 
         return (
           <View
@@ -177,9 +160,9 @@ export default function GroupLandingView({
 
             {/* Capacity */}
             <View style={styles.capacityRow}>
-              <PersonIcon size={14} color={Colors.textMuted} />
-              <Text style={styles.capacityText}>
-                {count} / {group.maxMembers} members
+              <PersonIcon size={14} color={isFull ? Colors.warning : Colors.textMuted} />
+              <Text style={[styles.capacityText, isFull && { color: Colors.warning, fontWeight: '600' }]}>
+                {count} / {group.maxMembers} members{isFull ? ' (Full)' : ''}
               </Text>
             </View>
 
@@ -210,7 +193,7 @@ export default function GroupLandingView({
                   !isRecommended && { color: config.accentColor },
                 ]}
               >
-                {isRecommended ? 'Join This Group' : 'Learn More'}
+                {isFull ? 'Join Waitlist' : isRecommended ? 'Join This Group' : 'Explore This Group'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -218,6 +201,7 @@ export default function GroupLandingView({
       })}
 
       <QuoteCard />
+      <CrisisFooter />
     </ScrollView>
   );
 }
@@ -232,26 +216,6 @@ function HeroSection() {
       <Text style={styles.heroSubtitle}>
         Healing is relational. You don't have to do this alone.
       </Text>
-    </View>
-  );
-}
-
-function NoAssessmentCard({ onStart }: { onStart: () => void }) {
-  return (
-    <View style={styles.noAssessCard}>
-      <ClipboardIcon size={32} color={Colors.accentGold} />
-      <Text style={styles.noAssessTitle}>Your group is waiting</Text>
-      <Text style={styles.noAssessText}>
-        Complete the attachment assessment to find the right support group
-        for your pattern.
-      </Text>
-      <TouchableOpacity
-        style={[styles.primaryButton, { backgroundColor: Colors.primary }]}
-        onPress={onStart}
-        activeOpacity={0.7}
-      >
-        <Text style={styles.primaryButtonText}>Start Assessment (12 min)</Text>
-      </TouchableOpacity>
     </View>
   );
 }
@@ -429,29 +393,6 @@ const styles = StyleSheet.create({
     fontFamily: FontFamilies.heading,
     fontSize: FontSizes.bodySmall,
     fontWeight: '600',
-  },
-
-  // No assessment card
-  noAssessCard: {
-    backgroundColor: Colors.surfaceElevated,
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.xl,
-    alignItems: 'center',
-    gap: Spacing.md,
-    ...Shadows.card,
-  },
-  noAssessTitle: {
-    fontFamily: FontFamilies.accent,
-    fontSize: FontSizes.headingM,
-    color: Colors.text,
-    textAlign: 'center',
-  },
-  noAssessText: {
-    fontFamily: FontFamilies.body,
-    fontSize: FontSizes.bodySmall,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: FontSizes.bodySmall * 1.5,
   },
 
   // Quote card

@@ -380,3 +380,13 @@ export type {
   AdaptedStep,
   GroupRecommendation,
 } from './support-groups';
+
+// ─── Notification Types ────────────────────────────────
+export type {
+  NotificationCategory,
+  EngagementPrompt,
+  CategoryConfig,
+  NotificationInstance,
+  NotificationSelectionState,
+  EngagementNotificationPreferences,
+} from './notifications';

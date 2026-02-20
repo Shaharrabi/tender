@@ -36,6 +36,7 @@ const CONNECTED_ASSESSMENTS = [
   'dsi-r',
   'dutch',
   'values',
+  'relational-field',
 ];
 
 interface ConnectionMapProps {
