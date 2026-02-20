@@ -365,3 +365,18 @@ export type {
   WEAREScoreRow,
   WeeklyCheckInRow,
 } from './weare';
+
+// ─── Support Groups Types ─────────────────────────────
+export type {
+  SupportGroupType,
+  MemberStatus,
+  GroupStatus,
+  SessionStatus,
+  SupportGroup,
+  SupportGroupMember,
+  SupportGroupSession,
+  SupportGroupAttendance,
+  RegistrationFormData,
+  AdaptedStep,
+  GroupRecommendation,
+} from './support-groups';

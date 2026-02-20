@@ -214,8 +214,8 @@ export const FEATURE_CARDS: FeatureCard[] = [
   },
   {
     key: 'findTherapist',
-    title: 'Find a Therapist',
-    subtitle: 'Matched to your assessment patterns',
+    title: 'Group Support & Therapy',
+    subtitle: 'Support groups and therapy matched to you',
     icon: SearchIcon,
     color: '#6BA3A0',
     unlockHint: '',

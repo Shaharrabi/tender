@@ -1,12 +1,15 @@
 /**
- * Find Your Therapist — Personalized therapy recommendations
+ * Group Support & Therapy — Support groups + personalized therapy recommendations
  *
  * Based on assessment results, recommends specific therapy modalities
- * and links to directories. Not a therapist directory itself.
+ * and links to directories. Also offers attachment-based support groups.
  */
 
 import React, { useEffect, useState } from 'react';
 import HomeButton from '@/components/HomeButton';
+import SupportGroupsCard from '@/components/support-groups/SupportGroupsCard';
+import { getRecommendedGroup } from '@/services/support-groups';
+import type { GroupRecommendation } from '@/types/support-groups';
 import {
   View,
   Text,
@@ -224,6 +227,7 @@ export default function FindTherapistScreen() {
   const [portrait, setPortrait] = useState<IndividualPortrait | null>(null);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
+  const [groupRec, setGroupRec] = useState<GroupRecommendation | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -231,6 +235,9 @@ export default function FindTherapistScreen() {
       .then(setPortrait)
       .catch(() => {})
       .finally(() => setLoading(false));
+    getRecommendedGroup(user.id)
+      .then(setGroupRec)
+      .catch(() => {});
   }, [user]);
 
   const recommendations = getTherapyRecommendations(portrait);
@@ -267,13 +274,19 @@ export default function FindTherapistScreen() {
           <View style={s.heroIcon}>
             <SearchIcon size={48} color={Colors.primary} />
           </View>
-          <Text style={s.heroTitle}>Find a Therapist</Text>
+          <Text style={s.heroTitle}>Group Support and Therapy</Text>
           <Text style={s.heroSubtitle}>
             {portrait
-              ? 'Based on your assessment results, here are the types of therapy that might be most helpful for you.'
-              : 'Explore therapy options. Complete assessments for personalized recommendations.'}
+              ? 'Explore support groups and therapy options matched to your assessment results.'
+              : 'Explore group support and therapy options. Complete assessments for personalized recommendations.'}
           </Text>
         </View>
+
+        {/* ── Support Groups ─────────────── */}
+        <SupportGroupsCard
+          recommendation={groupRec}
+          onPress={() => router.push('/(app)/support-groups' as any)}
+        />
 
         {/* ── Top Recommendation ─────────── */}
         {topRec && (

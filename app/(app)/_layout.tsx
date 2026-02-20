@@ -50,6 +50,7 @@ export default function AppLayout() {
       <Stack.Screen name="assessment-matrix" options={{ animation: 'fade_from_bottom' }} />
       <Stack.Screen name="relationship-mode" options={{ animation: 'slide_from_bottom' }} />
       <Stack.Screen name="dating-well" options={{ animation: 'fade_from_bottom' }} />
+      <Stack.Screen name="support-groups" options={{ animation: 'slide_from_bottom' }} />
     </Stack>
   );
 }
