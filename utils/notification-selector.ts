@@ -3,10 +3,10 @@
  *
  * Weighted-random selection of engagement prompts with:
  * - Category frequency caps (per-week)
- * - 14-day cooldown per prompt
- * - 1 per session, max 3 per day
+ * - 14-day cooldown per prompt (date-tracked)
+ * - 1 per session, max 5 per day
  * - WEARE bottleneck targeting (2x priority boost)
- * - No same-category back-to-back
+ * - No same-category back-to-back within the same day
  * - Anti-shame: never guilt-trips, never compares
  */
 
@@ -28,14 +28,14 @@ import type {
 const STORAGE_KEY = 'tender_engagement_state';
 const PREFS_KEY = 'tender_engagement_prefs';
 const COOLDOWN_DAYS = 14;
-const MAX_PER_DAY = 3;
+const MAX_PER_DAY = 5;
 const SESSION_ID_KEY = 'tender_engagement_session';
 
 // ─── State Management ───────────────────────────────────
 
 const DEFAULT_STATE: NotificationSelectionState = {
   lastShownByCategory: {},
-  seenPromptIds: [],
+  seenPrompts: [],
   lastCategory: undefined,
   todayShows: [],
   shownThisSession: false,
@@ -49,15 +49,26 @@ export async function getSelectionState(): Promise<NotificationSelectionState> {
     if (!raw) return { ...DEFAULT_STATE };
     const state = JSON.parse(raw) as NotificationSelectionState;
 
+    // Migrate old seenPromptIds (string[]) → seenPrompts ({id, at}[])
+    if ((state as any).seenPromptIds && !state.seenPrompts) {
+      const oldIds: string[] = (state as any).seenPromptIds;
+      // No dates available for old entries, so just clear them — fresh start
+      state.seenPrompts = [];
+      delete (state as any).seenPromptIds;
+    }
+
+    // Ensure seenPrompts exists
+    if (!state.seenPrompts) state.seenPrompts = [];
+
     // Clean up todayShows from previous days
     const today = new Date().toISOString().slice(0, 10);
     state.todayShows = (state.todayShows || []).filter(
       (ts) => ts.slice(0, 10) === today
     );
 
-    // Clean up seenPromptIds older than COOLDOWN_DAYS
-    // (We store ISO strings; prune old ones)
-    // For simplicity, we just keep a rolling list and check date at selection time
+    // Prune seenPrompts older than COOLDOWN_DAYS
+    const cutoff = new Date(Date.now() - COOLDOWN_DAYS * 24 * 60 * 60 * 1000).toISOString();
+    state.seenPrompts = state.seenPrompts.filter((entry) => entry.at > cutoff);
 
     return state;
   } catch {
@@ -114,7 +125,7 @@ export async function shouldShowNotification(): Promise<boolean> {
   // Max 1 per session
   if (state.shownThisSession) return false;
 
-  // Max 3 per day
+  // Max per day
   const today = new Date().toISOString().slice(0, 10);
   const todayCount = (state.todayShows || []).filter(
     (ts) => ts.slice(0, 10) === today
@@ -152,23 +163,40 @@ export async function selectNotification(
     }
   }
 
-  // Build count of category shows this week
-  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  // Build set of recently seen prompt IDs (already pruned to 14 days in getSelectionState)
+  const recentlySeenIds = new Set(state.seenPrompts.map((entry) => entry.id));
+
+  // Build count of category shows this week from todayShows + lastShownByCategory
+  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const categoryCountsThisWeek: Partial<Record<NotificationCategory, number>> = {};
+  // Count from seenPrompts this week
+  for (const entry of state.seenPrompts) {
+    if (entry.at.slice(0, 10) >= weekAgo) {
+      // We need the category — look it up from the prompt pool
+      const prompt = ENGAGEMENT_PROMPTS.find((p) => p.id === entry.id);
+      if (prompt) {
+        categoryCountsThisWeek[prompt.category] = (categoryCountsThisWeek[prompt.category] || 0) + 1;
+      }
+    }
+  }
+
+  // Only apply lastCategory filter within the same day (not across days)
+  const lastShowDate = state.lastShownAt?.slice(0, 10);
+  const applyLastCategoryFilter = lastShowDate === todayStr;
 
   // Filter the pool
   const eligible = ENGAGEMENT_PROMPTS.filter((prompt) => {
     // 1. Category not disabled
     if (disabledCategories.has(prompt.category)) return false;
 
-    // 2. Not seen in last 14 days
-    if (state.seenPromptIds.includes(prompt.id)) return false;
+    // 2. Not seen in cooldown window (14 days, date-tracked)
+    if (recentlySeenIds.has(prompt.id)) return false;
 
     // 3. Meets minimum day requirement
     if (prompt.minDay && dayNumber < prompt.minDay) return false;
 
-    // 4. Not same category as last shown (no back-to-back)
-    if (state.lastCategory === prompt.category) return false;
+    // 4. Not same category as last shown (only within same day)
+    if (applyLastCategoryFilter && state.lastCategory === prompt.category) return false;
 
     // 5. Category weekly cap not exceeded
     const catConfig = CATEGORY_CONFIG.find((c) => c.id === prompt.category);
@@ -177,15 +205,20 @@ export async function selectNotification(
       if (catCount >= catConfig.maxPerWeek) return false;
     }
 
-    // 6. Max frequency check
-    if (prompt.maxFrequency === 'once' && state.seenPromptIds.includes(prompt.id)) {
-      return false;
-    }
-
     return true;
   });
 
-  if (eligible.length === 0) return null;
+  if (eligible.length === 0) {
+    // Fallback: if everything is on cooldown, clear cooldowns and try again
+    // This prevents the "seen all prompts" dead-end
+    if (recentlySeenIds.size > 0) {
+      state.seenPrompts = [];
+      await saveSelectionState(state);
+      // Retry once with cleared cooldowns
+      return selectNotification(weareBottleneck, dayNumber, prefs);
+    }
+    return null;
+  }
 
   // Score: base priority + WEARE boost
   const scored = eligible.map((prompt) => {
@@ -210,18 +243,13 @@ export async function selectNotification(
   }
 
   // Update state
-  state.seenPromptIds.push(selected.id);
+  state.seenPrompts.push({ id: selected.id, at: now.toISOString() });
   state.lastCategory = selected.category;
   state.todayShows.push(now.toISOString());
   state.shownThisSession = true;
   state.totalShown += 1;
   state.lastShownAt = now.toISOString();
   state.lastShownByCategory[selected.category] = todayStr;
-
-  // Prune seenPromptIds older than 14 days (keep only the last 50 entries)
-  if (state.seenPromptIds.length > 50) {
-    state.seenPromptIds = state.seenPromptIds.slice(-50);
-  }
 
   await saveSelectionState(state);
 

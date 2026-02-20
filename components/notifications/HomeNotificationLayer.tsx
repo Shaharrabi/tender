@@ -51,9 +51,9 @@ export default function HomeNotificationLayer({
         <NotificationBellButton unreadCount={unreadCount} />
       </View>
 
-      {/* Banner overlays content — does NOT push layout down */}
+      {/* Banner in normal flow — visible above XP bar */}
       {currentNotification && (
-        <View style={styles.bannerOverlay}>
+        <View style={styles.bannerWrap}>
           {isMilestone ? (
             <NotificationToast
               notification={currentNotification}
@@ -76,7 +76,7 @@ export default function HomeNotificationLayer({
 
 const styles = StyleSheet.create({
   container: {
-    // Bell row stays in-flow; banner overlays below it via zIndex
+    zIndex: 10,
   },
   bellRow: {
     flexDirection: 'row',
@@ -84,12 +84,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     marginBottom: 4,
   },
-  bannerOverlay: {
-    // Overlay so the banner doesn't push content down
-    position: 'absolute',
-    top: '100%',
-    left: 0,
-    right: 0,
-    zIndex: 10,
+  bannerWrap: {
+    // In normal document flow so it stays visible above subsequent siblings
+    paddingHorizontal: 12,
+    marginBottom: 8,
   },
 });

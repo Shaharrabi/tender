@@ -207,7 +207,7 @@ const s = StyleSheet.create({
   },
 
   // Zone buttons
-  zoneRow: { flexDirection: 'row', gap: Spacing.sm, marginBottom: Spacing.md },
+  zoneRow: { flexDirection: 'row', gap: Spacing.sm, marginBottom: Spacing.md, width: '100%', justifyContent: 'center' },
   zoneBtn: {
     flex: 1, paddingVertical: 12, borderRadius: BorderRadius.pill,
     borderWidth: 1.5, borderColor: Colors.border, backgroundColor: Colors.surface,

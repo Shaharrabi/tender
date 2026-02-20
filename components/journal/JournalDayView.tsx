@@ -178,6 +178,96 @@ function CheckInCard({ entry }: { entry: JournalEntry }) {
   );
 }
 
+/**
+ * Try to format ANY response string that contains JSON into readable text.
+ * Works for both explicit `type: 'interactive'` and any step response
+ * that happens to contain serialized JSON (checklist, scenario, etc.).
+ *
+ * Returns the original string if it's not JSON.
+ * Returns null if the JSON can't be meaningfully displayed (skip it).
+ */
+function formatResponse(responseStr: string): string | null {
+  // Quick check: if it doesn't start with { or [, it's plain text
+  const trimmed = responseStr.trim();
+  if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) {
+    return responseStr;
+  }
+
+  try {
+    const data = JSON.parse(trimmed);
+
+    // Body scan / activation map
+    if (data.zone && data.zoneName) return data.zoneName;
+
+    // Myth busters
+    if (data.mythsBusted != null) return `${data.mythsBusted} myths explored`;
+
+    // Horseman matcher
+    if (data.allMatchedCorrectly != null) {
+      const acc = data.noMistakes ? 'perfect score' : `${data.totalMistakes || 0} mistake${data.totalMistakes !== 1 ? 's' : ''}`;
+      return `Matching complete \u2014 ${acc}`;
+    }
+    if (data.myHorseman) {
+      const parts: string[] = [];
+      if (data.myHorseman) parts.push(`My horseman: ${data.myHorseman}`);
+      if (data.partnerHorseman) parts.push(`Partner's: ${data.partnerHorseman}`);
+      return parts.join(' \u2022 ');
+    }
+
+    // Repair scenario / branching
+    if (data.choicesMade && Array.isArray(data.choicesMade)) {
+      const ending = data.endingType ? ` \u2014 ${data.endingType} ending` : '';
+      const repairs = data.repairAttemptsMade != null ? `, ${data.repairAttemptsMade} repair${data.repairAttemptsMade !== 1 ? 's' : ''} made` : '';
+      return `${data.choicesMade.length} choices${repairs}${ending}`;
+    }
+
+    // Content + pattern (MC3 L1) — duplicated in the prompt text
+    if (data.content && data.pattern) return null;
+
+    // Sentence transform output
+    if (data.stages && Array.isArray(data.stages)) {
+      return data.stages.map((s: any) => `${s.prefix || ''} ${s.value || ''}`).join(' ').trim();
+    }
+
+    // Checklist (e.g. grounding 5-4-3-2-1)
+    if (data.checkedLabels && Array.isArray(data.checkedLabels)) {
+      return data.checkedLabels.join(', ');
+    }
+    // Checklist variant with just 'checked' array and 'count'
+    if (data.checked && Array.isArray(data.checked) && data.count != null) {
+      if (data.checkedLabels) return data.checkedLabels.join(', ');
+      return `${data.count} selected`;
+    }
+
+    // Boundary spectrum, window of tolerance, etc. with simple label
+    if (data.label) return data.label;
+
+    // Breathing / timer completion
+    if (data.completed != null) return data.completed ? 'Completed' : 'Skipped';
+
+    // Card flip
+    if (data.count != null && data.total != null) return `${data.count} of ${data.total} cards explored`;
+
+    // Scale slider
+    if (data.value != null && data.zone) return `${data.zone} (${data.value}/100)`;
+
+    // Scenario choice
+    if (data.text) return data.text;
+
+    // Generic: if it has a 'selected' string field, show it
+    if (typeof data.selected === 'string') return data.selected;
+
+    // Generic: if it has a 'response' string, show it
+    if (typeof data.response === 'string') return data.response;
+
+    // Fallback: don't show raw JSON
+    return null;
+  } catch {
+    // Not valid JSON — it's plain text, show as-is
+    return responseStr;
+  }
+}
+
 function ExerciseCard({ entry }: { entry: JournalEntry }) {
   const { reflection, rating, stepResponses } = entry.data;
   return (
@@ -187,12 +277,20 @@ function ExerciseCard({ entry }: { entry: JournalEntry }) {
       {/* Full step-by-step responses from the practice */}
       {stepResponses && Array.isArray(stepResponses) && stepResponses.length > 0 && (
         <View style={cardStyles.stepResponsesContainer}>
-          {stepResponses.map((sr: any, idx: number) => (
-            <View key={idx} style={cardStyles.stepResponseBlock}>
-              <Text style={cardStyles.stepPrompt}>{sr.prompt}</Text>
-              <Text style={cardStyles.stepResponse}>{sr.response}</Text>
-            </View>
-          ))}
+          {stepResponses.map((sr: any, idx: number) => {
+            // Format any JSON responses into human-readable text
+            const displayText = formatResponse(sr.response || '');
+
+            // Skip entries that can't be meaningfully displayed
+            if (!displayText) return null;
+
+            return (
+              <View key={idx} style={cardStyles.stepResponseBlock}>
+                <Text style={cardStyles.stepPrompt}>{sr.prompt}</Text>
+                <Text style={cardStyles.stepResponse}>{displayText}</Text>
+              </View>
+            );
+          })}
         </View>
       )}
 
@@ -204,6 +302,46 @@ function ExerciseCard({ entry }: { entry: JournalEntry }) {
       ) : null}
     </View>
   );
+}
+
+/**
+ * Format an assessment score value for display.
+ * Shows primitives and simple flat objects. Skips deeply nested structures
+ * (like SubscaleScores with sub-objects) to keep cards clean.
+ */
+function formatScoreValue(value: unknown): string | null {
+  if (value == null) return null;
+  if (typeof value === 'number') return value % 1 === 0 ? String(value) : value.toFixed(1);
+  if (typeof value === 'string') return value;
+  if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+  if (Array.isArray(value)) {
+    // Array of primitives → join
+    const items = value
+      .filter((v) => v != null && (typeof v === 'string' || typeof v === 'number'))
+      .map((v) => typeof v === 'number' ? (v % 1 === 0 ? String(v) : v.toFixed(1)) : String(v));
+    if (items.length > 0) return items.slice(0, 5).join(', ') + (value.length > 5 ? '…' : '');
+    // Array of objects → skip (too detailed)
+    return null;
+  }
+  if (typeof value === 'object') {
+    const entries = Object.entries(value as Record<string, unknown>);
+    if (entries.length === 0) return null;
+    // Check if ANY value is a nested object/array — if so, skip entirely
+    const hasNested = entries.some(([, v]) => v != null && typeof v === 'object');
+    if (hasNested) return null;
+    // Flat object with only primitive values → show inline
+    if (entries.length <= 6) {
+      return entries
+        .map(([k, v]) => {
+          const label = k.replace(/_/g, ' ');
+          const val = typeof v === 'number' ? (v % 1 === 0 ? String(v) : v.toFixed(1)) : String(v ?? '');
+          return `${label}: ${val}`;
+        })
+        .join(', ');
+    }
+    return `${entries.length} dimensions`;
+  }
+  return String(value);
 }
 
 function AssessmentCard({ entry }: { entry: JournalEntry }) {
@@ -218,16 +356,20 @@ function AssessmentCard({ entry }: { entry: JournalEntry }) {
       {/* Show all score dimensions */}
       {scores && typeof scores === 'object' && (
         <View style={cardStyles.scoresGrid}>
-          {Object.entries(scores).map(([key, value]) => (
-            <View key={key} style={cardStyles.scoreItem}>
-              <Text style={cardStyles.scoreLabel}>
-                {key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
-              </Text>
-              <Text style={cardStyles.scoreValue}>
-                {typeof value === 'number' ? (value % 1 === 0 ? value : value.toFixed(1)) : String(value)}
-              </Text>
-            </View>
-          ))}
+          {Object.entries(scores).map(([key, value]) => {
+            const displayValue = formatScoreValue(value);
+            if (!displayValue) return null;
+            return (
+              <View key={key} style={cardStyles.scoreItem}>
+                <Text style={cardStyles.scoreLabel}>
+                  {key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                </Text>
+                <Text style={cardStyles.scoreValue}>
+                  {displayValue}
+                </Text>
+              </View>
+            );
+          })}
         </View>
       )}
     </View>
@@ -652,6 +794,7 @@ const cardStyles = StyleSheet.create({
   scoreItem: {
     alignItems: 'center',
     minWidth: 70,
+    maxWidth: 140,
     gap: 2,
   },
   scoreLabel: {
@@ -664,6 +807,7 @@ const cardStyles = StyleSheet.create({
     fontFamily: 'Jost_600SemiBold',
     fontSize: FontSizes.body,
     color: Colors.text,
+    textAlign: 'center',
   },
 
   // Chat

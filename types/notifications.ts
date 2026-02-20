@@ -83,8 +83,10 @@ export interface NotificationInstance {
 export interface NotificationSelectionState {
   /** Last shown date per category (ISO date strings) */
   lastShownByCategory: Partial<Record<NotificationCategory, string>>;
-  /** Prompt IDs shown in the last 14 days */
-  seenPromptIds: string[];
+  /** Prompt IDs with timestamps for 14-day cooldown. Replaces old string[] seenPromptIds. */
+  seenPrompts: Array<{ id: string; at: string }>;
+  /** @deprecated — migrated to seenPrompts on load */
+  seenPromptIds?: string[];
   /** Category of the last shown notification */
   lastCategory?: NotificationCategory;
   /** ISO timestamps of all shows today */

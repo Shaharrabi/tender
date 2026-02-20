@@ -29,9 +29,10 @@ interface MC4ProgressHeaderProps {
   currentLesson: number; // 1-indexed
   totalLessons: number;
   onExit?: () => void;
+  onPreviousLesson?: () => void;
 }
 
-export function MC4ProgressHeader({ currentLesson, totalLessons, onExit }: MC4ProgressHeaderProps) {
+export function MC4ProgressHeader({ currentLesson, totalLessons, onExit, onPreviousLesson }: MC4ProgressHeaderProps) {
   return (
     <View style={styles.container}>
       <View style={styles.topRow}>
@@ -91,8 +92,19 @@ export function MC4ProgressHeader({ currentLesson, totalLessons, onExit }: MC4Pr
           })}
         </View>
 
-        {/* Spacer to balance the exit button */}
-        <View style={styles.exitSpacer} />
+        {/* Previous lesson button or spacer to balance exit button */}
+        {onPreviousLesson ? (
+          <TouchableOpacity
+            style={styles.exitButton}
+            onPress={onPreviousLesson}
+            activeOpacity={0.7}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Text style={styles.exitText}>{'\u2039'}</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.exitSpacer} />
+        )}
       </View>
 
       <Text style={styles.label}>

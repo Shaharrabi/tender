@@ -53,6 +53,7 @@ interface MC6CourseFlowProps {
   course: MicroCourse;
   onComplete: (stepResponses?: StepResponseEntry[]) => Promise<void>;
   onExit: () => void;
+  onPreviousLesson?: () => void;
   saving: boolean;
   previousLessonData?: string; // JSON string from L1 for L2/L3 cascading
 }
@@ -66,6 +67,7 @@ export function MC6CourseFlow({
   course,
   onComplete,
   onExit,
+  onPreviousLesson,
   saving,
   previousLessonData,
 }: MC6CourseFlowProps) {
@@ -214,7 +216,7 @@ export function MC6CourseFlow({
 
   return (
     <SafeAreaView style={styles.container}>
-      <MC6ProgressHeader currentLesson={lessonNumber} totalLessons={totalLessons} onExit={onExit} />
+      <MC6ProgressHeader currentLesson={lessonNumber} totalLessons={totalLessons} onExit={onExit} onPreviousLesson={onPreviousLesson} />
 
       <View style={styles.content}>
         {phase === 'interactive' && renderInteractive()}

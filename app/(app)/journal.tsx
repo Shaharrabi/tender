@@ -374,7 +374,7 @@ export default function JournalScreen() {
       <View style={styles.topBar}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => { SoundHaptics.tapSoft(); router.back(); }}
+          onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/home' as any); }}
           activeOpacity={0.6}
         >
           <Text style={styles.backArrow}>{'\u2039'}</Text>

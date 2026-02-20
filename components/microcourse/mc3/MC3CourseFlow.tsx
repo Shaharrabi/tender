@@ -53,6 +53,7 @@ interface MC3CourseFlowProps {
   course: MicroCourse;
   onComplete: (stepResponses?: StepResponseEntry[]) => Promise<void>;
   onExit: () => void;
+  onPreviousLesson?: () => void;
   saving: boolean;
 }
 
@@ -65,6 +66,7 @@ export function MC3CourseFlow({
   course,
   onComplete,
   onExit,
+  onPreviousLesson,
   saving,
 }: MC3CourseFlowProps) {
   const haptics = useSoundHaptics();
@@ -210,7 +212,7 @@ export function MC3CourseFlow({
 
   return (
     <SafeAreaView style={styles.container}>
-      <MC3ProgressHeader currentLesson={lessonNumber} totalLessons={totalLessons} onExit={onExit} />
+      <MC3ProgressHeader currentLesson={lessonNumber} totalLessons={totalLessons} onExit={onExit} onPreviousLesson={onPreviousLesson} />
 
       <View style={styles.content}>
         {phase === 'interactive' && renderInteractive()}

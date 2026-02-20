@@ -28,6 +28,7 @@ import {
 } from '@/constants/theme';
 import { MC2_PALETTE } from '@/constants/mc2Theme';
 import { useSoundHaptics } from '@/services/SoundHapticsService';
+import { LeafIcon } from '@/assets/graphics/icons';
 import type { ResolvedLessonContent } from '@/utils/microcourses/course-content';
 import type { AttachmentStyle } from '@/types';
 import type { StepResponseEntry } from '@/types/intervention';
@@ -121,10 +122,7 @@ export function L3BreathingCircle({
       else if (cyclePos < 5) setBreathPhase('hold');
       else setBreathPhase('out');
 
-      // Haptic pulse every 4 seconds
-      if (elapsedRef.current % 4 === 0) {
-        haptics.tapSoft();
-      }
+      // Removed periodic sound/haptic pulse — just the visual circle
 
       if (remaining <= 0) {
         // Done!
@@ -261,7 +259,9 @@ export function L3BreathingCircle({
       contentContainerStyle={styles.doneContent}
       showsVerticalScrollIndicator={false}
     >
-      <Text style={styles.doneEmoji}>{'🌿'}</Text>
+      <View style={styles.doneIconWrap}>
+        <LeafIcon size={40} color={MC2_PALETTE.sage} />
+      </View>
       <Text style={styles.title}>WELL DONE</Text>
 
       <View style={styles.insightCard}>
@@ -426,9 +426,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexGrow: 1,
   },
-  doneEmoji: {
-    fontSize: 48,
+  doneIconWrap: {
     marginBottom: Spacing.md,
+    alignItems: 'center',
   },
   insightCard: {
     marginTop: Spacing.lg,

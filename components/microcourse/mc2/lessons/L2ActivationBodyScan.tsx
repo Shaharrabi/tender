@@ -27,6 +27,15 @@ import {
 } from '@/constants/theme';
 import { MC2_PALETTE } from '@/constants/mc2Theme';
 import { useSoundHaptics } from '@/services/SoundHapticsService';
+import {
+  BrainIcon,
+  HeartPulseIcon,
+  FireIcon,
+  HandshakeIcon,
+  WindIcon,
+  LightningIcon,
+  WaveIcon,
+} from '@/assets/graphics/icons';
 import type { ResolvedLessonContent } from '@/utils/microcourses/course-content';
 import type { AttachmentStyle } from '@/types';
 import type { StepResponseEntry } from '@/types/intervention';
@@ -36,7 +45,7 @@ type BodyZone = 'head' | 'chest' | 'gut' | 'hands' | 'legs';
 interface ZoneConfig {
   id: BodyZone;
   label: string;
-  emoji: string;
+  Icon: React.ComponentType<{ size: number; color: string }>;
   hyperSignals: string[];
   hypoSignals: string[];
 }
@@ -45,35 +54,35 @@ const ZONES: ZoneConfig[] = [
   {
     id: 'head',
     label: 'Head',
-    emoji: '🧠',
+    Icon: BrainIcon,
     hyperSignals: ['Racing thoughts', 'Tunnel vision', 'Jaw clenching', 'Heat in face'],
     hypoSignals: ['Brain fog', "Can't find words", 'Feeling far away', 'Blank mind'],
   },
   {
     id: 'chest',
     label: 'Chest',
-    emoji: '💗',
+    Icon: HeartPulseIcon,
     hyperSignals: ['Heart pounding', 'Chest tight', 'Breath shallow', 'Pressure'],
     hypoSignals: ['Empty feeling', 'Heavy', 'No sensation', 'Flat'],
   },
   {
     id: 'gut',
     label: 'Gut',
-    emoji: '🔥',
+    Icon: FireIcon,
     hyperSignals: ['Nausea', 'Butterflies', 'Stomach dropping', 'Acid feeling'],
     hypoSignals: ['Nothing', 'Disconnected', "Can't feel body", 'Hollowness'],
   },
   {
     id: 'hands',
     label: 'Hands',
-    emoji: '✋',
+    Icon: HandshakeIcon,
     hyperSignals: ['Fists clenching', 'Trembling', 'Sweating', 'Urge to grip'],
     hypoSignals: ['Cold', 'Tingling', 'Limp', "Can't grip"],
   },
   {
     id: 'legs',
     label: 'Legs',
-    emoji: '🦶',
+    Icon: WindIcon,
     hyperSignals: ['Restless', 'Urge to run', 'Bouncing', 'Ready to flee'],
     hypoSignals: ['Heavy like lead', "Can't move", 'Wobbly', 'Disconnected from floor'],
   },
@@ -210,7 +219,7 @@ export function L2ActivationBodyScan({
                 onPress={() => handleZoneTap(zone.id)}
                 activeOpacity={0.7}
               >
-                <Text style={styles.hotspotEmoji}>{zone.emoji}</Text>
+                <zone.Icon size={20} color={isActive ? Colors.text : (isTapped ? MC2_PALETTE.sage : Colors.textMuted)} />
                 <Text
                   style={[
                     styles.hotspotLabel,
@@ -251,13 +260,17 @@ export function L2ActivationBodyScan({
       {/* Signal Selection Card */}
       {activeZoneData && (
         <Animated.View style={[styles.signalCard, { opacity: cardFade }]}>
-          <Text style={styles.signalTitle}>
-            {activeZoneData.emoji} {activeZoneData.label.toUpperCase()}
-          </Text>
+          <View style={styles.signalTitleRow}>
+            <activeZoneData.Icon size={18} color={Colors.text} />
+            <Text style={styles.signalTitle}>
+              {activeZoneData.label.toUpperCase()}
+            </Text>
+          </View>
 
-          <Text style={styles.signalSubhead}>
-            When activated (hyper) {'⚡'}
-          </Text>
+          <View style={styles.signalSubheadRow}>
+            <Text style={styles.signalSubhead}>When activated (hyper)</Text>
+            <LightningIcon size={12} color={Colors.textMuted} />
+          </View>
           <View style={styles.signalGrid}>
             {activeZoneData.hyperSignals.map((sig) => {
               const isSelected = selectedSignals[activeZoneData.id].includes(sig);
@@ -281,9 +294,10 @@ export function L2ActivationBodyScan({
             })}
           </View>
 
-          <Text style={styles.signalSubhead}>
-            When shut down (hypo) {'🌊'}
-          </Text>
+          <View style={styles.signalSubheadRow}>
+            <Text style={styles.signalSubhead}>When shut down (hypo)</Text>
+            <WaveIcon size={12} color={Colors.textMuted} />
+          </View>
           <View style={styles.signalGrid}>
             {activeZoneData.hypoSignals.map((sig) => {
               const isSelected = selectedSignals[activeZoneData.id].includes(sig);
@@ -390,9 +404,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.text,
     borderWidth: 2,
   },
-  hotspotEmoji: {
-    fontSize: 20,
-  },
+  // (hotspotEmoji removed — using SVG icons now)
   hotspotLabel: {
     flex: 1,
     fontSize: FontSizes.bodySmall,
@@ -454,12 +466,24 @@ const styles = StyleSheet.create({
     gap: Spacing.xs,
     marginBottom: Spacing.sm,
   },
+  signalTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginBottom: Spacing.xs,
+  },
   signalTitle: {
     fontSize: FontSizes.caption,
     fontFamily: FontFamilies.heading,
     fontWeight: '800',
     letterSpacing: 2,
     color: Colors.text,
+  },
+  signalSubheadRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: Spacing.sm,
     marginBottom: Spacing.xs,
   },
   signalSubhead: {
@@ -467,8 +491,6 @@ const styles = StyleSheet.create({
     fontFamily: FontFamilies.heading,
     fontWeight: '600',
     color: Colors.textMuted,
-    marginTop: Spacing.sm,
-    marginBottom: Spacing.xs,
   },
   signalGrid: {
     flexDirection: 'row',

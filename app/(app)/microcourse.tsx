@@ -290,6 +290,15 @@ export default function MicroCourseScreen() {
     }
   };
 
+  const handlePreviousLesson = () => {
+    if (courseId && lessonNum > 1) {
+      router.replace({
+        pathname: '/(app)/microcourse',
+        params: { courseId, lessonNumber: String(lessonNum - 1) },
+      } as any);
+    }
+  };
+
   const handleExit = () => {
     if (router.canGoBack()) {
       router.back();
@@ -339,6 +348,7 @@ export default function MicroCourseScreen() {
         course={course}
         onComplete={handleComplete}
         onExit={handleExit}
+        onPreviousLesson={lessonNum > 1 ? handlePreviousLesson : undefined}
         saving={saving}
       />
     );
@@ -357,6 +367,7 @@ export default function MicroCourseScreen() {
         course={course}
         onComplete={handleComplete}
         onExit={handleExit}
+        onPreviousLesson={lessonNum > 1 ? handlePreviousLesson : undefined}
         saving={saving}
       />
     );
@@ -375,6 +386,7 @@ export default function MicroCourseScreen() {
         course={course}
         onComplete={handleComplete}
         onExit={handleExit}
+        onPreviousLesson={lessonNum > 1 ? handlePreviousLesson : undefined}
         saving={saving}
       />
     );
@@ -393,6 +405,7 @@ export default function MicroCourseScreen() {
         course={course}
         onComplete={handleComplete}
         onExit={handleExit}
+        onPreviousLesson={lessonNum > 1 ? handlePreviousLesson : undefined}
         saving={saving}
       />
     );
@@ -411,6 +424,7 @@ export default function MicroCourseScreen() {
         course={course}
         onComplete={handleComplete}
         onExit={handleExit}
+        onPreviousLesson={lessonNum > 1 ? handlePreviousLesson : undefined}
         saving={saving}
         previousLessonData={previousLessonData}
       />
@@ -430,6 +444,7 @@ export default function MicroCourseScreen() {
         course={course}
         onComplete={handleComplete}
         onExit={handleExit}
+        onPreviousLesson={lessonNum > 1 ? handlePreviousLesson : undefined}
         saving={saving}
         previousLessonData={previousLessonData}
       />

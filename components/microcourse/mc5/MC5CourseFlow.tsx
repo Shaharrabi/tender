@@ -53,6 +53,7 @@ interface MC5CourseFlowProps {
   course: MicroCourse;
   onComplete: (stepResponses?: StepResponseEntry[]) => Promise<void>;
   onExit: () => void;
+  onPreviousLesson?: () => void;
   saving: boolean;
   previousLessonData?: string; // JSON string from L1 for L2 cascading
 }
@@ -66,6 +67,7 @@ export function MC5CourseFlow({
   course,
   onComplete,
   onExit,
+  onPreviousLesson,
   saving,
   previousLessonData,
 }: MC5CourseFlowProps) {
@@ -220,7 +222,7 @@ export function MC5CourseFlow({
 
   return (
     <SafeAreaView style={styles.container}>
-      <MC5ProgressHeader currentLesson={lessonNumber} totalLessons={totalLessons} onExit={onExit} />
+      <MC5ProgressHeader currentLesson={lessonNumber} totalLessons={totalLessons} onExit={onExit} onPreviousLesson={onPreviousLesson} />
 
       <View style={styles.content}>
         {phase === 'interactive' && renderInteractive()}

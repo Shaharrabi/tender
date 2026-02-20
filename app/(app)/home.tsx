@@ -125,18 +125,6 @@ import type { DailyCheckIn } from '@/types/growth';
 import type { Couple } from '@/types/couples';
 import { getLatestWEAREProfile } from '@/services/weare';
 import { getRelationshipModeLabel, DEMO_PARTNERS, type DemoPartnerId } from '@/constants/demoPartners';
-import {
-  seedDemoAssessments,
-  clearDemoAssessments,
-  DEMO_ECRR,
-  DEMO_DUTCH,
-  DEMO_SSEIT,
-  DEMO_DSIR,
-  DEMO_IPIP,
-  DEMO_VALUES,
-  DEMO_SUPPLEMENTS,
-  DEMO_WEARE_PROFILE,
-} from '@/utils/demo-data';
 
 // ─── Types ──────────────────────────────────────────────
 
@@ -284,28 +272,8 @@ export default function HomeScreen() {
       // Local var to track relationship mode across loadData steps
       let userRelMode = 'solo';
 
-      // 0a. Auto-clear stuck demo mode on startup
-      try {
-        const demoFlag = await AsyncStorage.getItem('demo_mode');
-        if (demoFlag === 'true') {
-          console.log('[Home] Clearing stuck demo data...');
-          await clearDemoAssessments(user.id);
-          await supabase.from('portraits').delete().eq('user_id', user.id);
-          // Clear stale assessment progress keys (both scoped and legacy)
-          await AsyncStorage.removeItem('tender_assessment_progress').catch(() => {});
-          await AsyncStorage.removeItem(`tender_assessment_progress_${user.id}`).catch(() => {});
-          const allConfigs = getAllAssessments();
-          for (const config of allConfigs) {
-            await AsyncStorage.removeItem(config.progressKey).catch(() => {});
-            await AsyncStorage.removeItem(`${config.progressKey}_${user.id}`).catch(() => {});
-          }
-          await AsyncStorage.removeItem('demo_mode');
-          setIsDemo(false);
-          setPortrait(null);
-        }
-      } catch {
-        // Safe to ignore
-      }
+      // 0a. Clear any legacy demo mode flag
+      await AsyncStorage.removeItem('demo_mode').catch(() => {});
 
       // 0b. Load display name + relationship mode from user_profiles
       try {
@@ -758,7 +726,7 @@ export default function HomeScreen() {
 
   // Feature cards for the grid — ordered so tooltip targets (courses, community)
   // appear right after the fixed cards (journal, nuance) for natural top-to-bottom flow.
-  const gridCardOrder = ['healingJourney', 'courses', 'community', 'practices', 'treatmentPlan', 'findTherapist', 'couplesPortal', 'datingWell'];
+  const gridCardOrder = ['healingJourney', 'courses', 'community', 'practices', 'findTherapist', 'couplesPortal', 'datingWell'];
   const gridCards = gridCardOrder
     .map((key) => FEATURE_CARDS.find((c) => c.key === key && (c.category === 'feature' || c.category === 'couple')))
     .filter((c): c is NonNullable<typeof c> => c != null)
@@ -920,73 +888,7 @@ export default function HomeScreen() {
     }
   };
 
-  // ─── Demo Mode ─────────────────────────────────────────
-
-  const handleSkipToDemo = async () => {
-    if (!user || generating) return;
-    setGenerating(true);
-    try {
-      // 1. Seed all 6 assessment records with realistic scores
-      const assessmentIds = await seedDemoAssessments(user.id);
-
-      // 2. Generate a real portrait from the demo scores
-      const scores: AllAssessmentScores = {
-        ecrr: DEMO_ECRR,
-        dutch: DEMO_DUTCH,
-        sseit: DEMO_SSEIT,
-        dsir: DEMO_DSIR,
-        ipip: DEMO_IPIP,
-        values: DEMO_VALUES,
-      };
-      const demoPortrait = generatePortrait(user.id, assessmentIds, scores, DEMO_SUPPLEMENTS);
-      await savePortrait(demoPortrait);
-      await AsyncStorage.setItem('demo_mode', 'true');
-      setPortrait(demoPortrait as IndividualPortrait);
-      setWeareProfile(DEMO_WEARE_PROFILE);
-      setIsDemo(true);
-      router.push('/(app)/portrait' as any);
-    } catch (e) {
-      console.error('Demo portrait failed:', e);
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  const [isDemo, setIsDemo] = useState(false);
-
-  // Check demo mode from AsyncStorage on portrait change
-  useEffect(() => {
-    AsyncStorage.getItem('demo_mode').then((val) => setIsDemo(val === 'true'));
-  }, [portrait]);
-
-  const handleExitDemo = async () => {
-    if (!user) return;
-    try {
-      await supabase.from('portraits').delete().eq('user_id', user.id);
-      await clearDemoAssessments(user.id);
-      // Clear stale assessment progress keys (both scoped and legacy)
-      await AsyncStorage.removeItem('tender_assessment_progress').catch(() => {});
-      if (user) {
-        await AsyncStorage.removeItem(`tender_assessment_progress_${user.id}`).catch(() => {});
-      }
-      const allConfigs = getAllAssessments();
-      for (const config of allConfigs) {
-        await AsyncStorage.removeItem(config.progressKey).catch(() => {});
-        if (user) {
-          await AsyncStorage.removeItem(`${config.progressKey}_${user.id}`).catch(() => {});
-        }
-      }
-      await AsyncStorage.removeItem('demo_mode');
-      setPortrait(null);
-      setWeareProfile(null);
-      setIsDemo(false);
-      loadData(); // Refresh to reflect cleared state
-    } catch (e) {
-      console.error('Failed to exit demo:', e);
-      setPortrait(null);
-      setWeareProfile(null);
-    }
-  };
+  // Demo mode removed — no longer needed
 
   // ─── Render ────────────────────────────────────────────
 
@@ -1084,45 +986,14 @@ export default function HomeScreen() {
             </View>
           )}
 
-          {/* Demo mode banner */}
-          {hasPortrait && isDemo && (
-            <View style={styles.demoBanner}>
-              <Text style={styles.demoBannerText}>
-                You are viewing a demo portrait
-              </Text>
-              <TouchableOpacity
-                style={styles.exitDemoButton}
-                onPress={handleExitDemo}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.exitDemoText}>
-                  Exit Demo — Start Assessments
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
-          {/* Skip to demo */}
-          {!hasPortrait && (
-            <TouchableOpacity
-              style={styles.skipDemoButton}
-              onPress={handleSkipToDemo}
-              disabled={generating}
-              activeOpacity={0.7}
-            >
-              {generating ? (
-                <ActivityIndicator color={Colors.calm} size="small" />
-              ) : (
-                <Text style={styles.skipDemoText}>Skip to Demo</Text>
-              )}
-            </TouchableOpacity>
-          )}
+          {/* Demo mode removed — no longer needed */}
         </View>
 
         {/* ═══ ENGAGEMENT NOTIFICATIONS ═══════════════════════ */}
         <HomeNotificationLayer
           userId={user?.id}
           weareBottleneck={weareProfile?.bottleneck?.variable}
+          dayNumber={Math.max(streakData?.totalDays ?? 1, 1)}
         />
 
         {/* ═══ XP & LEVEL PROGRESS ═══════════════════════════ */}
@@ -1300,7 +1171,7 @@ export default function HomeScreen() {
         )}
 
         {/* ═══ JOURNEY VALUE MAP (first-time users) ═══════════ */}
-        {completedCount === 0 && !hasPortrait && !isDemo && (
+        {completedCount === 0 && !hasPortrait && (
           <View style={styles.journeyMapCard}>
             <Text style={styles.journeyMapTitle}>Your Journey Ahead</Text>
             <View style={styles.journeyStepsColumn}>
@@ -1348,7 +1219,7 @@ export default function HomeScreen() {
           </View>
 
           {/* Tender Assessment card */}
-          {tenderStatus.state !== 'completed' && !isDemo && (
+          {tenderStatus.state !== 'completed' && (
             <HighlightWrapper highlightId="home_assessment_cta">
             <View
               ref={(r) => RefRegistry.register('home_assessmentCta', r)}
@@ -1557,7 +1428,7 @@ export default function HomeScreen() {
         })()}
 
         {/* ═══ 4b. WEARE SUMMARY (The Space Between You) ═══════ */}
-        {weareProfile && (couple || isDemo) && (
+        {weareProfile && couple && (
           <TouchableOpacity
             style={styles.weareSummaryCard}
             onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/couple-portal' as any); }}
@@ -2055,51 +1926,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  // ── Demo Banner ──
-  demoBanner: {
-    marginTop: Spacing.md,
-    backgroundColor: '#FFF8E7',
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
-    gap: Spacing.sm,
-    borderWidth: 1,
-    borderColor: '#F0E0B8',
-  },
-  demoBannerText: {
-    fontSize: FontSizes.bodySmall,
-    color: '#8B6914',
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  exitDemoButton: {
-    backgroundColor: Colors.white,
-    borderRadius: BorderRadius.pill,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.primary,
-  },
-  exitDemoText: {
-    fontSize: FontSizes.caption,
-    color: Colors.primary,
-    fontWeight: '700',
-  },
-  skipDemoButton: {
-    marginTop: Spacing.md,
-    borderWidth: 1.5,
-    borderColor: Colors.calm,
-    borderRadius: BorderRadius.pill,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.lg,
-    alignSelf: 'center',
-    borderStyle: 'dashed' as any,
-  },
-  skipDemoText: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.calm,
-    fontWeight: '600',
-  },
+  // Demo styles removed
 
   // ── Progress Bar ──
   progressSection: {
