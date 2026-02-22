@@ -34,12 +34,16 @@ export interface Couple {
 
 // ─── User Profile ───────────────────────────────────────
 
+export type RelationshipMode = 'solo' | 'demo_partner' | 'real_partner' | 'random_partner';
+
 export interface UserProfile {
   id: string;
   user_id: string;
   display_name?: string;
   individual_assessments_complete: boolean;
   dyadic_assessments_complete: boolean;
+  relationship_mode?: RelationshipMode;
+  demo_partner_id?: string;
   created_at: string;
 }
 

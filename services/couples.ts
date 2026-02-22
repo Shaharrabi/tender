@@ -4,6 +4,7 @@
  */
 
 import { supabase } from './supabase';
+import { initializeSharingDefaults } from './consent';
 import type {
   CoupleInvite,
   Couple,
@@ -165,6 +166,27 @@ export async function acceptInvite(inviteId: string, acceptorId: string): Promis
       .update({ status: 'pending', accepted_by: null })
       .eq('id', inviteId);
     return null;
+  }
+
+  // 3. Update both partners' relationship_mode to 'real_partner'
+  //    (acceptor can update their own; inviter's update may be limited by RLS
+  //    but we attempt it — it will succeed if they have a profile row)
+  const now = new Date().toISOString();
+  await supabase
+    .from('user_profiles')
+    .update({ relationship_mode: 'real_partner', updated_at: now })
+    .eq('user_id', acceptorId);
+
+  await supabase
+    .from('user_profiles')
+    .update({ relationship_mode: 'real_partner', updated_at: now })
+    .eq('user_id', invite.inviter_id);
+
+  // 4. Initialize sharing defaults (all assessments private by default)
+  try {
+    await initializeSharingDefaults(acceptorId, couple.id);
+  } catch (e) {
+    console.warn('[Couples] Failed to initialize sharing defaults:', e);
   }
 
   return couple as Couple;

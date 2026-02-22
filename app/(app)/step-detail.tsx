@@ -153,8 +153,13 @@ export default function StepDetailScreen() {
     }
   };
 
+  // Check if the next step is navigable (active or completed)
+  const nextStepProgress = stepProgress.find((sp) => sp.stepNumber === stepNumber + 1);
+  const canNavigateNext =
+    nextStepProgress?.status === 'active' || nextStepProgress?.status === 'completed';
+
   const handleNextStep = () => {
-    if (nextStep) {
+    if (nextStep && canNavigateNext) {
       haptics.tap();
       router.replace({
         pathname: '/(app)/step-detail' as any,
@@ -399,15 +404,16 @@ export default function StepDetailScreen() {
           })}
         </Animated.View>
 
-        {/* Coming Next — tappable to navigate to next step */}
+        {/* Coming Next — tappable only when the next step is unlocked */}
         {nextStep && (
           <TouchableOpacity
-            style={styles.nextSection}
+            style={[styles.nextSection, !canNavigateNext && styles.nextSectionLocked]}
             onPress={handleNextStep}
-            activeOpacity={0.7}
+            activeOpacity={canNavigateNext ? 0.7 : 1}
+            disabled={!canNavigateNext}
           >
             <Text style={styles.nextLabel}>
-              {isCompletedStep || stepNumber < currentStepNumber
+              {canNavigateNext
                 ? 'NEXT STEP'
                 : 'COMING NEXT'}
               : Step {nextStep.stepNumber}
@@ -416,13 +422,15 @@ export default function StepDetailScreen() {
               &ldquo;{nextStep.title}&rdquo;
             </Text>
             <Text style={styles.nextHint}>
-              {isCompletedStep || stepNumber < currentStepNumber
+              {canNavigateNext
                 ? 'Tap to explore this step'
-                : `Unlocks after completing Step ${step.stepNumber} goals`}
+                : `Complete all Step ${step.stepNumber} goals to unlock`}
             </Text>
-            <Text style={[styles.nextArrow, { color: phase.color }]}>
-              {'\u203A'}
-            </Text>
+            {canNavigateNext && (
+              <Text style={[styles.nextArrow, { color: phase.color }]}>
+                {'\u203A'}
+              </Text>
+            )}
           </TouchableOpacity>
         )}
 
@@ -752,6 +760,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.borderLight,
     position: 'relative',
+  },
+  nextSectionLocked: {
+    opacity: 0.55,
   },
   nextLabel: {
     ...Typography.label,
