@@ -9,7 +9,7 @@
  * Warm parchment, dusty rose orbs, lobby blue sweeps, gold threads.
  */
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -32,7 +32,6 @@ import Animated, {
   FadeInUp,
 } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
-import { Audio } from 'expo-av';
 import {
   Colors,
   Spacing,
@@ -235,75 +234,8 @@ function FloatingDot({
 
 export default function WelcomeScreen() {
   const router = useRouter();
-  const soundRef = useRef<Audio.Sound | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [audioLoaded, setAudioLoaded] = useState(false);
 
-  // Load and play audio
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadAudio = async () => {
-      try {
-        await Audio.setAudioModeAsync({
-          playsInSilentModeIOS: true,
-          staysActiveInBackground: false,
-        });
-
-        const { sound } = await Audio.Sound.createAsync(
-          require('@/assets/audio/welcome.mp3'),
-          { shouldPlay: false }
-        );
-
-        if (!isMounted) {
-          await sound.unloadAsync();
-          return;
-        }
-
-        soundRef.current = sound;
-        setAudioLoaded(true);
-
-        sound.setOnPlaybackStatusUpdate((status) => {
-          if (!isMounted) return;
-          if (status.isLoaded) {
-            setIsPlaying(status.isPlaying);
-            if (status.didJustFinish) {
-              handleAdvance();
-            }
-          }
-        });
-
-        // Play after visuals settle
-        setTimeout(async () => {
-          if (isMounted && soundRef.current) {
-            await soundRef.current.playAsync();
-          }
-        }, 1500);
-      } catch (err) {
-        console.warn('[Welcome] Audio load failed:', err);
-        if (isMounted) setAudioLoaded(true);
-      }
-    };
-
-    loadAudio();
-
-    return () => {
-      isMounted = false;
-      if (soundRef.current) {
-        soundRef.current.unloadAsync();
-      }
-    };
-  }, []);
-
-  const handleAdvance = useCallback(async () => {
-    if (soundRef.current) {
-      await soundRef.current.stopAsync().catch(() => {});
-    }
-    // Reset audio mode back to normal (respect mute switch for UI sounds)
-    Audio.setAudioModeAsync({
-      playsInSilentModeIOS: false,
-      staysActiveInBackground: false,
-    }).catch(() => {});
+  const handleAdvance = useCallback(() => {
     router.push('/(onboarding)/status' as any);
   }, [router]);
 
@@ -348,20 +280,13 @@ export default function WelcomeScreen() {
         {/* Welcome message */}
         <Animated.View entering={FadeInDown.duration(1800).delay(1800)} style={styles.messageSection}>
           <Text style={styles.welcomeText}>
-            Welcome to a space{'\n'}built for your relationship.
+            A space for you and your{'\n'}relationships to grow.
           </Text>
           <Text style={styles.welcomeSubtext}>
-            Take a breath. You're here.{'\n'}That already matters.
+            Let me show you around.
           </Text>
         </Animated.View>
 
-        {/* Audio indicator */}
-        {isPlaying && (
-          <Animated.View entering={FadeIn.duration(800)} style={styles.audioIndicator}>
-            <View style={styles.audioPulse} />
-            <Text style={styles.audioText}>Listening...</Text>
-          </Animated.View>
-        )}
       </View>
 
       {/* Skip — top right, subtle */}
@@ -453,30 +378,6 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     textAlign: 'center',
     lineHeight: 26,
-  },
-
-  // Audio indicator
-  audioIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    marginTop: Spacing.xxl,
-    backgroundColor: 'rgba(255,255,255,0.7)',
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.sm + 2,
-    borderRadius: BorderRadius.pill,
-  },
-  audioPulse: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: Colors.primary,
-  },
-  audioText: {
-    fontSize: FontSizes.caption,
-    fontFamily: 'JosefinSans_400Regular',
-    color: Colors.textSecondary,
-    letterSpacing: 0.5,
   },
 
   // Skip button

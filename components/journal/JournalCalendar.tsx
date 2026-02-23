@@ -40,10 +40,11 @@ const TYPE_COLORS: Record<JournalEntryType, string> = {
   xp: Colors.accent,               // Terracotta
   minigame: Colors.accentGold,      // Concierge Gold
   step_milestone: Colors.success,   // Step completion green
+  card_game: Colors.accent,         // Terracotta (Building Bridges)
 };
 
 // Ordered for consistent dot layout
-const DOT_ORDER: JournalEntryType[] = ['checkin', 'exercise', 'assessment', 'chat'];
+const DOT_ORDER: JournalEntryType[] = ['checkin', 'exercise', 'assessment', 'chat', 'card_game'];
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 

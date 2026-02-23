@@ -4,7 +4,7 @@
  *
  * Reads from: daily_check_ins, exercise_completions, practice_completions,
  *             chat_sessions, xp_transactions, assessments, step_minigame_outputs,
- *             step_progress
+ *             step_progress, card_completions
  */
 
 import { supabase } from './supabase';
@@ -19,7 +19,8 @@ export type JournalEntryType =
   | 'assessment'
   | 'xp'
   | 'minigame'
-  | 'step_milestone';
+  | 'step_milestone'
+  | 'card_game';
 
 export interface JournalEntry {
   id: string;
@@ -105,6 +106,7 @@ export async function getJournalEntriesForDate(
     assessmentsResult,
     minigameResult,
     stepProgressResult,
+    cardGameResult,
   ] = await Promise.allSettled([
     // 1. Daily check-ins (uses DATE type — exact match)
     supabase
@@ -173,6 +175,15 @@ export async function getJournalEntriesForDate(
       .select('*')
       .eq('user_id', userId)
       .not('completed_at', 'is', null)
+      .gte('completed_at', dayStart)
+      .lt('completed_at', dayEnd)
+      .order('completed_at', { ascending: true }),
+
+    // 9. Building Bridges card completions (TIMESTAMPTZ — range)
+    supabase
+      .from('card_completions')
+      .select('*')
+      .eq('user_id', userId)
       .gte('completed_at', dayStart)
       .lt('completed_at', dayEnd)
       .order('completed_at', { ascending: true }),
@@ -337,6 +348,34 @@ export async function getJournalEntriesForDate(
     }
   }
 
+  // Process Building Bridges card completions
+  if (cardGameResult.status === 'fulfilled' && cardGameResult.value.data) {
+    for (const row of cardGameResult.value.data) {
+      const deckLabel = row.deck === 'open-heart' ? 'Open Heart' : 'Connection Builder';
+      const categoryLabel = row.category
+        ? row.category.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
+        : undefined;
+      // Format card number nicely: "cb-01" → "Card 01", "oh-12" → "Card 12"
+      const cardNum = row.card_id ? row.card_id.replace(/^(cb|oh)-/, '') : '';
+      const cardTitle = `Building Bridges \u2014 ${deckLabel} ${cardNum ? '#' + cardNum : ''}`.trim();
+      entries.push({
+        id: row.id,
+        type: 'card_game',
+        timestamp: row.completed_at,
+        title: cardTitle,
+        subtitle: categoryLabel || undefined,
+        data: {
+          cardId: row.card_id,
+          deck: row.deck,
+          category: row.category,
+          mode: row.mode,
+          reflectionText: row.reflection_text,
+          xpEarned: row.xp_earned,
+        },
+      });
+    }
+  }
+
   // Sort by timestamp
   entries.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
@@ -374,6 +413,7 @@ export async function getJournalCalendarData(
     assessmentsResult,
     minigameCalResult,
     stepProgressCalResult,
+    cardGameCalResult,
   ] = await Promise.allSettled([
     supabase
       .from('daily_check_ins')
@@ -422,6 +462,13 @@ export async function getJournalCalendarData(
       .select('completed_at')
       .eq('user_id', userId)
       .not('completed_at', 'is', null)
+      .gte('completed_at', startISO)
+      .lt('completed_at', endISO),
+
+    supabase
+      .from('card_completions')
+      .select('completed_at')
+      .eq('user_id', userId)
       .gte('completed_at', startISO)
       .lt('completed_at', endISO),
   ]);
@@ -475,6 +522,13 @@ export async function getJournalCalendarData(
     }
   }
 
+  // Map Building Bridges card completions
+  if (cardGameCalResult.status === 'fulfilled' && cardGameCalResult.value.data) {
+    for (const row of cardGameCalResult.value.data) {
+      addDay(dateFromTimestamp(row.completed_at), 'card_game');
+    }
+  }
+
   return dayMap;
 }
 
@@ -484,7 +538,7 @@ export async function getJournalStats(
   userId: string
 ): Promise<JournalStats> {
   // Fetch earliest entries from key tables in parallel
-  const [checkInResult, exerciseResult, assessmentResult] = await Promise.allSettled([
+  const [checkInResult, exerciseResult, assessmentResult, cardGameEarliestResult] = await Promise.allSettled([
     supabase
       .from('daily_check_ins')
       .select('checkin_date')
@@ -505,6 +559,13 @@ export async function getJournalStats(
       .eq('user_id', userId)
       .order('completed_at', { ascending: true })
       .limit(1),
+
+    supabase
+      .from('card_completions')
+      .select('completed_at')
+      .eq('user_id', userId)
+      .order('completed_at', { ascending: true })
+      .limit(1),
   ]);
 
   // Find earliest date
@@ -519,13 +580,16 @@ export async function getJournalStats(
   if (assessmentResult.status === 'fulfilled' && assessmentResult.value.data?.[0]) {
     dates.push(dateFromTimestamp(assessmentResult.value.data[0].completed_at));
   }
+  if (cardGameEarliestResult.status === 'fulfilled' && cardGameEarliestResult.value.data?.[0]) {
+    dates.push(dateFromTimestamp(cardGameEarliestResult.value.data[0].completed_at));
+  }
 
   const firstEntryDate = dates.length > 0
     ? dates.sort()[0]
     : null;
 
   // Count total active days and entries
-  const [checkInCountResult, exerciseCountResult, practiceCountResult] = await Promise.allSettled([
+  const [checkInCountResult, exerciseCountResult, practiceCountResult, cardGameCountResult] = await Promise.allSettled([
     supabase
       .from('daily_check_ins')
       .select('checkin_date', { count: 'exact', head: true })
@@ -540,13 +604,19 @@ export async function getJournalStats(
       .from('practice_completions')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', userId),
+
+    supabase
+      .from('card_completions')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId),
   ]);
 
   const checkInCount = checkInCountResult.status === 'fulfilled' ? (checkInCountResult.value.count ?? 0) : 0;
   const exerciseCount = exerciseCountResult.status === 'fulfilled' ? (exerciseCountResult.value.count ?? 0) : 0;
   const practiceCount = practiceCountResult.status === 'fulfilled' ? (practiceCountResult.value.count ?? 0) : 0;
+  const cardGameCount = cardGameCountResult.status === 'fulfilled' ? (cardGameCountResult.value.count ?? 0) : 0;
 
-  const totalEntries = checkInCount + exerciseCount + practiceCount;
+  const totalEntries = checkInCount + exerciseCount + practiceCount + cardGameCount;
 
   // Total active days = count of unique check-in dates (best proxy)
   const totalDays = checkInCount;

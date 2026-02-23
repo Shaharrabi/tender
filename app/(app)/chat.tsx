@@ -5,7 +5,7 @@
  * in the conversation navigates to the exercise runner.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -30,7 +30,7 @@ import { Colors, Spacing, FontSizes, FontFamilies, BorderRadius } from '@/consta
 import { getCurrentStepNumber } from '@/services/steps';
 import { getNuanceOpeningPrompts } from '@/utils/steps/twelve-steps';
 
-function ChatScreenInner() {
+function ChatScreenInner({ topic }: { topic?: string }) {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { isGuest } = useGuest();
@@ -52,6 +52,7 @@ function ChatScreenInner() {
   const [initialized, setInitialized] = useState(false);
   const [sessionCreateAttempted, setSessionCreateAttempted] = useState(false);
   const [nuanceStarters, setNuanceStarters] = useState<string[] | undefined>(undefined);
+  const topicSentRef = useRef(false);
 
   useEffect(() => {
     if (!user || authLoading) return; // Wait for auth to settle
@@ -82,6 +83,15 @@ function ChatScreenInner() {
       loadSession(sessions[0].id);
     }
   }, [initialized, activeSession, loading, sessions, user, sessionCreateAttempted]);
+
+  // Auto-send an opening message when navigated with a topic (e.g. from "Ask Nuance" on a result card)
+  useEffect(() => {
+    if (topic && activeSession && !topicSentRef.current && !loading && !sending && initialized) {
+      topicSentRef.current = true;
+      const opener = `I'd like to understand my "${topic}" results. What patterns do you see, and what do they mean for my relationship?`;
+      sendMessage(opener);
+    }
+  }, [topic, activeSession, loading, sending, initialized]);
 
   const handleBack = () => {
     router.back();
@@ -238,9 +248,10 @@ function ChatScreenInner() {
 }
 
 export default function ChatScreen() {
-  const { coupleMode, coupleId } = useLocalSearchParams<{
+  const { coupleMode, coupleId, topic } = useLocalSearchParams<{
     coupleMode?: string;
     coupleId?: string;
+    topic?: string;
   }>();
 
   return (
@@ -248,7 +259,7 @@ export default function ChatScreen() {
       coupleMode={coupleMode === 'true'}
       coupleId={coupleId || undefined}
     >
-      <ChatScreenInner />
+      <ChatScreenInner topic={topic || undefined} />
     </ChatProvider>
   );
 }

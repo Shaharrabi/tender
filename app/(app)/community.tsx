@@ -73,6 +73,7 @@ import { ComposeFlow } from '@/components/community/ComposeFlow';
 import { WelcomeModal } from '@/components/community/WelcomeModal';
 import { LetterDesk } from '@/components/community/LetterDesk';
 import { LetterFlow } from '@/components/community/LetterFlow';
+import { ArticlesSection } from '@/components/community/ArticlesSection';
 import { ThoughtBubbleIcon, LockIcon, SparkleIcon, FireIcon } from '@/assets/graphics/icons';
 
 // ─── FTUE ───────────────────────────────────────────────
@@ -89,7 +90,7 @@ export default function CommunityScreen() {
   const haptics = useSoundHaptics();
 
   // ── State ──────────────────────────────────
-  const [activeTab, setActiveTab] = useState<CommunityTab>('forYou');
+  const [activeTab, setActiveTab] = useState<CommunityTab>('articles');
   const [activeCategory, setActiveCategory] = useState('All');
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(false);
@@ -412,7 +413,7 @@ export default function CommunityScreen() {
       {/* Header with alias chip */}
       <CommunityHeader
         alias={alias}
-        onBack={() => router.back()}
+        onBack={() => router.canGoBack() ? router.back() : router.replace('/(app)/home' as any)}
         onRotateAlias={handleRotateAlias}
       />
 
@@ -430,6 +431,7 @@ export default function CommunityScreen() {
 
       {/* Content area */}
       <ScrollView
+        style={st.scrollView}
         contentContainerStyle={st.scrollContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -481,6 +483,11 @@ export default function CommunityScreen() {
             onCompose={() => setShowLetterCompose(true)}
             onOpenLetter={handleOpenLetter}
           />
+        )}
+
+        {/* ═══ Articles ═══════════════════════════ */}
+        {activeTab === 'articles' && (
+          <ArticlesSection />
         )}
 
         {/* ═══ Circle ═══════════════════════════ */}
@@ -574,8 +581,12 @@ const st = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  scrollView: {
+    flex: 1,
+  },
   scrollContent: {
     paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.sm,
     paddingBottom: Spacing.xxxl,
   },
   loader: {

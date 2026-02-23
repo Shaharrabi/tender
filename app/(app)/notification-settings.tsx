@@ -250,8 +250,8 @@ export default function NotificationSettingsScreen() {
 
         <ToggleRow
           IconComponent={TargetIcon}
-          title="Practice Nudges"
-          description="Reminders to try an exercise"
+          title="Practice Reminders"
+          description="Gentle reminders to try an exercise"
           value={engagementPrefs.practiceNudges}
           onToggle={(v) => updateEngagementPref('practiceNudges', v)}
         />

@@ -113,7 +113,7 @@ export async function getPortrait(
     .from('portraits')
     .select('*')
     .eq('user_id', userId)
-    .single();
+    .maybeSingle();
 
   if (error) {
     if (error.code === 'PGRST116') return null; // not found

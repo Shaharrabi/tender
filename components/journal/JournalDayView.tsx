@@ -24,6 +24,7 @@ import {
   StarIcon,
   ChatBubbleIcon,
   BookOpenIcon,
+  RainbowIcon,
 } from '@/assets/graphics/icons';
 import type { IconProps } from '@/assets/graphics/icons';
 
@@ -88,6 +89,12 @@ const TYPE_CONFIG: Record<JournalEntryType, {
     bg: '#E8F5E9',
     label: 'Step Milestone',
     Icon: StarIcon,
+  },
+  card_game: {
+    color: Colors.accent,
+    bg: '#FDF0E6',
+    label: 'Card Game',
+    Icon: RainbowIcon,
   },
 };
 
@@ -438,6 +445,44 @@ function MiniGameCard({ entry }: { entry: JournalEntry }) {
   );
 }
 
+function CardGameCard({ entry }: { entry: JournalEntry }) {
+  const { deck, category, reflectionText, xpEarned, mode } = entry.data;
+  const deckLabel = deck === 'open-heart' ? 'Open Heart' : 'Connection Builder';
+  const categoryLabel = category
+    ? category.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())
+    : null;
+
+  return (
+    <View style={cardStyles.cardBody}>
+      {/* Deck + category badge */}
+      <View style={cardStyles.inlineRow}>
+        <Text style={cardStyles.chatMode}>{deckLabel}</Text>
+        {categoryLabel && (
+          <Text style={cardStyles.chatMeta}>{categoryLabel}</Text>
+        )}
+      </View>
+
+      {/* Reflection */}
+      {reflectionText && reflectionText.trim().length > 0 ? (
+        <View style={cardStyles.reflectionBlock}>
+          <Text style={cardStyles.reflectionLabel}>Reflection</Text>
+          <Text style={cardStyles.noteFullText}>{reflectionText}</Text>
+        </View>
+      ) : null}
+
+      {/* XP earned */}
+      {xpEarned != null && (
+        <View style={cardStyles.inlineRow}>
+          <Text style={cardStyles.inlineLabel}>XP earned:</Text>
+          <Text style={[cardStyles.inlineValue, { color: Colors.accentGold }]}>
+            +{xpEarned}
+          </Text>
+        </View>
+      )}
+    </View>
+  );
+}
+
 // ─── Entry Card Router ──────────────────────────────────
 
 function EntryCardContent({ entry }: { entry: JournalEntry }) {
@@ -455,6 +500,8 @@ function EntryCardContent({ entry }: { entry: JournalEntry }) {
       return <XPCard entry={entry} />;
     case 'minigame':
       return <MiniGameCard entry={entry} />;
+    case 'card_game':
+      return <CardGameCard entry={entry} />;
     default:
       return null;
   }

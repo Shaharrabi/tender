@@ -8,6 +8,7 @@
  * - WEARE bottleneck targeting (2x priority boost)
  * - No same-category back-to-back within the same day
  * - Anti-shame: never guilt-trips, never compares
+ * - USER-SCOPED: all state is per-user (no cross-contamination on sign-out/in)
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -25,11 +26,37 @@ import type {
 
 // ─── Constants ──────────────────────────────────────────
 
-const STORAGE_KEY = 'tender_engagement_state';
-const PREFS_KEY = 'tender_engagement_prefs';
+const STORAGE_PREFIX = 'tender_engagement_state_';
+const PREFS_PREFIX = 'tender_engagement_prefs_';
+const HISTORY_PREFIX = 'tender_engagement_history_';
 const COOLDOWN_DAYS = 14;
 const MAX_PER_DAY = 5;
-const SESSION_ID_KEY = 'tender_engagement_session';
+
+// Legacy global keys (for cleanup)
+const LEGACY_STORAGE_KEY = 'tender_engagement_state';
+const LEGACY_PREFS_KEY = 'tender_engagement_prefs';
+const LEGACY_HISTORY_KEY = 'tender_engagement_history';
+
+/** Track the current userId so storage functions are scoped */
+let _currentUserId: string | undefined;
+
+/** Set the active user — call when userId changes. */
+export function setNotificationUserId(userId: string | undefined): void {
+  _currentUserId = userId;
+}
+
+/** Get user-scoped storage key */
+function stateKey(): string {
+  return _currentUserId ? `${STORAGE_PREFIX}${_currentUserId}` : LEGACY_STORAGE_KEY;
+}
+
+function prefsKey(): string {
+  return _currentUserId ? `${PREFS_PREFIX}${_currentUserId}` : LEGACY_PREFS_KEY;
+}
+
+function historyKey(): string {
+  return _currentUserId ? `${HISTORY_PREFIX}${_currentUserId}` : LEGACY_HISTORY_KEY;
+}
 
 // ─── State Management ───────────────────────────────────
 
@@ -45,14 +72,12 @@ const DEFAULT_STATE: NotificationSelectionState = {
 
 export async function getSelectionState(): Promise<NotificationSelectionState> {
   try {
-    const raw = await AsyncStorage.getItem(STORAGE_KEY);
+    const raw = await AsyncStorage.getItem(stateKey());
     if (!raw) return { ...DEFAULT_STATE };
     const state = JSON.parse(raw) as NotificationSelectionState;
 
     // Migrate old seenPromptIds (string[]) → seenPrompts ({id, at}[])
     if ((state as any).seenPromptIds && !state.seenPrompts) {
-      const oldIds: string[] = (state as any).seenPromptIds;
-      // No dates available for old entries, so just clear them — fresh start
       state.seenPrompts = [];
       delete (state as any).seenPromptIds;
     }
@@ -78,7 +103,7 @@ export async function getSelectionState(): Promise<NotificationSelectionState> {
 
 async function saveSelectionState(state: NotificationSelectionState): Promise<void> {
   try {
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    await AsyncStorage.setItem(stateKey(), JSON.stringify(state));
   } catch {
     // Silent fail — non-critical
   }
@@ -88,7 +113,7 @@ async function saveSelectionState(state: NotificationSelectionState): Promise<vo
 
 export async function getEngagementPrefs(): Promise<EngagementNotificationPreferences> {
   try {
-    const raw = await AsyncStorage.getItem(PREFS_KEY);
+    const raw = await AsyncStorage.getItem(prefsKey());
     if (!raw) return getDefaultPrefs();
     return JSON.parse(raw);
   } catch {
@@ -98,7 +123,7 @@ export async function getEngagementPrefs(): Promise<EngagementNotificationPrefer
 
 export async function saveEngagementPrefs(prefs: EngagementNotificationPreferences): Promise<void> {
   try {
-    await AsyncStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+    await AsyncStorage.setItem(prefsKey(), JSON.stringify(prefs));
   } catch {
     // Silent fail
   }
@@ -123,15 +148,22 @@ export async function shouldShowNotification(): Promise<boolean> {
   const state = await getSelectionState();
 
   // Max 1 per session
-  if (state.shownThisSession) return false;
+  if (state.shownThisSession) {
+    console.log('[NotifSelector] Blocked: shownThisSession is true');
+    return false;
+  }
 
   // Max per day
   const today = new Date().toISOString().slice(0, 10);
   const todayCount = (state.todayShows || []).filter(
     (ts) => ts.slice(0, 10) === today
   ).length;
-  if (todayCount >= MAX_PER_DAY) return false;
+  if (todayCount >= MAX_PER_DAY) {
+    console.log('[NotifSelector] Blocked: todayCount', todayCount, '>= MAX_PER_DAY', MAX_PER_DAY);
+    return false;
+  }
 
+  console.log('[NotifSelector] canShow=true (session:', state.shownThisSession, ', todayCount:', todayCount, ')');
   return true;
 }
 
@@ -162,6 +194,12 @@ export async function selectNotification(
       disabledCategories.add(category);
     }
   }
+
+  console.log('[NotifSelector] Pool size:', ENGAGEMENT_PROMPTS.length,
+    '| seenPrompts:', state.seenPrompts.length,
+    '| disabledCategories:', [...disabledCategories],
+    '| lastCategory:', state.lastCategory,
+    '| dayNumber:', dayNumber);
 
   // Build set of recently seen prompt IDs (already pruned to 14 days in getSelectionState)
   const recentlySeenIds = new Set(state.seenPrompts.map((entry) => entry.id));
@@ -208,11 +246,15 @@ export async function selectNotification(
     return true;
   });
 
+  console.log('[NotifSelector] Eligible:', eligible.length, 'of', ENGAGEMENT_PROMPTS.length);
+
   if (eligible.length === 0) {
+    console.log('[NotifSelector] No eligible prompts! Clearing cooldowns and retrying...');
     // Fallback: if everything is on cooldown, clear cooldowns and try again
     // This prevents the "seen all prompts" dead-end
     if (recentlySeenIds.size > 0) {
       state.seenPrompts = [];
+      state.lastCategory = undefined;
       await saveSelectionState(state);
       // Retry once with cleared cooldowns
       return selectNotification(weareBottleneck, dayNumber, prefs);
@@ -265,6 +307,29 @@ export async function resetSessionFlag(): Promise<void> {
   await saveSelectionState(state);
 }
 
+// ─── Clear All State (call on sign-out) ─────────────────
+
+/**
+ * Clear all notification state for the current user session.
+ * Also cleans up legacy global keys so old data doesn't pollute new users.
+ * Call this on sign-out.
+ */
+export async function clearNotificationState(): Promise<void> {
+  try {
+    // Clear legacy global keys so new users don't inherit old data
+    await AsyncStorage.multiRemove([
+      LEGACY_STORAGE_KEY,
+      LEGACY_PREFS_KEY,
+      LEGACY_HISTORY_KEY,
+      'tender_engagement_session',
+    ]);
+
+    _currentUserId = undefined;
+  } catch {
+    // Silent fail
+  }
+}
+
 // ─── Notification History (for Feed) ────────────────────
 
 interface StoredNotification {
@@ -275,7 +340,6 @@ interface StoredNotification {
   tapped: boolean;
 }
 
-const HISTORY_KEY = 'tender_engagement_history';
 const MAX_HISTORY = 100;
 
 export async function addToHistory(
@@ -283,7 +347,8 @@ export async function addToHistory(
   category: NotificationCategory,
 ): Promise<void> {
   try {
-    const raw = await AsyncStorage.getItem(HISTORY_KEY);
+    const key = historyKey();
+    const raw = await AsyncStorage.getItem(key);
     const history: StoredNotification[] = raw ? JSON.parse(raw) : [];
 
     history.unshift({
@@ -299,7 +364,7 @@ export async function addToHistory(
       history.length = MAX_HISTORY;
     }
 
-    await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    await AsyncStorage.setItem(key, JSON.stringify(history));
   } catch {
     // Silent fail
   }
@@ -307,7 +372,7 @@ export async function addToHistory(
 
 export async function getHistory(): Promise<StoredNotification[]> {
   try {
-    const raw = await AsyncStorage.getItem(HISTORY_KEY);
+    const raw = await AsyncStorage.getItem(historyKey());
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
@@ -321,12 +386,13 @@ export async function getUnreadCount(): Promise<number> {
 
 export async function markHistoryDismissed(promptId: string): Promise<void> {
   try {
-    const raw = await AsyncStorage.getItem(HISTORY_KEY);
+    const key = historyKey();
+    const raw = await AsyncStorage.getItem(key);
     if (!raw) return;
     const history: StoredNotification[] = JSON.parse(raw);
     const entry = history.find((n) => n.promptId === promptId && !n.dismissed);
     if (entry) entry.dismissed = true;
-    await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    await AsyncStorage.setItem(key, JSON.stringify(history));
   } catch {
     // Silent fail
   }
@@ -334,12 +400,13 @@ export async function markHistoryDismissed(promptId: string): Promise<void> {
 
 export async function markHistoryTapped(promptId: string): Promise<void> {
   try {
-    const raw = await AsyncStorage.getItem(HISTORY_KEY);
+    const key = historyKey();
+    const raw = await AsyncStorage.getItem(key);
     if (!raw) return;
     const history: StoredNotification[] = JSON.parse(raw);
     const entry = history.find((n) => n.promptId === promptId && !n.tapped);
     if (entry) entry.tapped = true;
-    await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    await AsyncStorage.setItem(key, JSON.stringify(history));
   } catch {
     // Silent fail
   }

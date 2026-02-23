@@ -36,7 +36,7 @@ export const HOME_TOUR: Tour = {
       id: 'tour_welcome',
       targetRef: 'none',
       title: 'Welcome to Tender',
-      body: "A space for your relationship to grow. Let me show you around.",
+      body: "A space for you and your relationships to grow. Let me show you around.",
       position: 'center',
     },
   ],

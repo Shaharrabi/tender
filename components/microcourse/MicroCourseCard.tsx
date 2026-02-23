@@ -28,6 +28,10 @@ import {
   ShieldIcon,
   WindIcon,
   CompassIcon,
+  PhoneIcon,
+  MeditationIcon,
+  SparkleIcon,
+  EyeIcon,
   BookOpenIcon,
   LockIcon,
   CheckmarkIcon,
@@ -43,6 +47,10 @@ const COURSE_ICONS: Record<string, React.ComponentType<IconProps>> = {
   'shield': ShieldIcon,
   'wind': WindIcon,
   'compass': CompassIcon,
+  'phone': PhoneIcon,
+  'meditation': MeditationIcon,
+  'sparkle': SparkleIcon,
+  'eye': EyeIcon,
 };
 
 // ─── Props ──────────────────────────────────────────────

@@ -17,6 +17,7 @@ import {
   MailboxIcon,
   FireIcon,
   LockIcon,
+  PenIcon,
 } from '@/assets/graphics/icons';
 import { useSoundHaptics } from '@/services/SoundHapticsService';
 import type { CommunityTab } from '@/types/community';
@@ -34,6 +35,7 @@ const TABS: TabConfig[] = [
   { key: 'forYou', label: 'For You', Icon: SparkleIcon, locked: false },
   { key: 'allStories', label: 'All Stories', Icon: BookOpenIcon, locked: false },
   { key: 'letters', label: 'Letters', Icon: MailboxIcon, locked: false },
+  { key: 'articles', label: 'Articles', Icon: PenIcon, locked: false },
   { key: 'circle', label: 'Circle', Icon: FireIcon, locked: false },
 ];
 
@@ -89,20 +91,24 @@ export function CommunityTabs({ activeTab, onTabChange }: CommunityTabsProps) {
 
 const st = StyleSheet.create({
   scroll: {
-    marginBottom: Spacing.md,
+    flexGrow: 0,
+    flexShrink: 0,
+    marginBottom: Spacing.sm,
+    backgroundColor: Colors.background,
   },
   container: {
     paddingHorizontal: Spacing.lg,
-    gap: Spacing.sm,
+    gap: Spacing.xs,
     flexDirection: 'row',
+    alignItems: 'center',
   },
   tab: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: Spacing.md,
+    gap: 5,
+    paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 20,
+    borderRadius: 16,
     backgroundColor: Colors.surface,
     borderWidth: 1,
     borderColor: Colors.borderLight,

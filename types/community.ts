@@ -46,7 +46,7 @@ export interface CommunityAlias {
   noun: string;
 }
 
-export type CommunityTab = 'forYou' | 'allStories' | 'letters' | 'circle';
+export type CommunityTab = 'forYou' | 'allStories' | 'letters' | 'articles' | 'circle';
 
 export type PostCategory =
   | 'Attachment'

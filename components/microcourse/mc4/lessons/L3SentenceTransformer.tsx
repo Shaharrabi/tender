@@ -56,7 +56,6 @@ export function L3SentenceTransformer({
   const [customNeed, setCustomNeed] = useState('');
   const [showReveal, setShowReveal] = useState(false);
 
-  const fadeAnim = useRef(new Animated.Value(0)).current;
   const revealAnim = useRef(new Animated.Value(0)).current;
 
   const emotion = selectedEmotion || customEmotion;
@@ -64,15 +63,8 @@ export function L3SentenceTransformer({
 
   const advanceStep = useCallback((nextStep: number) => {
     haptics.tap();
-    Animated.timing(fadeAnim, {
-      toValue: 0, duration: 150, useNativeDriver: true,
-    }).start(() => {
-      setStep(nextStep);
-      Animated.timing(fadeAnim, {
-        toValue: 1, duration: 250, useNativeDriver: true,
-      }).start();
-    });
-  }, [fadeAnim, haptics]);
+    setStep(nextStep);
+  }, [haptics]);
 
   const handleSelectNeed = useCallback((n: string) => {
     haptics.tap();
@@ -90,13 +82,19 @@ export function L3SentenceTransformer({
   const handleCustomNeed = useCallback((text: string) => {
     setCustomNeed(text);
     setSelectedNeed('');
-    if (text.trim().length > 0 && !showReveal) {
-      setTimeout(() => {
-        setShowReveal(true);
-        Animated.timing(revealAnim, {
-          toValue: 1, duration: 500, useNativeDriver: true,
-        }).start();
-      }, 300);
+    if (text.trim().length > 0) {
+      if (!showReveal) {
+        setTimeout(() => {
+          setShowReveal(true);
+          Animated.timing(revealAnim, {
+            toValue: 1, duration: 500, useNativeDriver: true,
+          }).start();
+        }, 300);
+      }
+    } else {
+      // If user clears text, hide reveal
+      setShowReveal(false);
+      revealAnim.setValue(0);
     }
   }, [showReveal, revealAnim]);
 
@@ -163,7 +161,7 @@ export function L3SentenceTransformer({
       {step >= 2 && renderDimmedPrevious('Your complaint:', rawComplaint)}
 
       {step === 1 && (
-        <Animated.View style={{ opacity: fadeAnim }}>
+        <View>
           <Text style={styles.stepPrompt}>
             Write something your partner does that frustrates you, starting
             with "You always..." or "You never..."
@@ -185,14 +183,14 @@ export function L3SentenceTransformer({
           >
             <Text style={styles.primaryButtonText}>NEXT</Text>
           </TouchableOpacity>
-        </Animated.View>
+        </View>
       )}
 
       {/* ── Step 2: Situation ── */}
       {step >= 3 && renderDimmedPrevious('Situation:', `When ${situation}`)}
 
       {step === 2 && (
-        <Animated.View style={{ opacity: fadeAnim }}>
+        <View>
           <Text style={styles.stepPrompt}>
             Now describe the specific situation. When does this happen?
           </Text>
@@ -214,14 +212,14 @@ export function L3SentenceTransformer({
           >
             <Text style={styles.primaryButtonText}>NEXT</Text>
           </TouchableOpacity>
-        </Animated.View>
+        </View>
       )}
 
       {/* ── Step 3: Emotion Picker ── */}
       {step >= 4 && renderDimmedPrevious('Emotion:', emotion)}
 
       {step === 3 && (
-        <Animated.View style={{ opacity: fadeAnim }}>
+        <View>
           <Text style={styles.stepPrompt}>How does this make you feel?</Text>
 
           <ScrollView
@@ -273,12 +271,12 @@ export function L3SentenceTransformer({
           >
             <Text style={styles.primaryButtonText}>NEXT</Text>
           </TouchableOpacity>
-        </Animated.View>
+        </View>
       )}
 
       {/* ── Step 4: Need + Reveal ── */}
       {step === 4 && (
-        <Animated.View style={{ opacity: fadeAnim }}>
+        <View>
           <Text style={styles.stepPrompt}>What do you need from your partner?</Text>
 
           <View style={styles.needChipsWrap}>
@@ -329,7 +327,7 @@ export function L3SentenceTransformer({
           >
             <Text style={styles.primaryButtonText}>COMPLETE</Text>
           </TouchableOpacity>
-        </Animated.View>
+        </View>
       )}
     </ScrollView>
   );

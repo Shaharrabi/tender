@@ -29,15 +29,9 @@ export default function StatusScreen() {
     SoundHaptics.tap();
     setSelected(id);
     setStatus(id);
-    // Brief delay so the user sees the selection highlight
+    // Brief delay so the user sees the selection highlight, then personalized audio welcome
     setTimeout(() => {
-      if (id === 'single') {
-        // Singles skip duration, go straight to mode selection
-        router.push('/(onboarding)/mode-select' as any);
-      } else {
-        // In-relationship users pick duration first, then mode
-        router.push('/(onboarding)/duration' as any);
-      }
+      router.push('/(onboarding)/status-welcome' as any);
     }, 200);
   };
 
@@ -95,7 +89,7 @@ export default function StatusScreen() {
       <Animated.View entering={FadeIn.duration(800).delay(600)}>
         <TouchableOpacity
           style={styles.skipButton}
-          onPress={() => router.push('/(onboarding)/mode-select' as any)}
+          onPress={() => router.push('/(onboarding)/status-welcome' as any)}
           activeOpacity={0.6}
         >
           <Text style={styles.skipText}>Skip for now</Text>

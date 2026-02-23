@@ -1,7 +1,7 @@
 /**
  * Micro-Course Browse Screen
  *
- * Displays all 6 micro-courses with progress, prerequisites, and lock states.
+ * Displays all 10 micro-courses with progress, prerequisites, and lock states.
  * Users can start new courses or continue in-progress ones.
  */
 
@@ -193,9 +193,9 @@ export default function CoursesScreen() {
         <View style={styles.introSection}>
           <Text style={styles.introTitle}>Your Learning Journey</Text>
           <Text style={styles.introSubtitle}>
-            6 micro-courses that guide you from understanding your patterns to
+            10 micro-courses that guide you from understanding your patterns to
             transforming your relationship. Each course has 5 short lessons
-            (~25 min total).
+            (~20-30 min total).
           </Text>
         </View>
 

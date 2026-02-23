@@ -26,7 +26,7 @@ export async function getUserConsent(userId: string): Promise<DataConsent | null
     .is('revoked_at', null)
     .order('consented_at', { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
 
   if (error || !data) return null;
 

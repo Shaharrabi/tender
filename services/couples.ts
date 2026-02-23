@@ -34,7 +34,7 @@ export async function getOrCreateProfile(userId: string, displayName?: string): 
     .from('user_profiles')
     .select('*')
     .eq('user_id', userId)
-    .single();
+    .maybeSingle();
 
   if (existing) return existing as UserProfile;
 
@@ -101,7 +101,7 @@ export async function getInviteByCode(code: string): Promise<CoupleInvite | null
     .select('*')
     .eq('invite_code', formatted)
     .eq('status', 'pending')
-    .single();
+    .maybeSingle();
 
   if (error || !data) return null;
 
@@ -140,7 +140,7 @@ export async function acceptInvite(inviteId: string, acceptorId: string): Promis
     .eq('id', inviteId)
     .eq('status', 'pending')
     .select()
-    .single();
+    .maybeSingle();
 
   if (invError || !invite) {
     console.error('[Couples] Failed to accept invite:', invError);
@@ -217,7 +217,7 @@ export async function getMyCouple(userId: string): Promise<Couple | null> {
     .select('*')
     .or(`partner_a_id.eq.${userId},partner_b_id.eq.${userId}`)
     .eq('status', 'active')
-    .single();
+    .maybeSingle();
 
   if (error || !data) return null;
   return data as Couple;
@@ -238,7 +238,7 @@ export async function getPartnerProfile(userId: string): Promise<UserProfile | n
     .from('user_profiles')
     .select('*')
     .eq('user_id', partnerId)
-    .single();
+    .maybeSingle();
 
   return data as UserProfile | null;
 }
@@ -394,7 +394,7 @@ export async function getCoupleById(coupleId: string): Promise<Couple | null> {
     .from('couples')
     .select('*')
     .eq('id', coupleId)
-    .single();
+    .maybeSingle();
 
   if (error || !data) return null;
   return data as Couple;
@@ -432,7 +432,7 @@ export async function getRelationshipPortrait(
     .from('relationship_portraits')
     .select('*')
     .eq('couple_id', coupleId)
-    .single();
+    .maybeSingle();
 
   if (error || !data) return null;
   return data as RelationshipPortrait;

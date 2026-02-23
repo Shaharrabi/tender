@@ -16,6 +16,7 @@ import {
   ScrollView,
   StyleSheet,
   Platform,
+  Alert,
 } from 'react-native';
 import Animated, { FadeIn, FadeInDown, SlideInUp } from 'react-native-reanimated';
 import { Colors, Spacing, BorderRadius, Typography, Shadows } from '@/constants/theme';
@@ -137,6 +138,13 @@ function MeetingRoomsSection() {
                   room.status === 'upcoming' && styles.meetingButtonDisabled,
                 ]}
                 disabled={room.status === 'upcoming'}
+                onPress={() => {
+                  Alert.alert(
+                    room.name,
+                    `${room.people} people are here.\n\nThis room is being prepared with care. Meeting rooms will open once our community reaches enough members to match thoughtfully.\n\nWe'll notify you when it's ready.`,
+                  );
+                }}
+                activeOpacity={0.7}
               >
                 <Text
                   style={[

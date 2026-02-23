@@ -26,6 +26,7 @@ import {
   CoupleIcon,
   HeartIcon,
   SeedlingIcon,
+  RainbowIcon,
 } from '@/assets/graphics/icons';
 
 export interface UnlockState {
@@ -52,6 +53,9 @@ export interface UnlockState {
 
   // Dating
   datingWell: boolean;          // Always available
+
+  // Card Game
+  buildingBridges: boolean;     // Always available
 
   // Counts
   completedCount: number;
@@ -253,6 +257,16 @@ export const FEATURE_CARDS: FeatureCard[] = [
     category: 'feature',
   },
   {
+    key: 'buildingBridges',
+    title: 'Building Bridges',
+    subtitle: 'Card game for deeper connection',
+    icon: RainbowIcon,
+    color: Colors.accent,
+    unlockHint: '',
+    route: '/(app)/building-bridges',
+    category: 'feature',
+  },
+  {
     key: 'couplesPortal',
     title: 'Couple Portal',
     subtitle: 'Shared portrait, couple assessments, and coaching',
@@ -295,6 +309,7 @@ export function getUnlockState(
     community: true,
     healingJourney: completedCount >= 1,
     datingWell: true,
+    buildingBridges: true,
 
     // Counts
     completedCount,

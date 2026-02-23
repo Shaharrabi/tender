@@ -1,8 +1,9 @@
 /**
  * Micro-Course Lesson Content
  *
- * All 30 lessons across 6 micro-courses, transcribed from
- * TENDER_MICROCOURSE_CONTENT.md. Each lesson has:
+ * All 50 lessons across 10 micro-courses, transcribed from
+ * TENDER_MICROCOURSE_CONTENT.md and MC7_MC8_MC9_MC10_COMPLETE_BLUEPRINT.md.
+ * Each lesson has:
  *   - Read section (psychoeducation / framing)
  *   - Exercise section (reflection, identification, behavioral experiment)
  *   - Reflection prompt (1-2 sentence completion, stored for Nuance)
@@ -905,6 +906,597 @@ const MC6_LESSONS: MicroCourseLesson[] = [
 ];
 
 // ═══════════════════════════════════════════════════════════
+//  MC7: THE TEXT BETWEEN US
+//  Placement: Mid-Shifting phase
+//  Prerequisites: ECR-R complete
+//  Primary modality: Communication science + attachment theory
+// ═══════════════════════════════════════════════════════════
+
+const MC7_LESSONS: MicroCourseLesson[] = [
+  {
+    id: 'mc-text-between-us-lesson-1',
+    courseId: 'mc-text-between-us',
+    lessonNumber: 1,
+    title: 'Your Phone, Your Pattern',
+    type: 'identification',
+    durationMinutes: 5,
+    readContent:
+      'Most people have never noticed their texting triggers. They know the conversation went sideways, but not why.\n\n' +
+      'Here is what the research says: it is not how often you text that shapes relationship satisfaction. It is how you interpret your partner\'s texting. A one-word reply. A delayed response. A message left on read. The words are the same \u2014 but the nervous system reading them is not.\n\n' +
+      'Text strips away 55% of communication. No tone. No facial expression. No body language. Just words on a screen. And in that absence, your brain fills in the blanks. The question is: what does it fill them in with?\n\n' +
+      'Your attachment history. Your fears. Your expectations from every relationship that came before this one.\n\n' +
+      'An anxious nervous system reads "k" and hears dismissal. An avoidant nervous system reads "can we talk tonight?" and feels trapped before a word has been spoken. A secure nervous system reads both and thinks: I will check in later.\n\n' +
+      'Same text. Different nervous system. Different relationship.\n\n' +
+      'This course is about seeing the pattern \u2014 and learning that you have more choices than your nervous system is giving you.',
+    readContentAnxious:
+      'Your phone is probably the place where your attachment pattern runs the show most freely. And you may not have noticed, because the speed of texting matches the speed of your anxiety \u2014 fast, reactive, filling silence with meaning.\n\n' +
+      'Research shows that anxious attachment amplifies negative interpretation of neutral stimuli. A delayed response becomes abandonment. A one-word reply becomes anger. Your nervous system fills in missing information with worst-case scenarios \u2014 not because you are dramatic, but because your system was trained to monitor connection when connection was not reliable.\n\n' +
+      'The challenge is not the texts themselves. It is the gap between what was sent and what your body received. That gap is where your attachment history lives.\n\n' +
+      'This course will help you see the gap \u2014 and make a different choice in it.',
+    readContentAvoidant:
+      'Your phone may actually be a more comfortable space for connection than face-to-face conversation. Research shows that avoidant partners sometimes prefer texting because it offers lower relational pressure \u2014 you can respond on your own timeline, manage the emotional intensity, and maintain a sense of control.\n\n' +
+      'But texting also has a shadow side for your pattern. When your partner sends a long emotional text, your system may shut down. When they double-text, you may feel irritated before you have even read the content. When they ask "can we talk?", your body may already be bracing for something you do not want to feel.\n\n' +
+      'The avoidant pattern in digital communication often looks like brevity, delayed responses, or topic changes when things get emotional. Not because you do not care \u2014 but because your system is managing the intensity the only way it knows how.\n\n' +
+      'This course will help you see where digital distance serves you and where it costs you.',
+    exerciseContent:
+      'Think about the last 5 text exchanges with your partner that left you feeling something \u2014 anything. Not the pleasant ones. The ones that created a reaction.\n\n' +
+      'For each one, notice: what did they actually write? And what did your nervous system hear?\n\n' +
+      'Write down one text that triggered a strong reaction. What was the text, and what story did your mind create about it?',
+    reflectionPrompt: 'The texting situation that gets under my skin most is:',
+  },
+  {
+    id: 'mc-text-between-us-lesson-2',
+    courseId: 'mc-text-between-us',
+    lessonNumber: 2,
+    title: 'The Missing Data Problem',
+    type: 'psychoeducation',
+    durationMinutes: 5,
+    readContent:
+      'When you read a text, your brain does something remarkable \u2014 and dangerous. It fills in the missing 55% of communication with a story. Tone, intent, emotion \u2014 all projected onto words that carry none of those things.\n\n' +
+      'This is not a character flaw. This is how human perception works. Psychologists call it "gap-filling" \u2014 the brain\'s automatic process of constructing a complete picture from incomplete information. It happens faster than conscious thought.\n\n' +
+      'Consider this text: "Fine. Do what you want."\n\n' +
+      'Read it as defeated: "I have given up arguing. I do not feel heard, so I am stepping back."\n' +
+      'Read it as angry: "I am furious but I am not going to show it. Do whatever you want because I am done."\n' +
+      'Read it as genuinely neutral: "I actually do not have a strong opinion. Go ahead."\n\n' +
+      'Three valid readings. Same six words. The one you land on reveals more about your nervous system than about your partner\'s intent.\n\n' +
+      'The practice is not to figure out what they "really meant." It is to notice that any text has multiple valid readings \u2014 and the one you choose automatically is the one your attachment pattern chose for you.',
+    readContentAnxious:
+      'When you read an ambiguous text, your nervous system does not wait for more information. It fills in the gap immediately \u2014 and it fills it with threat.\n\n' +
+      '"Fine" becomes "I am angry at you." "I am tired" becomes "I do not want to be around you." "You are right" becomes sarcasm.\n\n' +
+      'This is your system doing its job \u2014 scanning for danger in the connection. The problem is that text is mostly ambiguity. And for a nervous system trained to read ambiguity as threat, every text conversation becomes a minefield.\n\n' +
+      'The shift is not to stop having reactions. It is to create what researchers call "reasonable doubt" \u2014 the practice of pausing before the story locks in and asking: is there another reading?',
+    readContentAvoidant:
+      'When you read an emotional text, your nervous system has a practiced response: minimize. "It is not that big a deal." "They are overreacting." "I will deal with this later."\n\n' +
+      'This is your system doing its job \u2014 protecting you from emotional intensity. The problem is that your partner\'s emotional text is often a bid for connection disguised as words. And when you minimize or delay, they do not experience your calm. They experience absence.\n\n' +
+      'The digital format can be a gift for your pattern \u2014 lower pressure, more time to respond. But it can also become avoidance in disguise when you use the distance to never engage with the emotion at all.',
+    exerciseContent:
+      'Take a recent ambiguous text from your partner. Write it down exactly as it appeared.\n\n' +
+      'Now write three possible readings:\n' +
+      '1. The reading your gut chose first (what your nervous system heard)\n' +
+      '2. The most generous possible reading\n' +
+      '3. The most neutral possible reading\n\n' +
+      'Which one did you land on automatically? What would change if you tried on one of the others?',
+    reflectionPrompt: 'A text I have misread, and what I now think it actually meant:',
+  },
+  {
+    id: 'mc-text-between-us-lesson-3',
+    courseId: 'mc-text-between-us',
+    lessonNumber: 3,
+    title: 'The Good Text / Bad Text Lab',
+    type: 'skill-building',
+    durationMinutes: 5,
+    readContent:
+      'Research on positive text messaging shows that even small shifts in tone maintain relationship satisfaction over time. The goal is not perfect communication. It is slightly less defensive, slightly more connected.\n\n' +
+      'Most reactive texts share a structure: they communicate the feeling indirectly through distance, blame, or silence. The alternative texts communicate the same feeling directly \u2014 and open the door rather than closing it.\n\n' +
+      'Situation: Your partner cancels plans last minute. You are disappointed.\n' +
+      'Common text: "Whatever. Don\'t worry about me."\n' +
+      'Alternative: "Ugh, I was really looking forward to this. Can we reschedule soon?"\n\n' +
+      'Same disappointment. Completely different invitation. The first communicates through guilt \u2014 which produces defensiveness, not closeness. The second communicates directly and leaves the door open.\n\n' +
+      'Situation: You feel ignored during a text conversation.\n' +
+      'Common text: "Guess you are too busy for me."\n' +
+      'Alternative: "Hey \u2014 I noticed you got quiet. Everything okay?"\n\n' +
+      'Situation: You want to address a recurring issue.\n' +
+      'Common text: "We need to talk." (Three words guaranteed to spike your partner\'s cortisol.)\n' +
+      'Alternative: "Something has been on my mind. Can we find 10 minutes tonight to talk about it? Nothing urgent \u2014 I just want to feel connected."\n\n' +
+      'The difference is not politeness. It is clarity. Reactive texts encrypt the feeling. Effective texts decode it.',
+    exerciseContent:
+      'Think about your most common reactive text \u2014 the one you send when you are hurt, annoyed, or anxious. Write it down exactly as you would type it.\n\n' +
+      'Now rewrite it. Same feeling. Different delivery. What would the direct, open-door version sound like?\n\n' +
+      'If you are not sure, try this template: "I feel ___ when ___. What I need is ___."\n\n' +
+      'Simple. Vulnerable. And much more likely to get you what you actually want.',
+    reflectionPrompt: 'My reactive text rewritten with the door open:',
+  },
+  {
+    id: 'mc-text-between-us-lesson-4',
+    courseId: 'mc-text-between-us',
+    lessonNumber: 4,
+    title: 'Your Attachment in Your Pocket',
+    type: 'reflection',
+    durationMinutes: 5,
+    readContent:
+      'By now, you have seen the pattern: how you read ambiguity, what your reactive texts look like, and the gap between what was sent and what your nervous system received. This lesson is the synthesis \u2014 connecting your texting patterns to your attachment blueprint.\n\n' +
+      'Your phone is not just a communication tool. It is a 24/7 attachment monitor. Every notification is a signal. Every silence is data. And your nervous system is processing all of it through the filter of what it learned about connection a long time ago.\n\n' +
+      'The pattern shows up in predictable ways:\n\n' +
+      'In how quickly you respond (or do not respond)\n' +
+      'In how you interpret delays\n' +
+      'In how much context you need to feel safe\n' +
+      'In whether you use text to connect or to manage distance\n' +
+      'In what you do with the anxiety between sending a message and getting a reply\n\n' +
+      'None of this is a flaw. It is your nervous system doing what it was trained to do. But you are not your training. You are the person who can see the training \u2014 and make a different choice.',
+    readContentAnxious:
+      'Your texting pattern likely includes some of these:\n\n' +
+      'Double-texting when a response is slow. Checking read receipts. Reading into punctuation, timing, emoji use (or absence). Sending long messages when a short one would do \u2014 because the length feels like proof that you care.\n\n' +
+      'Your nervous system is doing this because silence feels dangerous. In the gap between your message and their response, your attachment alarm starts scanning: Are they upset? Did I say something wrong? Are they pulling away?\n\n' +
+      'Here is a phrase to hold when the alarm activates: "This is my pattern, not the present moment. I can wait 90 seconds and see what changes."\n\n' +
+      'The 90-second pause is not punishment. It is a gift you give yourself \u2014 the space to respond from choice rather than alarm.',
+    readContentAvoidant:
+      'Your texting pattern likely includes some of these:\n\n' +
+      'Brief replies. Responding to logistical questions but not emotional ones. Leaving emotional texts for "later" (which sometimes means never). Feeling irritated when your partner double-texts. Using humor to deflect when the conversation gets deep.\n\n' +
+      'Your nervous system is doing this because emotional intensity over text feels unmanageable. Without the escape hatch of leaving the room or changing the subject, an emotional text pins you down. And your system does not like being pinned down.\n\n' +
+      'Here is a phrase to hold when the withdrawal impulse activates: "Responding does not mean I am giving up control. It means I am choosing connection."\n\n' +
+      'One genuine sentence is enough. You do not need to match your partner\'s emotional intensity. You just need to let them know you are there.',
+    exerciseContent:
+      'Write down one texting habit you want to shift. Not eliminate \u2014 shift. A small, specific change you can try this week.\n\n' +
+      'Examples:\n' +
+      '\u2022 "Instead of checking read receipts, I will put my phone down for 10 minutes after sending."\n' +
+      '\u2022 "Instead of responding \'fine\', I will name one actual feeling."\n' +
+      '\u2022 "Instead of leaving emotional texts for later, I will respond with at least one sentence within an hour."',
+    reflectionPrompt: 'One texting habit I want to shift:',
+  },
+  {
+    id: 'mc-text-between-us-lesson-5',
+    courseId: 'mc-text-between-us',
+    lessonNumber: 5,
+    title: 'The Practice Exchange',
+    type: 'commitment',
+    durationMinutes: 5,
+    readContent:
+      'You now know four things about your digital communication:\n\n' +
+      '1. Your texting triggers \u2014 the situations that activate your nervous system through your phone\n' +
+      '2. The missing data problem \u2014 how your brain fills in what text leaves out, and the pattern it defaults to\n' +
+      '3. The difference between reactive and open-door texts \u2014 and how small shifts change everything\n' +
+      '4. How your attachment pattern lives inside your pocket \u2014 and one habit you want to shift\n\n' +
+      'The research consistently shows that scenario-based practice with reflection produces better skill transfer than instruction alone. So this final lesson is about putting it all together.\n\n' +
+      'Think about a real texting scenario that has gone sideways before \u2014 a recurring pattern between you and your partner. The kind of exchange where you both know the script before it plays out.\n\n' +
+      'Now imagine replaying it with everything you have learned:\n' +
+      '\u2022 Noticing your nervous system\'s first reaction (Lesson 1)\n' +
+      '\u2022 Checking for multiple valid readings (Lesson 2)\n' +
+      '\u2022 Choosing the open-door text instead of the reactive one (Lesson 3)\n' +
+      '\u2022 Pausing before the pattern takes over (Lesson 4)\n\n' +
+      'This is not about being perfect. It is about catching yourself 10% earlier, responding 10% more intentionally, and trusting that small shifts change entire conversations.',
+    exerciseContent:
+      'Write a commitment for this week \u2014 not a promise to be perfect, but a practice intention for your digital communication.\n\n' +
+      'Choose one:\n' +
+      '\u2022 "Before responding to an ambiguous text, I will write down two other possible readings."\n' +
+      '\u2022 "When I feel the urge to check read receipts, I will take three breaths instead."\n' +
+      '\u2022 "I will send one open-door text per day instead of a reactive one."\n' +
+      '\u2022 "I will respond to at least one emotional text with a genuine sentence instead of deflecting."\n\n' +
+      'Or write your own. The key is specificity \u2014 not "I will communicate better" but "I will do this specific thing in this specific moment."',
+    reflectionPrompt: 'What I learned about myself and my phone:',
+  },
+];
+
+// ═══════════════════════════════════════════════════════════
+//  MC8: BOUNDARIES DEEP \u2014 THE BODY KNOWS
+//  Placement: End of Shifting phase
+//  Prerequisites: MC4 (Boundaries That Connect) complete
+//  Primary modality: Somatic therapy + Bowen + polyvagal
+// ═══════════════════════════════════════════════════════════
+
+const MC8_LESSONS: MicroCourseLesson[] = [
+  {
+    id: 'mc-boundaries-deep-lesson-1',
+    courseId: 'mc-boundaries-deep',
+    lessonNumber: 1,
+    title: 'The Body Before the Words',
+    type: 'identification',
+    durationMinutes: 6,
+    readContent:
+      'Before you can communicate a boundary, you need to receive the signal that one is needed. And that signal does not start in your head. It starts in your body.\n\n' +
+      'Think about the last time you agreed to something that felt wrong. Not wrong in your mind \u2014 wrong in your body. A tightness in your chest. A held breath. A clenching in your gut. A sudden heaviness.\n\n' +
+      'That was your body telling you something. And you probably overrode it.\n\n' +
+      'This is what somatic therapists call "the body before the words" \u2014 the physical sensation that precedes conscious awareness. Your body knows before your mind catches up. The question is whether you are listening.\n\n' +
+      'There are three states your nervous system moves through, and each one has a different relationship to boundaries:\n\n' +
+      'In the safe state (ventral vagal): you can feel your limits clearly, communicate them calmly, and hold them without guilt.\n\n' +
+      'In the activated state (sympathetic): your boundaries become rigid, loud, defensive. You set them from anger rather than clarity.\n\n' +
+      'In the shutdown state (dorsal vagal): your boundaries disappear. You go numb, appease, and agree to things your body is screaming no about.\n\n' +
+      'MC4 taught you what boundaries are. This course teaches you what they feel like \u2014 in your body \u2014 before you speak them.',
+    exerciseContent:
+      'Think of something you agreed to recently that felt wrong in your body. Where did you feel it?\n\n' +
+      'Now think of something you said yes to that felt genuinely aligned. Where did THAT live in your body?\n\n' +
+      'Map both: YES lives in ___. NO lives in ___.\n\n' +
+      'Common locations for NO: throat (words stuck), chest (constriction), belly (knot or nausea), hands (clenching).\n' +
+      'Common locations for YES: chest (open, warm), belly (settled), shoulders (relaxed), hands (open).\n\n' +
+      'Your body already has a boundary vocabulary. This exercise is about learning to read it.',
+    reflectionPrompt: 'In my body, "no" feels like ___. "Yes" feels like ___.',
+  },
+  {
+    id: 'mc-boundaries-deep-lesson-2',
+    courseId: 'mc-boundaries-deep',
+    lessonNumber: 2,
+    title: 'The Cost of Chronic Override',
+    type: 'reflection',
+    durationMinutes: 6,
+    readContent:
+      'Chronic boundary override \u2014 saying yes when you mean no, accommodating to keep the peace, shrinking to maintain the connection \u2014 has cumulative costs that most people do not see until they are exhausted, resentful, or both.\n\n' +
+      'This is the mechanism Murray Bowen described: undifferentiated individuals maintain "togetherness" by sacrificing self. The short-term benefit is harmony. The long-term cost is the loss of the person inside the relationship.\n\n' +
+      'Here is what chronic override costs:\n\n' +
+      'Resentment builds. Not from any single incident \u2014 no single "yes" is that bad. But hundreds of small surrenders create a slow, grinding erosion of goodwill. You are not angry about this thing. You are angry about the pattern.\n\n' +
+      'Authenticity erodes. When you consistently override your gut, you stop trusting it. Eventually, you may not even know what you want \u2014 because wanting something and not getting it hurts less if you never wanted it in the first place.\n\n' +
+      'Exhaustion accumulates. Maintaining a version of yourself that is not really you takes enormous energy. It is like holding a posture that is slightly off \u2014 sustainable for minutes, unbearable for years.\n\n' +
+      'The relationship is maintained. But the self inside it is slowly disappearing.\n\n' +
+      'This is not about blame. Overriding was a survival strategy. It kept the connection alive. But the question now is: at what cost?',
+    exerciseContent:
+      'Think back over the last month. Can you identify three moments when you overrode a gut feeling? Moments when you said yes but your body was saying no?\n\n' +
+      'For each one, notice:\n' +
+      '\u2022 What did you sacrifice? (time, authenticity, energy, truth, a need)\n' +
+      '\u2022 What did you gain? (peace, approval, connection, safety)\n' +
+      '\u2022 Was the trade worth it?\n\n' +
+      'This is not about judging yourself. It is about seeing the pattern clearly enough to make a different choice.',
+    reflectionPrompt: 'The relationship where I overrode myself most: ___. What it cost:',
+  },
+  {
+    id: 'mc-boundaries-deep-lesson-3',
+    courseId: 'mc-boundaries-deep',
+    lessonNumber: 3,
+    title: 'Holding the Line While Staying Connected',
+    type: 'skill-building',
+    durationMinutes: 6,
+    readContent:
+      'This is the hardest skill in the course \u2014 and the most important. Anyone can hold a boundary when they are alone. The challenge is holding one while remaining emotionally present with a person who is pushing against it.\n\n' +
+      'When you set a boundary and your partner pushes back, your nervous system has two well-practiced options:\n\n' +
+      'Option 1: Fight. Your boundaries become walls. You get rigid, defensive, loud. You hold the line, but at the cost of the connection. Your partner feels attacked, and the boundary that was supposed to protect the relationship has damaged it.\n\n' +
+      'Option 2: Collapse. Your boundaries dissolve. You appease, accommodate, go quiet. The connection is maintained, but at the cost of yourself. And the resentment deposits another layer.\n\n' +
+      'There is a third option that your nervous system may not know yet:\n\n' +
+      'Option 3: Differentiation. You hold your position AND stay connected. You say what is true for you, calmly and clearly, without needing your partner to agree. You let them have their reaction without absorbing it or defending against it. You remain in the room \u2014 physically, emotionally, and relationally.\n\n' +
+      'This is what Bowen called "holding the I-position under relational pressure." It requires staying inside your window of tolerance while someone important to you is uncomfortable. That is the advanced practice.\n\n' +
+      'The body tool: when you feel yourself about to fight or collapse, try this \u2014 press your feet into the floor. Feel the ground. Slow your exhale. Place one hand on your chest. This somatic anchor can buy you 5 seconds \u2014 and 5 seconds is often enough to choose Option 3.',
+    exerciseContent:
+      'Think about a boundary you need to hold with your partner \u2014 something real but manageable.\n\n' +
+      'Now imagine the pushback. Not the worst case. Just the realistic one. Your partner says: "But why? That is not fair. You are being selfish."\n\n' +
+      'What happens in your body when you imagine that? Where does the activation start? Do you move toward fight or toward collapse?\n\n' +
+      'Now try the somatic anchor: feet on the floor, slow exhale, hand on chest. From this grounded place, what would you say? Not to win. Not to appease. Just to be true.',
+    reflectionPrompt: 'The hardest part of staying connected while holding firm is:',
+  },
+  {
+    id: 'mc-boundaries-deep-lesson-4',
+    courseId: 'mc-boundaries-deep',
+    lessonNumber: 4,
+    title: 'Saying It Without Wounding',
+    type: 'skill-building',
+    durationMinutes: 6,
+    readContent:
+      'The words matter \u2014 not because there is one right script, but because the structure of a boundary statement determines whether it is heard as information or as punishment.\n\n' +
+      'Effective boundary statements share a structure:\n\n' +
+      '1. Observation \u2014 what you notice (not accusation)\n' +
+      '"When plans change at the last minute..."\n\n' +
+      '2. Experience \u2014 what you feel or need (from the body, not the story)\n' +
+      '"I feel dismissed, and my body tightens up..."\n\n' +
+      '3. Request \u2014 what you are asking for (specific and actionable)\n' +
+      '"What I need is a conversation before things are decided..."\n\n' +
+      '4. What you will do \u2014 not a threat, just what is true for you\n' +
+      '"And if that does not happen, I will make my own plans."\n\n' +
+      'This structure keeps the boundary in the "I" position without being passive. It avoids "you" statements that create defensiveness. And it grounds the boundary in the body \u2014 "I feel" rather than "you make me feel."\n\n' +
+      'The hardest part is Step 4 \u2014 stating what you will do without it being a threat. A threat says: "If you do not change, I will hurt you." A boundary says: "This is what is true for me, and here is what I will do to take care of myself." Same structure. Completely different energy.',
+    exerciseContent:
+      'Build your own boundary statement using the 4-step structure:\n\n' +
+      'Step 1 \u2014 What I notice: "When ___"\n' +
+      'Step 2 \u2014 What I experience: "I feel ___"\n' +
+      'Step 3 \u2014 What I need: "What I need is ___"\n' +
+      'Step 4 \u2014 What I will do: "And if that does not work, I will ___"\n\n' +
+      'Choose something real. Read it back to yourself. Does it sound like information or punishment? Adjust until it feels clear and calm.',
+    reflectionPrompt: 'My personal boundary statement:',
+  },
+  {
+    id: 'mc-boundaries-deep-lesson-5',
+    courseId: 'mc-boundaries-deep',
+    lessonNumber: 5,
+    title: 'The Differentiation Practice',
+    type: 'commitment',
+    durationMinutes: 6,
+    readContent:
+      'You now have four tools:\n\n' +
+      '1. Body awareness \u2014 you know where YES and NO live in your body, and you can read the signal before your mind catches up\n' +
+      '2. Cost clarity \u2014 you can see the price of chronic override, and you are no longer willing to pay it unconsciously\n' +
+      '3. The somatic anchor \u2014 feet, exhale, hand on chest. Five seconds of choice before the old pattern takes over\n' +
+      '4. The boundary statement \u2014 four steps that turn a feeling into clear communication\n\n' +
+      'Differentiation is not a destination. It is a practice. Some days you will hold the line beautifully \u2014 grounded, clear, connected. Some days you will collapse or fight, just like before. Both are part of the learning.\n\n' +
+      'What changes is the recovery time. The first time you hold a boundary from a grounded place, it might take you days to work up to it. The tenth time, it might take minutes. The hundredth time, it might happen in real time \u2014 in the middle of the conversation, without even thinking about it.\n\n' +
+      'That is earned differentiation. Not the absence of anxiety. The ability to hold your position while the anxiety is present.\n\n' +
+      'Your boundary is not a wall. It is not a weapon. It is information \u2014 a clear, calm statement of where you end and another person begins. And it is an act of care for the relationship, not just for yourself.',
+    exerciseContent:
+      'Write a commitment for this week:\n\n' +
+      'Choose one of the following, or write your own:\n' +
+      '\u2022 "I will practice the somatic anchor (feet, exhale, hand on chest) once a day, even when I am not activated \u2014 so my body knows the path when it needs it."\n' +
+      '\u2022 "I will say one honest NO this week. Not aggressive. Not apologetic. Just clear."\n' +
+      '\u2022 "I will notice one moment of override and just name it to myself: \'I am overriding right now.\' No judgment. Just seeing."\n' +
+      '\u2022 "I will use the boundary statement template in one real conversation this week."',
+    reflectionPrompt: 'What I am taking from this course into my actual life:',
+  },
+];
+
+// ═══════════════════════════════════════════════════════════
+//  MC9: THE LIGHTNESS LAB \u2014 PLAY AS MEDICINE
+//  Placement: Mid-Feeling phase
+//  Prerequisites: None
+//  Primary modality: Gottman positive sentiment + positive psychology
+// ═══════════════════════════════════════════════════════════
+
+const MC9_LESSONS: MicroCourseLesson[] = [
+  {
+    id: 'mc-lightness-lab-lesson-1',
+    courseId: 'mc-lightness-lab',
+    lessonNumber: 1,
+    title: 'The Bid Census',
+    type: 'identification',
+    durationMinutes: 4,
+    readContent:
+      'Gottman\'s research on what makes relationships last discovered something surprising: the biggest predictor of success is not how couples fight. It is what happens between fights \u2014 in the thousands of tiny moments that most people never notice.\n\n' +
+      'He called them "bids for connection" \u2014 small gestures, comments, looks, and sounds that are really saying: "Are you there? Do you see me? Can we connect right now?"\n\n' +
+      'Bids are not dramatic. They look like:\n' +
+      '\u2022 "Look at that cloud."\n' +
+      '\u2022 A random fact shared: "Did you know..."\n' +
+      '\u2022 A sigh from across the room\n' +
+      '\u2022 A request for a hug\n' +
+      '\u2022 A complaint that is secretly an invitation: "I am so tired."\n' +
+      '\u2022 A piece of music played too loud\n' +
+      '\u2022 A question that is really "do you see me?"\n\n' +
+      'Masters of relationships turn toward these bids 86% of the time. Disasters turn toward only 33% of the time. The difference is not effort \u2014 it is attention. Masters have learned to see the bids.\n\n' +
+      'Most bids are invisible until you learn to look for them. This lesson is about learning to look.',
+    exerciseContent:
+      'Think about the last 24 hours with your partner (or the last time you were together). How many bids can you remember?\n\n' +
+      'Go through these categories and count:\n' +
+      '\u2022 Observation bids \u2014 "Look at this" / "Did you hear that?"\n' +
+      '\u2022 Touch bids \u2014 A hand on your arm, leaning into you, a hug\n' +
+      '\u2022 Humor bids \u2014 A joke, a silly face, a shared reference\n' +
+      '\u2022 Help bids \u2014 "Can you help me with..." or doing something for you without asking\n' +
+      '\u2022 Emotional bids \u2014 Sharing a feeling, a worry, a hope\n' +
+      '\u2022 Invisible bids \u2014 A sigh, a look, sitting close, making your coffee\n\n' +
+      'How many did you catch? How many did you turn toward? How many slipped by?',
+    reflectionPrompt: 'The bids I probably miss most:',
+  },
+  {
+    id: 'mc-lightness-lab-lesson-2',
+    courseId: 'mc-lightness-lab',
+    lessonNumber: 2,
+    title: 'The Lightness Inventory',
+    type: 'reflection',
+    durationMinutes: 4,
+    readContent:
+      'Many couples have stopped playing without knowing when it happened. Life filled in the gaps \u2014 children, work, stress, familiarity. The spontaneous joy that used to be effortless became something that required effort. And effort got crowded out by logistics.\n\n' +
+      'This is not a failure. It is a drift. And drifts can be reversed.\n\n' +
+      'Before you can rebuild playfulness, you need to locate where it went. This is not blame \u2014 it is archaeology. Recovering what is already there.\n\n' +
+      'Think about the arc of your relationship. There were periods of lightness \u2014 times when laughing together came easily, when you were curious about each other, when you did things for no reason other than joy. There were also heavier periods \u2014 stress, distance, conflict, going through the motions.\n\n' +
+      'The insight is simple but important: lightness is not gone. It has peaks and valleys. And the peaks usually share a common ingredient \u2014 something that was present then that is not present now.\n\n' +
+      'The question is not "why are we not playful anymore?" It is "what was present during the light periods that we could bring back?"',
+    exerciseContent:
+      'Map the emotional temperature of your relationship across its history.\n\n' +
+      'Divide your time together into phases (early dating, first year, a stressful period, a good period, now). For each phase, rate the overall lightness \u2014 how easy it was to laugh, play, and be silly together.\n\n' +
+      'Then for the lightest period, ask: what was present? More time? Less stress? A shared activity? Novelty? Fewer responsibilities?\n\n' +
+      'For the heaviest period, ask: what changed? What got crowded out?\n\n' +
+      'The last question: what was present during the peaks that you could bring back \u2014 even in a small way \u2014 right now?',
+    reflectionPrompt: 'The last time we were genuinely light together was:',
+  },
+  {
+    id: 'mc-lightness-lab-lesson-3',
+    courseId: 'mc-lightness-lab',
+    lessonNumber: 3,
+    title: 'Play Styles',
+    type: 'identification',
+    durationMinutes: 4,
+    readContent:
+      'Play is not one thing. Different people play differently. And mismatches in play style can feel like rejection \u2014 "they never want to have fun with me" \u2014 but are often just two people playing in different languages.\n\n' +
+      'Researcher Stuart Brown identified several play styles:\n\n' +
+      'The Joker \u2014 humor, wordplay, absurdity. Connection through laughter.\n' +
+      'The Kinesthete \u2014 physical play, sports, movement, dance. Connection through the body.\n' +
+      'The Explorer \u2014 novelty, trying new things, adventures. Connection through discovery.\n' +
+      'The Collector \u2014 shared hobbies, organization, building things. Connection through doing.\n' +
+      'The Director \u2014 planning fun, creating experiences, hosting. Connection through crafting.\n' +
+      'The Storyteller \u2014 imagination, games, shared narratives. Connection through story.\n' +
+      'The Creator \u2014 making things together, aesthetic appreciation. Connection through beauty.\n\n' +
+      'Most people have a dominant style and a secondary style. And most couples have a mismatch somewhere \u2014 which is actually an asset, not a problem. Your partner\'s play style offers you access to a kind of joy you would not discover on your own.',
+    exerciseContent:
+      'Sort the play styles for yourself. Which is your primary? Which is your secondary?\n\n' +
+      'Now guess your partner\'s primary and secondary play styles.\n\n' +
+      'Where do your styles overlap? That is your shared playground \u2014 the place where play comes easiest.\n\n' +
+      'Where do they diverge? That is your growth edge \u2014 the place where your partner can show you a kind of lightness you might not find alone.\n\n' +
+      'The insight: you do not need to play the same way. You need to learn each other\'s language.',
+    reflectionPrompt: 'My play style: ___. My partner\'s play style: ___. Where they meet:',
+  },
+  {
+    id: 'mc-lightness-lab-lesson-4',
+    courseId: 'mc-lightness-lab',
+    lessonNumber: 4,
+    title: 'The 30-Second Game',
+    type: 'behavioral-experiment',
+    durationMinutes: 4,
+    readContent:
+      'This lesson does something different. Instead of reading about play, you are going to play. Three micro-experiments, each designed to take 30 seconds. The research on experiential learning says: doing is more memorable than reading. You will remember the feeling of this lesson more than the content of any other.\n\n' +
+      'Game 1: The Specific Compliment\n' +
+      'Think of something your partner does when they think no one is looking. A small habit, a quiet kindness, a quirk. Write one specific, genuine sentence about it. Not "you are great" \u2014 but "the way you always check the stove twice before bed makes me feel safe." Specificity is the point. You have 30 seconds.\n\n' +
+      'Game 2: The Terrible Pun\n' +
+      'Pick a topic: cooking, mornings, or your pet (or a shared reference). Write the worst pun you can think of about it. Truly terrible. The kind that would make your partner groan. Bad puns are an underrated form of connection \u2014 they are bids disguised as suffering.\n\n' +
+      'Game 3: Finish the Story\n' +
+      '"It was the strangest Tuesday. They had just discovered a tiny door behind the bookshelf when..." Write one sentence to continue the story. Whatever comes to mind. There is no wrong answer.\n\n' +
+      'Play does not require talent. It just requires willingness.',
+    exerciseContent:
+      'Complete all three games above. Write your answers:\n\n' +
+      'Game 1 (Specific Compliment): ___\n\n' +
+      'Game 2 (Terrible Pun): ___\n\n' +
+      'Game 3 (Finish the Story): ___\n\n' +
+      'Bonus: which one made you smile? That tells you something about your play style.',
+    reflectionPrompt: 'The mini-game that actually made me smile:',
+  },
+  {
+    id: 'mc-lightness-lab-lesson-5',
+    courseId: 'mc-lightness-lab',
+    lessonNumber: 5,
+    title: 'The Lightness Ritual',
+    type: 'commitment',
+    durationMinutes: 4,
+    readContent:
+      'The goal of this course is not to be spontaneously playful. Spontaneity is overrated \u2014 especially in long-term relationships where schedules, stress, and familiarity crowd out the space for lightness.\n\n' +
+      'The goal is to design for play. Rituals of connection create predictable moments of lightness that do not require effort to initiate. They become part of the relationship\'s culture \u2014 like the way you say goodbye in the morning, or a Sunday tradition, or a private joke that only makes sense to the two of you.\n\n' +
+      'Gottman\'s research on shared meaning shows that couples who build rituals around positive moments are significantly more resilient. The ritual itself does not need to be elaborate. It needs to be consistent, personal, and protected.\n\n' +
+      'A lightness ritual has four parts:\n\n' +
+      'When: A specific, recurring time (morning, evening, weekly, a specific day)\n' +
+      'What: Something you do together that creates a moment of connection (a shared joke, a question, a game, a walk)\n' +
+      'How long: Even 2 minutes counts. The consistency matters more than the duration.\n' +
+      'What it protects: The space between you. The reservoir of positive sentiment that makes everything else work.\n\n' +
+      'Design your ritual. Protect it. And watch what changes.',
+    exerciseContent:
+      'Design your lightness ritual:\n\n' +
+      'When: ___ (morning / evening / weekly / a specific day)\n' +
+      'What: ___ (a shared joke format / a question we ask / something we do / something we make)\n' +
+      'How long: ___ (2 min / 5 min / 15 min / whenever it feels right)\n' +
+      'What it protects: "This creates space for ___ between us."\n\n' +
+      'Commit to trying it for one week. Not forever \u2014 one week. Then notice what changes.',
+    reflectionPrompt: 'Our lightness ritual will be:',
+  },
+];
+
+// ═══════════════════════════════════════════════════════════
+//  MC10: SEEN \u2014 THE ART OF FEELING KNOWN
+//  Placement: Start of Sustaining phase
+//  Prerequisites: ECR-R complete + Values assessment complete
+//  Primary modality: Gottman Love Maps + gratitude science
+// ═══════════════════════════════════════════════════════════
+
+const MC10_LESSONS: MicroCourseLesson[] = [
+  {
+    id: 'mc-seen-lesson-1',
+    courseId: 'mc-seen',
+    lessonNumber: 1,
+    title: 'The Knowledge Map',
+    type: 'reflection',
+    durationMinutes: 5,
+    readContent:
+      'Gottman\'s research discovered something that most people underestimate: the quality of the friendship between partners predicts relationship success more than conflict resolution skills.\n\n' +
+      'At the center of that friendship is what he calls a "Love Map" \u2014 a rich inner knowledge of your partner\'s world. Their current stresses. Their hopes. Their fears. Their favorite things. Their pet peeves. Their long-held dreams. The small details that say: I know you. I see you. I am paying attention.\n\n' +
+      'Couples with detailed Love Maps are more resilient. When difficult moments come, they have context for each other\'s behavior. "They are not being distant because they do not care. They are stressed about that thing at work they told me about." That context is protective \u2014 it prevents the slide from disappointment to resentment.\n\n' +
+      'But knowledge erodes. People change. The person you fell in love with is not exactly the person sitting across from you now. They have new worries, new dreams, new fears. And if you have not updated the map, you are navigating with outdated information.\n\n' +
+      'Couples who assume they know each other stop asking. And when they stop asking, the map goes stale. This lesson is an audit \u2014 a discovery of where your map is current and where it might be outdated.',
+    exerciseContent:
+      'Answer these questions about your partner. Be honest about what you know and what you are guessing:\n\n' +
+      '1. What is their biggest current stress? (How confident are you? 0-100%)\n' +
+      '2. What is bringing them joy right now? (Confidence?)\n' +
+      '3. What are they afraid of that they do not talk about? (Confidence?)\n' +
+      '4. What is a dream they have not mentioned in a while? (Confidence?)\n' +
+      '5. What makes them feel most alive? (Confidence?)\n' +
+      '6. What is something about themselves they are proud of? (Confidence?)\n' +
+      '7. What is a small pleasure they have discovered recently? (Confidence?)\n' +
+      '8. What do they need from you right now that they have not asked for? (Confidence?)\n\n' +
+      'Notice: which questions were easy? Which made you pause? The pauses are the areas worth exploring.',
+    reflectionPrompt: 'The area where I know my partner least:',
+  },
+  {
+    id: 'mc-seen-lesson-2',
+    courseId: 'mc-seen',
+    lessonNumber: 2,
+    title: 'The Appreciation Audit',
+    type: 'skill-building',
+    durationMinutes: 5,
+    readContent:
+      'Generic appreciation does not produce the same effect as specific observation. "You are great" is pleasant. "I noticed you stayed up to help my mom even though you had an early morning \u2014 you did not make a big deal of it, but I saw it" is transformative.\n\n' +
+      'The research distinction is between felt gratitude and perceived gratitude. Felt gratitude is what you experience internally \u2014 the warm feeling of recognizing something your partner did. Perceived gratitude is what your partner feels \u2014 the experience of being genuinely seen and valued.\n\n' +
+      'The gap between the two is specificity. Most people feel grateful but express it generically. Your partner does not need to hear "thank you." They need to hear: "I saw this specific thing you did, and here is why it mattered."\n\n' +
+      'This is not flattery. It is evidence of attention. And attention is what makes someone feel known.\n\n' +
+      'The research on gratitude in relationships shows:\n' +
+      '\u2022 Perceived gratitude protects relationships from the erosion of conflict and stress\n' +
+      '\u2022 Expressed gratitude increases comfort voicing concerns (because it signals safety)\n' +
+      '\u2022 Sincerity matters more than frequency \u2014 performative gratitude is worse than silence\n' +
+      '\u2022 Specificity communicates real seeing \u2014 "I noticed THIS specific thing you did"\n\n' +
+      'The practice is simple. It is also one of the most powerful relationship tools that exists.',
+    exerciseContent:
+      'Write three specific observations about your partner. Not compliments \u2014 observations. Things you have noticed that they might not realize you see.\n\n' +
+      'Use these prompts:\n' +
+      '1. Something they do when they are trying (but have not said so):\n' +
+      '2. A way they show up for others that they do not talk about:\n' +
+      '3. A small habit that is secretly kind:\n\n' +
+      'Read them back. Are they specific enough that only your partner would recognize themselves in them? That is the test.',
+    reflectionPrompt: 'Three specific things I see in my partner:',
+  },
+  {
+    id: 'mc-seen-lesson-3',
+    courseId: 'mc-seen',
+    lessonNumber: 3,
+    title: 'The Curiosity Practice',
+    type: 'couple-exercise',
+    durationMinutes: 5,
+    readContent:
+      'The antidote to habituation is curiosity. Specifically: the curiosity of a person who realizes they have been making assumptions \u2014 and decides to check.\n\n' +
+      'Couples who regularly ask open-ended questions about each other\'s inner worlds maintain an updated Love Map. The research shows this is a practice, not a personality trait. Even naturally incurious people can learn to ask. The skill is in the quality of the question.\n\n' +
+      '"How was your day?" is a closed question that produces a closed answer. It is a ritual without curiosity. Compare it to:\n\n' +
+      '"What is something you thought about today that I do not know about?"\n' +
+      '"What would make this month feel like a success for you?"\n' +
+      '"Is there anything I do that makes you feel more alone, even though you know I do not mean it that way?"\n' +
+      '"What do you think I do not know about how you are doing right now?"\n' +
+      '"What is a version of us you sometimes miss?"\n\n' +
+      'That last question is the most important. It opens the door to grief and nostalgia without blame. It says: I know we have changed. I am curious about what you miss. And I am not afraid of the answer.\n\n' +
+      'Good questions create the conditions for being seen. They tell your partner: I am still interested in the person you are becoming, not just the person I think I know.',
+    exerciseContent:
+      'From the questions above (and from your Lesson 1 knowledge gaps), choose 3 questions you want to ask your partner this week.\n\n' +
+      'Write them down. For each one, note:\n' +
+      '\u2022 When will you ask it? (A specific moment \u2014 over dinner, before bed, during a walk)\n' +
+      '\u2022 What makes this question feel risky?\n' +
+      '\u2022 What might you learn?\n\n' +
+      'You do not have to ask all three this week. Start with the one that feels most possible.',
+    reflectionPrompt: 'The question I want to ask my partner:',
+  },
+  {
+    id: 'mc-seen-lesson-4',
+    courseId: 'mc-seen',
+    lessonNumber: 4,
+    title: 'The Gratitude Transmission',
+    type: 'behavioral-experiment',
+    durationMinutes: 5,
+    readContent:
+      'Gratitude is most powerful when it is specific, sincere, and unsolicited. This lesson is about creating a gratitude transmission \u2014 not as a therapy exercise, but as a genuine act of communication.\n\n' +
+      'A gratitude transmission has three sections:\n\n' +
+      'Section 1: "What I noticed."\n' +
+      'The specific observations from Lesson 2, plus anything new. Concrete, detailed, grounded in real moments you witnessed. Not "you are a great partner" but "last Tuesday when I was having a hard day, you put your hand on my back without saying anything. That moment mattered."\n\n' +
+      'Section 2: "What it means to me."\n' +
+      'Why the observed things matter. What they say about who this person is. Not generic praise but specific meaning. "The way you show up for people without expecting recognition tells me something about who you are. It makes me trust the way you show up for us."\n\n' +
+      'Section 3: "What I want you to know."\n' +
+      'The thing you have been meaning to say. The thing you assume they already know. (They often do not.) The appreciation that has been living inside you, unexpressed.\n\n' +
+      'This does not have to be sent. Writing it is the practice. Sending it is the gift. But even if it stays private, the act of articulating gratitude changes your own perception. It rewires the story you carry about your partner \u2014 from the narrative of what is wrong to the evidence of what is right.',
+    exerciseContent:
+      'Write your gratitude transmission. Use the three sections:\n\n' +
+      'What I noticed:\n\n' +
+      'What it means to me:\n\n' +
+      'What I want you to know:\n\n' +
+      'When you are done, decide: save to journal (private) or share with your partner (you can copy it and send it however feels right). There is no wrong choice.',
+    reflectionPrompt: 'What I want my partner to know:',
+  },
+  {
+    id: 'mc-seen-lesson-5',
+    courseId: 'mc-seen',
+    lessonNumber: 5,
+    title: 'The Seen Ritual',
+    type: 'commitment',
+    durationMinutes: 5,
+    readContent:
+      'Naturally occurring appreciation does not sustain itself. It requires intentional cultivation. The same is true of deep knowing. Couples who feel deeply seen have usually built structures that support seeing.\n\n' +
+      'The Seen Ritual is a regular moment designed to actively rebuild the Love Map and communicate that your partner is known. It is the counterpart to the Lightness Ritual from the previous course \u2014 where that one builds the reservoir of positive sentiment through play, this one builds it through intimate knowing.\n\n' +
+      'Gottman\'s research on rituals of connection shows they create predictable moments of belonging that insulate the relationship against the drift of busyness, stress, and familiarity.\n\n' +
+      'A "Being Seen" ritual has four parts:\n\n' +
+      'When: A recurring time \u2014 weekly or monthly. Protected. Non-negotiable.\n' +
+      'Opening question: Something that invites genuine sharing \u2014 "What is on your mind lately that I do not know about?" or "What made you feel alive this week?"\n' +
+      'Duration: Even 10 minutes counts. The consistency matters more than the length.\n' +
+      'One rule: Something that protects the space \u2014 no phones, no fixing (just listening), curiosity only (no advice).\n\n' +
+      'This ritual is the deposit account. It is what Gottman calls the foundation of Positive Sentiment Override \u2014 the buffer that allows you to give your partner the benefit of the doubt when things get hard. It is built in the quiet moments, not the dramatic ones.',
+    exerciseContent:
+      'Design your "Being Seen" ritual:\n\n' +
+      'When: ___ (weekly / monthly / a specific day)\n' +
+      'Opening question: ___\n' +
+      'Duration: ___ (10 min / 20 min / as long as it takes)\n' +
+      'One rule: ___ (no phones / no fixing / curiosity only / your own)\n\n' +
+      'Commit to one week. Then notice: what changes when you create a protected space to be known?',
+    reflectionPrompt: 'Our "Being Seen" ritual will be:',
+  },
+];
+
+// ═══════════════════════════════════════════════════════════
 //  COMBINED EXPORT
 // ═══════════════════════════════════════════════════════════
 
@@ -915,4 +1507,8 @@ export const ALL_LESSONS: MicroCourseLesson[] = [
   ...MC4_LESSONS,
   ...MC5_LESSONS,
   ...MC6_LESSONS,
+  ...MC7_LESSONS,
+  ...MC8_LESSONS,
+  ...MC9_LESSONS,
+  ...MC10_LESSONS,
 ];

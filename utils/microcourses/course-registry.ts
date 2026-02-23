@@ -1,7 +1,7 @@
 /**
  * Micro-Course Registry
  *
- * 6 micro-courses, each with 5 lessons (~25 min total per course).
+ * 10 micro-courses, each with 5 lessons (~20-30 min total per course).
  * Courses are placed at specific points in the healing journey
  * and gated by assessment prerequisites.
  */
@@ -143,6 +143,70 @@ export const MICRO_COURSES: MicroCourse[] = [
     primaryModality: 'act-gottman',
     hasAttachmentVariants: false,
     icon: 'compass',
+  },
+  {
+    id: 'mc-text-between-us',
+    title: 'The Text Between Us',
+    subtitle: 'How your attachment pattern lives inside your phone',
+    description:
+      'Five lessons on digital communication through an attachment lens. Discover your texting triggers, decode the missing data in text messages, practice rewriting reactive texts, and learn how your nervous system fills in the blanks when tone is absent.',
+    totalLessons: 5,
+    estimatedMinutes: 25,
+    healingPhase: 'shifting',
+    phasePosition: 'mid',
+    prerequisites: ['ecr-r-complete'],
+    weareVariable: 'attunement',
+    primaryModality: 'communication-science',
+    hasAttachmentVariants: true,
+    icon: 'phone',
+  },
+  {
+    id: 'mc-boundaries-deep',
+    title: 'Boundaries Deep \u2014 The Body Knows',
+    subtitle: 'What a boundary feels like before you speak it',
+    description:
+      'Five somatic lessons that take boundaries from concept to lived experience. Map where YES and NO live in your body, trace the cost of chronic override, practice holding the line while staying connected, and build boundary statements from the body up.',
+    totalLessons: 5,
+    estimatedMinutes: 30,
+    healingPhase: 'shifting',
+    phasePosition: 'end',
+    prerequisites: ['mc-boundaries-complete'],
+    weareVariable: 'space',
+    primaryModality: 'somatic-bowen',
+    hasAttachmentVariants: false,
+    icon: 'meditation',
+  },
+  {
+    id: 'mc-lightness-lab',
+    title: 'The Lightness Lab \u2014 Play as Medicine',
+    subtitle: 'Because play is not the opposite of depth. It is the method of depth.',
+    description:
+      'Five playful lessons on rebuilding the positive sentiment reservoir in your relationship. Take a bid census, map your relationship\'s lightness timeline, discover your play styles, try 30-second micro-games, and design a lightness ritual.',
+    totalLessons: 5,
+    estimatedMinutes: 20,
+    healingPhase: 'feeling',
+    phasePosition: 'mid',
+    prerequisites: [],
+    weareVariable: 'coCreation',
+    primaryModality: 'gottman-positive-psychology',
+    hasAttachmentVariants: false,
+    icon: 'sparkle',
+  },
+  {
+    id: 'mc-seen',
+    title: 'Seen \u2014 The Art of Feeling Known',
+    subtitle: 'The foundation of love that lasts is the feeling of being deeply known',
+    description:
+      'Five intimate lessons on cultivating deep knowing and genuine appreciation. Build a knowledge map of your partner\'s inner world, practice specific noticing, generate curiosity questions, write a gratitude transmission, and design a "being seen" ritual.',
+    totalLessons: 5,
+    estimatedMinutes: 25,
+    healingPhase: 'sustaining',
+    phasePosition: 'start',
+    prerequisites: ['ecr-r-complete', 'values-complete'],
+    weareVariable: 'attunement',
+    primaryModality: 'gottman-gratitude',
+    hasAttachmentVariants: false,
+    icon: 'eye',
   },
 ];
 

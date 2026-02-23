@@ -52,6 +52,10 @@ import { MC3CourseFlow } from '@/components/microcourse/mc3/MC3CourseFlow';
 import { MC4CourseFlow } from '@/components/microcourse/mc4/MC4CourseFlow';
 import { MC5CourseFlow } from '@/components/microcourse/mc5/MC5CourseFlow';
 import { MC6CourseFlow } from '@/components/microcourse/mc6/MC6CourseFlow';
+import { MC7CourseFlow } from '@/components/microcourse/mc7/MC7CourseFlow';
+import { MC8CourseFlow } from '@/components/microcourse/mc8/MC8CourseFlow';
+import { MC9CourseFlow } from '@/components/microcourse/mc9/MC9CourseFlow';
+import { MC10CourseFlow } from '@/components/microcourse/mc10/MC10CourseFlow';
 import {
   getLesson,
   getLessonContent,
@@ -71,6 +75,10 @@ const COURSE_TO_EDGE: Record<string, string[]> = {
   'mc-boundaries': ['differentiation_work', 'reclaim_self'],
   'mc-act-defusion': ['differentiation_work'],
   'mc-values-alignment': ['values_gap'],
+  'mc-text-between-us': ['approach_closeness'],
+  'mc-boundaries-deep': ['differentiation_work', 'reclaim_self'],
+  'mc-lightness-lab': ['approach_closeness'],
+  'mc-seen': ['approach_closeness'],
 };
 
 // ─── Lesson Step (within a single lesson) ───────────────
@@ -447,6 +455,82 @@ export default function MicroCourseScreen() {
         onPreviousLesson={lessonNum > 1 ? handlePreviousLesson : undefined}
         saving={saving}
         previousLessonData={previousLessonData}
+      />
+    );
+  }
+
+  // ─── MC7 Interactive Flow ────────────────────
+
+  if (courseId === 'mc-text-between-us' && !completed) {
+    return (
+      <MC7CourseFlow
+        lessonNumber={lessonNum}
+        totalLessons={totalLessons}
+        attachmentStyle={attachmentStyle}
+        content={content}
+        lesson={lesson}
+        course={course}
+        onComplete={handleComplete}
+        onExit={handleExit}
+        onPreviousLesson={lessonNum > 1 ? handlePreviousLesson : undefined}
+        saving={saving}
+      />
+    );
+  }
+
+  // ─── MC8 Interactive Flow ────────────────────
+
+  if (courseId === 'mc-boundaries-deep' && !completed) {
+    return (
+      <MC8CourseFlow
+        lessonNumber={lessonNum}
+        totalLessons={totalLessons}
+        attachmentStyle={attachmentStyle}
+        content={content}
+        lesson={lesson}
+        course={course}
+        onComplete={handleComplete}
+        onExit={handleExit}
+        onPreviousLesson={lessonNum > 1 ? handlePreviousLesson : undefined}
+        saving={saving}
+      />
+    );
+  }
+
+  // ─── MC9 Interactive Flow ────────────────────
+
+  if (courseId === 'mc-lightness-lab' && !completed) {
+    return (
+      <MC9CourseFlow
+        lessonNumber={lessonNum}
+        totalLessons={totalLessons}
+        attachmentStyle={attachmentStyle}
+        content={content}
+        lesson={lesson}
+        course={course}
+        onComplete={handleComplete}
+        onExit={handleExit}
+        onPreviousLesson={lessonNum > 1 ? handlePreviousLesson : undefined}
+        saving={saving}
+      />
+    );
+  }
+
+  // ─── MC10 Interactive Flow ────────────────────
+
+  if (courseId === 'mc-seen' && !completed) {
+    return (
+      <MC10CourseFlow
+        lessonNumber={lessonNum}
+        totalLessons={totalLessons}
+        attachmentStyle={attachmentStyle}
+        content={content}
+        lesson={lesson}
+        course={course}
+        onComplete={handleComplete}
+        onExit={handleExit}
+        onPreviousLesson={lessonNum > 1 ? handlePreviousLesson : undefined}
+        saving={saving}
       />
     );
   }

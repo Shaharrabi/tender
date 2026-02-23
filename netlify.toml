@@ -34,8 +34,12 @@ npx expo export --platform web
     # Content Security Policy — allow self + Supabase + Anthropic
     Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.anthropic.com; img-src 'self' data: blob: https:; font-src 'self' data:; media-src 'self' data: blob:; frame-ancestors 'none';"
 
-# SPA fallback — route all requests to index.html
+# SPA fallback — only for routes without a pre-rendered HTML file.
+# Expo static export generates per-route HTML files; Netlify serves
+# those automatically when they exist (e.g. /partner → /partner.html).
+# This catch-all handles deep links that don't have a matching file.
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+  force = false

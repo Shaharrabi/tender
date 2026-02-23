@@ -19,6 +19,7 @@ import {
   getUnreadCount,
   markHistoryDismissed,
   markHistoryTapped,
+  setNotificationUserId,
 } from '@/utils/notification-selector';
 import {
   logNotificationShown,
@@ -64,16 +65,23 @@ export function useEngagementNotification(
   // Load notification on mount
   const loadNotification = useCallback(async () => {
     if (!userId) {
+      console.log('[Notification] No userId — skipping');
       setLoading(false);
       return;
     }
 
     try {
+      console.log('[Notification] Loading... userId:', userId, 'dayNumber:', dayNumber);
+
+      // Scope all notification storage to this user
+      setNotificationUserId(userId);
+
       // Reset session flag on mount (new screen visit)
       await resetSessionFlag();
 
       // Check rate limits
       const canShow = await shouldShowNotification();
+      console.log('[Notification] canShow:', canShow);
       if (!canShow) {
         setNotification(null);
         setLoading(false);
@@ -82,6 +90,7 @@ export function useEngagementNotification(
 
       // Select a notification
       const selected = await selectNotification(weareBottleneck, dayNumber);
+      console.log('[Notification] Selected:', selected ? `${selected.id} (${selected.category})` : 'null');
       if (!mountedRef.current) return;
 
       if (selected) {
@@ -100,13 +109,15 @@ export function useEngagementNotification(
         ).then((id) => {
           logIdRef.current = id;
         }).catch(() => {});
+      } else {
+        console.log('[Notification] No eligible prompt found');
       }
 
       // Update unread count
       const count = await getUnreadCount();
       if (mountedRef.current) setUnreadCount(count);
     } catch (err) {
-      if (__DEV__) console.warn('[Engagement] Hook error:', err);
+      console.warn('[Notification] Hook error:', err);
     } finally {
       if (mountedRef.current) setLoading(false);
     }

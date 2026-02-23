@@ -8,6 +8,7 @@ import {
   isValidEmail,
   sanitizeTextInput,
 } from '@/utils/security/validation';
+import { clearNotificationState } from '@/utils/notification-selector';
 
 interface AuthContextType {
   session: Session | null;
@@ -118,6 +119,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
+    await clearNotificationState();
     await supabase.auth.signOut();
     setSession(null);
   };

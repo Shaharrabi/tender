@@ -77,7 +77,9 @@ export default function PartnerScreen() {
   };
 
   const loadData = useCallback(async () => {
+    console.log('[Partner] loadData called, user:', user?.id ?? 'null');
     if (!user) {
+      console.log('[Partner] No user, setting loading=false');
       setLoading(false);
       return;
     }
@@ -85,10 +87,14 @@ export default function PartnerScreen() {
 
     try {
       // Ensure profile exists
+      console.log('[Partner] Getting profile...');
       await getOrCreateProfile(user.id);
+      console.log('[Partner] Profile OK');
 
       // Check if already coupled
+      console.log('[Partner] Checking couple...');
       const existingCouple = await getMyCouple(user.id);
+      console.log('[Partner] Couple result:', existingCouple?.id ?? 'null');
       setCouple(existingCouple);
 
       if (existingCouple) {
@@ -98,7 +104,9 @@ export default function PartnerScreen() {
         setDyadicStatus(status);
       } else {
         // Load existing invites
+        console.log('[Partner] Loading invites...');
         const invites = await getMyInvites(user.id);
+        console.log('[Partner] Invites loaded:', invites.length);
         setMyInvites(invites);
         const pending = invites.find((i) => i.status === 'pending');
         if (pending) setActiveInvite(pending);
@@ -106,15 +114,22 @@ export default function PartnerScreen() {
     } catch (e) {
       console.error('[Partner] Error loading data:', e);
     } finally {
+      console.log('[Partner] Setting loading=false');
       setLoading(false);
     }
   }, [user]);
 
+  // useFocusEffect for native tab/back navigation
   useFocusEffect(
     useCallback(() => {
       loadData();
     }, [loadData])
   );
+
+  // Also run on user change (useFocusEffect may not fire on web)
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   // ─── Create Invite ──────────────────────────────────
 
@@ -146,44 +161,77 @@ export default function PartnerScreen() {
 
   // ─── Accept Invite ──────────────────────────────────
 
+  const doAcceptInvite = async (inviteId: string) => {
+    try {
+      const newCouple = await acceptInvite(inviteId, user!.id);
+      if (newCouple) {
+        setCouple(newCouple);
+        await loadData();
+      } else {
+        if (Platform.OS === 'web') {
+          window.alert('Failed to connect. Please try again.');
+        } else {
+          Alert.alert('Error', 'Failed to connect. Please try again.');
+        }
+      }
+    } catch (e) {
+      console.error('[Partner] Error in doAcceptInvite:', e);
+      if (Platform.OS === 'web') {
+        window.alert('Failed to connect. Please try again.');
+      } else {
+        Alert.alert('Error', 'Failed to connect. Please try again.');
+      }
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   const handleAcceptInvite = async () => {
     if (!user || !acceptCode.trim()) return;
     setProcessing(true);
     try {
       const invite = await getInviteByCode(acceptCode.trim());
       if (!invite) {
-        Alert.alert('Invalid Code', 'This invite code is invalid or has expired. Please check and try again.');
+        if (Platform.OS === 'web') {
+          window.alert('This invite code is invalid or has expired. Please check and try again.');
+        } else {
+          Alert.alert('Invalid Code', 'This invite code is invalid or has expired. Please check and try again.');
+        }
         setProcessing(false);
         return;
       }
 
       if (invite.inviter_id === user.id) {
-        Alert.alert('Oops', "You can't accept your own invite!");
+        if (Platform.OS === 'web') {
+          window.alert("You can't accept your own invite!");
+        } else {
+          Alert.alert('Oops', "You can't accept your own invite!");
+        }
         setProcessing(false);
         return;
       }
 
       // Show consent before accepting
-      Alert.alert(
-        'Connect with Partner',
-        `${invite.inviter_name || 'Your partner'} wants to connect with you. This will share your assessment data to create a combined relationship portrait.\n\nYou can disconnect at any time.`,
-        [
-          { text: 'Cancel', style: 'cancel', onPress: () => setProcessing(false) },
-          {
-            text: 'Connect',
-            onPress: async () => {
-              const newCouple = await acceptInvite(invite.id, user.id);
-              if (newCouple) {
-                setCouple(newCouple);
-                await loadData();
-              } else {
-                Alert.alert('Error', 'Failed to connect. Please try again.');
-              }
-              setProcessing(false);
-            },
-          },
-        ]
-      );
+      const message = `${invite.inviter_name || 'Your partner'} wants to connect with you. This will share your assessment data to create a combined relationship portrait.\n\nYou can disconnect at any time.`;
+
+      if (Platform.OS === 'web') {
+        // On web, use window.confirm which works reliably
+        const confirmed = window.confirm(`Connect with Partner?\n\n${message}`);
+        if (confirmed) {
+          await doAcceptInvite(invite.id);
+        } else {
+          setProcessing(false);
+        }
+      } else {
+        Alert.alert(
+          'Connect with Partner',
+          message,
+          [
+            { text: 'Cancel', style: 'cancel', onPress: () => setProcessing(false) },
+            { text: 'Connect', onPress: () => doAcceptInvite(invite.id) },
+          ]
+        );
+      }
     } catch (e) {
       console.error('[Partner] Error accepting invite:', e);
       setProcessing(false);

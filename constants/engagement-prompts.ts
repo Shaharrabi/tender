@@ -59,8 +59,8 @@ export const CATEGORY_CONFIG: CategoryConfig[] = [
   },
   {
     id: 'practice_nudge',
-    label: 'Practice Nudges',
-    description: 'Reminders to try an exercise',
+    label: 'Practice Reminders',
+    description: 'Gentle reminders to try an exercise',
     icon: TargetIcon,
     accentColor: Colors.primary,
     maxPerWeek: 5,
