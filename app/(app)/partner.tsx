@@ -77,7 +77,10 @@ export default function PartnerScreen() {
   };
 
   const loadData = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
 
     try {

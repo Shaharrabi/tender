@@ -242,6 +242,7 @@ export default function HomeScreen() {
   const [relationshipMode, setRelationshipMode] = useState<string>('solo');
   const [demoPartnerId, setDemoPartnerId] = useState<string | null>(null);
   const [onboardedAsPartner, setOnboardedAsPartner] = useState(false);
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
 
   // Admin mode
   const [adminMode, setAdminMode] = useState(false);
@@ -279,9 +280,12 @@ export default function HomeScreen() {
       try {
         const { data: profile } = await supabase
           .from('user_profiles')
-          .select('display_name, relationship_mode, demo_partner_id, relationship_status')
+          .select('display_name, relationship_mode, demo_partner_id, relationship_status, onboarding_completed_at')
           .eq('user_id', user.id)
           .single();
+        if (profile?.onboarding_completed_at) {
+          setHasCompletedOnboarding(true);
+        }
         if (profile?.relationship_mode) {
           userRelMode = profile.relationship_mode;
           setRelationshipMode(profile.relationship_mode);
@@ -698,9 +702,10 @@ export default function HomeScreen() {
       !ftueState.completedTours.includes('tour_home') &&
       !hasShownTourRef.current
     ) {
-      // If user already has completed assessments, they're a returning user
-      // whose FTUE flag was lost (e.g. web storage cleared). Auto-complete tour.
-      if (completedCount > 0) {
+      // If user already completed onboarding or any assessments, they're a
+      // returning user whose FTUE flag was lost (e.g. web storage cleared).
+      // Auto-complete tour so it never replays.
+      if (completedCount > 0 || hasCompletedOnboarding) {
         markTourCompleted('tour_home');
         markFirstLaunchComplete();
         return;
@@ -710,7 +715,7 @@ export default function HomeScreen() {
       const timer = setTimeout(() => setShowTour(true), 800);
       return () => clearTimeout(timer);
     }
-  }, [loading, ftueLoading, ftueState.isFirstLaunch, ftueState.completedTours, completedCount]);
+  }, [loading, ftueLoading, ftueState.isFirstLaunch, ftueState.completedTours, completedCount, hasCompletedOnboarding]);
 
   const handleTourComplete = useCallback(() => {
     setShowTour(false);
@@ -726,7 +731,7 @@ export default function HomeScreen() {
 
   // Feature cards for the grid — ordered so tooltip targets (courses, community)
   // appear right after the fixed cards (journal, nuance) for natural top-to-bottom flow.
-  const gridCardOrder = ['healingJourney', 'courses', 'community', 'practices', 'findTherapist', 'couplesPortal', 'datingWell'];
+  const gridCardOrder = ['healingJourney', 'courses', 'community', 'practices', 'findTherapist', 'couplesPortal', 'datingWell', 'buildingBridges'];
   const gridCards = gridCardOrder
     .map((key) => FEATURE_CARDS.find((c) => c.key === key && (c.category === 'feature' || c.category === 'couple')))
     .filter((c): c is NonNullable<typeof c> => c != null)
@@ -1350,81 +1355,75 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* ═══ 4B. YOUR GROWTH PLAN (if portrait exists) ══════ */}
+        {/* ═══ 4B. YOUR PORTRAIT SUMMARY (if portrait exists) ══════ */}
         {hasPortrait && portrait && (() => {
-          // Import inline to avoid breaking non-portrait flow
-          const { synthesizeAssessments } = require('@/utils/portrait/assessment-synthesis');
-          try {
-            const synthesis = synthesizeAssessments(portrait, portrait.supplementData);
-            const { journeyMap, movements, protocol } = synthesis;
-            // Get 2 exercises from the first protocol phase for quick-launch
-            const { getExerciseById: getExById } = require('@/utils/interventions/registry');
-            const quickExercises = (protocol?.phases?.[0]?.practices || [])
-              .map((id: string) => getExById(id))
-              .filter(Boolean)
-              .slice(0, 2);
-            return (
-              <View style={styles.growthPlanSection}>
-                <View style={styles.growthPlanTitleRow}>
-                  <Text style={styles.growthPlanTitle}>
-                    Your Growth Plan
-                  </Text>
-                  {(() => {
-                    if (!protocol) return null;
-                    const gp = calculateGrowthProgress(protocol, exerciseCompletionMap);
-                    if (gp.overall === 0) return null;
-                    return (
-                      <View style={styles.growthPlanProgressBadge}>
-                        <Text style={styles.growthPlanProgressBadgeText}>
-                          {gp.overall}%
-                        </Text>
-                      </View>
-                    );
-                  })()}
-                </View>
-                <Text style={styles.growthPlanHeadline}>
-                  {journeyMap.headline}
-                </Text>
-                <Text style={styles.growthPlanRationale} numberOfLines={2}>
-                  {journeyMap.whyThisPath.length > 100
-                    ? journeyMap.whyThisPath.slice(0, 97) + '...'
-                    : journeyMap.whyThisPath}
-                </Text>
+          const cs = portrait.compositeScores;
+          const scores = [cs.regulationScore, cs.windowWidth, cs.accessibility, cs.responsiveness, cs.engagement, cs.selfLeadership, cs.valuesCongruence];
+          const overallScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
 
-                {/* Phases preview */}
-                <View style={styles.growthPlanPhases}>
-                  {journeyMap.phases.slice(0, 3).map((phase: { name: string; weeks: string; whatToDo: string; practiceCount: number }, i: number) => (
-                    <View key={i} style={styles.growthPlanPhaseRow}>
-                      <View style={[
-                        styles.growthPlanPhaseDot,
-                        i === 0 && styles.growthPlanPhaseDotActive,
-                      ]} />
-                      <View style={styles.growthPlanPhaseContent}>
-                        <Text style={styles.growthPlanPhaseName}>
-                          {phase.name}
-                        </Text>
-                        <Text style={styles.growthPlanPhaseWeeks}>
-                          {phase.weeks}
-                        </Text>
-                      </View>
-                    </View>
-                  ))}
-                </View>
+          // Find top strength
+          const scoreLabels: Record<string, string> = {
+            regulationScore: 'Regulation',
+            windowWidth: 'Window of Tolerance',
+            accessibility: 'Accessibility',
+            responsiveness: 'Responsiveness',
+            engagement: 'Engagement',
+            selfLeadership: 'Self-Leadership',
+            valuesCongruence: 'Values Alignment',
+          };
+          const topKey = (Object.keys(scoreLabels) as Array<keyof typeof cs>)
+            .reduce((best, key) => (cs[key] > cs[best] ? key : best));
+          const topStrength = scoreLabels[topKey];
 
-                <TouchableOpacity
-                  style={styles.growthPlanCta}
-                  onPress={() => router.push({ pathname: '/(app)/portrait', params: { tab: 'growth' } } as any)}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.growthPlanCtaText}>
-                    See Full Plan {'\u2192'}
-                  </Text>
-                </TouchableOpacity>
+          const cyclePosition = portrait.negativeCycle?.position
+            ? portrait.negativeCycle.position.charAt(0).toUpperCase() + portrait.negativeCycle.position.slice(1)
+            : null;
+          const growthEdge = portrait.growthEdges?.[0]?.title;
+          const coreValues = portrait.fourLens?.values?.coreValues?.slice(0, 3).join(', ');
+
+          return (
+            <TouchableOpacity
+              style={styles.portraitSummaryCard}
+              onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/portrait' as any); }}
+              activeOpacity={0.8}
+            >
+              <View style={styles.portraitSummaryHeader}>
+                <Text style={styles.portraitSummaryEyebrow}>YOUR PORTRAIT</Text>
+                <View style={styles.portraitScoreBadge}>
+                  <Text style={styles.portraitScoreBadgeText}>{overallScore}</Text>
+                </View>
               </View>
-            );
-          } catch {
-            return null;
-          }
+
+              <View style={styles.portraitStatsRow}>
+                {cyclePosition && (
+                  <View style={styles.portraitStatItem}>
+                    <Text style={styles.portraitStatLabel}>Cycle Position</Text>
+                    <Text style={styles.portraitStatValue}>{cyclePosition}</Text>
+                  </View>
+                )}
+                <View style={styles.portraitStatItem}>
+                  <Text style={styles.portraitStatLabel}>Top Strength</Text>
+                  <Text style={styles.portraitStatValue}>{topStrength}</Text>
+                </View>
+                {growthEdge && (
+                  <View style={styles.portraitStatItem}>
+                    <Text style={styles.portraitStatLabel}>Growth Edge</Text>
+                    <Text style={styles.portraitStatValue} numberOfLines={1}>{growthEdge}</Text>
+                  </View>
+                )}
+              </View>
+
+              {coreValues ? (
+                <Text style={styles.portraitValues}>
+                  Core Values: {coreValues}
+                </Text>
+              ) : null}
+
+              <Text style={styles.portraitCta}>
+                See Full Portrait {'\u2192'}
+              </Text>
+            </TouchableOpacity>
+          );
         })()}
 
         {/* ═══ 4b. WEARE SUMMARY (The Space Between You) ═══════ */}
@@ -1724,7 +1723,10 @@ export default function HomeScreen() {
                   </Text>
                   <TouchableOpacity
                     style={styles.askNuanceButton}
-                    onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/chat' as any); }}
+                    onPress={() => {
+                      SoundHaptics.tapSoft();
+                      router.push({ pathname: '/(app)/chat', params: { topic: card.title } } as any);
+                    }}
                     activeOpacity={0.7}
                   >
                     <View style={styles.askNuanceContent}>
@@ -2667,8 +2669,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  // ── Growth Plan Section ──
-  growthPlanSection: {
+  // ── Portrait Summary Card ──
+  portraitSummaryCard: {
     marginHorizontal: Spacing.xl,
     marginBottom: Spacing.lg,
     backgroundColor: Colors.white,
@@ -2676,25 +2678,71 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     ...Shadows.card,
   },
-  growthPlanTitle: {
+  portraitSummaryHeader: {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    alignItems: 'center' as const,
+    marginBottom: Spacing.sm,
+  },
+  portraitSummaryEyebrow: {
     fontSize: FontSizes.bodySmall,
     fontWeight: '700' as const,
     color: Colors.secondary,
     textTransform: 'uppercase' as const,
     letterSpacing: 1.2,
   },
-  growthPlanHeadline: {
-    fontSize: FontSizes.body,
+  portraitScoreBadge: {
+    backgroundColor: Colors.secondary,
+    borderRadius: 14,
+    width: 38,
+    height: 28,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  portraitScoreBadgeText: {
+    fontSize: 13,
+    fontWeight: '700' as const,
+    color: Colors.white,
+  },
+  portraitStatsRow: {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    marginBottom: Spacing.sm,
+    gap: Spacing.xs,
+  },
+  portraitStatItem: {
+    flex: 1,
+    alignItems: 'center' as const,
+    gap: 2,
+  },
+  portraitStatLabel: {
+    fontSize: 10,
+    fontWeight: '600' as const,
+    color: Colors.textMuted,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 0.5,
+    textAlign: 'center' as const,
+    width: '100%' as any,
+  },
+  portraitStatValue: {
+    fontSize: FontSizes.caption,
     fontWeight: '700' as const,
     color: Colors.text,
-    marginBottom: Spacing.xs,
-    lineHeight: 22,
+    textAlign: 'center' as const,
+    width: '100%' as any,
   },
-  growthPlanRationale: {
+  portraitValues: {
     fontSize: FontSizes.caption,
     color: Colors.textSecondary,
     lineHeight: 18,
-    marginBottom: Spacing.sm,
+    marginBottom: Spacing.xs,
+  },
+  portraitCta: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '600' as const,
+    color: Colors.secondary,
+    textAlign: 'center' as const,
+    paddingTop: Spacing.xs,
   },
   movementsRow: {
     flexDirection: 'row' as const,
@@ -2728,41 +2776,7 @@ const styles = StyleSheet.create({
     fontWeight: '600' as const,
     textAlign: 'center' as const,
   },
-  growthPlanPhases: {
-    marginBottom: Spacing.sm,
-  },
-  growthPlanPhaseRow: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    marginBottom: Spacing.xs,
-  },
-  growthPlanPhaseDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.border,
-    marginRight: Spacing.sm,
-  },
-  growthPlanPhaseDotActive: {
-    backgroundColor: Colors.secondary,
-  },
-  growthPlanPhaseContent: {
-    flexDirection: 'row' as const,
-    justifyContent: 'space-between' as const,
-    flex: 1,
-  },
-  growthPlanPhaseName: {
-    flex: 1,
-    fontSize: FontSizes.caption,
-    fontWeight: '600' as const,
-    color: Colors.text,
-    marginRight: Spacing.sm,
-  },
-  growthPlanPhaseWeeks: {
-    fontSize: FontSizes.caption,
-    color: Colors.textSecondary,
-    flexShrink: 0,
-  },
+  // Growth plan phase styles removed — portrait summary card replaces them
   quickPracticeSection: {
     marginBottom: Spacing.md,
   },
@@ -2807,32 +2821,7 @@ const styles = StyleSheet.create({
   quickPracticeTitleDone: {
     color: '#4A6F50',
   },
-  growthPlanTitleRow: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    justifyContent: 'space-between' as const,
-    marginBottom: Spacing.xs,
-  },
-  growthPlanProgressBadge: {
-    backgroundColor: Colors.secondary,
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-  },
-  growthPlanProgressBadgeText: {
-    fontSize: 12,
-    fontWeight: '700' as const,
-    color: Colors.white,
-  },
-  growthPlanCta: {
-    alignItems: 'center' as const,
-    paddingVertical: Spacing.xs,
-  },
-  growthPlanCtaText: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '600' as const,
-    color: Colors.secondary,
-  },
+  // Growth plan styles removed — replaced by portrait summary card above
 
   // ── WEARE Summary Card ──
   weareSummaryCard: {
