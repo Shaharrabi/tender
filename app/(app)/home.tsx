@@ -1022,61 +1022,7 @@ export default function HomeScreen() {
           />
         )}
 
-        {/* ═══ 2. TODAY'S FOCUS (ONE THING) ═══════════════════ */}
-        {todaysExercise ? (
-          <View style={styles.todaysFocusSection}>
-            <TouchableOpacity
-              style={styles.todaysFocusCard}
-              onPress={() =>
-                router.push({
-                  pathname: '/(app)/exercise' as any,
-                  params: { id: todaysExercise.id },
-                })
-              }
-              activeOpacity={0.8}
-            >
-              <Text style={styles.todaysFocusEyebrow}>TODAY'S PRACTICE</Text>
-              <Text style={styles.todaysFocusTitle}>
-                {todaysExercise.title}
-              </Text>
-              <Text style={styles.todaysFocusMeta}>
-                {todaysExercise.duration} min {'\u00B7'}{' '}
-                {todaysExercise.mode} {'\u00B7'}{' '}
-                {stepExercises.length > 0 ? `Step ${currentStepNum}` : todaysExercise.category}
-              </Text>
-              <View style={styles.todaysFocusButton}>
-                <Text style={styles.todaysFocusButtonText}>
-                  Start Practice {'\u2192'}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-        ) : completedCount > 0 ? (
-          <View style={styles.todaysFocusSection}>
-            <TouchableOpacity
-              style={styles.todaysFocusCard}
-              onPress={() => {
-                if (completedCount > 0) {
-                  router.push('/(app)/chat' as any);
-                }
-              }}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.todaysFocusEyebrow}>TODAY'S FOCUS</Text>
-              <Text style={styles.todaysFocusTitle}>
-                Ask Nuance AI about your journey
-              </Text>
-              <Text style={styles.todaysFocusMeta}>
-                Your relationship guide {'\u00B7'} Always here
-              </Text>
-              <View style={styles.todaysFocusButton}>
-                <Text style={styles.todaysFocusButtonText}>
-                  Open Nuance {'\u2192'}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-        ) : null}
+        {/* ═══ 2. TODAY'S FOCUS — removed to reduce home screen clutter ═══ */}
 
         {/* ═══ DEMO PARTNER CARD (shown when mode is demo_partner) ═══ */}
         {relationshipMode === 'demo_partner' && demoPartnerId && DEMO_PARTNERS[demoPartnerId as DemoPartnerId] && (
