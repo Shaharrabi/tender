@@ -2,7 +2,7 @@
  * Engagement Notification Types
  *
  * Type definitions for the in-app engagement notification system.
- * 50 prompts across 7 categories, with weighted selection, frequency
+ * 60 prompts across 8 categories, with weighted selection, frequency
  * throttling, and WEARE bottleneck targeting.
  */
 
@@ -18,7 +18,8 @@ export type NotificationCategory =
   | 'practice_nudge'
   | 'growth_mirror'
   | 'couple_bubble'
-  | 'milestone_streak';
+  | 'milestone_streak'
+  | 'weekly_checkin';
 
 // ─── Engagement Prompt ──────────────────────────────────
 
@@ -110,4 +111,5 @@ export interface EngagementNotificationPreferences {
   growthMirrors: boolean;
   coupleBubble: boolean;
   milestoneStreak: boolean;
+  weeklyCheckin: boolean;
 }

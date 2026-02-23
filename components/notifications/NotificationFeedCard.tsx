@@ -6,7 +6,7 @@
  * Matches InsightCarousel card aesthetic in a taller layout.
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
@@ -70,20 +70,25 @@ export default function NotificationFeedCard({
   const Icon = prompt.icon;
   const accentColor = prompt.accentColor || catConfig.accentColor;
   const isRead = dismissed || tapped;
+  const [expanded, setExpanded] = useState(false);
+
+  const handlePress = () => {
+    if (prompt.actionRoute) {
+      router.push(prompt.actionRoute as any);
+    } else {
+      // Toggle expanded to show full text
+      setExpanded((prev) => !prev);
+    }
+  };
 
   return (
     <Pressable
-      onPress={() => {
-        if (prompt.actionRoute) {
-          router.push(prompt.actionRoute as any);
-        }
-      }}
-      disabled={!prompt.actionRoute}
+      onPress={handlePress}
       style={({ pressed }) => [
         styles.card,
         { borderLeftColor: accentColor },
         isRead && styles.cardRead,
-        pressed && prompt.actionRoute ? styles.cardPressed : undefined,
+        pressed ? styles.cardPressed : undefined,
       ]}
     >
       {/* Header row: icon + category pill + timestamp */}
@@ -105,23 +110,27 @@ export default function NotificationFeedCard({
       </Text>
 
       {/* Body */}
-      <Text style={styles.body} numberOfLines={3}>
+      <Text style={styles.body} numberOfLines={expanded ? undefined : 3}>
         {prompt.body}
       </Text>
 
       {/* Source (science drops) */}
       {prompt.source && (
-        <Text style={styles.source} numberOfLines={1}>
+        <Text style={styles.source} numberOfLines={expanded ? undefined : 1}>
           {prompt.source}
         </Text>
       )}
 
       {/* Action hint */}
-      {prompt.actionRoute && (
+      {prompt.actionRoute ? (
         <Text style={[styles.actionHint, { color: accentColor }]}>
           Tap to explore
         </Text>
-      )}
+      ) : !expanded ? (
+        <Text style={[styles.actionHint, { color: Colors.textMuted }]}>
+          Tap to read more
+        </Text>
+      ) : null}
     </Pressable>
   );
 }

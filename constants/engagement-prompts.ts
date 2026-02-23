@@ -1,7 +1,7 @@
 /**
- * Engagement Prompt Pool — 50 prompts across 7 categories.
+ * Engagement Prompt Pool — 60 prompts across 8 categories.
  *
- * Content sourced from TENDER_ENGAGEMENT_50_PROMPTS.md.
+ * Content sourced from TENDER_ENGAGEMENT_50_PROMPTS.md + weekly check-ins.
  * Evidence-backed, warm, witty, never shaming.
  * Tone: Wes Anderson meets attachment theory.
  */
@@ -89,6 +89,14 @@ export const CATEGORY_CONFIG: CategoryConfig[] = [
     accentColor: Colors.accentCream,
     maxPerWeek: 7, // trigger-based, no hard cap
   },
+  {
+    id: 'weekly_checkin',
+    label: 'Weekly Check-In',
+    description: 'Warm weekly motivation and encouragement',
+    icon: HandshakeIcon,
+    accentColor: Colors.focus,
+    maxPerWeek: 2,
+  },
 ];
 
 // ─── Default Preferences ────────────────────────────────
@@ -101,6 +109,7 @@ export const DEFAULT_ENGAGEMENT_PREFS: EngagementNotificationPreferences = {
   growthMirrors: true,
   coupleBubble: true,
   milestoneStreak: true,
+  weeklyCheckin: true,
 };
 
 // ─── Preference → Category Mapping ──────────────────────
@@ -113,6 +122,7 @@ export const PREF_TO_CATEGORY: Record<keyof EngagementNotificationPreferences, N
   growthMirrors: 'growth_mirror',
   coupleBubble: 'couple_bubble',
   milestoneStreak: 'milestone_streak',
+  weeklyCheckin: 'weekly_checkin',
 };
 
 // ─── The 50 Prompts ─────────────────────────────────────
@@ -694,6 +704,121 @@ export const ENGAGEMENT_PROMPTS: EngagementPrompt[] = [
     priority: 10,
     icon: SparkleIcon,
     accentColor: Colors.accentCream,
+  },
+
+  // ═══════════════════════════════════════════════════════
+  // WEEKLY CHECK-IN (51–60)
+  // ═══════════════════════════════════════════════════════
+
+  {
+    id: 'checkin-51',
+    category: 'weekly_checkin',
+    title: 'A little check-in, just for you.',
+    body: "How are you actually doing this week? Not the polite answer — the real one. Take a breath. Notice what's true right now. That honesty is the foundation everything else is built on.",
+    tags: ['checkin', 'self-awareness', 'weekly'],
+    maxFrequency: 'weekly',
+    priority: 8,
+    icon: HandshakeIcon,
+    accentColor: Colors.focus,
+  },
+  {
+    id: 'checkin-52',
+    category: 'weekly_checkin',
+    title: 'You showed up this week.',
+    body: "Whatever you did — one practice, one conversation, even just opening this app — counts. Growth doesn't need to be dramatic. It needs to be consistent. And here you are.",
+    tags: ['checkin', 'encouragement', 'weekly'],
+    maxFrequency: 'weekly',
+    priority: 8,
+    icon: SparkleIcon,
+    accentColor: Colors.focus,
+  },
+  {
+    id: 'checkin-53',
+    category: 'weekly_checkin',
+    title: "What's one thing that went well?",
+    body: "This week, name one moment between you and your partner that felt good. A laugh, a repair, a quiet dinner. Research says savoring positive moments literally rewires your brain to notice more of them.",
+    tags: ['checkin', 'gratitude', 'savoring'],
+    maxFrequency: 'weekly',
+    priority: 7,
+    icon: HeartDoubleIcon,
+    accentColor: Colors.focus,
+  },
+  {
+    id: 'checkin-54',
+    category: 'weekly_checkin',
+    title: 'Midweek pulse check.',
+    body: "On a scale of 1 to 10, how connected do you feel to your partner right now? No judgment on the number. Just notice it. Awareness is the first step to any shift.",
+    tags: ['checkin', 'connection', 'awareness'],
+    maxFrequency: 'weekly',
+    priority: 7,
+    icon: HeartPulseIcon,
+    accentColor: Colors.focus,
+  },
+  {
+    id: 'checkin-55',
+    category: 'weekly_checkin',
+    title: 'Permission to be imperfect.',
+    body: "If this week felt messy — good. That means you're in the arena. Brené Brown says the people who feel the most belonging are the ones who have the courage to be imperfect. Keep going.",
+    tags: ['checkin', 'self-compassion', 'motivation'],
+    maxFrequency: 'weekly',
+    priority: 7,
+    icon: SeedlingIcon,
+    accentColor: Colors.focus,
+  },
+  {
+    id: 'checkin-56',
+    category: 'weekly_checkin',
+    title: 'Your weekly relationship weather report.',
+    body: "If your relationship were weather this week, what would it be? Sunny? Overcast? A little stormy? There's no wrong answer. All weather passes. What matters is that you're paying attention.",
+    tags: ['checkin', 'metaphor', 'reflection'],
+    maxFrequency: 'weekly',
+    priority: 6,
+    icon: CompassIcon,
+    accentColor: Colors.focus,
+  },
+  {
+    id: 'checkin-57',
+    category: 'weekly_checkin',
+    title: "Small things aren't small.",
+    body: "A text that says \"thinking of you.\" Making their coffee without being asked. Eye contact during dinner. Gottman's research is clear: the small, daily deposits of love matter more than any grand gesture.",
+    tags: ['checkin', 'gottman', 'daily-deposits'],
+    maxFrequency: 'weekly',
+    priority: 8,
+    icon: HandshakeIcon,
+    accentColor: Colors.focus,
+  },
+  {
+    id: 'checkin-58',
+    category: 'weekly_checkin',
+    title: 'Take a moment with yourself.',
+    body: "Before you can show up for your partner, you need to show up for yourself. How's your cup? Therapy, exercise, sleep, solitude — whatever fills it. You can't pour from empty.",
+    tags: ['checkin', 'self-care', 'boundaries'],
+    maxFrequency: 'weekly',
+    priority: 7,
+    icon: WaveIcon,
+    accentColor: Colors.focus,
+  },
+  {
+    id: 'checkin-59',
+    category: 'weekly_checkin',
+    title: 'The week ahead is yours.',
+    body: "Set one tiny intention for your relationship this week. Just one. \"I'll listen without fixing.\" \"I'll say thank you more.\" \"I'll put my phone down during dinner.\" Micro-shifts, macro-results.",
+    tags: ['checkin', 'intention', 'micro-goals'],
+    maxFrequency: 'weekly',
+    priority: 8,
+    icon: TargetIcon,
+    accentColor: Colors.focus,
+  },
+  {
+    id: 'checkin-60',
+    category: 'weekly_checkin',
+    title: "You're doing better than you think.",
+    body: "Seriously. The fact that you're here, reading this, thinking about your relationship — that puts you ahead of most people. Progress is often invisible from the inside. Trust the process.",
+    tags: ['checkin', 'encouragement', 'trust'],
+    maxFrequency: 'weekly',
+    priority: 9,
+    icon: SparkleIcon,
+    accentColor: Colors.focus,
   },
 ];
 

@@ -42,6 +42,7 @@ import {
   SeedlingIcon,
   HeartDoubleIcon,
   FireIcon,
+  HandshakeIcon,
 } from '@/assets/graphics/icons';
 import type { IconProps } from '@/assets/graphics/icons';
 import {
@@ -278,6 +279,14 @@ export default function NotificationSettingsScreen() {
           description="Celebrations for streaks and achievements"
           value={engagementPrefs.milestoneStreak}
           onToggle={(v) => updateEngagementPref('milestoneStreak', v)}
+        />
+
+        <ToggleRow
+          IconComponent={HandshakeIcon}
+          title="Weekly Check-Ins"
+          description="Warm weekly motivation and encouragement"
+          value={engagementPrefs.weeklyCheckin}
+          onToggle={(v) => updateEngagementPref('weeklyCheckin', v)}
         />
 
         {/* Preferred Time */}

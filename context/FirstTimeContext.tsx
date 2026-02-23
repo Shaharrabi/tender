@@ -57,6 +57,8 @@ interface FirstTimeContextType {
   /** Mark first launch as complete */
   markFirstLaunchComplete: () => void;
 
+  /** Mark all known tooltips as seen (for returning users after storage wipe) */
+  markAllTooltipsSeen: (tooltipIds: string[]) => void;
   /** Reset all FTUE state (for testing/debugging) */
   resetAll: () => Promise<void>;
 }
@@ -219,6 +221,20 @@ export function FirstTimeProvider({
     });
   }, [scopeId, persistValue]);
 
+  // ─── Bulk mark all tooltips seen (returning users after storage wipe) ──
+
+  const markAllTooltipsSeen = useCallback(
+    (tooltipIds: string[]) => {
+      setState((prev) => {
+        const merged = Array.from(new Set([...prev.seenTooltips, ...tooltipIds]));
+        if (merged.length === prev.seenTooltips.length) return prev;
+        persistArray(getKeys(scopeId).tooltips, merged);
+        return { ...prev, seenTooltips: merged };
+      });
+    },
+    [scopeId, persistArray]
+  );
+
   // ─── Reset (for testing) ─────────────────────────────────────────────
 
   const resetAll = useCallback(async () => {
@@ -244,6 +260,7 @@ export function FirstTimeProvider({
       markAudioHeard,
       markTourCompleted,
       markFirstLaunchComplete,
+      markAllTooltipsSeen,
       resetAll,
     }),
     [
@@ -254,6 +271,7 @@ export function FirstTimeProvider({
       markAudioHeard,
       markTourCompleted,
       markFirstLaunchComplete,
+      markAllTooltipsSeen,
       resetAll,
     ]
   );

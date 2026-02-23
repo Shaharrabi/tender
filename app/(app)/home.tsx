@@ -76,6 +76,7 @@ import { HighlightWrapper } from '@/components/ui/HighlightWrapper';
 import { TooltipManager } from '@/components/ftue/TooltipManager';
 import { GuidedTour } from '@/components/ftue/GuidedTour';
 import { WelcomeAudio } from '@/components/ftue/WelcomeAudio';
+import { TOOLTIP_CONFIGS } from '@/constants/ftue/tooltips';
 import { HOME_TOUR } from '@/constants/ftue/tourSteps';
 import { RefRegistry } from '@/utils/ftue/refRegistry';
 import JourneyUnlockOverlay, { hasSeenJourneyUnlock } from '@/components/growth/JourneyUnlockOverlay';
@@ -180,7 +181,7 @@ export default function HomeScreen() {
   const { user, signOut } = useAuth();
   const { isGuest, clearGuestData } = useGuest();
   const { awardXP: awardGamificationXP } = useGamification();
-  const { state: ftueState, loading: ftueLoading, markTourCompleted, markFirstLaunchComplete } = useFirstTime();
+  const { state: ftueState, loading: ftueLoading, markTourCompleted, markFirstLaunchComplete, markAllTooltipsSeen } = useFirstTime();
   const router = useRouter();
   const [showTour, setShowTour] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
@@ -704,10 +705,12 @@ export default function HomeScreen() {
     ) {
       // If user already completed onboarding or any assessments, they're a
       // returning user whose FTUE flag was lost (e.g. web storage cleared).
-      // Auto-complete tour so it never replays.
+      // Auto-complete tour AND all tooltips so they never replay.
       if (completedCount > 0 || hasCompletedOnboarding) {
         markTourCompleted('tour_home');
         markFirstLaunchComplete();
+        // Mark all tooltips as seen to prevent bubbles replaying
+        markAllTooltipsSeen(TOOLTIP_CONFIGS.map((t) => t.id));
         return;
       }
       // Small delay to let layout render before measuring

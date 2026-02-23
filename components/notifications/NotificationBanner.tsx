@@ -82,7 +82,7 @@ export default function NotificationBanner({
           <Text style={styles.title} numberOfLines={1}>
             {notification.title}
           </Text>
-          <Text style={styles.body} numberOfLines={2}>
+          <Text style={styles.body} numberOfLines={4}>
             {notification.body}
           </Text>
 

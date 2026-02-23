@@ -28,6 +28,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { TooltipManager } from '@/components/ftue/TooltipManager';
 import { WelcomeAudio } from '@/components/ftue/WelcomeAudio';
+import HomeButton from '@/components/HomeButton';
 import { getPortrait } from '@/services/portrait';
 import { getUserConsent, eraseUserData } from '@/services/consent';
 import {
@@ -723,6 +724,7 @@ export default function PortraitScreen() {
       {/* FTUE Overlays */}
       <TooltipManager screen="portrait" />
       <WelcomeAudio screenKey="portrait" />
+      <HomeButton />
     </SafeAreaView>
   );
 }

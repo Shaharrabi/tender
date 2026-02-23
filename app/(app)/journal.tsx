@@ -24,6 +24,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
+import HomeButton from '@/components/HomeButton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '@/context/AuthContext';
 import { useGuest } from '@/context/GuestContext';
@@ -436,6 +437,7 @@ export default function JournalScreen() {
       {/* FTUE Overlays */}
       <TooltipManager screen="journal" />
       <WelcomeAudio screenKey="journal" />
+      <HomeButton />
     </SafeAreaView>
   );
 }
