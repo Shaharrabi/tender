@@ -77,28 +77,49 @@ export function extractSupplementScores(
 export async function savePortrait(
   portrait: Omit<IndividualPortrait, 'id' | 'createdAt'>
 ): Promise<IndividualPortrait> {
-  const { data, error } = await supabase
+  // Build the row data — Phase 3 columns may not exist on older DBs
+  const row: Record<string, any> = {
+    user_id: portrait.userId,
+    assessment_ids: portrait.assessmentIds,
+    composite_scores: portrait.compositeScores,
+    patterns: portrait.patterns,
+    four_lens: portrait.fourLens,
+    negative_cycle: portrait.negativeCycle,
+    growth_edges: portrait.growthEdges,
+    anchor_points: portrait.anchorPoints,
+    partner_guide: portrait.partnerGuide,
+    version: portrait.version,
+  };
+
+  // Try with Phase 3 columns first, fall back without them
+  row.big_five_reframes = portrait.bigFiveReframes ?? null;
+  row.supplement_data = portrait.supplementData ?? null;
+
+  let { data, error } = await supabase
     .from('portraits')
-    .upsert(
-      {
-        user_id: portrait.userId,
-        assessment_ids: portrait.assessmentIds,
-        composite_scores: portrait.compositeScores,
-        patterns: portrait.patterns,
-        four_lens: portrait.fourLens,
-        negative_cycle: portrait.negativeCycle,
-        growth_edges: portrait.growthEdges,
-        anchor_points: portrait.anchorPoints,
-        partner_guide: portrait.partnerGuide,
-        version: portrait.version,
-        // Phase 3 additions — stored in the JSONB columns already available
-        big_five_reframes: portrait.bigFiveReframes ?? null,
-        supplement_data: portrait.supplementData ?? null,
-      },
-      { onConflict: 'user_id' }
-    )
+    .upsert(row, { onConflict: 'user_id' })
     .select()
     .single();
+
+  // If Phase 3 columns don't exist, retry without them
+  if (error && (
+    error.message?.includes('big_five_reframes') ||
+    error.message?.includes('supplement_data') ||
+    error.code === '42703' // undefined_column
+  )) {
+    console.warn('[savePortrait] Phase 3 columns missing, retrying without them');
+    delete row.big_five_reframes;
+    delete row.supplement_data;
+
+    const retry = await supabase
+      .from('portraits')
+      .upsert(row, { onConflict: 'user_id' })
+      .select()
+      .single();
+
+    data = retry.data;
+    error = retry.error;
+  }
 
   if (error) throw error;
 
@@ -119,6 +140,8 @@ export async function getPortrait(
     if (error.code === 'PGRST116') return null; // not found
     throw error;
   }
+
+  if (!data) return null; // No portrait found
 
   return mapRow(data);
 }

@@ -28,15 +28,47 @@ export default function Index() {
           .from('user_profiles')
           .select('onboarding_completed_at')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
 
         if (data?.onboarding_completed_at) {
           setOnboardingCheck('done');
-        } else {
-          setOnboardingCheck('needed');
+          return;
         }
+
+        // Fallback: if user has completed assessments, they've been through onboarding
+        // This handles cases where browser history was cleared but account exists
+        const { data: assessments } = await supabase
+          .from('assessments')
+          .select('id')
+          .eq('user_id', user.id)
+          .limit(1);
+
+        if (assessments && assessments.length > 0) {
+          // User has assessment data — they completed onboarding before.
+          // Backfill the onboarding flag so this check doesn't repeat.
+          await supabase.from('user_profiles').upsert(
+            { user_id: user.id, onboarding_completed_at: new Date().toISOString() },
+            { onConflict: 'user_id' }
+          );
+          setOnboardingCheck('done');
+          return;
+        }
+
+        setOnboardingCheck('needed');
       } catch {
-        // If profile doesn't exist yet, onboarding is needed
+        // If queries fail, try the assessment fallback
+        try {
+          const { data: assessments } = await supabase
+            .from('assessments')
+            .select('id')
+            .eq('user_id', user.id)
+            .limit(1);
+
+          if (assessments && assessments.length > 0) {
+            setOnboardingCheck('done');
+            return;
+          }
+        } catch { /* ignore */ }
         setOnboardingCheck('needed');
       }
     };

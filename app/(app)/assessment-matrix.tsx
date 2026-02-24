@@ -322,7 +322,7 @@ export default function AssessmentMatrixScreen() {
         </Text>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => router.back()}
+          onPress={() => router.replace('/(app)/home' as any)}
           activeOpacity={0.7}
         >
           <Text style={styles.backButtonText}>Go Back</Text>
@@ -336,7 +336,7 @@ export default function AssessmentMatrixScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
-          onPress={() => router.back()}
+          onPress={() => router.replace('/(app)/home' as any)}
           activeOpacity={0.7}
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
         >

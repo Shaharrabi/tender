@@ -477,17 +477,28 @@ export default function HomeScreen() {
 
         // Auto-generate portrait if all assessments complete but no portrait yet
         if (!loadedPortrait && completedAssessmentTypes.length >= 6) {
-          console.log('[Home] All assessments complete, no portrait — auto-generating...');
+          let step = 'init';
+          let localError = '';
           try {
+            step = 'fetchScores';
             const latestScoresMap = await fetchAllScores(user.id);
-            console.log('[Home] Fetched scores for types:', Object.keys(latestScoresMap));
+            const fetchedTypes = Object.keys(latestScoresMap);
 
-            // Verify all 6 types are present
+            step = 'checkRequired';
             const required = ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'ipip-neo-120', 'values'];
             const missing = required.filter((t) => !latestScoresMap[t]);
             if (missing.length > 0) {
-              console.warn('[Home] Missing assessment scores for:', missing);
+              localError = `MISSING: ${missing.join(',')}, fetched: ${fetchedTypes.join(',')}`;
+              console.error('[Home]', localError);
             } else {
+              step = 'buildScores';
+              for (const t of required) {
+                if (!latestScoresMap[t].scores) {
+                  localError = `NULL_SCORES: ${t} has no .scores`;
+                  console.error('[Home]', localError);
+                  throw new Error(localError);
+                }
+              }
               const scores: AllAssessmentScores = {
                 ecrr: latestScoresMap['ecr-r'].scores,
                 dutch: latestScoresMap['dutch'].scores,
@@ -496,24 +507,48 @@ export default function HomeScreen() {
                 ipip: latestScoresMap['ipip-neo-120'].scores,
                 values: latestScoresMap['values'].scores,
               };
+
+              step = 'validateScoreShape';
+              const shapeErrors: string[] = [];
+              if (!scores.ecrr?.avoidanceScore && scores.ecrr?.avoidanceScore !== 0) shapeErrors.push('ecrr.avoidanceScore');
+              if (!scores.ecrr?.anxietyScore && scores.ecrr?.anxietyScore !== 0) shapeErrors.push('ecrr.anxietyScore');
+              if (!scores.ecrr?.attachmentStyle) shapeErrors.push('ecrr.attachmentStyle');
+              if (!scores.ipip?.domainPercentiles) shapeErrors.push('ipip.domainPercentiles');
+              if (!scores.sseit?.subscaleNormalized) shapeErrors.push('sseit.subscaleNormalized');
+              if (!scores.dsir?.subscaleScores) shapeErrors.push('dsir.subscaleScores');
+              if (!scores.dutch?.subscaleScores) shapeErrors.push('dutch.subscaleScores');
+              if (!scores.values?.domainScores) shapeErrors.push('values.domainScores');
+              if (shapeErrors.length > 0) {
+                localError = `SHAPE: missing ${shapeErrors.join(', ')}`;
+                console.error('[Home]', localError);
+                throw new Error(localError);
+              }
+
+              step = 'extractSupplements';
               const supplements = extractSupplementScores(latestScoresMap);
               const ids = Object.values(latestScoresMap).map((r) => r.id);
-              console.log('[Home] Generating portrait with', ids.length, 'assessments, supplements:', !!supplements);
+
+              step = 'generatePortrait';
               const freshPortrait = generatePortrait(user.id, ids, scores, supplements);
-              console.log('[Home] Portrait generated, saving...');
+
+              step = 'savePortrait';
               const saved = await savePortrait(freshPortrait);
               loadedPortrait = saved;
               console.log('[Home] Portrait auto-generated successfully');
             }
           } catch (genErr: any) {
-            console.error('[Home] Auto-generation failed:', genErr?.message || genErr);
-            console.error('[Home] Error details:', JSON.stringify(genErr, null, 2));
+            const errMsg = genErr?.message || String(genErr);
+            console.error(`[Home] Portrait failed at step=${step}:`, errMsg);
+            if (!localError) {
+              console.error(`[Home] Portrait STEP=${step}: ${errMsg}`);
+            }
           }
         }
 
         setPortrait(loadedPortrait);
-      } catch (portraitErr) {
+      } catch (portraitErr: any) {
         console.error('[Home] Portrait loading failed:', portraitErr);
+        console.error(`[Home] Portrait LOAD: ${portraitErr?.message || String(portraitErr)}`);
         setPortrait(null);
       }
 
@@ -918,6 +953,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+
       {/* Journey Unlock Celebration */}
       {showJourneyUnlock && (
         <JourneyUnlockOverlay
