@@ -35,6 +35,10 @@ import {
   BookOpenIcon,
   LockIcon,
   CheckmarkIcon,
+  SunIcon,
+  ChatBubbleIcon,
+  HeartIcon,
+  FlagIcon,
 } from '@/assets/graphics/icons';
 import type { IconProps } from '@/assets/graphics/icons';
 
@@ -51,6 +55,10 @@ const COURSE_ICONS: Record<string, React.ComponentType<IconProps>> = {
   'meditation': MeditationIcon,
   'sparkle': SparkleIcon,
   'eye': EyeIcon,
+  'sun': SunIcon,
+  'chat-bubble': ChatBubbleIcon,
+  'heart': HeartIcon,
+  'flag': FlagIcon,
 };
 
 // ─── Props ──────────────────────────────────────────────
