@@ -465,8 +465,8 @@ export default function HomeScreen() {
               const supplements = extractSupplementScores(latestScoresMap);
               const ids = Object.values(latestScoresMap).map((r) => r.id);
               const freshPortrait = generatePortrait(user.id, ids, scores, supplements);
-              await savePortrait(freshPortrait);
-              loadedPortrait = freshPortrait as IndividualPortrait;
+              const saved = await savePortrait(freshPortrait);
+              loadedPortrait = saved;
               console.log('[Home] Portrait auto-regenerated successfully');
             } catch (regenErr) {
               console.error('[Home] Auto-regeneration failed:', regenErr);
@@ -501,8 +501,8 @@ export default function HomeScreen() {
               console.log('[Home] Generating portrait with', ids.length, 'assessments, supplements:', !!supplements);
               const freshPortrait = generatePortrait(user.id, ids, scores, supplements);
               console.log('[Home] Portrait generated, saving...');
-              await savePortrait(freshPortrait);
-              loadedPortrait = freshPortrait as IndividualPortrait;
+              const saved = await savePortrait(freshPortrait);
+              loadedPortrait = saved;
               console.log('[Home] Portrait auto-generated successfully');
             }
           } catch (genErr: any) {
@@ -512,7 +512,8 @@ export default function HomeScreen() {
         }
 
         setPortrait(loadedPortrait);
-      } catch {
+      } catch (portraitErr) {
+        console.error('[Home] Portrait loading failed:', portraitErr);
         setPortrait(null);
       }
 
@@ -805,8 +806,8 @@ export default function HomeScreen() {
       };
       const supplements = extractSupplementScores(latest);
       const p = generatePortrait(user.id, ids, scores, supplements);
-      await savePortrait(p);
-      setPortrait(p as IndividualPortrait);
+      const saved = await savePortrait(p);
+      setPortrait(saved);
       router.push('/(app)/portrait' as any);
     } catch (e) {
       console.error('Portrait generation failed:', e);

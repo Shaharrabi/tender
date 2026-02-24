@@ -212,8 +212,8 @@ export default function AssessmentMatrixScreen() {
               const supplements = extractSupplementScores(latestScoresMap);
               const ids = Object.values(latestScoresMap).map((r) => r.id);
               const freshPortrait = generatePortrait(user.id, ids, scores, supplements);
-              await savePortrait(freshPortrait);
-              p = freshPortrait as IndividualPortrait;
+              const saved = await savePortrait(freshPortrait);
+              p = saved;
               console.log('[Matrix] Portrait auto-generated successfully');
             } catch (genErr: any) {
               console.error('[Matrix] Portrait auto-generation failed:', genErr?.message || genErr);

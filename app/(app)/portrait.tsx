@@ -440,7 +440,9 @@ export default function PortraitScreen() {
     if (!user) return;
     getPortrait(user.id)
       .then(setPortrait)
-      .catch(() => {})
+      .catch((err) => {
+        console.error('[Portrait] Failed to load portrait:', err);
+      })
       .finally(() => setLoading(false));
 
     // Check if consent is view-and-erase
