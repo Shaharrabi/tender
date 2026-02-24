@@ -7,19 +7,20 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ScrollView, StyleSheet, Animated } from 'react-native';
 import { Colors, Spacing, FontSizes, FontFamilies, BorderRadius, Shadows } from '@/constants/theme';
-import { MeditationIcon } from '@/assets/graphics/icons';
+import { MeditationIcon, MegaphoneIcon, SparkleIcon } from '@/assets/graphics/icons';
+import { MC11_PALETTE } from '@/constants/mc11Theme';
 import { useSoundHaptics } from '@/services/SoundHapticsService';
 import type { ResolvedLessonContent } from '@/utils/microcourses/course-content';
 import type { AttachmentStyle } from '@/types';
 import type { StepResponseEntry } from '@/types/intervention';
 
 const PLEASURE_SUGGESTIONS = [
-  { label: 'Warmth of your hands', emoji: '🤲' },
-  { label: 'Feel of fabric on skin', emoji: '🧣' },
-  { label: 'Sound of your breath', emoji: '🌬️' },
-  { label: 'Color you can see right now', emoji: '🎨' },
-  { label: 'Gentle pressure on your feet', emoji: '🦶' },
-  { label: 'A memory that makes you smile', emoji: '😊' },
+  { label: 'Warmth of your hands' },
+  { label: 'Feel of fabric on skin' },
+  { label: 'Sound of your breath' },
+  { label: 'Color you can see right now' },
+  { label: 'Gentle pressure on your feet' },
+  { label: 'A memory that makes you smile' },
 ];
 
 const INTENSITY_LEVELS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -111,7 +112,7 @@ export default function L4PleasantIntensityPractice({ content, onComplete }: { c
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
           <View style={styles.iconCircle}><MeditationIcon size={28} color="#DAA520" /></View>
-          <Text style={styles.title}>🔊 Turn Up the Volume</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><MegaphoneIcon size={20} color={MC11_PALETTE.warmGold} /><Text style={styles.title}>Turn Up the Volume</Text></View>
           <Text style={styles.subtitle}>Pleasant Intensity Practice</Text>
           <Text style={styles.body}>In OI, we don't just notice pleasure — we amplify it. By giving pleasant sensations more attention, you train your nervous system to orient toward safety and aliveness.</Text>
           <Text style={styles.body}>You'll pick one pleasant sensation, rate it, spend 30 seconds amplifying it through attention, then rate it again.</Text>
@@ -132,7 +133,7 @@ export default function L4PleasantIntensityPractice({ content, onComplete }: { c
           <View style={styles.suggestionGrid}>
             {PLEASURE_SUGGESTIONS.map(s => (
               <TouchableOpacity key={s.label} style={styles.suggestionChip} onPress={() => selectPleasure(s.label)} activeOpacity={0.7}>
-                <Text style={styles.suggestionEmoji}>{s.emoji}</Text>
+                <Text style={styles.suggestionEmoji}>{s.label.charAt(0).toUpperCase()}</Text>
                 <Text style={styles.suggestionLabel}>{s.label}</Text>
               </TouchableOpacity>
             ))}
@@ -189,7 +190,7 @@ export default function L4PleasantIntensityPractice({ content, onComplete }: { c
     return (
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <Animated.View style={[styles.amplifyCard, { transform: [{ scale: pulseAnim }] }]}>
-          <Text style={styles.amplifyEmoji}>✨</Text>
+          <SparkleIcon size={40} color={MC11_PALETTE.warmGold} />
           <Text style={styles.amplifyTitle}>Amplify</Text>
           <Text style={styles.amplifyBody}>Give all your attention to: <Text style={{ fontWeight: '700' }}>{chosenPleasure}</Text></Text>
           <Text style={styles.amplifyBody}>Notice everything about it. Let the sensation grow. Don't force — just attend.</Text>
@@ -262,7 +263,7 @@ export default function L4PleasantIntensityPractice({ content, onComplete }: { c
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
       <View style={styles.card}>
-        <Text style={styles.title}>🔊 Results</Text>
+        <View style={{flexDirection:'row',alignItems:'center',gap:8}}><MegaphoneIcon size={20} color={MC11_PALETTE.warmGold} /><Text style={styles.title}>Results</Text></View>
         <View style={styles.resultRow}>
           <View style={styles.resultBox}>
             <Text style={styles.resultNumber}>{beforeIntensity}</Text>
@@ -307,7 +308,7 @@ const styles = StyleSheet.create({
   disabledBtn: { opacity: 0.4 },
   suggestionGrid: { gap: Spacing.sm, width: '100%' },
   suggestionChip: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: Spacing.md, paddingVertical: Spacing.md, borderRadius: BorderRadius.md, borderWidth: 1.5, borderColor: Colors.border, backgroundColor: '#FFFDF5', gap: Spacing.sm },
-  suggestionEmoji: { fontSize: 20 },
+  suggestionEmoji: { fontSize: 16, fontWeight: '700', color: '#DAA520', width: 24, textAlign: 'center' as const },
   suggestionLabel: { fontSize: FontSizes.body, color: Colors.text, fontWeight: '500' },
   orText: { fontSize: FontSizes.caption, color: Colors.textMuted, fontStyle: 'italic' },
   customRow: { flexDirection: 'row', gap: Spacing.sm, width: '100%' },
@@ -321,7 +322,7 @@ const styles = StyleSheet.create({
   scaleLabels: { flexDirection: 'row', justifyContent: 'space-between', width: '100%', paddingHorizontal: Spacing.xs },
   scaleLabel: { fontSize: FontSizes.caption, color: Colors.textMuted },
   amplifyCard: { backgroundColor: '#FFF3D4', borderRadius: BorderRadius.lg, padding: Spacing.xl, borderWidth: 2, borderColor: '#DAA520', ...Shadows.subtle, gap: Spacing.md, alignItems: 'center' },
-  amplifyEmoji: { fontSize: 48 },
+  amplifyEmoji: { fontSize: 40, fontWeight: '700', color: '#DAA520' },
   amplifyTitle: { fontSize: FontSizes.headingM, fontWeight: '700', color: '#B8860B' },
   amplifyBody: { fontSize: FontSizes.body, color: Colors.text, lineHeight: 24, textAlign: 'center' },
   timerText: { fontSize: 40, fontWeight: '700', color: '#DAA520' },

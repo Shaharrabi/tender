@@ -7,7 +7,8 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated } from 'react-native';
 import { Colors, Spacing, FontSizes, FontFamilies, BorderRadius, Shadows } from '@/constants/theme';
-import { ChatBubbleIcon } from '@/assets/graphics/icons';
+import { ChatBubbleIcon, TargetIcon } from '@/assets/graphics/icons';
+import { MC12_PALETTE } from '@/constants/mc12Theme';
 import { useSoundHaptics } from '@/services/SoundHapticsService';
 import type { ResolvedLessonContent } from '@/utils/microcourses/course-content';
 import type { AttachmentStyle } from '@/types';
@@ -77,7 +78,7 @@ export function L1BidCatcherGame({ content, onComplete }: { content: ResolvedLes
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
           <View style={styles.iconCircle}><ChatBubbleIcon size={28} color="#FF6B6B" /></View>
-          <Text style={styles.title}>🎯 Can You Spot the Bid?</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><TargetIcon size={20} color={MC12_PALETTE.coral} /><Text style={styles.title}>Can You Spot the Bid?</Text></View>
           <Text style={styles.subtitle}>The Bid Catcher Game</Text>
           <Text style={styles.body}>Gottman found that couples who notice bids for connection stay together at much higher rates than those who miss them.</Text>
           <Text style={styles.body}>A "bid" is any attempt to connect — a look, a sigh, a question, a touch. Most bids are subtle, and most people miss them.</Text>
@@ -96,7 +97,7 @@ export function L1BidCatcherGame({ content, onComplete }: { content: ResolvedLes
     return (
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
-          <Text style={styles.title}>🎯 Results</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><TargetIcon size={20} color={MC12_PALETTE.coral} /><Text style={styles.title}>Results</Text></View>
           <Text style={styles.scoreText}>{score} of {SCENARIOS.length} correct ({pct}%)</Text>
           <Text style={styles.body}>{bidCount} of those {SCENARIOS.length} scenarios were actual bids. In real life, Gottman estimates partners make bids every few minutes.</Text>
           {pct >= 75 ? (

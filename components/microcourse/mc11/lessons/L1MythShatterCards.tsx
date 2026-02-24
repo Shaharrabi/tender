@@ -110,7 +110,7 @@ export function L1MythShatterCards({ content, onComplete }: { content: ResolvedL
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.insightCard}>
           <SparkleIcon size={32} color="#DAA520" />
-          <Text style={styles.insightTitle}>✦ THE CORE INSIGHT ✦</Text>
+          <Text style={styles.insightTitle}>THE CORE INSIGHT</Text>
           <Text style={styles.insightQuote}>
             "People grow and heal through support, through pleasure, through feeling better by feeling better — not through feeling worse first."
           </Text>

@@ -7,27 +7,28 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ScrollView, StyleSheet } from 'react-native';
 import { Colors, Spacing, FontSizes, FontFamilies, BorderRadius, Shadows } from '@/constants/theme';
-import { FlagIcon } from '@/assets/graphics/icons';
+import { FlagIcon, HeartIcon, PenIcon, StarIcon } from '@/assets/graphics/icons';
+import { MC12_PALETTE } from '@/constants/mc12Theme';
 import { useSoundHaptics } from '@/services/SoundHapticsService';
 import type { ResolvedLessonContent } from '@/utils/microcourses/course-content';
 import type { AttachmentStyle } from '@/types';
 import type { StepResponseEntry } from '@/types/intervention';
 
-interface DepositIdea { id: string; label: string; emoji: string; when: string }
+interface DepositIdea { id: string; label: string; when: string }
 
 const DEPOSIT_IDEAS: DepositIdea[] = [
-  { id: 'greeting', label: 'Enthusiastic greeting', emoji: '👋', when: 'Coming home' },
-  { id: 'ask-day', label: 'Ask about their day (and listen)', emoji: '🗣️', when: 'Evening' },
-  { id: 'touch', label: '6-second hug', emoji: '🤗', when: 'Morning or night' },
-  { id: 'compliment', label: 'Specific compliment', emoji: '💬', when: 'Anytime' },
-  { id: 'share', label: 'Share something interesting', emoji: '📱', when: 'When you find it' },
-  { id: 'coffee', label: 'Make their drink', emoji: '☕', when: 'Morning' },
-  { id: 'eye-contact', label: 'Stop & make eye contact', emoji: '👁️', when: 'During conversation' },
-  { id: 'thank', label: 'Say thank you for something specific', emoji: '🙏', when: 'Daily' },
-  { id: 'goodnight', label: 'Meaningful goodnight', emoji: '🌙', when: 'Bedtime' },
-  { id: 'text', label: 'Mid-day "thinking of you" text', emoji: '💌', when: 'Afternoon' },
-  { id: 'invite', label: 'Invite them into what you\'re doing', emoji: '✨', when: 'When engaged' },
-  { id: 'recall', label: 'Bring up a shared memory', emoji: '💭', when: 'Quiet moments' },
+  { id: 'greeting', label: 'Enthusiastic greeting', when: 'Coming home' },
+  { id: 'ask-day', label: 'Ask about their day (and listen)', when: 'Evening' },
+  { id: 'touch', label: '6-second hug', when: 'Morning or night' },
+  { id: 'compliment', label: 'Specific compliment', when: 'Anytime' },
+  { id: 'share', label: 'Share something interesting', when: 'When you find it' },
+  { id: 'coffee', label: 'Make their drink', when: 'Morning' },
+  { id: 'eye-contact', label: 'Stop & make eye contact', when: 'During conversation' },
+  { id: 'thank', label: 'Say thank you for something specific', when: 'Daily' },
+  { id: 'goodnight', label: 'Meaningful goodnight', when: 'Bedtime' },
+  { id: 'text', label: 'Mid-day "thinking of you" text', when: 'Afternoon' },
+  { id: 'invite', label: 'Invite them into what you\'re doing', when: 'When engaged' },
+  { id: 'recall', label: 'Bring up a shared memory', when: 'Quiet moments' },
 ];
 
 const MAX_DEPOSITS = 3;
@@ -64,7 +65,7 @@ export default function L5DailyDepositRitual({ content, onComplete }: { content:
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
           <View style={styles.iconCircle}><FlagIcon size={28} color="#FF6B6B" /></View>
-          <Text style={styles.title}>💰 The Daily Deposit</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><HeartIcon size={20} color={MC12_PALETTE.coral} /><Text style={styles.title}>The Daily Deposit</Text></View>
           <Text style={styles.subtitle}>Building Your Emotional Bank Account</Text>
           <Text style={styles.body}>Gottman calls it the "emotional bank account." Every bid you make — and every time you turn toward — is a deposit.</Text>
           <Text style={styles.body}>Pick 3 intentional deposits you'll make daily. These aren't grand gestures — they're small, consistent acts of connection.</Text>
@@ -84,7 +85,7 @@ export default function L5DailyDepositRitual({ content, onComplete }: { content:
         {selected.length > 0 && (
           <View style={styles.previewRow}>
             {selected.map((d, i) => (
-              <View key={d.id} style={styles.previewChip}><Text style={styles.previewEmoji}>{d.emoji}</Text></View>
+              <View key={d.id} style={styles.previewChip}><HeartIcon size={18} color={MC12_PALETTE.coral} /></View>
             ))}
           </View>
         )}
@@ -100,7 +101,7 @@ export default function L5DailyDepositRitual({ content, onComplete }: { content:
                 activeOpacity={0.7}
                 disabled={disabled}
               >
-                <Text style={styles.depositEmoji}>{item.emoji}</Text>
+                <StarIcon size={20} color={MC12_PALETTE.coral} />
                 <View style={styles.depositContent}>
                   <Text style={[styles.depositLabel, isSelected && styles.depositLabelSelected]}>{item.label}</Text>
                   <Text style={styles.depositWhen}>{item.when}</Text>
@@ -127,12 +128,12 @@ export default function L5DailyDepositRitual({ content, onComplete }: { content:
     return (
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <View style={styles.card}>
-          <Text style={styles.title}>📝 Your Commitment</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><PenIcon size={20} color={MC12_PALETTE.coral} /><Text style={styles.title}>Your Commitment</Text></View>
           <Text style={styles.body}>Your 3 daily deposits:</Text>
           {selected.map((d, i) => (
             <View key={d.id} style={styles.commitItem}>
               <Text style={styles.commitNum}>{i + 1}.</Text>
-              <Text style={styles.commitLabel}>{d.emoji} {d.label}</Text>
+              <Text style={styles.commitLabel}>{d.label}</Text>
               <Text style={styles.commitWhen}>({d.when})</Text>
             </View>
           ))}
@@ -157,13 +158,13 @@ export default function L5DailyDepositRitual({ content, onComplete }: { content:
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
       <View style={styles.resultCard}>
-        <Text style={styles.title}>💰 Your Daily Deposit Plan</Text>
+        <View style={{flexDirection:'row',alignItems:'center',gap:8}}><HeartIcon size={20} color={MC12_PALETTE.coral} /><Text style={styles.title}>Your Daily Deposit Plan</Text></View>
         <View style={styles.depositPlan}>
           {selected.map((d, i) => (
             <View key={d.id} style={styles.planItem}>
               <View style={styles.planNum}><Text style={styles.planNumText}>{i + 1}</Text></View>
               <View style={styles.planContent}>
-                <Text style={styles.planLabel}>{d.emoji} {d.label}</Text>
+                <Text style={styles.planLabel}>{d.label}</Text>
                 <Text style={styles.planWhen}>When: {d.when}</Text>
               </View>
             </View>

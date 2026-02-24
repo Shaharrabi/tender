@@ -7,7 +7,8 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ScrollView, StyleSheet } from 'react-native';
 import { Colors, Spacing, FontSizes, FontFamilies, BorderRadius, Shadows } from '@/constants/theme';
-import { SearchIcon } from '@/assets/graphics/icons';
+import { SearchIcon, ClipboardIcon, ChartBarIcon } from '@/assets/graphics/icons';
+import { MC12_PALETTE } from '@/constants/mc12Theme';
 import { useSoundHaptics } from '@/services/SoundHapticsService';
 import type { ResolvedLessonContent } from '@/utils/microcourses/course-content';
 import type { AttachmentStyle } from '@/types';
@@ -17,7 +18,7 @@ interface BidEntry { bid: string; response: 'toward' | 'away' | 'against'; }
 
 const RESPONSE_COLORS = { toward: '#5A9E6F', away: '#E8A84A', against: '#E05555' };
 const RESPONSE_LABELS = { toward: 'Turned Toward', away: 'Turned Away', against: 'Turned Against' };
-const RESPONSE_EMOJIS = { toward: '🟢', away: '🟡', against: '🔴' };
+const RESPONSE_DOT_COLORS = { toward: '#4CAF50', away: '#FFC107', against: '#F44336' };
 
 const EXAMPLE_BIDS = [
   'They asked about my day',
@@ -66,7 +67,7 @@ export default function L3BidTrackerTool({ content, onComplete }: { content: Res
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
           <View style={styles.iconCircle}><SearchIcon size={28} color="#FF6B6B" /></View>
-          <Text style={styles.title}>📋 Today's Bid Log</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><ClipboardIcon size={20} color={MC12_PALETTE.coral} /><Text style={styles.title}>Today's Bid Log</Text></View>
           <Text style={styles.subtitle}>Tracking Your Connection Moments</Text>
           <Text style={styles.body}>Now it's time to look at your real life. Think about the last 24 hours with your partner. What bids happened between you?</Text>
           <Text style={styles.body}>Log as many as you can remember — even small ones. Then categorize how you responded to each.</Text>
@@ -85,7 +86,7 @@ export default function L3BidTrackerTool({ content, onComplete }: { content: Res
 
         {entries.map((entry, i) => (
           <View key={i} style={styles.entryRow}>
-            <Text style={styles.entryEmoji}>{RESPONSE_EMOJIS[entry.response]}</Text>
+            <View style={{width:12,height:12,borderRadius:6,backgroundColor:RESPONSE_DOT_COLORS[entry.response]}} />
             <View style={styles.entryContent}>
               <Text style={styles.entryBid}>{entry.bid}</Text>
               <Text style={[styles.entryResponse, { color: RESPONSE_COLORS[entry.response] }]}>{RESPONSE_LABELS[entry.response]}</Text>
@@ -126,7 +127,7 @@ export default function L3BidTrackerTool({ content, onComplete }: { content: Res
                     onPress={() => { haptics.tap(); setCurrentResponse(type); }}
                     activeOpacity={0.7}
                   >
-                    <Text style={styles.responseEmoji}>{RESPONSE_EMOJIS[type]}</Text>
+                    <View style={{width:12,height:12,borderRadius:6,backgroundColor:RESPONSE_DOT_COLORS[type]}} />
                     <Text style={[styles.responseLabel, currentResponse === type && { color: RESPONSE_COLORS[type], fontWeight: '700' }]}>{RESPONSE_LABELS[type]}</Text>
                   </TouchableOpacity>
                 ))}
@@ -166,7 +167,7 @@ export default function L3BidTrackerTool({ content, onComplete }: { content: Res
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
       <View style={styles.card}>
-        <Text style={styles.title}>📊 Your Bid Response Ratio</Text>
+        <View style={{flexDirection:'row',alignItems:'center',gap:8}}><ChartBarIcon size={20} color={MC12_PALETTE.coral} /><Text style={styles.title}>Your Bid Response Ratio</Text></View>
         <View style={styles.ratioCircle}>
           <Text style={styles.ratioNumber}>{ratio}%</Text>
           <Text style={styles.ratioLabel}>Turning Toward</Text>

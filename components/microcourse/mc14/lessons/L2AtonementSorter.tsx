@@ -8,6 +8,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated } from 'react-native';
 import { Colors, Spacing, FontSizes, FontFamilies, BorderRadius, Shadows } from '@/constants/theme';
 import { ScaleIcon } from '@/assets/graphics/icons';
+import { MC14_PALETTE } from '@/constants/mc14Theme';
 import { useSoundHaptics } from '@/services/SoundHapticsService';
 import type { ResolvedLessonContent } from '@/utils/microcourses/course-content';
 import type { AttachmentStyle } from '@/types';
@@ -68,7 +69,7 @@ export default function L2AtonementSorter({ content, onComplete }: { content: Re
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
           <View style={styles.iconCircle}><ScaleIcon size={28} color="#4A6B8A" /></View>
-          <Text style={styles.title}>⚖️ Atonement vs. Apology</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><ScaleIcon size={20} color={MC14_PALETTE.slate} /><Text style={styles.title}>Atonement vs. Apology</Text></View>
           <Text style={styles.subtitle}>Learning Real Accountability</Text>
           <Text style={styles.body}>An apology is words. Atonement is a process. Most people confuse the two — and wonder why their partner doesn't "just forgive."</Text>
           <Text style={styles.body}>You'll see 8 statements. Sort each one: is it genuine atonement, or a hollow apology?</Text>
@@ -85,7 +86,7 @@ export default function L2AtonementSorter({ content, onComplete }: { content: Re
     return (
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
-          <Text style={styles.title}>⚖️ Results</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><ScaleIcon size={20} color={MC14_PALETTE.slate} /><Text style={styles.title}>Results</Text></View>
           <Text style={styles.scoreText}>{score} of {SORT_ITEMS.length} correct ({pct}%)</Text>
           <View style={styles.keyPrinciples}>
             <Text style={styles.principleTitle}>The 4 Pillars of Genuine Atonement:</Text>

@@ -7,7 +7,8 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated } from 'react-native';
 import { Colors, Spacing, FontSizes, FontFamilies, BorderRadius, Shadows } from '@/constants/theme';
-import { EyeIcon } from '@/assets/graphics/icons';
+import { EyeIcon, RefreshIcon } from '@/assets/graphics/icons';
+import { MC12_PALETTE } from '@/constants/mc12Theme';
 import { useSoundHaptics } from '@/services/SoundHapticsService';
 import type { ResolvedLessonContent } from '@/utils/microcourses/course-content';
 import type { AttachmentStyle } from '@/types';
@@ -108,13 +109,13 @@ export default function L2ResponseSimulator({ content, onComplete }: { content: 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
           <View style={styles.iconCircle}><EyeIcon size={28} color="#FF6B6B" /></View>
-          <Text style={styles.title}>🔄 Three Ways to Respond</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><RefreshIcon size={20} color={MC12_PALETTE.coral} /><Text style={styles.title}>Three Ways to Respond</Text></View>
           <Text style={styles.subtitle}>The Response Simulator</Text>
           <Text style={styles.body}>When your partner makes a bid, you have three choices:</Text>
           <View style={styles.optionPreview}>
-            <View style={[styles.previewChip, { backgroundColor: '#D4F0DF' }]}><Text style={styles.previewText}>🟢 Turn Toward — engage with the bid</Text></View>
-            <View style={[styles.previewChip, { backgroundColor: '#FFF3DD' }]}><Text style={styles.previewText}>🟡 Turn Away — ignore or miss it</Text></View>
-            <View style={[styles.previewChip, { backgroundColor: '#FDDEDE' }]}><Text style={styles.previewText}>🔴 Turn Against — reject or criticize</Text></View>
+            <View style={[styles.previewChip, { backgroundColor: '#D4F0DF' }]}><View style={{flexDirection:'row',alignItems:'center',gap:8}}><View style={{width:12,height:12,borderRadius:6,backgroundColor:'#4CAF50'}} /><Text style={styles.previewText}>Turn Toward — engage with the bid</Text></View></View>
+            <View style={[styles.previewChip, { backgroundColor: '#FFF3DD' }]}><View style={{flexDirection:'row',alignItems:'center',gap:8}}><View style={{width:12,height:12,borderRadius:6,backgroundColor:'#FFC107'}} /><Text style={styles.previewText}>Turn Away — ignore or miss it</Text></View></View>
+            <View style={[styles.previewChip, { backgroundColor: '#FDDEDE' }]}><View style={{flexDirection:'row',alignItems:'center',gap:8}}><View style={{width:12,height:12,borderRadius:6,backgroundColor:'#F44336'}} /><Text style={styles.previewText}>Turn Against — reject or criticize</Text></View></View>
           </View>
           <Text style={styles.body}>You'll see 5 scenarios. Pick how you'd respond, and see the impact of each choice.</Text>
           <TouchableOpacity style={styles.primaryBtn} onPress={() => { haptics.tap(); setPhase('sim'); }} activeOpacity={0.7}>
@@ -132,7 +133,7 @@ export default function L2ResponseSimulator({ content, onComplete }: { content: 
     return (
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
-          <Text style={styles.title}>🔄 Your Response Pattern</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><RefreshIcon size={20} color={MC12_PALETTE.coral} /><Text style={styles.title}>Your Response Pattern</Text></View>
           <View style={styles.resultBars}>
             <View style={styles.barRow}><Text style={styles.barLabel}>Toward</Text><View style={styles.barTrack}><View style={[styles.barFill, { width: `${(towardCount / SCENARIOS.length) * 100}%`, backgroundColor: '#5A9E6F' }]} /></View><Text style={styles.barCount}>{towardCount}</Text></View>
             <View style={styles.barRow}><Text style={styles.barLabel}>Away</Text><View style={styles.barTrack}><View style={[styles.barFill, { width: `${(awayCount / SCENARIOS.length) * 100}%`, backgroundColor: '#E8A84A' }]} /></View><Text style={styles.barCount}>{awayCount}</Text></View>

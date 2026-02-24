@@ -7,6 +7,7 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { Colors, Spacing, FontSizes, FontFamilies, BorderRadius, Shadows } from '@/constants/theme';
+import { MC13_PALETTE } from '@/constants/mc13Theme';
 import { ScaleIcon } from '@/assets/graphics/icons';
 import { useSoundHaptics } from '@/services/SoundHapticsService';
 import type { ResolvedLessonContent } from '@/utils/microcourses/course-content';
@@ -14,16 +15,16 @@ import type { AttachmentStyle } from '@/types';
 import type { StepResponseEntry } from '@/types/intervention';
 
 const INTERACTION_TYPES = [
-  { id: 'compliment', label: 'Genuine compliment', type: 'positive' as const, emoji: '💬' },
-  { id: 'criticism', label: 'Criticism or complaint', type: 'negative' as const, emoji: '😤' },
-  { id: 'laughter', label: 'Shared laughter', type: 'positive' as const, emoji: '😂' },
-  { id: 'contempt', label: 'Eye roll or sarcasm', type: 'negative' as const, emoji: '🙄' },
-  { id: 'affection', label: 'Physical affection', type: 'positive' as const, emoji: '🤗' },
-  { id: 'stonewalling', label: 'Silent treatment', type: 'negative' as const, emoji: '🧊' },
-  { id: 'interest', label: 'Showing genuine interest', type: 'positive' as const, emoji: '👂' },
-  { id: 'defensiveness', label: 'Getting defensive', type: 'negative' as const, emoji: '🛡️' },
-  { id: 'appreciation', label: 'Saying thank you', type: 'positive' as const, emoji: '🙏' },
-  { id: 'support', label: 'Emotional support', type: 'positive' as const, emoji: '💪' },
+  { id: 'compliment', label: 'Genuine compliment', type: 'positive' as const },
+  { id: 'criticism', label: 'Criticism or complaint', type: 'negative' as const },
+  { id: 'laughter', label: 'Shared laughter', type: 'positive' as const },
+  { id: 'contempt', label: 'Eye roll or sarcasm', type: 'negative' as const },
+  { id: 'affection', label: 'Physical affection', type: 'positive' as const },
+  { id: 'stonewalling', label: 'Silent treatment', type: 'negative' as const },
+  { id: 'interest', label: 'Showing genuine interest', type: 'positive' as const },
+  { id: 'defensiveness', label: 'Getting defensive', type: 'negative' as const },
+  { id: 'appreciation', label: 'Saying thank you', type: 'positive' as const },
+  { id: 'support', label: 'Emotional support', type: 'positive' as const },
 ];
 
 const FREQUENCY_OPTIONS = ['Never', 'Rarely', 'Sometimes', 'Often', 'Daily'];
@@ -64,7 +65,7 @@ export default function L1MagicRatioSlider({ content, onComplete }: { content: R
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
           <View style={styles.iconCircle}><ScaleIcon size={28} color="#E8739E" /></View>
-          <Text style={styles.title}>⚖️ The 5:1 Magic Ratio</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><ScaleIcon size={20} color={MC13_PALETTE.warmRose} /><Text style={styles.title}>The 5:1 Magic Ratio</Text></View>
           <Text style={styles.subtitle}>What Keeps Relationships Thriving</Text>
           <Text style={styles.body}>Gottman found that stable, happy couples have at least 5 positive interactions for every 1 negative one.</Text>
           <Text style={styles.body}>Below 5:1, relationships start to erode. Above it, they flourish. It's not about avoiding conflict — it's about the surrounding climate.</Text>
@@ -84,10 +85,9 @@ export default function L1MagicRatioSlider({ content, onComplete }: { content: R
         <Text style={styles.counter}>{currentIdx + 1} of {INTERACTION_TYPES.length}</Text>
         <View style={styles.progressBar}><View style={[styles.progressFill, { width: `${((currentIdx + 1) / INTERACTION_TYPES.length) * 100}%` }]} /></View>
         <View style={styles.rateCard}>
-          <Text style={styles.rateEmoji}>{item.emoji}</Text>
           <Text style={styles.rateLabel}>{item.label}</Text>
           <View style={[styles.typeBadge, { backgroundColor: item.type === 'positive' ? '#D4F0DF' : '#FDDEDE' }]}>
-            <Text style={[styles.typeText, { color: item.type === 'positive' ? '#5A9E6F' : '#E57373' }]}>{item.type === 'positive' ? '➕ Positive' : '➖ Negative'}</Text>
+            <Text style={[styles.typeText, { color: item.type === 'positive' ? '#5A9E6F' : '#E57373' }]}>{item.type === 'positive' ? <Text style={{color:'#4CAF50',fontWeight:'700'}}>+</Text> : <Text style={{color:'#F44336',fontWeight:'700'}}>-</Text>} {item.type === 'positive' ? 'Positive' : 'Negative'}</Text>
           </View>
           <Text style={styles.rateQuestion}>How often this week?</Text>
           <View style={styles.freqList}>
@@ -112,7 +112,7 @@ export default function L1MagicRatioSlider({ content, onComplete }: { content: R
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
       <View style={styles.card}>
-        <Text style={styles.title}>⚖️ Your Ratio</Text>
+        <View style={{flexDirection:'row',alignItems:'center',gap:8}}><ScaleIcon size={20} color={MC13_PALETTE.warmRose} /><Text style={styles.title}>Your Ratio</Text></View>
         <View style={[styles.ratioCircle, { borderColor: isHealthy ? '#5A9E6F' : '#E8739E' }]}>
           <Text style={[styles.ratioNumber, { color: isHealthy ? '#5A9E6F' : '#E8739E' }]}>{ratioDisplay}:1</Text>
           <Text style={styles.ratioLabel}>{isHealthy ? 'Healthy Zone' : 'Growth Zone'}</Text>
@@ -156,7 +156,6 @@ const styles = StyleSheet.create({
   progressBar: { height: 4, backgroundColor: Colors.borderLight, borderRadius: 2, marginBottom: Spacing.md },
   progressFill: { height: 4, backgroundColor: '#E8739E', borderRadius: 2 },
   rateCard: { backgroundColor: '#FFFCF5', borderRadius: BorderRadius.lg, padding: Spacing.lg, borderWidth: 1, borderColor: '#F0D4E0', ...Shadows.subtle, gap: Spacing.md, alignItems: 'center' },
-  rateEmoji: { fontSize: 40 },
   rateLabel: { fontSize: FontSizes.headingS, fontWeight: '600', color: Colors.text, textAlign: 'center' },
   typeBadge: { paddingHorizontal: Spacing.md, paddingVertical: 4, borderRadius: BorderRadius.pill },
   typeText: { fontSize: FontSizes.caption, fontWeight: '600' },

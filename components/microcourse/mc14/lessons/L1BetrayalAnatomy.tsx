@@ -7,18 +7,33 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ScrollView, StyleSheet } from 'react-native';
 import { Colors, Spacing, FontSizes, FontFamilies, BorderRadius, Shadows } from '@/constants/theme';
-import { SearchIcon } from '@/assets/graphics/icons';
+import { SearchIcon, ClipboardIcon, ThoughtBubbleIcon, MirrorIcon, CompassIcon, PenIcon, TargetIcon } from '@/assets/graphics/icons';
+import { MC14_PALETTE } from '@/constants/mc14Theme';
 import { useSoundHaptics } from '@/services/SoundHapticsService';
 import type { ResolvedLessonContent } from '@/utils/microcourses/course-content';
 import type { AttachmentStyle } from '@/types';
 import type { StepResponseEntry } from '@/types/intervention';
 
 const BETRAYAL_LAYERS = [
-  { id: 'act', label: 'The Act', description: 'What specifically happened — the concrete event or behavior.', emoji: '📋', color: '#C44A4A' },
-  { id: 'meaning', label: 'The Meaning', description: 'What it meant to you — what story it told about your worth, your safety, your relationship.', emoji: '💭', color: '#4A6B8A' },
-  { id: 'identity', label: 'The Identity Wound', description: 'How it changed how you see yourself — "Am I not enough? Am I a fool for trusting?"', emoji: '🪞', color: '#C4A35A' },
-  { id: 'worldview', label: 'The Worldview Shift', description: 'How it changed how you see relationships, trust, and safety in general.', emoji: '🌍', color: '#8A8A8A' },
+  { id: 'act', label: 'The Act', description: 'What specifically happened — the concrete event or behavior.', color: '#C44A4A' },
+  { id: 'meaning', label: 'The Meaning', description: 'What it meant to you — what story it told about your worth, your safety, your relationship.', color: '#4A6B8A' },
+  { id: 'identity', label: 'The Identity Wound', description: 'How it changed how you see yourself — "Am I not enough? Am I a fool for trusting?"', color: '#C4A35A' },
+  { id: 'worldview', label: 'The Worldview Shift', description: 'How it changed how you see relationships, trust, and safety in general.', color: '#8A8A8A' },
 ];
+
+const LAYER_ICONS: Record<string, React.ReactNode> = {
+  act: <ClipboardIcon size={32} color={MC14_PALETTE.woundRed} />,
+  meaning: <ThoughtBubbleIcon size={32} color={MC14_PALETTE.slate} />,
+  identity: <MirrorIcon size={32} color={MC14_PALETTE.mutedGold} />,
+  worldview: <CompassIcon size={32} color={MC14_PALETTE.warmGray} />,
+};
+
+const LAYER_MINI_ICONS: Record<string, React.ReactNode> = {
+  act: <ClipboardIcon size={16} color={MC14_PALETTE.woundRed} />,
+  meaning: <ThoughtBubbleIcon size={16} color={MC14_PALETTE.slate} />,
+  identity: <MirrorIcon size={16} color={MC14_PALETTE.mutedGold} />,
+  worldview: <CompassIcon size={16} color={MC14_PALETTE.warmGray} />,
+};
 
 const IMPACT_AREAS = [
   'I feel hypervigilant / always watching',
@@ -59,7 +74,7 @@ export default function L1BetrayalAnatomy({ content, onComplete }: { content: Re
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
           <View style={styles.iconCircle}><SearchIcon size={28} color="#4A6B8A" /></View>
-          <Text style={styles.title}>🔍 Understanding the Wound</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><SearchIcon size={20} color={MC14_PALETTE.slate} /><Text style={styles.title}>Understanding the Wound</Text></View>
           <Text style={styles.subtitle}>The Anatomy of Betrayal</Text>
           <Text style={styles.body}>Trust repair starts with understanding. Not excusing, not minimizing — understanding the full shape of what happened.</Text>
           <Text style={styles.body}>Betrayal has layers. Most people only see the surface — the act itself. But healing requires seeing all four layers.</Text>
@@ -79,7 +94,7 @@ export default function L1BetrayalAnatomy({ content, onComplete }: { content: Re
         <Text style={styles.counter}>Layer {currentLayer + 1} of {BETRAYAL_LAYERS.length}</Text>
         <View style={styles.progressBar}><View style={[styles.progressFill, { width: `${((currentLayer + 1) / BETRAYAL_LAYERS.length) * 100}%` }]} /></View>
         <View style={[styles.layerCard, { borderLeftColor: layer.color }]}>
-          <Text style={styles.layerEmoji}>{layer.emoji}</Text>
+          <View style={styles.layerIconWrap}>{LAYER_ICONS[layer.id]}</View>
           <Text style={[styles.layerTitle, { color: layer.color }]}>{layer.label}</Text>
           <Text style={styles.layerDesc}>{layer.description}</Text>
         </View>
@@ -102,7 +117,7 @@ export default function L1BetrayalAnatomy({ content, onComplete }: { content: Re
     return (
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <View style={styles.card}>
-          <Text style={styles.title}>📝 Your Experience</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><PenIcon size={20} color={MC14_PALETTE.slate} /><Text style={styles.title}>Your Experience</Text></View>
           <Text style={styles.body}>Without needing to share details, which layer resonates most with your experience? What part of the wound feels most unhealed?</Text>
           <TextInput
             style={styles.personalInput}
@@ -127,7 +142,7 @@ export default function L1BetrayalAnatomy({ content, onComplete }: { content: Re
     return (
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
-          <Text style={styles.title}>🎯 Current Impact</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><TargetIcon size={20} color={MC14_PALETTE.slate} /><Text style={styles.title}>Current Impact</Text></View>
           <Text style={styles.body}>Which of these describe your experience right now? Select all that apply:</Text>
           <View style={styles.impactList}>
             {IMPACT_AREAS.map(item => (
@@ -153,13 +168,13 @@ export default function L1BetrayalAnatomy({ content, onComplete }: { content: Re
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
       <View style={styles.resultCard}>
-        <Text style={styles.title}>🔍 What You've Mapped</Text>
+        <View style={{flexDirection:'row',alignItems:'center',gap:8}}><SearchIcon size={20} color={MC14_PALETTE.slate} /><Text style={styles.title}>What You've Mapped</Text></View>
         <Text style={styles.body}>You've identified {selectedImpacts.length} active impact area{selectedImpacts.length !== 1 ? 's' : ''}. This isn't a diagnosis — it's a map.</Text>
         <Text style={styles.insightText}>Understanding the wound is the first step to healing it. You can't repair what you can't see.</Text>
         <View style={styles.layerSummary}>
           {BETRAYAL_LAYERS.map(l => (
             <View key={l.id} style={styles.layerMiniRow}>
-              <Text style={styles.layerMiniEmoji}>{l.emoji}</Text>
+              <View>{LAYER_MINI_ICONS[l.id]}</View>
               <Text style={styles.layerMiniLabel}>{l.label}</Text>
             </View>
           ))}
@@ -188,7 +203,7 @@ const styles = StyleSheet.create({
   progressBar: { height: 4, backgroundColor: Colors.borderLight, borderRadius: 2, marginBottom: Spacing.md },
   progressFill: { height: 4, backgroundColor: '#4A6B8A', borderRadius: 2 },
   layerCard: { backgroundColor: '#FAFBFD', borderRadius: BorderRadius.lg, padding: Spacing.lg, borderWidth: 1, borderColor: '#D0D8E0', borderLeftWidth: 4, gap: Spacing.md, alignItems: 'center', marginBottom: Spacing.md },
-  layerEmoji: { fontSize: 40 },
+  layerIconWrap: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#F0F2F5', alignItems: 'center', justifyContent: 'center' },
   layerTitle: { fontSize: FontSizes.headingS, fontWeight: '700' },
   layerDesc: { fontSize: FontSizes.body, color: Colors.text, lineHeight: 24, textAlign: 'center' },
   personalInput: { width: '100%', borderWidth: 1, borderColor: Colors.borderLight, borderRadius: BorderRadius.md, padding: Spacing.md, fontSize: FontSizes.body, color: Colors.text, minHeight: 100, backgroundColor: '#FFFCF7', textAlignVertical: 'top' },
@@ -201,6 +216,5 @@ const styles = StyleSheet.create({
   insightText: { fontSize: FontSizes.body, color: '#5A9E6F', fontWeight: '600', textAlign: 'center', fontStyle: 'italic' },
   layerSummary: { gap: Spacing.xs },
   layerMiniRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
-  layerMiniEmoji: { fontSize: 18 },
   layerMiniLabel: { fontSize: FontSizes.bodySmall, color: Colors.text, fontWeight: '500' },
 });

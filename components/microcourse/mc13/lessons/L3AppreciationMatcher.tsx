@@ -7,7 +7,8 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated } from 'react-native';
 import { Colors, Spacing, FontSizes, FontFamilies, BorderRadius, Shadows } from '@/constants/theme';
-import { HeartIcon } from '@/assets/graphics/icons';
+import { MC13_PALETTE } from '@/constants/mc13Theme';
+import { HeartIcon, SparkleIcon } from '@/assets/graphics/icons';
 import { useSoundHaptics } from '@/services/SoundHapticsService';
 import type { ResolvedLessonContent } from '@/utils/microcourses/course-content';
 import type { AttachmentStyle } from '@/types';
@@ -70,7 +71,7 @@ export default function L3AppreciationMatcher({ content, onComplete }: { content
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
           <View style={styles.iconCircle}><HeartIcon size={28} color="#E8739E" /></View>
-          <Text style={styles.title}>💝 Appreciation Matcher</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><HeartIcon size={20} color={MC13_PALETTE.warmRose} /><Text style={styles.title}>Appreciation Matcher</Text></View>
           <Text style={styles.subtitle}>Generic vs. Specific Gratitude</Text>
           <Text style={styles.body}>Research shows that specific appreciation is 3x more impactful than generic praise. It tells your partner: "I notice the details of who you are."</Text>
           <Text style={styles.body}>You'll see 5 pairs. For each, pick which appreciation would land more powerfully — then see why.</Text>
@@ -87,7 +88,7 @@ export default function L3AppreciationMatcher({ content, onComplete }: { content
     return (
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
-          <Text style={styles.title}>💝 Results</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><HeartIcon size={20} color={MC13_PALETTE.warmRose} /><Text style={styles.title}>Results</Text></View>
           <Text style={styles.scoreText}>You chose specific {specificCount} of {MATCH_PAIRS.length} times</Text>
           <Text style={styles.insightText}>The secret isn't just saying "thank you" more — it's saying it with enough detail that your partner feels truly seen.</Text>
           <View style={styles.formulaBox}>
@@ -135,7 +136,7 @@ export default function L3AppreciationMatcher({ content, onComplete }: { content
               <Text style={styles.comparisonText}>{pair.generic}</Text>
             </View>
             <View style={[styles.comparisonSide, styles.comparisonSpecific]}>
-              <Text style={styles.comparisonLabel}>Specific ✨</Text>
+              <View style={{flexDirection:'row',alignItems:'center',gap:4}}><Text style={styles.comparisonLabel}>Specific</Text><SparkleIcon size={14} color={MC13_PALETTE.softGold} /></View>
               <Text style={styles.comparisonText}>{pair.specific}</Text>
             </View>
           </View>

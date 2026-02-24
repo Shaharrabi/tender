@@ -7,33 +7,34 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ScrollView, StyleSheet } from 'react-native';
 import { Colors, Spacing, FontSizes, FontFamilies, BorderRadius, Shadows } from '@/constants/theme';
-import { SparkleIcon } from '@/assets/graphics/icons';
+import { SparkleIcon, MirrorIcon } from '@/assets/graphics/icons';
+import { MC11_PALETTE } from '@/constants/mc11Theme';
 import { useSoundHaptics } from '@/services/SoundHapticsService';
 import type { ResolvedLessonContent } from '@/utils/microcourses/course-content';
 import type { AttachmentStyle } from '@/types';
 import type { StepResponseEntry } from '@/types/intervention';
 
-interface PleasureItem { id: string; label: string; emoji: string; category: string }
+interface PleasureItem { id: string; label: string; category: string }
 
 const PLEASURE_ITEMS: PleasureItem[] = [
-  { id: 'warm-drink', label: 'Warm drink', emoji: '☕', category: 'Comfort' },
-  { id: 'flowers', label: 'Fresh flowers', emoji: '🌸', category: 'Beauty' },
-  { id: 'music', label: 'Favorite music', emoji: '🎵', category: 'Sound' },
-  { id: 'hot-shower', label: 'Hot shower', emoji: '🚿', category: 'Body' },
-  { id: 'sunlight', label: 'Sunlight on skin', emoji: '☀️', category: 'Body' },
-  { id: 'laughter', label: 'Laughing together', emoji: '😂', category: 'Connection' },
-  { id: 'cooking', label: 'Cooking a meal', emoji: '🍳', category: 'Creation' },
-  { id: 'walking', label: 'Gentle walk', emoji: '🚶', category: 'Movement' },
-  { id: 'reading', label: 'Reading in bed', emoji: '📖', category: 'Stillness' },
-  { id: 'petting', label: 'Pet cuddles', emoji: '🐾', category: 'Touch' },
-  { id: 'stretching', label: 'Morning stretch', emoji: '🧘', category: 'Body' },
-  { id: 'nature', label: 'Being in nature', emoji: '🌿', category: 'Beauty' },
-  { id: 'dancing', label: 'Dancing freely', emoji: '💃', category: 'Movement' },
-  { id: 'candle', label: 'Candlelight', emoji: '🕯️', category: 'Beauty' },
-  { id: 'hugging', label: 'A long hug', emoji: '🤗', category: 'Connection' },
-  { id: 'chocolate', label: 'Dark chocolate', emoji: '🍫', category: 'Taste' },
-  { id: 'birdsong', label: 'Birdsong', emoji: '🐦', category: 'Sound' },
-  { id: 'blanket', label: 'Soft blanket', emoji: '🛋️', category: 'Comfort' },
+  { id: 'warm-drink', label: 'Warm drink', category: 'Comfort' },
+  { id: 'flowers', label: 'Fresh flowers', category: 'Beauty' },
+  { id: 'music', label: 'Favorite music', category: 'Sound' },
+  { id: 'hot-shower', label: 'Hot shower', category: 'Body' },
+  { id: 'sunlight', label: 'Sunlight on skin', category: 'Body' },
+  { id: 'laughter', label: 'Laughing together', category: 'Connection' },
+  { id: 'cooking', label: 'Cooking a meal', category: 'Creation' },
+  { id: 'walking', label: 'Gentle walk', category: 'Movement' },
+  { id: 'reading', label: 'Reading in bed', category: 'Stillness' },
+  { id: 'petting', label: 'Pet cuddles', category: 'Touch' },
+  { id: 'stretching', label: 'Morning stretch', category: 'Body' },
+  { id: 'nature', label: 'Being in nature', category: 'Beauty' },
+  { id: 'dancing', label: 'Dancing freely', category: 'Movement' },
+  { id: 'candle', label: 'Candlelight', category: 'Beauty' },
+  { id: 'hugging', label: 'A long hug', category: 'Connection' },
+  { id: 'chocolate', label: 'Dark chocolate', category: 'Taste' },
+  { id: 'birdsong', label: 'Birdsong', category: 'Sound' },
+  { id: 'blanket', label: 'Soft blanket', category: 'Comfort' },
 ];
 
 const MAX_PALETTE = 6;
@@ -45,7 +46,6 @@ export default function L3PleasurePaletteBuilder({ content, onComplete }: { cont
   const [phase, setPhase] = useState<Phase>('intro');
   const [palette, setPalette] = useState<PleasureItem[]>([]);
   const [customText, setCustomText] = useState('');
-  const [customEmoji, setCustomEmoji] = useState('✨');
   const [showCustom, setShowCustom] = useState(false);
   const [reflectionText, setReflectionText] = useState('');
 
@@ -62,16 +62,16 @@ export default function L3PleasurePaletteBuilder({ content, onComplete }: { cont
   const addCustomItem = useCallback(() => {
     if (!customText.trim()) return;
     haptics.tap();
-    const item: PleasureItem = { id: `custom-${Date.now()}`, label: customText.trim(), emoji: customEmoji, category: 'Custom' };
+    const item: PleasureItem = { id: `custom-${Date.now()}`, label: customText.trim(), category: 'Custom' };
     setPalette(prev => prev.length < MAX_PALETTE ? [...prev, item] : prev);
     setCustomText('');
     setShowCustom(false);
-  }, [haptics, customText, customEmoji]);
+  }, [haptics, customText]);
 
   const handleFinish = useCallback(() => {
     haptics.tap();
     const steps: StepResponseEntry[] = [
-      { step: 1, prompt: 'Your Pleasure Palette', response: JSON.stringify(palette.map(p => ({ label: p.label, emoji: p.emoji, category: p.category }))), type: 'interactive' as const },
+      { step: 1, prompt: 'Your Pleasure Palette', response: JSON.stringify(palette.map(p => ({ label: p.label, category: p.category }))), type: 'interactive' as const },
       { step: 2, prompt: 'When did you last enjoy one of these?', response: reflectionText, type: 'interactive' as const },
     ];
     onComplete(steps);
@@ -82,7 +82,7 @@ export default function L3PleasurePaletteBuilder({ content, onComplete }: { cont
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
           <View style={styles.iconCircle}><SparkleIcon size={28} color="#DAA520" /></View>
-          <Text style={styles.title}>🎨 Your Pleasure Palette</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><SparkleIcon size={20} color={MC11_PALETTE.warmGold} /><Text style={styles.title}>Your Pleasure Palette</Text></View>
           <Text style={styles.subtitle}>Curating Your Personal Resources</Text>
           <Text style={styles.body}>In OI, pleasure isn't indulgence — it's medicine. Your nervous system needs a menu of things that feel genuinely good.</Text>
           <Text style={styles.body}>You'll pick 6 items that bring you authentic pleasure. Think small, accessible, everyday things — not grand vacations.</Text>
@@ -102,7 +102,7 @@ export default function L3PleasurePaletteBuilder({ content, onComplete }: { cont
         <View style={styles.palettePreview}>
           {Array.from({ length: MAX_PALETTE }).map((_, i) => (
             <View key={i} style={[styles.paletteSlot, palette[i] && styles.paletteSlotFilled]}>
-              <Text style={styles.paletteSlotText}>{palette[i]?.emoji || '+'}</Text>
+              <Text style={styles.paletteSlotText}>{palette[i] ? palette[i].label.charAt(0).toUpperCase() : '+'}</Text>
             </View>
           ))}
         </View>
@@ -122,7 +122,7 @@ export default function L3PleasurePaletteBuilder({ content, onComplete }: { cont
                     activeOpacity={0.7}
                     disabled={disabled}
                   >
-                    <Text style={styles.itemEmoji}>{item.emoji}</Text>
+                    <Text style={styles.itemEmoji}>{item.label.charAt(0).toUpperCase()}</Text>
                     <Text style={[styles.itemLabel, selected && styles.itemLabelSelected]}>{item.label}</Text>
                   </TouchableOpacity>
                 );
@@ -161,11 +161,11 @@ export default function L3PleasurePaletteBuilder({ content, onComplete }: { cont
     return (
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <View style={styles.card}>
-          <Text style={styles.title}>🪞 Quick Reflection</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><MirrorIcon size={20} color={MC11_PALETTE.warmGold} /><Text style={styles.title}>Quick Reflection</Text></View>
           <View style={styles.palettePreview}>
             {palette.map((p, i) => (
               <View key={i} style={[styles.paletteSlot, styles.paletteSlotFilled]}>
-                <Text style={styles.paletteSlotText}>{p.emoji}</Text>
+                <Text style={styles.paletteSlotText}>{p.label.charAt(0).toUpperCase()}</Text>
               </View>
             ))}
           </View>
@@ -190,11 +190,11 @@ export default function L3PleasurePaletteBuilder({ content, onComplete }: { cont
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
       <View style={styles.card}>
-        <Text style={styles.title}>🎨 Your Pleasure Palette</Text>
+        <View style={{flexDirection:'row',alignItems:'center',gap:8}}><SparkleIcon size={20} color={MC11_PALETTE.warmGold} /><Text style={styles.title}>Your Pleasure Palette</Text></View>
         <View style={styles.resultGrid}>
           {palette.map((p, i) => (
             <View key={i} style={styles.resultItem}>
-              <Text style={styles.resultEmoji}>{p.emoji}</Text>
+              <Text style={styles.resultEmoji}>{p.label.charAt(0).toUpperCase()}</Text>
               <Text style={styles.resultLabel}>{p.label}</Text>
             </View>
           ))}
@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
   itemChip: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm, borderRadius: BorderRadius.pill, borderWidth: 1.5, borderColor: Colors.border, backgroundColor: '#FFFDF5', gap: Spacing.xs },
   itemChipSelected: { borderColor: '#DAA520', backgroundColor: '#FFF3D4' },
   itemChipDisabled: { opacity: 0.35 },
-  itemEmoji: { fontSize: 16 },
+  itemEmoji: { fontSize: 14, fontWeight: '700', color: '#DAA520' },
   itemLabel: { fontSize: FontSizes.bodySmall, color: Colors.text, fontWeight: '500' },
   itemLabelSelected: { color: '#B8860B', fontWeight: '600' },
   addCustomBtn: { alignSelf: 'center', paddingVertical: Spacing.sm, paddingHorizontal: Spacing.lg, borderRadius: BorderRadius.pill, borderWidth: 1.5, borderColor: Colors.border, marginBottom: Spacing.md },
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
   reflectionInput: { width: '100%', borderWidth: 1, borderColor: Colors.borderLight, borderRadius: BorderRadius.md, padding: Spacing.md, fontSize: FontSizes.body, color: Colors.text, minHeight: 80, backgroundColor: '#FFFCF7', textAlignVertical: 'top' },
   resultGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.md, justifyContent: 'center' },
   resultItem: { alignItems: 'center', gap: 4, width: 80 },
-  resultEmoji: { fontSize: 32 },
+  resultEmoji: { fontSize: 24, fontWeight: '700', color: '#DAA520' },
   resultLabel: { fontSize: FontSizes.caption, color: Colors.text, textAlign: 'center', fontWeight: '500' },
   insightText: { fontSize: FontSizes.body, color: '#5A9E6F', fontWeight: '600', textAlign: 'center', fontStyle: 'italic' },
 });

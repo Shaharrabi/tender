@@ -7,7 +7,8 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ScrollView, StyleSheet } from 'react-native';
 import { Colors, Spacing, FontSizes, FontFamilies, BorderRadius, Shadows } from '@/constants/theme';
-import { PenIcon } from '@/assets/graphics/icons';
+import { MC13_PALETTE } from '@/constants/mc13Theme';
+import { PenIcon, MailboxIcon } from '@/assets/graphics/icons';
 import { useSoundHaptics } from '@/services/SoundHapticsService';
 import type { ResolvedLessonContent } from '@/utils/microcourses/course-content';
 import type { AttachmentStyle } from '@/types';
@@ -56,7 +57,7 @@ export default function L5AppreciationLetter({ content, onComplete }: { content:
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
           <View style={styles.iconCircle}><PenIcon size={28} color="#E8739E" /></View>
-          <Text style={styles.title}>💌 The Appreciation Letter</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><MailboxIcon size={20} color={MC13_PALETTE.warmRose} /><Text style={styles.title}>The Appreciation Letter</Text></View>
           <Text style={styles.subtitle}>Your Capstone Gift</Text>
           <Text style={styles.body}>Research shows that writing appreciation letters increases both the writer's and receiver's happiness for weeks afterward.</Text>
           <Text style={styles.body}>You'll answer 4 prompts, and they'll weave together into a short appreciation letter you can share with your partner — if you choose to.</Text>
@@ -132,14 +133,14 @@ export default function L5AppreciationLetter({ content, onComplete }: { content:
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
       <View style={styles.resultCard}>
-        <Text style={styles.title}>💌 Letter Complete</Text>
+        <View style={{flexDirection:'row',alignItems:'center',gap:8}}><MailboxIcon size={20} color={MC13_PALETTE.warmRose} /><Text style={styles.title}>Letter Complete</Text></View>
         <Text style={styles.insightText}>You just created something your partner would treasure. Studies show appreciation letters boost relationship satisfaction for both the writer and reader.</Text>
         <View style={styles.optionList}>
           <Text style={styles.optionTitle}>What to do with your letter:</Text>
-          <View style={styles.optionItem}><Text style={styles.optionEmoji}>💬</Text><Text style={styles.optionText}>Read it aloud to your partner tonight</Text></View>
-          <View style={styles.optionItem}><Text style={styles.optionEmoji}>📱</Text><Text style={styles.optionText}>Screenshot and text it to them</Text></View>
-          <View style={styles.optionItem}><Text style={styles.optionEmoji}>✍️</Text><Text style={styles.optionText}>Handwrite it and leave it where they'll find it</Text></View>
-          <View style={styles.optionItem}><Text style={styles.optionEmoji}>🤫</Text><Text style={styles.optionText}>Keep it for yourself — the writing itself matters</Text></View>
+          <View style={styles.optionItem}><Text style={styles.optionBullet}>{'\u2022'}</Text><Text style={styles.optionText}>Read it aloud to your partner tonight</Text></View>
+          <View style={styles.optionItem}><Text style={styles.optionBullet}>{'\u2022'}</Text><Text style={styles.optionText}>Screenshot and text it to them</Text></View>
+          <View style={styles.optionItem}><Text style={styles.optionBullet}>{'\u2022'}</Text><Text style={styles.optionText}>Handwrite it and leave it where they'll find it</Text></View>
+          <View style={styles.optionItem}><Text style={styles.optionBullet}>{'\u2022'}</Text><Text style={styles.optionText}>Keep it for yourself — the writing itself matters</Text></View>
         </View>
         <Text style={styles.body}>The habit of appreciation changes everything. Not because it solves problems — but because it reminds you both why you chose each other.</Text>
         <TouchableOpacity style={styles.primaryBtn} onPress={handleFinish} activeOpacity={0.7}>
@@ -178,6 +179,6 @@ const styles = StyleSheet.create({
   optionList: { width: '100%', gap: Spacing.sm },
   optionTitle: { fontSize: FontSizes.bodySmall, fontWeight: '700', color: Colors.text },
   optionItem: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
-  optionEmoji: { fontSize: 18 },
+  optionBullet: { fontSize: 18, color: MC13_PALETTE.warmRose, fontWeight: '700' },
   optionText: { fontSize: FontSizes.bodySmall, color: Colors.text, flex: 1, lineHeight: 20 },
 });

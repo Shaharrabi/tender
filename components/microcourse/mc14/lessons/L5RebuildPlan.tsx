@@ -7,36 +7,55 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ScrollView, StyleSheet } from 'react-native';
 import { Colors, Spacing, FontSizes, FontFamilies, BorderRadius, Shadows } from '@/constants/theme';
-import { FlagIcon } from '@/assets/graphics/icons';
+import { FlagIcon, PenIcon, EyeIcon, ChatBubbleIcon, LightningIcon, NotepadIcon, CalendarIcon, HeartIcon, HandshakeIcon, SparkleIcon, BookOpenIcon, LightbulbIcon, ClipboardIcon, StarIcon, DoveIcon } from '@/assets/graphics/icons';
+import { MC14_PALETTE } from '@/constants/mc14Theme';
 import { useSoundHaptics } from '@/services/SoundHapticsService';
 import type { ResolvedLessonContent } from '@/utils/microcourses/course-content';
 import type { AttachmentStyle } from '@/types';
 import type { StepResponseEntry } from '@/types/intervention';
 
-interface PlanAction { id: string; label: string; emoji: string; phase: string }
+interface PlanAction { id: string; label: string; phase: string }
 
 const PLAN_ACTIONS: Record<string, PlanAction[]> = {
   stabilize: [
-    { id: 'transparency', label: 'Full transparency (open phone, schedule, etc.)', emoji: '📱', phase: 'stabilize' },
-    { id: 'check-ins', label: 'Daily emotional check-ins (5 min)', emoji: '💬', phase: 'stabilize' },
-    { id: 'therapy', label: 'Start or continue couples therapy', emoji: '🛋️', phase: 'stabilize' },
-    { id: 'triggers', label: 'Learn and respect trigger situations', emoji: '⚡', phase: 'stabilize' },
-    { id: 'individual', label: 'Individual therapy or journaling', emoji: '📓', phase: 'stabilize' },
+    { id: 'transparency', label: 'Full transparency (open phone, schedule, etc.)', phase: 'stabilize' },
+    { id: 'check-ins', label: 'Daily emotional check-ins (5 min)', phase: 'stabilize' },
+    { id: 'therapy', label: 'Start or continue couples therapy', phase: 'stabilize' },
+    { id: 'triggers', label: 'Learn and respect trigger situations', phase: 'stabilize' },
+    { id: 'individual', label: 'Individual therapy or journaling', phase: 'stabilize' },
   ],
   reconnect: [
-    { id: 'dates', label: 'Weekly dedicated together time', emoji: '🗓️', phase: 'reconnect' },
-    { id: 'appreciate', label: 'Daily specific appreciation', emoji: '🙏', phase: 'reconnect' },
-    { id: 'physical', label: 'Rebuild physical closeness (non-sexual first)', emoji: '🤝', phase: 'reconnect' },
-    { id: 'fun', label: 'Do something new and fun together', emoji: '🎉', phase: 'reconnect' },
-    { id: 'stories', label: 'Share positive memories regularly', emoji: '📸', phase: 'reconnect' },
+    { id: 'dates', label: 'Weekly dedicated together time', phase: 'reconnect' },
+    { id: 'appreciate', label: 'Daily specific appreciation', phase: 'reconnect' },
+    { id: 'physical', label: 'Rebuild physical closeness (non-sexual first)', phase: 'reconnect' },
+    { id: 'fun', label: 'Do something new and fun together', phase: 'reconnect' },
+    { id: 'stories', label: 'Share positive memories regularly', phase: 'reconnect' },
   ],
   rebuild: [
-    { id: 'future', label: 'Create a shared vision for the future', emoji: '🔮', phase: 'rebuild' },
-    { id: 'boundaries', label: 'Establish new relationship agreements', emoji: '📋', phase: 'rebuild' },
-    { id: 'celebrate', label: 'Celebrate progress milestones', emoji: '🎊', phase: 'rebuild' },
-    { id: 'forgiveness', label: 'Explore forgiveness (when ready)', emoji: '🕊️', phase: 'rebuild' },
-    { id: 'narrative', label: 'Co-author your "comeback story"', emoji: '📖', phase: 'rebuild' },
+    { id: 'future', label: 'Create a shared vision for the future', phase: 'rebuild' },
+    { id: 'boundaries', label: 'Establish new relationship agreements', phase: 'rebuild' },
+    { id: 'celebrate', label: 'Celebrate progress milestones', phase: 'rebuild' },
+    { id: 'forgiveness', label: 'Explore forgiveness (when ready)', phase: 'rebuild' },
+    { id: 'narrative', label: 'Co-author your "comeback story"', phase: 'rebuild' },
   ],
+};
+
+const ACTION_ICONS: Record<string, React.ReactNode> = {
+  transparency: <EyeIcon size={18} color={MC14_PALETTE.woundRed} />,
+  'check-ins': <ChatBubbleIcon size={18} color={MC14_PALETTE.woundRed} />,
+  therapy: <HandshakeIcon size={18} color={MC14_PALETTE.woundRed} />,
+  triggers: <LightningIcon size={18} color={MC14_PALETTE.woundRed} />,
+  individual: <NotepadIcon size={18} color={MC14_PALETTE.woundRed} />,
+  dates: <CalendarIcon size={18} color={MC14_PALETTE.mutedGold} />,
+  appreciate: <HeartIcon size={18} color={MC14_PALETTE.mutedGold} />,
+  physical: <HandshakeIcon size={18} color={MC14_PALETTE.mutedGold} />,
+  fun: <SparkleIcon size={18} color={MC14_PALETTE.mutedGold} />,
+  stories: <BookOpenIcon size={18} color={MC14_PALETTE.mutedGold} />,
+  future: <LightbulbIcon size={18} color={MC14_PALETTE.repairGreen} />,
+  boundaries: <ClipboardIcon size={18} color={MC14_PALETTE.repairGreen} />,
+  celebrate: <StarIcon size={18} color={MC14_PALETTE.repairGreen} />,
+  forgiveness: <DoveIcon size={18} color={MC14_PALETTE.repairGreen} />,
+  narrative: <BookOpenIcon size={18} color={MC14_PALETTE.repairGreen} />,
 };
 
 const PHASES = [
@@ -86,7 +105,7 @@ export default function L5RebuildPlan({ content, onComplete }: { content: Resolv
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
           <View style={styles.iconCircle}><FlagIcon size={28} color="#4A6B8A" /></View>
-          <Text style={styles.title}>🏗️ Your 90-Day Rebuild Plan</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><FlagIcon size={20} color={MC14_PALETTE.slate} /><Text style={styles.title}>Your 90-Day Rebuild Plan</Text></View>
           <Text style={styles.subtitle}>From Intention to Action</Text>
           <Text style={styles.body}>Trust isn't rebuilt by promises — it's rebuilt by sustained, observable behavior over time.</Text>
           <Text style={styles.body}>You'll create a concrete plan across three 30-day phases. Pick 2-3 actions per phase that feel realistic and meaningful.</Text>
@@ -127,7 +146,7 @@ export default function L5RebuildPlan({ content, onComplete }: { content: Resolv
                 activeOpacity={0.7}
                 disabled={disabled}
               >
-                <Text style={styles.actionEmoji}>{action.emoji}</Text>
+                <View>{ACTION_ICONS[action.id]}</View>
                 <Text style={[styles.actionLabel, isSelected && { color: currentPhase.color, fontWeight: '700' }]}>{action.label}</Text>
                 {isSelected && <Text style={[styles.checkmark, { color: currentPhase.color }]}>✓</Text>}
               </TouchableOpacity>
@@ -155,7 +174,7 @@ export default function L5RebuildPlan({ content, onComplete }: { content: Resolv
     return (
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <View style={styles.card}>
-          <Text style={styles.title}>📝 Your Commitment</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><PenIcon size={20} color={MC14_PALETTE.slate} /><Text style={styles.title}>Your Commitment</Text></View>
           <Text style={styles.body}>Why are you choosing to rebuild? What gives you hope that this work is worth it?</Text>
           <TextInput
             style={styles.commitInput}
@@ -177,14 +196,14 @@ export default function L5RebuildPlan({ content, onComplete }: { content: Resolv
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
       <View style={styles.resultCard}>
-        <Text style={styles.title}>🏗️ Your 90-Day Rebuild Plan</Text>
+        <View style={{flexDirection:'row',alignItems:'center',gap:8}}><FlagIcon size={20} color={MC14_PALETTE.slate} /><Text style={styles.title}>Your 90-Day Rebuild Plan</Text></View>
         {PHASES.map(p => {
           const actions = (selected[p.key] || []).map(id => PLAN_ACTIONS[p.key].find(a => a.id === id)).filter(Boolean);
           return (
             <View key={p.key} style={[styles.planPhase, { borderLeftColor: p.color }]}>
               <Text style={[styles.planPhaseTitle, { color: p.color }]}>{p.label}</Text>
               {actions.map(a => a && (
-                <Text key={a.id} style={styles.planAction}>{a.emoji} {a.label}</Text>
+                <View key={a.id} style={{flexDirection:'row',alignItems:'center',gap:6}}>{ACTION_ICONS[a.id]}<Text style={styles.planAction}>{a.label}</Text></View>
               ))}
             </View>
           );
@@ -221,7 +240,6 @@ const styles = StyleSheet.create({
   actionList: { gap: Spacing.xs, marginBottom: Spacing.md },
   actionCard: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, padding: Spacing.md, borderRadius: BorderRadius.md, borderWidth: 1.5, borderColor: Colors.border, backgroundColor: '#FAFBFD' },
   actionDisabled: { opacity: 0.35 },
-  actionEmoji: { fontSize: 20 },
   actionLabel: { fontSize: FontSizes.bodySmall, color: Colors.text, fontWeight: '500', flex: 1 },
   checkmark: { fontSize: 18, fontWeight: '700' },
   hint: { fontSize: FontSizes.caption, color: Colors.textMuted, fontStyle: 'italic', textAlign: 'center' },

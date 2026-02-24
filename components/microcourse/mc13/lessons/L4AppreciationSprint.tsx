@@ -7,6 +7,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ScrollView, StyleSheet, Animated } from 'react-native';
 import { Colors, Spacing, FontSizes, FontFamilies, BorderRadius, Shadows } from '@/constants/theme';
+import { MC13_PALETTE } from '@/constants/mc13Theme';
 import { LightningIcon } from '@/assets/graphics/icons';
 import { useSoundHaptics } from '@/services/SoundHapticsService';
 import type { ResolvedLessonContent } from '@/utils/microcourses/course-content';
@@ -82,7 +83,7 @@ export default function L4AppreciationSprint({ content, onComplete }: { content:
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
           <View style={styles.iconCircle}><LightningIcon size={28} color="#E8739E" /></View>
-          <Text style={styles.title}>⚡ Appreciation Sprint</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><LightningIcon size={20} color={MC13_PALETTE.warmRose} /><Text style={styles.title}>Appreciation Sprint</Text></View>
           <Text style={styles.subtitle}>90 Seconds of Gratitude</Text>
           <Text style={styles.body}>Gratitude is a muscle. The more you use it, the stronger it gets.</Text>
           <Text style={styles.body}>You have 90 seconds. Write as many specific appreciations about your partner as you can. Use the formula: I noticed + [action] + it made me feel + [emotion].</Text>
@@ -161,7 +162,7 @@ export default function L4AppreciationSprint({ content, onComplete }: { content:
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
       <View style={styles.resultCard}>
-        <Text style={styles.title}>⚡ Sprint Results</Text>
+        <View style={{flexDirection:'row',alignItems:'center',gap:8}}><LightningIcon size={20} color={MC13_PALETTE.warmRose} /><Text style={styles.title}>Sprint Results</Text></View>
         <View style={styles.scoreCircle}>
           <Text style={styles.scoreNumber}>{appreciations.length}</Text>
           <Text style={styles.scoreLabel}>Appreciations</Text>

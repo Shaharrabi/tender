@@ -8,26 +8,27 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Animated } from 'react-native';
 import { Colors, Spacing, FontSizes, FontFamilies, BorderRadius, Shadows } from '@/constants/theme';
 import { LightningIcon } from '@/assets/graphics/icons';
+import { MC12_PALETTE } from '@/constants/mc12Theme';
 import { useSoundHaptics } from '@/services/SoundHapticsService';
 import type { ResolvedLessonContent } from '@/utils/microcourses/course-content';
 import type { AttachmentStyle } from '@/types';
 import type { StepResponseEntry } from '@/types/intervention';
 
-interface FlashBid { text: string; emoji: string }
+interface FlashBid { text: string; label: string }
 
 const FLASH_BIDS: FlashBid[] = [
-  { text: 'Partner looks up from their book', emoji: '📖' },
-  { text: 'Partner sighs while cooking', emoji: '🍳' },
-  { text: '"Hey, come look at this"', emoji: '👀' },
-  { text: 'Partner reaches for your arm', emoji: '🤝' },
-  { text: '"How was your meeting?"', emoji: '💼' },
-  { text: 'Partner laughs at something', emoji: '😄' },
-  { text: '"I\'m worried about Mom"', emoji: '💭' },
-  { text: 'Partner hums your song', emoji: '🎵' },
-  { text: '"Can we talk later?"', emoji: '🗣️' },
-  { text: 'Partner makes you coffee', emoji: '☕' },
-  { text: '"I miss us doing fun things"', emoji: '✨' },
-  { text: 'Partner shows you a photo', emoji: '📱' },
+  { text: 'Partner looks up from their book', label: 'Reading' },
+  { text: 'Partner sighs while cooking', label: 'Cooking' },
+  { text: '"Hey, come look at this"', label: 'Attention' },
+  { text: 'Partner reaches for your arm', label: 'Touch' },
+  { text: '"How was your meeting?"', label: 'Interest' },
+  { text: 'Partner laughs at something', label: 'Joy' },
+  { text: '"I\'m worried about Mom"', label: 'Worry' },
+  { text: 'Partner hums your song', label: 'Music' },
+  { text: '"Can we talk later?"', label: 'Talk' },
+  { text: 'Partner makes you coffee', label: 'Care' },
+  { text: '"I miss us doing fun things"', label: 'Longing' },
+  { text: 'Partner shows you a photo', label: 'Sharing' },
 ];
 
 const TURN_TOWARD_RESPONSES = [
@@ -128,7 +129,7 @@ export default function L4ReflexTrainingGame({ content, onComplete }: { content:
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
           <View style={styles.iconCircle}><LightningIcon size={28} color="#FF6B6B" /></View>
-          <Text style={styles.title}>⚡ Reflex Training</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><LightningIcon size={20} color={MC12_PALETTE.coral} /><Text style={styles.title}>Reflex Training</Text></View>
           <Text style={styles.subtitle}>Building Your Bid-Catching Instinct</Text>
           <Text style={styles.body}>In real life, bids happen fast. You need to catch them before your autopilot kicks in.</Text>
           <Text style={styles.body}>Bids will flash on screen. Tap "Turn Toward" before time runs out. Think of it as training your relationship reflexes.</Text>
@@ -146,7 +147,7 @@ export default function L4ReflexTrainingGame({ content, onComplete }: { content:
     return (
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
-          <Text style={styles.title}>⚡ Training Complete!</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><LightningIcon size={20} color={MC12_PALETTE.coral} /><Text style={styles.title}>Training Complete!</Text></View>
           <View style={styles.scoreCircle}>
             <Text style={styles.scoreNumber}>{catches}/{totalRounds}</Text>
             <Text style={styles.scoreLabel}>Bids Caught</Text>
@@ -185,7 +186,7 @@ export default function L4ReflexTrainingGame({ content, onComplete }: { content:
       </View>
 
       <Animated.View style={[styles.bidCard, { opacity: flashAnim, transform: [{ scale: responded ? 1 : pulseAnim }] }]}>
-        <Text style={styles.bidEmoji}>{bid.emoji}</Text>
+        <Text style={styles.bidLabel}>{bid.label}</Text>
         <Text style={styles.bidText}>{bid.text}</Text>
       </Animated.View>
 
@@ -195,7 +196,7 @@ export default function L4ReflexTrainingGame({ content, onComplete }: { content:
         </View>
       ) : (
         <TouchableOpacity style={styles.catchBtn} onPress={handleCatch} activeOpacity={0.7}>
-          <Text style={styles.catchBtnText}>🟢 Turn Toward!</Text>
+          <View style={{flexDirection:'row',alignItems:'center',justifyContent:'center',gap:8}}><View style={{width:14,height:14,borderRadius:7,backgroundColor:'#4CAF50'}} /><Text style={styles.catchBtnText}>Turn Toward!</Text></View>
         </TouchableOpacity>
       )}
     </View>
@@ -218,7 +219,7 @@ const styles = StyleSheet.create({
   statsMinRow: { flexDirection: 'row', justifyContent: 'center', gap: Spacing.lg },
   miniStat: { fontSize: FontSizes.bodySmall, fontWeight: '700' },
   bidCard: { backgroundColor: '#FFFCF5', borderRadius: BorderRadius.lg, padding: Spacing.xl, borderWidth: 2, borderColor: '#F0E0E0', alignItems: 'center', gap: Spacing.md },
-  bidEmoji: { fontSize: 48 },
+  bidLabel: { fontSize: FontSizes.caption, fontWeight: '600', color: Colors.textSecondary, textTransform: 'uppercase', letterSpacing: 1 },
   bidText: { fontSize: FontSizes.headingS, fontWeight: '600', color: Colors.text, textAlign: 'center', lineHeight: 28 },
   catchBtn: { backgroundColor: '#5A9E6F', paddingVertical: Spacing.lg, borderRadius: BorderRadius.lg, alignItems: 'center' },
   catchBtnText: { color: '#FFFFFF', fontWeight: '700', fontSize: FontSizes.headingS },

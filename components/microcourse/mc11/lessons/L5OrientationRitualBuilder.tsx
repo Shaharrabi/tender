@@ -7,23 +7,24 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ScrollView, StyleSheet } from 'react-native';
 import { Colors, Spacing, FontSizes, FontFamilies, BorderRadius, Shadows } from '@/constants/theme';
-import { FlagIcon } from '@/assets/graphics/icons';
+import { FlagIcon, SparkleIcon, HourglassIcon } from '@/assets/graphics/icons';
+import { MC11_PALETTE } from '@/constants/mc11Theme';
 import { useSoundHaptics } from '@/services/SoundHapticsService';
 import type { ResolvedLessonContent } from '@/utils/microcourses/course-content';
 import type { AttachmentStyle } from '@/types';
 import type { StepResponseEntry } from '@/types/intervention';
 
-interface RitualStep { id: string; label: string; emoji: string; description: string }
+interface RitualStep { id: string; label: string; description: string }
 
 const RITUAL_ELEMENTS: RitualStep[] = [
-  { id: 'orient-see', label: 'Visual scan', emoji: '👁️', description: 'Look around slowly. Find something pleasant to rest your eyes on.' },
-  { id: 'orient-hear', label: 'Sound check', emoji: '👂', description: 'Close your eyes. Notice 3 sounds around you.' },
-  { id: 'orient-feel', label: 'Body scan', emoji: '✋', description: 'Feel your feet, your seat, your hands. Notice temperature and texture.' },
-  { id: 'amplify', label: 'Amplify pleasure', emoji: '🔊', description: 'Pick the most pleasant sensation. Give it 15 seconds of pure attention.' },
-  { id: 'breath', label: 'Soft exhale', emoji: '🌬️', description: 'Three slow exhales. Let your jaw and shoulders soften.' },
-  { id: 'gratitude', label: 'One gratitude', emoji: '🙏', description: 'Name one thing you genuinely appreciate right now.' },
-  { id: 'smile', label: 'Micro-smile', emoji: '😊', description: 'Let the corners of your mouth lift slightly. Just that.' },
-  { id: 'intention', label: 'Set intention', emoji: '🎯', description: 'Choose one word for how you want to show up today.' },
+  { id: 'orient-see', label: 'Visual scan', description: 'Look around slowly. Find something pleasant to rest your eyes on.' },
+  { id: 'orient-hear', label: 'Sound check', description: 'Close your eyes. Notice 3 sounds around you.' },
+  { id: 'orient-feel', label: 'Body scan', description: 'Feel your feet, your seat, your hands. Notice temperature and texture.' },
+  { id: 'amplify', label: 'Amplify pleasure', description: 'Pick the most pleasant sensation. Give it 15 seconds of pure attention.' },
+  { id: 'breath', label: 'Soft exhale', description: 'Three slow exhales. Let your jaw and shoulders soften.' },
+  { id: 'gratitude', label: 'One gratitude', description: 'Name one thing you genuinely appreciate right now.' },
+  { id: 'smile', label: 'Micro-smile', description: 'Let the corners of your mouth lift slightly. Just that.' },
+  { id: 'intention', label: 'Set intention', description: 'Choose one word for how you want to show up today.' },
 ];
 
 const WHEN_OPTIONS = ['Morning (first thing)', 'Before work', 'Mid-day reset', 'Before seeing partner', 'Evening wind-down', 'When stressed'];
@@ -65,7 +66,7 @@ export default function L5OrientationRitualBuilder({ content, onComplete }: { co
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
           <View style={styles.iconCircle}><FlagIcon size={28} color="#DAA520" /></View>
-          <Text style={styles.title}>🏁 Your Orientation Ritual</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><FlagIcon size={20} color={MC11_PALETTE.warmGold} /><Text style={styles.title}>Your Orientation Ritual</Text></View>
           <Text style={styles.subtitle}>Making It Yours</Text>
           <Text style={styles.body}>You've learned the science. You've felt the shift. Now it's time to design a 2-minute ritual you'll actually use.</Text>
           <Text style={styles.body}>Pick 3-5 elements that resonated with you. Order matters — you'll do them in sequence.</Text>
@@ -87,7 +88,7 @@ export default function L5OrientationRitualBuilder({ content, onComplete }: { co
             {selectedSteps.map((s, i) => (
               <View key={s.id} style={styles.previewStep}>
                 <View style={styles.stepNumber}><Text style={styles.stepNumberText}>{i + 1}</Text></View>
-                <Text style={styles.previewStepLabel}>{s.emoji} {s.label}</Text>
+                <Text style={styles.previewStepLabel}>{s.label}</Text>
               </View>
             ))}
           </View>
@@ -107,7 +108,7 @@ export default function L5OrientationRitualBuilder({ content, onComplete }: { co
                 disabled={disabled}
               >
                 <View style={styles.elementHeader}>
-                  <Text style={styles.elementEmoji}>{el.emoji}</Text>
+                  <Text style={styles.elementEmoji}>{el.label.charAt(0).toUpperCase()}</Text>
                   <Text style={[styles.elementLabel, selected && styles.elementLabelSelected]}>{el.label}</Text>
                   {selected && <View style={styles.stepBadge}><Text style={styles.stepBadgeText}>{stepNum}</Text></View>}
                 </View>
@@ -134,7 +135,7 @@ export default function L5OrientationRitualBuilder({ content, onComplete }: { co
     return (
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
-          <Text style={styles.title}>⏰ When Will You Use It?</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><HourglassIcon size={20} color={MC11_PALETTE.warmGold} /><Text style={styles.title}>When Will You Use It?</Text></View>
           <Text style={styles.body}>Rituals work best when anchored to a specific moment. When will you practice your orientation?</Text>
           <View style={styles.optionList}>
             {WHEN_OPTIONS.map(opt => (
@@ -160,7 +161,7 @@ export default function L5OrientationRitualBuilder({ content, onComplete }: { co
     return (
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <View style={styles.card}>
-          <Text style={styles.title}>✨ Name Your Ritual</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><SparkleIcon size={20} color={MC11_PALETTE.warmGold} /><Text style={styles.title}>Name Your Ritual</Text></View>
           <Text style={styles.body}>Give it a name that feels right. Something you'd tell yourself: "Time for my ___."</Text>
           <TextInput
             style={styles.nameInput}
@@ -190,14 +191,14 @@ export default function L5OrientationRitualBuilder({ content, onComplete }: { co
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
       <View style={styles.resultCard}>
-        <Text style={styles.title}>🏁 {ritualName || 'My Orientation Ritual'}</Text>
+        <View style={{flexDirection:'row',alignItems:'center',gap:8}}><FlagIcon size={20} color={MC11_PALETTE.warmGold} /><Text style={styles.title}>{ritualName || 'My Orientation Ritual'}</Text></View>
         <Text style={styles.whenBadge}>{whenToUse}</Text>
         <View style={styles.ritualSteps}>
           {selectedSteps.map((s, i) => (
             <View key={s.id} style={styles.ritualStep}>
               <View style={styles.stepNumber}><Text style={styles.stepNumberText}>{i + 1}</Text></View>
               <View style={styles.ritualStepContent}>
-                <Text style={styles.ritualStepLabel}>{s.emoji} {s.label}</Text>
+                <Text style={styles.ritualStepLabel}>{s.label}</Text>
                 <Text style={styles.ritualStepDesc}>{s.description}</Text>
               </View>
             </View>
@@ -233,7 +234,7 @@ const styles = StyleSheet.create({
   elementCardSelected: { borderColor: '#DAA520', backgroundColor: '#FFF8E7' },
   elementCardDisabled: { opacity: 0.35 },
   elementHeader: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
-  elementEmoji: { fontSize: 20 },
+  elementEmoji: { fontSize: 16, fontWeight: '700', color: '#DAA520', width: 24, textAlign: 'center' as const },
   elementLabel: { fontSize: FontSizes.body, fontWeight: '600', color: Colors.text, flex: 1 },
   elementLabelSelected: { color: '#B8860B' },
   elementDesc: { fontSize: FontSizes.bodySmall, color: Colors.textSecondary, lineHeight: 20 },

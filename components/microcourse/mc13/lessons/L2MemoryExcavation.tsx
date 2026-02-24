@@ -7,25 +7,26 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ScrollView, StyleSheet } from 'react-native';
 import { Colors, Spacing, FontSizes, FontFamilies, BorderRadius, Shadows } from '@/constants/theme';
-import { SearchIcon } from '@/assets/graphics/icons';
+import { MC13_PALETTE } from '@/constants/mc13Theme';
+import { SearchIcon, PenIcon, HeartPulseIcon, SparkleIcon } from '@/assets/graphics/icons';
 import { useSoundHaptics } from '@/services/SoundHapticsService';
 import type { ResolvedLessonContent } from '@/utils/microcourses/course-content';
 import type { AttachmentStyle } from '@/types';
 import type { StepResponseEntry } from '@/types/intervention';
 
 const MEMORY_PROMPTS = [
-  { id: 'first', label: 'A moment you first felt truly seen', emoji: '👁️' },
-  { id: 'laughter', label: 'A time you couldn\'t stop laughing together', emoji: '😂' },
-  { id: 'overcome', label: 'Something hard you overcame as a team', emoji: '💪' },
-  { id: 'surprise', label: 'A surprise that melted your heart', emoji: '🎁' },
-  { id: 'quiet', label: 'A quiet moment that felt perfect', emoji: '🤫' },
-  { id: 'proud', label: 'A time you felt proud of your partner', emoji: '🌟' },
+  { id: 'first', label: 'A moment you first felt truly seen' },
+  { id: 'laughter', label: 'A time you couldn\'t stop laughing together' },
+  { id: 'overcome', label: 'Something hard you overcame as a team' },
+  { id: 'surprise', label: 'A surprise that melted your heart' },
+  { id: 'quiet', label: 'A quiet moment that felt perfect' },
+  { id: 'proud', label: 'A time you felt proud of your partner' },
 ];
 
 const WARMTH_LEVELS = [
-  { value: 1, label: 'Faint warmth', emoji: '🕯️' },
-  { value: 2, label: 'Gentle glow', emoji: '☀️' },
-  { value: 3, label: 'Full warmth', emoji: '🔥' },
+  { value: 1, label: 'Faint warmth' },
+  { value: 2, label: 'Gentle glow' },
+  { value: 3, label: 'Full warmth' },
 ];
 
 type Phase = 'intro' | 'choose' | 'describe' | 'warmth' | 'second' | 'describe2' | 'warmth2' | 'results';
@@ -56,7 +57,7 @@ export default function L2MemoryExcavation({ content, onComplete }: { content: R
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
           <View style={styles.iconCircle}><SearchIcon size={28} color="#E8739E" /></View>
-          <Text style={styles.title}>🔍 Memory Excavation</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><SearchIcon size={20} color={MC13_PALETTE.warmRose} /><Text style={styles.title}>Memory Excavation</Text></View>
           <Text style={styles.subtitle}>Digging Up Buried Treasure</Text>
           <Text style={styles.body}>Happy couples have rich, detailed "love maps" — mental archives of positive shared experiences they can access anytime.</Text>
           <Text style={styles.body}>You'll excavate 2 cherished memories. The act of remembering together is itself a bonding experience.</Text>
@@ -74,7 +75,7 @@ export default function L2MemoryExcavation({ content, onComplete }: { content: R
     return (
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
-          <Text style={styles.title}>{isSecond ? '🔍 Memory #2' : '🔍 Memory #1'}</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><SearchIcon size={20} color={MC13_PALETTE.warmRose} /><Text style={styles.title}>{isSecond ? 'Memory #2' : 'Memory #1'}</Text></View>
           <Text style={styles.body}>Choose a memory prompt:</Text>
           <View style={styles.promptList}>
             {MEMORY_PROMPTS.filter(p => !isSecond || p.label !== usedPrompt).map(p => (
@@ -88,7 +89,7 @@ export default function L2MemoryExcavation({ content, onComplete }: { content: R
                 }}
                 activeOpacity={0.7}
               >
-                <Text style={styles.promptEmoji}>{p.emoji}</Text>
+                <Text style={styles.promptBullet}>{'\u2022'}</Text>
                 <Text style={styles.promptLabel}>{p.label}</Text>
               </TouchableOpacity>
             ))}
@@ -106,7 +107,7 @@ export default function L2MemoryExcavation({ content, onComplete }: { content: R
     return (
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <View style={styles.card}>
-          <Text style={styles.title}>📝 Describe It</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><PenIcon size={20} color={MC13_PALETTE.warmRose} /><Text style={styles.title}>Describe It</Text></View>
           <Text style={styles.promptHighlight}>{prompt}</Text>
           <Text style={styles.body}>Close your eyes for a moment. Let the memory come back. Where were you? What did you see, hear, feel?</Text>
           <TextInput
@@ -137,7 +138,7 @@ export default function L2MemoryExcavation({ content, onComplete }: { content: R
     return (
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
-          <Text style={styles.title}>🌡️ Warmth Check</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><HeartPulseIcon size={20} color={MC13_PALETTE.warmRose} /><Text style={styles.title}>Warmth Check</Text></View>
           <Text style={styles.body}>How much warmth do you feel when you recall this memory?</Text>
           <View style={styles.warmthList}>
             {WARMTH_LEVELS.map(w => (
@@ -147,7 +148,6 @@ export default function L2MemoryExcavation({ content, onComplete }: { content: R
                 onPress={() => { haptics.tap(); setWarmth(w.value); }}
                 activeOpacity={0.7}
               >
-                <Text style={styles.warmthEmoji}>{w.emoji}</Text>
                 <Text style={[styles.warmthLabel, warmth === w.value && styles.warmthLabelActive]}>{w.label}</Text>
               </TouchableOpacity>
             ))}
@@ -173,16 +173,16 @@ export default function L2MemoryExcavation({ content, onComplete }: { content: R
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
       <View style={styles.resultCard}>
-        <Text style={styles.title}>💎 Your Excavated Treasures</Text>
+        <View style={{flexDirection:'row',alignItems:'center',gap:8}}><SparkleIcon size={20} color={MC13_PALETTE.softGold} /><Text style={styles.title}>Your Excavated Treasures</Text></View>
         <View style={styles.treasureBox}>
           <Text style={styles.treasureLabel}>{memory1Prompt}</Text>
           <Text style={styles.treasureText}>{memory1Text.slice(0, 100)}{memory1Text.length > 100 ? '...' : ''}</Text>
-          <Text style={styles.warmthIndicator}>{WARMTH_LEVELS.find(w => w.value === memory1Warmth)?.emoji} {WARMTH_LEVELS.find(w => w.value === memory1Warmth)?.label}</Text>
+          <Text style={styles.warmthIndicator}>{WARMTH_LEVELS.find(w => w.value === memory1Warmth)?.label}</Text>
         </View>
         <View style={styles.treasureBox}>
           <Text style={styles.treasureLabel}>{memory2Prompt}</Text>
           <Text style={styles.treasureText}>{memory2Text.slice(0, 100)}{memory2Text.length > 100 ? '...' : ''}</Text>
-          <Text style={styles.warmthIndicator}>{WARMTH_LEVELS.find(w => w.value === memory2Warmth)?.emoji} {WARMTH_LEVELS.find(w => w.value === memory2Warmth)?.label}</Text>
+          <Text style={styles.warmthIndicator}>{WARMTH_LEVELS.find(w => w.value === memory2Warmth)?.label}</Text>
         </View>
         <Text style={styles.insightText}>These memories are relationship resources. When things get hard, recalling shared positive experiences literally changes your brain chemistry toward connection.</Text>
         <TouchableOpacity style={styles.primaryBtn} onPress={handleFinish} activeOpacity={0.7}>
@@ -206,14 +206,13 @@ const styles = StyleSheet.create({
   disabledBtn: { opacity: 0.4 },
   promptList: { gap: Spacing.sm, width: '100%' },
   promptBtn: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, padding: Spacing.md, borderRadius: BorderRadius.md, borderWidth: 1.5, borderColor: Colors.border, backgroundColor: '#FFFDF5' },
-  promptEmoji: { fontSize: 24 },
+  promptBullet: { fontSize: 18, color: MC13_PALETTE.warmRose, fontWeight: '700' },
   promptLabel: { fontSize: FontSizes.body, color: Colors.text, fontWeight: '500', flex: 1 },
   promptHighlight: { fontSize: FontSizes.body, color: '#E8739E', fontWeight: '700', fontStyle: 'italic', textAlign: 'center' },
   memoryInput: { width: '100%', borderWidth: 1, borderColor: Colors.borderLight, borderRadius: BorderRadius.md, padding: Spacing.md, fontSize: FontSizes.body, color: Colors.text, minHeight: 120, backgroundColor: '#FFFCF7', textAlignVertical: 'top' },
   warmthList: { gap: Spacing.sm, width: '100%' },
   warmthBtn: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, padding: Spacing.md, borderRadius: BorderRadius.md, borderWidth: 1.5, borderColor: Colors.border, backgroundColor: '#FFFDF5' },
   warmthBtnActive: { borderColor: '#E8739E', backgroundColor: '#FFE0E8' },
-  warmthEmoji: { fontSize: 24 },
   warmthLabel: { fontSize: FontSizes.body, color: Colors.text, fontWeight: '500' },
   warmthLabelActive: { color: '#C4547A', fontWeight: '700' },
   treasureBox: { width: '100%', backgroundColor: '#FFE0E8', borderRadius: BorderRadius.md, padding: Spacing.md, gap: Spacing.xs },

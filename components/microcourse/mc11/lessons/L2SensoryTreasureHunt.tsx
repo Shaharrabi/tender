@@ -6,20 +6,21 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ScrollView, StyleSheet, Animated } from 'react-native';
 import { Colors, Spacing, FontSizes, FontFamilies, BorderRadius, Shadows } from '@/constants/theme';
-import { CompassIcon } from '@/assets/graphics/icons';
+import { CompassIcon, SparkleIcon } from '@/assets/graphics/icons';
+import { MC11_PALETTE } from '@/constants/mc11Theme';
 import { useSoundHaptics } from '@/services/SoundHapticsService';
 import type { ResolvedLessonContent } from '@/utils/microcourses/course-content';
 import type { AttachmentStyle } from '@/types';
 import type { StepResponseEntry } from '@/types/intervention';
 
-interface Sense { id: string; label: string; emoji: string; categories: string[]; optional?: boolean }
+interface Sense { id: string; label: string; categories: string[]; optional?: boolean }
 
 const SENSES: Sense[] = [
-  { id: 'see', label: 'SEE', emoji: '👁️', categories: ['A color', 'A shape', 'Movement', 'Light/shadow'] },
-  { id: 'hear', label: 'HEAR', emoji: '👂', categories: ['A close sound', 'A distant sound', 'A rhythmic sound'] },
-  { id: 'feel', label: 'FEEL', emoji: '✋', categories: ['Temperature', 'Texture', 'Your feet on the floor'] },
-  { id: 'smell', label: 'SMELL', emoji: '👃', categories: ['Something pleasant', 'Something neutral'], optional: true },
-  { id: 'taste', label: 'TASTE', emoji: '👅', categories: ['Anything in your mouth?'], optional: true },
+  { id: 'see', label: 'SEE', categories: ['A color', 'A shape', 'Movement', 'Light/shadow'] },
+  { id: 'hear', label: 'HEAR', categories: ['A close sound', 'A distant sound', 'A rhythmic sound'] },
+  { id: 'feel', label: 'FEEL', categories: ['Temperature', 'Texture', 'Your feet on the floor'] },
+  { id: 'smell', label: 'SMELL', categories: ['Something pleasant', 'Something neutral'], optional: true },
+  { id: 'taste', label: 'TASTE', categories: ['Anything in your mouth?'], optional: true },
 ];
 
 const CHECKIN_OPTIONS = ['A little calmer', 'More present', 'Surprisingly settled', 'Not much different', 'Actually more activated'];
@@ -86,7 +87,7 @@ export default function L2SensoryTreasureHunt({ content, onComplete }: { content
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
           <View style={styles.iconCircle}><CompassIcon size={28} color="#DAA520" /></View>
-          <Text style={styles.title}>🧭 Sensory Treasure Hunt</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><CompassIcon size={20} color={MC11_PALETTE.warmGold} /><Text style={styles.title}>Sensory Treasure Hunt</Text></View>
           <Text style={styles.subtitle}>The 45-Second Reset</Text>
           <Text style={styles.body}>Look around your actual environment. You're going to find one thing for each sense — a quick orientation that brings you from your head to right here.</Text>
           <Text style={styles.body}>5 senses. About 45 seconds. Let's see what happens in your body.</Text>
@@ -107,7 +108,7 @@ export default function L2SensoryTreasureHunt({ content, onComplete }: { content
             <View style={[styles.progressFill, { width: `${((senseIdx + 1) / SENSES.length) * 100}%` }]} />
           </View>
           <View style={styles.card}>
-            <Text style={styles.senseEmoji}>{currentSense.emoji}</Text>
+            <Text style={styles.senseEmoji}>{currentSense.label}</Text>
             <Text style={styles.senseLabel}>Something you {currentSense.label}</Text>
             <Text style={styles.body}>Look around right now. Pick one:</Text>
             <View style={styles.categoryGrid}>
@@ -138,7 +139,7 @@ export default function L2SensoryTreasureHunt({ content, onComplete }: { content
     return (
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
-          <Text style={styles.title}>✨ Check In With Your Body</Text>
+          <View style={{flexDirection:'row',alignItems:'center',gap:8}}><SparkleIcon size={20} color={MC11_PALETTE.warmGold} /><Text style={styles.title}>Check In With Your Body</Text></View>
           <Text style={styles.body}>After orienting through your senses... how do you feel compared to when you started?</Text>
           <View style={styles.optionList}>
             {CHECKIN_OPTIONS.map(opt => (
@@ -158,7 +159,7 @@ export default function L2SensoryTreasureHunt({ content, onComplete }: { content
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
       <View style={styles.card}>
-        <Text style={styles.title}>🧭 Hunt Complete!</Text>
+        <View style={{flexDirection:'row',alignItems:'center',gap:8}}><CompassIcon size={20} color={MC11_PALETTE.warmGold} /><Text style={styles.title}>Hunt Complete!</Text></View>
         <Text style={styles.body}>You oriented through {completedSenses} sense{completedSenses !== 1 ? 's' : ''} and you feel: {checkinAnswer.toLowerCase()}</Text>
         <Text style={styles.body}>This is what orientation does — it moves your attention from internal chatter to present-moment sensation. Your nervous system reads this as safety.</Text>
         <Text style={styles.insightText}>The 45-second reset is always available to you. No app needed — just your senses and your environment.</Text>
@@ -181,7 +182,7 @@ const styles = StyleSheet.create({
   senseProgress: { fontSize: FontSizes.caption, color: Colors.textSecondary, textAlign: 'center', fontWeight: '600' },
   progressBar: { height: 4, backgroundColor: Colors.borderLight, borderRadius: 2, marginBottom: Spacing.md },
   progressFill: { height: 4, backgroundColor: '#DAA520', borderRadius: 2 },
-  senseEmoji: { fontSize: 48 },
+  senseEmoji: { fontSize: 28, fontWeight: '700', color: '#DAA520', letterSpacing: 2 },
   senseLabel: { fontSize: FontSizes.headingS, fontWeight: '700', color: Colors.text },
   categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm, justifyContent: 'center' },
   categoryChip: { paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm, borderRadius: BorderRadius.pill, borderWidth: 1.5, borderColor: Colors.border, backgroundColor: 'transparent' },
