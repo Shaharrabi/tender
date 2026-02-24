@@ -452,6 +452,16 @@ export function CombinedProfileView({
               );
             })()}
 
+            {/* Fallback when portrait isn't available yet */}
+            {isCompleted && !portrait && (
+              <View style={[styles.portraitCard, { borderLeftColor: color, opacity: 0.6 }]}>
+                <Text style={styles.portraitCardTitle}>What This Reveals</Text>
+                <Text style={styles.portraitCardNarrative}>
+                  Complete all 6 assessments to see integrated portrait insights for this dimension.
+                </Text>
+              </View>
+            )}
+
             {/* Connection info — renders directly below the tapped card */}
             {isCardSelected && renderConnectionPanel()}
           </React.Fragment>

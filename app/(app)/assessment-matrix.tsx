@@ -22,9 +22,10 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { useGuest } from '@/context/GuestContext';
 import { supabase } from '@/services/supabase';
-import { getPortrait } from '@/services/portrait';
+import { getPortrait, savePortrait, fetchAllScores, extractSupplementScores } from '@/services/portrait';
+import { generatePortrait } from '@/utils/portrait/portrait-generator';
 import { getECRRInterpretation } from '@/utils/assessments/interpretations/ecr-r';
-import type { IndividualPortrait } from '@/types/portrait';
+import type { IndividualPortrait, AllAssessmentScores } from '@/types/portrait';
 import {
   Colors,
   Spacing,
@@ -187,11 +188,42 @@ export default function AssessmentMatrixScreen() {
         }
         setAllScores(latest);
 
-        // Also load portrait for enriched context
+        // Also load portrait for enriched context — auto-generate if missing
         try {
-          const p = await getPortrait(user.id);
+          let p = await getPortrait(user.id);
+
+          // Auto-generate portrait if all 6 assessments are complete but no portrait exists
+          const REQUIRED = ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'ipip-neo-120', 'values'];
+          const completedTypes = Object.keys(latest);
+          const hasAll6 = REQUIRED.every((t) => completedTypes.includes(t));
+
+          if (!p && hasAll6) {
+            console.log('[Matrix] All 6 assessments complete, no portrait — auto-generating...');
+            try {
+              const latestScoresMap = await fetchAllScores(user.id);
+              const scores: AllAssessmentScores = {
+                ecrr: latestScoresMap['ecr-r'].scores,
+                dutch: latestScoresMap['dutch'].scores,
+                sseit: latestScoresMap['sseit'].scores,
+                dsir: latestScoresMap['dsi-r'].scores,
+                ipip: latestScoresMap['ipip-neo-120'].scores,
+                values: latestScoresMap['values'].scores,
+              };
+              const supplements = extractSupplementScores(latestScoresMap);
+              const ids = Object.values(latestScoresMap).map((r) => r.id);
+              const freshPortrait = generatePortrait(user.id, ids, scores, supplements);
+              await savePortrait(freshPortrait);
+              p = freshPortrait as IndividualPortrait;
+              console.log('[Matrix] Portrait auto-generated successfully');
+            } catch (genErr: any) {
+              console.error('[Matrix] Portrait auto-generation failed:', genErr?.message || genErr);
+            }
+          }
+
           if (p) setPortrait(p);
-        } catch { /* Portrait is optional — matrix works without it */ }
+        } catch (portraitErr) {
+          console.error('[Matrix] Failed to load portrait:', portraitErr);
+        }
       } catch (err) {
         console.error('Failed to fetch scores:', err);
         setError('Unable to load your assessment data.');
@@ -436,6 +468,15 @@ export default function AssessmentMatrixScreen() {
             {selectedAssessment && (
               <View style={styles.selectedAssessmentEffects}>
                 {/* Portrait insight — what this assessment reveals */}
+                {!portrait && (
+                  <View style={styles.unlockHint}>
+                    <Text style={styles.unlockHintText}>
+                      {completedCount < 6
+                        ? `Complete all 6 assessments to see deeper portrait insights for each connection.`
+                        : 'Visit the home screen to generate your portrait and see deeper insights here.'}
+                    </Text>
+                  </View>
+                )}
                 {portrait && (() => {
                   const insight = getPortraitInsightForAssessment(selectedAssessment, portrait);
                   if (!insight) return null;
@@ -542,6 +583,17 @@ export default function AssessmentMatrixScreen() {
               completedAssessments={completedAssessments}
               portrait={portrait}
             />
+
+            {/* Hint when portrait hasn't been generated yet */}
+            {!portrait && (
+              <View style={styles.unlockHint}>
+                <Text style={styles.unlockHintText}>
+                  {completedCount < 6
+                    ? `Complete ${6 - completedCount} more assessment${6 - completedCount > 1 ? 's' : ''} to unlock deep portrait insights for each dimension.`
+                    : 'Your portrait is being generated. Return to the home screen and come back to see integrated insights.'}
+                </Text>
+              </View>
+            )}
           </View>
         )}
       </ScrollView>

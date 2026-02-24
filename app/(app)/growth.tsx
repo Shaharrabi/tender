@@ -228,10 +228,19 @@ export default function GrowthScreen() {
         )}
 
         {/* Growth Timeline */}
-        {edges.length > 0 && (
+        {edges.length > 0 ? (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Your Growth Edges</Text>
             <GrowthTimeline edges={edges} />
+          </View>
+        ) : (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Your Growth Edges</Text>
+            <View style={styles.emptyEdgesCard}>
+              <Text style={styles.emptyEdgesText}>
+                Complete all 6 assessments to generate your relational portrait and unlock personalized growth edges.
+              </Text>
+            </View>
           </View>
         )}
 
@@ -414,6 +423,23 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
     color: '#2D5F34',
+  },
+
+  // Empty growth edges fallback
+  emptyEdgesCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.lg,
+    alignItems: 'center' as const,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+  },
+  emptyEdgesText: {
+    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    color: Colors.textSecondary,
+    textAlign: 'center' as const,
+    lineHeight: 22,
   },
 
   // Treatment plan link
