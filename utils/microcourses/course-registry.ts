@@ -1,7 +1,7 @@
 /**
  * Micro-Course Registry
  *
- * 10 micro-courses, each with 5 lessons (~20-30 min total per course).
+ * 14 micro-courses, each with 5 lessons (~20-30 min total per course).
  * Courses are placed at specific points in the healing journey
  * and gated by assessment prerequisites.
  */
@@ -207,6 +207,70 @@ export const MICRO_COURSES: MicroCourse[] = [
     primaryModality: 'gottman-gratitude',
     hasAttachmentVariants: false,
     icon: 'eye',
+  },
+  {
+    id: 'mc-orientation-pleasure',
+    title: 'Orientation to Pleasure',
+    subtitle: 'What if healing started with what already feels good?',
+    description:
+      'Five lessons grounded in Organic Intelligence theory. Learn that healing begins by orienting toward what already feels good. Shatter pleasure myths, hunt for sensory treasures, build a pleasure palette, practice amplifying pleasant intensity, and create a daily orientation ritual.',
+    totalLessons: 5,
+    estimatedMinutes: 25,
+    healingPhase: 'feeling',
+    phasePosition: 'mid',
+    prerequisites: [],
+    weareVariable: 'space',
+    primaryModality: 'organic-intelligence',
+    hasAttachmentVariants: false,
+    icon: 'sun',
+  },
+  {
+    id: 'mc-bids-connection',
+    title: 'Bids for Connection',
+    subtitle: 'The tiny moments that make or break a relationship',
+    description:
+      'Five lessons on Gottman\'s bid framework. Learn to catch the small bids your partner makes every day, understand the three responses (turning toward, away, against), track your bid patterns, train your turning-toward reflex, and build a daily deposit ritual.',
+    totalLessons: 5,
+    estimatedMinutes: 25,
+    healingPhase: 'shifting',
+    phasePosition: 'mid',
+    prerequisites: [],
+    weareVariable: 'attunement',
+    primaryModality: 'gottman-bids',
+    hasAttachmentVariants: false,
+    icon: 'chat-bubble',
+  },
+  {
+    id: 'mc-fondness-gratitude',
+    title: 'Fondness & Gratitude',
+    subtitle: 'The antidote to contempt is cultivated admiration',
+    description:
+      'Five lessons on rebuilding fondness and gratitude. Assess your magic ratio of positive to negative interactions, excavate cherished memories, master specific appreciation, sprint through gratitude, and compose an appreciation letter to your partner.',
+    totalLessons: 5,
+    estimatedMinutes: 25,
+    healingPhase: 'sustaining',
+    phasePosition: 'mid',
+    prerequisites: [],
+    weareVariable: 'attunement',
+    primaryModality: 'gottman-positive-psychology',
+    hasAttachmentVariants: false,
+    icon: 'heart',
+  },
+  {
+    id: 'mc-trust-repair',
+    title: 'Trust Repair \u2014 After Betrayal',
+    subtitle: 'When the wound goes deeper than a bad fight',
+    description:
+      'Five advanced lessons on rebuilding trust after significant betrayal. Understand the anatomy of betrayal, sort genuine atonement from hollow apology, locate yourself on the rebuild timeline, practice structured repair conversations, and create your 90-day rebuild plan.',
+    totalLessons: 5,
+    estimatedMinutes: 30,
+    healingPhase: 'shifting',
+    phasePosition: 'end',
+    prerequisites: ['mc-conflict-repair-complete'],
+    weareVariable: 'attunement',
+    primaryModality: 'gottman-eft-advanced',
+    hasAttachmentVariants: false,
+    icon: 'flag',
   },
 ];
 

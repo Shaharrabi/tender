@@ -1,7 +1,7 @@
 /**
  * Micro-Course Lesson Content
  *
- * All 50 lessons across 10 micro-courses, transcribed from
+ * All 70 lessons across 14 micro-courses, transcribed from
  * TENDER_MICROCOURSE_CONTENT.md and MC7_MC8_MC9_MC10_COMPLETE_BLUEPRINT.md.
  * Each lesson has:
  *   - Read section (psychoeducation / framing)
@@ -1497,6 +1497,338 @@ const MC10_LESSONS: MicroCourseLesson[] = [
 ];
 
 // ═══════════════════════════════════════════════════════════
+//  MC11 — Orientation to Pleasure (Organic Intelligence)
+// ═══════════════════════════════════════════════════════════
+
+const MC11_LESSONS: MicroCourseLesson[] = [
+  {
+    id: 'mc-orientation-pleasure-lesson-1',
+    courseId: 'mc-orientation-pleasure',
+    lessonNumber: 1,
+    title: 'Myth Shatter Cards',
+    type: 'reframe',
+    durationMinutes: 5,
+    readContent:
+      'Most people carry deeply held myths about pleasure that keep them from accessing it as a healing resource. These myths sound responsible — "pleasure is selfish," "I need to fix the problem first," "good things make me let my guard down" — but they actually keep your nervous system locked in survival mode.\n\n' +
+      'Organic Intelligence (OI) teaches that the nervous system heals not by processing trauma first, but by first orienting toward what already feels good. Pleasant sensations are not a reward for healing — they are the mechanism of healing.\n\n' +
+      'When you notice something pleasant — warmth, a good smell, a moment of ease — your nervous system gets a signal: "Safe enough to come back online." That signal is the beginning of regulation.',
+    exerciseContent:
+      'You will see six common myths about pleasure. For each one, decide: is this a myth or a truth? Then see the research-backed reality.\n\nThis is not about being right — it is about noticing which myths you have been carrying without realizing it.',
+    reflectionPrompt: 'The myth I have been carrying most is:',
+  },
+  {
+    id: 'mc-orientation-pleasure-lesson-2',
+    courseId: 'mc-orientation-pleasure',
+    lessonNumber: 2,
+    title: 'Sensory Treasure Hunt',
+    type: 'mindfulness',
+    durationMinutes: 5,
+    readContent:
+      'Your five senses are doorways to the present moment — and the present moment is where regulation lives. When you are anxious, you are in the future. When you are grieving, you are in the past. But your senses only work now.\n\n' +
+      'OI calls this "orienting" — deliberately turning your attention toward something pleasant that is happening right now. It is not positive thinking. It is sensory noticing.\n\n' +
+      'The practice is almost absurdly simple: look around, and find something that your senses actually enjoy. A color. A texture. A sound. The temperature of the air on your skin. The key is that it has to be genuinely pleasant to you — not what should be pleasant, but what actually is.',
+    exerciseContent:
+      'Go on a sensory treasure hunt. For each of your five senses, find one thing that genuinely feels good right now. Not what should feel good — what actually does.\n\nTake your time. This is a practice in slowing down enough to notice.',
+    reflectionPrompt: 'The sense that surprised me most was:',
+  },
+  {
+    id: 'mc-orientation-pleasure-lesson-3',
+    courseId: 'mc-orientation-pleasure',
+    lessonNumber: 3,
+    title: 'Pleasure Palette Builder',
+    type: 'identification',
+    durationMinutes: 5,
+    readContent:
+      'Just as an artist keeps a palette of colors ready to use, you can build a "pleasure palette" — a curated collection of reliably pleasant experiences across different categories.\n\n' +
+      'The power of a pleasure palette is that it removes the decision fatigue of trying to figure out what might help when you are already dysregulated. You have already identified what works. You just reach for it.\n\n' +
+      'Categories include: body comforts (warm bath, soft blanket), sensory pleasures (music, scents), movement (stretching, walking), connection (a specific person, a pet), nature (sunlight, fresh air), and creation (cooking, drawing, writing).',
+    exerciseContent:
+      'Build your personal pleasure palette. Browse the options and select 6 items that genuinely bring you pleasure. You can also add your own custom items.\n\nThe goal is to have a go-to list that you can reach for when your nervous system needs a signal of safety.',
+    reflectionPrompt: 'The pleasure I have been neglecting most is:',
+  },
+  {
+    id: 'mc-orientation-pleasure-lesson-4',
+    courseId: 'mc-orientation-pleasure',
+    lessonNumber: 4,
+    title: 'Pleasant Intensity Practice',
+    type: 'behavioral-experiment',
+    durationMinutes: 5,
+    readContent:
+      'Most people experience pleasant sensations at low intensity — a background hum they barely notice. OI teaches that you can increase the intensity of pleasant sensations simply by paying attention to them.\n\n' +
+      'This is not visualization or imagination. It is amplification through attention. When you notice something pleasant and stay with it — really let yourself feel it — the sensation often grows. Your nervous system responds to the attention by producing more of the same signal.\n\n' +
+      'This practice trains your nervous system to seek and amplify positive signals, counterbalancing the negativity bias that evolution built in.',
+    exerciseContent:
+      'Choose one pleasant sensation from your palette. Rate its intensity from 1-10. Then spend 30 seconds simply paying attention to it — breathing with it, noticing where you feel it in your body, letting it expand. Rate it again.\n\nMost people find the number goes up. That is your nervous system responding to attention.',
+    reflectionPrompt: 'What I noticed when I paid attention to pleasure:',
+  },
+  {
+    id: 'mc-orientation-pleasure-lesson-5',
+    courseId: 'mc-orientation-pleasure',
+    lessonNumber: 5,
+    title: 'Orientation Ritual Builder',
+    type: 'commitment',
+    durationMinutes: 5,
+    readContent:
+      'A single moment of orientation is helpful. A daily ritual of orientation is transformative. Research on neuroplasticity shows that repeated brief positive experiences — even 15-30 seconds each — can measurably shift your nervous system over time.\n\n' +
+      'The key is consistency, not duration. A 30-second morning ritual practiced daily does more than an hour-long relaxation session done once a month.\n\n' +
+      'Your orientation ritual is a personalized sequence of pleasant anchors that you move through intentionally, once a day. It becomes your nervous system\'s daily reset — a signal that says: "I am here. I am safe enough. There is good in this moment."',
+    exerciseContent:
+      'Design your daily orientation ritual. Select 3-5 elements from the options, choose when you will practice, and give your ritual a name.\n\nThis is not homework. It is a gift to your nervous system — a daily reminder that healing can feel good.',
+    reflectionPrompt: 'My daily orientation ritual will be:',
+  },
+];
+
+// ═══════════════════════════════════════════════════════════
+//  MC12 — Bids for Connection (Gottman)
+// ═══════════════════════════════════════════════════════════
+
+const MC12_LESSONS: MicroCourseLesson[] = [
+  {
+    id: 'mc-bids-connection-lesson-1',
+    courseId: 'mc-bids-connection',
+    lessonNumber: 1,
+    title: 'Bid Catcher Game',
+    type: 'identification',
+    durationMinutes: 5,
+    readContent:
+      'Gottman discovered that relationships live and die not in grand gestures but in tiny, everyday moments called "bids for connection." A bid is any attempt — verbal or nonverbal — to get your partner\'s attention, affirmation, affection, or engagement.\n\n' +
+      'Bids are often so small they are invisible: "Look at that sunset." "How was your day?" A sigh. A touch on the shoulder. A shared laugh at something on TV.\n\n' +
+      'The couples who thrive are not the ones who never fight. They are the ones who catch each other\'s bids. Gottman found that couples who eventually divorced caught bids only 33% of the time. Happy couples caught them 86% of the time.',
+    exerciseContent:
+      'Can you spot the bid? You will see everyday scenarios. For each one, identify what the bid for connection is — or whether there is no bid at all.\n\nThe goal is to train your eyes and ears to catch what you have been missing.',
+    reflectionPrompt: 'The type of bid I most often miss from my partner is:',
+  },
+  {
+    id: 'mc-bids-connection-lesson-2',
+    courseId: 'mc-bids-connection',
+    lessonNumber: 2,
+    title: 'Response Simulator',
+    type: 'skill-building',
+    durationMinutes: 5,
+    readContent:
+      'When your partner makes a bid, you have three options:\n\n' +
+      'Turning toward: Acknowledging the bid with attention, interest, or enthusiasm. "Oh wow, that is a beautiful sunset!"\n\n' +
+      'Turning away: Missing or ignoring the bid, usually unintentionally. Continuing to scroll your phone. Not looking up.\n\n' +
+      'Turning against: Responding with hostility or dismissal. "Can you stop interrupting me?"\n\n' +
+      'Most turning away is not malicious — it is distracted. But to the bidder, it feels the same as rejection. Over time, missed bids erode the sense that "I matter to you."',
+    exerciseContent:
+      'For each scenario, you will see a bid from a partner. Choose how to respond: turn toward, turn away, or turn against. See how each response impacts the emotional bank account.\n\nNotice: which response feels most natural to you? That is information, not judgment.',
+    reflectionPrompt: 'My default response to bids tends to be:',
+  },
+  {
+    id: 'mc-bids-connection-lesson-3',
+    courseId: 'mc-bids-connection',
+    lessonNumber: 3,
+    title: 'Bid Tracker Tool',
+    type: 'reflection',
+    durationMinutes: 5,
+    readContent:
+      'Awareness is the first step to change. Before you can turn toward more bids, you need to see the bids that are already happening — and notice your current response patterns.\n\n' +
+      'Research shows that simply tracking a behavior increases the likelihood of changing it. This is called the "observation effect" — what you measure, you improve.\n\n' +
+      'In the next 24 hours, you will notice more bids than you expect. The average couple makes 100+ bids per day. Most go unnoticed.',
+    exerciseContent:
+      'Think back over the last 24 hours. Log the bids you can remember — from your partner and from you. For each bid, note how it was responded to: turned toward, turned away, or turned against.\n\nBe honest. This is not a scorecard — it is a mirror.',
+    reflectionPrompt: 'What surprised me about our bid patterns:',
+  },
+  {
+    id: 'mc-bids-connection-lesson-4',
+    courseId: 'mc-bids-connection',
+    lessonNumber: 4,
+    title: 'Reflex Training Game',
+    type: 'behavioral-experiment',
+    durationMinutes: 5,
+    readContent:
+      'Turning toward is a skill, and like any skill, it gets faster and more natural with practice. The goal is to make turning toward your automatic response — a reflex rather than a deliberate decision.\n\n' +
+      'Research on habit formation shows that speed matters. The faster you respond to a bid, the more your partner feels prioritized. A bid answered in 2 seconds feels different from one answered in 20 seconds.\n\n' +
+      'This is not about being perfect. It is about building a bias toward connection — making "turn toward" your default setting.',
+    exerciseContent:
+      'Speed round! You will see bids appear and you need to tap "Turn Toward" as quickly as you can. You have 4 seconds per bid.\n\nThis is training your reflex — making the turning-toward response faster and more automatic.',
+    reflectionPrompt: 'What I want to practice turning toward this week:',
+  },
+  {
+    id: 'mc-bids-connection-lesson-5',
+    courseId: 'mc-bids-connection',
+    lessonNumber: 5,
+    title: 'Daily Deposit Ritual',
+    type: 'commitment',
+    durationMinutes: 5,
+    readContent:
+      'Gottman calls the positive interactions in your relationship an "emotional bank account." Every turned-toward bid is a deposit. Every missed bid is a withdrawal.\n\n' +
+      'The math is simple but powerful: if you make 3 intentional deposits per day, that is 1,095 deposits per year. Over five years, that is 5,475 moments of connection — a reservoir that can carry you through the hard times.\n\n' +
+      'A daily deposit does not need to be grand. It can be as simple as: making eye contact when they speak, asking one genuine question about their day, or responding to a bid you might normally miss.',
+    exerciseContent:
+      'Choose 3 daily deposits you will commit to this week. These should be small, realistic, and specific enough that you will actually do them.\n\nWrite a brief commitment statement about why this matters to you.',
+    reflectionPrompt: 'My three daily deposits will be:',
+  },
+];
+
+// ═══════════════════════════════════════════════════════════
+//  MC13 — Fondness & Gratitude
+// ═══════════════════════════════════════════════════════════
+
+const MC13_LESSONS: MicroCourseLesson[] = [
+  {
+    id: 'mc-fondness-gratitude-lesson-1',
+    courseId: 'mc-fondness-gratitude',
+    lessonNumber: 1,
+    title: 'The Magic Ratio',
+    type: 'identification',
+    durationMinutes: 5,
+    readContent:
+      'Gottman discovered that stable, happy couples maintain a ratio of at least 5 positive interactions for every 1 negative interaction. He called this the "magic ratio" — 5:1.\n\n' +
+      'This does not mean avoiding conflict. It means building such a strong reservoir of positive sentiment that conflict does not drain the account. Couples below 5:1 are in the danger zone — not because they fight too much, but because they do not deposit enough positive moments.\n\n' +
+      'The magic ratio is not about grand gestures. It is about the accumulation of small positive moments: a touch, a laugh, a kind word, a moment of genuine interest.',
+    exerciseContent:
+      'Rate how often you experience each type of interaction in your relationship — both positive and negative. Be honest rather than aspirational.\n\nYour current ratio will reveal where you stand and what to focus on.',
+    reflectionPrompt: 'What our ratio tells me about where we need to focus:',
+  },
+  {
+    id: 'mc-fondness-gratitude-lesson-2',
+    courseId: 'mc-fondness-gratitude',
+    lessonNumber: 2,
+    title: 'Memory Excavation',
+    type: 'reflection',
+    durationMinutes: 5,
+    readContent:
+      'Gottman found that how couples tell the story of their relationship predicts its future. Couples who recall the early days with fondness — even when things are hard now — are significantly more likely to stay together and find their way back.\n\n' +
+      'Memory excavation is the deliberate practice of returning to positive shared memories and letting yourself feel the warmth they carry. This is not nostalgia for nostalgia\'s sake — it is a neurological intervention. Positive memories activate the same neural pathways as the original experience.\n\n' +
+      'When you excavate a warm memory and sit with it, you are literally rebuilding the fondness system in your brain.',
+    exerciseContent:
+      'Choose from the memory prompts below and describe two specific memories in detail. Let yourself feel the warmth as you write.\n\nThe more specific and sensory your description, the more powerful the effect.',
+    reflectionPrompt: 'The memory that brought the most warmth:',
+  },
+  {
+    id: 'mc-fondness-gratitude-lesson-3',
+    courseId: 'mc-fondness-gratitude',
+    lessonNumber: 3,
+    title: 'Appreciation Matcher',
+    type: 'skill-building',
+    durationMinutes: 5,
+    readContent:
+      'Not all appreciation is created equal. "You are great" feels different from "The way you remembered to pick up my prescription without me asking — that told me I matter to you."\n\n' +
+      'Specific appreciation has three qualities that generic praise lacks: it proves you were paying attention, it names the behavior (not just the person), and it connects the behavior to meaning.\n\n' +
+      'Research shows that specific appreciation is up to 3x more impactful than generic praise. It lands differently because it answers the question every human carries: "Do you really see me?"',
+    exerciseContent:
+      'For each pair, identify which appreciation is more specific and impactful. Then practice the skill of transforming generic appreciation into specific, meaningful acknowledgment.',
+    reflectionPrompt: 'One specific appreciation I want to tell my partner:',
+  },
+  {
+    id: 'mc-fondness-gratitude-lesson-4',
+    courseId: 'mc-fondness-gratitude',
+    lessonNumber: 4,
+    title: 'Appreciation Sprint',
+    type: 'behavioral-experiment',
+    durationMinutes: 5,
+    readContent:
+      'Gratitude is a muscle. The more you use it, the stronger it gets — and research confirms this. People who practice gratitude regularly show measurable increases in well-being, relationship satisfaction, and even physical health.\n\n' +
+      'But gratitude does not come naturally to most people in long-term relationships. Familiarity breeds blindness — you stop noticing the things your partner does because they have become expected.\n\n' +
+      'An appreciation sprint breaks through this blindness by creating urgency. When you have limited time, your brain bypasses the filter of "that is just normal" and starts seeing what is actually there.',
+    exerciseContent:
+      'You have 90 seconds. Write as many specific appreciations about your partner as you can. Go fast — do not overthink. Use the starter prompts if you get stuck.\n\nSpeed reveals what gratitude already lives inside you, waiting to be expressed.',
+    reflectionPrompt: 'What surprised me about what came up:',
+  },
+  {
+    id: 'mc-fondness-gratitude-lesson-5',
+    courseId: 'mc-fondness-gratitude',
+    lessonNumber: 5,
+    title: 'The Appreciation Letter',
+    type: 'commitment',
+    durationMinutes: 5,
+    readContent:
+      'Research shows that writing appreciation letters increases both the writer\'s and receiver\'s happiness for weeks afterward. The act of articulating gratitude changes your own perception — it rewires the story you carry about your partner.\n\n' +
+      'This is not homework. It is a love offering — a concrete artifact of the fondness and gratitude you have been cultivating throughout this course.\n\n' +
+      'You will answer four prompts, and they will weave together into a short appreciation letter you can share with your partner — if you choose to.',
+    exerciseContent:
+      'Write your appreciation letter by answering four guided prompts. Each one builds on the skills you have practiced: specific noticing, memory warmth, genuine gratitude.\n\nWhen complete, decide what to do with your letter — share it, save it, or keep it private. The writing itself is the practice.',
+    reflectionPrompt: 'What writing this letter showed me:',
+  },
+];
+
+// ═══════════════════════════════════════════════════════════
+//  MC14 — Trust Repair After Betrayal
+// ═══════════════════════════════════════════════════════════
+
+const MC14_LESSONS: MicroCourseLesson[] = [
+  {
+    id: 'mc-trust-repair-lesson-1',
+    courseId: 'mc-trust-repair',
+    lessonNumber: 1,
+    title: 'Betrayal Anatomy Explorer',
+    type: 'psychoeducation',
+    durationMinutes: 6,
+    readContent:
+      'Betrayal is not a single wound — it is a multi-layered injury that affects different parts of who you are. Understanding the anatomy of betrayal is the first step toward knowing what actually needs to heal.\n\n' +
+      'Four layers are typically affected: the act itself (what happened), the meaning you made (what it says about the relationship), your identity (what it says about you), and your worldview (what it says about trust and safety in general).\n\n' +
+      'Most couples try to repair only the surface layer — the act. But the deeper layers of meaning, identity, and worldview often carry the real pain. That is why "I am sorry" alone is never enough — it addresses the act but leaves the other layers untouched.',
+    exerciseContent:
+      'Explore the four layers of betrayal and identify which ones are most affected in your situation. Then check the areas of your life that have been impacted.\n\nThis is sensitive work. Go at your own pace. Understanding the wound is the beginning of healing it.',
+    reflectionPrompt: 'The layer that carries the most pain for us is:',
+  },
+  {
+    id: 'mc-trust-repair-lesson-2',
+    courseId: 'mc-trust-repair',
+    lessonNumber: 2,
+    title: 'Atonement Sorter',
+    type: 'skill-building',
+    durationMinutes: 5,
+    readContent:
+      'Not all apologies are created equal. Genuine atonement has four pillars: full acknowledgment of what happened (without minimizing), expressed understanding of the impact on the injured partner, demonstrated accountability (what they are doing differently), and patience with the timeline of healing.\n\n' +
+      'Hollow apology, by contrast, often includes: minimizing ("it was not that bad"), deflecting blame ("you also did X"), rushing the timeline ("when are you going to get over this"), or conditional regret ("I am sorry IF you were hurt").\n\n' +
+      'Learning to distinguish genuine atonement from hollow apology is critical — both for the injured partner (to know what to accept) and for the one who caused the injury (to know what to offer).',
+    exerciseContent:
+      'Sort statements into genuine atonement or hollow apology. For each one, identify which pillar makes it genuine or which pattern makes it hollow.\n\nThis is not about blame — it is about building literacy around what real repair sounds like.',
+    reflectionPrompt: 'What genuine atonement means to me:',
+  },
+  {
+    id: 'mc-trust-repair-lesson-3',
+    courseId: 'mc-trust-repair',
+    lessonNumber: 3,
+    title: 'Rebuild Timeline',
+    type: 'identification',
+    durationMinutes: 5,
+    readContent:
+      'Trust repair is not a single event — it is a journey through distinct phases. Understanding where you are on that journey helps you know what to expect and what to focus on right now.\n\n' +
+      'The five phases are: crisis (the initial shock and chaos), understanding (making sense of what happened), atonement (genuine accountability and changed behavior), reconnection (cautiously rebuilding emotional closeness), and integration (co-authoring a new story that includes the wound but is not defined by it).\n\n' +
+      'Most couples try to rush to integration. But each phase has its own essential work, and skipping phases creates a fragile foundation.',
+    exerciseContent:
+      'Locate yourself on the rebuild timeline. Which phase best describes where you are right now? Then identify your needs in that phase.\n\nRemember: wherever you are is exactly where you need to be. Healing has its own timeline.',
+    reflectionPrompt: 'Where we are on the rebuild timeline and what we need:',
+  },
+  {
+    id: 'mc-trust-repair-lesson-4',
+    courseId: 'mc-trust-repair',
+    lessonNumber: 4,
+    title: 'Repair Conversation',
+    type: 'skill-building',
+    durationMinutes: 6,
+    readContent:
+      'A structured repair conversation provides a container for the hardest things that need to be said. Without structure, these conversations often spiral into blame, defensiveness, or shutdown.\n\n' +
+      'The five steps are: acknowledge (name what happened without minimizing), impact (describe how it affected you/them), own (take responsibility without deflecting), change (describe what you are doing differently), and patience (honor the timeline of healing).\n\n' +
+      'This conversation is not about resolving everything in one sitting. It is about creating a template that can be returned to as many times as needed.',
+    exerciseContent:
+      'Draft your repair conversation using the five-step template. Write from your perspective — whether you are the one who was injured or the one who caused the injury.\n\nThis is a draft, not a final version. The goal is to practice structuring these difficult words.',
+    reflectionPrompt: 'The hardest part of repair for me is:',
+  },
+  {
+    id: 'mc-trust-repair-lesson-5',
+    courseId: 'mc-trust-repair',
+    lessonNumber: 5,
+    title: '90-Day Rebuild Plan',
+    type: 'commitment',
+    durationMinutes: 6,
+    readContent:
+      'Trust is not rebuilt by promises — it is rebuilt by sustained, observable behavior over time. A 90-day plan gives you a concrete roadmap across three phases.\n\n' +
+      'Days 1-30 (Stabilize): Create safety through transparency, routine, and consistent follow-through.\n' +
+      'Days 31-60 (Reconnect): Cautiously rebuild emotional closeness through quality time and vulnerability.\n' +
+      'Days 61-90 (Rebuild): Create new patterns, shared meaning, and a story that includes the wound but is not defined by it.\n\n' +
+      'This plan is a roadmap, not a rigid schedule. Some weeks you will progress fast, others you will need to pause. That is normal.',
+    exerciseContent:
+      'Build your 90-day rebuild plan. For each phase, pick 2-3 concrete actions that feel realistic and meaningful.\n\nThen write a brief commitment statement about why you are choosing to rebuild.',
+    reflectionPrompt: 'What gives me hope that this work is worth it:',
+  },
+];
+
+// ═══════════════════════════════════════════════════════════
 //  COMBINED EXPORT
 // ═══════════════════════════════════════════════════════════
 
@@ -1511,4 +1843,8 @@ export const ALL_LESSONS: MicroCourseLesson[] = [
   ...MC8_LESSONS,
   ...MC9_LESSONS,
   ...MC10_LESSONS,
+  ...MC11_LESSONS,
+  ...MC12_LESSONS,
+  ...MC13_LESSONS,
+  ...MC14_LESSONS,
 ];

@@ -56,6 +56,10 @@ import { MC7CourseFlow } from '@/components/microcourse/mc7/MC7CourseFlow';
 import { MC8CourseFlow } from '@/components/microcourse/mc8/MC8CourseFlow';
 import { MC9CourseFlow } from '@/components/microcourse/mc9/MC9CourseFlow';
 import { MC10CourseFlow } from '@/components/microcourse/mc10/MC10CourseFlow';
+import { MC11CourseFlow } from '@/components/microcourse/mc11/MC11CourseFlow';
+import { MC12CourseFlow } from '@/components/microcourse/mc12/MC12CourseFlow';
+import { MC13CourseFlow } from '@/components/microcourse/mc13/MC13CourseFlow';
+import { MC14CourseFlow } from '@/components/microcourse/mc14/MC14CourseFlow';
 import {
   getLesson,
   getLessonContent,
@@ -79,6 +83,10 @@ const COURSE_TO_EDGE: Record<string, string[]> = {
   'mc-boundaries-deep': ['differentiation_work', 'reclaim_self'],
   'mc-lightness-lab': ['approach_closeness'],
   'mc-seen': ['approach_closeness'],
+  'mc-orientation-pleasure': ['regulation_capacity'],
+  'mc-bids-connection': ['approach_closeness'],
+  'mc-fondness-gratitude': ['approach_closeness'],
+  'mc-trust-repair': ['speak_truth'],
 };
 
 // ─── Lesson Step (within a single lesson) ───────────────
@@ -521,6 +529,82 @@ export default function MicroCourseScreen() {
   if (courseId === 'mc-seen' && !completed) {
     return (
       <MC10CourseFlow
+        lessonNumber={lessonNum}
+        totalLessons={totalLessons}
+        attachmentStyle={attachmentStyle}
+        content={content}
+        lesson={lesson}
+        course={course}
+        onComplete={handleComplete}
+        onExit={handleExit}
+        onPreviousLesson={lessonNum > 1 ? handlePreviousLesson : undefined}
+        saving={saving}
+      />
+    );
+  }
+
+  // ─── MC11 Interactive Flow ────────────────────
+
+  if (courseId === 'mc-orientation-pleasure' && !completed) {
+    return (
+      <MC11CourseFlow
+        lessonNumber={lessonNum}
+        totalLessons={totalLessons}
+        attachmentStyle={attachmentStyle}
+        content={content}
+        lesson={lesson}
+        course={course}
+        onComplete={handleComplete}
+        onExit={handleExit}
+        onPreviousLesson={lessonNum > 1 ? handlePreviousLesson : undefined}
+        saving={saving}
+      />
+    );
+  }
+
+  // ─── MC12 Interactive Flow ────────────────────
+
+  if (courseId === 'mc-bids-connection' && !completed) {
+    return (
+      <MC12CourseFlow
+        lessonNumber={lessonNum}
+        totalLessons={totalLessons}
+        attachmentStyle={attachmentStyle}
+        content={content}
+        lesson={lesson}
+        course={course}
+        onComplete={handleComplete}
+        onExit={handleExit}
+        onPreviousLesson={lessonNum > 1 ? handlePreviousLesson : undefined}
+        saving={saving}
+      />
+    );
+  }
+
+  // ─── MC13 Interactive Flow ────────────────────
+
+  if (courseId === 'mc-fondness-gratitude' && !completed) {
+    return (
+      <MC13CourseFlow
+        lessonNumber={lessonNum}
+        totalLessons={totalLessons}
+        attachmentStyle={attachmentStyle}
+        content={content}
+        lesson={lesson}
+        course={course}
+        onComplete={handleComplete}
+        onExit={handleExit}
+        onPreviousLesson={lessonNum > 1 ? handlePreviousLesson : undefined}
+        saving={saving}
+      />
+    );
+  }
+
+  // ─── MC14 Interactive Flow ────────────────────
+
+  if (courseId === 'mc-trust-repair' && !completed) {
+    return (
+      <MC14CourseFlow
         lessonNumber={lessonNum}
         totalLessons={totalLessons}
         attachmentStyle={attachmentStyle}
