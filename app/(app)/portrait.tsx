@@ -1343,9 +1343,9 @@ function CycleDiagramInfographic({
 
   return (
     <Animated.View style={[st.cycleDiagramContainer, { opacity: fadeAnim }]}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-        <RefreshIcon size={16} color={Colors.textMuted} />
-        <Text style={st.scoreGroupLabel}>YOUR CYCLE POSITION</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+        <RefreshIcon size={13} color={Colors.textMuted} />
+        <Text style={[st.scoreGroupLabel, { fontSize: 10, letterSpacing: 1.0 }]}>YOUR CYCLE POSITION</Text>
       </View>
       <View style={st.scoreGroupDivider} />
 
@@ -3183,20 +3183,20 @@ const st = StyleSheet.create({
     ...Shadows.card,
   },
   cycleDiagramVisual: {
-    height: 140,
+    height: 110,
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
   },
   cycleDiagramArrowRing: {
     position: 'absolute',
-    width: 100,
-    height: 100,
+    width: 80,
+    height: 80,
     alignItems: 'center',
     justifyContent: 'center',
   },
   cycleDiagramArrow: {
-    fontSize: 100,
+    fontSize: 70,
     color: Colors.textMuted + '20',
     fontWeight: '200',
   },
@@ -3204,23 +3204,23 @@ const st = StyleSheet.create({
     position: 'absolute',
     left: 16,
     top: '50%',
-    marginTop: -24,
-    width: 66,
-    height: 48,
+    marginTop: -18,
+    width: 54,
+    height: 36,
     borderRadius: BorderRadius.md,
     alignItems: 'center',
     justifyContent: 'center',
     ...Shadows.elevated,
   },
   cycleDiagramYouText: {
-    fontSize: 8,
+    fontSize: 7,
     color: Colors.white,
     fontWeight: '600',
     textTransform: 'uppercase',
-    letterSpacing: 0.8,
+    letterSpacing: 0.6,
   },
   cycleDiagramYouRole: {
-    fontSize: 11,
+    fontSize: 9,
     color: Colors.white,
     fontWeight: '700',
   },
@@ -3228,22 +3228,22 @@ const st = StyleSheet.create({
     position: 'absolute',
     right: 16,
     top: '50%',
-    marginTop: -24,
-    width: 66,
-    height: 48,
+    marginTop: -18,
+    width: 54,
+    height: 36,
     borderRadius: BorderRadius.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
   cycleDiagramPartnerText: {
-    fontSize: 8,
+    fontSize: 7,
     color: Colors.white,
     fontWeight: '600',
     textTransform: 'uppercase',
-    letterSpacing: 0.8,
+    letterSpacing: 0.6,
   },
   cycleDiagramPartnerRole: {
-    fontSize: 11,
+    fontSize: 9,
     color: Colors.white,
     fontWeight: '700',
   },

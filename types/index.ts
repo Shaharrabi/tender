@@ -242,6 +242,8 @@ export type {
   EmotionalStructure,
   AttachmentLens,
   PartsLens,
+  RegulationToolkit,
+  CoRegulationPattern,
   RegulationLens,
   ValuesLens,
   FourLensAnalysis,
