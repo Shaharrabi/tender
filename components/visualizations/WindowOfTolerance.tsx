@@ -16,8 +16,8 @@
  * Built with react-native-svg.
  */
 
-import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, StyleSheet, Animated, LayoutChangeEvent } from 'react-native';
 import Svg, { Rect, Circle, Line, Text as SvgText, Defs, LinearGradient, Stop } from 'react-native-svg';
 import {
   Colors,
@@ -73,6 +73,7 @@ export default function WindowOfTolerance({
 }: WindowOfToleranceProps) {
   const fadeIn = useRef(new Animated.Value(0)).current;
   const markerAnim = useRef(new Animated.Value(0)).current;
+  const [containerWidth, setContainerWidth] = useState(0);
 
   const windowWidth = compositeScores.windowWidth;
   const regulationScore = compositeScores.regulationScore;
@@ -84,10 +85,14 @@ export default function WindowOfTolerance({
     ]).start();
   }, []);
 
-  // Chart dimensions
-  const chartWidth = 280;
+  const onLayout = (e: LayoutChangeEvent) => {
+    setContainerWidth(e.nativeEvent.layout.width);
+  };
+
+  // Chart dimensions — responsive to container
+  const chartWidth = containerWidth > 0 ? containerWidth - Spacing.lg * 2 : 280;
   const chartHeight = 200;
-  const margin = { top: 16, bottom: 16, left: 16, right: 60 };
+  const margin = { top: 16, bottom: 16, left: 16, right: 16 };
   const innerWidth = chartWidth - margin.left - margin.right;
   const innerHeight = chartHeight - margin.top - margin.bottom;
 
@@ -119,136 +124,108 @@ export default function WindowOfTolerance({
   const insight = getWindowInsight(windowWidth, activationPattern);
 
   return (
-    <Animated.View style={[styles.container, { opacity: fadeIn }]}>
+    <Animated.View style={[styles.container, { opacity: fadeIn }]} onLayout={onLayout}>
       {/* Header */}
       <Text style={styles.sectionLabel}>NERVOUS SYSTEM</Text>
       <Text style={styles.title}>Your Window of Tolerance</Text>
       <Text style={styles.subtitle}>The zone where you can think, feel, and respond</Text>
 
-      {/* Diagram */}
-      <View style={styles.chartWrapper}>
-        <Svg width={chartWidth} height={chartHeight} viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
-          <Defs>
-            <LinearGradient id="hyperGrad" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0" stopColor={Colors.primary} stopOpacity="0.2" />
-              <Stop offset="1" stopColor={Colors.primary} stopOpacity="0.06" />
-            </LinearGradient>
-            <LinearGradient id="hypoGrad" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0" stopColor={Colors.secondary} stopOpacity="0.06" />
-              <Stop offset="1" stopColor={Colors.secondary} stopOpacity="0.2" />
-            </LinearGradient>
-          </Defs>
+      {/* Diagram with side labels */}
+      {containerWidth > 0 && (
+      <View style={styles.chartRow}>
+        {/* Zone labels on the right */}
+        <View style={styles.chartWrapper}>
+          <Svg width={chartWidth} height={chartHeight} viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
+            <Defs>
+              <LinearGradient id="hyperGrad" x1="0" y1="0" x2="0" y2="1">
+                <Stop offset="0" stopColor={Colors.primary} stopOpacity="0.2" />
+                <Stop offset="1" stopColor={Colors.primary} stopOpacity="0.06" />
+              </LinearGradient>
+              <LinearGradient id="hypoGrad" x1="0" y1="0" x2="0" y2="1">
+                <Stop offset="0" stopColor={Colors.secondary} stopOpacity="0.06" />
+                <Stop offset="1" stopColor={Colors.secondary} stopOpacity="0.2" />
+              </LinearGradient>
+            </Defs>
 
-          {/* Hyperarousal zone */}
-          <Rect
-            x={margin.left}
-            y={margin.top}
-            width={innerWidth}
-            height={hyperHeight}
-            rx={4}
-            fill="url(#hyperGrad)"
-          />
-          <SvgText
-            x={margin.left + innerWidth + 8}
-            y={margin.top + hyperHeight / 2 + 3}
-            fill={Colors.primary}
-            fontSize={8}
-            fontFamily={FontFamilies.body}
-            fontWeight="500"
-          >
-            Activation ↑
-          </SvgText>
+            {/* Hyperarousal zone */}
+            <Rect
+              x={margin.left}
+              y={margin.top}
+              width={innerWidth}
+              height={hyperHeight}
+              rx={4}
+              fill="url(#hyperGrad)"
+            />
 
-          {/* Window zone */}
-          <Rect
-            x={margin.left}
-            y={margin.top + hyperHeight}
-            width={innerWidth}
-            height={windowZoneHeight}
-            rx={0}
-            fill={Colors.success}
-            fillOpacity={0.12}
-            stroke={Colors.success}
-            strokeWidth={1.5}
-            strokeOpacity={0.4}
-          />
-          <SvgText
-            x={margin.left + innerWidth + 8}
-            y={margin.top + hyperHeight + windowZoneHeight / 2 + 3}
-            fill={Colors.success}
-            fontSize={8}
-            fontFamily={FontFamilies.body}
-            fontWeight="600"
-          >
-            Window
-          </SvgText>
+            {/* Window zone */}
+            <Rect
+              x={margin.left}
+              y={margin.top + hyperHeight}
+              width={innerWidth}
+              height={windowZoneHeight}
+              rx={0}
+              fill={Colors.success}
+              fillOpacity={0.12}
+              stroke={Colors.success}
+              strokeWidth={1.5}
+              strokeOpacity={0.4}
+            />
 
-          {/* Window width label inside */}
-          <SvgText
-            x={margin.left + innerWidth / 2}
-            y={margin.top + hyperHeight + windowZoneHeight / 2 + 4}
-            fill={Colors.success}
-            fontSize={11}
-            fontFamily={FontFamilies.accent}
-            fontWeight="600"
-            textAnchor="middle"
-          >
-            {windowLabel} ({windowWidth})
-          </SvgText>
+            {/* Window width label inside */}
+            <SvgText
+              x={margin.left + innerWidth / 2}
+              y={margin.top + hyperHeight + windowZoneHeight / 2 + 4}
+              fill={Colors.success}
+              fontSize={11}
+              fontFamily={FontFamilies.accent}
+              fontWeight="600"
+              textAnchor="middle"
+            >
+              {windowLabel} ({windowWidth})
+            </SvgText>
 
-          {/* Hypoarousal zone */}
-          <Rect
-            x={margin.left}
-            y={margin.top + hyperHeight + windowZoneHeight}
-            width={innerWidth}
-            height={hypoHeight}
-            rx={4}
-            fill="url(#hypoGrad)"
-          />
-          <SvgText
-            x={margin.left + innerWidth + 8}
-            y={margin.top + hyperHeight + windowZoneHeight + hypoHeight / 2 + 3}
-            fill={Colors.secondary}
-            fontSize={8}
-            fontFamily={FontFamilies.body}
-            fontWeight="500"
-          >
-            Shutdown ↓
-          </SvgText>
+            {/* Hypoarousal zone */}
+            <Rect
+              x={margin.left}
+              y={margin.top + hyperHeight + windowZoneHeight}
+              width={innerWidth}
+              height={hypoHeight}
+              rx={4}
+              fill="url(#hypoGrad)"
+            />
 
-          {/* "You are here" marker */}
-          <Circle
-            cx={margin.left + innerWidth * 0.65}
-            cy={markerY}
-            r={6}
-            fill={Colors.primary}
-            stroke={Colors.white}
-            strokeWidth={2}
-          />
-          <SvgText
-            x={margin.left + innerWidth * 0.65 + 12}
-            y={markerY + 3}
-            fill={Colors.primary}
-            fontSize={9}
-            fontFamily={FontFamilies.body}
-            fontWeight="500"
-          >
-            You
-          </SvgText>
+            {/* "You are here" marker */}
+            <Circle
+              cx={margin.left + innerWidth * 0.65}
+              cy={markerY}
+              r={6}
+              fill={Colors.primary}
+              stroke={Colors.white}
+              strokeWidth={2}
+            />
 
-          {/* Dashed center line */}
-          <Line
-            x1={margin.left}
-            y1={margin.top + hyperHeight + windowZoneHeight / 2}
-            x2={margin.left + innerWidth}
-            y2={margin.top + hyperHeight + windowZoneHeight / 2}
-            stroke={Colors.success}
-            strokeWidth={0.5}
-            strokeDasharray="4,4"
-            strokeOpacity={0.5}
-          />
-        </Svg>
+            {/* Dashed center line */}
+            <Line
+              x1={margin.left}
+              y1={margin.top + hyperHeight + windowZoneHeight / 2}
+              x2={margin.left + innerWidth}
+              y2={margin.top + hyperHeight + windowZoneHeight / 2}
+              stroke={Colors.success}
+              strokeWidth={0.5}
+              strokeDasharray="4,4"
+              strokeOpacity={0.5}
+            />
+          </Svg>
+        </View>
+
+        {/* Zone labels stacked vertically beside the chart */}
+        <View style={styles.zoneLabelColumn}>
+          <Text style={[styles.zoneLabel, { color: Colors.primary }]}>Activation ↑</Text>
+          <Text style={[styles.zoneLabel, { color: Colors.success }]}>Window</Text>
+          <Text style={[styles.zoneLabel, { color: Colors.secondary }]}>Shutdown ↓</Text>
+        </View>
       </View>
+      )}
 
       {/* Summary pills */}
       <View style={styles.pillRow}>
@@ -317,9 +294,25 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     marginBottom: Spacing.md,
   },
+  chartRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
   chartWrapper: {
+    flex: 1,
     alignItems: 'center',
     paddingVertical: Spacing.sm,
+  },
+  zoneLabelColumn: {
+    justifyContent: 'space-between',
+    height: 168, // matches chart inner height roughly
+    paddingVertical: 8,
+  },
+  zoneLabel: {
+    fontFamily: FontFamilies.body,
+    fontSize: 10,
+    fontWeight: '500',
   },
   pillRow: {
     flexDirection: 'row',
