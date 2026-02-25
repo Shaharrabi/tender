@@ -92,7 +92,7 @@ export default function WindowOfTolerance({
   // Chart dimensions — responsive to container
   const chartWidth = containerWidth > 0 ? containerWidth - Spacing.lg * 2 : 280;
   const chartHeight = 200;
-  const margin = { top: 16, bottom: 16, left: 16, right: 16 };
+  const margin = { top: 16, bottom: 16, left: 16, right: 70 }; // right margin for zone labels
   const innerWidth = chartWidth - margin.left - margin.right;
   const innerHeight = chartHeight - margin.top - margin.bottom;
 
@@ -130,100 +130,125 @@ export default function WindowOfTolerance({
       <Text style={styles.title}>Your Window of Tolerance</Text>
       <Text style={styles.subtitle}>The zone where you can think, feel, and respond</Text>
 
-      {/* Diagram with side labels */}
+      {/* Diagram with zone labels inside SVG */}
       {containerWidth > 0 && (
-      <View style={styles.chartRow}>
-        {/* Zone labels on the right */}
-        <View style={styles.chartWrapper}>
-          <Svg width={chartWidth} height={chartHeight} viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
-            <Defs>
-              <LinearGradient id="hyperGrad" x1="0" y1="0" x2="0" y2="1">
-                <Stop offset="0" stopColor={Colors.primary} stopOpacity="0.2" />
-                <Stop offset="1" stopColor={Colors.primary} stopOpacity="0.06" />
-              </LinearGradient>
-              <LinearGradient id="hypoGrad" x1="0" y1="0" x2="0" y2="1">
-                <Stop offset="0" stopColor={Colors.secondary} stopOpacity="0.06" />
-                <Stop offset="1" stopColor={Colors.secondary} stopOpacity="0.2" />
-              </LinearGradient>
-            </Defs>
+      <View style={styles.chartWrapper}>
+        <Svg width={chartWidth} height={chartHeight} viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
+          <Defs>
+            <LinearGradient id="hyperGrad" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor={Colors.primary} stopOpacity="0.2" />
+              <Stop offset="1" stopColor={Colors.primary} stopOpacity="0.06" />
+            </LinearGradient>
+            <LinearGradient id="hypoGrad" x1="0" y1="0" x2="0" y2="1">
+              <Stop offset="0" stopColor={Colors.secondary} stopOpacity="0.06" />
+              <Stop offset="1" stopColor={Colors.secondary} stopOpacity="0.2" />
+            </LinearGradient>
+          </Defs>
 
-            {/* Hyperarousal zone */}
-            <Rect
-              x={margin.left}
-              y={margin.top}
-              width={innerWidth}
-              height={hyperHeight}
-              rx={4}
-              fill="url(#hyperGrad)"
-            />
+          {/* Hyperarousal zone */}
+          <Rect
+            x={margin.left}
+            y={margin.top}
+            width={innerWidth}
+            height={hyperHeight}
+            rx={4}
+            fill="url(#hyperGrad)"
+          />
 
-            {/* Window zone */}
-            <Rect
-              x={margin.left}
-              y={margin.top + hyperHeight}
-              width={innerWidth}
-              height={windowZoneHeight}
-              rx={0}
-              fill={Colors.success}
-              fillOpacity={0.12}
-              stroke={Colors.success}
-              strokeWidth={1.5}
-              strokeOpacity={0.4}
-            />
+          {/* Window zone */}
+          <Rect
+            x={margin.left}
+            y={margin.top + hyperHeight}
+            width={innerWidth}
+            height={windowZoneHeight}
+            rx={0}
+            fill={Colors.success}
+            fillOpacity={0.12}
+            stroke={Colors.success}
+            strokeWidth={1.5}
+            strokeOpacity={0.4}
+          />
 
-            {/* Window width label inside */}
-            <SvgText
-              x={margin.left + innerWidth / 2}
-              y={margin.top + hyperHeight + windowZoneHeight / 2 + 4}
-              fill={Colors.success}
-              fontSize={11}
-              fontFamily={FontFamilies.accent}
-              fontWeight="600"
-              textAnchor="middle"
-            >
-              {windowLabel} ({windowWidth})
-            </SvgText>
+          {/* Window width label inside */}
+          <SvgText
+            x={margin.left + innerWidth / 2}
+            y={margin.top + hyperHeight + windowZoneHeight / 2 + 4}
+            fill={Colors.success}
+            fontSize={11}
+            fontFamily={FontFamilies.accent}
+            fontWeight="600"
+            textAnchor="middle"
+          >
+            {windowLabel} ({windowWidth})
+          </SvgText>
 
-            {/* Hypoarousal zone */}
-            <Rect
-              x={margin.left}
-              y={margin.top + hyperHeight + windowZoneHeight}
-              width={innerWidth}
-              height={hypoHeight}
-              rx={4}
-              fill="url(#hypoGrad)"
-            />
+          {/* Hypoarousal zone */}
+          <Rect
+            x={margin.left}
+            y={margin.top + hyperHeight + windowZoneHeight}
+            width={innerWidth}
+            height={hypoHeight}
+            rx={4}
+            fill="url(#hypoGrad)"
+          />
 
-            {/* "You are here" marker */}
-            <Circle
-              cx={margin.left + innerWidth * 0.65}
-              cy={markerY}
-              r={6}
-              fill={Colors.primary}
-              stroke={Colors.white}
-              strokeWidth={2}
-            />
+          {/* "You are here" marker */}
+          <Circle
+            cx={margin.left + innerWidth * 0.65}
+            cy={markerY}
+            r={6}
+            fill={Colors.primary}
+            stroke={Colors.white}
+            strokeWidth={2}
+          />
 
-            {/* Dashed center line */}
-            <Line
-              x1={margin.left}
-              y1={margin.top + hyperHeight + windowZoneHeight / 2}
-              x2={margin.left + innerWidth}
-              y2={margin.top + hyperHeight + windowZoneHeight / 2}
-              stroke={Colors.success}
-              strokeWidth={0.5}
-              strokeDasharray="4,4"
-              strokeOpacity={0.5}
-            />
-          </Svg>
-        </View>
+          {/* Dashed center line */}
+          <Line
+            x1={margin.left}
+            y1={margin.top + hyperHeight + windowZoneHeight / 2}
+            x2={margin.left + innerWidth}
+            y2={margin.top + hyperHeight + windowZoneHeight / 2}
+            stroke={Colors.success}
+            strokeWidth={0.5}
+            strokeDasharray="4,4"
+            strokeOpacity={0.5}
+          />
 
-        {/* Zone labels stacked vertically beside the chart */}
-        <View style={styles.zoneLabelColumn}>
-          <Text style={[styles.zoneLabel, { color: Colors.primary }]}>Activation ↑</Text>
-          <Text style={[styles.zoneLabel, { color: Colors.success }]}>Window</Text>
-          <Text style={[styles.zoneLabel, { color: Colors.secondary }]}>Shutdown ↓</Text>
-        </View>
+          {/* Zone labels — right of the zones, inside SVG */}
+          <SvgText
+            x={margin.left + innerWidth + 8}
+            y={margin.top + hyperHeight / 2 + 4}
+            fill={Colors.primary}
+            fontSize={9}
+            fontFamily={FontFamilies.body}
+            fontWeight="500"
+            textAnchor="start"
+          >
+            Activation ↑
+          </SvgText>
+          <SvgText
+            x={margin.left + innerWidth + 8}
+            y={margin.top + hyperHeight + windowZoneHeight / 2 + 4}
+            fill={Colors.success}
+            fontSize={9}
+            fontFamily={FontFamilies.body}
+            fontWeight="500"
+            textAnchor="start"
+          >
+            Window
+          </SvgText>
+          <SvgText
+            x={margin.left + innerWidth + 8}
+            y={margin.top + hyperHeight + windowZoneHeight + hypoHeight / 2 + 4}
+            fill={Colors.secondary}
+            fontSize={9}
+            fontFamily={FontFamilies.body}
+            fontWeight="500"
+            textAnchor="start"
+          >
+            Shutdown ↓
+          </SvgText>
+        </Svg>
       </View>
       )}
 
@@ -294,25 +319,9 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     marginBottom: Spacing.md,
   },
-  chartRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
   chartWrapper: {
-    flex: 1,
     alignItems: 'center',
     paddingVertical: Spacing.sm,
-  },
-  zoneLabelColumn: {
-    justifyContent: 'space-between',
-    height: 168, // matches chart inner height roughly
-    paddingVertical: 8,
-  },
-  zoneLabel: {
-    fontFamily: FontFamilies.body,
-    fontSize: 10,
-    fontWeight: '500',
   },
   pillRow: {
     flexDirection: 'row',
