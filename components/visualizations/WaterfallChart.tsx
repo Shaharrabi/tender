@@ -2,14 +2,14 @@
  * WaterfallChart — "How Your Profile Was Built"
  *
  * Shows how each assessment contributes to the overall relational profile score.
- * Only shows dimensions that have actual scores (> 0).
- * Missing assessments are listed separately so the user understands gaps.
+ * Each bar starts where the previous one ended, creating a cascading waterfall.
+ * The final bar shows the composite total.
  *
  * Built with react-native-svg.
  */
 
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
+import { View, Text, StyleSheet, Animated, useWindowDimensions } from 'react-native';
 import Svg, { Rect, Line, Text as SvgText, G } from 'react-native-svg';
 import {
   Colors,
@@ -37,54 +37,54 @@ interface WaterfallStep {
 
 // ─── Step Definitions ─────────────────────────────────
 
-function buildAllSteps(scores: CompositeScores): WaterfallStep[] {
+function buildSteps(scores: CompositeScores): WaterfallStep[] {
   return [
     {
       label: 'Attachment Security',
       shortLabel: 'Attachment',
-      value: scores.attachmentSecurity ?? 0,
+      value: scores.attachmentSecurity,
       color: Colors.primary,
       source: 'ECR-R',
     },
     {
       label: 'Emotional Intelligence',
       shortLabel: 'EQ',
-      value: scores.emotionalIntelligence ?? 0,
+      value: scores.emotionalIntelligence,
       color: Colors.accentGold,
       source: 'SSEIT',
     },
     {
       label: 'Differentiation',
       shortLabel: 'Differentiating',
-      value: scores.differentiation ?? 0,
+      value: scores.differentiation,
       color: Colors.secondary,
       source: 'DSI-R',
     },
     {
       label: 'Conflict Flexibility',
       shortLabel: 'Conflict',
-      value: scores.conflictFlexibility ?? 0,
+      value: scores.conflictFlexibility,
       color: Colors.calm,
       source: 'DUTCH',
     },
     {
       label: 'Values Alignment',
       shortLabel: 'Values',
-      value: scores.valuesCongruence ?? 0,
+      value: scores.valuesCongruence,
       color: Colors.success,
       source: 'Values',
     },
     {
       label: 'Regulation Capacity',
       shortLabel: 'Regulation',
-      value: scores.regulationScore ?? 0,
+      value: scores.regulationScore,
       color: Colors.accent,
       source: 'Multi',
     },
     {
       label: 'Relational Awareness',
       shortLabel: 'Awareness',
-      value: scores.relationalAwareness ?? 0,
+      value: scores.relationalAwareness,
       color: Colors.depth,
       source: 'Multi',
     },
@@ -104,48 +104,32 @@ export default function WaterfallChart({ compositeScores }: WaterfallChartProps)
     }).start();
   }, []);
 
-  const allSteps = buildAllSteps(compositeScores);
-  const activeSteps = allSteps.filter((s) => s.value > 0);
-  const missingSteps = allSteps.filter((s) => s.value <= 0);
+  const { width: screenWidth } = useWindowDimensions();
+  const steps = buildSteps(compositeScores);
+  const overallAvg = Math.round(steps.reduce((s, step) => s + step.value, 0) / steps.length);
 
-  // If no active steps at all, show a placeholder message
-  if (activeSteps.length === 0) {
-    return (
-      <Animated.View style={[styles.container, { opacity: fadeIn }]}>
-        <Text style={styles.sectionLabel}>SCORE DECOMPOSITION</Text>
-        <Text style={styles.title}>How Your Profile Was Built</Text>
-        <Text style={styles.subtitle}>
-          Complete your assessments to see how each one contributes to your relational profile.
-        </Text>
-      </Animated.View>
-    );
-  }
-
-  const overallAvg = Math.round(
-    activeSteps.reduce((s, step) => s + step.value, 0) / activeSteps.length,
-  );
-
-  // Chart dimensions
-  const chartWidth = 300;
-  const chartHeight = 220;
-  const margin = { top: 20, bottom: 40, left: 8, right: 8 };
+  // Chart dimensions — responsive to screen width
+  const chartWidth = Math.min(screenWidth - 48, 400);
+  const chartHeight = 230;
+  const margin = { top: 20, bottom: 45, left: 8, right: 8 };
   const innerWidth = chartWidth - margin.left - margin.right;
   const innerHeight = chartHeight - margin.top - margin.bottom;
 
-  const barWidth = innerWidth / (activeSteps.length + 1.5); // +1 for total bar + gaps
+  const barWidth = innerWidth / (steps.length + 1.5); // +1 for total bar + gaps
   const gap = barWidth * 0.15;
   const maxScore = 100;
 
-  // Build bar positions
-  const bars = activeSteps.map((step, i) => {
+  // Build bar positions (minimum height so all bars are visible)
+  const minBarH = 4;
+  const bars = steps.map((step, i) => {
     const x = margin.left + i * (barWidth + gap);
-    const barH = (step.value / maxScore) * innerHeight;
+    const barH = Math.max((step.value / maxScore) * innerHeight, minBarH);
     const y = margin.top + innerHeight - barH;
     return { ...step, x, y, width: barWidth, height: barH };
   });
 
   // Total bar
-  const totalX = margin.left + activeSteps.length * (barWidth + gap) + gap;
+  const totalX = margin.left + steps.length * (barWidth + gap) + gap;
   const totalH = (overallAvg / maxScore) * innerHeight;
   const totalY = margin.top + innerHeight - totalH;
 
@@ -154,9 +138,7 @@ export default function WaterfallChart({ compositeScores }: WaterfallChartProps)
       {/* Header */}
       <Text style={styles.sectionLabel}>SCORE DECOMPOSITION</Text>
       <Text style={styles.title}>How Your Profile Was Built</Text>
-      <Text style={styles.subtitle}>
-        Each completed assessment contributes a dimension to your relational profile. The overall score averages across all active dimensions.
-      </Text>
+      <Text style={styles.subtitle}>Each assessment contributes to your relational profile</Text>
 
       {/* Chart */}
       <View style={styles.chartWrapper}>
@@ -230,7 +212,7 @@ export default function WaterfallChart({ compositeScores }: WaterfallChartProps)
                 x={bar.x + bar.width / 2}
                 y={margin.top + innerHeight + 12}
                 fill={Colors.textSecondary}
-                fontSize={7}
+                fontSize={9}
                 fontFamily={FontFamilies.body}
                 textAnchor="middle"
               >
@@ -240,9 +222,9 @@ export default function WaterfallChart({ compositeScores }: WaterfallChartProps)
               {/* Source below label */}
               <SvgText
                 x={bar.x + bar.width / 2}
-                y={margin.top + innerHeight + 22}
+                y={margin.top + innerHeight + 23}
                 fill={Colors.textMuted}
-                fontSize={6}
+                fontSize={8}
                 fontFamily={FontFamilies.body}
                 textAnchor="middle"
               >
@@ -292,7 +274,7 @@ export default function WaterfallChart({ compositeScores }: WaterfallChartProps)
             x={totalX + barWidth / 2}
             y={margin.top + innerHeight + 12}
             fill={Colors.text}
-            fontSize={8}
+            fontSize={10}
             fontFamily={FontFamilies.body}
             fontWeight="600"
             textAnchor="middle"
@@ -302,28 +284,21 @@ export default function WaterfallChart({ compositeScores }: WaterfallChartProps)
         </Svg>
       </View>
 
-      {/* Legend row */}
+      {/* Legend row — all 7 dimensions with scores */}
       <View style={styles.legendRow}>
-        {activeSteps.map((step) => (
+        {steps.map((step) => (
           <View key={step.label} style={styles.legendItem}>
             <View style={[styles.legendDot, { backgroundColor: step.color }]} />
             <Text style={styles.legendText}>{step.shortLabel}</Text>
+            <Text style={[styles.legendScore, { color: step.color }]}>{step.value}</Text>
           </View>
         ))}
-      </View>
-
-      {/* Missing assessments callout */}
-      {missingSteps.length > 0 && (
-        <View style={styles.missingBox}>
-          <Text style={styles.missingTitle}>Not yet contributing:</Text>
-          <Text style={styles.missingList}>
-            {missingSteps.map((s) => `${s.label} (${s.source})`).join(', ')}
-          </Text>
-          <Text style={styles.missingHint}>
-            These dimensions will appear once the relevant assessments are completed.
-          </Text>
+        <View style={styles.legendItem}>
+          <View style={[styles.legendDot, { backgroundColor: Colors.text }]} />
+          <Text style={[styles.legendText, { fontWeight: '600' }]}>Overall</Text>
+          <Text style={[styles.legendScore, { color: Colors.text }]}>{overallAvg}</Text>
         </View>
-      )}
+      </View>
     </Animated.View>
   );
 }
@@ -345,12 +320,13 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
   },
   title: {
-    ...Typography.headingM,
+    fontFamily: FontFamilies.heading,
+    fontSize: 20,
     color: Colors.text,
     marginBottom: 2,
   },
   subtitle: {
-    ...Typography.bodySmall,
+    ...Typography.caption,
     color: Colors.textSecondary,
     marginBottom: Spacing.md,
   },
@@ -377,35 +353,12 @@ const styles = StyleSheet.create({
   },
   legendText: {
     fontFamily: FontFamilies.body,
-    fontSize: 9,
+    fontSize: 10,
     color: Colors.textSecondary,
   },
-  missingBox: {
-    marginTop: Spacing.md,
-    padding: Spacing.md,
-    backgroundColor: Colors.backgroundAlt,
-    borderRadius: BorderRadius.sm,
-    borderLeftWidth: 3,
-    borderLeftColor: Colors.warning,
-  },
-  missingTitle: {
-    fontFamily: FontFamilies.body,
-    fontSize: 12,
-    fontWeight: '600',
-    color: Colors.textSecondary,
-    marginBottom: 4,
-  },
-  missingList: {
-    fontFamily: FontFamilies.body,
-    fontSize: 12,
-    color: Colors.textMuted,
-    lineHeight: 18,
-  },
-  missingHint: {
-    fontFamily: FontFamilies.body,
-    fontSize: 11,
-    color: Colors.textMuted,
-    fontStyle: 'italic',
-    marginTop: 6,
+  legendScore: {
+    fontFamily: FontFamilies.accent,
+    fontSize: 10,
+    fontWeight: '700',
   },
 });

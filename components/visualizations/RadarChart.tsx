@@ -13,7 +13,7 @@
  * Built with react-native-svg. Animated draw-in from center.
  */
 
-import React, { useEffect, useRef, useMemo } from 'react';
+import React, { useEffect, useRef, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Animated as RNAnimated, TouchableOpacity } from 'react-native';
 import Svg, { Polygon, Circle, Line, Text as SvgText, G } from 'react-native-svg';
 import {
@@ -65,6 +65,62 @@ const DIMENSIONS: DimensionDef[] = [
 
 const N = DIMENSIONS.length; // 7
 
+function getDimensionDetail(key: string, score: number): { description: string; source: string; strength: string } {
+  const details: Record<string, (s: number) => { description: string; source: string; strength: string }> = {
+    attachmentSecurity: (s) => ({
+      description: s >= 65
+        ? 'You have a solid foundation of relational security. You can tolerate closeness and separateness without excessive anxiety or withdrawal.'
+        : 'Your attachment system is somewhat activated — you may swing between seeking reassurance and pulling away when closeness feels unsafe.',
+      source: 'Based on your ECR-R attachment assessment (anxiety + avoidance dimensions)',
+      strength: s >= 65 ? 'Secure base for deeper work' : 'Building safety is the priority',
+    }),
+    emotionalIntelligence: (s) => ({
+      description: s >= 65
+        ? 'You have strong emotional intelligence — you perceive, understand, and manage emotions effectively in yourself and others.'
+        : 'There\'s room to grow in perceiving and managing emotions. This directly affects how you navigate difficult relational moments.',
+      source: 'Based on your SSEIT emotional intelligence assessment (4 subscales)',
+      strength: s >= 65 ? 'Natural empathy and attunement' : 'Growth in EQ transforms relationships',
+    }),
+    differentiation: (s) => ({
+      description: s >= 65
+        ? 'You maintain a healthy sense of self within relationships — able to stay connected without losing your own perspective.'
+        : 'Holding your own position while staying connected to others is your growth edge. This is about being a "self" while in a "we."',
+      source: 'Based on your DSI-R differentiation assessment (reactivity, I-position, cutoff, fusion)',
+      strength: s >= 65 ? 'Strong relational backbone' : 'I-position work is key',
+    }),
+    conflictFlexibility: (s) => ({
+      description: s >= 65
+        ? 'You have a flexible conflict repertoire — able to adapt your style based on the situation rather than defaulting to one pattern.'
+        : 'You tend to rely on one or two conflict styles, which can create predictable (and stuck) patterns in disagreements.',
+      source: 'Based on your DUTCH conflict styles assessment (5 modes)',
+      strength: s >= 65 ? 'Adaptive and versatile under pressure' : 'Expanding your conflict toolkit',
+    }),
+    valuesCongruence: (s) => ({
+      description: s >= 65
+        ? 'You\'re living in alignment with what you value most. This congruence creates authenticity and reduces inner conflict.'
+        : 'There\'s a gap between what you value and how you\'re living. These gaps are where your protective patterns show up most.',
+      source: 'Based on your Values assessment (importance vs. living-it ratings across 10 domains)',
+      strength: s >= 65 ? 'Deeply integrated values' : 'Closing the gap is the path',
+    }),
+    regulationScore: (s) => ({
+      description: s >= 65
+        ? 'You have strong regulation capacity — your nervous system can handle intensity without flooding or shutting down.'
+        : 'When things get emotionally intense, your system may struggle to stay regulated. This affects every other dimension.',
+      source: 'Composite: Big Five neuroticism (inverse), EQ self-management, DSI-R emotional reactivity',
+      strength: s >= 65 ? 'Solid emotional foundation' : 'Regulation comes before communication',
+    }),
+    relationalAwareness: (s) => ({
+      description: s >= 65
+        ? 'You have a keen awareness of relational dynamics — you notice patterns, read the room, and sense what\'s happening between people.'
+        : 'Developing awareness of the relational field — the space between you and others — will unlock deeper connection.',
+      source: 'Composite: EQ social awareness + perception + agreeableness',
+      strength: s >= 65 ? 'Deep relational attunement' : 'Building relational vision',
+    }),
+  };
+  const fn = details[key];
+  return fn ? fn(score) : { description: '', source: '', strength: '' };
+}
+
 // ─── Geometry Helpers ─────────────────────────────────
 
 function getVertex(index: number, radius: number, cx: number, cy: number): [number, number] {
@@ -95,6 +151,7 @@ export default function RadarChart({
   showAverage = true,
   onDimensionTap,
 }: RadarChartProps) {
+  const [expandedDim, setExpandedDim] = useState<string | null>(null);
   const size = sizeProp ?? 280;
   const cx = size / 2;
   const cy = size / 2;
@@ -284,25 +341,59 @@ export default function RadarChart({
         )}
       </View>
 
-      {/* Dimension chips */}
+      {/* Dimension chips — tap to explore */}
       <View style={styles.chipsContainer}>
         {DIMENSIONS.map((dim, i) => {
           const val = scoreValues[i];
           const IconComp = dim.Icon;
+          const isActive = expandedDim === dim.key;
           return (
             <TouchableOpacity
               key={dim.key}
-              style={styles.chip}
-              onPress={() => onDimensionTap?.(dim.shortLabel, val)}
+              style={[styles.chip, isActive && styles.chipActive]}
+              onPress={() => {
+                setExpandedDim(isActive ? null : dim.key);
+                onDimensionTap?.(dim.shortLabel, val);
+              }}
               activeOpacity={0.7}
             >
-              <IconComp size={14} color={Colors.primary} />
-              <Text style={styles.chipLabel}>{dim.shortLabel}</Text>
-              <Text style={styles.chipScore}>{val}</Text>
+              <IconComp size={14} color={isActive ? Colors.white : Colors.primary} />
+              <Text style={[styles.chipLabel, isActive && styles.chipLabelActive]}>{dim.shortLabel}</Text>
+              <Text style={[styles.chipScore, isActive && styles.chipScoreActive]}>{val}</Text>
             </TouchableOpacity>
           );
         })}
       </View>
+
+      {/* Expanded dimension detail card */}
+      {expandedDim && (() => {
+        const dimDef = DIMENSIONS.find(d => d.key === expandedDim);
+        if (!dimDef) return null;
+        const idx = DIMENSIONS.indexOf(dimDef);
+        const val = scoreValues[idx];
+        const detail = getDimensionDetail(dimDef.key, val);
+        const IconComp = dimDef.Icon;
+        return (
+          <View style={styles.detailCard}>
+            <View style={styles.detailHeader}>
+              <IconComp size={18} color={Colors.primary} />
+              <Text style={styles.detailTitle}>{dimDef.shortLabel}</Text>
+              <View style={[styles.detailScoreBadge, { backgroundColor: val >= 65 ? Colors.success + '20' : Colors.accentGold + '20' }]}>
+                <Text style={[styles.detailScoreNum, { color: val >= 65 ? Colors.success : Colors.accentGold }]}>{val}</Text>
+              </View>
+            </View>
+            <Text style={styles.detailDesc}>{detail.description}</Text>
+            <View style={styles.detailMeta}>
+              <Text style={styles.detailMetaLabel}>STRENGTH</Text>
+              <Text style={styles.detailMetaText}>{detail.strength}</Text>
+            </View>
+            <Text style={styles.detailSource}>{detail.source}</Text>
+            <TouchableOpacity onPress={() => setExpandedDim(null)} style={styles.detailClose}>
+              <Text style={styles.detailCloseText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        );
+      })()}
     </View>
   );
 }
@@ -322,7 +413,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
   },
   title: {
-    fontFamily: 'PlayfairDisplay_400Regular',
+    fontFamily: FontFamilies.heading,
     fontSize: 22,
     color: Colors.text,
     marginBottom: 2,
@@ -385,5 +476,92 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     color: Colors.primary,
+  },
+  chipActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  chipLabelActive: {
+    color: Colors.white,
+  },
+  chipScoreActive: {
+    color: Colors.white,
+  },
+
+  // Dimension detail card
+  detailCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    marginTop: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.primary + '30',
+  },
+  detailHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginBottom: Spacing.sm,
+  },
+  detailTitle: {
+    fontFamily: FontFamilies.heading,
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.text,
+    flex: 1,
+  },
+  detailScoreBadge: {
+    borderRadius: BorderRadius.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+  },
+  detailScoreNum: {
+    fontFamily: FontFamilies.accent,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  detailDesc: {
+    fontFamily: FontFamilies.body,
+    fontSize: 14,
+    color: Colors.textSecondary,
+    lineHeight: 20,
+    marginBottom: Spacing.sm,
+  },
+  detailMeta: {
+    backgroundColor: Colors.success + '10',
+    borderRadius: BorderRadius.sm,
+    padding: Spacing.sm,
+    borderLeftWidth: 2,
+    borderLeftColor: Colors.success,
+    marginBottom: Spacing.sm,
+  },
+  detailMetaLabel: {
+    fontFamily: FontFamilies.heading,
+    fontSize: 10,
+    letterSpacing: 1.5,
+    color: Colors.success,
+    marginBottom: 3,
+  },
+  detailMetaText: {
+    fontFamily: FontFamilies.body,
+    fontSize: 13,
+    color: Colors.text,
+  },
+  detailSource: {
+    fontFamily: FontFamilies.body,
+    fontSize: 11,
+    color: Colors.textMuted,
+    fontStyle: 'italic',
+    marginBottom: Spacing.xs,
+  },
+  detailClose: {
+    alignSelf: 'center',
+    paddingVertical: 4,
+    paddingHorizontal: Spacing.md,
+  },
+  detailCloseText: {
+    fontFamily: FontFamilies.body,
+    fontSize: 12,
+    color: Colors.textMuted,
   },
 });

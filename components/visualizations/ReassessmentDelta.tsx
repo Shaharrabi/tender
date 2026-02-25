@@ -283,14 +283,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FontSizes.headingM,
-    fontFamily: FontFamilies.accent,
+    fontFamily: FontFamilies.heading,
     fontWeight: '400',
     color: Colors.text,
     marginBottom: 2,
   },
   subtitle: {
     fontSize: FontSizes.bodySmall,
-    fontFamily: FontFamilies.accent,
+    fontFamily: FontFamilies.heading,
     fontStyle: 'italic',
     color: Colors.textSecondary,
     marginBottom: Spacing.md,

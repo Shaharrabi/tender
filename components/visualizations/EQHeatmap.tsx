@@ -15,8 +15,8 @@
  * Insight callout below summarizes the awareness-vs-management gap.
  */
 
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import {
   Colors,
   Typography,
@@ -54,6 +54,40 @@ const QUADRANTS: QuadrantDef[] = [
   { key: 'relationshipMgmt', label: 'Relationship Mgmt',  subscaleKey: 'utilization',      row: 'others', col: 'management' },
 ];
 
+function getQuadrantDetail(key: string, score: number): { title: string; description: string; practice: string } {
+  const details: Record<string, { title: string; description: string; practice: string }> = {
+    selfAwareness: {
+      title: 'Perceiving Your Own Emotions',
+      description: score >= 65
+        ? 'You have a strong ability to identify and name your own emotional states. This clarity helps you respond rather than react in relationships.'
+        : 'You may sometimes struggle to identify what you\'re feeling in the moment. Building this skill gives you more choice in how you respond to relational triggers.',
+      practice: 'Try naming your emotion 3 times a day: "Right now I feel..."',
+    },
+    selfRegulation: {
+      title: 'Managing Your Emotional Responses',
+      description: score >= 65
+        ? 'You can effectively manage your emotional intensity — staying present without being overwhelmed. This is a core relational strength.'
+        : 'When emotions run high, you may find it hard to stay regulated. This is where relational patterns get activated most strongly.',
+      practice: 'When activated, try the 5-4-3-2-1 grounding technique before responding.',
+    },
+    socialAwareness: {
+      title: 'Reading Others\' Emotions',
+      description: score >= 65
+        ? 'You pick up on others\' emotional cues with sensitivity. Your partner likely feels seen and understood by you.'
+        : 'You may sometimes miss emotional signals from others. Building this attunement creates deeper relational safety.',
+      practice: 'Practice noticing your partner\'s emotional tone before their words.',
+    },
+    relationshipMgmt: {
+      title: 'Navigating Relational Dynamics',
+      description: score >= 65
+        ? 'You can influence emotional dynamics in relationships constructively — de-escalating tension and fostering connection.'
+        : 'Managing the emotional flow between people is your growth edge. This is where EQ translates directly into relational quality.',
+      practice: 'After your next difficult conversation, reflect: "What did I do that helped or hurt the emotional flow?"',
+    },
+  };
+  return details[key] ?? { title: '', description: '', practice: '' };
+}
+
 // ─── Helpers ──────────────────────────────────────────
 
 interface QualityLevel {
@@ -89,11 +123,17 @@ function getInsight(scores: number[]): string {
 // ─── Component ────────────────────────────────────────
 
 export default function EQHeatmap({ sseitScores, onQuadrantTap }: EQHeatmapProps) {
+  const [expandedKey, setExpandedKey] = useState<string | null>(null);
   const scores = QUADRANTS.map(
     (q) => Math.round(sseitScores.subscaleNormalized[q.subscaleKey] ?? 50)
   );
 
   const insight = getInsight(scores);
+
+  const handleQuadrantTap = (q: QuadrantDef, score: number) => {
+    setExpandedKey(expandedKey === q.key ? null : q.key);
+    onQuadrantTap?.(q.label, score);
+  };
 
   return (
     <View style={styles.container}>
@@ -128,7 +168,7 @@ export default function EQHeatmap({ sseitScores, onQuadrantTap }: EQHeatmapProps
                   i === 0 && styles.cellTopLeft,
                   i === 1 && styles.cellTopRight,
                 ]}
-                onPress={() => onQuadrantTap?.(q.label, score)}
+                onPress={() => handleQuadrantTap(q, score)}
                 activeOpacity={0.7}
               >
                 <Text style={styles.cellScore}>{score}</Text>
@@ -157,7 +197,7 @@ export default function EQHeatmap({ sseitScores, onQuadrantTap }: EQHeatmapProps
                   i === 0 && styles.cellBottomLeft,
                   i === 1 && styles.cellBottomRight,
                 ]}
-                onPress={() => onQuadrantTap?.(q.label, score)}
+                onPress={() => handleQuadrantTap(q, score)}
                 activeOpacity={0.7}
               >
                 <Text style={styles.cellScore}>{score}</Text>
@@ -168,6 +208,33 @@ export default function EQHeatmap({ sseitScores, onQuadrantTap }: EQHeatmapProps
           })}
         </View>
       </View>
+
+      {/* Expanded detail card — shows when a quadrant is tapped */}
+      {expandedKey && (() => {
+        const q = QUADRANTS.find(qd => qd.key === expandedKey);
+        if (!q) return null;
+        const idx = QUADRANTS.indexOf(q);
+        const score = scores[idx];
+        const detail = getQuadrantDetail(q.key, score);
+        return (
+          <View style={styles.detailCard}>
+            <View style={styles.detailHeader}>
+              <Text style={styles.detailTitle}>{detail.title}</Text>
+              <View style={[styles.detailScoreBadge, { backgroundColor: Colors.primary + '18' }]}>
+                <Text style={[styles.detailScoreText, { color: Colors.primary }]}>{score}</Text>
+              </View>
+            </View>
+            <Text style={styles.detailDesc}>{detail.description}</Text>
+            <View style={styles.detailPractice}>
+              <Text style={styles.detailPracticeLabel}>TRY THIS</Text>
+              <Text style={styles.detailPracticeText}>{detail.practice}</Text>
+            </View>
+            <TouchableOpacity onPress={() => setExpandedKey(null)} style={styles.detailClose}>
+              <Text style={styles.detailCloseText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        );
+      })()}
 
       {/* Insight callout */}
       <View style={styles.insightBox}>
@@ -195,7 +262,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
   },
   title: {
-    fontFamily: 'PlayfairDisplay_400Regular',
+    fontFamily: FontFamilies.heading,
     fontSize: 20,
     color: Colors.text,
     marginBottom: 2,
@@ -287,5 +354,76 @@ const styles = StyleSheet.create({
     color: Colors.text,
     flex: 1,
     lineHeight: 20,
+  },
+
+  // Detail card (expanded on quadrant tap)
+  detailCard: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    marginBottom: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.primary + '30',
+  },
+  detailHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
+  },
+  detailTitle: {
+    fontFamily: FontFamilies.heading,
+    fontSize: 15,
+    fontWeight: '600',
+    color: Colors.text,
+    flex: 1,
+  },
+  detailScoreBadge: {
+    borderRadius: BorderRadius.pill,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+  },
+  detailScoreText: {
+    fontFamily: FontFamilies.accent,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  detailDesc: {
+    fontFamily: FontFamilies.body,
+    fontSize: 14,
+    color: Colors.textSecondary,
+    lineHeight: 20,
+    marginBottom: Spacing.sm,
+  },
+  detailPractice: {
+    backgroundColor: Colors.success + '12',
+    borderRadius: BorderRadius.sm,
+    padding: Spacing.sm,
+    borderLeftWidth: 2,
+    borderLeftColor: Colors.success,
+    marginBottom: Spacing.sm,
+  },
+  detailPracticeLabel: {
+    fontFamily: FontFamilies.heading,
+    fontSize: 10,
+    letterSpacing: 1.5,
+    color: Colors.success,
+    marginBottom: 4,
+  },
+  detailPracticeText: {
+    fontFamily: FontFamilies.body,
+    fontSize: 13,
+    color: Colors.text,
+    lineHeight: 18,
+  },
+  detailClose: {
+    alignSelf: 'center',
+    paddingVertical: 4,
+    paddingHorizontal: Spacing.md,
+  },
+  detailCloseText: {
+    fontFamily: FontFamilies.body,
+    fontSize: 12,
+    color: Colors.textMuted,
   },
 });

@@ -1231,12 +1231,16 @@ function PartsMapInfographic({
           <Text style={st.partsMapSectionTitle}>Manager Parts</Text>
           <Text style={st.partsMapSectionHint}>Try to prevent pain</Text>
         </View>
-        <View style={st.partsMapPills}>
-          {parts.managerParts.map((p) => (
-            <View key={p} style={[st.partsMapPill, { backgroundColor: Colors.warning + '12', borderColor: Colors.warning + '40' }]}>
-              <Text style={[st.partsMapPillText, { color: Colors.warning }]}>{p}</Text>
-            </View>
-          ))}
+        <View style={st.partsMapCards}>
+          {parts.managerParts.map((p) => {
+            const [title, desc] = p.includes(' — ') ? p.split(' — ') : [p, ''];
+            return (
+              <View key={p} style={[st.partsMapCard, { borderLeftColor: Colors.warning }]}>
+                <Text style={[st.partsMapCardTitle, { color: Colors.warning }]}>{title}</Text>
+                {desc ? <Text style={st.partsMapCardDesc}>{desc}</Text> : null}
+              </View>
+            );
+          })}
         </View>
       </View>
 
@@ -1247,12 +1251,16 @@ function PartsMapInfographic({
           <Text style={st.partsMapSectionTitle}>Firefighter Parts</Text>
           <Text style={st.partsMapSectionHint}>React when pain breaks through</Text>
         </View>
-        <View style={st.partsMapPills}>
-          {parts.firefighterParts.map((p) => (
-            <View key={p} style={[st.partsMapPill, { backgroundColor: Colors.error + '10', borderColor: Colors.error + '30' }]}>
-              <Text style={[st.partsMapPillText, { color: Colors.error }]}>{p}</Text>
-            </View>
-          ))}
+        <View style={st.partsMapCards}>
+          {parts.firefighterParts.map((p) => {
+            const [title, desc] = p.includes(' — ') ? p.split(' — ') : [p, ''];
+            return (
+              <View key={p} style={[st.partsMapCard, { borderLeftColor: Colors.error }]}>
+                <Text style={[st.partsMapCardTitle, { color: Colors.error }]}>{title}</Text>
+                {desc ? <Text style={st.partsMapCardDesc}>{desc}</Text> : null}
+              </View>
+            );
+          })}
         </View>
       </View>
 
@@ -2564,7 +2572,7 @@ const st = StyleSheet.create({
     fontWeight: '300' as const,
   },
   guidanceContainer: {
-    backgroundColor: '#FFF8F0',
+    backgroundColor: Colors.surfaceElevated,
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
     marginBottom: Spacing.lg,
@@ -2924,6 +2932,29 @@ const st = StyleSheet.create({
     fontSize: FontSizes.caption,
     fontWeight: '600',
   },
+  partsMapCards: {
+    gap: Spacing.xs,
+    paddingLeft: Spacing.sm,
+  },
+  partsMapCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.sm,
+    borderLeftWidth: 3,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs + 2,
+  },
+  partsMapCardTitle: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '700',
+    fontFamily: FontFamilies.heading,
+    marginBottom: 2,
+  },
+  partsMapCardDesc: {
+    fontSize: FontSizes.caption,
+    color: Colors.textSecondary,
+    fontFamily: FontFamilies.body,
+    lineHeight: 16,
+  },
   partsMapPolarity: {
     paddingHorizontal: Spacing.sm,
     paddingVertical: Spacing.xs,
@@ -3237,14 +3268,14 @@ const st = StyleSheet.create({
 
   // ── Exercise Done States ──
   exerciseRowDone: {
-    backgroundColor: '#E3EFE5',
+    backgroundColor: Colors.success + '20',
     opacity: 0.85,
   },
   exerciseCheckmark: {
     width: 18,
     height: 18,
     borderRadius: 9,
-    backgroundColor: '#4A6F50',
+    backgroundColor: Colors.success,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
     marginRight: 10,
@@ -3255,7 +3286,7 @@ const st = StyleSheet.create({
     fontWeight: '700' as const,
   },
   exerciseRowTitleDone: {
-    color: '#4A6F50',
+    color: Colors.success,
   },
   phaseProgressText: {
     fontSize: 11,
@@ -3267,12 +3298,12 @@ const st = StyleSheet.create({
 
   // ── Phase Completion Summary ──
   phaseCompleteSummary: {
-    backgroundColor: '#E3EFE5',
+    backgroundColor: Colors.success + '20',
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
     marginTop: Spacing.sm,
     borderLeftWidth: 3,
-    borderLeftColor: '#4A6F50',
+    borderLeftColor: Colors.success,
   },
   phaseCompleteIcon: {
     fontSize: 18,
@@ -3281,12 +3312,12 @@ const st = StyleSheet.create({
   phaseCompleteTitle: {
     fontSize: FontSizes.bodySmall,
     fontWeight: '700' as const,
-    color: '#4A6F50',
+    color: Colors.success,
     marginBottom: 4,
   },
   phaseCompleteText: {
     fontSize: FontSizes.bodySmall,
-    color: '#3D6B42',
+    color: Colors.success,
     lineHeight: 20,
   },
 

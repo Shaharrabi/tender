@@ -104,7 +104,7 @@ function petalPath(
 const AnimatedSvg = RNAnimated.createAnimatedComponent(Svg);
 
 export default function ConflictRose({ dutchScores, size: sizeProp }: ConflictRoseProps) {
-  const size = sizeProp ?? 240;
+  const size = sizeProp ?? 260;
   const cx = size / 2;
   const cy = size / 2;
   const maxRadius = size * 0.42;
@@ -172,21 +172,26 @@ export default function ConflictRose({ dutchScores, size: sizeProp }: ConflictRo
           {/* Center dot */}
           <Circle cx={cx} cy={cy} r={4} fill={Colors.text} fillOpacity={0.2} />
 
-          {/* Petal labels */}
+          {/* Petal labels — dynamic text anchor for left/right alignment */}
           {PETALS.map((petal, i) => {
             const angle = (2 * Math.PI * i) / N - Math.PI / 2;
-            const labelR = maxRadius + 20;
+            const labelR = maxRadius + 22;
             const x = cx + labelR * Math.cos(angle);
             const y = cy + labelR * Math.sin(angle);
+            // Determine text anchor based on horizontal position
+            const cosAngle = Math.cos(angle);
+            const anchor = cosAngle < -0.15 ? 'end' : cosAngle > 0.15 ? 'start' : 'middle';
+            const isPrimary = petal.key === primaryStyle;
             return (
               <SvgText
                 key={`label-${i}`}
                 x={x}
                 y={y + 4}
-                fill={Colors.textSecondary}
-                fontSize={9}
+                fill={isPrimary ? Colors.text : Colors.textSecondary}
+                fontSize={10}
                 fontFamily={FontFamilies.body}
-                textAnchor="middle"
+                fontWeight={isPrimary ? '600' : '400'}
+                textAnchor={anchor}
               >
                 {petal.relationalLabel}
               </SvgText>
@@ -250,7 +255,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
   },
   title: {
-    fontFamily: 'PlayfairDisplay_400Regular',
+    fontFamily: FontFamilies.heading,
     fontSize: 20,
     color: Colors.text,
     marginBottom: 2,
