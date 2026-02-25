@@ -23,7 +23,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useGuest } from '@/context/GuestContext';
 import { supabase } from '@/services/supabase';
 import { getPortrait, savePortrait, fetchAllScores, extractSupplementScores } from '@/services/portrait';
-import { generatePortrait } from '@/utils/portrait/portrait-generator';
+import { generatePortrait, isPortraitStale } from '@/utils/portrait/portrait-generator';
 import { getECRRInterpretation } from '@/utils/assessments/interpretations/ecr-r';
 import type { IndividualPortrait, AllAssessmentScores } from '@/types/portrait';
 import {
@@ -203,8 +203,11 @@ export default function AssessmentMatrixScreen() {
           const completedTypes = Object.keys(latest);
           const hasAll6 = REQUIRED.every((t) => completedTypes.includes(t));
 
-          if (!p && hasAll6) {
-            console.log('[Matrix] All 6 assessments complete, no portrait — auto-generating...');
+          const needsGeneration = !p && hasAll6;
+          const needsRegeneration = p && hasAll6 && isPortraitStale(p.version);
+
+          if (needsGeneration || needsRegeneration) {
+            console.log(`[Matrix] ${needsRegeneration ? 'Portrait stale (v' + p?.version + ') — regenerating' : 'No portrait — auto-generating'}...`);
             try {
               const latestScoresMap = await fetchAllScores(user.id);
               const scores: AllAssessmentScores = {
