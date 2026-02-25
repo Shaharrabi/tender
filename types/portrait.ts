@@ -13,6 +13,13 @@ export interface CompositeScores {
   engagement: number;         // 0-100: investment in connection
   selfLeadership: number;     // 0-100: differentiation / self-awareness
   valuesCongruence: number;   // 0-100: values-behavior alignment
+
+  // ── Radar chart dimensions (Sprint 1 enhancement) ──
+  attachmentSecurity: number;    // 0-100: inverse of ECR-R anxiety + avoidance
+  emotionalIntelligence: number; // 0-100: SSEIT total normalized
+  differentiation: number;       // 0-100: DSI-R total normalized
+  conflictFlexibility: number;   // 0-100: entropy of DUTCH conflict modes
+  relationalAwareness: number;   // 0-100: EQ social awareness + perception + agreeableness
 }
 
 // ─── Pattern Detection ───────────────────────────────────
