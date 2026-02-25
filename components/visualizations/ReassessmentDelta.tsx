@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
   },
   title: {
-    fontSize: FontSizes.heading3,
+    fontSize: FontSizes.headingM,
     fontFamily: FontFamilies.accent,
     fontWeight: '400',
     color: Colors.text,
