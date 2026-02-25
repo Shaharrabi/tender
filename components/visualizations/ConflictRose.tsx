@@ -104,10 +104,12 @@ function petalPath(
 const AnimatedSvg = RNAnimated.createAnimatedComponent(Svg);
 
 export default function ConflictRose({ dutchScores, size: sizeProp }: ConflictRoseProps) {
-  const size = sizeProp ?? 240;
-  const cx = size / 2;
-  const cy = size / 2;
-  const maxRadius = size * 0.42;
+  const size = sizeProp ?? 220;
+  const padding = 30; // padding for labels
+  const svgSize = size + padding * 2;
+  const cx = svgSize / 2;
+  const cy = svgSize / 2;
+  const maxRadius = size * 0.38;
 
   const scaleAnim = useRef(new RNAnimated.Value(0)).current;
 
@@ -140,9 +142,9 @@ export default function ConflictRose({ dutchScores, size: sizeProp }: ConflictRo
       {/* Rose chart */}
       <View style={styles.chartWrapper}>
         <AnimatedSvg
-          width={size}
-          height={size}
-          viewBox={`0 0 ${size} ${size}`}
+          width={svgSize}
+          height={svgSize}
+          viewBox={`0 0 ${svgSize} ${svgSize}`}
           style={{ transform: [{ scale: scaleAnim }] }}
         >
           {/* Background circle */}
@@ -175,7 +177,7 @@ export default function ConflictRose({ dutchScores, size: sizeProp }: ConflictRo
           {/* Petal labels */}
           {PETALS.map((petal, i) => {
             const angle = (2 * Math.PI * i) / N - Math.PI / 2;
-            const labelR = maxRadius + 20;
+            const labelR = maxRadius + 24;
             const x = cx + labelR * Math.cos(angle);
             const y = cy + labelR * Math.sin(angle);
             return (
@@ -184,8 +186,9 @@ export default function ConflictRose({ dutchScores, size: sizeProp }: ConflictRo
                 x={x}
                 y={y + 4}
                 fill={Colors.textSecondary}
-                fontSize={9}
+                fontSize={10}
                 fontFamily={FontFamilies.body}
+                fontWeight="500"
                 textAnchor="middle"
               >
                 {petal.relationalLabel}

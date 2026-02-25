@@ -79,12 +79,27 @@ export interface PartsLens {
   selfLeadershipScore: number;   // 0-100
 }
 
+export interface RegulationToolkit {
+  strengths: string[];           // What's already working
+  buildingBlocks: string[];      // Skills to develop
+  practiceSequence: string[];    // Ordered sequence of practices
+}
+
+export interface CoRegulationPattern {
+  style: 'co-regulator' | 'needs-co-regulation' | 'mutual' | 'independent';
+  description: string;
+  whatYouOffer: string[];        // How you help your partner regulate
+  whatYouNeed: string[];         // How your partner can help you regulate
+}
+
 export interface RegulationLens {
   narrative: string;
   windowWidth: number;           // 0-100
   activationPatterns: string[];
   shutdownPatterns: string[];
   floodingMarkers: string[];
+  regulationToolkit?: RegulationToolkit;     // Personalized tools
+  coRegulationPattern?: CoRegulationPattern; // How you co-regulate with partner
 }
 
 export interface ValuesLens {

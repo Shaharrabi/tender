@@ -28,6 +28,7 @@ export function detectPatterns(
   const allPatterns: DetectedPattern[] = [
     ...detectAttachmentConflict(ecrr, dutch),
     ...detectRegulation(sseit, composite),
+    ...detectEmotionalIntelligenceGaps(sseit, ecrr, composite),
     ...detectValuesBehavior(values, dutch, ecrr, dsir, ipip),
     ...detectDifferentiation(dsir),
     ...(supplements ? detectFieldAwareness(supplements, ecrr, ipip, composite) : []),
@@ -177,6 +178,102 @@ function detectRegulation(
         "You know exactly what you're feeling, but struggle to manage it. \"I know I'm doing it but can't stop.\" This gap is workable.",
       confidence: 'high',
       flags: ['insight_action_gap'],
+    });
+  }
+
+  return patterns;
+}
+
+// ─── Category 2b: Emotional Intelligence Gaps ──────────
+
+function detectEmotionalIntelligenceGaps(
+  sseit: SSEITScores,
+  ecrr: ECRRScores,
+  composite: CompositeScores
+): DetectedPattern[] {
+  const patterns: DetectedPattern[] = [];
+  const perception = sseit.subscaleNormalized.perception;
+  const managingOwn = sseit.subscaleNormalized.managingOwn;
+  const managingOthers = sseit.subscaleNormalized.managingOthers;
+  const utilization = sseit.subscaleNormalized.utilization;
+
+  // 1. High perception but low self-management → "I see it but can't stop it"
+  if (perception > 65 && managingOwn < 45) {
+    patterns.push({
+      id: 'eq_perception_management_gap',
+      category: 'regulation',
+      description: 'High emotional perception but low self-management',
+      interpretation:
+        'You read emotions clearly — yours and others\' — but struggle to regulate once activated. ' +
+        'You are the person who knows exactly what is happening and cannot stop it. ' +
+        'This gap is workable: the awareness is already there.',
+      confidence: 'high',
+      flags: ['insight_action_gap', 'regulation_priority'],
+    });
+  }
+
+  // 2. High managing others but low managing own → "I hold everyone else but not myself"
+  if (managingOthers > 65 && managingOwn < 45) {
+    patterns.push({
+      id: 'eq_other_focused',
+      category: 'regulation',
+      description: 'Strong at managing others\' emotions, weak at managing own',
+      interpretation:
+        'You are the emotional caretaker — you attune to others, soothe them, hold space. ' +
+        'But when it is your turn to feel, you struggle. You may neglect your own emotional needs ' +
+        'or not know how to receive the same care you give.',
+      confidence: 'high',
+      flags: ['self_neglect_risk', 'caretaker_pattern'],
+    });
+  }
+
+  // 3. Low emotional utilization → "Feelings don't inform decisions"
+  if (utilization < 40 && perception > 55) {
+    patterns.push({
+      id: 'eq_underutilized_emotions',
+      category: 'regulation',
+      description: 'Can perceive emotions but does not use them to guide action',
+      interpretation:
+        'You notice feelings but do not trust them as information. You may override emotional ' +
+        'signals with logic or ignore gut feelings. In relationships, this means missing ' +
+        'important data about what you need and what your partner is communicating nonverbally.',
+      confidence: 'medium',
+      flags: ['emotional_bypassing'],
+    });
+  }
+
+  // 4. Globally low EQ with anxious attachment → "Overwhelmed and unequipped"
+  if (composite.emotionalIntelligence < 40 && ecrr.anxietyScore > 4.0) {
+    patterns.push({
+      id: 'eq_low_anxious',
+      category: 'regulation',
+      description: 'Low emotional intelligence combined with anxious attachment',
+      interpretation:
+        'You feel intensely but lack the tools to understand or manage those feelings. ' +
+        'This combination means emotions arrive fast, hit hard, and linger. ' +
+        'Building emotional vocabulary and regulation skills will make the biggest difference.',
+      confidence: 'high',
+      flags: ['regulation_priority', 'skill_building_needed'],
+    });
+  }
+
+  // 5. High EQ across the board → emotional resource
+  if (
+    perception > 70 &&
+    managingOwn > 65 &&
+    managingOthers > 65 &&
+    utilization > 60
+  ) {
+    patterns.push({
+      id: 'eq_resource',
+      category: 'regulation',
+      description: 'Strong emotional intelligence across all dimensions',
+      interpretation:
+        'You have well-developed emotional intelligence — you perceive, manage, and use ' +
+        'emotions effectively. This is a genuine relational resource. Your partner benefits ' +
+        'from your attunement and you can generally navigate emotional complexity.',
+      confidence: 'high',
+      flags: ['emotional_resource'],
     });
   }
 

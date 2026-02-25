@@ -24,21 +24,22 @@ import type { SupplementScores } from '@/types/portrait';
  *  '2.0.0' — Phase 3 supplements + field awareness lens
  *  '1.1.0' / '2.1.0' — Sprint 1: Added 5 radar chart dimensions to compositeScores
  *  '1.2.0' / '2.2.0' — Sprint 2: emotionalStructure, rich anchor points, state-aware partner guide
+ *  '1.3.0' / '2.3.0' — Sprint 3: EQ gap patterns, regulation toolkit, co-regulation pattern
  */
-export const PORTRAIT_CODE_VERSION_BASE = '1.2.0';
-export const PORTRAIT_CODE_VERSION_SUPPLEMENTS = '2.2.0';
+export const PORTRAIT_CODE_VERSION_BASE = '1.3.0';
+export const PORTRAIT_CODE_VERSION_SUPPLEMENTS = '2.3.0';
 
 /**
  * Check if a portrait version is outdated.
- * Any portrait with minor version < 2 needs regeneration for enriched anchors/guide.
+ * Any portrait with minor version < 3 needs regeneration for EQ patterns + toolkit.
  */
 export function isPortraitStale(version?: string): boolean {
   if (!version) return true;
   // Parse version: major.minor.patch
   const parts = version.split('.').map(Number);
   const minor = parts[1] ?? 0;
-  // Rich anchors + partner guide added at minor version 2
-  return minor < 2;
+  // EQ gaps + regulation toolkit added at minor version 3
+  return minor < 3;
 }
 
 /**
