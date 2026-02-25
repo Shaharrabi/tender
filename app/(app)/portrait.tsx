@@ -1095,110 +1095,6 @@ function SynthesisCard({ synthesis }: { synthesis: AssessmentSynthesis }) {
   );
 }
 
-// ─── WINDOW OF TOLERANCE INFOGRAPHIC ────────────────
-
-function WindowOfToleranceInfographic({
-  windowWidth,
-  regulationScore,
-}: {
-  windowWidth: number;
-  regulationScore: number;
-}) {
-  const windowAnim = useRef(new Animated.Value(0)).current;
-  const zoneAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.sequence([
-      Animated.delay(800),
-      Animated.parallel([
-        Animated.spring(windowAnim, {
-          toValue: 1,
-          friction: 8,
-          tension: 40,
-          useNativeDriver: false,
-        }),
-        Animated.timing(zoneAnim, {
-          toValue: 1,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-      ]),
-    ]).start();
-  }, []);
-
-  // The "window" height is proportional to the score
-  const windowHeightPercent = Math.max(20, Math.min(80, windowWidth));
-
-  const animatedWindowHeight = windowAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, windowHeightPercent * 1.8],
-  });
-
-  const getZoneLabel = (): string => {
-    if (windowWidth >= 70) return 'Wide window — you can handle significant stress before dysregulating';
-    if (windowWidth >= 50) return 'Moderate window — you manage everyday stress but intense situations can push you out';
-    if (windowWidth >= 30) return 'Narrower window — you may get overwhelmed by moderate stress';
-    return 'Narrow window — small stressors can push you into activation or shutdown';
-  };
-
-  return (
-    <View style={st.wotContainer}>
-      <Text style={st.scoreGroupLabel}>WINDOW OF TOLERANCE</Text>
-      <View style={st.scoreGroupDivider} />
-
-      {/* Infographic */}
-      <View style={st.wotInfographic}>
-        {/* Hyperarousal zone */}
-        <Animated.View style={[st.wotZone, st.wotHyperZone, { opacity: zoneAnim }]}>
-          <Text style={st.wotZoneLabel}>Hyperarousal</Text>
-          <Text style={st.wotZoneHint}>Anxiety, panic, anger, racing thoughts</Text>
-        </Animated.View>
-
-        {/* Window zone (the green safe area) */}
-        <Animated.View
-          style={[
-            st.wotWindowZone,
-            { height: animatedWindowHeight },
-          ]}
-        >
-          <View style={st.wotWindowInner}>
-            <Text style={st.wotWindowLabel}>Your Window</Text>
-            <Text style={st.wotWindowScore}>{windowWidth}/100</Text>
-          </View>
-          {/* Regulation capacity marker */}
-          <View style={st.wotRegulationRow}>
-            <View style={st.wotRegulationBar}>
-              <Animated.View
-                style={[
-                  st.wotRegulationFill,
-                  {
-                    width: windowAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: ['0%', `${regulationScore}%`],
-                    }),
-                  },
-                ]}
-              />
-            </View>
-            <Text style={st.wotRegulationText}>Regulation: {regulationScore}%</Text>
-          </View>
-        </Animated.View>
-
-        {/* Hypoarousal zone */}
-        <Animated.View style={[st.wotZone, st.wotHypoZone, { opacity: zoneAnim }]}>
-          <Text style={st.wotZoneLabel}>Hypoarousal</Text>
-          <Text style={st.wotZoneHint}>Numbness, shutdown, dissociation, flatness</Text>
-        </Animated.View>
-      </View>
-
-      {/* Interpretation */}
-      <View style={st.wotInterpretation}>
-        <Text style={st.wotInterpretationText}>{getZoneLabel()}</Text>
-      </View>
-    </View>
-  );
-}
-
 // ─── VALUES COMPASS INFOGRAPHIC ─────────────────────
 
 function ValuesCompassInfographic({
@@ -1240,8 +1136,8 @@ function ValuesCompassInfographic({
           const y = Math.sin(rad) * radius;
           const gap = gaps.find((g) => g.value === v);
           const gapSize = gap?.gap ?? 0;
-          const dotSize = Math.max(28, 42 - gapSize * 0.3);
-          const dotColor = gapSize > 25 ? Colors.warning : gapSize > 15 ? Colors.calm : Colors.primary;
+          const dotSize = Math.max(28, 42 - gapSize * 2);
+          const dotColor = gapSize >= 5 ? Colors.warning : gapSize >= 3 ? Colors.calm : Colors.primary;
 
           return (
             <View
@@ -1270,21 +1166,26 @@ function ValuesCompassInfographic({
       {gaps.length > 0 && (
         <View style={st.valuesGapSection}>
           <Text style={st.valuesGapTitle}>Values-Action Gaps</Text>
+          <Text style={st.valuesGapDescription}>
+            The distance between how important a value is to you and how much you're currently living it. A gap of 3+ means this value matters deeply but your daily actions aren't yet matching.
+          </Text>
           {gaps.map((g) => (
             <View key={g.value} style={st.valuesGapRow}>
               <Text style={st.valuesGapLabel}>{g.value}</Text>
               <View style={st.valuesGapBarTrack}>
                 <View style={[st.valuesGapBarFill, {
-                  width: `${Math.min(100, g.gap)}%`,
-                  backgroundColor: g.gap > 25 ? Colors.warning : Colors.calm,
+                  width: `${Math.min(100, (g.gap / 10) * 100)}%`,
+                  backgroundColor: g.gap >= 5 ? Colors.warning : g.gap >= 3 ? Colors.calm : Colors.success,
                 }]} />
               </View>
               <Text style={[st.valuesGapScore, {
-                color: g.gap > 25 ? Colors.warning : Colors.calm,
-              }]}>{g.gap}</Text>
+                color: g.gap >= 5 ? Colors.warning : Colors.calm,
+              }]}>{g.gap}/10</Text>
             </View>
           ))}
-          <Text style={st.valuesGapHint}>Higher gap = more room to align action with values</Text>
+          <Text style={st.valuesGapHint}>
+            Importance: {gaps[0]?.importance ?? '—'}/10 · Gap shows room to align action with values
+          </Text>
         </View>
       )}
     </Animated.View>
@@ -1534,6 +1435,9 @@ function ScoresTab({
       {/* A.R.E. Group */}
       <View style={st.scoreGroupCard}>
         <Text style={st.scoreGroupLabel}>A.R.E. — ATTACHMENT QUALITY</Text>
+        <Text style={st.scoreGroupDescription}>
+          Based on Emotionally Focused Therapy: Are you emotionally reachable, do you tune in to your partner's needs, and are you invested in the connection?
+        </Text>
         <View style={st.scoreGroupDivider} />
         <AnimatedScoreBar label="Accessible" value={cs.accessibility} delay={100} interpretation={getInterpretation('accessibility', cs.accessibility)} />
         <AnimatedScoreBar label="Responsive" value={cs.responsiveness} delay={200} interpretation={getInterpretation('responsiveness', cs.responsiveness)} />
@@ -1543,6 +1447,9 @@ function ScoresTab({
       {/* Capacity Group */}
       <View style={st.scoreGroupCard}>
         <Text style={st.scoreGroupLabel}>CAPACITY — INNER RESOURCES</Text>
+        <Text style={st.scoreGroupDescription}>
+          Your internal toolkit for staying grounded. Regulation measures how well you recover from emotional activation, window width shows how much stress you can hold, and self-leadership reflects your ability to observe your own patterns.
+        </Text>
         <View style={st.scoreGroupDivider} />
         <AnimatedScoreBar label="Regulation" value={cs.regulationScore} delay={400} interpretation={getInterpretation('regulationScore', cs.regulationScore)} />
         <AnimatedScoreBar label="Window Width" value={cs.windowWidth} delay={500} interpretation={getInterpretation('windowWidth', cs.windowWidth)} />
@@ -1552,17 +1459,14 @@ function ScoresTab({
       {/* Values Group */}
       <View style={st.scoreGroupCard}>
         <Text style={st.scoreGroupLabel}>VALUES — ALIGNMENT</Text>
+        <Text style={st.scoreGroupDescription}>
+          How closely your daily actions match what you say matters most to you. A high score means you're living in line with your values; a lower score points to protective patterns overriding your intentions.
+        </Text>
         <View style={st.scoreGroupDivider} />
         <AnimatedScoreBar label="Values Congruence" value={cs.valuesCongruence} delay={700} interpretation={getInterpretation('valuesCongruence', cs.valuesCongruence)} />
       </View>
 
-      {/* Window of Tolerance Infographic */}
-      <WindowOfToleranceInfographic
-        windowWidth={cs.windowWidth}
-        regulationScore={cs.regulationScore}
-      />
-
-      {/* Enhanced Window of Tolerance (SVG visualization) */}
+      {/* Window of Tolerance (SVG visualization) */}
       <WindowOfTolerance
         compositeScores={cs}
         activationPattern={
@@ -2344,6 +2248,14 @@ const st = StyleSheet.create({
     color: Colors.primary,
     letterSpacing: 1.2,
   },
+  scoreGroupDescription: {
+    fontFamily: FontFamilies.body,
+    fontSize: 13,
+    color: Colors.textSecondary,
+    lineHeight: 19,
+    marginTop: 4,
+    marginBottom: 4,
+  },
   scoreGroupDivider: {
     height: 1,
     backgroundColor: Colors.borderLight,
@@ -2829,112 +2741,6 @@ const st = StyleSheet.create({
     lineHeight: 18,
   },
 
-  // ── Window of Tolerance Infographic ──
-  wotContainer: {
-    backgroundColor: Colors.surfaceElevated,
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.lg,
-    gap: Spacing.sm,
-    marginBottom: Spacing.md,
-    ...Shadows.card,
-  },
-  wotInfographic: {
-    marginTop: Spacing.sm,
-    borderRadius: BorderRadius.md,
-    overflow: 'hidden',
-  },
-  wotZone: {
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.md,
-    alignItems: 'center',
-  },
-  wotHyperZone: {
-    backgroundColor: Colors.error + '12',
-    borderTopLeftRadius: BorderRadius.md,
-    borderTopRightRadius: BorderRadius.md,
-  },
-  wotHypoZone: {
-    backgroundColor: Colors.depth + '12',
-    borderBottomLeftRadius: BorderRadius.md,
-    borderBottomRightRadius: BorderRadius.md,
-  },
-  wotZoneLabel: {
-    fontSize: FontSizes.caption,
-    fontWeight: '700',
-    color: Colors.textSecondary,
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
-  },
-  wotZoneHint: {
-    fontSize: 11,
-    color: Colors.textMuted,
-    marginTop: 2,
-    textAlign: 'center',
-  },
-  wotWindowZone: {
-    backgroundColor: Colors.primary + '18',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.lg,
-    borderLeftWidth: 3,
-    borderRightWidth: 3,
-    borderLeftColor: Colors.primary,
-    borderRightColor: Colors.primary,
-    minHeight: 80,
-    gap: Spacing.sm,
-  },
-  wotWindowInner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  wotWindowLabel: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '600',
-    color: Colors.primary,
-    fontFamily: FontFamilies.heading,
-  },
-  wotWindowScore: {
-    fontSize: FontSizes.headingM,
-    fontWeight: '700',
-    color: Colors.primary,
-    fontFamily: FontFamilies.heading,
-  },
-  wotRegulationRow: {
-    width: '100%',
-    gap: 4,
-  },
-  wotRegulationBar: {
-    height: 6,
-    backgroundColor: Colors.primary + '25',
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  wotRegulationFill: {
-    height: 6,
-    backgroundColor: Colors.primary,
-    borderRadius: 3,
-  },
-  wotRegulationText: {
-    fontSize: 11,
-    color: Colors.primary,
-    fontWeight: '500',
-    textAlign: 'center',
-  },
-  wotInterpretation: {
-    backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.sm,
-    padding: Spacing.md,
-    borderLeftWidth: 3,
-    borderLeftColor: Colors.calm,
-  },
-  wotInterpretationText: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.textSecondary,
-    lineHeight: 20,
-    fontStyle: 'italic',
-  },
 
   // ── Values Compass Infographic ──
   valuesCompassContainer: {
@@ -2997,7 +2803,14 @@ const st = StyleSheet.create({
     fontSize: FontSizes.caption,
     fontWeight: '700',
     color: Colors.text,
-    marginBottom: 4,
+    marginBottom: 2,
+  },
+  valuesGapDescription: {
+    fontFamily: FontFamilies.body,
+    fontSize: 12,
+    color: Colors.textSecondary,
+    lineHeight: 17,
+    marginBottom: 6,
   },
   valuesGapRow: {
     flexDirection: 'row',

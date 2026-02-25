@@ -6,7 +6,7 @@
  * Constellation badge from The Field game displayed at top.
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -15,8 +15,8 @@ import {
   ScrollView,
   StyleSheet,
 } from 'react-native';
-import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
-import { Colors, Spacing, BorderRadius, Typography, Shadows } from '@/constants/theme';
+import Animated, { FadeIn, FadeInDown, FadeInUp, FadeOut } from 'react-native-reanimated';
+import { Colors, Spacing, BorderRadius, Typography, Shadows, FontFamilies } from '@/constants/theme';
 import { PREFERENCE_SECTIONS } from '@/constants/dating/preferences';
 import ConstellationBadge from './ConstellationBadge';
 import type { DatingPreferences } from '@/types/dating';
@@ -41,6 +41,27 @@ export default function ProfileBuilder({
     initialPreferences ? flattenPreferences(initialPreferences) : {},
   );
   const [bio, setBio] = useState(initialBio);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const bioTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clear timers on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+      if (bioTimerRef.current) clearTimeout(bioTimerRef.current);
+    };
+  }, []);
+
+  const showSaveStatus = useCallback(() => {
+    setSaveStatus('saving');
+    // Clear any existing timer
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => {
+      setSaveStatus('saved');
+      saveTimerRef.current = setTimeout(() => setSaveStatus('idle'), 2000);
+    }, 600);
+  }, []);
 
   const handleSelect = useCallback(
     (fieldId: string, value: string, isMulti: boolean) => {
@@ -55,16 +76,22 @@ export default function ProfileBuilder({
       }
       setPreferences(newPrefs);
       onPreferencesChange?.(newPrefs);
+      showSaveStatus();
     },
-    [preferences, onPreferencesChange],
+    [preferences, onPreferencesChange, showSaveStatus],
   );
 
   const handleBioChange = useCallback(
     (text: string) => {
       setBio(text);
-      onBioChange?.(text);
+      // Debounce bio saves
+      if (bioTimerRef.current) clearTimeout(bioTimerRef.current);
+      bioTimerRef.current = setTimeout(() => {
+        onBioChange?.(text);
+        showSaveStatus();
+      }, 800);
     },
-    [onBioChange],
+    [onBioChange, showSaveStatus],
   );
 
   const section = PREFERENCE_SECTIONS[activeSection];
@@ -181,6 +208,25 @@ export default function ProfileBuilder({
         />
         <Text style={styles.bioCounter}>{bio.length}/500</Text>
       </View>
+
+      {/* Save Status Indicator */}
+      {saveStatus !== 'idle' && (
+        <Animated.View
+          entering={FadeInUp.duration(200)}
+          exiting={FadeOut.duration(200)}
+          style={styles.saveStatusContainer}
+        >
+          <Text style={[
+            styles.saveStatusText,
+            saveStatus === 'saved' && styles.saveStatusSaved,
+            saveStatus === 'error' && styles.saveStatusError,
+          ]}>
+            {saveStatus === 'saving' ? 'Saving...' :
+             saveStatus === 'saved' ? 'All changes saved' :
+             'Failed to save — try again'}
+          </Text>
+        </Animated.View>
+      )}
     </View>
   );
 }
@@ -353,5 +399,24 @@ const styles = StyleSheet.create({
     color: Colors.textMuted,
     textAlign: 'right',
     marginTop: 4,
+  },
+  saveStatusContainer: {
+    marginTop: Spacing.md,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.sm,
+    backgroundColor: Colors.backgroundAlt,
+    alignItems: 'center',
+  },
+  saveStatusText: {
+    fontFamily: FontFamilies.body,
+    fontSize: 13,
+    color: Colors.textSecondary,
+  },
+  saveStatusSaved: {
+    color: Colors.success,
+  },
+  saveStatusError: {
+    color: Colors.error,
   },
 });

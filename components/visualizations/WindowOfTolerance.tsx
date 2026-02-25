@@ -308,13 +308,12 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
   },
   title: {
-    fontFamily: 'PlayfairDisplay_400Regular',
-    fontSize: 20,
+    ...Typography.headingM,
     color: Colors.text,
     marginBottom: 2,
   },
   subtitle: {
-    ...Typography.caption,
+    ...Typography.bodySmall,
     color: Colors.textSecondary,
     marginBottom: Spacing.md,
   },

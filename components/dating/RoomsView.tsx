@@ -13,13 +13,14 @@ import {
   View,
   Text,
   TouchableOpacity,
+  TextInput,
   ScrollView,
   StyleSheet,
   Platform,
   Alert,
 } from 'react-native';
 import Animated, { FadeIn, FadeInDown, SlideInUp } from 'react-native-reanimated';
-import { Colors, Spacing, BorderRadius, Typography, Shadows } from '@/constants/theme';
+import { Colors, Spacing, BorderRadius, Typography, Shadows, FontFamilies } from '@/constants/theme';
 import { CompassIcon, ChatBubbleIcon, SparkleIcon } from '@/assets/graphics/icons';
 import { MEETING_ROOMS, HOTEL_ROOMS } from '@/constants/dating/rooms';
 import RoomContent from './rooms/RoomContent';
@@ -92,6 +93,9 @@ export default function RoomsView() {
 // ─── Meeting Rooms Section ───────────────────────────────────
 
 function MeetingRoomsSection() {
+  const [enteredRoom, setEnteredRoom] = useState<number | null>(null);
+  const [response, setResponse] = useState('');
+
   return (
     <View>
       <View style={styles.sectionHeader}>
@@ -102,10 +106,62 @@ function MeetingRoomsSection() {
         </Text>
       </View>
 
+      {/* Active Room View */}
+      {enteredRoom !== null && (() => {
+        const activeRoom = MEETING_ROOMS[enteredRoom];
+        const RoomIcon = activeRoom.Icon || ChatBubbleIcon;
+        return (
+        <Animated.View entering={FadeIn.duration(300)} style={styles.activeRoomView}>
+          <View style={styles.activeRoomHeader}>
+            <View style={styles.meetingIconBox}>
+              <RoomIcon size={22} color={Colors.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.meetingName}>{activeRoom.name}</Text>
+              <Text style={styles.meetingPeople}>{activeRoom.people} people reflecting</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.leaveButton}
+              onPress={() => { setEnteredRoom(null); setResponse(''); }}
+            >
+              <Text style={styles.leaveButtonText}>Leave</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.activeRoomPromptBox}>
+            <SparkleIcon size={16} color={Colors.accentGold} />
+            <Text style={styles.activeRoomPrompt}>{activeRoom.prompt}</Text>
+          </View>
+
+          <Text style={styles.activeRoomInstructions}>
+            This is a space for reflection. Write your response below — when community matching is live, others will be able to read and respond to what you share here.
+          </Text>
+
+          <View style={styles.activeRoomInputWrap}>
+            <TextInput
+              style={styles.activeRoomInput}
+              value={response}
+              onChangeText={setResponse}
+              placeholder="Share your reflection..."
+              placeholderTextColor={Colors.textMuted}
+              multiline
+              textAlignVertical="top"
+              maxLength={800}
+            />
+            <Text style={styles.activeRoomCounter}>{response.length}/800</Text>
+          </View>
+
+          <Text style={styles.activeRoomNote}>
+            Community matching is being prepared with care. We'll notify you when others are here to connect with.
+          </Text>
+        </Animated.View>
+        );
+      })()}
+
       <View style={styles.meetingCards}>
         {MEETING_ROOMS.map((room, i) => (
           <Animated.View key={i} entering={FadeInDown.delay(i * 100).duration(400)}>
-            <View style={styles.meetingCard}>
+            <View style={[styles.meetingCard, enteredRoom === i && styles.meetingCardActive]}>
               {room.status === 'upcoming' && (
                 <View style={styles.comingSoonBadge}>
                   <Text style={styles.comingSoonText}>Coming Soon</Text>
@@ -136,13 +192,19 @@ function MeetingRoomsSection() {
                 style={[
                   styles.meetingButton,
                   room.status === 'upcoming' && styles.meetingButtonDisabled,
+                  enteredRoom === i && styles.meetingButtonEntered,
                 ]}
                 disabled={room.status === 'upcoming'}
                 onPress={() => {
-                  Alert.alert(
-                    room.name,
-                    `${room.people} people are here.\n\nThis room is being prepared with care. Meeting rooms will open once our community reaches enough members to match thoughtfully.\n\nWe'll notify you when it's ready.`,
-                  );
+                  if (room.status === 'active') {
+                    setEnteredRoom(enteredRoom === i ? null : i);
+                    setResponse('');
+                  } else {
+                    Alert.alert(
+                      room.name,
+                      'This room is being prepared with care. We\'ll notify you when it\'s ready.',
+                    );
+                  }
                 }}
                 activeOpacity={0.7}
               >
@@ -152,7 +214,7 @@ function MeetingRoomsSection() {
                     room.status === 'upcoming' && styles.meetingButtonTextDisabled,
                   ]}
                 >
-                  {room.status === 'upcoming' ? 'Notify Me' : 'Enter Room'}
+                  {room.status === 'upcoming' ? 'Notify Me' : enteredRoom === i ? 'You\'re Here' : 'Enter Room'}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -414,6 +476,98 @@ const styles = StyleSheet.create({
   },
   meetingButtonTextDisabled: {
     color: Colors.textMuted,
+  },
+  meetingCardActive: {
+    borderColor: Colors.primary,
+    borderWidth: 2,
+  },
+  meetingButtonEntered: {
+    backgroundColor: Colors.success,
+    borderColor: Colors.success,
+  },
+
+  // Active room view
+  activeRoomView: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    marginBottom: Spacing.lg,
+    borderWidth: 1,
+    borderColor: Colors.primary + '30',
+    ...Shadows.card,
+  },
+  activeRoomHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginBottom: Spacing.md,
+  },
+  leaveButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: BorderRadius.pill,
+    borderWidth: 1,
+    borderColor: Colors.textMuted,
+  },
+  leaveButtonText: {
+    fontFamily: FontFamilies.body,
+    fontSize: 12,
+    color: Colors.textSecondary,
+  },
+  activeRoomPromptBox: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    backgroundColor: Colors.backgroundAlt,
+    borderRadius: BorderRadius.sm,
+    padding: Spacing.md,
+    borderLeftWidth: 3,
+    borderLeftColor: Colors.accentGold,
+    marginBottom: Spacing.md,
+  },
+  activeRoomPrompt: {
+    fontFamily: 'PlayfairDisplay_600SemiBold',
+    fontStyle: 'italic',
+    fontSize: 15,
+    color: Colors.text,
+    flex: 1,
+    lineHeight: 22,
+  },
+  activeRoomInstructions: {
+    fontFamily: FontFamilies.body,
+    fontSize: 13,
+    color: Colors.textSecondary,
+    lineHeight: 19,
+    marginBottom: Spacing.md,
+  },
+  activeRoomInputWrap: {
+    marginBottom: Spacing.sm,
+  },
+  activeRoomInput: {
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: BorderRadius.md,
+    padding: 14,
+    fontFamily: FontFamilies.body,
+    fontSize: 14,
+    lineHeight: 22,
+    color: Colors.text,
+    backgroundColor: Colors.surface,
+    minHeight: 120,
+  },
+  activeRoomCounter: {
+    fontFamily: FontFamilies.heading,
+    fontSize: 11,
+    color: Colors.textMuted,
+    textAlign: 'right',
+    marginTop: 4,
+  },
+  activeRoomNote: {
+    fontFamily: FontFamilies.body,
+    fontSize: 12,
+    color: Colors.textMuted,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    lineHeight: 17,
   },
 
   // Hotel rooms

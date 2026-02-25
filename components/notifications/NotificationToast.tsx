@@ -55,10 +55,10 @@ export default function NotificationToast({
           <Icon size={20} color={notification.accentColor} />
         </View>
         <View style={styles.textContainer}>
-          <Text style={styles.title} numberOfLines={1}>
+          <Text style={styles.title} numberOfLines={2}>
             {notification.title}
           </Text>
-          <Text style={styles.body} numberOfLines={2}>
+          <Text style={styles.body} numberOfLines={4}>
             {notification.body}
           </Text>
         </View>
