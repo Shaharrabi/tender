@@ -104,12 +104,12 @@ function petalPath(
 const AnimatedSvg = RNAnimated.createAnimatedComponent(Svg);
 
 export default function ConflictRose({ dutchScores, size: sizeProp }: ConflictRoseProps) {
-  const size = sizeProp ?? 220;
-  const padding = 30; // padding for labels
+  const size = sizeProp ?? 200;
+  const padding = 40; // padding for labels outside petals
   const svgSize = size + padding * 2;
   const cx = svgSize / 2;
   const cy = svgSize / 2;
-  const maxRadius = size * 0.38;
+  const maxRadius = size * 0.36;
 
   const scaleAnim = useRef(new RNAnimated.Value(0)).current;
 
@@ -242,29 +242,34 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: Colors.surface,
     borderRadius: BorderRadius.md,
-    padding: Spacing.lg,
+    padding: Spacing.md,
     borderWidth: 1,
     borderColor: Colors.borderLight,
     ...Shadows.card,
+    overflow: 'visible',
   },
   sectionLabel: {
     ...Typography.label,
     color: Colors.primary,
-    marginBottom: Spacing.xs,
+    fontSize: 10,
+    letterSpacing: 1.0,
+    marginBottom: 2,
   },
   title: {
     fontFamily: 'PlayfairDisplay_400Regular',
-    fontSize: 20,
+    fontSize: 16,
     color: Colors.text,
     marginBottom: 2,
   },
   subtitle: {
     ...Typography.caption,
     color: Colors.textSecondary,
-    marginBottom: Spacing.md,
+    fontSize: 11,
+    marginBottom: Spacing.sm,
   },
   chartWrapper: {
     alignItems: 'center',
+    overflow: 'visible',
     paddingVertical: Spacing.sm,
   },
   chipRow: {

@@ -2480,32 +2480,32 @@ const st = StyleSheet.create({
   // ── Cycle Tab ──
   cycleHero: {
     borderRadius: BorderRadius.lg,
-    padding: Spacing.lg,
-    gap: Spacing.md,
-    marginBottom: Spacing.lg,
+    padding: Spacing.md,
+    gap: Spacing.sm,
+    marginBottom: Spacing.md,
     alignItems: 'center',
   },
   cycleBadge: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.xs,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 3,
     borderRadius: BorderRadius.pill,
   },
   cycleBadgeText: {
-    fontSize: FontSizes.caption,
+    fontSize: 10,
     fontWeight: '700',
     color: Colors.white,
-    letterSpacing: 1.5,
+    letterSpacing: 1.0,
   },
   cycleHeroTitle: {
-    fontSize: FontSizes.headingL,
+    fontSize: FontSizes.headingM,
     fontWeight: '600',
     fontFamily: FontFamilies.heading,
     color: Colors.text,
   },
   cycleHeroBody: {
-    fontSize: FontSizes.body,
+    fontSize: 13,
     color: Colors.text,
-    lineHeight: 24,
+    lineHeight: 20,
     textAlign: 'center',
   },
 
