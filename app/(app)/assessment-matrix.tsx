@@ -44,6 +44,12 @@ import { calculateRipples } from '@/utils/visualizations/rippleEffects';
 import { ASSESSMENT_LABELS, ASSESSMENT_COLORS } from '@/constants/connectionMatrix';
 import type { AttachmentStyle, ECRRScores } from '@/types';
 
+// Sprint 4: New visualizations
+import RadarChart from '@/components/visualizations/RadarChart';
+import WaterfallChart from '@/components/visualizations/WaterfallChart';
+import ConflictRose from '@/components/visualizations/ConflictRose';
+import EQHeatmap from '@/components/visualizations/EQHeatmap';
+
 type Segment = 'matrix' | 'connections' | 'profile';
 
 /** Portrait insight for a given assessment — narrative, growth edges with descriptions, patterns */
@@ -578,11 +584,31 @@ export default function AssessmentMatrixScreen() {
               Tap any dimension to see how it connects across assessments
             </Text>
 
+            {/* Radar Chart — 7-dimension profile shape */}
+            {portrait && (
+              <RadarChart scores={portrait.compositeScores} />
+            )}
+
             <CombinedProfileView
               allScores={allScores}
               completedAssessments={completedAssessments}
               portrait={portrait}
             />
+
+            {/* Waterfall Chart — How scores contribute */}
+            {portrait && (
+              <WaterfallChart compositeScores={portrait.compositeScores} />
+            )}
+
+            {/* EQ Heatmap — when SSEIT data available */}
+            {allScores['sseit']?.scores && (
+              <EQHeatmap sseitScores={allScores['sseit'].scores} />
+            )}
+
+            {/* Conflict Rose — when DUTCH data available */}
+            {allScores['dutch']?.scores && (
+              <ConflictRose dutchScores={allScores['dutch'].scores} />
+            )}
 
             {/* Hint when portrait hasn't been generated yet */}
             {!portrait && (
