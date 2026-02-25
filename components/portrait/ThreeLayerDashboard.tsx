@@ -322,11 +322,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: Spacing.xl,
     paddingHorizontal: Spacing.lg,
-    backgroundColor: Colors.surfaceElevated,
-    borderRadius: BorderRadius.xl,
-    borderWidth: 1,
-    borderColor: Colors.primaryFaded,
-    ...Shadows.card,
   },
   orbOuter: {
     width: ORB_SIZE + 40,
@@ -355,9 +350,8 @@ const styles = StyleSheet.create({
     marginTop: Spacing.md,
   },
   resonanceStatus: {
-    fontFamily: 'PlayfairDisplay_400Regular_Italic',
+    fontFamily: FontFamilies.heading,
     fontSize: 18,
-    fontStyle: 'italic',
     textAlign: 'center',
     marginBottom: 4,
   },

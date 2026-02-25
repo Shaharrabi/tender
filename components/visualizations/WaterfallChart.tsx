@@ -106,7 +106,6 @@ export default function WaterfallChart({ compositeScores }: WaterfallChartProps)
 
   const allSteps = buildAllSteps(compositeScores);
   const activeSteps = allSteps.filter((s) => s.value > 0);
-  const missingSteps = allSteps.filter((s) => s.value <= 0);
 
   // If no active steps at all, show a placeholder message
   if (activeSteps.length === 0) {
@@ -121,9 +120,11 @@ export default function WaterfallChart({ compositeScores }: WaterfallChartProps)
     );
   }
 
-  const overallAvg = Math.round(
-    activeSteps.reduce((s, step) => s + step.value, 0) / activeSteps.length,
-  );
+  // Show ALL dimensions always — zero ones show as empty bars
+  const displaySteps = allSteps;
+  const overallAvg = activeSteps.length > 0
+    ? Math.round(activeSteps.reduce((s, step) => s + step.value, 0) / activeSteps.length)
+    : 0;
 
   // Chart dimensions
   const chartWidth = 300;
@@ -132,20 +133,20 @@ export default function WaterfallChart({ compositeScores }: WaterfallChartProps)
   const innerWidth = chartWidth - margin.left - margin.right;
   const innerHeight = chartHeight - margin.top - margin.bottom;
 
-  const barWidth = innerWidth / (activeSteps.length + 1.5); // +1 for total bar + gaps
+  const barWidth = innerWidth / (displaySteps.length + 1.5); // +1 for total bar + gaps
   const gap = barWidth * 0.15;
   const maxScore = 100;
 
-  // Build bar positions
-  const bars = activeSteps.map((step, i) => {
+  // Build bar positions for ALL dimensions
+  const bars = displaySteps.map((step, i) => {
     const x = margin.left + i * (barWidth + gap);
-    const barH = (step.value / maxScore) * innerHeight;
+    const barH = step.value > 0 ? (step.value / maxScore) * innerHeight : 3; // min 3px for empty
     const y = margin.top + innerHeight - barH;
-    return { ...step, x, y, width: barWidth, height: barH };
+    return { ...step, x, y, width: barWidth, height: barH, isEmpty: step.value <= 0 };
   });
 
   // Total bar
-  const totalX = margin.left + activeSteps.length * (barWidth + gap) + gap;
+  const totalX = margin.left + displaySteps.length * (barWidth + gap) + gap;
   const totalH = (overallAvg / maxScore) * innerHeight;
   const totalY = margin.top + innerHeight - totalH;
 
@@ -208,28 +209,31 @@ export default function WaterfallChart({ compositeScores }: WaterfallChartProps)
                 width={bar.width}
                 height={bar.height}
                 rx={2}
-                fill={bar.color}
-                fillOpacity={0.7}
+                fill={bar.isEmpty ? Colors.borderLight : bar.color}
+                fillOpacity={bar.isEmpty ? 0.5 : 0.7}
+                stroke={bar.isEmpty ? Colors.border : 'none'}
+                strokeWidth={bar.isEmpty ? 0.5 : 0}
+                strokeDasharray={bar.isEmpty ? '3,2' : ''}
               />
 
               {/* Score label on top */}
               <SvgText
                 x={bar.x + bar.width / 2}
                 y={bar.y - 4}
-                fill={bar.color}
-                fontSize={10}
+                fill={bar.isEmpty ? Colors.textMuted : bar.color}
+                fontSize={bar.isEmpty ? 8 : 10}
                 fontFamily={FontFamilies.accent}
                 fontWeight="600"
                 textAnchor="middle"
               >
-                {bar.value}
+                {bar.isEmpty ? '—' : bar.value}
               </SvgText>
 
               {/* Label below */}
               <SvgText
                 x={bar.x + bar.width / 2}
                 y={margin.top + innerHeight + 12}
-                fill={Colors.textSecondary}
+                fill={bar.isEmpty ? Colors.textMuted : Colors.textSecondary}
                 fontSize={7}
                 fontFamily={FontFamilies.body}
                 textAnchor="middle"
@@ -250,7 +254,7 @@ export default function WaterfallChart({ compositeScores }: WaterfallChartProps)
               </SvgText>
 
               {/* Connector line to next bar */}
-              {i < bars.length - 1 && (
+              {i < bars.length - 1 && !bar.isEmpty && (
                 <Line
                   x1={bar.x + bar.width}
                   y1={bar.y}
@@ -304,26 +308,13 @@ export default function WaterfallChart({ compositeScores }: WaterfallChartProps)
 
       {/* Legend row */}
       <View style={styles.legendRow}>
-        {activeSteps.map((step) => (
+        {displaySteps.map((step) => (
           <View key={step.label} style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: step.color }]} />
-            <Text style={styles.legendText}>{step.shortLabel}</Text>
+            <View style={[styles.legendDot, { backgroundColor: step.value > 0 ? step.color : Colors.borderLight }]} />
+            <Text style={[styles.legendText, step.value <= 0 && { color: Colors.textMuted }]}>{step.shortLabel}</Text>
           </View>
         ))}
       </View>
-
-      {/* Missing assessments callout */}
-      {missingSteps.length > 0 && (
-        <View style={styles.missingBox}>
-          <Text style={styles.missingTitle}>Not yet contributing:</Text>
-          <Text style={styles.missingList}>
-            {missingSteps.map((s) => `${s.label} (${s.source})`).join(', ')}
-          </Text>
-          <Text style={styles.missingHint}>
-            These dimensions will appear once the relevant assessments are completed.
-          </Text>
-        </View>
-      )}
     </Animated.View>
   );
 }
@@ -379,33 +370,5 @@ const styles = StyleSheet.create({
     fontFamily: FontFamilies.body,
     fontSize: 9,
     color: Colors.textSecondary,
-  },
-  missingBox: {
-    marginTop: Spacing.md,
-    padding: Spacing.md,
-    backgroundColor: Colors.backgroundAlt,
-    borderRadius: BorderRadius.sm,
-    borderLeftWidth: 3,
-    borderLeftColor: Colors.warning,
-  },
-  missingTitle: {
-    fontFamily: FontFamilies.body,
-    fontSize: 12,
-    fontWeight: '600',
-    color: Colors.textSecondary,
-    marginBottom: 4,
-  },
-  missingList: {
-    fontFamily: FontFamilies.body,
-    fontSize: 12,
-    color: Colors.textMuted,
-    lineHeight: 18,
-  },
-  missingHint: {
-    fontFamily: FontFamilies.body,
-    fontSize: 11,
-    color: Colors.textMuted,
-    fontStyle: 'italic',
-    marginTop: 6,
   },
 });

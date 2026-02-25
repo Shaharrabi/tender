@@ -217,7 +217,7 @@ export default function DifferentiationSpectrum({
             fontWeight="600"
             textAnchor="middle"
           >
-            {label} ({overall})
+            {label}{overall ? ` (${overall})` : ''}
           </SvgText>
         </Svg>
       </View>
