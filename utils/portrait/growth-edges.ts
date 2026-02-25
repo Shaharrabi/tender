@@ -27,6 +27,7 @@ export function identifyGrowthEdges(
   if (composite.regulationScore < 40) {
     candidates.push({
       id: 'regulation_capacity',
+      category: 'regulation',
       title: 'Widening Your Window',
       description:
         `Your window of tolerance is narrow (regulation score: ` +
@@ -53,6 +54,7 @@ export function identifyGrowthEdges(
 
     candidates.push({
       id: `values_gap_${domainId}`,
+      category: 'values',
       title: `Living Your Value: ${label}`,
       description:
         `${label} matters deeply to you (${scores.importance}/10 importance), ` +
@@ -85,6 +87,7 @@ export function identifyGrowthEdges(
   if (iPosition < 40 && fusion < 40 && !candidates.some((c) => c.id.includes('differentiation'))) {
     candidates.push({
       id: 'differentiation_work',
+      category: 'differentiation',
       title: 'Knowing Who You Are',
       description:
         'Your sense of self in relationships is still forming. You may ' +
@@ -235,6 +238,7 @@ export function getExercisesForEdge(edgeId: string): string[] {
 const PATTERN_EDGES: Record<string, GrowthEdge> = {
   values_honesty_avoids_conflict: {
     id: 'speak_truth',
+    category: 'communication',
     title: 'Speaking Your Truth',
     description:
       'You value honesty but avoid difficult conversations. This creates ' +
@@ -251,6 +255,7 @@ const PATTERN_EDGES: Record<string, GrowthEdge> = {
   },
   values_intimacy_avoids_closeness: {
     id: 'approach_closeness',
+    category: 'attachment',
     title: 'Approaching Closeness',
     description:
       'You long for deep connection but your system pulls you away from it. ' +
@@ -267,6 +272,7 @@ const PATTERN_EDGES: Record<string, GrowthEdge> = {
   },
   values_autonomy_but_fused: {
     id: 'reclaim_self',
+    category: 'differentiation',
     title: 'Reclaiming Your Self',
     description:
       'You value independence but tend to merge with your partner. ' +

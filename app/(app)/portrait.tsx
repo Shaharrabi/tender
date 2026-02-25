@@ -1810,23 +1810,137 @@ function AnchorsTab({
         Short phrases for difficult moments. Save the ones that resonate.
       </Text>
 
-      {ANCHOR_ITEMS.map(({ key, label, Icon, color }) => (
-        <View key={key} style={st.anchorCard}>
-          <View style={st.anchorCardHeader}>
-            <View style={[st.anchorIcon, { backgroundColor: color + '15' }]}>
-              <Icon size={18} color={color} />
+      {ANCHOR_ITEMS.slice(0, 2).map(({ key, label, Icon, color }) => {
+        const anchor = portrait.anchorPoints[key];
+        // Handle both old (string) and new (AnchorCategory) formats
+        const isRich = typeof anchor === 'object' && anchor !== null;
+        return (
+          <View key={key} style={st.anchorCard}>
+            <View style={st.anchorCardHeader}>
+              <View style={[st.anchorIcon, { backgroundColor: color + '15' }]}>
+                <Icon size={18} color={color} />
+              </View>
+              <Text style={[st.anchorLabel, { color }]}>{label}</Text>
             </View>
-            <Text style={[st.anchorLabel, { color }]}>{label}</Text>
+            <Text style={st.anchorText}>
+              {isRich ? (anchor as any).primary : anchor}
+            </Text>
+            {isRich && (
+              <>
+                <Text style={st.anchorSubhead}>Remember</Text>
+                {((anchor as any).whatToRemember ?? []).map((item: string, i: number) => (
+                  <Text key={`r${i}`} style={st.anchorListItem}>{'•'} {item}</Text>
+                ))}
+                <Text style={st.anchorSubhead}>Do</Text>
+                {((anchor as any).whatToDo ?? []).map((item: string, i: number) => (
+                  <Text key={`d${i}`} style={st.anchorListItem}>{'•'} {item}</Text>
+                ))}
+                <Text style={st.anchorSubhead}>Don't</Text>
+                {((anchor as any).whatNotToDo ?? []).map((item: string, i: number) => (
+                  <Text key={`n${i}`} style={st.anchorListItem}>{'•'} {item}</Text>
+                ))}
+              </>
+            )}
           </View>
-          <Text style={st.anchorText}>{portrait.anchorPoints[key]}</Text>
-        </View>
-      ))}
+        );
+      })}
+
+      {/* Pattern Interrupts */}
+      {(() => {
+        const pi = portrait.anchorPoints.patternInterrupt;
+        const isArr = Array.isArray(pi);
+        return (
+          <View style={st.anchorCard}>
+            <View style={st.anchorCardHeader}>
+              <View style={[st.anchorIcon, { backgroundColor: Colors.warning + '15' }]}>
+                <HourglassIcon size={18} color={Colors.warning} />
+              </View>
+              <Text style={[st.anchorLabel, { color: Colors.warning }]}>Pattern Interrupts</Text>
+            </View>
+            {isArr ? (pi as string[]).map((item, i) => (
+              <Text key={i} style={st.anchorText}>"{item}"</Text>
+            )) : (
+              <Text style={st.anchorText}>{pi}</Text>
+            )}
+          </View>
+        );
+      })()}
+
+      {/* Repair */}
+      {(() => {
+        const rep = portrait.anchorPoints.repair;
+        const isRich = typeof rep === 'object' && rep !== null && !Array.isArray(rep);
+        return (
+          <View style={st.anchorCard}>
+            <View style={st.anchorCardHeader}>
+              <View style={[st.anchorIcon, { backgroundColor: Colors.secondary + '15' }]}>
+                <HeartIcon size={18} color={Colors.secondary} />
+              </View>
+              <Text style={[st.anchorLabel, { color: Colors.secondary }]}>Repair</Text>
+            </View>
+            {isRich ? (
+              <>
+                <Text style={st.anchorSubhead}>Signs you're ready</Text>
+                {((rep as any).signsYoureReady ?? []).map((item: string, i: number) => (
+                  <Text key={`s${i}`} style={st.anchorListItem}>{'•'} {item}</Text>
+                ))}
+                <Text style={st.anchorSubhead}>Try saying</Text>
+                {((rep as any).repairStarters ?? []).map((item: string, i: number) => (
+                  <Text key={`rs${i}`} style={st.anchorText}>"{item}"</Text>
+                ))}
+              </>
+            ) : (
+              <Text style={st.anchorText}>{String(rep)}</Text>
+            )}
+          </View>
+        );
+      })()}
+
+      {/* Self-Compassion */}
+      {(() => {
+        const sc = portrait.anchorPoints.selfCompassion;
+        const isRich = typeof sc === 'object' && sc !== null;
+        return (
+          <View style={st.anchorCard}>
+            <View style={st.anchorCardHeader}>
+              <View style={[st.anchorIcon, { backgroundColor: Colors.primary + '15' }]}>
+                <GreenHeartIcon size={18} color={Colors.primary} />
+              </View>
+              <Text style={[st.anchorLabel, { color: Colors.primary }]}>Self-Compassion</Text>
+            </View>
+            {isRich ? (
+              <>
+                {((sc as any).reminders ?? []).map((item: string, i: number) => (
+                  <Text key={`r${i}`} style={st.anchorListItem}>{'•'} {item}</Text>
+                ))}
+                {(sc as any).personalizedMessage && (
+                  <View style={[st.insightBox, { marginTop: 8 }]}>
+                    <Text style={st.insightText}>{(sc as any).personalizedMessage}</Text>
+                  </View>
+                )}
+              </>
+            ) : (
+              <Text style={st.anchorText}>{sc as string}</Text>
+            )}
+          </View>
+        );
+      })()}
 
       {/* Partner Guide */}
       <Text style={st.sectionLabel}>FOR YOUR PARTNER</Text>
       <View style={st.card}>
         <Text style={st.cardBody}>{portrait.partnerGuide.whatToKnow}</Text>
       </View>
+
+      {/* Deepest longing — the most therapeutically powerful sentence */}
+      {portrait.partnerGuide.deepestLonging && (
+        <View style={[st.card, { borderLeftWidth: 3, borderLeftColor: Colors.primary }]}>
+          <Text style={st.cardHeading}>What I really need you to understand</Text>
+          <Text style={[st.cardBody, { fontStyle: 'italic' }]}>
+            "{portrait.partnerGuide.deepestLonging}"
+          </Text>
+        </View>
+      )}
 
       <View style={st.card}>
         <Text style={st.cardHeading}>When I'm struggling, I need...</Text>
@@ -1838,6 +1952,36 @@ function AnchorsTab({
         ))}
       </View>
 
+      {/* State-specific guidance (new enriched fields) */}
+      {portrait.partnerGuide.whenActivated && (
+        <View style={st.card}>
+          <Text style={[st.cardHeading, { color: Colors.error }]}>When I'm activated (fight/flight)</Text>
+          <Text style={st.anchorSubhead}>What helps</Text>
+          {portrait.partnerGuide.whenActivated.whatHelps.map((item, i) => (
+            <Text key={`ah${i}`} style={st.anchorListItem}>{'•'} {item}</Text>
+          ))}
+          <Text style={st.anchorSubhead}>What to say</Text>
+          {portrait.partnerGuide.whenActivated.whatToSay.map((item, i) => (
+            <Text key={`as${i}`} style={[st.anchorText, { fontStyle: 'italic' }]}>"{item}"</Text>
+          ))}
+        </View>
+      )}
+
+      {portrait.partnerGuide.whenShutdown && (
+        <View style={st.card}>
+          <Text style={[st.cardHeading, { color: Colors.depth }]}>When I've shut down (freeze)</Text>
+          <Text style={st.anchorSubhead}>What helps</Text>
+          {portrait.partnerGuide.whenShutdown.whatHelps.map((item, i) => (
+            <Text key={`sh${i}`} style={st.anchorListItem}>{'•'} {item}</Text>
+          ))}
+          <Text style={st.anchorSubhead}>What to say</Text>
+          {portrait.partnerGuide.whenShutdown.whatToSay.map((item, i) => (
+            <Text key={`ss${i}`} style={[st.anchorText, { fontStyle: 'italic' }]}>"{item}"</Text>
+          ))}
+        </View>
+      )}
+
+      {/* General helps/doesn't */}
       <View style={st.card}>
         <View style={st.twoCol}>
           <View style={st.colCard}>
@@ -2750,6 +2894,36 @@ const st = StyleSheet.create({
     fontSize: FontSizes.body,
     color: Colors.text,
     lineHeight: 24,
+    fontStyle: 'italic',
+    marginBottom: 4,
+  },
+  anchorSubhead: {
+    fontSize: FontSizes.caption,
+    fontWeight: '700',
+    color: Colors.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginTop: 10,
+    marginBottom: 4,
+  },
+  anchorListItem: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.text,
+    lineHeight: 20,
+    paddingLeft: 4,
+    marginBottom: 2,
+  },
+  insightBox: {
+    backgroundColor: Colors.backgroundAlt,
+    borderRadius: BorderRadius.sm,
+    padding: Spacing.md,
+    borderLeftWidth: 3,
+    borderLeftColor: Colors.primary,
+  },
+  insightText: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.text,
+    lineHeight: 20,
     fontStyle: 'italic',
   },
 

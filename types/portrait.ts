@@ -56,11 +56,19 @@ export interface AREProfile {
   engaged: number;      // 0-100
 }
 
+/** The emotional layers underneath reactive behavior (EFT concept). */
+export interface EmotionalStructure {
+  primary: string;      // Primary emotion driving behavior (e.g., "fear of abandonment")
+  secondary: string;    // Surface emotion that shows (e.g., "anger or criticism")
+  longing: string;      // Deepest need underneath (e.g., "reassurance that I matter")
+}
+
 export interface AttachmentLens {
   narrative: string;
   protectiveStrategy: string;
   triggers: string[];
   areProfile: AREProfile;
+  emotionalStructure: EmotionalStructure;  // EFT primary/secondary/longing
 }
 
 export interface PartsLens {
@@ -119,31 +127,64 @@ export interface NegativeCycle {
 
 // ─── Growth Edges ────────────────────────────────────────
 
+export type GrowthEdgeCategory =
+  | 'regulation'
+  | 'attachment'
+  | 'values'
+  | 'differentiation'
+  | 'conflict'
+  | 'communication'
+  | 'personality';
+
 export interface GrowthEdge {
   id: string;
   title: string;
   description: string;
   rationale: string;
   practices: string[];
+  category?: GrowthEdgeCategory;  // For filtering in CombinedProfileView
 }
 
 // ─── Anchor Points ───────────────────────────────────────
 
+export interface AnchorCategory {
+  primary: string;           // Main anchor phrase
+  whatToRemember: string[];  // 2-3 things to remember in this state
+  whatToDo: string[];        // 2-3 concrete actions
+  whatNotToDo: string[];     // 1-2 things to avoid
+}
+
 export interface AnchorPoints {
-  whenActivated: string;
-  whenShutdown: string;
-  patternInterrupt: string;
-  repair: string;
-  selfCompassion: string;
+  whenActivated: AnchorCategory;
+  whenShutdown: AnchorCategory;
+  patternInterrupt: string[];    // 3-4 personalized interrupt phrases
+  repair: {
+    signsYoureReady: string[];   // Signs you're ready to repair
+    repairStarters: string[];    // Phrases to start repair
+  };
+  selfCompassion: {
+    reminders: string[];          // 2-3 self-compassion phrases
+    personalizedMessage: string;  // One deeply personal message
+  };
 }
 
 // ─── Partner Guide ───────────────────────────────────────
 
+export interface PartnerGuideState {
+  whatHelps: string[];
+  whatDoesntHelp: string[];
+  whatToSay: string[];         // Actual phrases a partner can say
+}
+
 export interface PartnerGuide {
   whatToKnow: string;
   whenStrugglingINeed: string[];
-  whatHelps: string[];
-  whatDoesntHelp: string[];
+  whatHelps: string[];          // General - kept for backward compat
+  whatDoesntHelp: string[];     // General - kept for backward compat
+  whenActivated?: PartnerGuideState;  // State-specific guidance
+  whenShutdown?: PartnerGuideState;   // State-specific guidance
+  whatToSay?: string[];              // Key phrases a partner should know
+  deepestLonging?: string;           // "What I really need you to understand"
 }
 
 // ─── Supplement Scores (Phase 3 — aggregated from 4 supplements) ──

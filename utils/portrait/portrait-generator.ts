@@ -23,21 +23,22 @@ import type { SupplementScores } from '@/types/portrait';
  *  '1.0.0' — Original 7 composite scores
  *  '2.0.0' — Phase 3 supplements + field awareness lens
  *  '1.1.0' / '2.1.0' — Sprint 1: Added 5 radar chart dimensions to compositeScores
+ *  '1.2.0' / '2.2.0' — Sprint 2: emotionalStructure, rich anchor points, state-aware partner guide
  */
-export const PORTRAIT_CODE_VERSION_BASE = '1.1.0';
-export const PORTRAIT_CODE_VERSION_SUPPLEMENTS = '2.1.0';
+export const PORTRAIT_CODE_VERSION_BASE = '1.2.0';
+export const PORTRAIT_CODE_VERSION_SUPPLEMENTS = '2.2.0';
 
 /**
- * Check if a portrait version is outdated (missing radar dimensions).
- * Any portrait with version < x.1.0 is stale and needs regeneration.
+ * Check if a portrait version is outdated.
+ * Any portrait with minor version < 2 needs regeneration for enriched anchors/guide.
  */
 export function isPortraitStale(version?: string): boolean {
   if (!version) return true;
   // Parse version: major.minor.patch
   const parts = version.split('.').map(Number);
   const minor = parts[1] ?? 0;
-  // Radar dimensions were added at minor version 1
-  return minor < 1;
+  // Rich anchors + partner guide added at minor version 2
+  return minor < 2;
 }
 
 /**
@@ -97,11 +98,11 @@ export function generatePortrait(
   // Step 5: Growth edges
   const growthEdges = identifyGrowthEdges(values, dsir, compositeScores, patternResult.patterns);
 
-  // Step 6: Anchor points
-  const anchorPoints = generateAnchorPoints(ecrr, compositeScores);
+  // Step 6: Anchor points — now uses emotionalStructure for deep personalization
+  const anchorPoints = generateAnchorPoints(ecrr, compositeScores, attachment.emotionalStructure);
 
-  // Step 7: Partner guide
-  const partnerGuide = generatePartnerGuide(ecrr, compositeScores);
+  // Step 7: Partner guide — now uses emotionalStructure for whatToSay and deepestLonging
+  const partnerGuide = generatePartnerGuide(ecrr, compositeScores, attachment.emotionalStructure);
 
   return {
     userId,
