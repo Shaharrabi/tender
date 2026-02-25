@@ -4,6 +4,7 @@ import type {
   CompositeScores,
   DetectedPattern,
   AttachmentLens,
+  EmotionalStructure,
 } from '@/types';
 import { tailorNarrative, buildTailoringContext } from './attachment-tailoring';
 
@@ -28,8 +29,9 @@ export function analyzeAttachmentProtection(
     responsive: composite.responsiveness,
     engaged: composite.engagement,
   };
+  const emotionalStructure = getEmotionalStructure(attachmentStyle, anxietyScore, avoidanceScore);
 
-  return { narrative, protectiveStrategy, triggers, areProfile };
+  return { narrative, protectiveStrategy, triggers, areProfile, emotionalStructure };
 }
 
 // ─── Narrative ───────────────────────────────────────────
@@ -146,4 +148,59 @@ function getTriggers(
   }
 
   return triggers;
+}
+
+// ─── Emotional Structure (EFT primary/secondary/longing) ─────
+
+/**
+ * Maps attachment patterns to the EFT emotional layers:
+ *   primary → the deep emotion driving behavior (often unseen)
+ *   secondary → the surface emotion that shows (often misread by partner)
+ *   longing → the deepest unmet need underneath everything
+ *
+ * These are load-bearing: anchor points and partner guide reference them
+ * to generate deeply personalized "in the moment" guidance.
+ */
+function getEmotionalStructure(
+  style: AttachmentStyle,
+  anxiety: number,
+  avoidance: number
+): EmotionalStructure {
+  switch (style) {
+    case 'anxious-preoccupied':
+      return {
+        primary: anxiety > 5.5
+          ? 'Deep fear that I am not enough and will be left'
+          : 'Fear that distance means something is wrong between us',
+        secondary: anxiety > 5.5
+          ? 'Urgency, intensity, criticism, or clinginess'
+          : 'Worry, over-analyzing, seeking reassurance',
+        longing: 'Reassurance that I matter to you — that you choose me',
+      };
+
+    case 'dismissive-avoidant':
+      return {
+        primary: avoidance > 5.5
+          ? 'Fear of being engulfed or losing myself in closeness'
+          : 'Discomfort with emotional exposure and vulnerability',
+        secondary: avoidance > 5.5
+          ? 'Withdrawal, intellectualizing, or emotional flatness'
+          : 'Minimizing feelings, changing the subject, going quiet',
+        longing: 'To be accepted without having to perform closeness on demand',
+      };
+
+    case 'fearful-avoidant':
+      return {
+        primary: 'Simultaneous fear of abandonment AND engulfment',
+        secondary: 'Oscillation — reaching out then pulling away, hot then cold',
+        longing: 'Safety to be close without it being used against me',
+      };
+
+    case 'secure':
+      return {
+        primary: 'Trust that relationships can hold difficulty',
+        secondary: 'Direct expression — naming needs, staying present',
+        longing: 'To be met with the same honesty and presence I offer',
+      };
+  }
 }
