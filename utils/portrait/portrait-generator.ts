@@ -31,7 +31,7 @@ export function generatePortrait(
   const { ecrr, dutch, sseit, dsir, ipip, values } = scores;
 
   // Step 1: Composite scores
-  const compositeScores = calculateCompositeScores(ecrr, ipip, sseit, dsir, values);
+  const compositeScores = calculateCompositeScores(ecrr, ipip, sseit, dsir, values, dutch);
 
   // Step 2: Pattern detection (now with optional supplement-aware patterns)
   const patternResult = detectPatterns(ecrr, dutch, sseit, dsir, ipip, values, compositeScores, supplements);

@@ -71,6 +71,12 @@ const INTERPRETATIONS: Record<keyof CompositeScores, [string, string, string]> =
   windowWidth: ['Wide window', 'Moderate window', 'Narrow window'],
   selfLeadership: ['Strong self-awareness', 'Building awareness', 'Self-led growth needed'],
   valuesCongruence: ['Living your values', 'Some gaps to bridge', 'Significant values gap'],
+  // Radar dimensions (used by RadarChart, not displayed in Snapshot bars)
+  attachmentSecurity: ['Securely attached', 'Developing security', 'Insecurity patterns'],
+  emotionalIntelligence: ['High EQ', 'Growing EQ', 'EQ development needed'],
+  differentiation: ['Well differentiated', 'Building differentiation', 'Fusion patterns'],
+  conflictFlexibility: ['Flexible in conflict', 'Some rigidity', 'Conflict style rigid'],
+  relationalAwareness: ['Deeply aware', 'Growing awareness', 'Awareness developing'],
 };
 
 // ─── Helpers ─────────────────────────────────────────────

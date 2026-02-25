@@ -3,20 +3,23 @@ import type {
   IPIPScores,
   SSEITScores,
   DSIRScores,
+  DUTCHScores,
   ValuesScores,
   CompositeScores,
 } from '@/types';
 
 /**
- * Calculate 7 composite scores that integrate data across all 6 assessments.
- * Each score is 0-100. Formulas come from the integration-algorithm spec.
+ * Calculate composite scores that integrate data across all 6 assessments.
+ * Original 7 scores (0-100) plus 5 radar chart dimensions added in Sprint 1.
+ * Formulas come from the integration-algorithm spec + portrait enhancement spec.
  */
 export function calculateCompositeScores(
   ecrr: ECRRScores,
   ipip: IPIPScores,
   sseit: SSEITScores,
   dsir: DSIRScores,
-  values: ValuesScores
+  values: ValuesScores,
+  dutch?: DUTCHScores
 ): CompositeScores {
   // ── Normalize ECR-R (1-7 → 0-100) ──
   const avoidanceNorm = ((ecrr.avoidanceScore - 1) / 6) * 100;
@@ -87,6 +90,42 @@ export function calculateCompositeScores(
     gapValues.reduce((sum, gap) => sum + (10 - gap), 0) / (gapValues.length || 1);
   const valuesCongruence = clamp(meanInverseGap * 10);
 
+  // ═══════════ RADAR CHART DIMENSIONS (Sprint 1) ═══════════
+
+  // 1. Attachment Security: inverse of anxiety + avoidance (ECR-R 1-7 scale)
+  const anxietyNorm = ((ecrr.anxietyScore - 1) / 6) * 100;
+  const attachmentSecurity = clamp(
+    (100 - anxietyNorm) * 0.5 + (100 - avoidanceNorm) * 0.5
+  );
+
+  // 2. Emotional Intelligence: SSEIT total (already 0-100)
+  const emotionalIntelligence = clamp(sseit.totalNormalized);
+
+  // 3. Differentiation: DSI-R total normalized (already 0-100)
+  const dsiTotal = (dsiReactivity + dsiIPosition + dsiCutoff +
+    dsir.subscaleScores.fusionWithOthers.normalized) / 4;
+  const differentiation = clamp(dsiTotal);
+
+  // 4. Conflict Flexibility: entropy of DUTCH modes (how balanced the 5 styles are)
+  //    Max entropy = perfectly balanced use of all 5 styles → score 100
+  //    Min entropy = only one style used → score 0
+  let conflictFlexibility = 50; // fallback when no dutch data
+  if (dutch) {
+    const modes = ['yielding', 'compromising', 'forcing', 'problemSolving', 'avoiding'];
+    const means = modes.map(m => dutch.subscaleScores[m]?.mean ?? 0);
+    const total = means.reduce((s, v) => s + v, 0) || 1;
+    const probs = means.map(m => m / total);
+    const maxEntropy = Math.log(5); // ln(5)
+    const entropy = -probs.reduce((s, p) => s + (p > 0 ? p * Math.log(p) : 0), 0);
+    conflictFlexibility = clamp((entropy / maxEntropy) * 100);
+  }
+
+  // 5. Relational Awareness: EQ social awareness + perception + agreeableness
+  const eqSocialAwareness = sseit.subscaleNormalized.managingOthers ?? 50;
+  const relationalAwareness = clamp(
+    eqSocialAwareness * 0.35 + eqPerception * 0.35 + agreePct * 0.30
+  );
+
   return {
     regulationScore,
     windowWidth,
@@ -95,6 +134,12 @@ export function calculateCompositeScores(
     engagement,
     selfLeadership,
     valuesCongruence,
+    // Radar dimensions
+    attachmentSecurity,
+    emotionalIntelligence,
+    differentiation,
+    conflictFlexibility,
+    relationalAwareness,
   };
 }
 
