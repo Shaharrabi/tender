@@ -49,6 +49,20 @@ import { synthesizeAssessments, type AssessmentSynthesis } from '@/utils/portrai
 import { getStep } from '@/utils/steps/twelve-steps';
 import { STAT_ICONS } from '@/constants/icons';
 import type { IconComponent } from '@/constants/icons';
+
+// ── Sprint 4: New visualization imports ──
+import RadarChart from '@/components/visualizations/RadarChart';
+import ThreeLayerDashboard from '@/components/portrait/ThreeLayerDashboard';
+import WaterfallChart from '@/components/visualizations/WaterfallChart';
+import ConflictRose from '@/components/visualizations/ConflictRose';
+import EQHeatmap from '@/components/visualizations/EQHeatmap';
+import ValuesAlignment from '@/components/visualizations/ValuesAlignment';
+import BigFiveBars from '@/components/visualizations/BigFiveBars';
+import WindowOfTolerance from '@/components/visualizations/WindowOfTolerance';
+import DifferentiationSpectrum from '@/components/visualizations/DifferentiationSpectrum';
+import { fetchAllScores } from '@/services/portrait';
+import type { AllAssessmentScores } from '@/types/portrait';
+import type { SSEITScores, DUTCHScores, ValuesScores, IPIPScores, DSIRScores } from '@/types';
 import {
   CompassIcon,
   MasksIcon,
@@ -427,6 +441,7 @@ export default function PortraitScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ tab?: string }>();
   const [portrait, setPortrait] = useState<IndividualPortrait | null>(null);
+  const [rawScores, setRawScores] = useState<AllAssessmentScores | null>(null);
   const [loading, setLoading] = useState(true);
   const initialTab = (params.tab as TabKey) || 'overview';
   const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
@@ -438,8 +453,28 @@ export default function PortraitScreen() {
 
   useEffect(() => {
     if (!user) return;
-    getPortrait(user.id)
-      .then(setPortrait)
+    // Load portrait + raw assessment scores in parallel
+    Promise.all([
+      getPortrait(user.id),
+      fetchAllScores(user.id).catch(() => null),
+    ])
+      .then(([p, scoresMap]) => {
+        setPortrait(p);
+        if (scoresMap) {
+          try {
+            setRawScores({
+              ecrr: scoresMap['ecr-r']?.scores,
+              dutch: scoresMap['dutch']?.scores,
+              sseit: scoresMap['sseit']?.scores,
+              dsir: scoresMap['dsi-r']?.scores,
+              ipip: scoresMap['ipip-neo-120']?.scores,
+              values: scoresMap['values']?.scores,
+            });
+          } catch (e) {
+            console.warn('[Portrait] Failed to parse raw scores:', e);
+          }
+        }
+      })
       .catch((err) => {
         console.error('[Portrait] Failed to load portrait:', err);
       })
@@ -667,22 +702,23 @@ export default function PortraitScreen() {
               userName={userName}
               overallScore={overallScore}
               onNavigate={() => {}}
+              rawScores={rawScores}
             />
           </View>
 
           <View style={st.exportSection}>
             <Text style={st.exportSectionLabel}>Scores</Text>
-            <ScoresTab portrait={portrait} overallScore={overallScore} />
+            <ScoresTab portrait={portrait} overallScore={overallScore} rawScores={rawScores} />
           </View>
 
           <View style={st.exportSection}>
             <Text style={st.exportSectionLabel}>Lenses</Text>
-            <LensesTab portrait={portrait} />
+            <LensesTab portrait={portrait} rawScores={rawScores} />
           </View>
 
           <View style={st.exportSection}>
             <Text style={st.exportSectionLabel}>Cycle</Text>
-            <CycleTab portrait={portrait} />
+            <CycleTab portrait={portrait} rawScores={rawScores} />
           </View>
 
           <View style={st.exportSection}>
@@ -709,13 +745,14 @@ export default function PortraitScreen() {
               userName={userName}
               overallScore={overallScore}
               onNavigate={handleTabChange}
+              rawScores={rawScores}
             />
           )}
           {activeTab === 'scores' && (
-            <ScoresTab portrait={portrait} overallScore={overallScore} />
+            <ScoresTab portrait={portrait} overallScore={overallScore} rawScores={rawScores} />
           )}
-          {activeTab === 'lenses' && <LensesTab portrait={portrait} />}
-          {activeTab === 'cycle' && <CycleTab portrait={portrait} />}
+          {activeTab === 'lenses' && <LensesTab portrait={portrait} rawScores={rawScores} />}
+          {activeTab === 'cycle' && <CycleTab portrait={portrait} rawScores={rawScores} />}
           {activeTab === 'growth' && <GrowthTab portrait={portrait} router={router} />}
           {activeTab === 'anchors' && (
             <AnchorsTab portrait={portrait} router={router} />
@@ -742,11 +779,13 @@ function OverviewTab({
   userName,
   overallScore,
   onNavigate,
+  rawScores,
 }: {
   portrait: IndividualPortrait;
   userName: string;
   overallScore: number;
   onNavigate: (tab: TabKey) => void;
+  rawScores: AllAssessmentScores | null;
 }) {
   const narrative = generateLandingNarrative(portrait);
   const synthesis = synthesizeAssessments(portrait, portrait.supplementData);
@@ -767,8 +806,15 @@ function OverviewTab({
       <View style={st.heroSection}>
         <Text style={st.heroEyebrow}>YOUR RELATIONAL PORTRAIT</Text>
         <Text style={st.heroTitle}>{userName}</Text>
-        <AnimatedScoreCircle score={overallScore} />
+        {/* Three-Layer Dashboard replaces the single score circle */}
+        <ThreeLayerDashboard
+          compositeScores={cs}
+          onSeeDetails={() => onNavigate('scores')}
+        />
       </View>
+
+      {/* Radar Chart — The Shape of You */}
+      <RadarChart scores={cs} onDimensionTap={() => onNavigate('scores')} />
 
       {/* Narrative */}
       <View style={st.card}>
@@ -1427,9 +1473,11 @@ function CycleDiagramInfographic({
 function ScoresTab({
   portrait,
   overallScore,
+  rawScores,
 }: {
   portrait: IndividualPortrait;
   overallScore: number;
+  rawScores: AllAssessmentScores | null;
 }) {
   const cs = portrait.compositeScores;
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -1514,15 +1562,33 @@ function ScoresTab({
         regulationScore={cs.regulationScore}
       />
 
+      {/* Enhanced Window of Tolerance (SVG visualization) */}
+      <WindowOfTolerance
+        compositeScores={cs}
+        activationPattern={
+          cs.regulationScore > 60 ? 'balanced' :
+          cs.windowWidth < 35 ? 'hyperarousal' : 'both'
+        }
+        triggers={portrait.negativeCycle.primaryTriggers.slice(0, 3)}
+      />
+
       {/* Values Compass Infographic */}
       <ValuesCompassInfographic values={portrait.fourLens.values} />
+
+      {/* Waterfall Chart — How your profile was built */}
+      <WaterfallChart compositeScores={cs} />
+
+      {/* Differentiation Spectrum (when DSI-R data available) */}
+      {rawScores?.dsir && (
+        <DifferentiationSpectrum dsirScores={rawScores.dsir} compositeScores={cs} />
+      )}
     </Animated.View>
   );
 }
 
 // ─── LENSES TAB ─────────────────────────────────────
 
-function LensesTab({ portrait }: { portrait: IndividualPortrait }) {
+function LensesTab({ portrait, rawScores }: { portrait: IndividualPortrait; rawScores: AllAssessmentScores | null }) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const hasFieldAwareness = !!portrait.fourLens.fieldAwareness;
   const hasReframes = (portrait.bigFiveReframes?.length ?? 0) > 0;
@@ -1562,11 +1628,22 @@ function LensesTab({ portrait }: { portrait: IndividualPortrait }) {
         lens={portrait.fourLens.regulation}
         type="regulation"
       />
+
+      {/* EQ Heatmap — Emotional Intelligence quadrants */}
+      {rawScores?.sseit && (
+        <EQHeatmap sseitScores={rawScores.sseit} />
+      )}
+
       <PortraitLens
         title="Values & Becoming"
         lens={portrait.fourLens.values}
         type="values"
       />
+
+      {/* Values Alignment — importance vs living-it gaps */}
+      {rawScores?.values && (
+        <ValuesAlignment valuesScores={rawScores.values} />
+      )}
 
       {/* Field Awareness Lens — Phase 3 (only if supplement data present) */}
       {hasFieldAwareness && portrait.fourLens.fieldAwareness && (
@@ -1594,6 +1671,11 @@ function LensesTab({ portrait }: { portrait: IndividualPortrait }) {
       {/* Big Five Relational Reframes — Phase 3 */}
       {hasReframes && (
         <BigFiveReframesSection reframes={portrait.bigFiveReframes!} />
+      )}
+
+      {/* Big Five Bars — visual personality bars with relational reframes */}
+      {rawScores?.ipip && (
+        <BigFiveBars ipipScores={rawScores.ipip} reframes={portrait.bigFiveReframes} />
       )}
     </Animated.View>
   );
@@ -1638,7 +1720,7 @@ function BigFiveReframesSection({ reframes }: { reframes: string[] }) {
 
 // ─── CYCLE TAB ──────────────────────────────────────
 
-function CycleTab({ portrait }: { portrait: IndividualPortrait }) {
+function CycleTab({ portrait, rawScores }: { portrait: IndividualPortrait; rawScores: AllAssessmentScores | null }) {
   const nc = portrait.negativeCycle;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -1670,6 +1752,11 @@ function CycleTab({ portrait }: { portrait: IndividualPortrait }) {
 
       {/* Cycle Diagram */}
       <CycleDiagramInfographic negativeCycle={nc} />
+
+      {/* Conflict Rose — 5-petal DUTCH conflict style visualization */}
+      {rawScores?.dutch && (
+        <ConflictRose dutchScores={rawScores.dutch} />
+      )}
 
       {/* Triggers */}
       <View style={st.card}>
