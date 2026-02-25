@@ -54,7 +54,7 @@ import {
 } from '@/utils/assessments/registry';
 import { supabase } from '@/services/supabase';
 import { getPortrait, savePortrait, fetchAllScores, extractSupplementScores } from '@/services/portrait';
-import { generatePortrait } from '@/utils/portrait/portrait-generator';
+import { generatePortrait, isPortraitStale } from '@/utils/portrait/portrait-generator';
 import { getTodaysCheckIn, saveDailyCheckIn } from '@/services/growth';
 import { getMyCouple, checkDyadicCompletion, isSelfCouple } from '@/services/couples';
 import { getAllExercises, getExerciseById } from '@/utils/interventions/registry';
@@ -444,14 +444,18 @@ export default function HomeScreen() {
       try {
         loadedPortrait = await getPortrait(user.id);
 
-        // Auto-regenerate portrait if assessments have been updated
+        // Auto-regenerate portrait if assessments have been updated OR code version is newer
         if (loadedPortrait && completedAssessmentTypes.length >= 6) {
           const latestScoresMap = await fetchAllScores(user.id);
           const currentIds = new Set(Object.values(latestScoresMap).map((r) => r.id));
           const portraitIds = new Set(loadedPortrait.assessmentIds || []);
-          const isStale = [...currentIds].some((id) => !portraitIds.has(id));
+          const idsChanged = [...currentIds].some((id) => !portraitIds.has(id));
+          const versionStale = isPortraitStale(loadedPortrait.version);
+          const isStale = idsChanged || versionStale;
 
           if (isStale) {
+            console.log(`[Home] Portrait stale reason: ${idsChanged ? 'IDs changed' : ''}${versionStale ? ' version outdated (' + loadedPortrait.version + ')' : ''}`);
+
             console.log('[Home] Portrait is stale — auto-regenerating...');
             try {
               const scores: AllAssessmentScores = {

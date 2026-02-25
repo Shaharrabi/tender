@@ -15,12 +15,38 @@ import type { AllAssessmentScores, IndividualPortrait } from '@/types';
 import type { SupplementScores } from '@/types/portrait';
 
 /**
+ * Current portrait generation code version.
+ * Bump this whenever the composite-scores formula or portrait structure changes.
+ * Used by home.tsx and portrait.tsx for stale-portrait detection.
+ *
+ * History:
+ *  '1.0.0' — Original 7 composite scores
+ *  '2.0.0' — Phase 3 supplements + field awareness lens
+ *  '1.1.0' / '2.1.0' — Sprint 1: Added 5 radar chart dimensions to compositeScores
+ */
+export const PORTRAIT_CODE_VERSION_BASE = '1.1.0';
+export const PORTRAIT_CODE_VERSION_SUPPLEMENTS = '2.1.0';
+
+/**
+ * Check if a portrait version is outdated (missing radar dimensions).
+ * Any portrait with version < x.1.0 is stale and needs regeneration.
+ */
+export function isPortraitStale(version?: string): boolean {
+  if (!version) return true;
+  // Parse version: major.minor.patch
+  const parts = version.split('.').map(Number);
+  const minor = parts[1] ?? 0;
+  // Radar dimensions were added at minor version 1
+  return minor < 1;
+}
+
+/**
  * Generate a complete Individual Portrait from 6 assessment score objects.
  * Returns everything except `id` and `createdAt` (set by DB).
  *
  * Phase 3: Accepts optional supplement data for enhanced portrait generation.
  * When supplements are provided, adds field awareness lens, Big Five reframes,
- * and supplement-aware patterns. Version bumps to '2.0.0'.
+ * and supplement-aware patterns. Version bumps to '2.1.0'.
  */
 export function generatePortrait(
   userId: string,
@@ -87,7 +113,7 @@ export function generatePortrait(
     growthEdges,
     anchorPoints,
     partnerGuide,
-    version: supplements ? '2.0.0' : '1.0.0',
+    version: supplements ? PORTRAIT_CODE_VERSION_SUPPLEMENTS : PORTRAIT_CODE_VERSION_BASE,
     // Phase 3 additions
     bigFiveReframes: bigFiveReframes.length > 0 ? bigFiveReframes : undefined,
     supplementData: supplements,
