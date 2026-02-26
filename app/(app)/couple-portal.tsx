@@ -169,15 +169,21 @@ export default function CouplePortalScreen() {
             }
           }
 
-          if (!myPortraitData || !partnerPortraitData) {
-            const missing: string[] = [];
-            if (!myPortraitData) missing.push('your individual portrait');
-            if (!partnerPortraitData && !selfCouple) missing.push("your partner's individual portrait");
+          // If neither portrait exists, we truly can't generate
+          if (!myPortraitData && !partnerPortraitData) {
             setPortraitError(
-              `Could not generate: missing ${missing.join(' and ')}. ` +
+              'Neither partner has an individual portrait yet. ' +
               'Go to the Home screen to generate your portrait first, then come back.'
             );
           } else {
+            // Use whichever portrait is available for both sides if one is missing
+            // This lets the portal open even if only one partner has a portrait
+            const effectiveMyPortrait = myPortraitData || partnerPortraitData;
+            const effectivePartnerPortrait = partnerPortraitData || myPortraitData;
+            if (!myPortraitData || !partnerPortraitData) {
+              console.log('[CouplePortal] Using available portrait for both sides (partial mode)');
+            }
+
             // Load dyadic scores
             const [rdas, dci, csi16] = await Promise.all([
               getLatestDyadicScores(myCouple.id, 'rdas'),
@@ -194,8 +200,8 @@ export default function CouplePortalScreen() {
 
             // Determine which portrait is A and B
             const isPartnerA = myCouple.partner_a_id === user.id;
-            const portraitA = isPartnerA ? myPortraitData : partnerPortraitData;
-            const portraitB = isPartnerA ? partnerPortraitData : myPortraitData;
+            const portraitA = isPartnerA ? effectiveMyPortrait : effectivePartnerPortrait;
+            const portraitB = isPartnerA ? effectivePartnerPortrait : effectiveMyPortrait;
 
             console.log('[CouplePortal] Generating relationship portrait...');
             const generated = generateRelationshipPortrait(
