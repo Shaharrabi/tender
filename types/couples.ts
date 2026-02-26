@@ -221,3 +221,261 @@ export interface AppUnlockState {
   partnerDyadicComplete: boolean;
   hasRelationshipPortrait: boolean;
 }
+
+// ─── Deep Couple Portrait (V5) ────────────────────────────
+
+import type { IndividualPortrait, CompositeScores } from './portrait';
+import type { WEAREProfile } from './weare';
+
+// ── Combined Cycle ──────────────────────────────────────
+
+export type CycleDynamic = 'pursue-withdraw' | 'mutual-pursuit' | 'mutual-withdrawal' | 'mixed-switching';
+
+export interface CombinedTriggerStep {
+  stage: 'trigger' | 'first_moves' | 'escalation' | 'aftermath';
+  partnerA: { action: string; internal: string; dataSource: string };
+  partnerB: { action: string; internal: string; dataSource: string };
+  fieldState: string;
+}
+
+export interface ExitPoint {
+  stage: string;
+  number: number;
+  forPartnerA: string;
+  forPartnerB: string;
+  forBoth: string;
+  modality: string;
+}
+
+export interface RepairStep {
+  step: number;
+  action: string;
+  who: 'both' | 'partnerA' | 'partnerB';
+}
+
+export interface CombinedCycle {
+  dynamic: CycleDynamic;
+  partnerAPosition: string;
+  partnerBPosition: string;
+  interlockDescription: string;
+  triggerCascade: CombinedTriggerStep[];
+  exitPoints: ExitPoint[];
+  repairPathway: RepairStep[];
+  strengthInThisDynamic: string;
+}
+
+// ── Convergence / Divergence ────────────────────────────
+
+export type GapInterpretation = 'aligned' | 'complementary' | 'tension' | 'significant_gap';
+
+export interface RadarOverlap {
+  dimension: string;
+  dimensionLabel: string;
+  partnerAScore: number;
+  partnerBScore: number;
+  gap: number;
+  gapInterpretation: GapInterpretation;
+  insight: string;
+}
+
+export interface ConvergencePoint {
+  dimension: string;
+  dimensionLabel: string;
+  scoreA: number;
+  scoreB: number;
+  narrative: string;
+  practiceToDeepen: string;
+}
+
+export interface ComplementaryPair {
+  dimension: string;
+  dimensionLabel: string;
+  strongerPartner: 'A' | 'B';
+  gap: number;
+  giftNarrative: string;
+  riskNarrative: string;
+  growthOpportunity: string;
+}
+
+export interface FrictionZone {
+  area: string;
+  partnerAPull: string;
+  partnerBPull: string;
+  whatHappens: string;
+  underneathIt: string;
+  practiceForBoth: string;
+}
+
+export interface BlindSpot {
+  area: string;
+  description: string;
+  whatNeitherSees: string;
+  explorationQuestion: string;
+}
+
+export interface ValueOverlap {
+  value: string;
+  partnerAImportance: number;
+  partnerBImportance: number;
+  sharedMeaning: string;
+}
+
+export interface ValuesTension {
+  valueA: string;
+  valueB: string;
+  description: string;
+  integrationPractice: string;
+}
+
+// ── Attachment Dynamic ──────────────────────────────────
+
+export interface AttachmentDynamic {
+  distance: number;
+  dynamicLabel: string;
+  narrative: string;
+  partnerASecureDistance: number;
+  partnerBSecureDistance: number;
+  partnerAQuadrant: string;
+  partnerBQuadrant: string;
+  growthDirection: string;
+  whatThisMeansForRepair: string;
+}
+
+// ── Dyadic Discrepancies ────────────────────────────────
+
+export type DiscrepancyType = 'blind_spot' | 'hidden_strength' | 'perception_gap' | 'compensating';
+
+export interface DyadicDiscrepancy {
+  type: DiscrepancyType;
+  title: string;
+  description: string;
+  individualData: string;
+  dyadicData: string;
+  whatItMeans: string;
+  explorationQuestion: string;
+}
+
+// ── Couple Growth Edge ──────────────────────────────────
+
+export interface CoupleGrowthEdge {
+  id: string;
+  title: string;
+  whatItIs: string;
+  whyItMatters: string;
+  whatItProtects: string;
+  whatItCosts: string;
+  theInvitation: string;
+  partnerAPart: string;
+  partnerBPart: string;
+  practiceForBoth: string;
+  confidenceLevel: 'Strong' | 'Supported' | 'Emerging';
+  priority: number;
+  relatedDyadicData: string;
+}
+
+// ── Couple Narrative ────────────────────────────────────
+
+export interface CoupleNarrative {
+  opening: string;
+  theField: string;
+  theDance: string;
+  whatYouBring: string;
+  whereYouMeet: string;
+  whereYouDiverge: string;
+  theEdge: string;
+  closing: string;
+}
+
+// ── Couple Anchors ──────────────────────────────────────
+
+export interface CoupleAnchor {
+  text: string;
+  context?: string;
+}
+
+export interface CoupleAnchorSet {
+  whenInTheCycle: CoupleAnchor[];
+  forPartnerA: CoupleAnchor[];
+  forPartnerB: CoupleAnchor[];
+  sharedTruths: CoupleAnchor[];
+  repairStarters: string[];
+}
+
+// ── Dyadic Synthesis ────────────────────────────────────
+
+export interface RDASSynthesis {
+  total: number;
+  consensusAvg: number;
+  satisfactionAvg: number;
+  cohesionAvg: number;
+  aboveThreshold: boolean;
+  narrative: string;
+}
+
+export interface CSI16Synthesis {
+  total: number;
+  aboveThreshold: boolean;
+  satisfactionLabel: string;
+  narrative: string;
+}
+
+export interface DCISynthesis {
+  supportiveStrength: boolean;
+  commonCopingStrength: boolean;
+  negativeCopingConcern: boolean;
+  narrative: string;
+}
+
+export interface CoupleFieldSynthesis {
+  concordance: number;
+  narrative: string;
+}
+
+// ── Relational Field (WEARE-powered) ────────────────────
+
+export interface RelationalFieldLayer {
+  resonance: number;
+  direction: number;
+  vitality: number;
+  qualitativeLabel: string;
+  bottleneck: string;
+  bottleneckLabel: string;
+  movement: string;
+  fieldNarrative: string;
+}
+
+// ── Deep Couple Portrait ────────────────────────────────
+
+export interface DeepCouplePortrait {
+  coupleId: string;
+  partnerAName: string;
+  partnerBName: string;
+  generatedAt: string;
+
+  relationalField: RelationalFieldLayer;
+
+  patternInterlock: {
+    combinedCycle: CombinedCycle;
+    attachmentDynamic: AttachmentDynamic;
+  };
+
+  convergenceDivergence: {
+    radarOverlap: RadarOverlap[];
+    sharedStrengths: ConvergencePoint[];
+    complementaryGifts: ComplementaryPair[];
+    frictionZones: FrictionZone[];
+    valuesTensions: ValuesTension[];
+  };
+
+  coupleGrowthEdges: CoupleGrowthEdge[];
+
+  dyadicInsights: {
+    satisfaction?: RDASSynthesis;
+    closeness?: CSI16Synthesis;
+    coping?: DCISynthesis;
+    discrepancies: DyadicDiscrepancy[];
+  };
+
+  narrative: CoupleNarrative;
+  coupleAnchors: CoupleAnchorSet;
+}

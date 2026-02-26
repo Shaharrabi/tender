@@ -1,15 +1,13 @@
 /**
- * Couple Portal Screen
+ * Couple Portal Screen — "The Space Between You"
  *
- * The shared space for the couple after both complete dyadic assessments.
- * Shows:
- * 1. Relationship summary / combined portrait
- * 2. Relationship patterns
- * 3. Discrepancy analysis
- * 4. Relationship growth edges
- * 5. Couple exercises (recommended)
- * 6. Couple anchor points
- * 7. Entry to couple's AI coaching chat
+ * Deep Couple Portrait with 6 tabs:
+ * 1. Overview — Twin Orbs, narrative opening, quick stats
+ * 2. Your Dance — Combined cycle, exit points, repair pathway
+ * 3. Together — Dual radar, convergence/divergence, attachment matrix
+ * 4. Insights — Dyadic synthesis, discrepancies
+ * 5. Growth — Couple growth edges, practices
+ * 6. Anchors — Couple anchors, repair starters
  */
 
 import React, { useState, useCallback } from 'react';
@@ -21,6 +19,7 @@ import {
   SafeAreaView,
   ScrollView,
   ActivityIndicator,
+  Dimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -37,30 +36,54 @@ import { getPartnerSharedAssessments } from '@/services/consent';
 import { getPortrait, checkCanGeneratePortrait, fetchAllScores, extractSupplementScores, savePortrait } from '@/services/portrait';
 import { generatePortrait } from '@/utils/portrait/portrait-generator';
 import { generateRelationshipPortrait } from '@/utils/portrait/relationship-portrait-generator';
+import { generateDeepCouplePortrait } from '@/utils/portrait/couple-portrait-generator';
 import { getExerciseById } from '@/utils/interventions/registry';
 import {
   Colors,
   Spacing,
+  Typography,
   FontSizes,
   FontFamilies,
   BorderRadius,
   Shadows,
 } from '@/constants/theme';
 import {
-  SparkleIcon,
   SeedlingIcon,
-  SearchIcon,
-  LeafIcon,
-  PersonIcon,
-  CommunityIcon,
-  MeditationIcon,
 } from '@/assets/graphics/icons';
 import HomeButton from '@/components/HomeButton';
-import type { Couple, UserProfile, RelationshipPortrait } from '@/types/couples';
+import type { Couple, UserProfile, RelationshipPortrait, DeepCouplePortrait } from '@/types/couples';
 import type { IndividualPortrait } from '@/types/portrait';
-import type { WEAREProfile, WeeklyCheckIn, WEAREVariableName } from '@/types/weare';
+import type { WEAREProfile, WeeklyCheckIn } from '@/types/weare';
 import { getLatestWEAREProfile, getThisWeeksCheckIn, saveWeeklyCheckIn } from '@/services/weare';
 import WeeklyCheckInCard from '@/components/weare/WeeklyCheckInCard';
+
+// Deep Couple Portrait components
+import TwinOrbsField from '@/components/couple-portrait/TwinOrbsField';
+import DualRadarChart from '@/components/couple-portrait/DualRadarChart';
+import AttachmentMatrixPlot from '@/components/couple-portrait/AttachmentMatrixPlot';
+import CombinedCycleVisualization from '@/components/couple-portrait/CombinedCycleVisualization';
+import {
+  SharedStrengthCard,
+  ComplementaryGiftCard,
+  FrictionZoneCard,
+  ValuesTensionCard,
+} from '@/components/couple-portrait/ConvergenceDivergenceCard';
+import CoupleGrowthEdgeCard from '@/components/couple-portrait/CoupleGrowthEdgeCard';
+import CoupleAnchorCard from '@/components/couple-portrait/CoupleAnchorCard';
+import ExitPointCard from '@/components/couple-portrait/ExitPointCard';
+import DyadicDiscrepancyAlert from '@/components/couple-portrait/DyadicDiscrepancyAlert';
+import CoupleNarrativeBlock from '@/components/couple-portrait/CoupleNarrativeBlock';
+
+type TabKey = 'overview' | 'dance' | 'together' | 'insights' | 'growth' | 'anchors';
+
+const TABS: { key: TabKey; label: string }[] = [
+  { key: 'overview', label: 'Overview' },
+  { key: 'dance', label: 'Your Dance' },
+  { key: 'together', label: 'Together' },
+  { key: 'insights', label: 'Insights' },
+  { key: 'growth', label: 'Growth' },
+  { key: 'anchors', label: 'Anchors' },
+];
 
 export default function CouplePortalScreen() {
   const { user } = useAuth();
@@ -71,21 +94,25 @@ export default function CouplePortalScreen() {
   const [couple, setCouple] = useState<Couple | null>(null);
   const [partnerProfile, setPartnerProfile] = useState<UserProfile | null>(null);
   const [portrait, setPortrait] = useState<RelationshipPortrait | null>(null);
+  const [deepPortrait, setDeepPortrait] = useState<DeepCouplePortrait | null>(null);
   const [portraitError, setPortraitError] = useState<string | null>(null);
-  const [expandedSection, setExpandedSection] = useState<string | null>('patterns');
   const [partnerSharedAssessments, setPartnerSharedAssessments] = useState<string[]>([]);
 
   // Tab state
-  const [activeTab, setActiveTab] = useState<'portraits' | 'scores'>('portraits');
+  const [activeTab, setActiveTab] = useState<TabKey>('overview');
 
-  // Dyadic scores state for Tab 2
+  // Individual portraits (needed for deep portrait gen)
+  const [myPortrait, setMyPortrait] = useState<IndividualPortrait | null>(null);
+  const [partnerPortrait, setPartnerPortrait] = useState<IndividualPortrait | null>(null);
+
+  // Dyadic scores
   const [dyadicScores, setDyadicScores] = useState<{
     rdas: { partnerA: any | null; partnerB: any | null };
     dci: { partnerA: any | null; partnerB: any | null };
     csi16: { partnerA: any | null; partnerB: any | null };
   } | null>(null);
 
-  // WEARE state (Phase 4)
+  // WEARE state
   const [weareProfile, setWeareProfile] = useState<WEAREProfile | null>(null);
   const [weeklyCheckIn, setWeeklyCheckIn] = useState<WeeklyCheckIn | null>(null);
 
@@ -110,32 +137,23 @@ export default function CouplePortalScreen() {
 
       // Try to load existing relationship portrait
       let rp = await getRelationshipPortrait(myCouple.id);
-      console.log('[CouplePortal] Existing relationship portrait:', rp ? 'found' : 'not found');
 
       // If no portrait exists, generate one
       if (!rp) {
         setGenerating(true);
         setPortraitError(null);
         try {
-          // Load both individual portraits
           const selfCouple = isSelfCouple(myCouple);
           const partnerId = myCouple.partner_a_id === user.id
             ? myCouple.partner_b_id : myCouple.partner_a_id;
-          console.log('[CouplePortal] Self-couple:', selfCouple, 'partnerId:', partnerId);
 
           let myPortraitData = await getPortrait(user.id);
           let partnerPortraitData = selfCouple ? myPortraitData : await getPortrait(partnerId);
-          console.log('[CouplePortal] My portrait:', myPortraitData ? 'found' : 'MISSING');
-          console.log('[CouplePortal] Partner portrait:', partnerPortraitData ? 'found' : 'MISSING');
 
-          // Auto-generate individual portraits if missing but assessments are complete
+          // Auto-generate individual portraits if missing
           const autoGenPortrait = async (targetUserId: string): Promise<IndividualPortrait | null> => {
-            console.log('[CouplePortal] Attempting to auto-generate individual portrait for', targetUserId);
-            const { canGenerate, missingAssessments } = await checkCanGeneratePortrait(targetUserId);
-            if (!canGenerate) {
-              console.log('[CouplePortal] Cannot auto-generate, missing assessments:', missingAssessments);
-              return null;
-            }
+            const { canGenerate } = await checkCanGeneratePortrait(targetUserId);
+            if (!canGenerate) return null;
             const latestScoresMap = await fetchAllScores(targetUserId);
             const scores = {
               ecrr: latestScoresMap['ecr-r'].scores,
@@ -148,9 +166,7 @@ export default function CouplePortalScreen() {
             const supplements = extractSupplementScores(latestScoresMap);
             const ids = Object.values(latestScoresMap).map((r) => r.id);
             const freshPortrait = generatePortrait(targetUserId, ids, scores, supplements);
-            const saved = await savePortrait(freshPortrait);
-            console.log('[CouplePortal] Auto-generated individual portrait for', targetUserId, saved ? 'OK' : 'FAILED');
-            return saved;
+            return await savePortrait(freshPortrait);
           };
 
           if (!myPortraitData) {
@@ -169,54 +185,46 @@ export default function CouplePortalScreen() {
             }
           }
 
-          // If neither portrait exists, we truly can't generate
           if (!myPortraitData && !partnerPortraitData) {
             setPortraitError(
               'Neither partner has an individual portrait yet. ' +
               'Go to the Home screen to generate your portrait first, then come back.'
             );
           } else {
-            // Use whichever portrait is available for both sides if one is missing
-            // This lets the portal open even if only one partner has a portrait
             const effectiveMyPortrait = myPortraitData || partnerPortraitData;
             const effectivePartnerPortrait = partnerPortraitData || myPortraitData;
-            if (!myPortraitData || !partnerPortraitData) {
-              console.log('[CouplePortal] Using available portrait for both sides (partial mode)');
-            }
 
-            // Load dyadic scores
+            // Load dyadic scores for generation
             const [rdas, dci, csi16] = await Promise.all([
               getLatestDyadicScores(myCouple.id, 'rdas'),
               getLatestDyadicScores(myCouple.id, 'dci'),
               getLatestDyadicScores(myCouple.id, 'csi-16'),
             ]);
-            console.log('[CouplePortal] Dyadic scores - RDAS:', rdas.partnerA ? 'yes' : 'no',
-              'DCI:', dci.partnerA ? 'yes' : 'no', 'CSI-16:', csi16.partnerA ? 'yes' : 'no');
 
-            const dyadicScores: any = {};
-            if (rdas.partnerA && rdas.partnerB) dyadicScores.rdas = rdas;
-            if (dci.partnerA && dci.partnerB) dyadicScores.dci = dci;
-            if (csi16.partnerA && csi16.partnerB) dyadicScores.csi16 = csi16;
+            const genDyadicScores: any = {};
+            if (rdas.partnerA && rdas.partnerB) genDyadicScores.rdas = rdas;
+            if (dci.partnerA && dci.partnerB) genDyadicScores.dci = dci;
+            if (csi16.partnerA && csi16.partnerB) genDyadicScores.csi16 = csi16;
 
-            // Determine which portrait is A and B
             const isPartnerA = myCouple.partner_a_id === user.id;
             const portraitA = isPartnerA ? effectiveMyPortrait : effectivePartnerPortrait;
             const portraitB = isPartnerA ? effectivePartnerPortrait : effectiveMyPortrait;
 
-            console.log('[CouplePortal] Generating relationship portrait...');
             const generated = generateRelationshipPortrait(
               myCouple.id,
               portraitA as unknown as IndividualPortrait,
               portraitB as unknown as IndividualPortrait,
-              dyadicScores,
+              genDyadicScores,
             );
-            console.log('[CouplePortal] Portrait generated, saving...');
 
             rp = await saveRelationshipPortrait(generated as any);
-            console.log('[CouplePortal] Portrait saved:', rp ? 'success' : 'FAILED');
             if (!rp) {
-              setPortraitError('Portrait was generated but failed to save to database. Please try again.');
+              setPortraitError('Portrait was generated but failed to save. Please try again.');
             }
+
+            // Store individual portraits for deep portrait generation
+            setMyPortrait(effectiveMyPortrait as unknown as IndividualPortrait);
+            setPartnerPortrait(effectivePartnerPortrait as unknown as IndividualPortrait);
           }
         } catch (e: any) {
           console.error('[CouplePortal] Error generating portrait:', e);
@@ -227,7 +235,22 @@ export default function CouplePortalScreen() {
 
       setPortrait(rp);
 
-      // Load dyadic scores for the Relationship Scores tab
+      // Load individual portraits if not already loaded
+      if (!myPortrait || !partnerPortrait) {
+        try {
+          const selfCouple = isSelfCouple(myCouple);
+          const partnerId = myCouple.partner_a_id === user.id
+            ? myCouple.partner_b_id : myCouple.partner_a_id;
+          const [mp, pp] = await Promise.all([
+            getPortrait(user.id),
+            selfCouple ? getPortrait(user.id) : getPortrait(partnerId),
+          ]);
+          if (mp) setMyPortrait(mp as unknown as IndividualPortrait);
+          if (pp) setPartnerPortrait(pp as unknown as IndividualPortrait);
+        } catch {}
+      }
+
+      // Load dyadic scores
       try {
         const [rdas, dci, csi16] = await Promise.all([
           getLatestDyadicScores(myCouple.id, 'rdas'),
@@ -260,9 +283,45 @@ export default function CouplePortalScreen() {
 
   useFocusEffect(useCallback(() => { loadData(); }, [loadData]));
 
-  const toggle = (section: string) => {
-    setExpandedSection(expandedSection === section ? null : section);
-  };
+  // Generate deep portrait when we have the data
+  const generateDeep = useCallback(() => {
+    if (!couple || !myPortrait || !partnerPortrait) return null;
+
+    const isPartnerA = couple.partner_a_id === user?.id;
+    const pA = isPartnerA ? myPortrait : partnerPortrait;
+    const pB = isPartnerA ? partnerPortrait : myPortrait;
+
+    const selfCouple = isSelfCouple(couple);
+    const pAName = isPartnerA
+      ? 'You'
+      : (partnerProfile?.display_name || (selfCouple ? 'Demo Partner' : 'Your partner'));
+    const pBName = isPartnerA
+      ? (partnerProfile?.display_name || (selfCouple ? 'Demo Partner' : 'Your partner'))
+      : 'You';
+
+    const dScores: any = {};
+    if (dyadicScores?.rdas.partnerA && dyadicScores?.rdas.partnerB) dScores.rdas = dyadicScores.rdas;
+    if (dyadicScores?.dci.partnerA && dyadicScores?.dci.partnerB) dScores.dci = dyadicScores.dci;
+    if (dyadicScores?.csi16.partnerA && dyadicScores?.csi16.partnerB) dScores.csi16 = dyadicScores.csi16;
+
+    try {
+      return generateDeepCouplePortrait(
+        couple.id,
+        pA,
+        pB,
+        pAName,
+        pBName,
+        dScores,
+        weareProfile,
+      );
+    } catch (e) {
+      console.error('[CouplePortal] Deep portrait generation error:', e);
+      return null;
+    }
+  }, [couple, myPortrait, partnerPortrait, dyadicScores, weareProfile, user, partnerProfile]);
+
+  // Compute deep portrait
+  const dp = deepPortrait || (myPortrait && partnerPortrait ? generateDeep() : null);
 
   // ─── Loading State ───────────────────────────────────
 
@@ -270,9 +329,9 @@ export default function CouplePortalScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.center}>
-          <ActivityIndicator size="large" color={Colors.secondary} />
+          <ActivityIndicator size="large" color={Colors.primary} />
           <Text style={styles.loadingText}>
-            {generating ? 'Creating your relationship portrait...' : 'Loading...'}
+            {generating ? 'Weaving your shared portrait...' : 'Loading the space between you...'}
           </Text>
         </View>
       </SafeAreaView>
@@ -283,30 +342,22 @@ export default function CouplePortalScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.center}>
-          <Text style={styles.heading}>Couple Portal</Text>
+          <Text style={styles.heading}>The Space Between You</Text>
           {portraitError ? (
             <>
               <Text style={styles.subtitle}>{portraitError}</Text>
               <TouchableOpacity
                 onPress={() => { setPortrait(null); setPortraitError(null); loadData(); }}
-                style={[styles.backBtnCenter, { marginTop: 16 }]}
+                style={styles.retryBtn}
               >
-                <Text style={[styles.backText, { color: Colors.secondary }]}>Try Again</Text>
+                <Text style={styles.retryText}>Try Again</Text>
               </TouchableOpacity>
             </>
           ) : (
-            <>
-              <Text style={styles.subtitle}>
-                To build your combined relationship portrait, each partner needs to
-                complete their 6 individual assessments first (How You Connect, Who You Are,
-                How You Feel, How You Fight, How You Hold Your Ground, and What Matters to You).
-              </Text>
-              <Text style={[styles.subtitle, { marginTop: 8, fontStyle: 'italic', fontSize: 13 }]}>
-                Once both partners have their personal portraits, the couple portal will
-                combine them with your relationship assessments to create a shared map
-                of your partnership.
-              </Text>
-            </>
+            <Text style={styles.subtitle}>
+              To build your shared portrait, each partner needs to complete their
+              6 individual assessments first.
+            </Text>
           )}
           <TouchableOpacity
             onPress={() => router.replace('/(app)/partner')}
@@ -319,429 +370,275 @@ export default function CouplePortalScreen() {
     );
   }
 
-  // ─── WEARE Variable Bar Helper ──────────────────────
+  const partnerName = partnerProfile?.display_name || (couple && isSelfCouple(couple) ? 'Demo Partner' : 'Your partner');
 
-  const renderVariableBar = (
-    variable: WEAREVariableName,
-    label: string,
-    profile: WEAREProfile,
-  ) => {
-    const v = profile.variables[variable];
-    const isBottleneck = profile.bottleneck.variable === variable;
-    const fillPercent = (v.raw / 10) * 100;
-    // For resistance, high = bad, so invert the color
-    const isResistance = variable === 'resistance';
-    const barColor = isResistance
-      ? (v.raw >= 7 ? Colors.accent : v.raw >= 4 ? Colors.secondary : Colors.primary)
-      : (v.raw >= 7 ? Colors.primary : v.raw >= 4 ? Colors.secondary : Colors.accent);
+  // ─── Tab Content Renderers ─────────────────────────────
+
+  const renderOverview = () => (
+    <View style={styles.tabContent}>
+      {/* Twin Orbs + Field */}
+      {dp && (
+        <TwinOrbsField
+          field={dp.relationalField}
+          partnerAName={dp.partnerAName}
+          partnerBName={dp.partnerBName}
+        />
+      )}
+
+      {/* Narrative Opening */}
+      {dp && (
+        <View style={styles.narrativeCard}>
+          <Text style={styles.narrativeOpening}>{dp.narrative.opening}</Text>
+        </View>
+      )}
+
+      {/* Quick Stats */}
+      {portrait.dyadic_scores?.csi16 && (
+        <View style={styles.quickStatsRow}>
+          <View style={styles.quickStat}>
+            <Text style={styles.quickStatValue}>{portrait.dyadic_scores.csi16.total}</Text>
+            <Text style={styles.quickStatLabel}>Satisfaction</Text>
+          </View>
+          {portrait.dyadic_scores?.rdas && (
+            <View style={styles.quickStat}>
+              <Text style={styles.quickStatValue}>{portrait.dyadic_scores.rdas.total}</Text>
+              <Text style={styles.quickStatLabel}>Adjustment</Text>
+            </View>
+          )}
+          {portrait.dyadic_scores?.dci && (
+            <View style={styles.quickStat}>
+              <Text style={[styles.quickStatValue, { fontSize: 16, color: Colors.calm }]}>
+                {portrait.dyadic_scores.dci.copingQuality}
+              </Text>
+              <Text style={styles.quickStatLabel}>Coping</Text>
+            </View>
+          )}
+        </View>
+      )}
+
+      {/* WEARE Check-In */}
+      {couple && weareProfile && (
+        <WeeklyCheckInCard
+          existingCheckIn={weeklyCheckIn}
+          onSubmit={async (stress, support, satisfaction, highlight) => {
+            if (!user || !couple) return;
+            const saved = await saveWeeklyCheckIn(
+              user.id, couple.id, stress, support, satisfaction, highlight
+            );
+            setWeeklyCheckIn(saved);
+          }}
+        />
+      )}
+
+      {/* Coach Entry */}
+      <TouchableOpacity
+        style={styles.coachCard}
+        onPress={() => router.push({
+          pathname: '/(app)/chat' as any,
+          params: { coupleMode: 'true', coupleId: couple?.id || '' },
+        })}
+        activeOpacity={0.7}
+      >
+        <Text style={styles.coachTitle}>Talk to Your Couple Coach</Text>
+        <Text style={styles.coachDesc}>
+          Your AI guide now understands both of your portraits and your relationship
+          patterns.
+        </Text>
+        <Text style={styles.coachCta}>Start Conversation {'\u2192'}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderDance = () => {
+    if (!dp) return <Text style={styles.noDataText}>Deep portrait data is being generated...</Text>;
 
     return (
-      <View key={variable} style={[
-        styles.weareVarRow,
-        isBottleneck && styles.weareVarRowHighlight,
-      ]}>
-        <Text style={[styles.weareVarLabel, isBottleneck && { fontWeight: '600' as const }]}>
-          {label}
+      <View style={styles.tabContent}>
+        {/* Combined Cycle */}
+        <CombinedCycleVisualization
+          cycle={dp.patternInterlock.combinedCycle}
+          partnerAName={dp.partnerAName}
+          partnerBName={dp.partnerBName}
+        />
+
+        {/* Exit Points */}
+        <Text style={styles.sectionTitle}>Exit Points</Text>
+        <Text style={styles.sectionDesc}>
+          Four moments where you can interrupt the cycle and choose differently.
         </Text>
-        <View style={styles.weareVarBarBg}>
-          <View style={[
-            styles.weareVarBarFill,
-            { width: `${fillPercent}%`, backgroundColor: barColor },
-          ]} />
-        </View>
-        <Text style={styles.weareVarValue}>{v.raw.toFixed(1)}</Text>
+        {dp.patternInterlock.combinedCycle.exitPoints.map((ep) => (
+          <ExitPointCard
+            key={ep.number}
+            exitPoint={ep}
+            partnerAName={dp.partnerAName}
+            partnerBName={dp.partnerBName}
+          />
+        ))}
+
+        {/* Repair Pathway */}
+        <Text style={[styles.sectionTitle, { marginTop: Spacing.lg }]}>Repair Pathway</Text>
+        {dp.patternInterlock.combinedCycle.repairPathway.map((step) => (
+          <View key={step.step} style={styles.repairStep}>
+            <View style={styles.repairStepNumber}>
+              <Text style={styles.repairStepNumberText}>{step.step}</Text>
+            </View>
+            <Text style={styles.repairStepText}>{step.action}</Text>
+          </View>
+        ))}
       </View>
     );
   };
 
-  // ─── Main Render ─────────────────────────────────────
+  const renderTogether = () => {
+    if (!dp) return <Text style={styles.noDataText}>Deep portrait data is being generated...</Text>;
 
-  const partnerName = partnerProfile?.display_name || (couple && isSelfCouple(couple) ? 'Demo Partner' : 'Your partner');
-  const patterns = portrait.relationship_patterns || [];
-  const discrepancy = portrait.discrepancy_analysis;
-  const growthEdges = portrait.relationship_growth_edges || [];
-  const anchors = portrait.couple_anchor_points;
-  const priorities = portrait.intervention_priorities;
+    return (
+      <View style={styles.tabContent}>
+        {/* Dual Radar Chart */}
+        <Text style={styles.sectionTitle}>Your Profiles Overlaid</Text>
+        <DualRadarChart
+          radarOverlap={dp.convergenceDivergence.radarOverlap}
+          partnerAName={dp.partnerAName}
+          partnerBName={dp.partnerBName}
+        />
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scroll}>
-        {/* Header */}
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backText}>{'< Back'}</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.heading}>Your Relationship Portrait</Text>
-        <Text style={styles.subtitle}>
-          A living picture of how you and {partnerName} work together
+        {/* Attachment Matrix */}
+        <Text style={[styles.sectionTitle, { marginTop: Spacing.lg }]}>Attachment Landscape</Text>
+        <AttachmentMatrixPlot
+          attachmentDynamic={dp.patternInterlock.attachmentDynamic}
+          partnerAName={dp.partnerAName}
+          partnerBName={dp.partnerBName}
+        />
+        <Text style={styles.narrativeSmall}>
+          {dp.patternInterlock.attachmentDynamic.narrative}
         </Text>
 
-        {/* Sharing Info */}
-        {partnerSharedAssessments.length > 0 && (
-          <View style={[styles.card, { borderColor: Colors.calm, borderWidth: 1, marginBottom: Spacing.md }]}>
-            <Text style={{ fontSize: FontSizes.caption, color: Colors.calm, fontWeight: '700', letterSpacing: 1, marginBottom: Spacing.xs }}>
-              SHARED WITH YOU
-            </Text>
-            <Text style={{ fontSize: FontSizes.bodySmall, color: Colors.textSecondary, lineHeight: 20 }}>
-              {partnerName} is sharing {partnerSharedAssessments.length} of 6 individual assessments with you.
-              Their portrait data reflects only the assessments they've chosen to share.
-            </Text>
-          </View>
-        )}
-
-        {/* Tab Bar */}
-        <View style={styles.tabBar}>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'portraits' && styles.tabActive]}
-            onPress={() => setActiveTab('portraits')}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.tabText, activeTab === 'portraits' && styles.tabTextActive]}>
-              Your Portraits
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'scores' && styles.tabActive]}
-            onPress={() => setActiveTab('scores')}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.tabText, activeTab === 'scores' && styles.tabTextActive]}>
-              Relationship Scores
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* ════════ TAB 1: Your Portraits ════════ */}
-        {activeTab === 'portraits' && (
+        {/* Shared Strengths */}
+        {dp.convergenceDivergence.sharedStrengths.length > 0 && (
           <>
-        {/* Summary Card */}
-        <View style={[styles.card, styles.summaryCard]}>
-          <View style={styles.scoreRow}>
-            {portrait.dyadic_scores?.csi16 && (
-              <View style={styles.scoreItem}>
-                <Text style={styles.scoreValue}>{portrait.dyadic_scores.csi16.total}</Text>
-                <Text style={styles.scoreLabel}>Satisfaction</Text>
-              </View>
-            )}
-            {portrait.dyadic_scores?.rdas && (
-              <View style={styles.scoreItem}>
-                <Text style={styles.scoreValue}>{portrait.dyadic_scores.rdas.total}</Text>
-                <Text style={styles.scoreLabel}>Adjustment</Text>
-              </View>
-            )}
-            {portrait.dyadic_scores?.dci && (
-              <View style={styles.scoreItem}>
-                <Text style={[styles.scoreValue, { color: Colors.calm }]}>
-                  {portrait.dyadic_scores.dci.copingQuality}
-                </Text>
-                <Text style={styles.scoreLabel}>Coping</Text>
-              </View>
-            )}
-          </View>
-          {discrepancy && (
-            <Text style={styles.alignmentText}>{discrepancy.summary}</Text>
-          )}
-        </View>
-
-        {/* ═══ WEARE DASHBOARD — The Space Between You ═══════ */}
-        {weareProfile && (
-          <>
-            <TouchableOpacity
-              style={styles.sectionHeader}
-              onPress={() => toggle('weare')}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.sectionTitle}>The Space Between You</Text>
-              <Text style={styles.chevron}>{expandedSection === 'weare' ? '\u25BC' : '\u25B6'}</Text>
-            </TouchableOpacity>
-
-            {expandedSection === 'weare' && (
-              <View style={styles.weareDashboard}>
-                {/* Data mode badge */}
-                {weareProfile.dataMode !== 'full' && (
-                  <View style={styles.weareDataModeBadge}>
-                    <Text style={styles.weareDataModeText}>
-                      {weareProfile.dataMode === 'single-partner'
-                        ? 'Based on your data only — more accurate when your partner completes their portrait'
-                        : 'Preview — complete couple instruments for full picture'}
-                    </Text>
-                  </View>
-                )}
-
-                {/* Overall + Movement Phase */}
-                <View style={[styles.card, styles.weareOverallCard]}>
-                  <View style={styles.weareOverallRow}>
-                    <View style={[
-                      styles.weareOverallCircle,
-                      weareProfile.layers.overall >= 65
-                        ? { borderColor: Colors.primary }
-                        : weareProfile.layers.overall >= 45
-                          ? { borderColor: Colors.secondary }
-                          : weareProfile.layers.overall >= 25
-                            ? { borderColor: Colors.accent }
-                            : { borderColor: Colors.textMuted },
-                    ]}>
-                      {weareProfile.warmSummary === 'Deeply alive'
-                        ? <SparkleIcon size={28} color={Colors.primary} />
-                        : weareProfile.warmSummary === 'Growing stronger'
-                          ? <SeedlingIcon size={28} color={Colors.primary} />
-                          : weareProfile.warmSummary === 'Finding its way'
-                            ? <SearchIcon size={28} color={Colors.secondary} />
-                            : <LeafIcon size={28} color={Colors.primary} />
-                      }
-                    </View>
-                    <View style={styles.weareOverallInfo}>
-                      <Text style={styles.weareOverallPhrase}>{weareProfile.warmSummary}</Text>
-                      <Text style={styles.wearePhaseLabel}>
-                        Phase: {weareProfile.movementPhase.charAt(0).toUpperCase() + weareProfile.movementPhase.slice(1)}
-                      </Text>
-                      <Text style={styles.weareDirectionLabel}>
-                        {weareProfile.layers.emergenceDirection > 1 ? 'Growing'
-                          : weareProfile.layers.emergenceDirection < -1 ? 'Contracting'
-                          : 'Steady'}
-                        {weareProfile.trend ? ` · ${weareProfile.trend.periodLabel}` : ''}
-                      </Text>
-                    </View>
-                  </View>
-                  <Text style={styles.weareNarrative}>{weareProfile.movementNarrative}</Text>
-                </View>
-
-                {/* Variable Breakdown — grouped */}
-                <View style={styles.card}>
-                  <Text style={styles.weareGroupTitle}>How You Connect</Text>
-                  {renderVariableBar('attunement', 'Feeling Each Other', weareProfile)}
-                  {renderVariableBar('coCreation', 'Building Together', weareProfile)}
-                  {renderVariableBar('transmission', 'Showing Up', weareProfile)}
-
-                  <Text style={[styles.weareGroupTitle, { marginTop: Spacing.md }]}>What Supports You</Text>
-                  {renderVariableBar('space', 'Healthy Separateness', weareProfile)}
-                  {renderVariableBar('time', 'Consistency', weareProfile)}
-                  {renderVariableBar('individual', 'Inner Resources', weareProfile)}
-
-                  <Text style={[styles.weareGroupTitle, { marginTop: Spacing.md }]}>What Shapes You</Text>
-                  {renderVariableBar('context', 'Life Pressures', weareProfile)}
-                  {renderVariableBar('change', 'Growth Momentum', weareProfile)}
-                  {renderVariableBar('resistance', 'Letting Go', weareProfile)}
-                </View>
-
-                {/* Bottleneck Card */}
-                <View style={[styles.card, styles.weareBottleneckCard]}>
-                  <Text style={styles.weareBottleneckLabel}>
-                    Where the invitation is
-                  </Text>
-                  <Text style={styles.weareBottleneckTitle}>
-                    {weareProfile.bottleneck.label}
-                  </Text>
-                  <Text style={styles.weareBottleneckDesc}>
-                    {weareProfile.bottleneck.description}
-                  </Text>
-                  {weareProfile.bottleneck.recommendedPractices.slice(0, 2).map((practiceId) => {
-                    const exercise = getExerciseById(practiceId);
-                    if (!exercise) return null;
-                    return (
-                      <TouchableOpacity
-                        key={practiceId}
-                        style={styles.weareBottleneckPractice}
-                        onPress={() => router.push(`/(app)/exercise?id=${exercise.id}` as any)}
-                        activeOpacity={0.7}
-                      >
-                        <Text style={styles.weareBottleneckPracticeName}>
-                          {exercise.title} \u2192
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-
-                {/* Weekly Check-In */}
-                {couple && (
-                  <WeeklyCheckInCard
-                    existingCheckIn={weeklyCheckIn}
-                    onSubmit={async (stress, support, satisfaction, highlight) => {
-                      if (!user || !couple) return;
-                      const saved = await saveWeeklyCheckIn(
-                        user.id, couple.id, stress, support, satisfaction, highlight
-                      );
-                      setWeeklyCheckIn(saved);
-                    }}
-                  />
-                )}
-              </View>
-            )}
-          </>
-        )}
-
-        {/* Relationship Patterns */}
-        <TouchableOpacity
-          style={styles.sectionHeader}
-          onPress={() => toggle('patterns')}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.sectionTitle}>Relationship Patterns</Text>
-          <Text style={styles.chevron}>{expandedSection === 'patterns' ? '\u25BC' : '\u25B6'}</Text>
-        </TouchableOpacity>
-        {expandedSection === 'patterns' && patterns.map((p, i) => (
-          <View key={i} style={[styles.card, styles.patternCard]}>
-            <View style={styles.patternHeader}>
-              <Text style={styles.patternType}>
-                {p.type.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
-              </Text>
-              {p.confidence > 0 && (
-                <View style={[styles.confidenceBadge, p.confidence > 70 && styles.highConfidence]}>
-                  <Text style={styles.confidenceText}>{p.confidence}%</Text>
-                </View>
-              )}
-            </View>
-            <Text style={styles.patternDesc}>{p.description}</Text>
-            {p.confidence > 0 && (
-              <View style={styles.roleRow}>
-                <View style={styles.roleChip}>
-                  <Text style={styles.roleLabel}>You: {p.partnerARoleLabel}</Text>
-                </View>
-                <View style={[styles.roleChip, styles.roleChipB]}>
-                  <Text style={styles.roleLabel}>{partnerName}: {p.partnerBRoleLabel}</Text>
-                </View>
-              </View>
-            )}
-          </View>
-        ))}
-
-        {/* Growth Edges */}
-        <TouchableOpacity
-          style={styles.sectionHeader}
-          onPress={() => toggle('growth')}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.sectionTitle}>Relationship Growth Edges</Text>
-          <Text style={styles.chevron}>{expandedSection === 'growth' ? '▼' : '▶'}</Text>
-        </TouchableOpacity>
-        {expandedSection === 'growth' && growthEdges.map((edge, i) => (
-          <View key={i} style={[styles.card, styles.growthCard]}>
-            <View style={styles.growthHeader}>
-              <Text style={styles.growthTitle}>{edge.title}</Text>
-              <View style={[styles.priorityBadge,
-                edge.priority === 'high' && styles.priorityHigh,
-                edge.priority === 'medium' && styles.priorityMedium,
-              ]}>
-                <Text style={styles.priorityText}>{edge.priority}</Text>
-              </View>
-            </View>
-            <Text style={styles.growthPattern}>{edge.pattern}</Text>
-            <View style={styles.growthDetail}>
-              <Text style={styles.growthDetailLabel}>The protection:</Text>
-              <Text style={styles.growthDetailText}>{edge.protection}</Text>
-            </View>
-            <View style={styles.growthDetail}>
-              <Text style={styles.growthDetailLabel}>The invitation:</Text>
-              <Text style={styles.growthDetailText}>{edge.invitation}</Text>
-            </View>
-            <View style={styles.practiceBox}>
-              <Text style={styles.practiceLabel}>Practice Together:</Text>
-              <Text style={styles.practiceText}>{edge.practice}</Text>
-            </View>
-            <View style={styles.anchorBox}>
-              <Text style={styles.anchorQuote}>"{edge.anchor}"</Text>
-            </View>
-          </View>
-        ))}
-
-        {/* Discrepancy Analysis */}
-        {discrepancy && discrepancy.items.length > 0 && (
-          <>
-            <TouchableOpacity
-              style={styles.sectionHeader}
-              onPress={() => toggle('discrepancy')}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.sectionTitle}>How You See Things Differently</Text>
-              <Text style={styles.chevron}>{expandedSection === 'discrepancy' ? '▼' : '▶'}</Text>
-            </TouchableOpacity>
-            {expandedSection === 'discrepancy' && discrepancy.items.map((item, i) => (
-              <View key={i} style={[styles.card, item.isSignificant && styles.significantCard]}>
-                <Text style={styles.discDomain}>{item.domain}</Text>
-                <View style={styles.discScoreRow}>
-                  <Text style={styles.discScore}>You: {item.partnerAScore}</Text>
-                  <Text style={styles.discScore}>{partnerName}: {item.partnerBScore}</Text>
-                </View>
-                <Text style={styles.discInsight}>{item.insight}</Text>
-              </View>
+            <Text style={[styles.sectionTitle, { marginTop: Spacing.lg }]}>Shared Strengths</Text>
+            {dp.convergenceDivergence.sharedStrengths.map((s, i) => (
+              <SharedStrengthCard key={i} item={s} />
             ))}
           </>
         )}
 
-        {/* Couple Anchors */}
-        {anchors && (
+        {/* Complementary Gifts */}
+        {dp.convergenceDivergence.complementaryGifts.length > 0 && (
           <>
-            <TouchableOpacity
-              style={styles.sectionHeader}
-              onPress={() => toggle('anchors')}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.sectionTitle}>Couple Anchor Points</Text>
-              <Text style={styles.chevron}>{expandedSection === 'anchors' ? '▼' : '▶'}</Text>
-            </TouchableOpacity>
-            {expandedSection === 'anchors' && (
-              <View style={styles.card}>
-                {[
-                  { label: 'When Activated', items: anchors.whenActivated, color: Colors.secondary },
-                  { label: 'When Disconnected', items: anchors.whenDisconnected, color: Colors.depth },
-                  { label: 'For Repair', items: anchors.forRepair, color: Colors.primary },
-                  { label: 'For Connection', items: anchors.forConnection, color: Colors.calm },
-                ].map((group, gi) => (
-                  <View key={gi} style={styles.anchorGroup}>
-                    <Text style={[styles.anchorGroupLabel, { color: group.color }]}>
-                      {group.label}
-                    </Text>
-                    {group.items.map((item, ii) => (
-                      <Text key={ii} style={styles.anchorItem}>• {item}</Text>
-                    ))}
-                  </View>
-                ))}
-              </View>
-            )}
+            <Text style={[styles.sectionTitle, { marginTop: Spacing.lg }]}>Complementary Gifts</Text>
+            {dp.convergenceDivergence.complementaryGifts.map((g, i) => (
+              <ComplementaryGiftCard
+                key={i}
+                item={g}
+                partnerAName={dp.partnerAName}
+                partnerBName={dp.partnerBName}
+              />
+            ))}
           </>
         )}
 
-        {/* Recommended Exercises */}
-        {priorities && (
+        {/* Friction Zones */}
+        {dp.convergenceDivergence.frictionZones.length > 0 && (
           <>
-            <Text style={[styles.sectionTitle, { marginTop: Spacing.xl }]}>
-              Recommended Practices
-            </Text>
+            <Text style={[styles.sectionTitle, { marginTop: Spacing.lg }]}>Friction Zones</Text>
+            {dp.convergenceDivergence.frictionZones.map((z, i) => (
+              <FrictionZoneCard
+                key={i}
+                item={z}
+                partnerAName={dp.partnerAName}
+                partnerBName={dp.partnerBName}
+              />
+            ))}
+          </>
+        )}
+
+        {/* Values Tensions */}
+        {dp.convergenceDivergence.valuesTensions.length > 0 && (
+          <>
+            <Text style={[styles.sectionTitle, { marginTop: Spacing.lg }]}>Values Tensions</Text>
+            {dp.convergenceDivergence.valuesTensions.map((t, i) => (
+              <ValuesTensionCard key={i} item={t} />
+            ))}
+          </>
+        )}
+      </View>
+    );
+  };
+
+  const renderInsights = () => {
+    if (!dp) return <Text style={styles.noDataText}>Deep portrait data is being generated...</Text>;
+
+    return (
+      <View style={styles.tabContent}>
+        {/* Full Narrative */}
+        <Text style={styles.sectionTitle}>Your Story</Text>
+        <CoupleNarrativeBlock
+          narrative={dp.narrative}
+          partnerAName={dp.partnerAName}
+          partnerBName={dp.partnerBName}
+        />
+
+        {/* Dyadic Synthesis */}
+        {dp.dyadicInsights.satisfaction && (
+          <View style={[styles.synthesisCard, { marginTop: Spacing.lg }]}>
+            <Text style={styles.synthesisTitle}>Relationship Adjustment</Text>
+            <Text style={styles.synthesisNarrative}>{dp.dyadicInsights.satisfaction.narrative}</Text>
+          </View>
+        )}
+        {dp.dyadicInsights.closeness && (
+          <View style={styles.synthesisCard}>
+            <Text style={styles.synthesisTitle}>Couple Satisfaction</Text>
+            <Text style={styles.synthesisNarrative}>{dp.dyadicInsights.closeness.narrative}</Text>
+          </View>
+        )}
+        {dp.dyadicInsights.coping && (
+          <View style={styles.synthesisCard}>
+            <Text style={styles.synthesisTitle}>Dyadic Coping</Text>
+            <Text style={styles.synthesisNarrative}>{dp.dyadicInsights.coping.narrative}</Text>
+          </View>
+        )}
+
+        {/* Discrepancies */}
+        {dp.dyadicInsights.discrepancies.length > 0 && (
+          <>
+            <Text style={[styles.sectionTitle, { marginTop: Spacing.lg }]}>Where Data Diverges</Text>
             <Text style={styles.sectionDesc}>
-              Evidence-based exercises tailored to your relationship patterns.
+              Places where your individual profiles tell a different story than your dyadic assessments.
             </Text>
-            {[
-              ...(priorities.immediate || []),
-              ...(priorities.shortTerm || []),
-            ].slice(0, 4).map((exerciseId, i) => {
-              const exercise = getExerciseById(exerciseId);
-              if (!exercise) return null;
-              return (
-                <TouchableOpacity
-                  key={i}
-                  style={[styles.card, styles.exerciseCard]}
-                  onPress={() => router.push(`/(app)/exercise?id=${exercise.id}` as any)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.exerciseName}>{exercise.title}</Text>
-                  <Text style={styles.exerciseDesc}>{exercise.description}</Text>
-                  <View style={styles.exerciseMeta}>
-                    <Text style={styles.exerciseMetaText}>{exercise.duration} min</Text>
-                    <Text style={styles.exerciseMetaText}>•</Text>
-                    <Text style={styles.exerciseMetaText}>{exercise.mode === 'together' ? 'Together' : 'Solo'}</Text>
-                    <Text style={styles.exerciseMetaText}>•</Text>
-                    <Text style={styles.exerciseMetaText}>{exercise.difficulty}</Text>
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
+            {dp.dyadicInsights.discrepancies.map((d, i) => (
+              <DyadicDiscrepancyAlert key={i} discrepancy={d} />
+            ))}
           </>
         )}
+      </View>
+    );
+  };
 
-        {/* 12-Step Healing Journey */}
+  const renderGrowth = () => {
+    if (!dp) return <Text style={styles.noDataText}>Deep portrait data is being generated...</Text>;
+
+    return (
+      <View style={styles.tabContent}>
+        <Text style={styles.sectionTitle}>Your Growth Edges</Text>
+        <Text style={styles.sectionDesc}>
+          Prioritized areas where your relationship is asking to evolve. Each edge names
+          the protection, the cost, and the invitation.
+        </Text>
+
+        {dp.coupleGrowthEdges.map((edge, i) => (
+          <CoupleGrowthEdgeCard
+            key={edge.id}
+            edge={edge}
+            partnerAName={dp.partnerAName}
+            partnerBName={dp.partnerBName}
+            index={i}
+          />
+        ))}
+
+        {/* Healing Journey Link */}
         <TouchableOpacity
-          style={[styles.card, styles.journeyCard]}
+          style={styles.journeyCard}
           onPress={() => router.push('/(app)/growth' as any)}
           activeOpacity={0.7}
         >
@@ -755,309 +652,89 @@ export default function CouplePortalScreen() {
           </Text>
           <Text style={styles.journeyCta}>View Journey {'\u2192'}</Text>
         </TouchableOpacity>
+      </View>
+    );
+  };
 
-        {/* Couple Coach Chat Entry */}
-        <TouchableOpacity
-          style={[styles.card, styles.coachCard]}
-          onPress={() => router.push({
-            pathname: '/(app)/chat' as any,
-            params: { coupleMode: 'true', coupleId: couple?.id || '' },
-          })}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.coachTitle}>Talk to Your Couple Coach</Text>
-          <Text style={styles.coachDesc}>
-            Your AI guide now understands both of your portraits and your relationship
-            patterns. Get personalized coaching for your journey together.
-          </Text>
-          <Text style={styles.coachCta}>Start Conversation {'\u2192'}</Text>
+  const renderAnchors = () => {
+    if (!dp) return <Text style={styles.noDataText}>Deep portrait data is being generated...</Text>;
+
+    return (
+      <View style={styles.tabContent}>
+        <Text style={styles.sectionTitle}>Couple Anchors</Text>
+        <Text style={styles.sectionDesc}>
+          Phrases to hold onto in difficult moments — personalized to your patterns, your cycle,
+          and your attachment dynamics.
+        </Text>
+
+        <CoupleAnchorCard
+          anchors={dp.coupleAnchors}
+          partnerAName={dp.partnerAName}
+          partnerBName={dp.partnerBName}
+        />
+      </View>
+    );
+  };
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'overview': return renderOverview();
+      case 'dance': return renderDance();
+      case 'together': return renderTogether();
+      case 'insights': return renderInsights();
+      case 'growth': return renderGrowth();
+      case 'anchors': return renderAnchors();
+    }
+  };
+
+  // ─── Main Render ─────────────────────────────────────
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scroll}>
+        {/* Header */}
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <Text style={styles.backText}>{'< Back'}</Text>
         </TouchableOpacity>
-          </>
-        )}
 
-        {/* ════════ TAB 2: Relationship Scores ════════ */}
-        {activeTab === 'scores' && (
-          <View style={styles.scoresTab}>
-            <Text style={styles.scoresTabIntro}>
-              These are the assessments you and {partnerName} take together about your relationship.
-              Each score reflects your individual experience.
+        <Text style={styles.heading}>The Space Between You</Text>
+        <Text style={styles.subtitle}>
+          A living portrait of how you and {partnerName} move through the world together
+        </Text>
+
+        {/* Sharing Info */}
+        {partnerSharedAssessments.length > 0 && (
+          <View style={styles.sharingCard}>
+            <Text style={styles.sharingLabel}>SHARED WITH YOU</Text>
+            <Text style={styles.sharingText}>
+              {partnerName} is sharing {partnerSharedAssessments.length} of 6 individual assessments with you.
             </Text>
-
-            {/* RDAS Card */}
-            <View style={[styles.card, styles.dyadicCard]}>
-              <Text style={styles.dyadicCardTitle}>Relationship Adjustment (RDAS)</Text>
-              <Text style={styles.dyadicCardDesc}>
-                How well you agree on important matters, your satisfaction, and how connected you feel.
-              </Text>
-              {dyadicScores?.rdas.partnerA || dyadicScores?.rdas.partnerB ? (
-                <View style={styles.dyadicScoresGrid}>
-                  {/* Partner A (you) */}
-                  <View style={styles.dyadicPartnerCol}>
-                    <Text style={styles.dyadicPartnerLabel}>You</Text>
-                    {dyadicScores?.rdas.partnerA ? (
-                      <>
-                        <Text style={styles.dyadicMainScore}>{dyadicScores.rdas.partnerA.total}</Text>
-                        <Text style={styles.dyadicMaxLabel}>/ 69</Text>
-                        <View style={styles.dyadicSubScores}>
-                          <Text style={styles.dyadicSubText}>Consensus: {dyadicScores.rdas.partnerA.consensus}</Text>
-                          <Text style={styles.dyadicSubText}>Satisfaction: {dyadicScores.rdas.partnerA.satisfaction}</Text>
-                          <Text style={styles.dyadicSubText}>Cohesion: {dyadicScores.rdas.partnerA.cohesion}</Text>
-                        </View>
-                        <View style={[styles.dyadicLevelBadge,
-                          dyadicScores.rdas.partnerA.distressLevel === 'non-distressed'
-                            ? styles.dyadicBadgeGood : styles.dyadicBadgeAlert
-                        ]}>
-                          <Text style={styles.dyadicLevelText}>
-                            {dyadicScores.rdas.partnerA.distressLevel === 'non-distressed' ? 'Well-Adjusted' : 'Needs Attention'}
-                          </Text>
-                        </View>
-                      </>
-                    ) : (
-                      <>
-                        <Text style={styles.dyadicNotDone}>Not yet completed</Text>
-                        <TouchableOpacity
-                          style={[styles.dyadicStartBtn, { marginTop: Spacing.sm }]}
-                          onPress={() => couple && router.push(`/(app)/assessment?type=rdas&coupleId=${couple.id}` as any)}
-                          activeOpacity={0.7}
-                        >
-                          <Text style={styles.dyadicStartBtnText}>Take Now {'\u2192'}</Text>
-                        </TouchableOpacity>
-                      </>
-                    )}
-                  </View>
-
-                  {/* Divider */}
-                  <View style={styles.dyadicDivider} />
-
-                  {/* Partner B */}
-                  <View style={styles.dyadicPartnerCol}>
-                    <Text style={styles.dyadicPartnerLabel}>{partnerName}</Text>
-                    {dyadicScores?.rdas.partnerB ? (
-                      <>
-                        <Text style={styles.dyadicMainScore}>{dyadicScores.rdas.partnerB.total}</Text>
-                        <Text style={styles.dyadicMaxLabel}>/ 69</Text>
-                        <View style={styles.dyadicSubScores}>
-                          <Text style={styles.dyadicSubText}>Consensus: {dyadicScores.rdas.partnerB.consensus}</Text>
-                          <Text style={styles.dyadicSubText}>Satisfaction: {dyadicScores.rdas.partnerB.satisfaction}</Text>
-                          <Text style={styles.dyadicSubText}>Cohesion: {dyadicScores.rdas.partnerB.cohesion}</Text>
-                        </View>
-                        <View style={[styles.dyadicLevelBadge,
-                          dyadicScores.rdas.partnerB.distressLevel === 'non-distressed'
-                            ? styles.dyadicBadgeGood : styles.dyadicBadgeAlert
-                        ]}>
-                          <Text style={styles.dyadicLevelText}>
-                            {dyadicScores.rdas.partnerB.distressLevel === 'non-distressed' ? 'Well-Adjusted' : 'Needs Attention'}
-                          </Text>
-                        </View>
-                      </>
-                    ) : (
-                      <Text style={styles.dyadicNotDone}>Not yet completed</Text>
-                    )}
-                  </View>
-                </View>
-              ) : (
-                <View style={styles.dyadicEmpty}>
-                  <Text style={styles.dyadicEmptyText}>Neither partner has completed this assessment yet.</Text>
-                  <TouchableOpacity
-                    style={styles.dyadicStartBtn}
-                    onPress={() => couple && router.push(`/(app)/assessment?type=rdas&coupleId=${couple.id}` as any)}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.dyadicStartBtnText}>Start Assessment {'\u2192'}</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
-
-            {/* CSI-16 Card */}
-            <View style={[styles.card, styles.dyadicCard]}>
-              <Text style={styles.dyadicCardTitle}>Couple Satisfaction (CSI-16)</Text>
-              <Text style={styles.dyadicCardDesc}>
-                How satisfied each of you feels in the relationship overall.
-              </Text>
-              {dyadicScores?.csi16.partnerA || dyadicScores?.csi16.partnerB ? (
-                <View style={styles.dyadicScoresGrid}>
-                  <View style={styles.dyadicPartnerCol}>
-                    <Text style={styles.dyadicPartnerLabel}>You</Text>
-                    {dyadicScores?.csi16.partnerA ? (
-                      <>
-                        <Text style={styles.dyadicMainScore}>{dyadicScores.csi16.partnerA.total}</Text>
-                        <Text style={styles.dyadicMaxLabel}>/ 81</Text>
-                        <View style={[styles.dyadicLevelBadge,
-                          dyadicScores.csi16.partnerA.satisfactionLevel === 'high' ? styles.dyadicBadgeGood
-                            : dyadicScores.csi16.partnerA.satisfactionLevel === 'moderate' ? styles.dyadicBadgeOk
-                            : styles.dyadicBadgeAlert
-                        ]}>
-                          <Text style={styles.dyadicLevelText}>
-                            {dyadicScores.csi16.partnerA.satisfactionLevel === 'high' ? 'Highly Satisfied'
-                              : dyadicScores.csi16.partnerA.satisfactionLevel === 'moderate' ? 'Satisfied'
-                              : dyadicScores.csi16.partnerA.satisfactionLevel === 'low' ? 'Struggling'
-                              : 'In Distress'}
-                          </Text>
-                        </View>
-                      </>
-                    ) : (
-                      <>
-                        <Text style={styles.dyadicNotDone}>Not yet completed</Text>
-                        <TouchableOpacity
-                          style={[styles.dyadicStartBtn, { marginTop: Spacing.sm }]}
-                          onPress={() => couple && router.push(`/(app)/assessment?type=csi-16&coupleId=${couple.id}` as any)}
-                          activeOpacity={0.7}
-                        >
-                          <Text style={styles.dyadicStartBtnText}>Take Now {'\u2192'}</Text>
-                        </TouchableOpacity>
-                      </>
-                    )}
-                  </View>
-
-                  <View style={styles.dyadicDivider} />
-
-                  <View style={styles.dyadicPartnerCol}>
-                    <Text style={styles.dyadicPartnerLabel}>{partnerName}</Text>
-                    {dyadicScores?.csi16.partnerB ? (
-                      <>
-                        <Text style={styles.dyadicMainScore}>{dyadicScores.csi16.partnerB.total}</Text>
-                        <Text style={styles.dyadicMaxLabel}>/ 81</Text>
-                        <View style={[styles.dyadicLevelBadge,
-                          dyadicScores.csi16.partnerB.satisfactionLevel === 'high' ? styles.dyadicBadgeGood
-                            : dyadicScores.csi16.partnerB.satisfactionLevel === 'moderate' ? styles.dyadicBadgeOk
-                            : styles.dyadicBadgeAlert
-                        ]}>
-                          <Text style={styles.dyadicLevelText}>
-                            {dyadicScores.csi16.partnerB.satisfactionLevel === 'high' ? 'Highly Satisfied'
-                              : dyadicScores.csi16.partnerB.satisfactionLevel === 'moderate' ? 'Satisfied'
-                              : dyadicScores.csi16.partnerB.satisfactionLevel === 'low' ? 'Struggling'
-                              : 'In Distress'}
-                          </Text>
-                        </View>
-                      </>
-                    ) : (
-                      <Text style={styles.dyadicNotDone}>Not yet completed</Text>
-                    )}
-                  </View>
-                </View>
-              ) : (
-                <View style={styles.dyadicEmpty}>
-                  <Text style={styles.dyadicEmptyText}>Neither partner has completed this assessment yet.</Text>
-                  <TouchableOpacity
-                    style={styles.dyadicStartBtn}
-                    onPress={() => couple && router.push(`/(app)/assessment?type=csi-16&coupleId=${couple.id}` as any)}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.dyadicStartBtnText}>Start Assessment {'\u2192'}</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
-
-            {/* DCI Card */}
-            <View style={[styles.card, styles.dyadicCard]}>
-              <Text style={styles.dyadicCardTitle}>Dyadic Coping (DCI)</Text>
-              <Text style={styles.dyadicCardDesc}>
-                How you and your partner cope with stress together — support, communication, and teamwork.
-              </Text>
-              {dyadicScores?.dci.partnerA || dyadicScores?.dci.partnerB ? (
-                <View style={styles.dyadicScoresGrid}>
-                  <View style={styles.dyadicPartnerCol}>
-                    <Text style={styles.dyadicPartnerLabel}>You</Text>
-                    {dyadicScores?.dci.partnerA ? (
-                      <>
-                        <Text style={[styles.dyadicMainScore, { fontSize: 20 }]}>
-                          {dyadicScores.dci.partnerA.copingQuality === 'strong' ? 'Strong'
-                            : dyadicScores.dci.partnerA.copingQuality === 'adequate' ? 'Moderate'
-                            : 'Needs Work'}
-                        </Text>
-                        <View style={styles.dyadicSubScores}>
-                          <Text style={styles.dyadicSubText}>Supportive: {dyadicScores.dci.partnerA.supportiveBySelf + dyadicScores.dci.partnerA.supportiveByPartner}</Text>
-                          <Text style={styles.dyadicSubText}>Common: {dyadicScores.dci.partnerA.commonCoping}</Text>
-                          <Text style={styles.dyadicSubText}>Negative: {dyadicScores.dci.partnerA.negativeBySelf + dyadicScores.dci.partnerA.negativeByPartner}</Text>
-                        </View>
-                        <View style={[styles.dyadicLevelBadge,
-                          dyadicScores.dci.partnerA.copingQuality === 'strong' ? styles.dyadicBadgeGood
-                            : dyadicScores.dci.partnerA.copingQuality === 'adequate' ? styles.dyadicBadgeOk
-                            : styles.dyadicBadgeAlert
-                        ]}>
-                          <Text style={styles.dyadicLevelText}>
-                            {dyadicScores.dci.partnerA.copingQuality === 'strong' ? 'Strong Coping'
-                              : dyadicScores.dci.partnerA.copingQuality === 'adequate' ? 'Moderate Coping'
-                              : 'Needs Strengthening'}
-                          </Text>
-                        </View>
-                      </>
-                    ) : (
-                      <>
-                        <Text style={styles.dyadicNotDone}>Not yet completed</Text>
-                        <TouchableOpacity
-                          style={[styles.dyadicStartBtn, { marginTop: Spacing.sm }]}
-                          onPress={() => couple && router.push(`/(app)/assessment?type=dci&coupleId=${couple.id}` as any)}
-                          activeOpacity={0.7}
-                        >
-                          <Text style={styles.dyadicStartBtnText}>Take Now {'\u2192'}</Text>
-                        </TouchableOpacity>
-                      </>
-                    )}
-                  </View>
-
-                  <View style={styles.dyadicDivider} />
-
-                  <View style={styles.dyadicPartnerCol}>
-                    <Text style={styles.dyadicPartnerLabel}>{partnerName}</Text>
-                    {dyadicScores?.dci.partnerB ? (
-                      <>
-                        <Text style={[styles.dyadicMainScore, { fontSize: 20 }]}>
-                          {dyadicScores.dci.partnerB.copingQuality === 'strong' ? 'Strong'
-                            : dyadicScores.dci.partnerB.copingQuality === 'adequate' ? 'Moderate'
-                            : 'Needs Work'}
-                        </Text>
-                        <View style={styles.dyadicSubScores}>
-                          <Text style={styles.dyadicSubText}>Supportive: {dyadicScores.dci.partnerB.supportiveBySelf + dyadicScores.dci.partnerB.supportiveByPartner}</Text>
-                          <Text style={styles.dyadicSubText}>Common: {dyadicScores.dci.partnerB.commonCoping}</Text>
-                          <Text style={styles.dyadicSubText}>Negative: {dyadicScores.dci.partnerB.negativeBySelf + dyadicScores.dci.partnerB.negativeByPartner}</Text>
-                        </View>
-                        <View style={[styles.dyadicLevelBadge,
-                          dyadicScores.dci.partnerB.copingQuality === 'strong' ? styles.dyadicBadgeGood
-                            : dyadicScores.dci.partnerB.copingQuality === 'adequate' ? styles.dyadicBadgeOk
-                            : styles.dyadicBadgeAlert
-                        ]}>
-                          <Text style={styles.dyadicLevelText}>
-                            {dyadicScores.dci.partnerB.copingQuality === 'strong' ? 'Strong Coping'
-                              : dyadicScores.dci.partnerB.copingQuality === 'adequate' ? 'Moderate Coping'
-                              : 'Needs Strengthening'}
-                          </Text>
-                        </View>
-                      </>
-                    ) : (
-                      <Text style={styles.dyadicNotDone}>Not yet completed</Text>
-                    )}
-                  </View>
-                </View>
-              ) : (
-                <View style={styles.dyadicEmpty}>
-                  <Text style={styles.dyadicEmptyText}>Neither partner has completed this assessment yet.</Text>
-                  <TouchableOpacity
-                    style={styles.dyadicStartBtn}
-                    onPress={() => couple && router.push(`/(app)/assessment?type=dci&coupleId=${couple.id}` as any)}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.dyadicStartBtnText}>Start Assessment {'\u2192'}</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
-
-            {/* Note about how these relate to portraits */}
-            <View style={[styles.card, { borderColor: Colors.calm, borderWidth: 1 }]}>
-              <Text style={{ fontSize: FontSizes.caption, color: Colors.calm, fontWeight: '700', letterSpacing: 1, marginBottom: Spacing.xs }}>
-                HOW THESE CONNECT
-              </Text>
-              <Text style={{ fontSize: FontSizes.bodySmall, color: Colors.textSecondary, lineHeight: 20 }}>
-                These relationship scores are woven into your Relationship Portrait on the "Your Portraits" tab.
-                They add context about how satisfied, adjusted, and supported you each feel — enriching the
-                picture your individual assessments paint together.
-              </Text>
-            </View>
           </View>
         )}
+
+        {/* Tab Bar — scrollable horizontal */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.tabBarScroll}
+          contentContainerStyle={styles.tabBar}
+        >
+          {TABS.map((tab) => (
+            <TouchableOpacity
+              key={tab.key}
+              style={[styles.tab, activeTab === tab.key && styles.tabActive]}
+              onPress={() => setActiveTab(tab.key)}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.tabText, activeTab === tab.key && styles.tabTextActive]}>
+                {tab.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        {/* Tab Content */}
+        {renderTabContent()}
 
         <View style={{ height: 40 }} />
       </ScrollView>
@@ -1072,415 +749,247 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   scroll: { padding: Spacing.lg, paddingBottom: 40 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: Spacing.xl },
-  loadingText: { marginTop: Spacing.md, color: Colors.textSecondary, fontFamily: FontFamilies.body },
+  loadingText: {
+    ...Typography.bodySmall,
+    color: Colors.textSecondary,
+    marginTop: Spacing.md,
+    textAlign: 'center',
+  },
+
+  // Header
   backBtn: { marginBottom: Spacing.md },
   backBtnCenter: { marginTop: Spacing.lg },
-  backText: { color: Colors.primary, fontSize: FontSizes.body, fontFamily: FontFamilies.body },
+  backText: { ...Typography.body, color: Colors.primary },
   heading: {
-    fontSize: FontSizes.headingL,
-    fontFamily: FontFamilies.heading,
+    ...Typography.headingXL,
     color: Colors.text,
     marginBottom: Spacing.xs,
   },
   subtitle: {
-    fontSize: FontSizes.body,
-    fontFamily: FontFamilies.body,
+    ...Typography.body,
     color: Colors.textSecondary,
     lineHeight: 24,
-    marginBottom: Spacing.xl,
+    marginBottom: Spacing.lg,
   },
+  retryBtn: { marginTop: Spacing.md },
+  retryText: { ...Typography.body, color: Colors.secondary },
 
-  // Cards
-  card: {
+  // Sharing
+  sharingCard: {
     backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.lg,
-    marginBottom: Spacing.md,
-    ...Shadows.subtle,
-  },
-
-  // Summary
-  summaryCard: { borderColor: Colors.secondary, borderWidth: 1 },
-  scoreRow: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: Spacing.md },
-  scoreItem: { alignItems: 'center' },
-  scoreValue: { fontSize: 28, fontFamily: FontFamilies.heading, color: Colors.secondary, fontWeight: '700' },
-  scoreLabel: { fontSize: FontSizes.caption, fontFamily: FontFamilies.body, color: Colors.textSecondary, marginTop: 2 },
-  alignmentText: { fontSize: FontSizes.bodySmall, fontFamily: FontFamilies.body, color: Colors.textSecondary, lineHeight: 20, textAlign: 'center' },
-
-  // Section headers
-  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: Spacing.md, marginTop: Spacing.sm },
-  sectionTitle: { fontSize: FontSizes.headingM, fontFamily: FontFamilies.heading, color: Colors.text },
-  sectionDesc: { fontSize: FontSizes.bodySmall, fontFamily: FontFamilies.body, color: Colors.textSecondary, marginBottom: Spacing.md, lineHeight: 20 },
-  chevron: { fontSize: FontSizes.body, color: Colors.textMuted },
-
-  // Patterns
-  patternCard: {},
-  patternHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.sm },
-  patternType: { fontSize: FontSizes.body, fontFamily: FontFamilies.heading, color: Colors.depth, fontWeight: '600' },
-  confidenceBadge: { backgroundColor: Colors.surface, borderWidth: 1, borderColor: Colors.border, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 2 },
-  highConfidence: { borderColor: Colors.secondary, backgroundColor: Colors.background },
-  confidenceText: { fontSize: FontSizes.caption, fontFamily: FontFamilies.body, color: Colors.textSecondary },
-  patternDesc: { fontSize: FontSizes.bodySmall, fontFamily: FontFamilies.body, color: Colors.textSecondary, lineHeight: 22, marginBottom: Spacing.md },
-  roleRow: { flexDirection: 'row', gap: Spacing.sm },
-  roleChip: { backgroundColor: Colors.primaryLight + '20', borderRadius: 16, paddingHorizontal: 12, paddingVertical: 4 },
-  roleChipB: { backgroundColor: Colors.secondary + '20' },
-  roleLabel: { fontSize: FontSizes.caption, fontFamily: FontFamilies.body, color: Colors.text },
-
-  // Growth
-  growthCard: {},
-  growthHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.sm },
-  growthTitle: { fontSize: FontSizes.body, fontFamily: FontFamilies.heading, color: Colors.text, fontWeight: '600', flex: 1 },
-  priorityBadge: { borderRadius: 12, paddingHorizontal: 10, paddingVertical: 2, backgroundColor: Colors.borderLight },
-  priorityHigh: { backgroundColor: Colors.secondary + '20' },
-  priorityMedium: { backgroundColor: Colors.accent + '20' },
-  priorityText: { fontSize: FontSizes.caption, fontFamily: FontFamilies.body, color: Colors.textSecondary, textTransform: 'capitalize' },
-  growthPattern: { fontSize: FontSizes.bodySmall, fontFamily: FontFamilies.body, color: Colors.textSecondary, lineHeight: 22, marginBottom: Spacing.md },
-  growthDetail: { marginBottom: Spacing.sm },
-  growthDetailLabel: { fontSize: FontSizes.caption, fontFamily: FontFamilies.body, color: Colors.depth, fontWeight: '600', marginBottom: 2 },
-  growthDetailText: { fontSize: FontSizes.bodySmall, fontFamily: FontFamilies.body, color: Colors.textSecondary, lineHeight: 20 },
-  practiceBox: { backgroundColor: Colors.primary + '10', borderRadius: BorderRadius.md, padding: Spacing.md, marginTop: Spacing.sm, marginBottom: Spacing.sm },
-  practiceLabel: { fontSize: FontSizes.caption, fontFamily: FontFamilies.body, color: Colors.primary, fontWeight: '600', marginBottom: 4 },
-  practiceText: { fontSize: FontSizes.bodySmall, fontFamily: FontFamilies.body, color: Colors.text, lineHeight: 20 },
-  anchorBox: { backgroundColor: Colors.depth + '10', borderRadius: BorderRadius.md, padding: Spacing.md },
-  anchorQuote: { fontSize: FontSizes.bodySmall, fontFamily: FontFamilies.heading, color: Colors.depth, fontStyle: 'italic', lineHeight: 22, textAlign: 'center' },
-
-  // Discrepancy
-  significantCard: { borderLeftWidth: 3, borderLeftColor: Colors.accent },
-  discDomain: { fontSize: FontSizes.body, fontFamily: FontFamilies.heading, color: Colors.text, fontWeight: '600', marginBottom: Spacing.xs },
-  discScoreRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: Spacing.sm },
-  discScore: { fontSize: FontSizes.bodySmall, fontFamily: FontFamilies.body, color: Colors.textSecondary },
-  discInsight: { fontSize: FontSizes.bodySmall, fontFamily: FontFamilies.body, color: Colors.textSecondary, lineHeight: 20 },
-
-  // Anchors
-  anchorGroup: { marginBottom: Spacing.lg },
-  anchorGroupLabel: { fontSize: FontSizes.bodySmall, fontFamily: FontFamilies.heading, fontWeight: '600', marginBottom: Spacing.xs },
-  anchorItem: { fontSize: FontSizes.bodySmall, fontFamily: FontFamilies.body, color: Colors.textSecondary, lineHeight: 22, marginBottom: 4 },
-
-  // Exercises
-  exerciseCard: {},
-  exerciseName: { fontSize: FontSizes.body, fontFamily: FontFamilies.heading, color: Colors.text, fontWeight: '600', marginBottom: 4 },
-  exerciseDesc: { fontSize: FontSizes.bodySmall, fontFamily: FontFamilies.body, color: Colors.textSecondary, lineHeight: 20, marginBottom: Spacing.sm },
-  exerciseMeta: { flexDirection: 'row', gap: Spacing.sm },
-  exerciseMetaText: { fontSize: FontSizes.caption, fontFamily: FontFamilies.body, color: Colors.textMuted },
-
-  // Journey
-  journeyCard: { borderColor: Colors.primary, borderWidth: 1, marginTop: Spacing.lg },
-  journeyHeader: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, marginBottom: Spacing.sm },
-  journeyTitle: { fontSize: FontSizes.headingM, fontFamily: FontFamilies.heading, color: Colors.primary, fontWeight: '600' },
-  journeyDesc: { fontSize: FontSizes.bodySmall, fontFamily: FontFamilies.body, color: Colors.textSecondary, lineHeight: 22, marginBottom: Spacing.md },
-  journeyCta: { fontSize: FontSizes.body, fontFamily: FontFamilies.body, color: Colors.primary, fontWeight: '600' },
-
-  // Coach
-  coachCard: { borderColor: Colors.depth, borderWidth: 1, marginTop: Spacing.md },
-  coachTitle: { fontSize: FontSizes.headingM, fontFamily: FontFamilies.heading, color: Colors.depth, marginBottom: Spacing.xs },
-  coachDesc: { fontSize: FontSizes.bodySmall, fontFamily: FontFamilies.body, color: Colors.textSecondary, lineHeight: 22, marginBottom: Spacing.md },
-  coachCta: { fontSize: FontSizes.body, fontFamily: FontFamilies.body, color: Colors.depth, fontWeight: '600' },
-
-  // ── WEARE Dashboard ──
-  weareDashboard: {
-    gap: Spacing.md,
-    marginBottom: Spacing.md,
-  },
-  weareDataModeBadge: {
-    backgroundColor: Colors.borderLight,
     borderRadius: BorderRadius.md,
-    padding: Spacing.sm,
-  },
-  weareDataModeText: {
-    fontSize: FontSizes.caption,
-    fontFamily: FontFamilies.body,
-    color: Colors.textSecondary,
-    lineHeight: 18,
-  },
-  weareOverallCard: {
-    borderColor: Colors.secondary,
+    padding: Spacing.md,
     borderWidth: 1,
-  },
-  weareOverallRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.md,
+    borderColor: Colors.calm,
     marginBottom: Spacing.md,
   },
-  weareOverallCircle: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    borderWidth: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.surfaceElevated,
-  },
-  weareOverallEmoji: {
-    fontSize: 28,
-  },
-  weareOverallInfo: {
-    flex: 1,
-    gap: 3,
-  },
-  weareOverallPhrase: {
-    fontSize: FontSizes.headingM,
-    fontFamily: FontFamilies.heading,
-    color: Colors.text,
-    fontWeight: '700',
-  },
-  wearePhaseLabel: {
-    fontSize: FontSizes.bodySmall,
-    fontFamily: FontFamilies.body,
-    color: Colors.secondary,
-    fontWeight: '500',
-  },
-  weareDirectionLabel: {
-    fontSize: FontSizes.caption,
-    fontFamily: FontFamilies.body,
-    color: Colors.textSecondary,
-  },
-  weareNarrative: {
-    fontSize: FontSizes.bodySmall,
-    fontFamily: FontFamilies.body,
-    color: Colors.textSecondary,
-    lineHeight: 22,
-  },
-  weareGroupTitle: {
-    fontSize: FontSizes.caption,
-    fontFamily: FontFamilies.heading,
-    color: Colors.depth,
-    fontWeight: '600',
-    letterSpacing: 1,
-    textTransform: 'uppercase',
+  sharingLabel: {
+    ...Typography.label,
+    color: Colors.calm,
     marginBottom: Spacing.xs,
   },
-  weareVarRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    marginBottom: Spacing.xs,
-    paddingVertical: 3,
-    paddingHorizontal: 4,
-    borderRadius: BorderRadius.sm,
-  },
-  weareVarRowHighlight: {
-    backgroundColor: Colors.secondary + '10',
-  },
-  weareVarLabel: {
-    fontSize: FontSizes.bodySmall,
-    fontFamily: FontFamilies.body,
-    color: Colors.text,
-    width: 130,
-  },
-  weareVarBarBg: {
-    flex: 1,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.borderLight,
-    overflow: 'hidden',
-  },
-  weareVarBarFill: {
-    height: '100%',
-    borderRadius: 4,
-  },
-  weareVarValue: {
-    fontSize: FontSizes.caption,
-    fontFamily: FontFamilies.body,
+  sharingText: {
+    ...Typography.bodySmall,
     color: Colors.textSecondary,
-    width: 28,
-    textAlign: 'right',
-  },
-  weareBottleneckCard: {
-    borderColor: Colors.secondary,
-    borderWidth: 1,
-    borderLeftWidth: 4,
-  },
-  weareBottleneckLabel: {
-    fontSize: FontSizes.caption,
-    fontFamily: FontFamilies.body,
-    color: Colors.secondary,
-    fontWeight: '600',
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-    marginBottom: Spacing.xs,
-  },
-  weareBottleneckTitle: {
-    fontSize: FontSizes.headingM,
-    fontFamily: FontFamilies.heading,
-    color: Colors.text,
-    fontWeight: '600',
-    marginBottom: Spacing.sm,
-  },
-  weareBottleneckDesc: {
-    fontSize: FontSizes.bodySmall,
-    fontFamily: FontFamilies.body,
-    color: Colors.textSecondary,
-    lineHeight: 22,
-    marginBottom: Spacing.md,
-  },
-  weareBottleneckPractice: {
-    backgroundColor: Colors.primary + '10',
-    borderRadius: BorderRadius.sm,
-    paddingVertical: Spacing.xs + 2,
-    paddingHorizontal: Spacing.sm,
-    marginBottom: Spacing.xs,
-  },
-  weareBottleneckPracticeName: {
-    fontSize: FontSizes.bodySmall,
-    fontFamily: FontFamilies.body,
-    color: Colors.primary,
-    fontWeight: '600',
+    lineHeight: 20,
   },
 
-  // ── Tab Bar ──
+  // Tab Bar
+  tabBarScroll: {
+    marginBottom: Spacing.md,
+  },
   tabBar: {
     flexDirection: 'row',
     backgroundColor: Colors.surface,
     borderRadius: BorderRadius.lg,
-    padding: 4,
-    marginBottom: Spacing.lg,
+    padding: 3,
+    gap: 2,
     ...Shadows.subtle,
   },
   tab: {
-    flex: 1,
-    paddingVertical: Spacing.sm + 2,
-    alignItems: 'center',
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
     borderRadius: BorderRadius.md,
   },
   tabActive: {
     backgroundColor: Colors.primary,
   },
   tabText: {
-    fontSize: FontSizes.bodySmall,
-    fontFamily: FontFamilies.heading,
+    ...Typography.buttonSmall,
     color: Colors.textSecondary,
-    fontWeight: '600',
   },
   tabTextActive: {
     color: Colors.white,
   },
 
-  // ── Relationship Scores Tab ──
-  scoresTab: {
-    gap: Spacing.md,
+  // Tab Content
+  tabContent: {
+    gap: Spacing.sm,
   },
-  scoresTabIntro: {
-    fontSize: FontSizes.bodySmall,
-    fontFamily: FontFamilies.body,
-    color: Colors.textSecondary,
-    lineHeight: 22,
-    marginBottom: Spacing.sm,
+  noDataText: {
+    ...Typography.bodySmall,
+    color: Colors.textMuted,
+    textAlign: 'center',
+    marginTop: Spacing.xl,
+    fontStyle: 'italic',
   },
-  dyadicCard: {
-    borderColor: Colors.secondary,
-    borderWidth: 1,
-  },
-  dyadicCardTitle: {
-    fontSize: FontSizes.headingM,
-    fontFamily: FontFamilies.heading,
+
+  // Section headers
+  sectionTitle: {
+    ...Typography.headingM,
     color: Colors.text,
-    fontWeight: '600',
+    marginTop: Spacing.md,
     marginBottom: Spacing.xs,
   },
-  dyadicCardDesc: {
-    fontSize: FontSizes.bodySmall,
-    fontFamily: FontFamilies.body,
+  sectionDesc: {
+    ...Typography.bodySmall,
     color: Colors.textSecondary,
     lineHeight: 20,
     marginBottom: Spacing.md,
   },
-  dyadicScoresGrid: {
+
+  // Overview
+  narrativeCard: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  narrativeOpening: {
+    fontFamily: 'PlayfairDisplay_400Regular',
+    fontSize: 15,
+    color: Colors.text,
+    lineHeight: 24,
+  },
+  quickStatsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    marginBottom: Spacing.md,
+    ...Shadows.subtle,
+  },
+  quickStat: {
+    alignItems: 'center',
+  },
+  quickStatValue: {
+    fontFamily: 'PlayfairDisplay_700Bold',
+    fontSize: 28,
+    color: Colors.secondary,
+  },
+  quickStatLabel: {
+    ...Typography.caption,
+    color: Colors.textSecondary,
+    marginTop: 2,
+  },
+  narrativeSmall: {
+    ...Typography.bodySmall,
+    color: Colors.textSecondary,
+    lineHeight: 20,
+    marginTop: Spacing.sm,
+    paddingHorizontal: Spacing.xs,
+  },
+
+  // Repair steps
+  repairStep: {
     flexDirection: 'row',
     alignItems: 'flex-start',
+    gap: Spacing.sm,
+    marginBottom: Spacing.sm,
+    paddingHorizontal: Spacing.xs,
   },
-  dyadicPartnerCol: {
-    flex: 1,
+  repairStepNumber: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: Colors.success,
     alignItems: 'center',
-    gap: Spacing.xs,
+    justifyContent: 'center',
   },
-  dyadicPartnerLabel: {
-    fontSize: FontSizes.caption,
-    fontFamily: FontFamilies.heading,
-    color: Colors.depth,
-    fontWeight: '600',
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
+  repairStepNumberText: {
+    fontFamily: 'PlayfairDisplay_700Bold',
+    fontSize: 12,
+    color: Colors.white,
+  },
+  repairStepText: {
+    ...Typography.bodySmall,
+    color: Colors.textSecondary,
+    lineHeight: 20,
+    flex: 1,
+  },
+
+  // Synthesis cards
+  synthesisCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    marginBottom: Spacing.sm,
+    ...Shadows.subtle,
+  },
+  synthesisTitle: {
+    ...Typography.headingS,
+    color: Colors.text,
     marginBottom: Spacing.xs,
   },
-  dyadicMainScore: {
-    fontSize: 32,
-    fontFamily: FontFamilies.heading,
-    color: Colors.secondary,
-    fontWeight: '700',
-  },
-  dyadicMaxLabel: {
-    fontSize: FontSizes.caption,
-    fontFamily: FontFamilies.body,
-    color: Colors.textMuted,
-    marginTop: -4,
-  },
-  dyadicSubScores: {
-    gap: 2,
-    marginTop: Spacing.xs,
-  },
-  dyadicSubText: {
-    fontSize: FontSizes.caption,
-    fontFamily: FontFamilies.body,
+  synthesisNarrative: {
+    ...Typography.bodySmall,
     color: Colors.textSecondary,
-    textAlign: 'center',
+    lineHeight: 20,
   },
-  dyadicLevelBadge: {
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    marginTop: Spacing.xs,
+
+  // Journey Card
+  journeyCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    marginTop: Spacing.lg,
+    borderColor: Colors.primary,
+    borderWidth: 1,
   },
-  dyadicBadgeGood: {
-    backgroundColor: Colors.success + '20',
-  },
-  dyadicBadgeOk: {
-    backgroundColor: Colors.accentGold + '20',
-  },
-  dyadicBadgeAlert: {
-    backgroundColor: Colors.accent + '20',
-  },
-  dyadicLevelText: {
-    fontSize: FontSizes.caption,
-    fontFamily: FontFamilies.body,
-    color: Colors.text,
-    fontWeight: '500',
-  },
-  dyadicDivider: {
-    width: 1,
-    backgroundColor: Colors.border,
-    marginHorizontal: Spacing.sm,
-    alignSelf: 'stretch',
-  },
-  dyadicNotDone: {
-    fontSize: FontSizes.bodySmall,
-    fontFamily: FontFamilies.body,
-    color: Colors.textMuted,
-    fontStyle: 'italic',
-    textAlign: 'center',
-    marginTop: Spacing.md,
-  },
-  dyadicEmpty: {
+  journeyHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: Spacing.md,
-    gap: Spacing.md,
+    gap: Spacing.sm,
+    marginBottom: Spacing.sm,
   },
-  dyadicEmptyText: {
-    fontSize: FontSizes.bodySmall,
-    fontFamily: FontFamilies.body,
-    color: Colors.textMuted,
-    textAlign: 'center',
-  },
-  dyadicStartBtn: {
-    backgroundColor: Colors.primary + '10',
-    borderRadius: BorderRadius.md,
-    paddingVertical: Spacing.xs + 2,
-    paddingHorizontal: Spacing.md,
-  },
-  dyadicStartBtnText: {
-    fontSize: FontSizes.bodySmall,
-    fontFamily: FontFamilies.body,
+  journeyTitle: {
+    ...Typography.headingS,
     color: Colors.primary,
-    fontWeight: '600',
+  },
+  journeyDesc: {
+    ...Typography.bodySmall,
+    color: Colors.textSecondary,
+    lineHeight: 22,
+    marginBottom: Spacing.md,
+  },
+  journeyCta: {
+    ...Typography.bodyMedium,
+    color: Colors.primary,
+  },
+
+  // Coach Card
+  coachCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    marginTop: Spacing.md,
+    borderColor: Colors.depth,
+    borderWidth: 1,
+  },
+  coachTitle: {
+    ...Typography.headingS,
+    color: Colors.depth,
+    marginBottom: Spacing.xs,
+  },
+  coachDesc: {
+    ...Typography.bodySmall,
+    color: Colors.textSecondary,
+    lineHeight: 22,
+    marginBottom: Spacing.md,
+  },
+  coachCta: {
+    ...Typography.bodyMedium,
+    color: Colors.depth,
   },
 });
