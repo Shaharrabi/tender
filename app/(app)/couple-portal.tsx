@@ -128,32 +128,44 @@ export default function CouplePortalScreen() {
           console.log('[CouplePortal] My portrait:', myPortraitData ? 'found' : 'MISSING');
           console.log('[CouplePortal] Partner portrait:', partnerPortraitData ? 'found' : 'MISSING');
 
-          // Auto-generate individual portrait if missing but assessments are complete
-          if (!myPortraitData) {
-            console.log('[CouplePortal] Attempting to auto-generate individual portrait for user...');
-            const { canGenerate, missingAssessments } = await checkCanGeneratePortrait(user.id);
-            if (canGenerate) {
-              try {
-                const latestScoresMap = await fetchAllScores(user.id);
-                const scores = {
-                  ecrr: latestScoresMap['ecr-r'].scores,
-                  dutch: latestScoresMap['dutch'].scores,
-                  sseit: latestScoresMap['sseit'].scores,
-                  dsir: latestScoresMap['dsi-r'].scores,
-                  ipip: latestScoresMap['ipip-neo-120'].scores,
-                  values: latestScoresMap['values'].scores,
-                };
-                const supplements = extractSupplementScores(latestScoresMap);
-                const ids = Object.values(latestScoresMap).map((r) => r.id);
-                const freshPortrait = generatePortrait(user.id, ids, scores, supplements);
-                myPortraitData = await savePortrait(freshPortrait);
-                if (selfCouple) partnerPortraitData = myPortraitData;
-                console.log('[CouplePortal] Auto-generated individual portrait successfully');
-              } catch (genErr) {
-                console.error('[CouplePortal] Auto-generate individual portrait failed:', genErr);
-              }
-            } else {
+          // Auto-generate individual portraits if missing but assessments are complete
+          const autoGenPortrait = async (targetUserId: string): Promise<IndividualPortrait | null> => {
+            console.log('[CouplePortal] Attempting to auto-generate individual portrait for', targetUserId);
+            const { canGenerate, missingAssessments } = await checkCanGeneratePortrait(targetUserId);
+            if (!canGenerate) {
               console.log('[CouplePortal] Cannot auto-generate, missing assessments:', missingAssessments);
+              return null;
+            }
+            const latestScoresMap = await fetchAllScores(targetUserId);
+            const scores = {
+              ecrr: latestScoresMap['ecr-r'].scores,
+              dutch: latestScoresMap['dutch'].scores,
+              sseit: latestScoresMap['sseit'].scores,
+              dsir: latestScoresMap['dsi-r'].scores,
+              ipip: latestScoresMap['ipip-neo-120'].scores,
+              values: latestScoresMap['values'].scores,
+            };
+            const supplements = extractSupplementScores(latestScoresMap);
+            const ids = Object.values(latestScoresMap).map((r) => r.id);
+            const freshPortrait = generatePortrait(targetUserId, ids, scores, supplements);
+            const saved = await savePortrait(freshPortrait);
+            console.log('[CouplePortal] Auto-generated individual portrait for', targetUserId, saved ? 'OK' : 'FAILED');
+            return saved;
+          };
+
+          if (!myPortraitData) {
+            try {
+              myPortraitData = await autoGenPortrait(user.id);
+              if (selfCouple && myPortraitData) partnerPortraitData = myPortraitData;
+            } catch (genErr) {
+              console.error('[CouplePortal] Auto-generate user portrait failed:', genErr);
+            }
+          }
+          if (!partnerPortraitData && !selfCouple) {
+            try {
+              partnerPortraitData = await autoGenPortrait(partnerId);
+            } catch (genErr) {
+              console.error('[CouplePortal] Auto-generate partner portrait failed:', genErr);
             }
           }
 
