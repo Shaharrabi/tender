@@ -215,16 +215,20 @@ export default function CouplePortalScreen() {
         <View style={styles.center}>
           <Text style={styles.heading}>Couple Portal</Text>
           <Text style={styles.subtitle}>
-            Both partners need individual portraits (all 6 assessments each) to generate
-            your combined relationship portrait. Complete more assessments to unlock
-            deeper insights together.
+            To build your combined relationship portrait, each partner needs to
+            complete their 6 individual assessments first (How You Connect, Who You Are,
+            How You Feel, How You Fight, How You Hold Your Ground, and What Matters to You).
           </Text>
           <Text style={[styles.subtitle, { marginTop: 8, fontStyle: 'italic', fontSize: 13 }]}>
-            Tip: Each partner can view their own results after completing each section.
-            The combined portrait requires both complete profiles.
+            Once both partners have their personal portraits, the couple portal will
+            combine them with your relationship assessments to create a shared map
+            of your partnership.
           </Text>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backBtnCenter}>
-            <Text style={styles.backText}>{'\u2190'} Go Back</Text>
+          <TouchableOpacity
+            onPress={() => router.replace('/(app)/partner')}
+            style={styles.backBtnCenter}
+          >
+            <Text style={styles.backText}>{'\u2190'} Back to Partner</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>

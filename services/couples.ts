@@ -469,7 +469,7 @@ export async function checkDyadicCompletion(
     .filter((d: any) => d.user_id === partnerId)
     .map((d: any) => d.assessment_type);
 
-  const requiredTypes: DyadicAssessmentType[] = ['rdas', 'dci', 'csi-16'];
+  const requiredTypes: DyadicAssessmentType[] = ['rdas', 'dci', 'csi-16', 'relational-field'];
 
   // Unlock portal after at least 1 dyadic assessment per partner (lower bar)
   const allDone =

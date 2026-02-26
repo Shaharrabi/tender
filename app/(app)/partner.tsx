@@ -60,6 +60,7 @@ export default function PartnerScreen() {
     partnerComplete: string[];
     allDone: boolean;
   }>({ userComplete: [], partnerComplete: [], allDone: false });
+  const [relationshipDuration, setRelationshipDuration] = useState<string | null>(null);
 
   // Invite flow state
   const [activeInvite, setActiveInvite] = useState<CoupleInvite | null>(null);
@@ -86,9 +87,12 @@ export default function PartnerScreen() {
     setLoading(true);
 
     try {
-      // Ensure profile exists
+      // Ensure profile exists & capture relationship duration
       console.log('[Partner] Getting profile...');
-      await getOrCreateProfile(user.id);
+      const myProfile = await getOrCreateProfile(user.id);
+      if (myProfile?.relationship_duration) {
+        setRelationshipDuration(myProfile.relationship_duration);
+      }
       console.log('[Partner] Profile OK');
 
       // Check if already coupled
@@ -254,7 +258,12 @@ export default function PartnerScreen() {
   // ─── Render: Connected (Couple Exists) ───────────────
 
   if (couple) {
-    const dyadicAssessments = getDyadicAssessments();
+    const allDyadicAssessments = getDyadicAssessments();
+    // Filter out CSI-16 for couples together less than 1 year
+    // (CSI-16 measures satisfaction which is less meaningful for very new relationships)
+    const dyadicAssessments = relationshipDuration === 'less-than-1'
+      ? allDyadicAssessments.filter((a) => a.type !== 'csi-16')
+      : allDyadicAssessments;
     return (
       <SafeAreaView style={styles.container}>
         <ScrollView contentContainerStyle={styles.scroll}>

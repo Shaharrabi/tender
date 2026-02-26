@@ -12,6 +12,7 @@ import ValuesResults from '@/components/results/ValuesResults';
 import RDASResults from '@/components/results/RDASResults';
 import CSI16Results from '@/components/results/CSI16Results';
 import DCIResults from '@/components/results/DCIResults';
+import RFASResults from '@/components/results/RFASResults';
 
 export default function ResultsScreen() {
   const router = useRouter();
@@ -57,6 +58,8 @@ export default function ResultsScreen() {
       return <CSI16Results scores={scores} />;
     case 'dci':
       return <DCIResults scores={scores} />;
+    case 'relational-field':
+      return <RFASResults scores={scores} />;
     default:
       return (
         <SafeAreaView style={styles.container}>
