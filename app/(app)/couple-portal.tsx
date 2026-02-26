@@ -34,7 +34,8 @@ import {
   isSelfCouple,
 } from '@/services/couples';
 import { getPartnerSharedAssessments } from '@/services/consent';
-import { getPortrait } from '@/services/portrait';
+import { getPortrait, checkCanGeneratePortrait, fetchAllScores, extractSupplementScores, savePortrait } from '@/services/portrait';
+import { generatePortrait } from '@/utils/portrait/portrait-generator';
 import { generateRelationshipPortrait } from '@/utils/portrait/relationship-portrait-generator';
 import { getExerciseById } from '@/utils/interventions/registry';
 import {
@@ -70,6 +71,7 @@ export default function CouplePortalScreen() {
   const [couple, setCouple] = useState<Couple | null>(null);
   const [partnerProfile, setPartnerProfile] = useState<UserProfile | null>(null);
   const [portrait, setPortrait] = useState<RelationshipPortrait | null>(null);
+  const [portraitError, setPortraitError] = useState<string | null>(null);
   const [expandedSection, setExpandedSection] = useState<string | null>('patterns');
   const [partnerSharedAssessments, setPartnerSharedAssessments] = useState<string[]>([]);
 
@@ -108,27 +110,70 @@ export default function CouplePortalScreen() {
 
       // Try to load existing relationship portrait
       let rp = await getRelationshipPortrait(myCouple.id);
+      console.log('[CouplePortal] Existing relationship portrait:', rp ? 'found' : 'not found');
 
       // If no portrait exists, generate one
       if (!rp) {
         setGenerating(true);
+        setPortraitError(null);
         try {
           // Load both individual portraits
+          const selfCouple = isSelfCouple(myCouple);
           const partnerId = myCouple.partner_a_id === user.id
             ? myCouple.partner_b_id : myCouple.partner_a_id;
+          console.log('[CouplePortal] Self-couple:', selfCouple, 'partnerId:', partnerId);
 
-          const [myPortraitData, partnerPortraitData] = await Promise.all([
-            getPortrait(user.id),
-            getPortrait(partnerId),
-          ]);
+          let myPortraitData = await getPortrait(user.id);
+          let partnerPortraitData = selfCouple ? myPortraitData : await getPortrait(partnerId);
+          console.log('[CouplePortal] My portrait:', myPortraitData ? 'found' : 'MISSING');
+          console.log('[CouplePortal] Partner portrait:', partnerPortraitData ? 'found' : 'MISSING');
 
-          if (myPortraitData && partnerPortraitData) {
+          // Auto-generate individual portrait if missing but assessments are complete
+          if (!myPortraitData) {
+            console.log('[CouplePortal] Attempting to auto-generate individual portrait for user...');
+            const { canGenerate, missingAssessments } = await checkCanGeneratePortrait(user.id);
+            if (canGenerate) {
+              try {
+                const latestScoresMap = await fetchAllScores(user.id);
+                const scores = {
+                  ecrr: latestScoresMap['ecr-r'].scores,
+                  dutch: latestScoresMap['dutch'].scores,
+                  sseit: latestScoresMap['sseit'].scores,
+                  dsir: latestScoresMap['dsi-r'].scores,
+                  ipip: latestScoresMap['ipip-neo-120'].scores,
+                  values: latestScoresMap['values'].scores,
+                };
+                const supplements = extractSupplementScores(latestScoresMap);
+                const ids = Object.values(latestScoresMap).map((r) => r.id);
+                const freshPortrait = generatePortrait(user.id, ids, scores, supplements);
+                myPortraitData = await savePortrait(freshPortrait);
+                if (selfCouple) partnerPortraitData = myPortraitData;
+                console.log('[CouplePortal] Auto-generated individual portrait successfully');
+              } catch (genErr) {
+                console.error('[CouplePortal] Auto-generate individual portrait failed:', genErr);
+              }
+            } else {
+              console.log('[CouplePortal] Cannot auto-generate, missing assessments:', missingAssessments);
+            }
+          }
+
+          if (!myPortraitData || !partnerPortraitData) {
+            const missing: string[] = [];
+            if (!myPortraitData) missing.push('your individual portrait');
+            if (!partnerPortraitData && !selfCouple) missing.push("your partner's individual portrait");
+            setPortraitError(
+              `Could not generate: missing ${missing.join(' and ')}. ` +
+              'Go to the Home screen to generate your portrait first, then come back.'
+            );
+          } else {
             // Load dyadic scores
             const [rdas, dci, csi16] = await Promise.all([
               getLatestDyadicScores(myCouple.id, 'rdas'),
               getLatestDyadicScores(myCouple.id, 'dci'),
               getLatestDyadicScores(myCouple.id, 'csi-16'),
             ]);
+            console.log('[CouplePortal] Dyadic scores - RDAS:', rdas.partnerA ? 'yes' : 'no',
+              'DCI:', dci.partnerA ? 'yes' : 'no', 'CSI-16:', csi16.partnerA ? 'yes' : 'no');
 
             const dyadicScores: any = {};
             if (rdas.partnerA && rdas.partnerB) dyadicScores.rdas = rdas;
@@ -140,17 +185,24 @@ export default function CouplePortalScreen() {
             const portraitA = isPartnerA ? myPortraitData : partnerPortraitData;
             const portraitB = isPartnerA ? partnerPortraitData : myPortraitData;
 
+            console.log('[CouplePortal] Generating relationship portrait...');
             const generated = generateRelationshipPortrait(
               myCouple.id,
               portraitA as unknown as IndividualPortrait,
               portraitB as unknown as IndividualPortrait,
               dyadicScores,
             );
+            console.log('[CouplePortal] Portrait generated, saving...');
 
             rp = await saveRelationshipPortrait(generated as any);
+            console.log('[CouplePortal] Portrait saved:', rp ? 'success' : 'FAILED');
+            if (!rp) {
+              setPortraitError('Portrait was generated but failed to save to database. Please try again.');
+            }
           }
-        } catch (e) {
+        } catch (e: any) {
           console.error('[CouplePortal] Error generating portrait:', e);
+          setPortraitError(`Portrait generation error: ${e?.message || String(e)}`);
         }
         setGenerating(false);
       }
@@ -214,16 +266,30 @@ export default function CouplePortalScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.center}>
           <Text style={styles.heading}>Couple Portal</Text>
-          <Text style={styles.subtitle}>
-            To build your combined relationship portrait, each partner needs to
-            complete their 6 individual assessments first (How You Connect, Who You Are,
-            How You Feel, How You Fight, How You Hold Your Ground, and What Matters to You).
-          </Text>
-          <Text style={[styles.subtitle, { marginTop: 8, fontStyle: 'italic', fontSize: 13 }]}>
-            Once both partners have their personal portraits, the couple portal will
-            combine them with your relationship assessments to create a shared map
-            of your partnership.
-          </Text>
+          {portraitError ? (
+            <>
+              <Text style={styles.subtitle}>{portraitError}</Text>
+              <TouchableOpacity
+                onPress={() => { setPortrait(null); setPortraitError(null); loadData(); }}
+                style={[styles.backBtnCenter, { marginTop: 16 }]}
+              >
+                <Text style={[styles.backText, { color: Colors.secondary }]}>Try Again</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <Text style={styles.subtitle}>
+                To build your combined relationship portrait, each partner needs to
+                complete their 6 individual assessments first (How You Connect, Who You Are,
+                How You Feel, How You Fight, How You Hold Your Ground, and What Matters to You).
+              </Text>
+              <Text style={[styles.subtitle, { marginTop: 8, fontStyle: 'italic', fontSize: 13 }]}>
+                Once both partners have their personal portraits, the couple portal will
+                combine them with your relationship assessments to create a shared map
+                of your partnership.
+              </Text>
+            </>
+          )}
           <TouchableOpacity
             onPress={() => router.replace('/(app)/partner')}
             style={styles.backBtnCenter}
