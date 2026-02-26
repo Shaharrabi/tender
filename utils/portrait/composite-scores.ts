@@ -106,9 +106,10 @@ export function calculateCompositeScores(
     dsir.subscaleScores.fusionWithOthers.normalized) / 4;
   const differentiation = clamp(dsiTotal);
 
-  // 4. Conflict Flexibility: entropy of DUTCH modes (how balanced the 5 styles are)
-  //    Max entropy = perfectly balanced use of all 5 styles → score 100
-  //    Min entropy = only one style used → score 0
+  // 4. Conflict Flexibility: balance × quality of DUTCH conflict modes
+  //    Balance (entropy): how evenly the 5 styles are used (0-100)
+  //    Quality: overall engagement level across styles (mean of means / max)
+  //    Blend: 60% balance + 40% quality — so balanced low-engagement ≠ 99
   let conflictFlexibility = 50; // fallback when no dutch data
   if (dutch) {
     const modes = ['yielding', 'compromising', 'forcing', 'problemSolving', 'avoiding'];
@@ -117,7 +118,13 @@ export function calculateCompositeScores(
     const probs = means.map(m => m / total);
     const maxEntropy = Math.log(5); // ln(5)
     const entropy = -probs.reduce((s, p) => s + (p > 0 ? p * Math.log(p) : 0), 0);
-    conflictFlexibility = clamp((entropy / maxEntropy) * 100);
+    const balanceScore = (entropy / maxEntropy) * 100;
+
+    // Quality: average engagement across styles (DUTCH uses 1-5 scale, normalize to 0-100)
+    const avgMean = means.reduce((s, v) => s + v, 0) / means.length;
+    const qualityScore = ((avgMean - 1) / 4) * 100; // 1→0, 5→100
+
+    conflictFlexibility = clamp(balanceScore * 0.6 + qualityScore * 0.4);
   }
 
   // 5. Relational Awareness: EQ social awareness + perception + agreeableness
