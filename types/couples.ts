@@ -44,12 +44,13 @@ export interface UserProfile {
   dyadic_assessments_complete: boolean;
   relationship_mode?: RelationshipMode;
   demo_partner_id?: string;
+  relationship_duration?: string;  // 'less-than-1' | '1-3' | '3-7' | '7-15' | '15-plus' | 'not-applicable'
   created_at: string;
 }
 
 // ─── Dyadic Assessment Types ────────────────────────────
 
-export type DyadicAssessmentType = 'rdas' | 'dci' | 'csi-16' | 'csi-4';
+export type DyadicAssessmentType = 'rdas' | 'dci' | 'csi-16' | 'csi-4' | 'relational-field' | 'couple-field';
 
 export interface DyadicAssessmentRecord {
   id: string;

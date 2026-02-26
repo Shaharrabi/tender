@@ -140,7 +140,12 @@ export default function AssessmentScreen() {
 
   const handleSaveAndExit = () => {
     setSectionBreak(null);
-    router.replace('/(app)/home');
+    // Navigate back to partner screen for dyadic assessments, home for individual
+    if (isDyadicAssessment(config.type as any)) {
+      router.replace('/(app)/partner');
+    } else {
+      router.replace('/(app)/home');
+    }
   };
 
   const handleSubmit = async () => {
