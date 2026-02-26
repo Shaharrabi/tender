@@ -12,7 +12,7 @@ npx expo export --platform web
   publish = "dist"
 
 [build.environment]
-  NODE_VERSION = "18"
+  NODE_VERSION = "20"
   EXPO_PUBLIC_SUPABASE_URL = "https://qwqclhzezyzeflxrtfjy.supabase.co"
   EXPO_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_X44nRh0JlS952CarvKJfcg_WAJLktxq"
 
