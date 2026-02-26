@@ -2,6 +2,7 @@ import type {
   ValuesScores,
   DetectedPattern,
   ValuesLens,
+  QualitativeInsights,
   ECRRScores,
 } from '@/types';
 import { VALUE_DOMAINS } from '@/utils/assessments/configs/values';
@@ -10,6 +11,10 @@ import { tailorNarrative, buildTailoringContext } from './attachment-tailoring';
 /**
  * Lens 4: Values & Becoming
  * What matters most and where the gaps live.
+ *
+ * Enhanced in Sprint 4:
+ *   - willingnessRequirements: what discomfort you must tolerate for growth
+ *   - qualitativeInsights: who you are as a partner + aspirational vision
  */
 export function analyzeValuesBecoming(
   values: ValuesScores,
@@ -30,7 +35,17 @@ export function analyzeValuesBecoming(
       )
     : rawNarrative;
 
-  return { narrative, coreValues, significantGaps, developmentalInvitations };
+  const willingnessRequirements = buildWillingnessRequirements(values, significantGaps, ecrr);
+  const qualitativeInsights = buildQualitativeInsights(values, coreValues, significantGaps, ecrr);
+
+  return {
+    narrative,
+    coreValues,
+    significantGaps,
+    developmentalInvitations,
+    willingnessRequirements,
+    qualitativeInsights,
+  };
 }
 
 // ─── Core Values ─────────────────────────────────────────
@@ -195,3 +210,193 @@ const PATTERN_INVITATIONS: Record<string, string> = {
     'Start with micro-changes. Your aspiration for growth is genuine; ' +
     'your system just needs the changes to be small enough to feel safe.',
 };
+
+// ─── Willingness Requirements ───────────────────────────
+
+function buildWillingnessRequirements(
+  values: ValuesScores,
+  gaps: Array<{ value: string; gap: number; importance: number }>,
+  ecrr?: ECRRScores
+): string[] {
+  const reqs: string[] = [];
+
+  // From significant gaps — each gap requires tolerating specific discomfort
+  for (const gap of gaps.slice(0, 2)) {
+    const req = WILLINGNESS_MAP[gap.value.toLowerCase()];
+    if (req) reqs.push(req);
+  }
+
+  // From avoidance tendency
+  if (values.avoidanceTendency > 0.3) {
+    reqs.push(
+      'Willingness to sit with discomfort instead of solving, fixing, or fleeing — ' +
+      'the discomfort IS the growth.'
+    );
+  }
+
+  // From attachment style
+  if (ecrr) {
+    if (ecrr.anxietyScore > 4.0) {
+      reqs.push(
+        'Willingness to tolerate uncertainty without seeking immediate reassurance — ' +
+        'your partner cannot always be your emotional regulator.'
+      );
+    }
+    if (ecrr.avoidanceScore > 4.0) {
+      reqs.push(
+        'Willingness to stay present when emotions rise instead of retreating — ' +
+        'connection requires being seen in your vulnerability.'
+      );
+    }
+  }
+
+  // From balanced tendency (high balanced can mean conflict-avoidant middle-groundism)
+  if (values.balancedTendency > 0.6) {
+    reqs.push(
+      'Willingness to take a clear position even when middle ground feels safer — ' +
+      'sometimes compromise means nobody gets what they actually need.'
+    );
+  }
+
+  if (reqs.length === 0) {
+    reqs.push(
+      'Willingness to keep showing up honestly, even when it costs comfort — ' +
+      'growth always happens at the edge of what feels easy.'
+    );
+  }
+
+  return reqs.slice(0, 3); // max 3
+}
+
+const WILLINGNESS_MAP: Record<string, string> = {
+  intimacy:
+    'Willingness to be seen — fully, imperfectly — without controlling how your partner receives you.',
+  honesty:
+    'Willingness to speak the difficult truth, even when silence feels safer and the outcome is uncertain.',
+  growth:
+    'Willingness to be a beginner again — to not know, to stumble, to learn in front of someone who matters.',
+  security:
+    'Willingness to follow through consistently, even when motivation fades — reliability is built in the boring moments.',
+  adventure:
+    'Willingness to release control and step into the unknown, even when routine feels like safety.',
+  independence:
+    'Willingness to assert your separate self, even when it risks temporary disconnection from your partner.',
+  family:
+    'Willingness to have the conversations you have been avoiding about what you each truly want for your future.',
+  service:
+    'Willingness to give without keeping score and to receive without feeling indebted.',
+  playfulness:
+    'Willingness to be silly, unproductive, and light — even when your inner taskmaster says there is work to do.',
+  spirituality:
+    'Willingness to explore meaning together, even when your worldviews do not perfectly align.',
+};
+
+// ─── Qualitative Insights ───────────────────────────────
+
+function buildQualitativeInsights(
+  values: ValuesScores,
+  coreValues: string[],
+  gaps: Array<{ value: string; gap: number; importance: number }>,
+  ecrr?: ECRRScores
+): QualitativeInsights {
+  const partnerIdentity = buildPartnerIdentity(values, coreValues, ecrr);
+  const nonNegotiables = buildNonNegotiables(values);
+  const aspirationalVision = buildAspirationalVision(values, coreValues, gaps, ecrr);
+
+  return { partnerIdentity, nonNegotiables, aspirationalVision };
+}
+
+function buildPartnerIdentity(
+  values: ValuesScores,
+  coreValues: string[],
+  ecrr?: ECRRScores
+): string {
+  const top2 = coreValues.slice(0, 2);
+  let identity = `At your core, you are a partner who values ${formatList(top2)} above all else. `;
+
+  // Add character from values profile
+  const hasIntimacy = values.domainScores.intimacy?.importance >= 8;
+  const hasHonesty = values.domainScores.honesty?.importance >= 8;
+  const hasGrowth = values.domainScores.growth?.importance >= 8;
+  const hasIndependence = values.domainScores.independence?.importance >= 7;
+
+  if (hasIntimacy && hasHonesty) {
+    identity += 'You want a relationship built on deep connection AND radical honesty — ' +
+      'you believe real love requires both.';
+  } else if (hasIntimacy) {
+    identity += 'You are driven by a deep desire for closeness and emotional connection — ' +
+      'surface-level relating will never be enough for you.';
+  } else if (hasGrowth && hasIndependence) {
+    identity += 'You are a partner who brings both a growth mindset and a strong sense of self — ' +
+      'you want to evolve together while maintaining who you each are.';
+  } else if (hasGrowth) {
+    identity += 'You see your relationship as a place to become your best self — ' +
+      'stagnation is more threatening to you than conflict.';
+  } else {
+    identity += `These values shape how you show up in conflict, intimacy, and everyday moments.`;
+  }
+
+  return identity;
+}
+
+function buildNonNegotiables(values: ValuesScores): string[] {
+  // Non-negotiables = values with importance >= 9
+  const nonNegs: string[] = [];
+  const entries = Object.entries(values.domainScores)
+    .filter(([, d]) => d.importance >= 9)
+    .sort(([, a], [, b]) => b.importance - a.importance);
+
+  for (const [id, d] of entries.slice(0, 3)) {
+    const domain = VALUE_DOMAINS.find((dom) => dom.id === id);
+    const label = domain?.label ?? id;
+    nonNegs.push(`${label} (${d.importance}/10) — this is non-negotiable for you`);
+  }
+
+  if (nonNegs.length === 0) {
+    // No extreme values — note the flexibility
+    nonNegs.push('You have no values rated at 9-10, suggesting flexibility in what you prioritize');
+  }
+
+  return nonNegs;
+}
+
+function buildAspirationalVision(
+  values: ValuesScores,
+  coreValues: string[],
+  gaps: Array<{ value: string; gap: number; importance: number }>,
+  ecrr?: ECRRScores
+): string {
+  if (gaps.length === 0) {
+    return `You are becoming the partner you already aspire to be — someone anchored in ` +
+      `${formatList(coreValues.slice(0, 3))}. The work now is deepening what you already do well.`;
+  }
+
+  const topGap = gaps[0];
+  let vision = `You are becoming a partner who lives ${topGap.value.toLowerCase()} more fully. `;
+
+  // Attachment-specific aspirational tone
+  if (ecrr) {
+    if (ecrr.attachmentStyle === 'anxious-preoccupied') {
+      vision += 'For you, this means learning to trust that you are enough — ' +
+        'that your love does not need to be earned through vigilance and effort. ' +
+        'The version of you that can rest in connection is already emerging.';
+    } else if (ecrr.attachmentStyle === 'dismissive-avoidant') {
+      vision += 'For you, this means allowing yourself to need and be needed — ' +
+        'not as weakness but as courage. The version of you that lets someone in ' +
+        'all the way is already there, behind the walls.';
+    } else if (ecrr.attachmentStyle === 'fearful-avoidant') {
+      vision += 'For you, this means learning that safety and closeness can coexist — ' +
+        'that you do not have to choose between protecting yourself and loving fully. ' +
+        'Each day you stay present is proof that you are rewriting the story.';
+    } else {
+      vision += 'Your foundation is strong. The invitation is to go deeper — ' +
+        'to close the gap between your aspirations and your daily actions, ' +
+        'one small choice at a time.';
+    }
+  } else {
+    vision += 'Each step toward closing this gap brings you closer to the partner ' +
+      'you already aspire to be.';
+  }
+
+  return vision;
+}

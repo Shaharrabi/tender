@@ -102,11 +102,19 @@ export interface RegulationLens {
   coRegulationPattern?: CoRegulationPattern; // How you co-regulate with partner
 }
 
+export interface QualitativeInsights {
+  partnerIdentity: string;        // who you are as a partner (values-based)
+  nonNegotiables: string[];       // values you will not compromise on
+  aspirationalVision: string;     // who you are becoming
+}
+
 export interface ValuesLens {
   narrative: string;
   coreValues: string[];
   significantGaps: Array<{ value: string; gap: number; importance: number }>;
   developmentalInvitations: string[];
+  willingnessRequirements?: string[];     // discomfort required for growth
+  qualitativeInsights?: QualitativeInsights; // who you are as a partner
 }
 
 // ─── Field Awareness Lens (Phase 3) ─────────────────────
@@ -132,12 +140,21 @@ export interface FourLensAnalysis {
 
 export type CyclePosition = 'pursuer' | 'withdrawer' | 'mixed' | 'flexible';
 
+export interface RepairReadiness {
+  canMakeRepair: number;      // 0-100: ability to initiate repair
+  canReceiveRepair: number;   // 0-100: ability to receive repair attempts
+  repairStyle: string;        // description of how they repair
+  barriers: string[];         // what gets in the way of repair
+}
+
 export interface NegativeCycle {
   position: CyclePosition;
+  positionConfidence: 'high' | 'medium';  // how distinct the position is
   description: string;
   primaryTriggers: string[];
   typicalMoves: string[];
   deEscalators: string[];
+  repairReadiness?: RepairReadiness;       // how ready they are for repair
 }
 
 // ─── Growth Edges ────────────────────────────────────────
