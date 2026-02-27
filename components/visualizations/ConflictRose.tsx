@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   title: {
-    fontFamily: 'PlayfairDisplay_400Regular',
+    fontFamily: FontFamilies.heading,
     fontSize: 16,
     color: Colors.text,
     marginBottom: 2,

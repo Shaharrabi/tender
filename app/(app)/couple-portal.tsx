@@ -32,7 +32,7 @@ import {
   getLatestDyadicScores,
   isSelfCouple,
 } from '@/services/couples';
-import { getPartnerSharedAssessments } from '@/services/consent';
+import { getPartnerSharedAssessments, INDIVIDUAL_ASSESSMENT_TYPES } from '@/services/consent';
 import { getPortrait, checkCanGeneratePortrait, fetchAllScores, extractSupplementScores, savePortrait } from '@/services/portrait';
 import { generatePortrait, isPortraitStale } from '@/utils/portrait/portrait-generator';
 import { generateRelationshipPortrait } from '@/utils/portrait/relationship-portrait-generator';
@@ -82,6 +82,7 @@ import CoupleAnchorCard from '@/components/couple-portrait/CoupleAnchorCard';
 import ExitPointCard from '@/components/couple-portrait/ExitPointCard';
 import DyadicDiscrepancyAlert from '@/components/couple-portrait/DyadicDiscrepancyAlert';
 import CoupleNarrativeBlock from '@/components/couple-portrait/CoupleNarrativeBlock';
+import { generateOverviewSnapshot } from '@/utils/portrait/overview-snapshot';
 
 type TabKey = 'overview' | 'dance' | 'together' | 'insights' | 'growth' | 'anchors';
 
@@ -156,6 +157,14 @@ export default function CouplePortalScreen() {
       let mp = await getPortrait(user.id);
       let pp = selfCouple ? mp : await getPortrait(partnerId);
       console.log('[CouplePortal] Portraits from DB:', { mine: !!mp, partner: !!pp });
+      if (!pp && !selfCouple) {
+        console.warn(
+          '[CouplePortal] ⚠️ Partner portrait returned null. Common causes:\n' +
+          '  1. Partner hasn\'t generated their portrait yet (they need to complete all 6 assessments + generate from Home screen)\n' +
+          '  2. RLS migration 026_couple_partner_rls_access.sql hasn\'t been applied in Supabase\n' +
+          '  3. Couple status is not "active" in the couples table'
+        );
+      }
 
       // Auto-generate individual portrait helper
       const autoGenPortrait = async (targetUserId: string, label: string): Promise<IndividualPortrait | null> => {
@@ -188,6 +197,7 @@ export default function CouplePortalScreen() {
       };
 
       // Auto-regenerate my portrait if stale (assessment IDs changed or code version newer)
+      let individualPortraitRegenerated = false;
       if (mp) {
         try {
           const { canGenerate } = await checkCanGeneratePortrait(user.id);
@@ -201,6 +211,7 @@ export default function CouplePortalScreen() {
               console.log(`[CouplePortal] My portrait stale (ids: ${idsChanged}, version: ${versionStale}) — regenerating...`);
               mp = await autoGenPortrait(user.id, 'MY');
               if (selfCouple && mp) pp = mp;
+              individualPortraitRegenerated = true;
             }
           }
         } catch (staleErr: any) {
@@ -212,9 +223,26 @@ export default function CouplePortalScreen() {
         mp = await autoGenPortrait(user.id, 'MY');
         if (selfCouple && mp) pp = mp;
       }
+      // NOTE: We do NOT try to regenerate the partner's portrait here.
+      // RLS prevents writing to another user's portrait row. The partner
+      // must regenerate their own portrait from their device. We only READ.
+      // If the portrait is stale, we still use it — a stale portrait is
+      // far better than no portrait at all.
+      if (pp && !selfCouple) {
+        const partnerVersionStale = isPortraitStale((pp as any).version);
+        if (partnerVersionStale) {
+          console.log('[CouplePortal] Partner portrait is stale but still usable — partner should regenerate from their device');
+        }
+      }
+
       if (!pp && !selfCouple) {
-        // Partner needs to generate their own portrait from their device
-        console.log('[CouplePortal] Partner portrait missing — partner needs to generate it from their own device');
+        // Partner portrait not accessible — either:
+        // 1. Partner hasn't generated their portrait yet, OR
+        // 2. The RLS policy (migration 026) hasn't been applied to allow reading partner data
+        console.warn(
+          '[CouplePortal] Partner portrait missing — partner needs to generate it from their device. ' +
+          'Also verify that migration 026_couple_partner_rls_access.sql has been applied in Supabase.'
+        );
       }
 
       if (mp) setMyPortrait(mp as unknown as IndividualPortrait);
@@ -225,7 +253,13 @@ export default function CouplePortalScreen() {
       let rp = await getRelationshipPortrait(myCouple.id);
       console.log('[CouplePortal] Relationship portrait from DB:', !!rp);
 
-      if (!rp && (mp || pp)) {
+      // Regenerate when: no portrait exists, OR individual portraits changed
+      // (without this, retaking an assessment would never update the couple view)
+      const needsRelPortraitRegen = !rp || individualPortraitRegenerated;
+      if (needsRelPortraitRegen && (mp || pp)) {
+        if (rp && individualPortraitRegenerated) {
+          console.log('[CouplePortal] Individual portrait changed — regenerating relationship portrait...');
+        }
         setGenerating(true);
         try {
           const effectiveMyPortrait = mp || pp;
@@ -446,11 +480,11 @@ export default function CouplePortalScreen() {
           <Text style={styles.synthesisTitle}>Your deep portrait needs more data</Text>
           <Text style={styles.synthesisNarrative}>
             {!myPortrait && !partnerPortrait
-              ? 'Both individual portraits are missing. Each partner needs to complete all 6 individual assessments (ECR-R, DUTCH, SSEIT, DSI-R, IPIP-NEO, Values) to generate their portrait.'
+              ? 'Both individual portraits are missing. Each partner needs to complete all 6 individual assessments (ECR-R, DUTCH, SSEIT, DSI-R, IPIP-NEO, Values) and generate their portrait from the Home screen.'
               : !myPortrait
                 ? 'Your individual portrait is missing. Complete all 6 assessments on the Home screen, then come back.'
                 : !partnerPortrait
-                  ? 'Your partner\'s individual portrait is missing. They need to complete their 6 assessments.'
+                  ? `${partnerName}'s individual portrait isn't available yet. They need to complete their 6 assessments and generate their portrait from the Home screen on their device. Once generated, it will appear here automatically.`
                   : portraitError || 'Something unexpected went wrong generating the deep portrait. Try tapping Refresh.'}
           </Text>
           <TouchableOpacity
@@ -471,29 +505,64 @@ export default function CouplePortalScreen() {
         />
       )}
 
-      {/* Synthesized Overview Summary */}
-      {dp && (() => {
-        // Build a unique overview blurb from all the data — NOT the narrative opening
-        const dance = dp.patternInterlock.combinedCycle.dynamic.replace(/-/g, ' ');
-        const attach = dp.patternInterlock.attachmentDynamic.dynamicLabel;
-        const strengths = dp.convergenceDivergence.sharedStrengths.slice(0, 2).map(s => s.dimensionLabel);
-        const friction = dp.convergenceDivergence.frictionZones.slice(0, 1).map(z => z.area);
-        const topEdge = dp.coupleGrowthEdges[0]?.title || '';
-        const vitalityPct = dp.relationalField?.vitality ?? 0;
-        const vitalityLabel = dp.relationalField?.qualitativeLabel || '';
+      {/* Literary Narrative Snapshot */}
+      {dp && (
+        <View style={styles.narrativeCard}>
+          <Text style={styles.narrativeSummary}>
+            {generateOverviewSnapshot(dp)}
+          </Text>
+        </View>
+      )}
 
-        let summary = `Your relational dance is ${dance}. ${attach}`;
-        if (strengths.length > 0) summary += ` You share strength in ${strengths.join(' and ')}.`;
-        if (friction.length > 0) summary += ` Your primary friction zone is around ${friction[0].toLowerCase()}.`;
-        if (topEdge) summary += ` Your leading growth edge: "${topEdge}."`;
-        if (vitalityLabel) summary += ` Field vitality: ${vitalityLabel}.`;
+      {/* ─── Fallback content when deep portrait isn't available ─── */}
+      {!dp && portrait && (
+        <View style={styles.overviewInsights}>
+          {portrait.combined_cycle && (
+            <>
+              <Text style={styles.insightsHeading}>Your Relational Pattern</Text>
+              <View style={styles.narrativeCard}>
+                <Text style={styles.narrativeSummary}>
+                  {portrait.combined_cycle.cycleDescription}
+                </Text>
+              </View>
+              {portrait.combined_cycle.triggers?.length > 0 && (
+                <View style={styles.overviewInsightRow}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.overviewInsightLabel}>Common Triggers</Text>
+                    <Text style={styles.overviewInsightText}>
+                      {portrait.combined_cycle.triggers.slice(0, 3).join(' • ')}
+                    </Text>
+                  </View>
+                </View>
+              )}
+              {portrait.combined_cycle.deEscalationSteps?.length > 0 && (
+                <View style={styles.overviewInsightRow}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.overviewInsightLabel}>Steps Toward Each Other</Text>
+                    <Text style={styles.overviewInsightText}>
+                      {portrait.combined_cycle.deEscalationSteps.slice(0, 3).join(' • ')}
+                    </Text>
+                  </View>
+                </View>
+              )}
+            </>
+          )}
 
-        return (
-          <View style={styles.narrativeCard}>
-            <Text style={styles.narrativeSummary}>{summary}</Text>
-          </View>
-        );
-      })()}
+          {portrait.relationship_growth_edges?.length > 0 && (
+            <>
+              <Text style={[styles.insightsHeading, { marginTop: Spacing.md }]}>Growth Edges</Text>
+              {portrait.relationship_growth_edges.slice(0, 3).map((edge: any, i: number) => (
+                <View key={i} style={styles.overviewInsightRow}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.overviewInsightLabel}>{edge.title || edge.area}</Text>
+                    <Text style={styles.overviewInsightText}>{edge.description}</Text>
+                  </View>
+                </View>
+              ))}
+            </>
+          )}
+        </View>
+      )}
 
       {/* Quick Stats */}
       {portrait.dyadic_scores?.csi16 && (
@@ -906,7 +975,7 @@ export default function CouplePortalScreen() {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* Header */}
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+        <TouchableOpacity onPress={() => router.replace('/(app)/partner' as any)} style={styles.backBtn}>
           <View style={styles.backRow}>
             <ArrowLeftIcon size={16} color={Colors.primary} />
             <Text style={styles.backText}>Back</Text>
@@ -923,7 +992,7 @@ export default function CouplePortalScreen() {
           <View style={styles.sharingCard}>
             <Text style={styles.sharingLabel}>SHARED WITH YOU</Text>
             <Text style={styles.sharingText}>
-              {partnerName} is sharing {partnerSharedAssessments.length} of 6 individual assessments with you.
+              {partnerName} is sharing {Math.min(partnerSharedAssessments.length, INDIVIDUAL_ASSESSMENT_TYPES.length)} of {INDIVIDUAL_ASSESSMENT_TYPES.length} individual assessments with you.
             </Text>
           </View>
         )}
@@ -952,7 +1021,7 @@ export default function CouplePortalScreen() {
         {/* Tab Content */}
         {renderTabContent()}
 
-        <View style={{ height: 40 }} />
+        <View style={{ height: 100 }} />
       </ScrollView>
       <HomeButton />
     </SafeAreaView>
@@ -1071,15 +1140,21 @@ const styles = StyleSheet.create({
 
   // Overview
   narrativeCard: {
-    backgroundColor: Colors.surfaceElevated,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
+    backgroundColor: '#FFFFFF',
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
     marginBottom: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+    ...Shadows.card,
   },
   narrativeSummary: {
-    ...Typography.body,
-    color: Colors.text,
-    lineHeight: 24,
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '400',
+    color: Colors.textSecondary,
+    lineHeight: 22,
+    letterSpacing: 0.1,
   },
   quickStatsRow: {
     flexDirection: 'row',

@@ -236,11 +236,7 @@ export function AttachmentMatrix({
           {'\u2191'} ANXIETY
         </Text>
 
-        {/* Score endpoints */}
-        <Text style={[styles.tickLabel, { bottom: PADDING - 14, left: PADDING - 4 }]}>1</Text>
-        <Text style={[styles.tickLabel, { bottom: PADDING - 14, left: PADDING + PLOT_SIZE - 4 }]}>7</Text>
-        <Text style={[styles.tickLabel, { top: PADDING + PLOT_SIZE + 2, left: PADDING - 14 }]}>1</Text>
-        <Text style={[styles.tickLabel, { top: PADDING - 8, left: PADDING - 14 }]}>7</Text>
+        {/* Scale context — Low/High instead of confusing endpoint numbers */}
       </View>
 
       {/* Current position badge */}
@@ -321,12 +317,6 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     transform: [{ rotate: '-90deg' }],
     width: 80,
-  },
-  tickLabel: {
-    position: 'absolute',
-    fontSize: 9,
-    color: Colors.textMuted,
-    fontFamily: FontFamilies.body,
   },
   positionBadge: {
     alignItems: 'center',
