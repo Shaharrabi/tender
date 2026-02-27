@@ -337,8 +337,30 @@ export function findValuesTensions(
  * We must use this — not the composite `attachmentSecurity` (which blends
  * anxiety + avoidance into one number, losing the distinction).
  */
-function quadrantFromPosition(pos: CyclePosition | undefined): string {
-  switch (pos) {
+/**
+ * Derive quadrant label from actual ECR-R normalized scores (0-100 scale).
+ * Uses the same boundary logic as getStyleFromScores (QUADRANT_BOUNDARY = 4.0
+ * on a 1-7 scale, which maps to 50 on the 0-100 normalized scale).
+ *
+ * Falls back to cycle-position mapping only for older portraits that lack
+ * anxietyNorm/avoidanceNorm in their compositeScores.
+ */
+function quadrantFromScores(
+  portrait: IndividualPortrait,
+  posFallback: CyclePosition | undefined,
+): string {
+  const sc = portrait.compositeScores;
+  if (sc?.anxietyNorm != null && sc?.avoidanceNorm != null) {
+    // Normalized 0-100 scale: 50 corresponds to raw score 4.0 (the QUADRANT_BOUNDARY)
+    const highAnxiety = sc.anxietyNorm >= 50;
+    const highAvoidance = sc.avoidanceNorm >= 50;
+    if (highAnxiety && highAvoidance) return 'Fearful-Avoidant';
+    if (highAnxiety) return 'Anxious-Preoccupied';
+    if (highAvoidance) return 'Dismissive-Avoidant';
+    return 'Secure';
+  }
+  // Legacy fallback: position-based (less accurate)
+  switch (posFallback) {
     case 'pursuer': return 'Anxious-Preoccupied';
     case 'withdrawer': return 'Dismissive-Avoidant';
     case 'mixed': return 'Fearful-Avoidant';
@@ -402,8 +424,8 @@ export function analyzeAttachmentDynamic(
   const posA: CyclePosition = portraitA.negativeCycle?.position || 'flexible';
   const posB: CyclePosition = portraitB.negativeCycle?.position || 'flexible';
 
-  const aQuadrant = quadrantFromPosition(posA);
-  const bQuadrant = quadrantFromPosition(posB);
+  const aQuadrant = quadrantFromScores(portraitA, posA);
+  const bQuadrant = quadrantFromScores(portraitB, posB);
 
   // Use actual ECR-R anxiety/avoidance for matrix plotting
   const a = getAnxietyAvoidance(portraitA, posA);

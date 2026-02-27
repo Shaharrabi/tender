@@ -107,15 +107,25 @@ export default function AttachmentMatrixPlot({
           stroke={Colors.textMuted} strokeWidth={1} strokeDasharray="3,3" opacity={0.5}
         />
 
-        {/* Axis labels */}
-        <SvgText x={size / 2} y={size - 8} fontSize={10}
-          fill={Colors.textMuted} textAnchor="middle" fontFamily="JosefinSans_400Regular">
-          Avoidance \u2192
+        {/* Axis context */}
+        {/* Low/High context labels instead of "Avoidance →" / "Anxiety →" */}
+        <SvgText x={padding + 2} y={size - 8} fontSize={8}
+          fill={Colors.textMuted} textAnchor="start" fontFamily="JosefinSans_400Regular">
+          Low
         </SvgText>
-        <SvgText x={12} y={size / 2} fontSize={10}
+        <SvgText x={padding + plotSize} y={size - 8} fontSize={8}
+          fill={Colors.textMuted} textAnchor="end" fontFamily="JosefinSans_400Regular">
+          High avoidance
+        </SvgText>
+        <SvgText x={8} y={padding + plotSize - 2} fontSize={8}
           fill={Colors.textMuted} textAnchor="middle" fontFamily="JosefinSans_400Regular"
-          transform={`rotate(-90, 12, ${size / 2})`}>
-          Anxiety \u2192
+          transform={`rotate(-90, 8, ${padding + plotSize - 2})`}>
+          Low
+        </SvgText>
+        <SvgText x={8} y={padding + 10} fontSize={8}
+          fill={Colors.textMuted} textAnchor="middle" fontFamily="JosefinSans_400Regular"
+          transform={`rotate(-90, 8, ${padding + 10})`}>
+          High anxiety
         </SvgText>
       </Svg>
 
