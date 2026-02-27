@@ -8,6 +8,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '@/constants/theme';
+import { SparkleIcon, PuzzleIcon, LightningIcon, ScaleIcon } from '@/assets/graphics/icons';
 import type {
   ConvergencePoint,
   ComplementaryPair,
@@ -28,7 +29,7 @@ export function SharedStrengthCard({ item }: { item: ConvergencePoint }) {
     >
       <View style={styles.cardHeader}>
         <View style={styles.iconBadge}>
-          <Text style={styles.iconText}>{'\u2728'}</Text>
+          <SparkleIcon size={16} color={Colors.success} />
         </View>
         <Text style={styles.cardTitle}>{item.dimensionLabel}</Text>
         <View style={styles.scoreRow}>
@@ -75,7 +76,7 @@ export function ComplementaryGiftCard({
     >
       <View style={styles.cardHeader}>
         <View style={[styles.iconBadge, { backgroundColor: '#F0E6FF' }]}>
-          <Text style={styles.iconText}>{'\uD83C\uDF81'}</Text>
+          <PuzzleIcon size={16} color="#9B7BA7" />
         </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.cardTitle}>{item.dimensionLabel}</Text>
@@ -117,7 +118,7 @@ export function FrictionZoneCard({
     >
       <View style={styles.cardHeader}>
         <View style={[styles.iconBadge, { backgroundColor: Colors.errorLight }]}>
-          <Text style={styles.iconText}>{'\u26A0'}</Text>
+          <LightningIcon size={16} color={Colors.warning} />
         </View>
         <Text style={styles.cardTitle}>{item.area}</Text>
       </View>
@@ -165,7 +166,7 @@ export function ValuesTensionCard({ item }: { item: ValuesTension }) {
     >
       <View style={styles.cardHeader}>
         <View style={[styles.iconBadge, { backgroundColor: '#FFF3E0' }]}>
-          <Text style={styles.iconText}>{'\u2696'}</Text>
+          <ScaleIcon size={16} color={Colors.accent} />
         </View>
         <Text style={styles.cardTitle}>{item.valueA} vs. {item.valueB}</Text>
       </View>
@@ -220,9 +221,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.backgroundAlt,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  iconText: {
-    fontSize: 16,
   },
   cardTitle: {
     ...Typography.headingS,

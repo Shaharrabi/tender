@@ -137,9 +137,9 @@ const styles = StyleSheet.create({
     borderLeftColor: Colors.success,
   },
   repairQuote: {
-    fontFamily: 'PlayfairDisplay_400Regular_Italic',
-    fontSize: 14,
+    ...Typography.bodySmall,
     color: Colors.text,
+    fontStyle: 'italic' as const,
     lineHeight: 20,
   },
 });

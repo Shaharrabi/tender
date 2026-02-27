@@ -27,26 +27,21 @@ export default function AttachmentMatrixPlot({
   const padding = 40;
   const plotSize = size - padding * 2;
 
-  // Derive anxiety/avoidance from secure distance + quadrant
-  // We reverse-engineer from the quadrant labels
-  const getPosition = (quadrant: string, secureDist: number) => {
-    const normalizedDist = Math.min(secureDist, 100);
-    switch (quadrant) {
-      case 'Secure':
-        return { x: 25, y: plotSize - 25 }; // low avoidance, low anxiety (bottom-left)
-      case 'Anxious-Preoccupied':
-        return { x: 25 + normalizedDist * 0.2, y: plotSize - 25 - normalizedDist * 0.7 }; // low avoidance, high anxiety (top-left)
-      case 'Dismissive-Avoidant':
-        return { x: 25 + normalizedDist * 0.7, y: plotSize - 25 - normalizedDist * 0.2 }; // high avoidance, low anxiety (bottom-right)
-      case 'Fearful-Avoidant':
-        return { x: 25 + normalizedDist * 0.5, y: plotSize - 25 - normalizedDist * 0.5 }; // high both (top-right)
-      default:
-        return { x: plotSize / 2, y: plotSize / 2 };
-    }
-  };
+  // Use actual anxiety/avoidance values (0-100 scale) for accurate plotting.
+  // X-axis = avoidance (left=0, right=100), Y-axis = anxiety (bottom=0, top=100)
+  const toPlotPos = (anxiety: number, avoidance: number) => ({
+    x: (avoidance / 100) * plotSize,
+    y: plotSize - (anxiety / 100) * plotSize,
+  });
 
-  const posA = getPosition(attachmentDynamic.partnerAQuadrant, attachmentDynamic.partnerASecureDistance);
-  const posB = getPosition(attachmentDynamic.partnerBQuadrant, attachmentDynamic.partnerBSecureDistance);
+  const posA = toPlotPos(
+    attachmentDynamic.partnerAAnxiety ?? 25,
+    attachmentDynamic.partnerAAvoidance ?? 25,
+  );
+  const posB = toPlotPos(
+    attachmentDynamic.partnerBAnxiety ?? 25,
+    attachmentDynamic.partnerBAvoidance ?? 25,
+  );
 
   return (
     <View style={styles.container}>

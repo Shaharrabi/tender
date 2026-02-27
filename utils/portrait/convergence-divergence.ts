@@ -5,7 +5,7 @@
  * complement, clash, or leave blind spots.
  */
 
-import type { IndividualPortrait, CompositeScores } from '@/types/portrait';
+import type { IndividualPortrait, CompositeScores, CyclePosition } from '@/types/portrait';
 import type {
   RadarOverlap,
   GapInterpretation,
@@ -230,6 +230,8 @@ export function findFrictionZones(
   const scoresA = portraitA.compositeScores;
   const scoresB = portraitB.compositeScores;
 
+  if (!scoresA || !scoresB) return zones;
+
   // Regulation mismatch > 25 points
   const regA = scoresA.regulationScore ?? 50;
   const regB = scoresB.regulationScore ?? 50;
@@ -295,16 +297,29 @@ export function findValuesTensions(
   ];
 
   for (const [setA, setB, desc, practice] of tensionPairs) {
-    const aHas = aValues.some(v => setA.some(s => v.toLowerCase().includes(s)));
-    const bHas = bValues.some(v => setB.some(s => v.toLowerCase().includes(s)));
-    const aHasB = aValues.some(v => setB.some(s => v.toLowerCase().includes(s)));
-    const bHasA = bValues.some(v => setA.some(s => v.toLowerCase().includes(s)));
+    const aHasSetA = aValues.some(v => setA.some(s => v.toLowerCase().includes(s)));
+    const bHasSetB = bValues.some(v => setB.some(s => v.toLowerCase().includes(s)));
+    const aHasSetB = aValues.some(v => setB.some(s => v.toLowerCase().includes(s)));
+    const bHasSetA = bValues.some(v => setA.some(s => v.toLowerCase().includes(s)));
 
-    if ((aHas && bHas) || (aHasB && bHasA)) {
+    let valueA: string | null = null;
+    let valueB: string | null = null;
+
+    if (aHasSetA && bHasSetB) {
+      // Standard: Partner A aligns with side A, Partner B aligns with side B
+      valueA = setA[0];
+      valueB = setB[0];
+    } else if (aHasSetB && bHasSetA) {
+      // Reversed: Partner A aligns with side B, Partner B aligns with side A
+      valueA = setB[0];
+      valueB = setA[0];
+    }
+
+    if (valueA && valueB && valueA !== valueB) {
       tensions.push({
-        valueA: aHas ? setA[0] : setB[0],
-        valueB: bHas ? setB[0] : setA[0],
-        description: `One of you craves ${(aHas ? setA[0] : setB[0])}; the other values ${(bHas ? setB[0] : setA[0])}. Neither is wrong. The relationship needs both — the tension between them is the engine of your evolution as a couple.`,
+        valueA,
+        valueB,
+        description: `One of you craves ${valueA}; the other values ${valueB}. Neither is wrong. The relationship needs both — the tension between them is the engine of your evolution as a couple.`,
         integrationPractice: practice,
       });
     }
@@ -315,51 +330,107 @@ export function findValuesTensions(
 
 // ─── Attachment Dynamic ──────────────────────────────────
 
-function getQuadrant(anxiety: number, avoidance: number): string {
-  // Using normalized scores (0-100)
-  if (anxiety < 50 && avoidance < 50) return 'Secure';
-  if (anxiety >= 50 && avoidance < 50) return 'Anxious-Preoccupied';
-  if (anxiety < 50 && avoidance >= 50) return 'Dismissive-Avoidant';
-  return 'Fearful-Avoidant';
+/**
+ * Map the individual portrait's negativeCycle.position to attachment quadrant.
+ *
+ * The individual portrait determines position from the ACTUAL ECR-R scores.
+ * We must use this — not the composite `attachmentSecurity` (which blends
+ * anxiety + avoidance into one number, losing the distinction).
+ */
+function quadrantFromPosition(pos: CyclePosition | undefined): string {
+  switch (pos) {
+    case 'pursuer': return 'Anxious-Preoccupied';
+    case 'withdrawer': return 'Dismissive-Avoidant';
+    case 'mixed': return 'Fearful-Avoidant';
+    case 'flexible':
+    default:
+      return 'Secure';
+  }
+}
+
+/**
+ * Get anxiety and avoidance values for the attachment matrix plot.
+ *
+ * Uses the ACTUAL ECR-R normalized subscale scores (anxietyNorm, avoidanceNorm)
+ * stored in compositeScores. Falls back to position-based estimation only
+ * for older portraits that predate the field addition.
+ */
+function getAnxietyAvoidance(
+  portrait: IndividualPortrait,
+  pos: CyclePosition | undefined,
+): { anxiety: number; avoidance: number } {
+  const sc = portrait.compositeScores;
+
+  // Use actual ECR-R scores when available (new portraits have these)
+  if (sc?.anxietyNorm != null && sc?.avoidanceNorm != null) {
+    return { anxiety: sc.anxietyNorm, avoidance: sc.avoidanceNorm };
+  }
+
+  // Fallback for older portraits without the raw subscales
+  const insecurity = 100 - (sc?.attachmentSecurity ?? 50);
+  switch (pos) {
+    case 'pursuer':
+      return {
+        anxiety: Math.min(100, insecurity * 1.5),
+        avoidance: Math.max(5, insecurity * 0.5),
+      };
+    case 'withdrawer':
+      return {
+        anxiety: Math.max(5, insecurity * 0.5),
+        avoidance: Math.min(100, insecurity * 1.5),
+      };
+    case 'mixed':
+      return {
+        anxiety: Math.min(100, insecurity * 1.2),
+        avoidance: Math.min(100, insecurity * 1.2),
+      };
+    case 'flexible':
+    default:
+      return {
+        anxiety: Math.max(0, insecurity * 0.7),
+        avoidance: Math.max(0, insecurity * 0.7),
+      };
+  }
 }
 
 export function analyzeAttachmentDynamic(
   portraitA: IndividualPortrait,
   portraitB: IndividualPortrait,
 ): AttachmentDynamic {
-  const scA = portraitA.compositeScores;
-  const scB = portraitB.compositeScores;
+  // Use the negativeCycle.position from the individual portrait.
+  // This was determined from ACTUAL ECR-R scores and is accurate.
+  const posA: CyclePosition = portraitA.negativeCycle?.position || 'flexible';
+  const posB: CyclePosition = portraitB.negativeCycle?.position || 'flexible';
 
-  // Derive anxiety/avoidance from attachment security and accessibility
-  // AttachmentSecurity = (100 - anxietyNorm) * 0.5 + (100 - avoidanceNorm) * 0.5
-  // We approximate: anxiety ~ 100 - attachmentSecurity, avoidance ~ 100 - accessibility
-  const aAnxiety = 100 - (scA.attachmentSecurity ?? 50);
-  const aAvoidance = 100 - (scA.accessibility ?? 50);
-  const bAnxiety = 100 - (scB.attachmentSecurity ?? 50);
-  const bAvoidance = 100 - (scB.accessibility ?? 50);
+  const aQuadrant = quadrantFromPosition(posA);
+  const bQuadrant = quadrantFromPosition(posB);
+
+  // Use actual ECR-R anxiety/avoidance for matrix plotting
+  const a = getAnxietyAvoidance(portraitA, posA);
+  const b = getAnxietyAvoidance(portraitB, posB);
 
   const distance = Math.sqrt(
-    Math.pow(aAnxiety - bAnxiety, 2) + Math.pow(aAvoidance - bAvoidance, 2)
+    Math.pow(a.anxiety - b.anxiety, 2) + Math.pow(a.avoidance - b.avoidance, 2)
   );
 
-  const aQuadrant = getQuadrant(aAnxiety, aAvoidance);
-  const bQuadrant = getQuadrant(bAnxiety, bAvoidance);
-
-  const aSecureDist = Math.sqrt(Math.pow(aAnxiety, 2) + Math.pow(aAvoidance, 2));
-  const bSecureDist = Math.sqrt(Math.pow(bAnxiety, 2) + Math.pow(bAvoidance, 2));
+  const aSecureDist = Math.sqrt(Math.pow(a.anxiety, 2) + Math.pow(a.avoidance, 2));
+  const bSecureDist = Math.sqrt(Math.pow(b.anxiety, 2) + Math.pow(b.avoidance, 2));
 
   let dynamicLabel: string;
   let narrative: string;
   let repairGuidance: string;
 
-  const aIsAnxious = aAnxiety > aAvoidance;
-  const bIsAvoidant = bAvoidance > bAnxiety;
+  // Determine dynamic from position, not from derived numbers
+  const aIsAnxious = posA === 'pursuer' || posA === 'mixed';
+  const bIsAvoidant = posB === 'withdrawer' || posB === 'mixed';
+  const aIsAvoidant = posA === 'withdrawer' || posA === 'mixed';
+  const bIsAnxious = posB === 'pursuer' || posB === 'mixed';
 
-  if (aIsAnxious && bIsAvoidant) {
+  if ((aIsAnxious && bIsAvoidant) || (aIsAvoidant && bIsAnxious)) {
     dynamicLabel = 'The Classic Dance';
     narrative = 'This is the most common couple pattern in attachment research: one partner moves toward when stressed, the other moves away. The pursuer is not "too needy" and the withdrawer is not "too cold." Both are managing the same underlying fear — the fear that connection is not safe — using opposite strategies. The breakthrough comes when both see the OTHER person\'s strategy as an expression of the same fear, not a rejection of self.';
     repairGuidance = 'The pursuer softens the approach (expressing need, not urgency). The withdrawer stays present (saying "I need a moment" instead of disappearing). Both practice: pause, name the pattern, then return.';
-  } else if (!aIsAnxious && !bIsAvoidant && distance < 30) {
+  } else if (posA === posB && distance < 30) {
     dynamicLabel = 'Shared Ground';
     narrative = 'You both sit in a similar zone on the attachment landscape. This means you likely "get" each other\'s relational logic intuitively. The risk of similarity is that your shared blind spots go unnoticed — you may both avoid the same conversations, or both react the same way without anyone to balance the response.';
     repairGuidance = 'Because you share similar attachment patterns, repair comes naturally when you both feel safe. The growth edge is expanding into the zones that feel less natural for both of you.';
@@ -381,6 +452,10 @@ export function analyzeAttachmentDynamic(
     partnerBSecureDistance: bSecureDist,
     partnerAQuadrant: aQuadrant,
     partnerBQuadrant: bQuadrant,
+    partnerAAnxiety: a.anxiety,
+    partnerAAvoidance: a.avoidance,
+    partnerBAnxiety: b.anxiety,
+    partnerBAvoidance: b.avoidance,
     growthDirection: 'Both moving toward lower anxiety and lower avoidance — toward secure base',
     whatThisMeansForRepair: repairGuidance,
   };

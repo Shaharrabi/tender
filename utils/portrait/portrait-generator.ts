@@ -26,21 +26,22 @@ import type { SupplementScores } from '@/types/portrait';
  *  '1.2.0' / '2.2.0' — Sprint 2: emotionalStructure, rich anchor points, state-aware partner guide
  *  '1.3.0' / '2.3.0' — Sprint 3: EQ gap patterns, regulation toolkit, co-regulation pattern
  *  '1.4.0' / '2.4.0' — Sprint 4: repair readiness, conflict flexibility fix, values willingness + insights
+ *  '1.5.0' / '2.5.0' — Sprint 5: added anxietyNorm/avoidanceNorm to compositeScores for accurate couple attachment plotting
  */
-export const PORTRAIT_CODE_VERSION_BASE = '1.4.0';
-export const PORTRAIT_CODE_VERSION_SUPPLEMENTS = '2.4.0';
+export const PORTRAIT_CODE_VERSION_BASE = '1.5.0';
+export const PORTRAIT_CODE_VERSION_SUPPLEMENTS = '2.5.0';
 
 /**
  * Check if a portrait version is outdated.
- * Any portrait with minor version < 4 needs regeneration for Sprint 4 features.
+ * Any portrait with minor version < 5 needs regeneration for Sprint 5 features.
  */
 export function isPortraitStale(version?: string): boolean {
   if (!version) return true;
   // Parse version: major.minor.patch
   const parts = version.split('.').map(Number);
   const minor = parts[1] ?? 0;
-  // Sprint 4: repair readiness + conflict flexibility + values enrichment at minor 4
-  return minor < 4;
+  // Sprint 5: anxietyNorm/avoidanceNorm in compositeScores
+  return minor < 5;
 }
 
 /**

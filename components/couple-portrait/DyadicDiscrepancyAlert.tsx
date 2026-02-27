@@ -5,17 +5,19 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '@/constants/theme';
+import { EyeIcon, SparkleIcon, SearchIcon, ScaleIcon } from '@/assets/graphics/icons';
+import type { IconProps } from '@/assets/graphics/icons';
 import type { DyadicDiscrepancy, DiscrepancyType } from '@/types/couples';
 
 interface DyadicDiscrepancyAlertProps {
   discrepancy: DyadicDiscrepancy;
 }
 
-const TYPE_CONFIG: Record<DiscrepancyType, { label: string; color: string; icon: string }> = {
-  blind_spot: { label: 'Blind Spot', color: Colors.warning, icon: '\uD83D\uDC41' },
-  hidden_strength: { label: 'Hidden Strength', color: Colors.success, icon: '\u2728' },
-  perception_gap: { label: 'Perception Gap', color: Colors.secondary, icon: '\uD83D\uDD0D' },
-  compensating: { label: 'Compensating Pattern', color: Colors.depth, icon: '\u2696' },
+const TYPE_CONFIG: Record<DiscrepancyType, { label: string; color: string; Icon: React.ComponentType<IconProps> }> = {
+  blind_spot: { label: 'Blind Spot', color: Colors.warning, Icon: EyeIcon },
+  hidden_strength: { label: 'Hidden Strength', color: Colors.success, Icon: SparkleIcon },
+  perception_gap: { label: 'Perception Gap', color: Colors.secondary, Icon: SearchIcon },
+  compensating: { label: 'Compensating Pattern', color: Colors.depth, Icon: ScaleIcon },
 };
 
 export default function DyadicDiscrepancyAlert({ discrepancy }: DyadicDiscrepancyAlertProps) {
@@ -29,7 +31,7 @@ export default function DyadicDiscrepancyAlert({ discrepancy }: DyadicDiscrepanc
       activeOpacity={0.7}
     >
       <View style={styles.header}>
-        <Text style={styles.icon}>{config.icon}</Text>
+        <config.Icon size={20} color={config.color} />
         <View style={{ flex: 1 }}>
           <View style={styles.titleRow}>
             <Text style={styles.title}>{discrepancy.title}</Text>
@@ -84,10 +86,6 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     gap: Spacing.sm,
-  },
-  icon: {
-    fontSize: 20,
-    marginTop: 2,
   },
   titleRow: {
     flexDirection: 'row',
@@ -167,9 +165,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   questionText: {
-    fontFamily: 'PlayfairDisplay_400Regular_Italic',
-    fontSize: 14,
+    ...Typography.bodySmall,
     color: Colors.text,
+    fontStyle: 'italic' as const,
     lineHeight: 20,
   },
 });

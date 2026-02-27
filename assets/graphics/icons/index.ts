@@ -56,6 +56,8 @@ export { default as TrophyIcon } from './TrophyIcon';
 // Navigation
 export { default as ArrowLeftIcon } from './ArrowLeftIcon';
 export { default as ArrowRightIcon } from './ArrowRightIcon';
+export { default as ChevronUpIcon } from './ChevronUpIcon';
+export { default as ChevronDownIcon } from './ChevronDownIcon';
 export { default as CloseIcon } from './CloseIcon';
 export { default as MenuIcon } from './MenuIcon';
 export { default as HomeIcon } from './HomeIcon';

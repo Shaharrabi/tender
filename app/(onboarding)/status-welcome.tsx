@@ -167,11 +167,13 @@ export default function StatusWelcomeScreen() {
     if (soundRef.current) {
       await soundRef.current.stopAsync().catch(() => {});
     }
-    // Reset audio mode back to normal
-    Audio.setAudioModeAsync({
-      playsInSilentModeIOS: false,
-      staysActiveInBackground: false,
-    }).catch(() => {});
+    // Reset audio mode back to normal (native only)
+    if (Platform.OS !== 'web') {
+      Audio.setAudioModeAsync({
+        playsInSilentModeIOS: false,
+        staysActiveInBackground: false,
+      }).catch(() => {});
+    }
 
     if (isSingle) {
       // Singles skip duration, go straight to mode selection
@@ -188,10 +190,12 @@ export default function StatusWelcomeScreen() {
 
     const loadAudio = async () => {
       try {
-        await Audio.setAudioModeAsync({
-          playsInSilentModeIOS: true,
-          staysActiveInBackground: false,
-        });
+        if (Platform.OS !== 'web') {
+          await Audio.setAudioModeAsync({
+            playsInSilentModeIOS: true,
+            staysActiveInBackground: false,
+          });
+        }
 
         const { sound } = await Audio.Sound.createAsync(
           audioSource,

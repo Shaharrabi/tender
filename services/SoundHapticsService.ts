@@ -81,37 +81,40 @@ const SOUND_CONFIG: Record<SoundName, SoundConfig> = {
 
 // ─── Haptic Patterns ────────────────────────────────────────────────────────
 
+const isWeb = Platform.OS === 'web';
+const noop = () => Promise.resolve();
+
 const HapticPatterns = {
   /** Light tap — buttons, selections */
-  tap: () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light),
+  tap: isWeb ? noop : () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light),
 
   /** Medium tap — page turns, card flips */
-  medium: () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium),
+  medium: isWeb ? noop : () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium),
 
   /** Heavy tap — confetti, major celebrations */
-  heavy: () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy),
+  heavy: isWeb ? noop : () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy),
 
   /** Success notification — completed items */
-  success: () => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success),
+  success: isWeb ? noop : () => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success),
 
   /** Warning — approaching streak loss, etc. */
-  warning: () => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning),
+  warning: isWeb ? noop : () => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning),
 
   /** Error — validation fails, etc. */
-  error: () => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error),
+  error: isWeb ? noop : () => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error),
 
   /** Selection changed — mood selector, radio buttons */
-  selection: () => Haptics.selectionAsync(),
+  selection: isWeb ? noop : () => Haptics.selectionAsync(),
 
   /** XP gain — double pulse */
-  xpGain: async () => {
+  xpGain: isWeb ? noop : async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     await new Promise(r => setTimeout(r, 100));
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   },
 
   /** Level up — escalating triple pulse */
-  levelUp: async () => {
+  levelUp: isWeb ? noop : async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     await new Promise(r => setTimeout(r, 80));
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -120,14 +123,14 @@ const HapticPatterns = {
   },
 
   /** Badge unlock — success + heavy */
-  badgeUnlock: async () => {
+  badgeUnlock: isWeb ? noop : async () => {
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     await new Promise(r => setTimeout(r, 200));
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
   },
 
   /** Confetti — rapid burst */
-  confetti: async () => {
+  confetti: isWeb ? noop : async () => {
     for (let i = 0; i < 4; i++) {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       await new Promise(r => setTimeout(r, 50));
@@ -136,7 +139,7 @@ const HapticPatterns = {
   },
 
   /** Streak — rhythmic pulse (like a heartbeat) */
-  streak: async () => {
+  streak: isWeb ? noop : async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     await new Promise(r => setTimeout(r, 150));
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
@@ -165,14 +168,19 @@ class SoundHapticsServiceClass {
     if (this.initialized) return;
 
     try {
-      await Audio.setAudioModeAsync({
-        playsInSilentModeIOS: false,
-        staysActiveInBackground: false,
-        shouldDuckAndroid: true,
-      });
+      // setAudioModeAsync is iOS/Android-only; skip on web
+      if (Platform.OS !== 'web') {
+        await Audio.setAudioModeAsync({
+          playsInSilentModeIOS: false,
+          staysActiveInBackground: false,
+          shouldDuckAndroid: true,
+        });
+      }
       this.initialized = true;
     } catch (error) {
       console.warn('[SoundHaptics] Audio init failed:', error);
+      // Still mark as initialized so audio can attempt playback on web
+      if (Platform.OS === 'web') this.initialized = true;
     }
   }
 

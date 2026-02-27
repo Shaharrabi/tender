@@ -5,12 +5,15 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
+import { ChevronUpIcon, ChevronDownIcon } from '@/assets/graphics/icons';
 import type { CoupleNarrative } from '@/types/couples';
 
 interface CoupleNarrativeBlockProps {
   narrative: CoupleNarrative;
   partnerAName: string;
   partnerBName: string;
+  /** When false, the opening section is omitted (used in Insights to avoid duplicating the Overview). */
+  showOpening?: boolean;
 }
 
 interface NarrativeSectionProps {
@@ -32,7 +35,10 @@ function NarrativeSection({ title, text, accentColor = Colors.textMuted, isFirst
       <View style={styles.sectionHeader}>
         <View style={[styles.sectionDot, { backgroundColor: accentColor }]} />
         <Text style={[styles.sectionTitle, { color: accentColor }]}>{title}</Text>
-        <Text style={styles.expandIcon}>{expanded ? '\u25B2' : '\u25BC'}</Text>
+        {expanded
+          ? <ChevronUpIcon size={14} color={accentColor} />
+          : <ChevronDownIcon size={14} color={accentColor} />
+        }
       </View>
       {expanded && (
         <Text style={styles.sectionText}>{text}</Text>
@@ -45,13 +51,16 @@ export default function CoupleNarrativeBlock({
   narrative,
   partnerAName,
   partnerBName,
+  showOpening = true,
 }: CoupleNarrativeBlockProps) {
   return (
     <View style={styles.container}>
-      {/* Opening — always fully visible */}
-      <View style={styles.openingSection}>
-        <Text style={styles.openingText}>{narrative.opening}</Text>
-      </View>
+      {/* Opening — only shown when showOpening is true (skipped in Insights tab) */}
+      {showOpening && (
+        <View style={styles.openingSection}>
+          <Text style={styles.openingText}>{narrative.opening}</Text>
+        </View>
+      )}
 
       <NarrativeSection
         title="The Field Between You"
@@ -104,8 +113,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   openingText: {
-    fontFamily: 'PlayfairDisplay_400Regular',
-    fontSize: 15,
+    ...Typography.body,
     color: Colors.text,
     lineHeight: 24,
   },
@@ -128,10 +136,6 @@ const styles = StyleSheet.create({
     ...Typography.headingS,
     flex: 1,
   },
-  expandIcon: {
-    fontSize: 12,
-    color: Colors.textMuted,
-  },
   sectionText: {
     ...Typography.bodySmall,
     color: Colors.textSecondary,
@@ -148,9 +152,9 @@ const styles = StyleSheet.create({
     borderLeftColor: Colors.primary,
   },
   closingText: {
-    fontFamily: 'PlayfairDisplay_400Regular_Italic',
-    fontSize: 15,
+    ...Typography.bodySmall,
     color: Colors.text,
-    lineHeight: 24,
+    fontStyle: 'italic' as const,
+    lineHeight: 22,
   },
 });

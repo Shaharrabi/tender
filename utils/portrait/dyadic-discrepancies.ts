@@ -42,6 +42,9 @@ export function detectDyadicDiscrepancies(
 ): DyadicDiscrepancy[] {
   const discrepancies: DyadicDiscrepancy[] = [];
 
+  // Guard: need composite scores from both portraits
+  if (!portraitA.compositeScores || !portraitB.compositeScores) return discrepancies;
+
   // ── Regulation vs. Negative Coping ──────────────────
   // If both have high regulation scores but DCI shows high negative coping,
   // there's a blind spot: they think they regulate well but under relational stress, they don't

@@ -337,6 +337,10 @@ export interface AttachmentDynamic {
   partnerBSecureDistance: number;
   partnerAQuadrant: string;
   partnerBQuadrant: string;
+  partnerAAnxiety: number;
+  partnerAAvoidance: number;
+  partnerBAnxiety: number;
+  partnerBAvoidance: number;
   growthDirection: string;
   whatThisMeansForRepair: string;
 }

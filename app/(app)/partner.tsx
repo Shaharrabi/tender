@@ -343,11 +343,11 @@ export default function PartnerScreen() {
                 key={assessment.type}
                 style={[styles.card, styles.assessmentCard]}
                 onPress={() => {
-                  if (!myDone && couple) {
+                  if (couple) {
                     router.push(`/(app)/assessment?type=${assessment.type}&coupleId=${couple.id}` as any);
                   }
                 }}
-                activeOpacity={myDone ? 1 : 0.7}
+                activeOpacity={0.7}
               >
                 <View style={styles.assessmentHeader}>
                   <Text style={styles.assessmentName}>{assessment.shortName}</Text>
@@ -368,6 +368,9 @@ export default function PartnerScreen() {
                     </Text>
                   </View>
                 </View>
+                {myDone && (
+                  <Text style={styles.retakeHint}>Tap to retake</Text>
+                )}
               </TouchableOpacity>
             );
           })}
@@ -695,6 +698,13 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.caption,
     fontFamily: FontFamilies.body,
     color: Colors.textSecondary,
+  },
+  retakeHint: {
+    fontSize: FontSizes.caption,
+    fontFamily: 'PlayfairDisplay_400Regular_Italic',
+    color: Colors.primary,
+    marginTop: Spacing.xs,
+    textAlign: 'right' as const,
   },
 
   // Portal

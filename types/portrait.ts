@@ -20,6 +20,10 @@ export interface CompositeScores {
   differentiation: number;       // 0-100: DSI-R total normalized
   conflictFlexibility: number;   // 0-100: entropy of DUTCH conflict modes
   relationalAwareness: number;   // 0-100: EQ social awareness + perception + agreeableness
+
+  // ── Raw ECR-R subscales (for couple portrait attachment plotting) ──
+  anxietyNorm?: number;          // 0-100: ECR-R anxiety subscale normalized
+  avoidanceNorm?: number;        // 0-100: ECR-R avoidance subscale normalized
 }
 
 // ─── Pattern Detection ───────────────────────────────────

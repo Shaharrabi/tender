@@ -256,9 +256,9 @@ export default function DCIResults({ scores }: Props) {
         <View style={styles.actions}>
           <TouchableOpacity
             style={styles.primaryButton}
-            onPress={() => router.replace('/(app)/partner')}
+            onPress={() => router.replace('/(app)/couple-portal')}
           >
-            <Text style={styles.primaryButtonText}>Back to Partner</Text>
+            <Text style={styles.primaryButtonText}>Go to Couple Portal</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

@@ -140,9 +140,9 @@ export default function AssessmentScreen() {
 
   const handleSaveAndExit = () => {
     setSectionBreak(null);
-    // Navigate back to partner screen for dyadic assessments, home for individual
+    // Navigate to couple portal for dyadic assessments, home for individual
     if (isDyadicAssessment(config.type as any)) {
-      router.replace('/(app)/partner');
+      router.replace('/(app)/couple-portal');
     } else {
       router.replace('/(app)/home');
     }
@@ -197,9 +197,13 @@ export default function AssessmentScreen() {
             responses,
             scores,
           );
-        } catch (dyadicErr) {
-          console.warn('[Assessment] Failed to save dyadic record (non-fatal):', dyadicErr);
-          // Non-fatal — the individual save succeeded, couple save is supplementary
+          console.log('[Assessment] Dyadic record saved successfully for', config.type);
+        } catch (dyadicErr: any) {
+          console.error('[Assessment] Dyadic save FAILED:', dyadicErr);
+          Alert.alert(
+            'Couple Record Issue',
+            `Your answers were saved, but the couple record failed: ${dyadicErr?.message || 'Unknown error'}. The partner screen may still show "Not started". Please try retaking the assessment.`,
+          );
         }
       }
 

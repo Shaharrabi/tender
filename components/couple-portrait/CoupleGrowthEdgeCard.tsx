@@ -11,6 +11,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '@/constants/theme';
+import { ChevronUpIcon, ChevronDownIcon } from '@/assets/graphics/icons';
 import type { CoupleGrowthEdge } from '@/types/couples';
 
 interface CoupleGrowthEdgeCardProps {
@@ -58,7 +59,10 @@ export default function CoupleGrowthEdgeCard({
             ) : null}
           </View>
         </View>
-        <Text style={styles.expandIcon}>{expanded ? '\u25B2' : '\u25BC'}</Text>
+        {expanded
+          ? <ChevronUpIcon size={14} color={Colors.textMuted} />
+          : <ChevronDownIcon size={14} color={Colors.textMuted} />
+        }
       </View>
 
       {expanded && (
@@ -170,10 +174,6 @@ const styles = StyleSheet.create({
     color: Colors.textMuted,
     fontSize: 10,
     flex: 1,
-  },
-  expandIcon: {
-    fontSize: 12,
-    color: Colors.textMuted,
   },
   expandedContent: {
     marginTop: Spacing.md,

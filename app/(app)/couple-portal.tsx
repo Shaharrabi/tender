@@ -34,7 +34,7 @@ import {
 } from '@/services/couples';
 import { getPartnerSharedAssessments } from '@/services/consent';
 import { getPortrait, checkCanGeneratePortrait, fetchAllScores, extractSupplementScores, savePortrait } from '@/services/portrait';
-import { generatePortrait } from '@/utils/portrait/portrait-generator';
+import { generatePortrait, isPortraitStale } from '@/utils/portrait/portrait-generator';
 import { generateRelationshipPortrait } from '@/utils/portrait/relationship-portrait-generator';
 import { generateDeepCouplePortrait } from '@/utils/portrait/couple-portrait-generator';
 import { getExerciseById } from '@/utils/interventions/registry';
@@ -49,6 +49,15 @@ import {
 } from '@/constants/theme';
 import {
   SeedlingIcon,
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  ChatBubbleIcon,
+  HeartPulseIcon,
+  LinkIcon,
+  SparkleIcon,
+  LightningIcon,
+  CompassIcon,
+  LeafIcon,
 } from '@/assets/graphics/icons';
 import HomeButton from '@/components/HomeButton';
 import type { Couple, UserProfile, RelationshipPortrait, DeepCouplePortrait } from '@/types/couples';
@@ -119,209 +128,261 @@ export default function CouplePortalScreen() {
   const loadData = useCallback(async () => {
     if (!user) return;
     setLoading(true);
+    setPortraitError(null);
+    console.log('[CouplePortal] === LOAD START ===');
     try {
       const myCouple = await getMyCouple(user.id);
+      console.log('[CouplePortal] Couple:', myCouple ? myCouple.id : 'NOT FOUND');
       if (!myCouple) { setLoading(false); return; }
       setCouple(myCouple);
 
+      const selfCouple = isSelfCouple(myCouple);
+      const partnerId = myCouple.partner_a_id === user.id
+        ? myCouple.partner_b_id : myCouple.partner_a_id;
+      console.log('[CouplePortal] Self-couple:', selfCouple, '| partnerId:', partnerId);
+
       const partner = await getPartnerProfile(user.id);
       setPartnerProfile(partner);
+      console.log('[CouplePortal] Partner profile:', partner?.display_name || 'none');
 
       // Load partner's sharing preferences
       if (partner) {
-        const partnerId = myCouple.partner_a_id === user.id
-          ? myCouple.partner_b_id : myCouple.partner_a_id;
         const shared = await getPartnerSharedAssessments(partnerId, myCouple.id);
         setPartnerSharedAssessments(shared);
       }
 
-      // Try to load existing relationship portrait
-      let rp = await getRelationshipPortrait(myCouple.id);
+      // ─── 1. Load Individual Portraits ────────────────────
+      console.log('[CouplePortal] Loading individual portraits...');
+      let mp = await getPortrait(user.id);
+      let pp = selfCouple ? mp : await getPortrait(partnerId);
+      console.log('[CouplePortal] Portraits from DB:', { mine: !!mp, partner: !!pp });
 
-      // If no portrait exists, generate one
-      if (!rp) {
-        setGenerating(true);
-        setPortraitError(null);
+      // Auto-generate individual portrait helper
+      const autoGenPortrait = async (targetUserId: string, label: string): Promise<IndividualPortrait | null> => {
         try {
-          const selfCouple = isSelfCouple(myCouple);
-          const partnerId = myCouple.partner_a_id === user.id
-            ? myCouple.partner_b_id : myCouple.partner_a_id;
-
-          let myPortraitData = await getPortrait(user.id);
-          let partnerPortraitData = selfCouple ? myPortraitData : await getPortrait(partnerId);
-
-          // Auto-generate individual portraits if missing
-          const autoGenPortrait = async (targetUserId: string): Promise<IndividualPortrait | null> => {
-            const { canGenerate } = await checkCanGeneratePortrait(targetUserId);
-            if (!canGenerate) return null;
-            const latestScoresMap = await fetchAllScores(targetUserId);
-            const scores = {
-              ecrr: latestScoresMap['ecr-r'].scores,
-              dutch: latestScoresMap['dutch'].scores,
-              sseit: latestScoresMap['sseit'].scores,
-              dsir: latestScoresMap['dsi-r'].scores,
-              ipip: latestScoresMap['ipip-neo-120'].scores,
-              values: latestScoresMap['values'].scores,
-            };
-            const supplements = extractSupplementScores(latestScoresMap);
-            const ids = Object.values(latestScoresMap).map((r) => r.id);
-            const freshPortrait = generatePortrait(targetUserId, ids, scores, supplements);
-            return await savePortrait(freshPortrait);
+          const { canGenerate, missingAssessments } = await checkCanGeneratePortrait(targetUserId);
+          if (!canGenerate) {
+            console.log(`[CouplePortal] Cannot auto-gen ${label} portrait — missing:`, missingAssessments);
+            return null;
+          }
+          console.log(`[CouplePortal] Auto-generating ${label} portrait...`);
+          const latestScoresMap = await fetchAllScores(targetUserId);
+          const scores = {
+            ecrr: latestScoresMap['ecr-r'].scores,
+            dutch: latestScoresMap['dutch'].scores,
+            sseit: latestScoresMap['sseit'].scores,
+            dsir: latestScoresMap['dsi-r'].scores,
+            ipip: latestScoresMap['ipip-neo-120'].scores,
+            values: latestScoresMap['values'].scores,
           };
+          const supplements = extractSupplementScores(latestScoresMap);
+          const ids = Object.values(latestScoresMap).map((r) => r.id);
+          const freshPortrait = generatePortrait(targetUserId, ids, scores, supplements);
+          const saved = await savePortrait(freshPortrait);
+          console.log(`[CouplePortal] ${label} portrait auto-generated:`, !!saved);
+          return saved;
+        } catch (genErr: any) {
+          console.error(`[CouplePortal] Auto-gen ${label} portrait FAILED:`, genErr?.message || genErr);
+          return null;
+        }
+      };
 
-          if (!myPortraitData) {
-            try {
-              myPortraitData = await autoGenPortrait(user.id);
-              if (selfCouple && myPortraitData) partnerPortraitData = myPortraitData;
-            } catch (genErr) {
-              console.error('[CouplePortal] Auto-generate user portrait failed:', genErr);
+      // Auto-regenerate my portrait if stale (assessment IDs changed or code version newer)
+      if (mp) {
+        try {
+          const { canGenerate } = await checkCanGeneratePortrait(user.id);
+          if (canGenerate) {
+            const latestScoresMap = await fetchAllScores(user.id);
+            const currentIds = new Set(Object.values(latestScoresMap).map((r) => r.id));
+            const portraitIds = new Set(mp.assessmentIds || []);
+            const idsChanged = [...currentIds].some((id) => !portraitIds.has(id));
+            const versionStale = isPortraitStale(mp.version);
+            if (idsChanged || versionStale) {
+              console.log(`[CouplePortal] My portrait stale (ids: ${idsChanged}, version: ${versionStale}) — regenerating...`);
+              mp = await autoGenPortrait(user.id, 'MY');
+              if (selfCouple && mp) pp = mp;
             }
           }
-          if (!partnerPortraitData && !selfCouple) {
-            try {
-              partnerPortraitData = await autoGenPortrait(partnerId);
-            } catch (genErr) {
-              console.error('[CouplePortal] Auto-generate partner portrait failed:', genErr);
-            }
-          }
+        } catch (staleErr: any) {
+          console.warn('[CouplePortal] Staleness check failed:', staleErr?.message);
+        }
+      }
 
-          if (!myPortraitData && !partnerPortraitData) {
-            setPortraitError(
-              'Neither partner has an individual portrait yet. ' +
-              'Go to the Home screen to generate your portrait first, then come back.'
-            );
-          } else {
-            const effectiveMyPortrait = myPortraitData || partnerPortraitData;
-            const effectivePartnerPortrait = partnerPortraitData || myPortraitData;
+      if (!mp) {
+        mp = await autoGenPortrait(user.id, 'MY');
+        if (selfCouple && mp) pp = mp;
+      }
+      if (!pp && !selfCouple) {
+        // Partner needs to generate their own portrait from their device
+        console.log('[CouplePortal] Partner portrait missing — partner needs to generate it from their own device');
+      }
 
-            // Load dyadic scores for generation
-            const [rdas, dci, csi16] = await Promise.all([
-              getLatestDyadicScores(myCouple.id, 'rdas'),
-              getLatestDyadicScores(myCouple.id, 'dci'),
-              getLatestDyadicScores(myCouple.id, 'csi-16'),
-            ]);
+      if (mp) setMyPortrait(mp as unknown as IndividualPortrait);
+      if (pp) setPartnerPortrait(pp as unknown as IndividualPortrait);
+      console.log('[CouplePortal] Final portraits:', { mine: !!mp, partner: !!pp });
 
-            const genDyadicScores: any = {};
-            if (rdas.partnerA && rdas.partnerB) genDyadicScores.rdas = rdas;
-            if (dci.partnerA && dci.partnerB) genDyadicScores.dci = dci;
-            if (csi16.partnerA && csi16.partnerB) genDyadicScores.csi16 = csi16;
+      // ─── 2. Load/Generate Relationship Portrait ──────────
+      let rp = await getRelationshipPortrait(myCouple.id);
+      console.log('[CouplePortal] Relationship portrait from DB:', !!rp);
 
-            const isPartnerA = myCouple.partner_a_id === user.id;
-            const portraitA = isPartnerA ? effectiveMyPortrait : effectivePartnerPortrait;
-            const portraitB = isPartnerA ? effectivePartnerPortrait : effectiveMyPortrait;
+      if (!rp && (mp || pp)) {
+        setGenerating(true);
+        try {
+          const effectiveMyPortrait = mp || pp;
+          const effectivePartnerPortrait = pp || mp;
 
-            const generated = generateRelationshipPortrait(
-              myCouple.id,
-              portraitA as unknown as IndividualPortrait,
-              portraitB as unknown as IndividualPortrait,
-              genDyadicScores,
-            );
+          const [rdas, dci, csi16] = await Promise.all([
+            getLatestDyadicScores(myCouple.id, 'rdas'),
+            getLatestDyadicScores(myCouple.id, 'dci'),
+            getLatestDyadicScores(myCouple.id, 'csi-16'),
+          ]);
 
-            rp = await saveRelationshipPortrait(generated as any);
-            if (!rp) {
-              setPortraitError('Portrait was generated but failed to save. Please try again.');
-            }
+          const genDyadicScores: any = {};
+          if (rdas.partnerA && rdas.partnerB) genDyadicScores.rdas = rdas;
+          if (dci.partnerA && dci.partnerB) genDyadicScores.dci = dci;
+          if (csi16.partnerA && csi16.partnerB) genDyadicScores.csi16 = csi16;
+          console.log('[CouplePortal] Dyadic scores for generation:', {
+            rdas: !!(rdas.partnerA && rdas.partnerB),
+            dci: !!(dci.partnerA && dci.partnerB),
+            csi16: !!(csi16.partnerA && csi16.partnerB),
+          });
 
-            // Store individual portraits for deep portrait generation
-            setMyPortrait(effectiveMyPortrait as unknown as IndividualPortrait);
-            setPartnerPortrait(effectivePartnerPortrait as unknown as IndividualPortrait);
-          }
+          const isPartnerA = myCouple.partner_a_id === user.id;
+          const portraitA = isPartnerA ? effectiveMyPortrait : effectivePartnerPortrait;
+          const portraitB = isPartnerA ? effectivePartnerPortrait : effectiveMyPortrait;
+
+          const generated = generateRelationshipPortrait(
+            myCouple.id,
+            portraitA as unknown as IndividualPortrait,
+            portraitB as unknown as IndividualPortrait,
+            genDyadicScores,
+          );
+
+          rp = await saveRelationshipPortrait(generated as any);
+          console.log('[CouplePortal] Relationship portrait generated & saved:', !!rp);
         } catch (e: any) {
-          console.error('[CouplePortal] Error generating portrait:', e);
+          console.error('[CouplePortal] Error generating relationship portrait:', e);
           setPortraitError(`Portrait generation error: ${e?.message || String(e)}`);
         }
         setGenerating(false);
       }
 
+      if (!rp && !mp && !pp) {
+        setPortraitError(
+          'Neither partner has an individual portrait yet. ' +
+          'Go to the Home screen to generate your portrait first, then come back.'
+        );
+      }
+
       setPortrait(rp);
 
-      // Load individual portraits if not already loaded
-      if (!myPortrait || !partnerPortrait) {
+      // ─── 3. Generate Deep Couple Portrait ────────────────
+      if (mp && pp) {
+        // Validate portraits have required data for deep generation
+        const mpValid = mp && (mp as any).compositeScores && (mp as any).negativeCycle;
+        const ppValid = pp && (pp as any).compositeScores && (pp as any).negativeCycle;
+        if (!mpValid || !ppValid) {
+          console.warn('[CouplePortal] Portrait data incomplete — compositeScores or negativeCycle missing', {
+            myComposite: !!(mp as any)?.compositeScores,
+            myNegCycle: !!(mp as any)?.negativeCycle,
+            partnerComposite: !!(pp as any)?.compositeScores,
+            partnerNegCycle: !!(pp as any)?.negativeCycle,
+          });
+          setPortraitError('One or both portraits are missing key data (compositeScores / negativeCycle). Try regenerating the portrait from the Home screen.');
+        }
+
         try {
-          const selfCouple = isSelfCouple(myCouple);
-          const partnerId = myCouple.partner_a_id === user.id
-            ? myCouple.partner_b_id : myCouple.partner_a_id;
-          const [mp, pp] = await Promise.all([
-            getPortrait(user.id),
-            selfCouple ? getPortrait(user.id) : getPortrait(partnerId),
+          const isPartnerA = myCouple.partner_a_id === user.id;
+          const pA = isPartnerA ? mp : pp;
+          const pB = isPartnerA ? pp : mp;
+          const pAName = isPartnerA
+            ? 'You'
+            : (partner?.display_name || (selfCouple ? 'Demo Partner' : 'Your partner'));
+          const pBName = isPartnerA
+            ? (partner?.display_name || (selfCouple ? 'Demo Partner' : 'Your partner'))
+            : 'You';
+
+          // Load dyadic scores
+          const [rdas, dci, csi16] = await Promise.all([
+            getLatestDyadicScores(myCouple.id, 'rdas'),
+            getLatestDyadicScores(myCouple.id, 'dci'),
+            getLatestDyadicScores(myCouple.id, 'csi-16'),
           ]);
-          if (mp) setMyPortrait(mp as unknown as IndividualPortrait);
-          if (pp) setPartnerPortrait(pp as unknown as IndividualPortrait);
+          const dScores: any = {};
+          if (rdas.partnerA && rdas.partnerB) dScores.rdas = rdas;
+          if (dci.partnerA && dci.partnerB) dScores.dci = dci;
+          if (csi16.partnerA && csi16.partnerB) dScores.csi16 = csi16;
+          setDyadicScores({ rdas, dci, csi16 });
+
+          // Load WEARE
+          const wp = await getLatestWEAREProfile(myCouple.id);
+          setWeareProfile(wp);
+
+          console.log('[CouplePortal] Generating deep couple portrait...', {
+            dyadicAvailable: Object.keys(dScores),
+            weareAvailable: !!wp,
+          });
+
+          const dp = generateDeepCouplePortrait(
+            myCouple.id,
+            pA as unknown as IndividualPortrait,
+            pB as unknown as IndividualPortrait,
+            pAName,
+            pBName,
+            dScores,
+            wp,
+          );
+          setDeepPortrait(dp);
+          console.log('[CouplePortal] === Deep portrait generated! ===');
+        } catch (e: any) {
+          console.error('[CouplePortal] Deep portrait generation FAILED:', e);
+          setPortraitError(`Deep portrait error: ${e?.message || String(e)}`);
+        }
+      } else {
+        console.log('[CouplePortal] Cannot generate deep portrait — missing individual portrait(s)');
+
+        // Still load dyadic + WEARE for partial display
+        try {
+          const [rdas, dci, csi16] = await Promise.all([
+            getLatestDyadicScores(myCouple.id, 'rdas'),
+            getLatestDyadicScores(myCouple.id, 'dci'),
+            getLatestDyadicScores(myCouple.id, 'csi-16'),
+          ]);
+          setDyadicScores({ rdas, dci, csi16 });
+        } catch { setDyadicScores(null); }
+
+        try {
+          const [wp, wci] = await Promise.all([
+            getLatestWEAREProfile(myCouple.id),
+            getThisWeeksCheckIn(myCouple.id, user.id),
+          ]);
+          setWeareProfile(wp);
+          setWeeklyCheckIn(wci);
+        } catch {
+          setWeareProfile(null);
+          setWeeklyCheckIn(null);
+        }
+      }
+
+      // Load weekly check-in if not already loaded
+      if (!weeklyCheckIn) {
+        try {
+          const wci = await getThisWeeksCheckIn(myCouple.id, user.id);
+          setWeeklyCheckIn(wci);
         } catch {}
-      }
-
-      // Load dyadic scores
-      try {
-        const [rdas, dci, csi16] = await Promise.all([
-          getLatestDyadicScores(myCouple.id, 'rdas'),
-          getLatestDyadicScores(myCouple.id, 'dci'),
-          getLatestDyadicScores(myCouple.id, 'csi-16'),
-        ]);
-        setDyadicScores({ rdas, dci, csi16 });
-      } catch {
-        setDyadicScores(null);
-      }
-
-      // Load WEARE profile + weekly check-in
-      try {
-        const [wp, wci] = await Promise.all([
-          getLatestWEAREProfile(myCouple.id),
-          getThisWeeksCheckIn(myCouple.id, user.id),
-        ]);
-        setWeareProfile(wp);
-        setWeeklyCheckIn(wci);
-      } catch {
-        setWeareProfile(null);
-        setWeeklyCheckIn(null);
       }
     } catch (e) {
       console.error('[CouplePortal] Error loading:', e);
     } finally {
       setLoading(false);
+      console.log('[CouplePortal] === LOAD COMPLETE ===');
     }
   }, [user]);
 
   useFocusEffect(useCallback(() => { loadData(); }, [loadData]));
 
-  // Generate deep portrait when we have the data
-  const generateDeep = useCallback(() => {
-    if (!couple || !myPortrait || !partnerPortrait) return null;
-
-    const isPartnerA = couple.partner_a_id === user?.id;
-    const pA = isPartnerA ? myPortrait : partnerPortrait;
-    const pB = isPartnerA ? partnerPortrait : myPortrait;
-
-    const selfCouple = isSelfCouple(couple);
-    const pAName = isPartnerA
-      ? 'You'
-      : (partnerProfile?.display_name || (selfCouple ? 'Demo Partner' : 'Your partner'));
-    const pBName = isPartnerA
-      ? (partnerProfile?.display_name || (selfCouple ? 'Demo Partner' : 'Your partner'))
-      : 'You';
-
-    const dScores: any = {};
-    if (dyadicScores?.rdas.partnerA && dyadicScores?.rdas.partnerB) dScores.rdas = dyadicScores.rdas;
-    if (dyadicScores?.dci.partnerA && dyadicScores?.dci.partnerB) dScores.dci = dyadicScores.dci;
-    if (dyadicScores?.csi16.partnerA && dyadicScores?.csi16.partnerB) dScores.csi16 = dyadicScores.csi16;
-
-    try {
-      return generateDeepCouplePortrait(
-        couple.id,
-        pA,
-        pB,
-        pAName,
-        pBName,
-        dScores,
-        weareProfile,
-      );
-    } catch (e) {
-      console.error('[CouplePortal] Deep portrait generation error:', e);
-      return null;
-    }
-  }, [couple, myPortrait, partnerPortrait, dyadicScores, weareProfile, user, partnerProfile]);
-
-  // Compute deep portrait
-  const dp = deepPortrait || (myPortrait && partnerPortrait ? generateDeep() : null);
+  // Deep portrait is generated during loadData and stored in state
+  const dp = deepPortrait;
 
   // ─── Loading State ───────────────────────────────────
 
@@ -363,7 +424,10 @@ export default function CouplePortalScreen() {
             onPress={() => router.replace('/(app)/partner')}
             style={styles.backBtnCenter}
           >
-            <Text style={styles.backText}>{'\u2190'} Back to Partner</Text>
+            <View style={styles.backRow}>
+              <ArrowLeftIcon size={16} color={Colors.primary} />
+              <Text style={styles.backText}>Back to Partner</Text>
+            </View>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -376,6 +440,28 @@ export default function CouplePortalScreen() {
 
   const renderOverview = () => (
     <View style={styles.tabContent}>
+      {/* Fallback: show what's missing when deep portrait can't generate */}
+      {!dp && (
+        <View style={styles.synthesisCard}>
+          <Text style={styles.synthesisTitle}>Your deep portrait needs more data</Text>
+          <Text style={styles.synthesisNarrative}>
+            {!myPortrait && !partnerPortrait
+              ? 'Both individual portraits are missing. Each partner needs to complete all 6 individual assessments (ECR-R, DUTCH, SSEIT, DSI-R, IPIP-NEO, Values) to generate their portrait.'
+              : !myPortrait
+                ? 'Your individual portrait is missing. Complete all 6 assessments on the Home screen, then come back.'
+                : !partnerPortrait
+                  ? 'Your partner\'s individual portrait is missing. They need to complete their 6 assessments.'
+                  : portraitError || 'Something unexpected went wrong generating the deep portrait. Try tapping Refresh.'}
+          </Text>
+          <TouchableOpacity
+            onPress={() => { setDeepPortrait(null); setPortrait(null); loadData(); }}
+            style={styles.retryBtn}
+          >
+            <Text style={styles.retryText}>Refresh</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* Twin Orbs + Field */}
       {dp && (
         <TwinOrbsField
@@ -385,12 +471,29 @@ export default function CouplePortalScreen() {
         />
       )}
 
-      {/* Narrative Opening */}
-      {dp && (
-        <View style={styles.narrativeCard}>
-          <Text style={styles.narrativeOpening}>{dp.narrative.opening}</Text>
-        </View>
-      )}
+      {/* Synthesized Overview Summary */}
+      {dp && (() => {
+        // Build a unique overview blurb from all the data — NOT the narrative opening
+        const dance = dp.patternInterlock.combinedCycle.dynamic.replace(/-/g, ' ');
+        const attach = dp.patternInterlock.attachmentDynamic.dynamicLabel;
+        const strengths = dp.convergenceDivergence.sharedStrengths.slice(0, 2).map(s => s.dimensionLabel);
+        const friction = dp.convergenceDivergence.frictionZones.slice(0, 1).map(z => z.area);
+        const topEdge = dp.coupleGrowthEdges[0]?.title || '';
+        const vitalityPct = dp.relationalField?.vitality ?? 0;
+        const vitalityLabel = dp.relationalField?.qualitativeLabel || '';
+
+        let summary = `Your relational dance is ${dance}. ${attach}`;
+        if (strengths.length > 0) summary += ` You share strength in ${strengths.join(' and ')}.`;
+        if (friction.length > 0) summary += ` Your primary friction zone is around ${friction[0].toLowerCase()}.`;
+        if (topEdge) summary += ` Your leading growth edge: "${topEdge}."`;
+        if (vitalityLabel) summary += ` Field vitality: ${vitalityLabel}.`;
+
+        return (
+          <View style={styles.narrativeCard}>
+            <Text style={styles.narrativeSummary}>{summary}</Text>
+          </View>
+        );
+      })()}
 
       {/* Quick Stats */}
       {portrait.dyadic_scores?.csi16 && (
@@ -411,6 +514,106 @@ export default function CouplePortalScreen() {
                 {portrait.dyadic_scores.dci.copingQuality}
               </Text>
               <Text style={styles.quickStatLabel}>Coping</Text>
+            </View>
+          )}
+        </View>
+      )}
+
+      {/* ─── Key Insights Snapshot ─── */}
+      {dp && (
+        <View style={styles.overviewInsights}>
+          <Text style={styles.insightsHeading}>Relationship Snapshot</Text>
+
+          {/* Your Dance */}
+          <View style={styles.overviewInsightRow}>
+            <View style={styles.insightIconBadge}>
+              <HeartPulseIcon size={14} color={Colors.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.overviewInsightLabel}>Your Dance</Text>
+              <Text style={styles.overviewInsightText}>
+                {dp.patternInterlock.combinedCycle.dynamic.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())} — {dp.partnerAName} tends to {dp.patternInterlock.combinedCycle.partnerAPosition}, {dp.partnerBName} tends to {dp.patternInterlock.combinedCycle.partnerBPosition}
+              </Text>
+            </View>
+          </View>
+
+          {/* Attachment — mini matrix plot */}
+          <View style={styles.overviewInsightRow}>
+            <View style={styles.insightIconBadge}>
+              <LinkIcon size={14} color={Colors.secondary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.overviewInsightLabel}>Attachment Landscape</Text>
+            </View>
+          </View>
+          <View style={styles.miniMatrixContainer}>
+            <AttachmentMatrixPlot
+              attachmentDynamic={dp.patternInterlock.attachmentDynamic}
+              partnerAName={dp.partnerAName}
+              partnerBName={dp.partnerBName}
+            />
+            <Text style={styles.miniMatrixCaption}>
+              {dp.patternInterlock.attachmentDynamic.dynamicLabel}
+            </Text>
+          </View>
+
+          {/* Shared Strengths */}
+          {dp.convergenceDivergence.sharedStrengths.length > 0 && (
+            <View style={styles.overviewInsightRow}>
+              <View style={styles.insightIconBadge}>
+                <SparkleIcon size={14} color={Colors.success} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.overviewInsightLabel}>Shared Strengths</Text>
+                <Text style={styles.overviewInsightText}>
+                  {dp.convergenceDivergence.sharedStrengths.slice(0, 3).map(s => s.dimensionLabel).join(', ')}
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {/* Friction Zones */}
+          {dp.convergenceDivergence.frictionZones.length > 0 && (
+            <View style={styles.overviewInsightRow}>
+              <View style={styles.insightIconBadge}>
+                <LightningIcon size={14} color={Colors.warning} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.overviewInsightLabel}>Friction Zones</Text>
+                <Text style={styles.overviewInsightText}>
+                  {dp.convergenceDivergence.frictionZones.slice(0, 3).map(z => z.area).join(', ')}
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {/* Top Growth Edge */}
+          {dp.coupleGrowthEdges.length > 0 && (
+            <View style={styles.overviewInsightRow}>
+              <View style={styles.insightIconBadge}>
+                <CompassIcon size={14} color={Colors.depth} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.overviewInsightLabel}>Growth Edge</Text>
+                <Text style={styles.overviewInsightText}>
+                  {dp.coupleGrowthEdges[0].title}
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {/* Field Vitality */}
+          {dp.relationalField && dp.relationalField.vitality > 0 && (
+            <View style={styles.overviewInsightRow}>
+              <View style={styles.insightIconBadge}>
+                <LeafIcon size={14} color={Colors.calm} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.overviewInsightLabel}>Field Vitality</Text>
+                <Text style={styles.overviewInsightText}>
+                  {dp.relationalField.qualitativeLabel || `${Math.round(dp.relationalField.vitality)}%`}
+                </Text>
+              </View>
             </View>
           )}
         </View>
@@ -439,12 +642,18 @@ export default function CouplePortalScreen() {
         })}
         activeOpacity={0.7}
       >
-        <Text style={styles.coachTitle}>Talk to Your Couple Coach</Text>
+        <View style={styles.journeyHeader}>
+          <ChatBubbleIcon size={20} color={Colors.depth} />
+          <Text style={styles.coachTitle}>Talk to Your Couple Coach</Text>
+        </View>
         <Text style={styles.coachDesc}>
           Your AI guide now understands both of your portraits and your relationship
           patterns.
         </Text>
-        <Text style={styles.coachCta}>Start Conversation {'\u2192'}</Text>
+        <View style={styles.ctaRow}>
+          <Text style={styles.coachCta}>Start Conversation</Text>
+          <ArrowRightIcon size={14} color={Colors.depth} />
+        </View>
       </TouchableOpacity>
     </View>
   );
@@ -571,12 +780,13 @@ export default function CouplePortalScreen() {
 
     return (
       <View style={styles.tabContent}>
-        {/* Full Narrative */}
+        {/* Full Relationship Story — opening is shown on Overview tab, not here */}
         <Text style={styles.sectionTitle}>Your Story</Text>
         <CoupleNarrativeBlock
           narrative={dp.narrative}
           partnerAName={dp.partnerAName}
           partnerBName={dp.partnerBName}
+          showOpening={false}
         />
 
         {/* Dyadic Synthesis */}
@@ -650,7 +860,10 @@ export default function CouplePortalScreen() {
             Twelve steps of relational growth — practices, reflections, and milestones
             designed around your unique patterns.
           </Text>
-          <Text style={styles.journeyCta}>View Journey {'\u2192'}</Text>
+          <View style={styles.ctaRow}>
+            <Text style={styles.journeyCta}>View Journey</Text>
+            <ArrowRightIcon size={14} color={Colors.primary} />
+          </View>
         </TouchableOpacity>
       </View>
     );
@@ -694,7 +907,10 @@ export default function CouplePortalScreen() {
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* Header */}
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backText}>{'< Back'}</Text>
+          <View style={styles.backRow}>
+            <ArrowLeftIcon size={16} color={Colors.primary} />
+            <Text style={styles.backText}>Back</Text>
+          </View>
         </TouchableOpacity>
 
         <Text style={styles.heading}>The Space Between You</Text>
@@ -759,6 +975,11 @@ const styles = StyleSheet.create({
   // Header
   backBtn: { marginBottom: Spacing.md },
   backBtnCenter: { marginTop: Spacing.lg },
+  backRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 6,
+  },
   backText: { ...Typography.body, color: Colors.primary },
   heading: {
     ...Typography.headingXL,
@@ -855,9 +1076,8 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     marginBottom: Spacing.md,
   },
-  narrativeOpening: {
-    fontFamily: 'PlayfairDisplay_400Regular',
-    fontSize: 15,
+  narrativeSummary: {
+    ...Typography.body,
     color: Colors.text,
     lineHeight: 24,
   },
@@ -889,6 +1109,55 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginTop: Spacing.sm,
     paddingHorizontal: Spacing.xs,
+  },
+
+  // Overview Key Insights
+  overviewInsights: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    marginBottom: Spacing.md,
+    ...Shadows.subtle,
+    gap: Spacing.sm,
+  },
+  overviewInsightRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.sm,
+  },
+  insightIconBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: Colors.backgroundAlt,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    marginTop: 2,
+  },
+  insightsHeading: {
+    ...Typography.headingS,
+    color: Colors.text,
+    marginBottom: Spacing.xs,
+  },
+  miniMatrixContainer: {
+    marginVertical: Spacing.xs,
+    alignItems: 'center' as const,
+  },
+  miniMatrixCaption: {
+    ...Typography.caption,
+    color: Colors.textSecondary,
+    textAlign: 'center' as const,
+    marginTop: Spacing.xs,
+  },
+  overviewInsightLabel: {
+    ...Typography.label,
+    color: Colors.text,
+    marginBottom: 2,
+  },
+  overviewInsightText: {
+    ...Typography.bodySmall,
+    color: Colors.textSecondary,
+    lineHeight: 20,
   },
 
   // Repair steps
@@ -966,6 +1235,11 @@ const styles = StyleSheet.create({
   journeyCta: {
     ...Typography.bodyMedium,
     color: Colors.primary,
+  },
+  ctaRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 6,
   },
 
   // Coach Card

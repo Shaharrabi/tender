@@ -9,6 +9,14 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '@/constants/theme';
+import {
+  LightningIcon,
+  ArrowRightIcon,
+  FireIcon,
+  SnowflakeIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
+} from '@/assets/graphics/icons';
 import type { CombinedCycle, CombinedTriggerStep } from '@/types/couples';
 
 interface CombinedCycleVisualizationProps {
@@ -24,11 +32,11 @@ const STAGE_LABELS: Record<string, string> = {
   aftermath: 'Aftermath',
 };
 
-const STAGE_ICONS: Record<string, string> = {
-  trigger: '\u26A1',
-  first_moves: '\u27A1',
-  escalation: '\uD83D\uDD25',
-  aftermath: '\u2744',
+const STAGE_ICON_COMPONENTS: Record<string, { icon: React.FC<{ size?: number; color?: string }>; color: string }> = {
+  trigger: { icon: LightningIcon, color: Colors.warning },
+  first_moves: { icon: ArrowRightIcon, color: Colors.textMuted },
+  escalation: { icon: FireIcon, color: Colors.error },
+  aftermath: { icon: SnowflakeIcon, color: Colors.calm },
 };
 
 function CascadeStep({
@@ -48,9 +56,19 @@ function CascadeStep({
     <TouchableOpacity style={styles.stepCard} onPress={onToggle} activeOpacity={0.7}>
       {/* Stage header */}
       <View style={styles.stepHeader}>
-        <Text style={styles.stepIcon}>{STAGE_ICONS[step.stage] || ''}</Text>
+        {(() => {
+          const cfg = STAGE_ICON_COMPONENTS[step.stage];
+          if (cfg) {
+            const IconComp = cfg.icon;
+            return <IconComp size={18} color={cfg.color} />;
+          }
+          return null;
+        })()}
         <Text style={styles.stepTitle}>{STAGE_LABELS[step.stage] || step.stage}</Text>
-        <Text style={styles.expandIcon}>{isExpanded ? '\u25B2' : '\u25BC'}</Text>
+        {isExpanded
+          ? <ChevronUpIcon size={14} color={Colors.textMuted} />
+          : <ChevronDownIcon size={14} color={Colors.textMuted} />
+        }
       </View>
 
       {/* Field state — always visible */}
@@ -164,17 +182,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.sm,
   },
-  stepIcon: {
-    fontSize: 18,
-  },
   stepTitle: {
     ...Typography.headingS,
     color: Colors.text,
     flex: 1,
-  },
-  expandIcon: {
-    fontSize: 12,
-    color: Colors.textMuted,
   },
   fieldState: {
     ...Typography.bodySmall,

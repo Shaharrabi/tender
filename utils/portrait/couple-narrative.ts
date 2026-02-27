@@ -44,7 +44,7 @@ export function generateCoupleNarrative(
   relationalField?: RelationalFieldLayer | null,
 ): CoupleNarrative {
   return {
-    opening: buildOpening(partnerAName, partnerBName, combinedCycle.dynamic),
+    opening: buildOpening(partnerAName, partnerBName, combinedCycle.dynamic, sharedStrengths, frictionZones, growthEdges, relationalField),
     theField: buildFieldNarrative(partnerAName, partnerBName, relationalField),
     theDance: buildDanceNarrative(combinedCycle, partnerAName, partnerBName),
     whatYouBring: buildWhatYouBringNarrative(portraitA, portraitB, partnerAName, partnerBName),
@@ -57,15 +57,46 @@ export function generateCoupleNarrative(
 
 // ─── Opening ──────────────────────────────────────────────
 
-function buildOpening(nameA: string, nameB: string, dynamic: CycleDynamic): string {
+function buildOpening(
+  nameA: string,
+  nameB: string,
+  dynamic: CycleDynamic,
+  sharedStrengths: ConvergencePoint[],
+  frictionZones: FrictionZone[],
+  growthEdges: CoupleGrowthEdge[],
+  relationalField?: RelationalFieldLayer | null,
+): string {
   const dynamicDescriptions: Record<CycleDynamic, string> = {
-    'pursue-withdraw': 'One of you reaches while the other retreats — not because you do not care, but because you both care deeply and protect differently.',
-    'mutual-pursuit': 'You both move toward each other with intensity — two people who refuse to let disconnection go unnamed.',
-    'mutual-withdrawal': 'You both tend to give each other space — two people who value autonomy and have built a quiet, steady partnership.',
-    'mixed-switching': 'Your dance changes depending on the moment — you have more flexibility than most couples, even when it feels confusing.',
+    'pursue-withdraw': 'When things get hard, one of you reaches while the other pulls back — not because anyone cares less, but because you each protect your heart in different ways. This is one of the most common patterns in love, and understanding it changes everything.',
+    'mutual-pursuit': 'When stress shows up, you both move toward each other with real intensity — two people who refuse to let disconnection sit unnamed. That fire is a gift. Learning to channel it together is the work.',
+    'mutual-withdrawal': 'When things get hard, you both tend to give each other space — two people who value calm and have built a quiet, steady partnership. The invitation is to break the silence sometimes, because closeness lives in the reaching.',
+    'mixed-switching': 'Your pattern shifts depending on the moment — sometimes one of you reaches, sometimes the other. You have more flexibility than most couples, and that is a real strength, even when it feels confusing.',
   };
 
-  return `What you are about to read is not a diagnosis. It is a map — a way of seeing the invisible architecture of your relationship. Everything here comes from what ${nameA} and ${nameB} shared about themselves and each other, processed through frameworks used by the world's leading couples researchers. ${dynamicDescriptions[dynamic]} This portrait holds the whole picture: your strengths, your struggles, and the growth edges where your relationship is asking to evolve.`;
+  // Build personalized snapshot from actual data
+  let snapshot = '';
+
+  if (sharedStrengths.length > 0) {
+    const top = sharedStrengths.slice(0, 2).map(s => s.dimensionLabel.toLowerCase());
+    snapshot += `What stands out right away: you share real strength in ${top.join(' and ')}. That is not luck — it is something you have built together, and it gives you a foundation most couples would envy.`;
+  }
+
+  if (frictionZones.length > 0 && sharedStrengths.length > 0) {
+    snapshot += ` At the same time, there are places where you pull in different directions — ${frictionZones.length === 1 ? 'one area' : `${frictionZones.length} areas`} where your nervous systems are calibrated differently. These are not flaws. They are the places where growth is waiting.`;
+  }
+
+  if (growthEdges.length > 0) {
+    snapshot += ` Your most important growth edge right now is "${growthEdges[0].title}" — this is where your relationship is asking to evolve.`;
+  }
+
+  if (relationalField && relationalField.vitality > 0) {
+    const vLabel = relationalField.qualitativeLabel?.toLowerCase() || '';
+    if (vLabel) {
+      snapshot += ` The overall energy between you is ${vLabel}.`;
+    }
+  }
+
+  return `${nameA} and ${nameB} — welcome to your couple portrait.\n\nThis is not a test result or a grade. It is a living picture of your relationship — built from everything you both shared about yourselves and each other. Think of it as a map: it shows where you are strong, where you get stuck, and where your relationship is ready to grow.\n\nEvery couple has patterns. The way you handle conflict, the way you reach for each other, the way you pull back when things feel too much — none of it is random. It all makes sense when you see the full picture. And that is what this portrait gives you: the full picture.\n\n${dynamicDescriptions[dynamic]}${snapshot ? `\n\n${snapshot}` : ''}\n\nThe most important thing to know is this: whatever you find here, it is workable. Couples who see their patterns clearly — who can say "there it is, that is our thing" — are the couples who grow the most. You are already doing that by being here.`;
 }
 
 // ─── Field Narrative ──────────────────────────────────────
@@ -118,6 +149,10 @@ function buildWhatYouBringNarrative(
 
   const scA = portraitA.compositeScores;
   const scB = portraitB.compositeScores;
+
+  if (!scA || !scB) {
+    return `${nameA} and ${nameB} each bring unique gifts to this relationship. As your individual portraits develop, the specific strengths will become clearer.`;
+  }
 
   // Find top 2 strengths for each partner (above 65)
   const dims: [string, keyof typeof scA][] = [
@@ -203,7 +238,7 @@ function buildEdgeNarrative(growthEdges: CoupleGrowthEdge[]): string {
 // ─── Closing ──────────────────────────────────────────────
 
 function buildClosing(nameA: string, nameB: string, dynamic: AttachmentDynamic): string {
-  return `This portrait is a snapshot, not a sentence. What you see here will shift as you grow, as you practice, as you repair. The fact that ${nameA} and ${nameB} are reading this together says something important: you are both willing to look. That willingness — the courage to see yourselves and each other clearly — is the single strongest predictor of relationship growth. Not perfection. Not compatibility scores. Willingness. You have it. Now use it.`;
+  return `${nameA} and ${nameB} — this portrait is a snapshot, not a sentence. What you see here will shift as you grow, as you practice, as you come back to each other after the hard moments.\n\nThe fact that you are both here, looking at this together, says something important: you are willing to see yourselves and each other honestly. That willingness is not a small thing. Research shows it is the single strongest predictor of relationship growth — not perfection, not how alike you are, not how few arguments you have. Just the willingness to look and keep showing up.\n\nYou have it. Now use it. Come back to this portrait when you need a reminder of what you are building together.`;
 }
 
 // ─── Couple Anchors ──────────────────────────────────────
@@ -271,7 +306,7 @@ function buildPartnerAnchors(portrait: IndividualPortrait, name: string, positio
   }
 
   // Add anchor from their regulation capacity
-  const regScore = portrait.compositeScores.regulationScore ?? 50;
+  const regScore = portrait.compositeScores?.regulationScore ?? 50;
   if (regScore > 65) {
     anchors.push({ text: 'You have wide capacity for emotional intensity. Use it to hold space, not to avoid.', context: 'When your calm might seem like not caring' });
   } else {

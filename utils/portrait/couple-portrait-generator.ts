@@ -198,6 +198,11 @@ export function generateDeepCouplePortrait(
   weareProfile?: WEAREProfile | null,
 ): DeepCouplePortrait {
 
+  // Safety: ensure compositeScores exist (caller should validate, but guard here too)
+  if (!portraitA.compositeScores || !portraitB.compositeScores) {
+    throw new Error('[generateDeepCouplePortrait] Both portraits must have compositeScores');
+  }
+
   // 1. Relational Field Layer
   const relationalField = buildRelationalFieldLayer(weareProfile, dyadicScores);
 

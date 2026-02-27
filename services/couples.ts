@@ -340,7 +340,7 @@ export async function saveDyadicAssessment(
 
   if (error) {
     console.error('[Couples] Failed to save dyadic assessment:', error);
-    return null;
+    throw new Error(`Dyadic save failed: ${error.message} (code: ${error.code})`);
   }
   return data as DyadicAssessmentRecord;
 }
@@ -462,12 +462,12 @@ export async function checkDyadicCompletion(
 
   if (!data) return { userComplete: [], partnerComplete: [], allDone: false };
 
-  const userComplete = data
+  const userComplete = [...new Set(data
     .filter((d: any) => d.user_id === userId)
-    .map((d: any) => d.assessment_type);
-  const partnerComplete = data
+    .map((d: any) => d.assessment_type as string))];
+  const partnerComplete = [...new Set(data
     .filter((d: any) => d.user_id === partnerId)
-    .map((d: any) => d.assessment_type);
+    .map((d: any) => d.assessment_type as string))];
 
   const requiredTypes: DyadicAssessmentType[] = ['rdas', 'dci', 'csi-16', 'relational-field'];
 

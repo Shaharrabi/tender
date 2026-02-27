@@ -147,6 +147,9 @@ export function calculateCompositeScores(
     differentiation,
     conflictFlexibility,
     relationalAwareness,
+    // Raw ECR-R subscales for couple portrait attachment plotting
+    anxietyNorm: clamp(anxietyNorm),
+    avoidanceNorm: clamp(avoidanceNorm),
   };
 }
 

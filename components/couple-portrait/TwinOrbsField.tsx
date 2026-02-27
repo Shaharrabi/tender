@@ -9,6 +9,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, Easing } from 'react-native';
 import Svg, { Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
 import { Colors, Typography, Spacing } from '@/constants/theme';
+import { ArrowRightIcon } from '@/assets/graphics/icons';
 import type { RelationalFieldLayer } from '@/types/couples';
 
 interface TwinOrbsFieldProps {
@@ -61,7 +62,10 @@ export default function TwinOrbsField({ field, partnerAName, partnerBName }: Twi
   }, []);
 
   const vitalityPct = Math.round(field.vitality);
-  const directionArrow = field.direction > 3 ? '\u2191' : field.direction < -3 ? '\u2193' : '\u2194';
+  // Direction icon: up = growing, down = declining, right = stable
+  const directionLabel = field.direction > 3 ? 'Growing' : field.direction < -3 ? 'Declining' : 'Stable';
+  const directionRotation = field.direction > 3 ? -90 : field.direction < -3 ? 90 : 0;
+  const directionColor = field.direction > 3 ? Colors.success : field.direction < -3 ? Colors.warning : Colors.textMuted;
 
   return (
     <View style={styles.container}>
@@ -117,8 +121,10 @@ export default function TwinOrbsField({ field, partnerAName, partnerBName }: Twi
           <Text style={styles.statLabel}>Resonance</Text>
         </View>
         <View style={styles.stat}>
-          <Text style={styles.statValue}>{directionArrow}</Text>
-          <Text style={styles.statLabel}>Direction</Text>
+          <View style={{ transform: [{ rotate: `${directionRotation}deg` }] }}>
+            <ArrowRightIcon size={22} color={directionColor} />
+          </View>
+          <Text style={styles.statLabel}>{directionLabel}</Text>
         </View>
       </View>
 
