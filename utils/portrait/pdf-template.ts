@@ -406,7 +406,7 @@ export function generatePortraitHTML(portrait: IndividualPortrait, userName?: st
 
 @page {
   size: letter;
-  margin: 1in 1in;
+  margin: 0.85in 0.85in;
   @bottom-center {
     content: "Tender: The Science of Relationships";
     font-family: 'Josefin Sans', Poppins, 'Liberation Sans', sans-serif;
@@ -423,7 +423,7 @@ export function generatePortraitHTML(portrait: IndividualPortrait, userName?: st
 }
 
 @page :first {
-  margin: 0.5in 1in;
+  margin: 0.5in 0.85in;
   @bottom-center { content: none; }
   @bottom-right { content: none; }
 }
@@ -436,6 +436,13 @@ body {
   font-size: 10pt;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
+  /* On-screen margins for the HTML preview */
+  max-width: 8.5in;
+  margin: 0 auto;
+  padding: 0 0.75in;
+}
+@media print {
+  body { padding: 0; max-width: none; margin: 0; }
 }
 
 /* ── COVER PAGE ──────────────────────── */
