@@ -1362,7 +1362,7 @@ export default function HomeScreen() {
             valuesCongruence: 'Values Alignment',
           };
           const topKey = (Object.keys(scoreLabels) as Array<keyof typeof cs>)
-            .reduce((best, key) => (cs[key] > cs[best] ? key : best));
+            .reduce((best, key) => ((cs[key] ?? 0) > (cs[best] ?? 0) ? key : best));
           const topStrength = scoreLabels[topKey];
 
           const cyclePosition = portrait.negativeCycle?.position

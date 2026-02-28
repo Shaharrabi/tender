@@ -125,7 +125,7 @@ export default function AdminPanel({ userId, onDataChanged, onClose }: AdminPane
         return;
       }
       const ids = completed.map((r: any) => r.id);
-      const portrait = generatePortrait(userId, ids, allScores, DEMO_SUPPLEMENTS);
+      const portrait = generatePortrait(userId, ids, allScores as any, DEMO_SUPPLEMENTS);
       await savePortrait(portrait);
       Alert.alert('Done', 'Portrait generated from current scores.');
       onDataChanged();

@@ -167,7 +167,7 @@ function ConfettiBurst({ visible, color = MC9_PALETTE.sunshine }: ConfettiBurstP
 
     const burstColors = [
       MC9_PALETTE.sunshine,
-      MC9_PALETTE.pink,
+      MC9_PALETTE.playPink,
       MC9_PALETTE.coral,
       MC9_PALETTE.lavender,
     ];
@@ -223,7 +223,7 @@ function ConfettiBurst({ visible, color = MC9_PALETTE.sunshine }: ConfettiBurstP
 
   const burstColors = [
     MC9_PALETTE.sunshine,
-    MC9_PALETTE.pink,
+    MC9_PALETTE.playPink,
     MC9_PALETTE.coral,
     MC9_PALETTE.lavender,
     MC9_PALETTE.sunshineLight,
@@ -1178,7 +1178,7 @@ export default function L4ThirtySecondGames({
       <ConfettiBurst visible={showConfetti} />
 
       <View style={styles.resultsIconRow}>
-        <SparkleIcon size={36} color={MC9_PALETTE.pink} />
+        <SparkleIcon size={36} color={MC9_PALETTE.playPink} />
       </View>
 
       <Animated.Text
@@ -1262,8 +1262,8 @@ export default function L4ThirtySecondGames({
           </Text>
         </View>
 
-        <View style={[styles.summaryCard, { borderTopColor: MC9_PALETTE.pink }]}>
-          <SparkleIcon size={20} color={MC9_PALETTE.pink} />
+        <View style={[styles.summaryCard, { borderTopColor: MC9_PALETTE.playPink }]}>
+          <SparkleIcon size={20} color={MC9_PALETTE.playPink} />
           <Text style={styles.summaryCardNumber}>{compliments.length}</Text>
           <Text style={styles.summaryCardLabel}>Compliments</Text>
           <Text style={styles.summaryCardPoints}>

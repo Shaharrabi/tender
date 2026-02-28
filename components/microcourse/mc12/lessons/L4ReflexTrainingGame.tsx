@@ -54,7 +54,7 @@ export default function L4ReflexTrainingGame({ content, onComplete }: { content:
   const [misses, setMisses] = useState(0);
   const [totalRounds] = useState(8);
   const [responseIdx, setResponseIdx] = useState(0);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const flashAnim = useRef(new Animated.Value(0)).current;
 

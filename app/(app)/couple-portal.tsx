@@ -20,6 +20,8 @@ import {
   ScrollView,
   ActivityIndicator,
   Dimensions,
+  Platform,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -37,7 +39,6 @@ import { getPortrait, checkCanGeneratePortrait, fetchAllScores, extractSupplemen
 import { generatePortrait, isPortraitStale } from '@/utils/portrait/portrait-generator';
 import { generateRelationshipPortrait } from '@/utils/portrait/relationship-portrait-generator';
 import { generateDeepCouplePortrait } from '@/utils/portrait/couple-portrait-generator';
-import { getExerciseById } from '@/utils/interventions/registry';
 import {
   Colors,
   Spacing,
@@ -83,6 +84,7 @@ import ExitPointCard from '@/components/couple-portrait/ExitPointCard';
 import DyadicDiscrepancyAlert from '@/components/couple-portrait/DyadicDiscrepancyAlert';
 import CoupleNarrativeBlock from '@/components/couple-portrait/CoupleNarrativeBlock';
 import { generateOverviewSnapshot } from '@/utils/portrait/overview-snapshot';
+import CouplePortalErrorBoundary from '@/components/CouplePortalErrorBoundary';
 
 type TabKey = 'overview' | 'dance' | 'together' | 'insights' | 'growth' | 'anchors';
 
@@ -95,7 +97,15 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: 'anchors', label: 'Anchors' },
 ];
 
-export default function CouplePortalScreen() {
+export default function CouplePortalScreenWithBoundary() {
+  return (
+    <CouplePortalErrorBoundary>
+      <CouplePortalScreen />
+    </CouplePortalErrorBoundary>
+  );
+}
+
+function CouplePortalScreen() {
   const { user } = useAuth();
   const router = useRouter();
 
@@ -509,7 +519,7 @@ export default function CouplePortalScreen() {
       {dp && (
         <View style={styles.narrativeCard}>
           <Text style={styles.narrativeSummary}>
-            {generateOverviewSnapshot(dp)}
+            {(() => { try { return generateOverviewSnapshot(dp); } catch { return 'Your couple portrait is being prepared...'; } })()}
           </Text>
         </View>
       )}
@@ -959,13 +969,34 @@ export default function CouplePortalScreen() {
   };
 
   const renderTabContent = () => {
-    switch (activeTab) {
-      case 'overview': return renderOverview();
-      case 'dance': return renderDance();
-      case 'together': return renderTogether();
-      case 'insights': return renderInsights();
-      case 'growth': return renderGrowth();
-      case 'anchors': return renderAnchors();
+    try {
+      switch (activeTab) {
+        case 'overview': return renderOverview();
+        case 'dance': return renderDance();
+        case 'together': return renderTogether();
+        case 'insights': return renderInsights();
+        case 'growth': return renderGrowth();
+        case 'anchors': return renderAnchors();
+      }
+    } catch (e: any) {
+      console.error('[CouplePortal] Tab render error:', e);
+      return (
+        <View style={styles.tabContent}>
+          <View style={styles.synthesisCard}>
+            <Text style={styles.synthesisTitle}>Something went wrong</Text>
+            <Text style={styles.synthesisNarrative}>
+              This section couldn't render. Try switching tabs or refreshing.
+              {__DEV__ ? `\n\nError: ${e?.message}` : ''}
+            </Text>
+            <TouchableOpacity
+              onPress={() => { setDeepPortrait(null); setPortrait(null); loadData(); }}
+              style={styles.retryBtn}
+            >
+              <Text style={styles.retryText}>Refresh</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      );
     }
   };
 
@@ -974,13 +1005,36 @@ export default function CouplePortalScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        {/* Header */}
-        <TouchableOpacity onPress={() => router.replace('/(app)/partner' as any)} style={styles.backBtn}>
-          <View style={styles.backRow}>
-            <ArrowLeftIcon size={16} color={Colors.primary} />
-            <Text style={styles.backText}>Back</Text>
-          </View>
-        </TouchableOpacity>
+        {/* Header Row */}
+        <View style={styles.headerRow}>
+          <TouchableOpacity onPress={() => router.replace('/(app)/partner' as any)} style={styles.backBtn}>
+            <View style={styles.backRow}>
+              <ArrowLeftIcon size={16} color={Colors.primary} />
+              <Text style={styles.backText}>Back</Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={async () => {
+              if (!dp) return;
+              try {
+                const { generateCouplePortraitPDF } = await import('@/services/pdf-export');
+                const nameA = dp.partnerAName || 'Partner A';
+                const nameB = dp.partnerBName || partnerName || 'Partner B';
+                await generateCouplePortraitPDF(dp, nameA, nameB);
+              } catch (err) {
+                if (__DEV__) console.warn('[CouplePortal] PDF export failed:', err);
+                if (Platform.OS !== 'web') {
+                  Alert.alert('Export Error', 'Could not generate PDF. Please try again.');
+                }
+              }
+            }}
+            activeOpacity={0.7}
+            style={styles.exportBtn}
+            disabled={!dp}
+          >
+            <Text style={[styles.exportBtnText, !dp && { opacity: 0.4 }]}>Export PDF</Text>
+          </TouchableOpacity>
+        </View>
 
         <Text style={styles.heading}>The Space Between You</Text>
         <Text style={styles.subtitle}>
@@ -1340,5 +1394,21 @@ const styles = StyleSheet.create({
   coachCta: {
     ...Typography.bodyMedium,
     color: Colors.depth,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
+  },
+  exportBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+  },
+  exportBtnText: {
+    ...Typography.bodySmall,
+    color: Colors.primary,
+    fontFamily: FontFamilies.body,
+    letterSpacing: 0.5,
   },
 });

@@ -346,10 +346,10 @@ export function findValuesTensions(
  * anxietyNorm/avoidanceNorm in their compositeScores.
  */
 function quadrantFromScores(
-  portrait: IndividualPortrait,
+  portrait: IndividualPortrait | null | undefined,
   posFallback: CyclePosition | undefined,
 ): string {
-  const sc = portrait.compositeScores;
+  const sc = portrait?.compositeScores;
   if (sc?.anxietyNorm != null && sc?.avoidanceNorm != null) {
     // Normalized 0-100 scale: 50 corresponds to raw score 4.0 (the QUADRANT_BOUNDARY)
     const highAnxiety = sc.anxietyNorm >= 50;
@@ -378,10 +378,10 @@ function quadrantFromScores(
  * for older portraits that predate the field addition.
  */
 function getAnxietyAvoidance(
-  portrait: IndividualPortrait,
+  portrait: IndividualPortrait | null | undefined,
   pos: CyclePosition | undefined,
 ): { anxiety: number; avoidance: number } {
-  const sc = portrait.compositeScores;
+  const sc = portrait?.compositeScores;
 
   // Use actual ECR-R scores when available (new portraits have these)
   if (sc?.anxietyNorm != null && sc?.avoidanceNorm != null) {

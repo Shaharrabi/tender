@@ -447,6 +447,7 @@ export async function checkDyadicCompletion(
   userComplete: string[];
   partnerComplete: string[];
   allDone: boolean;
+  completionLevel?: 'none' | 'preliminary' | 'partial' | 'full';
 }> {
   const couple = await getCoupleById(coupleId);
   if (!couple) return { userComplete: [], partnerComplete: [], allDone: false };

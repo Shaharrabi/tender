@@ -18,6 +18,7 @@ import {
   ASSESSMENT_LABELS,
   ASSESSMENT_COLORS,
   ASSESSMENT_CONNECTIONS,
+  type AssessmentConnection,
 } from '@/constants/connectionMatrix';
 import {
   Colors,
@@ -158,6 +159,104 @@ const ASSESSMENT_DIMENSIONS: Record<string, DimensionConfig[]> = {
   ],
 };
 
+// ─── Score-aware connection deduplication ───────────────────
+//
+// Some connections are *conditionally* true — e.g., attachment anxiety
+// can lead to EITHER yielding OR competing, depending on the person.
+// When both connections exist in the static matrix, we keep only the
+// one that matches the user's actual higher score.
+
+function resolveContradictoryConnections(
+  connections: AssessmentConnection[],
+  scores: Record<string, { id: string; scores: any }>,
+  selectedDim: { assessment: string; dimension: string },
+): AssessmentConnection[] {
+  // Group outgoing connections: same source → same target assessment
+  // For connections where selectedDim is the FROM side
+  const outgoingGroups = new Map<string, AssessmentConnection[]>();
+  // For connections where selectedDim is the TO side
+  const incomingGroups = new Map<string, AssessmentConnection[]>();
+  const ungrouped: AssessmentConnection[] = [];
+
+  for (const conn of connections) {
+    const isFrom =
+      conn.from.assessment === selectedDim.assessment &&
+      conn.from.dimension === selectedDim.dimension;
+
+    if (isFrom) {
+      // Group by target assessment
+      const key = conn.to.assessment;
+      const group = outgoingGroups.get(key) || [];
+      group.push(conn);
+      outgoingGroups.set(key, group);
+    } else {
+      // Group by source assessment (reverse direction)
+      const key = conn.from.assessment;
+      const group = incomingGroups.get(key) || [];
+      group.push(conn);
+      incomingGroups.set(key, group);
+    }
+  }
+
+  const result: AssessmentConnection[] = [];
+
+  // Resolve outgoing groups (e.g., anxiety → [yielding, competing])
+  for (const [targetAssessment, group] of outgoingGroups) {
+    if (group.length <= 1) {
+      result.push(...group);
+      continue;
+    }
+    // Multiple connections to different dims in the same target assessment
+    // Use actual user scores to pick the dominant one
+    const targetScores = scores[targetAssessment]?.scores;
+    if (!targetScores) {
+      result.push(...group); // No scores — keep all
+      continue;
+    }
+
+    let best = group[0];
+    let bestScore = -Infinity;
+    for (const conn of group) {
+      const raw = targetScores[conn.to.dimension];
+      const val = typeof raw === 'number' ? raw : (raw?.mean ?? 0);
+      if (val > bestScore) {
+        bestScore = val;
+        best = conn;
+      }
+    }
+    result.push(best);
+  }
+
+  // Resolve incoming groups (e.g., [anxiety, avoidance] → same target dim)
+  for (const [sourceAssessment, group] of incomingGroups) {
+    if (group.length <= 1) {
+      result.push(...group);
+      continue;
+    }
+    // Multiple connections from different dims of the same source assessment
+    // Use the source dimension's actual score to pick the stronger influence
+    const sourceScores = scores[sourceAssessment]?.scores;
+    if (!sourceScores) {
+      result.push(...group); // No scores — keep all
+      continue;
+    }
+
+    let best = group[0];
+    let bestScore = -Infinity;
+    for (const conn of group) {
+      const raw = sourceScores[conn.from.dimension];
+      const val = typeof raw === 'number' ? raw : (raw?.mean ?? 0);
+      if (val > bestScore) {
+        bestScore = val;
+        best = conn;
+      }
+    }
+    result.push(best);
+  }
+
+  return result;
+}
+
 interface CombinedProfileViewProps {
   /** All assessment scores: { 'ecr-r': { id, scores }, ... } */
   allScores: Record<string, { id: string; scores: any }>;
@@ -206,11 +305,12 @@ export function CombinedProfileView({
     []
   );
 
-  // Get connections for selected dimension
+  // Get connections for selected dimension — with score-aware filtering
+  // to resolve contradictions (e.g., anxiety → yielding vs anxiety → competing)
   const activeConnections = useMemo(() => {
     if (!selectedDim) return [];
 
-    return ASSESSMENT_CONNECTIONS.filter(
+    const raw = ASSESSMENT_CONNECTIONS.filter(
       (c) =>
         (c.from.assessment === selectedDim.assessment &&
           c.from.dimension === selectedDim.dimension) ||
@@ -221,7 +321,13 @@ export function CombinedProfileView({
         completedAssessments.includes(c.from.assessment) &&
         completedAssessments.includes(c.to.assessment)
     );
-  }, [selectedDim, completedAssessments]);
+
+    // Resolve contradictions: when the same source dimension connects to
+    // multiple dimensions in the SAME target assessment (e.g., anxiety → yielding
+    // AND anxiety → competing), keep only the connection whose target dimension
+    // has the higher actual user score.
+    return resolveContradictoryConnections(raw, allScores, selectedDim);
+  }, [selectedDim, completedAssessments, allScores]);
 
   const handleDimPress = (assessment: string, dimension: string) => {
     if (
@@ -255,6 +361,21 @@ export function CombinedProfileView({
     });
   }, [completedAssessments]);
 
+  // Determine if the selected dimension has a low score (below scale midpoint)
+  // If so, connections from this dimension are less relevant for this user
+  const selectedDimRelevance = useMemo(() => {
+    if (!selectedDim) return { isLow: false, score: 0, label: '' };
+    const dimConfig = (ASSESSMENT_DIMENSIONS[selectedDim.assessment] || [])
+      .find((d) => d.key === selectedDim.dimension);
+    if (!dimConfig) return { isLow: false, score: 0, label: '' };
+
+    const scores = allScores[selectedDim.assessment]?.scores || {};
+    const raw = scores[dimConfig.key];
+    const val = typeof raw === 'number' ? raw : (raw?.mean ?? 0);
+    const midpoint = (dimConfig.min + dimConfig.max) / 2;
+    return { isLow: val < midpoint, score: val, label: dimConfig.label };
+  }, [selectedDim, allScores]);
+
   // Render the connection info panel (reused inline after tapped card)
   const renderConnectionPanel = () => {
     if (!selectedDim || activeConnections.length === 0) return null;
@@ -264,6 +385,11 @@ export function CombinedProfileView({
         <Text style={styles.connectionInfoTitle}>
           Connections ({activeConnections.length})
         </Text>
+        {selectedDimRelevance.isLow && (
+          <Text style={styles.connectionLowNote}>
+            Your {selectedDimRelevance.label.toLowerCase()} is relatively low — these patterns may be less prominent for you.
+          </Text>
+        )}
         {activeConnections.map((conn, i) => {
           const isFrom =
             conn.from.assessment === selectedDim.assessment &&
@@ -619,6 +745,18 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     paddingLeft: 20,
     fontStyle: 'italic',
+  },
+  connectionLowNote: {
+    fontSize: FontSizes.caption,
+    fontFamily: FontFamilies.body,
+    color: Colors.textMuted,
+    fontStyle: 'italic',
+    lineHeight: 16,
+    paddingVertical: 4,
+    paddingHorizontal: 4,
+    backgroundColor: Colors.progressTrack + '40',
+    borderRadius: BorderRadius.sm,
+    marginBottom: Spacing.xs,
   },
   // Portrait context card per assessment
   portraitCard: {

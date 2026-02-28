@@ -32,7 +32,7 @@ export default function L4AppreciationSprint({ content, onComplete }: { content:
   const [timerActive, setTimerActive] = useState(false);
   const [appreciations, setAppreciations] = useState<string[]>([]);
   const [currentText, setCurrentText] = useState('');
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {

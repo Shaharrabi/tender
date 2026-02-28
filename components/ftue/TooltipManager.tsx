@@ -47,7 +47,7 @@ export const TooltipManager: React.FC<TooltipManagerProps> = ({
   scrollRef,
   scrollOffset,
 }) => {
-  const { state, loading, markTooltipSeen } = useFirstTime();
+  const { state, loading, markTooltipSeen, markAllTooltipsSeen } = useFirstTime();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [ready, setReady] = useState(false);
   const [scrolledAndReady, setScrolledAndReady] = useState(false);
@@ -71,6 +71,18 @@ export const TooltipManager: React.FC<TooltipManagerProps> = ({
       queueInitialized.current = true;
     }
   }, [screen, loading, state.seenTooltips]);
+
+  // ── On unmount: mark ALL queued tooltips as seen ──
+  // This prevents unseen tooltips from replaying if the user navigates
+  // away before dismissing the entire sequence.
+  useEffect(() => {
+    return () => {
+      if (tooltipQueue.length > 0) {
+        markAllTooltipsSeen(tooltipQueue.map((t) => t.id));
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tooltipQueue]);
 
   // Wait for the right moment to show tooltips
   useEffect(() => {

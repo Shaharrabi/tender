@@ -146,9 +146,7 @@ export default function RelationshipModeScreen() {
           await seedDyadicAssessments(couple.id, user.id, user.id);
         }
       } else if (
-        (currentMode === 'demo_partner' || currentMode === 'random_partner') &&
-        selectedMode !== 'demo_partner' &&
-        selectedMode !== 'random_partner'
+        (currentMode === 'demo_partner' || currentMode === 'random_partner')
       ) {
         // Switching away from demo mode — clean up the self-couple
         const myCouple = await getMyCouple(user.id);

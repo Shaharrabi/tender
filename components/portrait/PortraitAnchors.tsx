@@ -1,10 +1,31 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Colors, Spacing, FontSizes } from '@/constants/theme';
-import type { AnchorPoints } from '@/types';
+import { Colors, Spacing, Typography } from '@/constants/theme';
+import type { AnchorPoints, AnchorCategory } from '@/types';
 
 interface Props {
   anchors: AnchorPoints;
+}
+
+function renderAnchorValue(value: AnchorPoints[keyof AnchorPoints]): string {
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value)) return value.join('\n');
+  if (value && typeof value === 'object') {
+    // AnchorCategory
+    if ('primary' in value) {
+      const cat = value as AnchorCategory;
+      return cat.primary;
+    }
+    // repair object
+    if ('repairStarters' in value) {
+      return (value as { repairStarters: string[] }).repairStarters.join('\n');
+    }
+    // selfCompassion object
+    if ('personalizedMessage' in value) {
+      return (value as { personalizedMessage: string }).personalizedMessage;
+    }
+  }
+  return String(value);
 }
 
 const LABELS: Array<{ key: keyof AnchorPoints; label: string }> = [
@@ -26,7 +47,7 @@ export default function PortraitAnchors({ anchors }: Props) {
       {LABELS.map(({ key, label }) => (
         <View key={key} style={styles.card}>
           <Text style={styles.anchorLabel}>{label}</Text>
-          <Text style={styles.anchorText}>{anchors[key]}</Text>
+          <Text style={styles.anchorText}>{renderAnchorValue(anchors[key])}</Text>
         </View>
       ))}
     </View>
@@ -39,12 +60,11 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   sectionTitle: {
-    fontSize: FontSizes.headingL,
-    fontWeight: '600',
+    ...Typography.headingL,
     color: Colors.text,
   },
   sectionSubtitle: {
-    fontSize: FontSizes.bodySmall,
+    ...Typography.bodySmall,
     color: Colors.textSecondary,
     marginBottom: Spacing.sm,
   },
@@ -55,16 +75,13 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   anchorLabel: {
-    fontSize: FontSizes.caption,
-    fontWeight: '700',
+    ...Typography.label,
     color: Colors.primary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
   },
   anchorText: {
-    fontSize: FontSizes.body,
+    ...Typography.body,
     color: Colors.text,
     lineHeight: 24,
-    fontStyle: 'italic',
+    fontStyle: 'italic' as const,
   },
 });

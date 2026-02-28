@@ -66,6 +66,10 @@ export const Colors = {
   progressFill: '#C4616E',      // Dusty Rose — filled
   progressComplete: '#6B9080',  // Muted Sage — completed
 
+  // Aliases & extensions
+  pink: '#E6A0C4',              // Alias for primaryLight (Mendl's Pink)
+  focus: '#7294D4',             // Alias for secondary — focus states
+
   // Utility
   white: '#FFFFFF',
   black: '#2D2226',
@@ -83,8 +87,14 @@ export const FontSizes = {
   headingXL: 32,
   headingL: 24,
   headingM: 20,
+  headingS: 17,
+  xl: 32,
+  lg: 24,
+  md: 20,
   body: 16,
+  sm: 14,
   bodySmall: 14,
+  xs: 12,
   caption: 12,
 };
 
@@ -250,12 +260,20 @@ export const BorderRadius = {
   lg: 12,      // Buttons, prominent cards
   xl: 20,      // Modal containers
   pill: 999,
+  round: 999,  // Alias for pill — fully round
 };
 
 // ─── Shadows ─────────────────────────────────────────────
 // Warm shadow color (#2D2226), not cool gray
 
 export const Shadows = {
+  sm: {
+    shadowColor: '#2D2226',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 2,
+    elevation: 1,
+  },
   subtle: {
     shadowColor: '#2D2226',
     shadowOffset: { width: 0, height: 1 },

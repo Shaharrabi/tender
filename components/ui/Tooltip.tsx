@@ -72,7 +72,7 @@ export const Tooltip: React.FC<TooltipProps> = ({ config, onDismiss }) => {
     };
 
     // Measure target element after a short delay (let layout settle)
-    let retryTimer: NodeJS.Timeout;
+    let retryTimer: ReturnType<typeof setTimeout>;
     const timer = setTimeout(tryMeasure, FTUETiming.measureDelay);
 
     return () => {

@@ -138,6 +138,7 @@ function getDefaultPrefs(): EngagementNotificationPreferences {
     growthMirrors: true,
     coupleBubble: true,
     milestoneStreak: true,
+    weeklyCheckin: true,
   };
 }
 

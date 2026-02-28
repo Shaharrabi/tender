@@ -63,7 +63,7 @@ const INNER_LABEL_MIN_PCT = 25;
 
 // ─── Score Interpretation Map ────────────────────────────
 
-const INTERPRETATIONS: Record<keyof CompositeScores, [string, string, string]> = {
+const INTERPRETATIONS: Record<string, [string, string, string]> = {
   accessibility: ['Emotionally available', 'Sometimes guarded', 'Tends to withdraw'],
   responsiveness: ['Attuned to partner', 'Working on attunement', 'Needs focus'],
   engagement: ['Deeply invested', 'Moderately engaged', 'Disengaging risk'],
@@ -77,6 +77,8 @@ const INTERPRETATIONS: Record<keyof CompositeScores, [string, string, string]> =
   differentiation: ['Well differentiated', 'Building differentiation', 'Fusion patterns'],
   conflictFlexibility: ['Flexible in conflict', 'Some rigidity', 'Conflict style rigid'],
   relationalAwareness: ['Deeply aware', 'Growing awareness', 'Awareness developing'],
+  anxietyNorm: ['Low attachment anxiety', 'Moderate anxiety', 'High attachment anxiety'],
+  avoidanceNorm: ['Low avoidance', 'Moderate avoidance', 'High avoidance'],
 };
 
 // ─── Helpers ─────────────────────────────────────────────
@@ -97,7 +99,7 @@ function getInterpretation(key: keyof CompositeScores, value: number): string {
 
 function computeOverallScore(scores: CompositeScores): number {
   const keys = SCORE_META.map((m) => m.key);
-  const total = keys.reduce((sum, k) => sum + scores[k], 0);
+  const total = keys.reduce((sum, k) => sum + (scores[k] ?? 0), 0);
   return Math.round(total / keys.length);
 }
 
@@ -198,7 +200,7 @@ function GroupCard({
       <Text style={styles.groupLabel}>{group}</Text>
       <View style={styles.groupDivider} />
       {items.map((meta) => (
-        <ScoreBar key={meta.key} meta={meta} value={scores[meta.key]} />
+        <ScoreBar key={meta.key} meta={meta} value={scores[meta.key] ?? 0} />
       ))}
     </View>
   );

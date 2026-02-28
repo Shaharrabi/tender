@@ -52,21 +52,33 @@ function edgeSentence(edges: { title: string }[]): string {
 // ─── Main Generator ────────────────────────────────────────
 
 export function generateOverviewSnapshot(dp: DeepCouplePortrait): string {
-  const { partnerAName: nameA, partnerBName: nameB } = dp;
+  try {
+    const nameA = dp?.partnerAName || 'Partner A';
+    const nameB = dp?.partnerBName || 'Partner B';
 
-  const parts: string[] = [];
+    const parts: string[] = [];
 
-  // 1. Vitality-based opening — the centerpiece
-  const vitality = dp.relationalField?.vitality ?? 50;
-  parts.push(vitalityOpening(vitality, nameA, nameB));
+    // 1. Vitality-based opening — the centerpiece
+    const vitality = dp?.relationalField?.vitality ?? 50;
+    parts.push(vitalityOpening(vitality, nameA, nameB));
 
-  // 2. Shared strengths
-  const strength = strengthSentence(dp.convergenceDivergence.sharedStrengths);
-  if (strength) parts.push(strength);
+    // 2. Shared strengths
+    const strengths = dp?.convergenceDivergence?.sharedStrengths;
+    if (strengths) {
+      const strength = strengthSentence(strengths);
+      if (strength) parts.push(strength);
+    }
 
-  // 3. Growth edge
-  const edge = edgeSentence(dp.coupleGrowthEdges);
-  if (edge) parts.push(edge);
+    // 3. Growth edge
+    const edges = dp?.coupleGrowthEdges;
+    if (edges) {
+      const edge = edgeSentence(edges);
+      if (edge) parts.push(edge);
+    }
 
-  return parts.join(' ');
+    return parts.join(' ');
+  } catch (e) {
+    console.warn('[overviewSnapshot] Error generating snapshot:', e);
+    return 'Your couple portrait is being woven together...';
+  }
 }

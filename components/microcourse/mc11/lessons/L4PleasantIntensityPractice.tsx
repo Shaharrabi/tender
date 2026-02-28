@@ -43,7 +43,7 @@ export default function L4PleasantIntensityPractice({ content, onComplete }: { c
   const [timer, setTimer] = useState(30);
   const [timerActive, setTimerActive] = useState(false);
   const pulseAnim = useRef(new Animated.Value(1)).current;
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (timerActive && timer > 0) {

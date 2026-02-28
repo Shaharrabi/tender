@@ -461,9 +461,9 @@ export default function TenderAssessmentScreen() {
 
       // Award XP for completing a section (non-blocking)
       if (retakeMode.current) {
-        awardXP('assessment_retake', currentConfig.type, `Retook: ${currentSection.sectionName}`).catch(() => {});
+        awardXP('assessment_retake', currentConfig.type, `Retook: ${currentSection.fieldName}`).catch(() => {});
       } else {
-        awardXP('assessment_complete', currentConfig.type, `Completed: ${currentSection.sectionName}`).catch(() => {});
+        awardXP('assessment_complete', currentConfig.type, `Completed: ${currentSection.fieldName}`).catch(() => {});
       }
 
       // What's next?

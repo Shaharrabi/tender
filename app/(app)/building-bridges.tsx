@@ -405,7 +405,9 @@ function HomeView({
                 <Text style={styles.categoryDesc}>{cat.description}</Text>
                 <Text style={styles.categoryCount}>{cat.cardCount} cards</Text>
               </View>
-              <ArrowLeftIcon size={14} color={Colors.textMuted} style={{ transform: [{ rotate: '180deg' }] }} />
+              <View style={{ transform: [{ rotate: '180deg' }] }}>
+                <ArrowLeftIcon size={14} color={Colors.textMuted} />
+              </View>
             </TouchableOpacity>
           ))}
 

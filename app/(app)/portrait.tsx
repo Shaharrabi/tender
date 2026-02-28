@@ -637,31 +637,23 @@ export default function PortraitScreen() {
           <Text style={st.headerTitle}>Your Portrait</Text>
           <Text style={st.headerDate}>{dateStr}</Text>
         </View>
-        {Platform.OS === 'web' ? (
-          <TouchableOpacity
-            onPress={handleExportAll}
-            activeOpacity={0.7}
-            style={[st.headerBackBtn, { alignItems: 'flex-end' }]}
-          >
-            <Text style={st.headerBackText}>{exportMode ? 'Printing...' : 'Export All'}</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            onPress={async () => {
-              try {
-                const { generatePortraitPDF } = await import('@/services/pdf-export');
-                await generatePortraitPDF(portrait);
-              } catch (err) {
-                if (__DEV__) console.warn('[Export] Native PDF failed:', err);
+        <TouchableOpacity
+          onPress={async () => {
+            try {
+              const { generatePortraitPDF } = await import('@/services/pdf-export');
+              await generatePortraitPDF(portrait, userName);
+            } catch (err) {
+              if (__DEV__) console.warn('[Export] PDF failed:', err);
+              if (Platform.OS !== 'web') {
                 Alert.alert('Export Error', 'Could not generate PDF. Please try again.');
               }
-            }}
-            activeOpacity={0.7}
-            style={[st.headerBackBtn, { alignItems: 'flex-end' }]}
-          >
-            <Text style={st.headerBackText}>Export PDF</Text>
-          </TouchableOpacity>
-        )}
+            }
+          }}
+          activeOpacity={0.7}
+          style={[st.headerBackBtn, { alignItems: 'flex-end' }]}
+        >
+          <Text style={st.headerBackText}>Export PDF</Text>
+        </TouchableOpacity>
       </View>
 
       {/* ── View-and-Erase Warning ─────────────── */}

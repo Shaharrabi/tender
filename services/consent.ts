@@ -7,7 +7,7 @@ import { supabase } from '@/services/supabase';
 import type { ConsentType, DataConsent, SharingPreference } from '@/types/consent';
 
 // ─── Individual Assessment Types ─────────────────────────
-const INDIVIDUAL_ASSESSMENT_TYPES = [
+export const INDIVIDUAL_ASSESSMENT_TYPES = [
   'ecr-r',
   'dutch',
   'sseit',

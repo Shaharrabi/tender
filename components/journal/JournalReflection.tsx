@@ -107,7 +107,7 @@ export default function JournalReflection({
     })
   );
   const [freeText, setFreeText] = useState(reflection?.freeText || '');
-  const saveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Reset state when date or reflection changes
   useEffect(() => {

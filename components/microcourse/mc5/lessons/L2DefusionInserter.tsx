@@ -57,7 +57,7 @@ export function L2DefusionInserter({
   const storyScale = useRef(new Animated.Value(1)).current;
   const storyOpacity = useRef(new Animated.Value(1)).current;
   const cursorOpacity = useRef(new Animated.Value(1)).current;
-  const typewriterRef = useRef<NodeJS.Timeout | null>(null);
+  const typewriterRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Blinking cursor loop
   useEffect(() => {
