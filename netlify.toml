@@ -13,8 +13,9 @@ npx expo export --platform web
 
 [build.environment]
   NODE_VERSION = "20"
-  EXPO_PUBLIC_SUPABASE_URL = "https://qwqclhzezyzeflxrtfjy.supabase.co"
-  EXPO_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_X44nRh0JlS952CarvKJfcg_WAJLktxq"
+  # EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY must be set
+  # in the Netlify dashboard (Site settings > Environment variables).
+  # Do NOT hardcode credentials here.
 
 # ─── Security Headers ───────────────────────────────────
 # Protects against common web attacks (XSS, clickjacking, MIME sniffing)

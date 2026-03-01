@@ -18,7 +18,7 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
 // ─── CORS — restrict to your domains only ────────────
 const ALLOWED_ORIGINS = [
-  'https://couples-app-demo.netlify.app',
+  // TODO: Replace with your production domain, e.g. 'https://tender-app.netlify.app'
   'http://localhost:8081',      // Expo dev
   'http://localhost:19006',     // Expo web dev
 ];

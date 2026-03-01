@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "couples-app",
-    "slug": "couples-app",
+    "name": "tender",
+    "slug": "tender-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

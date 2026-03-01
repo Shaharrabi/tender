@@ -39,14 +39,17 @@ interface ChatContextType {
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 // Edge function URL — derived from the same env var used by supabase.ts.
-// Use a fallback to the known project URL in case Expo's Babel transform
-// fails to inline the env var (observed in some static-export builds).
-const SUPABASE_URL =
-  process.env.EXPO_PUBLIC_SUPABASE_URL ||
-  'https://qwqclhzezyzeflxrtfjy.supabase.co';
-const SUPABASE_ANON_KEY =
-  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ||
-  'sb_publishable_X44nRh0JlS952CarvKJfcg_WAJLktxq';
+// These MUST be set via environment variables (.env.local or Netlify dashboard).
+const SUPABASE_URL = process.env.EXPO_PUBLIC_SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  throw new Error(
+    'Missing required environment variables: EXPO_PUBLIC_SUPABASE_URL and/or EXPO_PUBLIC_SUPABASE_ANON_KEY. ' +
+    'Set them in .env.local (for local dev) or in the Netlify dashboard (for production).'
+  );
+}
+
 const CHAT_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/chat`;
 
 interface ChatProviderProps {
