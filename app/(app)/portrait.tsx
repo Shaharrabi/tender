@@ -29,7 +29,7 @@ import { useAuth } from '@/context/AuthContext';
 import { TooltipManager } from '@/components/ftue/TooltipManager';
 import { WelcomeAudio } from '@/components/ftue/WelcomeAudio';
 import HomeButton from '@/components/HomeButton';
-import { getPortrait, savePortrait, extractSupplementScores } from '@/services/portrait';
+import { getPortrait, savePortrait, extractSupplementScores, fetchPreviousScores } from '@/services/portrait';
 import { getUserConsent, eraseUserData } from '@/services/consent';
 import {
   Colors,
@@ -62,6 +62,7 @@ import BigFiveBars from '@/components/visualizations/BigFiveBars';
 import WindowOfTolerance from '@/components/visualizations/WindowOfTolerance';
 import DifferentiationSpectrum from '@/components/visualizations/DifferentiationSpectrum';
 import { fetchAllScores } from '@/services/portrait';
+import { ReassessmentDelta } from '@/components/visualizations/ReassessmentDelta';
 import { generatePortrait, isPortraitStale } from '@/utils/portrait/portrait-generator';
 import type { AllAssessmentScores } from '@/types/portrait';
 import type { SSEITScores, DUTCHScores, ValuesScores, IPIPScores, DSIRScores } from '@/types';
@@ -444,6 +445,7 @@ export default function PortraitScreen() {
   const params = useLocalSearchParams<{ tab?: string }>();
   const [portrait, setPortrait] = useState<IndividualPortrait | null>(null);
   const [rawScores, setRawScores] = useState<AllAssessmentScores | null>(null);
+  const [previousCompositeScores, setPreviousCompositeScores] = useState<IndividualPortrait['compositeScores'] | null>(null);
   const [loading, setLoading] = useState(true);
   const initialTab = (params.tab as TabKey) || 'overview';
   const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
@@ -453,71 +455,106 @@ export default function PortraitScreen() {
   const tabScrollRef = useRef<ScrollView>(null);
   const contentScrollRef = useRef<ScrollView>(null);
 
-  useEffect(() => {
+  const loadPortraitData = useCallback(async () => {
     if (!user) return;
-    // Load portrait + raw assessment scores in parallel
-    Promise.all([
-      getPortrait(user.id),
-      fetchAllScores(user.id).catch(() => null),
-    ])
-      .then(async ([p, scoresMap]) => {
-        // Auto-regenerate portrait if code version is newer (e.g. missing radar dimensions)
-        if (p && scoresMap && isPortraitStale(p.version)) {
-          console.log(`[Portrait] Portrait version ${p.version} is stale — regenerating...`);
-          try {
+    setLoading(true);
+    try {
+      // Load portrait + raw assessment scores in parallel
+      const [p, scoresMap] = await Promise.all([
+        getPortrait(user.id),
+        fetchAllScores(user.id).catch(() => null),
+      ]);
+
+      let finalPortrait = p;
+
+      // Auto-regenerate portrait if code version is newer (e.g. missing radar dimensions)
+      if (finalPortrait && scoresMap && isPortraitStale(finalPortrait.version)) {
+        console.log(`[Portrait] Portrait version ${finalPortrait.version} is stale — regenerating...`);
+        try {
+          const required = ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'ipip-neo-120', 'values'];
+          const hasAll = required.every((t) => scoresMap[t]?.scores);
+          if (hasAll) {
+            const scores: AllAssessmentScores = {
+              ecrr: scoresMap['ecr-r'].scores,
+              dutch: scoresMap['dutch'].scores,
+              sseit: scoresMap['sseit'].scores,
+              dsir: scoresMap['dsi-r'].scores,
+              ipip: scoresMap['ipip-neo-120'].scores,
+              values: scoresMap['values'].scores,
+            };
+            const supplements = extractSupplementScores(scoresMap);
+            const ids = Object.values(scoresMap).map((r) => r.id);
+            const freshPortrait = generatePortrait(user.id, ids, scores, supplements);
+            const saved = await savePortrait(freshPortrait);
+            finalPortrait = saved;
+            console.log('[Portrait] Auto-regenerated with latest composite scores');
+          }
+        } catch (regenErr) {
+          console.error('[Portrait] Auto-regeneration failed:', regenErr);
+          // Keep the old portrait rather than showing nothing
+        }
+      }
+
+      setPortrait(finalPortrait);
+      if (scoresMap) {
+        try {
+          setRawScores({
+            ecrr: scoresMap['ecr-r']?.scores,
+            dutch: scoresMap['dutch']?.scores,
+            sseit: scoresMap['sseit']?.scores,
+            dsir: scoresMap['dsi-r']?.scores,
+            ipip: scoresMap['ipip-neo-120']?.scores,
+            values: scoresMap['values']?.scores,
+          });
+        } catch (e) {
+          console.warn('[Portrait] Failed to parse raw scores:', e);
+        }
+      }
+
+      // Fetch previous assessment scores for ReassessmentDelta visualization
+      if (finalPortrait) {
+        try {
+          const prevScoresMap = await fetchPreviousScores(user.id);
+          if (prevScoresMap) {
+            // Generate a portrait from previous scores to get previous composite scores
             const required = ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'ipip-neo-120', 'values'];
-            const hasAll = required.every((t) => scoresMap[t]?.scores);
-            if (hasAll) {
-              const scores: AllAssessmentScores = {
-                ecrr: scoresMap['ecr-r'].scores,
-                dutch: scoresMap['dutch'].scores,
-                sseit: scoresMap['sseit'].scores,
-                dsir: scoresMap['dsi-r'].scores,
-                ipip: scoresMap['ipip-neo-120'].scores,
-                values: scoresMap['values'].scores,
+            const hasAllPrev = required.every((t) => prevScoresMap[t]?.scores);
+            if (hasAllPrev) {
+              const prevScores: AllAssessmentScores = {
+                ecrr: prevScoresMap['ecr-r'].scores,
+                dutch: prevScoresMap['dutch'].scores,
+                sseit: prevScoresMap['sseit'].scores,
+                dsir: prevScoresMap['dsi-r'].scores,
+                ipip: prevScoresMap['ipip-neo-120'].scores,
+                values: prevScoresMap['values'].scores,
               };
-              const supplements = extractSupplementScores(scoresMap);
-              const ids = Object.values(scoresMap).map((r) => r.id);
-              const freshPortrait = generatePortrait(user.id, ids, scores, supplements);
-              const saved = await savePortrait(freshPortrait);
-              p = saved;
-              console.log('[Portrait] Auto-regenerated with latest composite scores');
+              const prevSupplements = extractSupplementScores(prevScoresMap);
+              const prevIds = Object.values(prevScoresMap).map((r) => r.id);
+              const prevPortrait = generatePortrait(user.id, prevIds, prevScores, prevSupplements);
+              setPreviousCompositeScores(prevPortrait.compositeScores);
+              console.log('[Portrait] Previous composite scores loaded for ReassessmentDelta');
             }
-          } catch (regenErr) {
-            console.error('[Portrait] Auto-regeneration failed:', regenErr);
-            // Keep the old portrait rather than showing nothing
           }
+        } catch (e) {
+          console.warn('[Portrait] Failed to load previous scores:', e);
         }
+      }
 
-        setPortrait(p);
-        if (scoresMap) {
-          try {
-            setRawScores({
-              ecrr: scoresMap['ecr-r']?.scores,
-              dutch: scoresMap['dutch']?.scores,
-              sseit: scoresMap['sseit']?.scores,
-              dsir: scoresMap['dsi-r']?.scores,
-              ipip: scoresMap['ipip-neo-120']?.scores,
-              values: scoresMap['values']?.scores,
-            });
-          } catch (e) {
-            console.warn('[Portrait] Failed to parse raw scores:', e);
-          }
-        }
-      })
-      .catch((err) => {
-        console.error('[Portrait] Failed to load portrait:', err);
-      })
-      .finally(() => setLoading(false));
-
-    // Check if consent is view-and-erase
-    getUserConsent(user.id).then((consent) => {
+      // Check if consent is view-and-erase
+      const consent = await getUserConsent(user.id);
       if (consent?.consentType === 'view_and_erase') {
         setIsViewAndErase(true);
         viewAndEraseRef.current = true;
       }
-    });
+    } catch (err) {
+      console.error('[Portrait] Failed to load portrait:', err);
+    } finally {
+      setLoading(false);
+    }
   }, [user]);
+
+  // Refresh portrait data when screen gains focus (e.g. returning from assessment)
+  useFocusEffect(useCallback(() => { loadPortraitData(); }, [loadPortraitData]));
 
   // View-and-erase: erase data when navigating away
   useEffect(() => {
@@ -779,7 +816,15 @@ export default function PortraitScreen() {
             />
           )}
           {activeTab === 'scores' && (
-            <ScoresTab portrait={portrait} overallScore={overallScore} rawScores={rawScores} />
+            <>
+              <ScoresTab portrait={portrait} overallScore={overallScore} rawScores={rawScores} />
+              {previousCompositeScores && (
+                <ReassessmentDelta
+                  previous={previousCompositeScores}
+                  current={portrait.compositeScores}
+                />
+              )}
+            </>
           )}
           {activeTab === 'lenses' && <LensesTab portrait={portrait} rawScores={rawScores} />}
           {activeTab === 'cycle' && <CycleTab portrait={portrait} rawScores={rawScores} />}

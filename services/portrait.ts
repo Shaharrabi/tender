@@ -73,6 +73,43 @@ export function extractSupplementScores(
   return hasAny ? supplements : undefined;
 }
 
+/**
+ * Fetch the second-most-recent scores for each of the 6 assessments.
+ * Returns null if the user hasn't taken any assessment more than once.
+ * Used by ReassessmentDelta to show before/after comparison.
+ */
+export async function fetchPreviousScores(userId: string): Promise<Record<string, { id: string; scores: any }> | null> {
+  const { data, error } = await supabase
+    .from('assessments')
+    .select('id, type, scores, completed_at')
+    .eq('user_id', userId)
+    .in('type', REQUIRED_ASSESSMENTS)
+    .order('completed_at', { ascending: false });
+
+  if (error || !data) return null;
+
+  // Group by type, take the second entry (index 1) for each
+  const byType: Record<string, { id: string; scores: any }[]> = {};
+  for (const row of data) {
+    if (!byType[row.type]) byType[row.type] = [];
+    byType[row.type].push({ id: row.id, scores: row.scores });
+  }
+
+  // Check if at least one assessment type has been taken more than once
+  const hasRetakes = Object.values(byType).some((entries) => entries.length >= 2);
+  if (!hasRetakes) return null;
+
+  // Return the second-most-recent per type (or the only one if only taken once)
+  const previous: Record<string, { id: string; scores: any }> = {};
+  for (const [type, entries] of Object.entries(byType)) {
+    if (entries.length >= 2) {
+      previous[type] = entries[1]; // second most recent
+    }
+  }
+
+  return Object.keys(previous).length > 0 ? previous : null;
+}
+
 /** Save (upsert) a portrait. */
 export async function savePortrait(
   portrait: Omit<IndividualPortrait, 'id' | 'createdAt'>

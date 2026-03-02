@@ -438,6 +438,53 @@ export async function getRelationshipPortrait(
   return data as RelationshipPortrait;
 }
 
+// ─── Deep Couple Portrait ────────────────────────────────
+
+/**
+ * Save the deep couple portrait to the relationship_portraits.deep_portrait JSONB column.
+ * Uses update (not upsert) since the relationship_portraits row must already exist.
+ */
+export async function saveDeepCouplePortrait(
+  coupleId: string,
+  deepPortrait: any,
+): Promise<boolean> {
+  const { error } = await supabase
+    .from('relationship_portraits')
+    .update({
+      deep_portrait: deepPortrait,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('couple_id', coupleId);
+
+  if (error) {
+    // Column may not exist if migration 029 hasn't been applied
+    if (error.code === '42703' || error.message?.includes('deep_portrait')) {
+      console.warn('[Couples] deep_portrait column missing — migration 029 not applied yet');
+      return false;
+    }
+    console.error('[Couples] Failed to save deep couple portrait:', error);
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Get the cached deep couple portrait from the database.
+ * Returns null if not saved or if the column doesn't exist.
+ */
+export async function getDeepCouplePortrait(
+  coupleId: string,
+): Promise<any | null> {
+  const { data, error } = await supabase
+    .from('relationship_portraits')
+    .select('deep_portrait')
+    .eq('couple_id', coupleId)
+    .maybeSingle();
+
+  if (error || !data) return null;
+  return data.deep_portrait || null;
+}
+
 // ─── Unlock State Helper ───────────────────────────────
 
 export async function checkDyadicCompletion(

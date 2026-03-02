@@ -33,6 +33,8 @@ import {
   saveRelationshipPortrait,
   getLatestDyadicScores,
   isSelfCouple,
+  saveDeepCouplePortrait,
+  getDeepCouplePortrait,
 } from '@/services/couples';
 import { getPartnerSharedAssessments, INDIVIDUAL_ASSESSMENT_TYPES } from '@/services/consent';
 import { getPortrait, checkCanGeneratePortrait, fetchAllScores, extractSupplementScores, savePortrait } from '@/services/portrait';
@@ -264,17 +266,64 @@ function CouplePortalScreen() {
       let rp = await getRelationshipPortrait(myCouple.id);
       console.log('[CouplePortal] Relationship portrait from DB:', !!rp);
 
-      // Regenerate when: no portrait exists, OR individual portraits changed
-      // (without this, retaking an assessment would never update the couple view)
-      const needsRelPortraitRegen = !rp || individualPortraitRegenerated;
-      if (needsRelPortraitRegen && (mp || pp)) {
-        if (rp && individualPortraitRegenerated) {
-          console.log('[CouplePortal] Individual portrait changed — regenerating relationship portrait...');
+      // Detect partner portrait changes by comparing portrait IDs stored in relationship portrait
+      let partnerPortraitChanged = false;
+      if (pp && rp && !selfCouple) {
+        const rpData = rp as any;
+        const isPartnerA = myCouple.partner_a_id === user.id;
+        // The partner's portrait ID stored when the relationship portrait was last generated
+        const savedPartnerPortraitId = isPartnerA
+          ? rpData.partner_b_portrait_id
+          : rpData.partner_a_portrait_id;
+        const currentPartnerPortraitId = (pp as any).id;
+        if (savedPartnerPortraitId && currentPartnerPortraitId && savedPartnerPortraitId !== currentPartnerPortraitId) {
+          partnerPortraitChanged = true;
+          console.log('[CouplePortal] Partner portrait ID changed — will regenerate relationship portrait', {
+            saved: savedPartnerPortraitId,
+            current: currentPartnerPortraitId,
+          });
         }
+        // Also check if partner's assessment IDs are newer (portrait row ID may stay same on upsert)
+        if (!partnerPortraitChanged) {
+          const ppIds = new Set((pp as any).assessmentIds || []);
+          const myPortraitId = isPartnerA
+            ? rpData.partner_a_portrait_id
+            : rpData.partner_b_portrait_id;
+          const currentMyPortraitId = mp ? (mp as any).id : null;
+          // If saved portrait IDs don't match current, something changed
+          if (myPortraitId && currentMyPortraitId && myPortraitId !== currentMyPortraitId) {
+            partnerPortraitChanged = true; // re-use flag to trigger regen
+            console.log('[CouplePortal] My portrait ID changed since last relationship portrait — will regenerate');
+          }
+        }
+      }
+
+      // Regenerate when: no portrait exists, OR either partner's portrait changed
+      const needsRelPortraitRegen = !rp || individualPortraitRegenerated || partnerPortraitChanged;
+      if (needsRelPortraitRegen && (mp || pp)) {
+        if (rp && (individualPortraitRegenerated || partnerPortraitChanged)) {
+          console.log('[CouplePortal] Individual portrait changed — regenerating relationship portrait...', {
+            myPortraitChanged: individualPortraitRegenerated,
+            partnerPortraitChanged,
+          });
+        }
+        // Only generate if BOTH partners have portraits (no mirroring)
+        const hasBothPortraits = !!mp && !!pp;
+        if (!hasBothPortraits && !selfCouple) {
+          console.log('[CouplePortal] Only one partner has a portrait — skipping relationship portrait generation (no mirroring)');
+          setPortraitError(
+            !mp
+              ? 'Your individual portrait is needed to generate the couple portrait. Go to the Home screen to generate it first.'
+              : `Your partner hasn't generated their portrait yet. They need to complete all 6 assessments and generate their portrait from their Home screen.`
+          );
+          setLoading(false);
+          return;
+        }
+
         setGenerating(true);
         try {
-          const effectiveMyPortrait = mp || pp;
-          const effectivePartnerPortrait = pp || mp;
+          const effectiveMyPortrait = mp!;
+          const effectivePartnerPortrait = pp!;
 
           const [rdas, dci, csi16] = await Promise.all([
             getLatestDyadicScores(myCouple.id, 'rdas'),
@@ -321,7 +370,7 @@ function CouplePortalScreen() {
 
       setPortrait(rp);
 
-      // ─── 3. Generate Deep Couple Portrait ────────────────
+      // ─── 3. Load or Generate Deep Couple Portrait ────────
       if (mp && pp) {
         // Validate portraits have required data for deep generation
         const mpValid = mp && (mp as any).compositeScores && (mp as any).negativeCycle;
@@ -363,22 +412,39 @@ function CouplePortalScreen() {
           const wp = await getLatestWEAREProfile(myCouple.id);
           setWeareProfile(wp);
 
-          console.log('[CouplePortal] Generating deep couple portrait...', {
-            dyadicAvailable: Object.keys(dScores),
-            weareAvailable: !!wp,
-          });
+          // Try loading cached deep portrait from DB first (skip regeneration if data hasn't changed)
+          const needsDeepRegen = needsRelPortraitRegen || !rp;
+          let cachedDp = needsDeepRegen ? null : await getDeepCouplePortrait(myCouple.id);
+          if (cachedDp && !needsDeepRegen) {
+            console.log('[CouplePortal] Loaded deep portrait from DB cache');
+            setDeepPortrait(cachedDp);
+          } else {
+            console.log('[CouplePortal] Generating deep couple portrait...', {
+              dyadicAvailable: Object.keys(dScores),
+              weareAvailable: !!wp,
+              reason: needsDeepRegen ? 'data changed' : 'no cached version',
+            });
 
-          const dp = generateDeepCouplePortrait(
-            myCouple.id,
-            pA as unknown as IndividualPortrait,
-            pB as unknown as IndividualPortrait,
-            pAName,
-            pBName,
-            dScores,
-            wp,
-          );
-          setDeepPortrait(dp);
-          console.log('[CouplePortal] === Deep portrait generated! ===');
+            const dp = generateDeepCouplePortrait(
+              myCouple.id,
+              pA as unknown as IndividualPortrait,
+              pB as unknown as IndividualPortrait,
+              pAName,
+              pBName,
+              dScores,
+              wp,
+            );
+            setDeepPortrait(dp);
+
+            // Persist to database for future loads
+            saveDeepCouplePortrait(myCouple.id, dp).then((saved) => {
+              if (saved) console.log('[CouplePortal] Deep portrait persisted to DB');
+            }).catch((e) => {
+              console.warn('[CouplePortal] Failed to persist deep portrait:', e);
+            });
+
+            console.log('[CouplePortal] === Deep portrait generated! ===');
+          }
         } catch (e: any) {
           console.error('[CouplePortal] Deep portrait generation FAILED:', e);
           setPortraitError(`Deep portrait error: ${e?.message || String(e)}`);
