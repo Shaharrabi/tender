@@ -25,6 +25,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '@/context/AuthContext';
 import { WelcomeAudio } from '@/components/ftue/WelcomeAudio';
 import { useGamification } from '@/context/GamificationContext';
+import TenderButton from '@/components/ui/TenderButton';
 import { supabase } from '@/services/supabase';
 import { getAssessmentConfig } from '@/utils/assessments/registry';
 import { TENDER_SECTIONS, TOTAL_QUESTIONS, TOTAL_ESTIMATED_MINUTES } from '@/utils/assessments/tender-sections';
@@ -642,14 +643,14 @@ export default function TenderAssessmentScreen() {
             You have completed all 7 sections of The Tender Assessment.
             Your relational portrait is ready to be explored.
           </Text>
-          <TouchableOpacity
-            style={styles.completionButton}
+          <TenderButton
+            title="View Your Results"
             onPress={() => router.replace('/(app)/home')}
-            accessibilityRole="button"
+            variant="primary"
+            size="lg"
             accessibilityLabel="View Your Results"
-          >
-            <Text style={styles.completionButtonText}>View Your Results</Text>
-          </TouchableOpacity>
+            style={{ marginTop: Spacing.md }}
+          />
         </View>
       </SafeAreaView>
     );
@@ -770,19 +771,28 @@ export default function TenderAssessmentScreen() {
           </View>
 
           {/* CTA button */}
-          <TouchableOpacity
-            style={styles.welcomeCTA}
-            onPress={handleWelcomeCTA}
-            accessibilityRole="button"
-          >
-            <Text style={styles.welcomeCTAText}>
-              {allComplete
+          <TenderButton
+            title={
+              allComplete
                 ? 'VIEW PORTRAIT'
                 : alreadyDone > 0
                 ? 'CONTINUE'
-                : 'BEGIN CHAPTER 1'}
-            </Text>
-          </TouchableOpacity>
+                : 'BEGIN CHAPTER 1'
+            }
+            onPress={handleWelcomeCTA}
+            variant="primary"
+            size="lg"
+            fullWidth
+            accessibilityLabel={
+              allComplete
+                ? 'View Portrait'
+                : alreadyDone > 0
+                ? 'Continue Assessment'
+                : 'Begin Chapter 1'
+            }
+            style={{ marginTop: Spacing.lg }}
+            textStyle={{ letterSpacing: 1 }}
+          />
 
           {/* Caption below CTA */}
           {!allComplete && (
@@ -792,14 +802,14 @@ export default function TenderAssessmentScreen() {
           )}
 
           {/* Back link */}
-          <TouchableOpacity
-            style={styles.welcomeBackButton}
+          <TenderButton
+            title="Back"
             onPress={() => router.back()}
-            accessibilityRole="button"
+            variant="ghost"
+            size="lg"
+            fullWidth
             accessibilityLabel="Back"
-          >
-            <Text style={styles.welcomeBackText}>Back</Text>
-          </TouchableOpacity>
+          />
         </ScrollView>
       </SafeAreaView>
     );
@@ -887,14 +897,13 @@ export default function TenderAssessmentScreen() {
             </Text>
           </View>
 
-          <TouchableOpacity
-            style={styles.saveExitButton}
+          <TenderButton
+            title="Save & Exit"
             onPress={handleSaveAndExit}
-            accessibilityRole="button"
-            accessibilityLabel="Save & Exit"
-          >
-            <Text style={styles.saveExitText}>Save & Exit</Text>
-          </TouchableOpacity>
+            variant="ghost"
+            size="sm"
+            accessibilityLabel="Save and Exit"
+          />
         </View>
 
         {/* Question */}
@@ -932,24 +941,19 @@ export default function TenderAssessmentScreen() {
           </TouchableOpacity>
 
           {isLastQuestionInSection ? (
-            <TouchableOpacity
-              style={[
-                styles.submitButton,
-                (!hasAnswer || submittingSection) && styles.navButtonDisabled,
-              ]}
-              onPress={handleSubmitSection}
-              disabled={!hasAnswer || submittingSection}
-              accessibilityRole="button"
-              accessibilityState={{ disabled: !hasAnswer || submittingSection }}
-            >
-              <Text style={styles.submitButtonText}>
-                {submittingSection
-                  ? 'Saving...'
-                  : isLastSection
-                  ? 'Complete Assessment'
-                  : 'Complete Section'}
-              </Text>
-            </TouchableOpacity>
+            <View style={{ flex: 1 }}>
+              <TenderButton
+                title={isLastSection ? 'Complete Assessment' : 'Complete Section'}
+                onPress={handleSubmitSection}
+                variant="primary"
+                size="lg"
+                loading={submittingSection}
+                disabled={!hasAnswer}
+                fullWidth
+                accessibilityLabel={isLastSection ? 'Complete Assessment' : 'Complete Section'}
+                style={{ backgroundColor: Colors.success }}
+              />
+            </View>
           ) : (
             <TouchableOpacity
               style={[styles.navButton, styles.navButtonPrimary]}

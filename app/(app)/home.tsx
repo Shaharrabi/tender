@@ -71,6 +71,7 @@ import { XPProgressBar } from '@/components/gamification/XPProgressBar';
 import StreakBanner from '@/components/StreakBanner';
 import { useFirstTime } from '@/context/FirstTimeContext';
 import AdminPanel from '@/components/admin/AdminPanel';
+import TenderButton from '@/components/ui/TenderButton';
 import LockedPortraitPreview from '@/components/portrait/LockedPortraitPreview';
 import { HighlightWrapper } from '@/components/ui/HighlightWrapper';
 import { TooltipManager } from '@/components/ftue/TooltipManager';
@@ -1237,15 +1238,15 @@ export default function HomeScreen() {
                   <Text style={styles.tenderCardMeta}>
                     {TOTAL_QUESTIONS} questions {'\u00B7'} ~{TOTAL_ESTIMATED_MINUTES} min {'\u00B7'} Save & exit anytime
                   </Text>
-                  <TouchableOpacity
-                    style={styles.tenderStartButton}
+                  <TenderButton
+                    title="Start Assessment"
                     onPress={() => { SoundHaptics.tap(); router.push('/(app)/tender-assessment' as any); }}
-                    activeOpacity={0.7}
-                    accessibilityRole="button"
+                    variant="primary"
+                    size="md"
+                    fullWidth
+                    style={{ marginTop: Spacing.xs }}
                     accessibilityLabel="Start Assessment"
-                  >
-                    <Text style={styles.tenderStartButtonText}>Start Assessment</Text>
-                  </TouchableOpacity>
+                  />
                 </>
               )}
 
@@ -1257,15 +1258,15 @@ export default function HomeScreen() {
                       Next: {tenderStatus.currentSectionName}
                     </Text>
                   )}
-                  <TouchableOpacity
-                    style={styles.tenderStartButton}
+                  <TenderButton
+                    title="Continue"
                     onPress={() => { SoundHaptics.tap(); router.push('/(app)/tender-assessment' as any); }}
-                    activeOpacity={0.7}
-                    accessibilityRole="button"
-                    accessibilityLabel="Continue"
-                  >
-                    <Text style={styles.tenderStartButtonText}>Continue</Text>
-                  </TouchableOpacity>
+                    variant="primary"
+                    size="md"
+                    fullWidth
+                    style={{ marginTop: Spacing.xs }}
+                    accessibilityLabel="Continue Assessment"
+                  />
                 </>
               )}
             </View>
@@ -1274,27 +1275,25 @@ export default function HomeScreen() {
 
           {/* Portrait generation prompt — part of journey */}
           {individualCompleted && !hasPortrait && (
-            <TouchableOpacity
-              style={styles.portraitGenerateCard}
-              onPress={handleGeneratePortrait}
-              disabled={generating}
-              activeOpacity={0.8}
-              accessibilityRole="button"
-              accessibilityState={{ disabled: generating }}
-            >
-              {generating ? (
-                <ActivityIndicator color={Colors.white} accessibilityLabel="Loading" />
-              ) : (
-                <>
-                  <Text style={styles.portraitGenerateTitle}>
-                    Your Portrait is Ready
-                  </Text>
-                  <Text style={styles.portraitGenerateSubtitle}>
-                    All assessments complete — generate your relational portrait
-                  </Text>
-                </>
-              )}
-            </TouchableOpacity>
+            <View style={styles.portraitGenerateCard}>
+              <Text style={styles.portraitGenerateTitle}>
+                Your Portrait is Ready
+              </Text>
+              <Text style={styles.portraitGenerateSubtitle}>
+                All assessments complete — generate your relational portrait
+              </Text>
+              <TenderButton
+                title="Generate Portrait"
+                onPress={handleGeneratePortrait}
+                variant="secondary"
+                size="lg"
+                fullWidth
+                loading={generating}
+                disabled={generating}
+                style={{ marginTop: Spacing.sm }}
+                accessibilityLabel="Generate your relational portrait"
+              />
+            </View>
           )}
         </View>
 
@@ -1845,15 +1844,16 @@ export default function HomeScreen() {
         </View>
 
         {/* ═══ Logout ═════════════════════════════════════════ */}
-        <TouchableOpacity
-          style={styles.logoutButton}
-          onPress={handleLogout}
-          activeOpacity={0.7}
-          accessibilityRole="button"
-          accessibilityLabel="Logout"
-        >
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
+        <View style={{ marginHorizontal: Spacing.xl, marginTop: Spacing.sm }}>
+          <TenderButton
+            title="Logout"
+            onPress={handleLogout}
+            variant="outline"
+            size="md"
+            fullWidth
+            accessibilityLabel="Logout"
+          />
+        </View>
       </ScrollView>
 
       {/* ═══ FTUE Overlays ═══════════════════════════════════ */}

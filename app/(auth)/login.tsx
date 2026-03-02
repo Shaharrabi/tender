@@ -2,10 +2,8 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -13,7 +11,9 @@ import {
 import { Link, useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { useGuest } from '@/context/GuestContext';
-import { Colors, Spacing, FontSizes, ButtonSizes, FontFamilies, BorderRadius } from '@/constants/theme';
+import { Colors, Spacing, FontSizes, ButtonSizes, FontFamilies } from '@/constants/theme';
+import TenderButton from '@/components/ui/TenderButton';
+import TenderTextInput from '@/components/ui/TenderTextInput';
 import {
   isValidEmail,
   checkRateLimit,
@@ -83,47 +83,39 @@ export default function LoginScreen() {
         </View>
 
         <View style={styles.form}>
-          <TextInput
-            style={styles.input}
+          <TenderTextInput
+            label="Email"
             placeholder="you@example.com"
-            placeholderTextColor={Colors.textSecondary}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
             autoComplete="email"
-            accessibilityRole="text"
             accessibilityLabel="Email address"
           />
 
-          <TextInput
-            style={styles.input}
+          <TenderTextInput
+            label="Password"
             placeholder="Password"
-            placeholderTextColor={Colors.textSecondary}
             value={password}
             onChangeText={setPassword}
             secureTextEntry
             autoComplete="password"
-            accessibilityRole="text"
             accessibilityLabel="Password"
           />
 
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
+          <TenderButton
+            title="Login"
             onPress={handleLogin}
-            disabled={loading}
-            accessibilityRole="button"
+            loading={loading}
+            variant="primary"
+            size="lg"
+            fullWidth
+            style={{ marginTop: Spacing.sm }}
             accessibilityLabel="Log in"
-            accessibilityState={{ disabled: loading }}
-          >
-            {loading ? (
-              <ActivityIndicator color={Colors.white} />
-            ) : (
-              <Text style={styles.buttonText}>Login</Text>
-            )}
-          </TouchableOpacity>
+          />
         </View>
 
         <Link href="/(auth)/register" asChild>
@@ -196,31 +188,6 @@ const styles = StyleSheet.create({
   },
   form: {
     gap: Spacing.md,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: BorderRadius.sm,
-    padding: Spacing.md,
-    fontSize: FontSizes.body,
-    color: Colors.text,
-    backgroundColor: Colors.white,
-  },
-  button: {
-    backgroundColor: Colors.primary,
-    height: ButtonSizes.large,
-    borderRadius: BorderRadius.pill,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: Spacing.sm,
-  },
-  buttonDisabled: {
-    opacity: 0.7,
-  },
-  buttonText: {
-    color: Colors.white,
-    fontSize: FontSizes.body,
-    fontWeight: '600',
   },
   errorText: {
     color: Colors.error,

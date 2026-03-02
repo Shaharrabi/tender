@@ -16,6 +16,7 @@ import { saveDyadicAssessment } from '@/services/couples';
 import { supabase } from '@/services/supabase';
 import { Colors, Spacing, FontSizes, ButtonSizes, FontFamilies, BorderRadius } from '@/constants/theme';
 import HomeButton from '@/components/HomeButton';
+import TenderButton from '@/components/ui/TenderButton';
 import SectionBreak from '@/components/assessment/SectionBreak';
 import QuestionRenderer from '@/components/assessment/QuestionRenderer';
 import type { AssessmentConfig, AssessmentSection, GenericQuestion, DyadicAssessmentType } from '@/types';
@@ -249,22 +250,22 @@ export default function AssessmentScreen() {
           <View style={styles.instructionsBox}>
             <Text style={styles.instructionsText}>{config.instructions}</Text>
           </View>
-          <TouchableOpacity
-            style={styles.startButton}
+          <TenderButton
+            title="Begin"
             onPress={() => setShowInstructions(false)}
-            accessibilityRole="button"
+            variant="primary"
+            size="lg"
+            fullWidth
             accessibilityLabel="Begin"
-          >
-            <Text style={styles.startButtonText}>Begin</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.cancelButton}
+          />
+          <TenderButton
+            title="Cancel"
             onPress={() => router.back()}
-            accessibilityRole="button"
+            variant="ghost"
+            size="lg"
+            fullWidth
             accessibilityLabel="Cancel"
-          >
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
+          />
         </ScrollView>
       </SafeAreaView>
     );
@@ -343,20 +344,16 @@ export default function AssessmentScreen() {
           </TouchableOpacity>
 
           {isLastQuestion ? (
-            <TouchableOpacity
-              style={[
-                styles.submitButton,
-                (!hasAnswer || submitting) && styles.navButtonDisabled,
-              ]}
+            <TenderButton
+              title={submitting ? 'Submitting...' : 'See Results'}
               onPress={handleSubmit}
-              disabled={!hasAnswer || submitting}
-              accessibilityRole="button"
-              accessibilityState={{ disabled: !hasAnswer || submitting }}
-            >
-              <Text style={styles.submitButtonText}>
-                {submitting ? 'Submitting...' : 'See Results'}
-              </Text>
-            </TouchableOpacity>
+              disabled={!hasAnswer}
+              loading={submitting}
+              variant="primary"
+              size="lg"
+              style={{ flex: 1 }}
+              accessibilityLabel={submitting ? 'Submitting assessment' : 'See Results'}
+            />
           ) : (
             <TouchableOpacity
               style={[
@@ -410,29 +407,6 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.body,
     color: Colors.text,
     lineHeight: 24,
-  },
-  startButton: {
-    backgroundColor: Colors.primary,
-    height: ButtonSizes.large,
-    borderRadius: BorderRadius.pill,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  startButtonText: {
-    color: Colors.white,
-    fontSize: FontSizes.body,
-    fontWeight: '600',
-  },
-  cancelButton: {
-    height: ButtonSizes.large,
-    borderRadius: BorderRadius.pill,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  cancelButtonText: {
-    color: Colors.textSecondary,
-    fontSize: FontSizes.body,
-    fontWeight: '600',
   },
 
   // Top bar
@@ -502,19 +476,6 @@ const styles = StyleSheet.create({
   navButtonText: { fontSize: FontSizes.body, color: Colors.text, fontWeight: '600' },
   navButtonTextDisabled: { color: Colors.textSecondary },
   navButtonPrimaryText: {
-    fontSize: FontSizes.body,
-    color: Colors.white,
-    fontWeight: '600',
-  },
-  submitButton: {
-    flex: 1,
-    height: ButtonSizes.large,
-    borderRadius: BorderRadius.pill,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: Colors.success,
-  },
-  submitButtonText: {
     fontSize: FontSizes.body,
     color: Colors.white,
     fontWeight: '600',

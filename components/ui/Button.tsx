@@ -1,3 +1,4 @@
+// DEPRECATED — use TenderButton instead
 import React from 'react';
 import {
   TouchableOpacity,

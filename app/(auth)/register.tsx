@@ -2,10 +2,8 @@ import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -13,7 +11,9 @@ import {
 import { Link, useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Colors, Spacing, FontSizes, ButtonSizes, FontFamilies, BorderRadius } from '@/constants/theme';
+import { Colors, Spacing, FontSizes, FontFamilies } from '@/constants/theme';
+import TenderButton from '@/components/ui/TenderButton';
+import TenderTextInput from '@/components/ui/TenderTextInput';
 import {
   isValidEmail,
   checkPasswordStrength,
@@ -120,114 +120,78 @@ export default function RegisterScreen() {
         </View>
 
         <View style={styles.form}>
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>First name</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Your first name"
-              placeholderTextColor={Colors.textMuted}
-              value={firstName}
-              onChangeText={setFirstName}
-              autoCapitalize="words"
-              autoComplete="given-name"
-              accessibilityRole="text"
-              accessibilityLabel="First name"
-            />
-          </View>
+          <TenderTextInput
+            label="First name"
+            placeholder="Your first name"
+            value={firstName}
+            onChangeText={setFirstName}
+            autoCapitalize="words"
+            autoComplete="given-name"
+          />
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Email</Text>
-            <TextInput
-              style={[
-                styles.input,
-                email.length > 0 && !isValidEmail(email) && styles.inputError,
-              ]}
-              placeholder="you@example.com"
-              placeholderTextColor={Colors.textMuted}
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoComplete="email"
-              accessibilityRole="text"
-              accessibilityLabel="Email address"
-            />
-            {email.length > 0 && !isValidEmail(email) && (
-              <Text style={styles.fieldHint}>Please enter a valid email</Text>
-            )}
-          </View>
+          <TenderTextInput
+            label="Email"
+            placeholder="you@example.com"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoComplete="email"
+            error={email.length > 0 && !isValidEmail(email) ? 'Please enter a valid email' : undefined}
+          />
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Password</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Min. 8 characters"
-              placeholderTextColor={Colors.textMuted}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              autoComplete="new-password"
-              accessibilityRole="text"
-              accessibilityLabel="Password"
-            />
-            {/* Password strength indicator */}
-            {password.length > 0 && (
-              <View style={styles.strengthContainer}>
-                <View style={styles.strengthBarTrack}>
-                  {[0, 1, 2, 3].map((i) => (
-                    <View
-                      key={i}
-                      style={[
-                        styles.strengthBarSegment,
-                        {
-                          backgroundColor:
-                            i < passwordStrength.score
-                              ? passwordStrength.color
-                              : Colors.borderLight,
-                        },
-                      ]}
-                    />
-                  ))}
-                </View>
-                <Text
-                  style={[
-                    styles.strengthLabel,
-                    { color: passwordStrength.color },
-                  ]}
-                >
-                  {passwordStrength.label}
-                </Text>
-                {passwordStrength.feedback.length > 0 && (
-                  <Text style={styles.strengthFeedback}>
-                    Tip: {passwordStrength.feedback[0]}
-                  </Text>
-                )}
+          <TenderTextInput
+            label="Password"
+            placeholder="Min. 8 characters"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            autoComplete="new-password"
+          />
+          {/* Password strength indicator */}
+          {password.length > 0 && (
+            <View style={styles.strengthContainer}>
+              <View style={styles.strengthBarTrack}>
+                {[0, 1, 2, 3].map((i) => (
+                  <View
+                    key={i}
+                    style={[
+                      styles.strengthBarSegment,
+                      {
+                        backgroundColor:
+                          i < passwordStrength.score
+                            ? passwordStrength.color
+                            : Colors.borderLight,
+                      },
+                    ]}
+                  />
+                ))}
               </View>
-            )}
-          </View>
+              <Text
+                style={[
+                  styles.strengthLabel,
+                  { color: passwordStrength.color },
+                ]}
+              >
+                {passwordStrength.label}
+              </Text>
+              {passwordStrength.feedback.length > 0 && (
+                <Text style={styles.strengthFeedback}>
+                  Tip: {passwordStrength.feedback[0]}
+                </Text>
+              )}
+            </View>
+          )}
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Confirm password</Text>
-            <TextInput
-              style={[
-                styles.input,
-                confirmPassword.length > 0 &&
-                  password !== confirmPassword &&
-                  styles.inputError,
-              ]}
-              placeholder="Re-enter password"
-              placeholderTextColor={Colors.textMuted}
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              secureTextEntry
-              autoComplete="new-password"
-              accessibilityRole="text"
-              accessibilityLabel="Confirm password"
-            />
-            {confirmPassword.length > 0 && password !== confirmPassword && (
-              <Text style={styles.fieldHint}>Passwords don't match</Text>
-            )}
-          </View>
+          <TenderTextInput
+            label="Confirm password"
+            placeholder="Re-enter password"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            secureTextEntry
+            autoComplete="new-password"
+            error={confirmPassword.length > 0 && password !== confirmPassword ? "Passwords don't match" : undefined}
+          />
 
           {/* Terms / Consent */}
           <TouchableOpacity
@@ -255,20 +219,16 @@ export default function RegisterScreen() {
 
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
+          <TenderButton
+            title="Create account"
             onPress={handleRegister}
-            disabled={loading}
-            accessibilityRole="button"
+            loading={loading}
+            variant="primary"
+            size="lg"
+            fullWidth
+            style={{ marginTop: Spacing.sm }}
             accessibilityLabel="Sign up"
-            accessibilityState={{ disabled: loading }}
-          >
-            {loading ? (
-              <ActivityIndicator color={Colors.white} />
-            ) : (
-              <Text style={styles.buttonText}>Create account</Text>
-            )}
-          </TouchableOpacity>
+          />
         </View>
 
         <Link href="/(auth)/login" asChild>
@@ -316,31 +276,6 @@ const styles = StyleSheet.create({
   form: {
     gap: Spacing.md,
   },
-  inputGroup: {
-    gap: Spacing.xs,
-  },
-  inputLabel: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '600',
-    color: Colors.text,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: BorderRadius.sm,
-    padding: Spacing.md,
-    fontSize: FontSizes.body,
-    color: Colors.text,
-    backgroundColor: Colors.white,
-  },
-  inputError: {
-    borderColor: Colors.error,
-  },
-  fieldHint: {
-    fontSize: FontSizes.caption,
-    color: Colors.error,
-  },
-
   // Password strength
   strengthContainer: {
     gap: Spacing.xs,
@@ -397,22 +332,6 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
 
-  button: {
-    backgroundColor: Colors.primary,
-    height: ButtonSizes.large,
-    borderRadius: BorderRadius.pill,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: Spacing.sm,
-  },
-  buttonDisabled: {
-    opacity: 0.7,
-  },
-  buttonText: {
-    color: Colors.white,
-    fontSize: FontSizes.body,
-    fontWeight: '600',
-  },
   errorText: {
     color: Colors.error,
     fontSize: FontSizes.bodySmall,

@@ -1,10 +1,13 @@
-// DEPRECATED — use TenderButton instead
 /**
- * AppButton — Premium reusable button component
+ * TenderButton — Consolidated button component for the Tender app.
  *
- * Variants: primary, secondary, outline, ghost, danger
- * Sizes: small, medium, large
- * Features: press animation, haptic feedback, loading state, icon support
+ * Combines the best of AppButton (Pressable, haptics, animation) and Button
+ * (simple API) into a single shared component.
+ *
+ * Variants: primary, secondary, outline, ghost, destructive
+ * Sizes: sm, md, lg
+ * Features: press animation, haptic feedback, loading state, disabled state,
+ *           icon support, full accessibility annotations.
  */
 
 import React, { useRef, useCallback } from 'react';
@@ -27,22 +30,24 @@ try {
 
 // ─── Types ──────────────────────────────────────────────
 
-type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
-type ButtonSize = 'small' | 'medium' | 'large';
+export type TenderButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive';
+export type TenderButtonSize = 'sm' | 'md' | 'lg';
 
-interface AppButtonProps {
+export interface TenderButtonProps {
   title: string;
   onPress: () => void;
-  variant?: ButtonVariant;
-  size?: ButtonSize;
+  variant?: TenderButtonVariant;
+  size?: TenderButtonSize;
   loading?: boolean;
   disabled?: boolean;
   icon?: string;
   fullWidth?: boolean;
   style?: ViewStyle;
+  textStyle?: TextStyle;
+  accessibilityLabel?: string;
 }
 
-// ─── Variant Styles ─────────────────────────────────────
+// ─── Variant Tokens ─────────────────────────────────────
 
 interface VariantTokens {
   backgroundColor: string;
@@ -52,7 +57,7 @@ interface VariantTokens {
   loaderColor: string;
 }
 
-const variantTokens: Record<ButtonVariant, VariantTokens> = {
+const variantTokens: Record<TenderButtonVariant, VariantTokens> = {
   primary: {
     backgroundColor: Colors.primary,
     borderColor: Colors.primary,
@@ -81,7 +86,7 @@ const variantTokens: Record<ButtonVariant, VariantTokens> = {
     textColor: Colors.primary,
     loaderColor: Colors.primary,
   },
-  danger: {
+  destructive: {
     backgroundColor: Colors.error,
     borderColor: Colors.error,
     borderWidth: 0,
@@ -90,7 +95,7 @@ const variantTokens: Record<ButtonVariant, VariantTokens> = {
   },
 };
 
-// ─── Size Styles ────────────────────────────────────────
+// ─── Size Tokens ────────────────────────────────────────
 
 interface SizeTokens {
   height: number;
@@ -99,20 +104,20 @@ interface SizeTokens {
   iconSize: number;
 }
 
-const sizeTokens: Record<ButtonSize, SizeTokens> = {
-  small: {
+const sizeTokens: Record<TenderButtonSize, SizeTokens> = {
+  sm: {
     height: ButtonSizes.small,
     paddingHorizontal: Spacing.md,
     fontSize: FontSizes.bodySmall,
     iconSize: 14,
   },
-  medium: {
+  md: {
     height: ButtonSizes.medium,
     paddingHorizontal: Spacing.lg,
     fontSize: FontSizes.body,
     iconSize: 16,
   },
-  large: {
+  lg: {
     height: ButtonSizes.large,
     paddingHorizontal: Spacing.xl,
     fontSize: FontSizes.body,
@@ -122,17 +127,19 @@ const sizeTokens: Record<ButtonSize, SizeTokens> = {
 
 // ─── Component ──────────────────────────────────────────
 
-export function AppButton({
+export default function TenderButton({
   title,
   onPress,
   variant = 'primary',
-  size = 'medium',
+  size = 'md',
   loading = false,
   disabled = false,
   icon,
   fullWidth = false,
   style,
-}: AppButtonProps) {
+  textStyle,
+  accessibilityLabel,
+}: TenderButtonProps) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const isDisabled = disabled || loading;
@@ -178,12 +185,12 @@ export function AppButton({
     borderWidth: tokens.borderWidth,
     borderRadius: BorderRadius.pill,
     alignSelf: fullWidth ? 'stretch' : 'center',
-    ...(variant === 'primary' || variant === 'secondary' || variant === 'danger'
+    ...(variant === 'primary' || variant === 'secondary' || variant === 'destructive'
       ? Shadows.subtle
       : {}),
   };
 
-  const textStyle: TextStyle = {
+  const computedTextStyle: TextStyle = {
     color: tokens.textColor,
     fontSize: sizing.fontSize,
     fontWeight: '600',
@@ -209,7 +216,7 @@ export function AppButton({
           style,
         ]}
         accessibilityRole="button"
-        accessibilityLabel={title}
+        accessibilityLabel={accessibilityLabel || title}
         accessibilityState={{ disabled: isDisabled, busy: loading }}
       >
         {loading ? (
@@ -217,7 +224,7 @@ export function AppButton({
         ) : (
           <>
             {icon ? <Text style={[styles.icon, { fontSize: sizing.iconSize }]}>{icon}</Text> : null}
-            <Text style={[styles.text, textStyle]}>{title}</Text>
+            <Text style={[styles.text, computedTextStyle, textStyle]}>{title}</Text>
           </>
         )}
       </Pressable>
