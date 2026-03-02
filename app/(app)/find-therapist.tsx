@@ -248,7 +248,7 @@ export default function FindTherapistScreen() {
     return (
       <SafeAreaView style={s.container}>
         <View style={s.center}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={Colors.primary} accessibilityLabel="Loading" />
         </View>
       </SafeAreaView>
     );
@@ -265,6 +265,8 @@ export default function FindTherapistScreen() {
           <TouchableOpacity
             onPress={() => router.back()}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Group Support and Therapy"
           >
             <Text style={s.backText}>{'←'} Back</Text>
           </TouchableOpacity>
@@ -311,6 +313,7 @@ export default function FindTherapistScreen() {
               style={s.directoryButton}
               onPress={() => Linking.openURL(topRec.directory)}
               activeOpacity={0.7}
+              accessibilityRole="button"
             >
               <Text style={s.directoryButtonText}>
                 Find {topRec.abbreviation} Therapists {'→'}
@@ -339,6 +342,7 @@ export default function FindTherapistScreen() {
                   style={s.recDirectoryButton}
                   onPress={() => Linking.openURL(rec.directory)}
                   activeOpacity={0.7}
+                  accessibilityRole="button"
                 >
                   <Text style={s.recDirectoryText}>
                     Find {rec.abbreviation} Therapists {'→'}
@@ -357,6 +361,7 @@ export default function FindTherapistScreen() {
             style={s.dirCard}
             onPress={() => Linking.openURL(dir.url)}
             activeOpacity={0.7}
+            accessibilityRole="button"
           >
             <View style={s.dirIcon}>
               <dir.Icon size={24} color={Colors.text} />
@@ -382,6 +387,8 @@ export default function FindTherapistScreen() {
             style={s.nuanceButton}
             onPress={() => router.push('/(app)/chat' as any)}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="SHARE WITH YOUR THERAPIST"
           >
             <Text style={s.nuanceButtonText}>Chat with Nuance {'→'}</Text>
           </TouchableOpacity>
@@ -413,9 +420,11 @@ export default function FindTherapistScreen() {
             }}
             disabled={exporting}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: exporting }}
           >
             {exporting ? (
-              <ActivityIndicator size="small" color={Colors.textSecondary} />
+              <ActivityIndicator size="small" color={Colors.textSecondary} accessibilityLabel="Loading" />
             ) : (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 <ClipboardIcon size={16} color={Colors.textSecondary} />

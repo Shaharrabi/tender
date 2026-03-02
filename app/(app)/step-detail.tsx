@@ -187,7 +187,7 @@ export default function StepDetailScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={phase.color} />
+          <ActivityIndicator size="large" color={phase.color} accessibilityLabel="Loading" />
         </View>
       </SafeAreaView>
     );
@@ -210,7 +210,7 @@ export default function StepDetailScreen() {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7}>
+        <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Go back">
           <Text style={styles.backText}>{'\u2039'} Back</Text>
         </TouchableOpacity>
         <Text style={[styles.headerPhase, { color: phase.color }]}>
@@ -268,6 +268,7 @@ export default function StepDetailScreen() {
                 <TouchableOpacity
                   onPress={() => setShowMiniGame(true)}
                   activeOpacity={0.7}
+                  accessibilityRole="button"
                 >
                   <Text style={[styles.replayText, { color: phase.color }]}>
                     Play again
@@ -292,6 +293,7 @@ export default function StepDetailScreen() {
                 setShowMiniGame(true);
               }}
               activeOpacity={0.7}
+              accessibilityRole="button"
             >
               <Text style={styles.miniGamePromptLabel}>
                 BEFORE WE DIVE IN...
@@ -337,6 +339,8 @@ export default function StepDetailScreen() {
                 activeOpacity={canToggleCriteria ? 0.6 : 1}
                 disabled={!canToggleCriteria}
                 onPress={() => handleCriteriaToggle(i, !isChecked)}
+                accessibilityRole="button"
+                accessibilityState={{ disabled: !canToggleCriteria }}
               >
                 <View style={styles.criteriaCheckbox}>
                   <View
@@ -389,6 +393,7 @@ export default function StepDetailScreen() {
                 style={styles.practiceCard}
                 onPress={() => handlePracticePress(practiceId)}
                 activeOpacity={0.7}
+                accessibilityRole="button"
               >
                 <View style={styles.practiceInfo}>
                   <Text style={styles.practiceLabel}>{label}</Text>
@@ -411,6 +416,8 @@ export default function StepDetailScreen() {
             onPress={handleNextStep}
             activeOpacity={canNavigateNext ? 0.7 : 1}
             disabled={!canNavigateNext}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: !canNavigateNext }}
           >
             <Text style={styles.nextLabel}>
               {canNavigateNext
@@ -450,6 +457,8 @@ export default function StepDetailScreen() {
           style={styles.backToJourneyButton}
           onPress={handleBackToJourney}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
         >
           <Text style={styles.backToJourneyText}>
             {'\u2039'} Back to Your Journey

@@ -35,7 +35,7 @@ export default function AssessmentScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.content}>
           <Text style={styles.questionText}>Unknown assessment type: {assessmentType}</Text>
-          <TouchableOpacity style={styles.navButton} onPress={() => router.back()}>
+          <TouchableOpacity style={styles.navButton} onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Go Back">
             <Text style={styles.navButtonText}>Go Back</Text>
           </TouchableOpacity>
         </View>
@@ -252,12 +252,16 @@ export default function AssessmentScreen() {
           <TouchableOpacity
             style={styles.startButton}
             onPress={() => setShowInstructions(false)}
+            accessibilityRole="button"
+            accessibilityLabel="Begin"
           >
             <Text style={styles.startButtonText}>Begin</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.cancelButton}
             onPress={() => router.back()}
+            accessibilityRole="button"
+            accessibilityLabel="Cancel"
           >
             <Text style={styles.cancelButtonText}>Cancel</Text>
           </TouchableOpacity>
@@ -285,17 +289,19 @@ export default function AssessmentScreen() {
         {/* Top bar: progress + save & exit */}
         <View style={styles.topBar}>
           <View style={styles.progressSection}>
-            <Text style={styles.progressText}>
+            <Text style={styles.progressText} accessibilityLiveRegion="polite" accessibilityLabel={`Question ${currentIndex + 1} of ${config.totalQuestions}`}>
               Question {currentIndex + 1} of {config.totalQuestions}
             </Text>
-            <View style={styles.progressBarBg}>
+            <View style={styles.progressBarBg} accessibilityRole="progressbar" accessibilityLabel={`${Math.round(progress)}% complete`}>
               <View style={[styles.progressBarFill, { width: `${progress}%` }]} />
             </View>
-            <Text style={styles.percentText}>{Math.round(progress)}% complete</Text>
+            <Text style={styles.percentText} accessibilityLiveRegion="polite">{Math.round(progress)}% complete</Text>
           </View>
           <TouchableOpacity
             style={styles.saveExitButton}
             onPress={handleSaveAndExit}
+            accessibilityRole="button"
+            accessibilityLabel="Save & Exit"
           >
             <Text style={styles.saveExitText}>Save & Exit</Text>
           </TouchableOpacity>
@@ -323,6 +329,8 @@ export default function AssessmentScreen() {
             style={[styles.navButton, currentIndex === 0 && styles.navButtonDisabled]}
             onPress={handlePrevious}
             disabled={currentIndex === 0}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: currentIndex === 0 }}
           >
             <Text
               style={[
@@ -342,6 +350,8 @@ export default function AssessmentScreen() {
               ]}
               onPress={handleSubmit}
               disabled={!hasAnswer || submitting}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: !hasAnswer || submitting }}
             >
               <Text style={styles.submitButtonText}>
                 {submitting ? 'Submitting...' : 'See Results'}
@@ -354,6 +364,7 @@ export default function AssessmentScreen() {
                 styles.navButtonPrimary,
               ]}
               onPress={handleNext}
+              accessibilityRole="button"
             >
               <Text style={styles.navButtonPrimaryText}>
                 {hasAnswer ? 'Next' : 'Skip'}

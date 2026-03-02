@@ -90,6 +90,9 @@ export default function NotificationFeedCard({
         isRead && styles.cardRead,
         pressed ? styles.cardPressed : undefined,
       ]}
+      accessibilityRole="button"
+      accessibilityLabel={`${catConfig.label} notification: ${prompt.title}`}
+      accessibilityState={{ expanded }}
     >
       {/* Header row: icon + category pill + timestamp */}
       <View style={styles.headerRow}>

@@ -178,6 +178,8 @@ export default function SentenceTransformStep({
             placeholderTextColor={Colors.textMuted}
             multiline
             textAlignVertical="top"
+            accessibilityRole="text"
+            accessibilityLabel="Write your response"
           />
         </View>
       </View>
@@ -220,6 +222,8 @@ export default function SentenceTransformStep({
             style={styles.completedStage}
             onPress={() => handleEditStage(i)}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={`Edit stage: ${stage.prefix}. ${stageTexts[i] || 'empty'}`}
           >
             <Text style={styles.completedPrefix}>{stage.prefix}</Text>
             <Text style={styles.completedText}>
@@ -265,6 +269,8 @@ export default function SentenceTransformStep({
               multiline
               textAlignVertical="top"
               autoFocus={activeStage > 0}
+              accessibilityRole="text"
+              accessibilityLabel={`Complete the sentence: ${stages[activeStage].prefix}`}
             />
           </View>
 
@@ -281,6 +287,9 @@ export default function SentenceTransformStep({
             onPress={handleAdvanceStage}
             disabled={!currentStageHasText}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={activeStage === stages.length - 1 ? 'Complete transformation' : 'Go to next stage'}
+            accessibilityState={{ disabled: !currentStageHasText }}
           >
             <Text
               style={[
@@ -314,6 +323,8 @@ export default function SentenceTransformStep({
             style={styles.editButton}
             onPress={() => handleEditStage(0)}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Edit your transformation"
           >
             <Text style={styles.editButtonText}>Edit</Text>
           </TouchableOpacity>

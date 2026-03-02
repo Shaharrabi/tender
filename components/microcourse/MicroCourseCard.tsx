@@ -100,6 +100,9 @@ export default function MicroCourseCard({
         onPress={onPress}
         activeOpacity={isLocked ? 1 : 0.7}
         disabled={isLocked}
+        accessibilityRole="button"
+        accessibilityLabel={`${course.title}. ${isCompleted ? 'Completed' : `Lesson ${progress.lessonsCompleted + 1} of ${course.totalLessons}`}${isLocked ? '. Locked' : ''}`}
+        accessibilityState={{ disabled: isLocked }}
       >
         <View style={styles.compactLeft}>
           <View style={styles.compactIcon}>
@@ -148,6 +151,9 @@ export default function MicroCourseCard({
       onPress={onPress}
       activeOpacity={isLocked ? 1 : 0.7}
       disabled={isLocked}
+      accessibilityRole="button"
+      accessibilityLabel={`${course.title}. ${isCompleted ? 'Completed' : isStarted ? `${progress.lessonsCompleted} of ${course.totalLessons} lessons` : `${course.totalLessons} lessons, approximately ${course.estimatedMinutes} minutes`}${isLocked ? '. Locked, complete prerequisites to unlock' : ''}`}
+      accessibilityState={{ disabled: isLocked }}
     >
       {/* Header row */}
       <View style={styles.header}>

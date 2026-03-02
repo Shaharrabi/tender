@@ -120,6 +120,8 @@ export default function CheckInCard({
             setEditing(true);
           }}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Update check-in"
         >
           <Text style={styles.updateButtonText}>Update Check-In</Text>
         </TouchableOpacity>
@@ -167,6 +169,8 @@ export default function CheckInCard({
               ]}
               onPress={() => setMood(val)}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={`Regulation rating ${val} of 10`}
             />
           ))}
         </View>
@@ -197,6 +201,8 @@ export default function CheckInCard({
               ]}
               onPress={() => setRelationship(val)}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={`Connection rating ${val} of 10`}
             />
           ))}
         </View>
@@ -213,6 +219,8 @@ export default function CheckInCard({
         style={styles.toggleRow}
         onPress={() => setPracticed(!practiced)}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={`Practiced a growth edge today, ${practiced ? 'checked' : 'unchecked'}`}
       >
         <View
           style={[
@@ -237,6 +245,8 @@ export default function CheckInCard({
         multiline
         numberOfLines={2}
         textAlignVertical="top"
+        accessibilityRole="text"
+        accessibilityLabel="Optional note"
       />
 
       {/* ── Submit button ────────────────────────── */}
@@ -245,6 +255,9 @@ export default function CheckInCard({
         onPress={handleSubmit}
         activeOpacity={0.7}
         disabled={submitting}
+        accessibilityRole="button"
+        accessibilityLabel={editing ? 'Save changes' : 'Submit check-in'}
+        accessibilityState={{ disabled: submitting }}
       >
         {submitting ? (
           <ActivityIndicator color={Colors.textOnPrimary} size="small" />
@@ -260,6 +273,8 @@ export default function CheckInCard({
           style={styles.cancelButton}
           onPress={() => setEditing(false)}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Cancel editing"
         >
           <Text style={styles.cancelButtonText}>Cancel</Text>
         </TouchableOpacity>

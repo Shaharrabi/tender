@@ -62,11 +62,21 @@ export default function SectionBreak({
         </View>
 
         <View style={styles.actions}>
-          <TouchableOpacity style={styles.continueButton} onPress={onContinue}>
+          <TouchableOpacity
+            style={styles.continueButton}
+            onPress={onContinue}
+            accessibilityRole="button"
+            accessibilityLabel={`Continue to ${section.title}`}
+          >
             <Text style={styles.continueButtonText}>Continue</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.exitButton} onPress={onSaveAndExit}>
+          <TouchableOpacity
+            style={styles.exitButton}
+            onPress={onSaveAndExit}
+            accessibilityRole="button"
+            accessibilityLabel="Save progress and exit assessment"
+          >
             <Text style={styles.exitButtonText}>Save & Exit</Text>
           </TouchableOpacity>
         </View>

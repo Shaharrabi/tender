@@ -58,6 +58,9 @@ export default function IPIPResults({ scores }: Props) {
                 style={styles.domainHeader}
                 onPress={() => setExpanded(isExpanded ? null : domain)}
                 activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={`${interpretation.warmLabel}: ${interpretation.label}. ${isExpanded ? 'Collapse' : 'Expand'} details`}
+                accessibilityState={{ expanded: isExpanded }}
               >
                 <View style={styles.domainTitleRow}>
                   <View>
@@ -137,6 +140,8 @@ export default function IPIPResults({ scores }: Props) {
           <TouchableOpacity
             style={styles.primaryButton}
             onPress={() => router.replace('/(app)/home')}
+            accessibilityRole="button"
+            accessibilityLabel="Back to Home"
           >
             <Text style={styles.primaryButtonText}>Back to Home</Text>
           </TouchableOpacity>

@@ -53,13 +53,23 @@ export default function AppIcon({
 
   const iconColor = color || Colors.text;
 
+  const label = name || 'icon';
+
   if (style) {
     return (
-      <View style={style}>
+      <View
+        style={style}
+        accessibilityRole="image"
+        accessibilityLabel={label}
+      >
         <IconComp size={size} color={iconColor} />
       </View>
     );
   }
 
-  return <IconComp size={size} color={iconColor} />;
+  return (
+    <View accessibilityRole="image" accessibilityLabel={label}>
+      <IconComp size={size} color={iconColor} />
+    </View>
+  );
 }

@@ -31,6 +31,9 @@ function NarrativeSection({ title, text, accentColor = Colors.textMuted, isFirst
       style={styles.section}
       onPress={() => setExpanded(!expanded)}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={`${title}. ${expanded ? 'Collapse' : 'Expand'}`}
+      accessibilityState={{ expanded }}
     >
       <View style={styles.sectionHeader}>
         <View style={[styles.sectionDot, { backgroundColor: accentColor }]} />

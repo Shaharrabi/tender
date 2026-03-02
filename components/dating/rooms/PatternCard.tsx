@@ -27,6 +27,9 @@ export default function PatternCard({ pattern, expanded, onToggle }: PatternCard
     <TouchableOpacity
       onPress={onToggle}
       activeOpacity={0.8}
+      accessibilityRole="button"
+      accessibilityLabel={`${pattern.style} pattern. ${expanded ? 'Collapse' : 'Expand'} details`}
+      accessibilityState={{ expanded }}
       style={[
         styles.card,
         { borderLeftColor: pattern.color },

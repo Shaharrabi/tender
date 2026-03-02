@@ -129,6 +129,9 @@ export function StoryCard({ post, onReaction, onReport }: StoryCardProps) {
                   onReaction(post.id, reaction.type);
                 }}
                 activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={`${reaction.label}${isActive ? ', selected' : ''}`}
+                accessibilityState={{ selected: isActive }}
               >
                 <reaction.Icon
                   size={13}
@@ -151,6 +154,8 @@ export function StoryCard({ post, onReaction, onReport }: StoryCardProps) {
           onPress={handleReport}
           activeOpacity={0.7}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          accessibilityRole="button"
+          accessibilityLabel="Report this post"
         >
           <FlagIcon size={14} color={Colors.textMuted} />
         </TouchableOpacity>

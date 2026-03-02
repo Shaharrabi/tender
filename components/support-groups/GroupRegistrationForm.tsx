@@ -116,7 +116,13 @@ export default function GroupRegistrationForm({
       showsVerticalScrollIndicator={false}
     >
       {/* Back button */}
-      <TouchableOpacity style={styles.backBtn} onPress={onBack} activeOpacity={0.7}>
+      <TouchableOpacity
+        style={styles.backBtn}
+        onPress={onBack}
+        activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel="Go back"
+      >
         <ArrowLeftIcon size={16} color={Colors.primary} />
         <Text style={styles.backText}>Back</Text>
       </TouchableOpacity>
@@ -144,7 +150,12 @@ export default function GroupRegistrationForm({
             <Text style={styles.prefilledValue}>{attachmentLabel}</Text>
           </View>
         )}
-        <TouchableOpacity onPress={onSwitchGroup} activeOpacity={0.7}>
+        <TouchableOpacity
+          onPress={onSwitchGroup}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={`Switch to ${otherGroupName}`}
+        >
           <Text style={[styles.switchText, { color: accentColor }]}>
             Not the right group? Switch to {otherGroupName} {'\u2192'}
           </Text>
@@ -162,6 +173,8 @@ export default function GroupRegistrationForm({
         onChangeText={setPreferredName}
         placeholder="Your preferred name"
         placeholderTextColor={Colors.textMuted}
+        accessibilityRole="text"
+        accessibilityLabel="Preferred name"
       />
 
       {/* Timezone */}
@@ -186,6 +199,9 @@ export default function GroupRegistrationForm({
               ]}
               onPress={() => toggleTime(slot.key)}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={`${slot.label} time slot`}
+              accessibilityState={{ selected }}
             >
               <Text
                 style={[
@@ -210,6 +226,9 @@ export default function GroupRegistrationForm({
           ]}
           onPress={() => setInTherapy(true)}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Currently in therapy: Yes"
+          accessibilityState={{ selected: inTherapy === true }}
         >
           <Text
             style={[
@@ -227,6 +246,9 @@ export default function GroupRegistrationForm({
           ]}
           onPress={() => setInTherapy(false)}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Currently in therapy: No"
+          accessibilityState={{ selected: inTherapy === false }}
         >
           <Text
             style={[
@@ -247,6 +269,8 @@ export default function GroupRegistrationForm({
         onChangeText={setEmergencyName}
         placeholder="Name"
         placeholderTextColor={Colors.textMuted}
+        accessibilityRole="text"
+        accessibilityLabel="Emergency contact name"
       />
       <TextInput
         style={[styles.input, { marginTop: Spacing.sm }]}
@@ -255,6 +279,8 @@ export default function GroupRegistrationForm({
         placeholder="Phone"
         placeholderTextColor={Colors.textMuted}
         keyboardType="phone-pad"
+        accessibilityRole="text"
+        accessibilityLabel="Emergency contact phone"
       />
 
       {/* Consent */}
@@ -263,6 +289,9 @@ export default function GroupRegistrationForm({
           style={styles.consentCheckRow}
           onPress={() => setConsentGiven(!consentGiven)}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="I have read and agree to the Group Agreement"
+          accessibilityState={{ selected: consentGiven }}
         >
           <View style={[styles.checkbox, consentGiven && styles.checkboxChecked]}>
             {consentGiven && <CheckmarkIcon size={14} color={Colors.white} />}
@@ -283,6 +312,9 @@ export default function GroupRegistrationForm({
         onPress={handleSubmit}
         disabled={!canSubmit}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel="Register for group"
+        accessibilityState={{ disabled: !canSubmit }}
       >
         <Text style={styles.submitText}>Register for Group</Text>
       </TouchableOpacity>

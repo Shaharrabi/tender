@@ -67,6 +67,9 @@ function SelfCheckContent({ content }: { content: any }) {
                 key={oi}
                 style={[styles.optionButton, answers[qi] === oi && styles.optionSelected]}
                 onPress={() => setAnswers({ ...answers, [qi]: oi })}
+                accessibilityRole="button"
+                accessibilityLabel={`Option: ${opt}`}
+                accessibilityState={{ selected: answers[qi] === oi }}
               >
                 <Text style={[styles.optionText, answers[qi] === oi && styles.optionTextSelected]}>
                   {opt}

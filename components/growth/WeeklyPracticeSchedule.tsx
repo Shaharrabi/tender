@@ -178,6 +178,9 @@ export default function WeeklyPracticeSchedule({
               onPress={() => day.practice && onSelectPractice(day.practice.id)}
               activeOpacity={day.practice ? 0.7 : 1}
               disabled={!day.practice}
+              accessibilityRole="button"
+              accessibilityLabel={`${day.subLabel || day.label}${day.practice ? `, ${day.practice.title}` : ', no practice'}${isCompleted ? ', completed' : ''}`}
+              accessibilityState={{ disabled: !day.practice }}
             >
               <Text
                 style={[
@@ -227,6 +230,8 @@ export default function WeeklyPracticeSchedule({
           style={styles.todayCard}
           onPress={() => onSelectPractice(todayPractice.id)}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={`Today's practice: ${todayPractice.title}, ${todayPractice.duration} minutes`}
         >
           <View style={styles.todayCardHeader}>
             {todayPractice.fourMovement && (
@@ -283,6 +288,8 @@ export default function WeeklyPracticeSchedule({
                 style={styles.practiceRow}
                 onPress={() => onSelectPractice(practice.id)}
                 activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={`${practice.title}, ${practice.duration} minutes${done ? ', completed' : ''}`}
               >
                 <View
                   style={[

@@ -75,6 +75,9 @@ export default function UserInput({
             blurOnSubmit={false}
             onKeyPress={handleKeyPress}
             autoFocus={false}
+            accessibilityRole="text"
+            accessibilityLabel={`Your message to ${COACH.name}`}
+            accessibilityState={{ disabled }}
           />
         </View>
 
@@ -83,6 +86,9 @@ export default function UserInput({
           onPress={handleSend}
           disabled={!canSend}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={`Send message to ${COACH.name}`}
+          accessibilityState={{ disabled: !canSend }}
         >
           <Text style={[styles.sendArrow, !canSend && styles.sendArrowDisabled]}>
             {'\u2191'}

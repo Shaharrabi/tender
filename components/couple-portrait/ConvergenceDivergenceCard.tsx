@@ -26,6 +26,9 @@ export function SharedStrengthCard({ item }: { item: ConvergencePoint }) {
       style={[styles.card, styles.strengthCard]}
       onPress={() => setExpanded(!expanded)}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={`Shared strength: ${item.dimensionLabel}. ${expanded ? 'Collapse' : 'Expand'} details`}
+      accessibilityState={{ expanded }}
     >
       <View style={styles.cardHeader}>
         <View style={styles.iconBadge}>
@@ -73,6 +76,9 @@ export function ComplementaryGiftCard({
       style={[styles.card, styles.giftCard]}
       onPress={() => setExpanded(!expanded)}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={`Complementary gift: ${item.dimensionLabel}. ${expanded ? 'Collapse' : 'Expand'} details`}
+      accessibilityState={{ expanded }}
     >
       <View style={styles.cardHeader}>
         <View style={[styles.iconBadge, { backgroundColor: '#F0E6FF' }]}>
@@ -115,6 +121,9 @@ export function FrictionZoneCard({
       style={[styles.card, styles.frictionCard]}
       onPress={() => setExpanded(!expanded)}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={`Friction zone: ${item.area}. ${expanded ? 'Collapse' : 'Expand'} details`}
+      accessibilityState={{ expanded }}
     >
       <View style={styles.cardHeader}>
         <View style={[styles.iconBadge, { backgroundColor: Colors.errorLight }]}>
@@ -163,6 +172,9 @@ export function ValuesTensionCard({ item }: { item: ValuesTension }) {
       style={[styles.card, styles.tensionCard]}
       onPress={() => setExpanded(!expanded)}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={`Values tension: ${item.valueA} vs ${item.valueB}. ${expanded ? 'Collapse' : 'Expand'} details`}
+      accessibilityState={{ expanded }}
     >
       <View style={styles.cardHeader}>
         <View style={[styles.iconBadge, { backgroundColor: '#FFF3E0' }]}>

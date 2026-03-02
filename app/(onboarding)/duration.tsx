@@ -45,6 +45,8 @@ export default function DurationScreen() {
             onPress={() => router.back()}
             activeOpacity={0.7}
             style={styles.backButton}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
           >
             <ArrowLeftIcon size={16} color={Colors.primary} />
             <Text style={styles.backText}>Back</Text>
@@ -72,6 +74,9 @@ export default function DurationScreen() {
                   style={[styles.optionButton, isSelected && styles.optionSelected]}
                   onPress={() => handleSelect(option.id)}
                   activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel={option.label}
+                  accessibilityState={{ selected: isSelected }}
                 >
                   <View style={styles.optionIconWrapper}>
                     <option.Icon size={22} color={isSelected ? Colors.primaryDark : Colors.primary} />
@@ -91,6 +96,8 @@ export default function DurationScreen() {
           style={styles.skipButton}
           onPress={() => router.push('/(onboarding)/mode-select' as any)}
           activeOpacity={0.6}
+          accessibilityRole="button"
+          accessibilityLabel="Skip"
         >
           <Text style={styles.skipText}>Skip</Text>
         </TouchableOpacity>

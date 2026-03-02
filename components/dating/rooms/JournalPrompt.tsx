@@ -30,6 +30,8 @@ export default function JournalPrompt({ prompt }: JournalPromptProps) {
         placeholderTextColor={Colors.textMuted}
         multiline
         textAlignVertical="top"
+        accessibilityRole="text"
+        accessibilityLabel={`Journal prompt: ${prompt.question}`}
       />
     </View>
   );

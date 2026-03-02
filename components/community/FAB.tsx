@@ -55,6 +55,8 @@ export function FAB({ onPress, visible }: FABProps) {
         style={st.button}
         onPress={handlePress}
         activeOpacity={0.8}
+        accessibilityRole="button"
+        accessibilityLabel="Share a story"
       >
         <PenIcon size={16} color={Colors.textOnPrimary} />
         <Text style={st.text}>Share</Text>

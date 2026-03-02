@@ -224,6 +224,7 @@ export default function ConsentWaiverScreen() {
           setAgreed(false);
         }}
         activeOpacity={0.7}
+        accessibilityRole="button"
       >
         {/* Card Header */}
         <View style={s.optionHeader}>
@@ -292,6 +293,8 @@ export default function ConsentWaiverScreen() {
               style={s.submitButton}
               onPress={() => router.replace('/(app)/portrait' as any)}
               activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="View Your Portrait"
             >
               <SparkleIcon size={18} color={Colors.textOnPrimary} />
               <Text style={s.submitButtonText}>  View Your Portrait</Text>
@@ -303,9 +306,11 @@ export default function ConsentWaiverScreen() {
               onPress={handleExportPDF}
               activeOpacity={0.8}
               disabled={exporting}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: exporting }}
             >
               {exporting ? (
-                <ActivityIndicator color={Colors.primary} size="small" />
+                <ActivityIndicator color={Colors.primary} size="small" accessibilityLabel="Loading" />
               ) : (
                 <Text style={[s.submitButtonText, { color: Colors.primary }]}>
                   Export as PDF
@@ -319,6 +324,7 @@ export default function ConsentWaiverScreen() {
                 style={[s.submitButton, s.confirmationSecondaryBtn]}
                 onPress={() => router.push('/(app)/sharing-settings' as any)}
                 activeOpacity={0.8}
+                accessibilityRole="button"
               >
                 <Text style={[s.submitButtonText, { color: Colors.primary }]}>
                   Sharing Settings
@@ -331,6 +337,7 @@ export default function ConsentWaiverScreen() {
               style={[s.submitButton, s.confirmationSecondaryBtn]}
               onPress={() => router.push('/(app)/couple-portal' as any)}
               activeOpacity={0.8}
+              accessibilityRole="button"
             >
               <Text style={[s.submitButtonText, { color: Colors.primary }]}>
                 Connect with Partner
@@ -353,7 +360,7 @@ export default function ConsentWaiverScreen() {
       >
         {/* ── Back Button ───────────── */}
         <View style={s.header}>
-          <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }} accessibilityRole="button" accessibilityLabel="Back">
             <ArrowLeftIcon size={16} color={Colors.primary} />
             <Text style={s.backText}>Back</Text>
           </TouchableOpacity>
@@ -425,6 +432,7 @@ export default function ConsentWaiverScreen() {
               style={s.checkboxRow}
               onPress={() => setAgreed(!agreed)}
               activeOpacity={0.7}
+              accessibilityRole="button"
             >
               <View
                 style={[
@@ -450,7 +458,9 @@ export default function ConsentWaiverScreen() {
                 placeholderTextColor={Colors.textMuted}
                 autoCapitalize="words"
                 autoCorrect={false}
-              />
+              accessibilityRole="text"
+            accessibilityLabel="Enter your name"
+          />
             </View>
 
             {/* Submit Button */}
@@ -462,9 +472,11 @@ export default function ConsentWaiverScreen() {
               onPress={handleSubmit}
               disabled={!canSubmit}
               activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: !canSubmit }}
             >
               {saving ? (
-                <ActivityIndicator color={Colors.textOnPrimary} size="small" />
+                <ActivityIndicator color={Colors.textOnPrimary} size="small" accessibilityLabel="Loading" />
               ) : (
                 <Text
                   style={[

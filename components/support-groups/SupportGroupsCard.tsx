@@ -44,6 +44,8 @@ export default function SupportGroupsCard({
       ]}
       onPress={onPress}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={hasRec ? `Support Groups. Recommended: ${groupName}` : 'Explore support groups'}
     >
       <View style={styles.iconWrap}>
         <CommunityIcon size={28} color={hasRec ? accentColor : Colors.accentGold} />

@@ -23,6 +23,8 @@ export default function Divider({
         },
         style,
       ]}
+      accessibilityRole="none"
+      accessible={false}
     />
   );
 }

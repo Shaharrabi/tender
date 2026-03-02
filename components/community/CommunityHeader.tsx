@@ -45,6 +45,8 @@ export function CommunityHeader({ alias, onBack, onRotateAlias }: CommunityHeade
         onPress={onBack}
         activeOpacity={0.7}
         style={st.backRow}
+        accessibilityRole="button"
+        accessibilityLabel="Go back"
       >
         <ArrowLeftIcon size={16} color={Colors.primary} />
         <Text style={st.backText}>Back</Text>
@@ -64,6 +66,8 @@ export function CommunityHeader({ alias, onBack, onRotateAlias }: CommunityHeade
             style={st.aliasChip}
             onPress={handleRotate}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={`Current alias: ${alias.name}. Tap to refresh alias`}
           >
             <View style={[st.aliasDot, { backgroundColor: alias.color }]} />
             <Text style={st.aliasName} numberOfLines={1}>

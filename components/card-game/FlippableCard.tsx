@@ -92,7 +92,7 @@ export default function FlippableCard({
   }));
 
   return (
-    <TouchableWithoutFeedback onPress={flip}>
+    <TouchableWithoutFeedback onPress={flip} accessibilityRole="button" accessibilityLabel="Flip card" accessibilityState={{ disabled }}>
       <View style={[styles.container, { width, height }]}>
         <Animated.View style={frontStyle}>{frontContent}</Animated.View>
         <Animated.View style={backStyle}>{backContent}</Animated.View>

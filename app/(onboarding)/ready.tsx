@@ -120,6 +120,8 @@ export default function ReadyScreen() {
           style={styles.letsGoButton}
           onPress={handleLetsGo}
           activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel="Let's begin"
         >
           <Text style={styles.letsGoText}>Let's begin →</Text>
         </TouchableOpacity>

@@ -24,6 +24,8 @@ export default function HomeButton() {
           router.replace('/(app)/home' as any);
         }}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel="Go to home screen"
       >
         <HomeIcon size={16} color={Colors.textSecondary} />
         <Text style={styles.label}>Home</Text>

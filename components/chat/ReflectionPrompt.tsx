@@ -14,7 +14,12 @@ interface Props {
 
 export default function ReflectionPrompt({ question, context }: Props) {
   return (
-    <View style={styles.container}>
+    <View
+      style={styles.container}
+      accessible
+      accessibilityRole="text"
+      accessibilityLabel={`Reflection prompt: ${question}${context ? `. ${context}` : ''}`}
+    >
       <Text style={styles.label}>A moment to reflect</Text>
       <Text style={styles.question}>{question}</Text>
       {context ? <Text style={styles.context}>{context}</Text> : null}

@@ -103,6 +103,8 @@ function ReflectionView({
           onChangeText={onChangeText}
           multiline
           textAlignVertical="top"
+          accessibilityRole="text"
+          accessibilityLabel={`${step.title}: Write your reflections`}
         />
       </View>
     </View>
@@ -198,6 +200,8 @@ function TimerView({ step }: { step: ExerciseStepType }) {
         ]}
         onPress={handleToggle}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={remaining === 0 ? 'Restart timer' : isRunning ? 'Pause timer' : 'Start timer'}
       >
         <Text style={styles.timerButtonText}>
           {remaining === 0 ? 'Restart' : isRunning ? 'Pause' : 'Start'}
@@ -234,6 +238,8 @@ function PromptView({
           onChangeText={onChangeText}
           multiline
           textAlignVertical="top"
+          accessibilityRole="text"
+          accessibilityLabel={`${step.title}: Share your thoughts`}
         />
       </View>
     </View>

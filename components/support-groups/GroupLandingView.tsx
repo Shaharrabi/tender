@@ -186,6 +186,8 @@ export default function GroupLandingView({
               ]}
               onPress={() => onSelectGroup(group.groupType)}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={isFull ? `Join waitlist for ${group.name}` : isRecommended ? `Join ${group.name}` : `Explore ${group.name}`}
             >
               <Text
                 style={[

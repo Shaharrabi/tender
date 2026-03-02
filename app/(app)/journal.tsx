@@ -363,7 +363,7 @@ export default function JournalScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={Colors.secondary} />
+          <ActivityIndicator size="large" color={Colors.secondary} accessibilityLabel="Loading" />
         </View>
       </SafeAreaView>
     );
@@ -377,6 +377,8 @@ export default function JournalScreen() {
           style={styles.backButton}
           onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/home' as any); }}
           activeOpacity={0.6}
+          accessibilityRole="button"
+          accessibilityLabel="Home"
         >
           <Text style={styles.backArrow}>{'\u2039'}</Text>
           <Text style={styles.backText}>Home</Text>

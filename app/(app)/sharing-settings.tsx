@@ -205,7 +205,7 @@ export default function SharingSettingsScreen() {
     return (
       <SafeAreaView style={s.container}>
         <View style={s.loadingContainer}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={Colors.primary} accessibilityLabel="Loading" />
           <Text style={s.loadingText}>Loading sharing settings...</Text>
         </View>
       </SafeAreaView>
@@ -222,7 +222,7 @@ export default function SharingSettingsScreen() {
       >
         {/* ── Header ──────────────────── */}
         <View style={s.header}>
-          <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }} accessibilityRole="button" accessibilityLabel="Back">
             <ArrowLeftIcon size={16} color={Colors.primary} />
             <Text style={s.backText}>Back</Text>
           </TouchableOpacity>
@@ -259,6 +259,8 @@ export default function SharingSettingsScreen() {
                 onPress={() => router.push('/(app)/partner')}
                 activeOpacity={0.7}
                 style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: Spacing.xs }}
+                accessibilityRole="button"
+                accessibilityLabel="Go to Partner Settings"
               >
                 <Text style={[s.partnerLink, { marginTop: 0 }]}>Go to Partner Settings</Text>
                 <ArrowRightIcon size={14} color={Colors.primary} />
@@ -285,6 +287,7 @@ export default function SharingSettingsScreen() {
                   size="small"
                   color={Colors.primary}
                   style={{ marginRight: Spacing.sm }}
+                                  accessibilityLabel="Loading"
                 />
               )}
               <Switch
@@ -317,6 +320,7 @@ export default function SharingSettingsScreen() {
                 size="small"
                 color={Colors.primary}
                 style={{ marginRight: Spacing.sm }}
+                              accessibilityLabel="Loading"
               />
             )}
             <Switch
@@ -358,6 +362,8 @@ export default function SharingSettingsScreen() {
           <TouchableOpacity
             onPress={() => router.push('/(app)/privacy')}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="View full privacy policy"
           >
             <Text style={s.footerLink}>View full privacy policy</Text>
           </TouchableOpacity>

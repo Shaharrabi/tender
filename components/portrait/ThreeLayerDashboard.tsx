@@ -280,7 +280,12 @@ function RelationalVitality({
 
       {/* See details link */}
       {onSeeDetails && (
-        <TouchableOpacity onPress={onSeeDetails} activeOpacity={0.7}>
+        <TouchableOpacity
+          onPress={onSeeDetails}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="See what is underneath"
+        >
           <Text style={styles.seeDetails}>See what's underneath</Text>
         </TouchableOpacity>
       )}

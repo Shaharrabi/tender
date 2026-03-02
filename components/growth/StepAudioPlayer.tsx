@@ -159,6 +159,9 @@ export default function StepAudioPlayer({
           onPress={loadAndPlay}
           activeOpacity={0.7}
           disabled={isLoading}
+          accessibilityRole="button"
+          accessibilityLabel={isPlaying ? 'Pause audio' : hasFinished ? 'Replay audio' : 'Play audio'}
+          accessibilityState={{ disabled: isLoading }}
         >
           <Animated.View
             style={[

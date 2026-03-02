@@ -152,6 +152,9 @@ export default function ChecklistStep({
               ]}
               onPress={() => handleToggle(item.id)}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={`${item.text}${item.subtext ? '. ' + item.subtext : ''}`}
+              accessibilityState={{ selected: isChecked }}
             >
               {/* Checkbox */}
               <View

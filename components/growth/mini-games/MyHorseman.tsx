@@ -265,6 +265,8 @@ export default function MyHorseman({ onComplete, onSkip, phaseColor }: MiniGameC
               style={[styles.primaryButton, { backgroundColor: phaseColor }]}
               onPress={() => setPhase('quiz')}
               activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Begin exercise"
             >
               <Text style={styles.primaryButtonText}>BEGIN</Text>
             </TouchableOpacity>
@@ -322,6 +324,8 @@ export default function MyHorseman({ onComplete, onSkip, phaseColor }: MiniGameC
                   style={styles.quizOptionButton}
                   onPress={() => handleSelect(option.horseman)}
                   activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Option ${String.fromCharCode(65 + i)}`}
                 >
                   <View style={[styles.optionMarker, { backgroundColor: phaseColor + '30' }]}>
                     <Text style={[styles.optionMarkerText, { color: phaseColor }]}>
@@ -408,6 +412,8 @@ export default function MyHorseman({ onComplete, onSkip, phaseColor }: MiniGameC
             style={[styles.primaryButton, { backgroundColor: phaseColor }]}
             onPress={handleFinish}
             activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Continue"
           >
             <Text style={styles.primaryButtonText}>CONTINUE</Text>
           </TouchableOpacity>
@@ -423,7 +429,13 @@ function Header({ onSkip }: { onSkip: () => void }) {
   return (
     <View style={styles.header}>
       <Text style={styles.headerTitle}>My Horseman</Text>
-      <TouchableOpacity onPress={onSkip} activeOpacity={0.7} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+      <TouchableOpacity
+        onPress={onSkip}
+        activeOpacity={0.7}
+        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        accessibilityRole="button"
+        accessibilityLabel="Skip exercise"
+      >
         <Text style={styles.skipText}>Skip</Text>
       </TouchableOpacity>
     </View>

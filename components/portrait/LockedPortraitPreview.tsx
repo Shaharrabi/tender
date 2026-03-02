@@ -96,6 +96,8 @@ export default function LockedPortraitPreview({
         style={styles.expandButton}
         onPress={() => setExpanded(!expanded)}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={expanded ? 'Hide details' : 'See what is remaining'}
       >
         <Text style={styles.expandButtonText}>
           {expanded ? 'Hide details' : 'See what\u2019s remaining'}

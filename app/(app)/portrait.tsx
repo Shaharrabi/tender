@@ -590,7 +590,7 @@ export default function PortraitScreen() {
     return (
       <SafeAreaView style={st.container}>
         <View style={st.center}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={Colors.primary} accessibilityLabel="Loading" />
         </View>
       </SafeAreaView>
     );
@@ -606,6 +606,8 @@ export default function PortraitScreen() {
           <TouchableOpacity
             style={st.button}
             onPress={() => router.replace('/(app)/home')}
+            accessibilityRole="button"
+            accessibilityLabel="Back to Home"
           >
             <Text style={st.buttonText}>Back to Home</Text>
           </TouchableOpacity>
@@ -630,6 +632,8 @@ export default function PortraitScreen() {
           onPress={() => router.replace('/(app)/home')}
           activeOpacity={0.7}
           style={st.headerBackBtn}
+          accessibilityRole="button"
+          accessibilityLabel="Your Portrait"
         >
           <Text style={st.headerBackText}>{'<'} Back</Text>
         </TouchableOpacity>
@@ -651,6 +655,8 @@ export default function PortraitScreen() {
           }}
           activeOpacity={0.7}
           style={[st.headerBackBtn, { alignItems: 'flex-end' }]}
+          accessibilityRole="button"
+          accessibilityLabel="Export PDF"
         >
           <Text style={st.headerBackText}>Export PDF</Text>
         </TouchableOpacity>
@@ -684,6 +690,7 @@ export default function PortraitScreen() {
                 ]}
                 onPress={() => handleTabChange(tab.key)}
                 activeOpacity={0.7}
+                accessibilityRole="button"
               >
                 <View style={st.tabIcon}>
                   <tab.Icon size={14} color={isActive ? tab.color : Colors.textMuted} />
@@ -904,6 +911,7 @@ function OverviewTab({
             style={st.navCard}
             onPress={() => onNavigate(tab.key)}
             activeOpacity={0.8}
+            accessibilityRole="button"
           >
             <View style={[st.navCardIcon, { backgroundColor: tab.color }]}>
               <tab.Icon size={16} color={Colors.white} />
@@ -967,6 +975,7 @@ function FieldAwarenessCard({ fieldAwareness }: { fieldAwareness: FieldAwareness
             }}
             style={st.fieldExpandBtn}
             activeOpacity={0.7}
+            accessibilityRole="button"
           >
             <Text style={st.fieldExpandLabel}>
               Cross-Pattern Insights ({fieldAwareness.crossPatterns.length})
@@ -1627,6 +1636,8 @@ function BigFiveReframesSection({ reframes }: { reframes: string[] }) {
           setExpanded(!expanded);
         }}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel="Personality Reframes"
       >
         <View style={st.cardHeaderRow}>
           <View style={[st.lensIconCircle, { backgroundColor: Colors.secondary + '20' }]}>
@@ -2005,6 +2016,8 @@ function AnchorsTab({
         style={st.ctaButton}
         onPress={() => router.push('/(app)/chat' as any)}
         activeOpacity={0.8}
+        accessibilityRole="button"
+        accessibilityLabel="Nuance AI"
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           <Text style={st.ctaButtonText}>Nuance AI</Text>
@@ -2016,6 +2029,8 @@ function AnchorsTab({
         style={st.ctaButtonOutline}
         onPress={() => router.push('/(app)/exercises' as any)}
         activeOpacity={0.8}
+        accessibilityRole="button"
+        accessibilityLabel="Practice an Exercise"
       >
         <Text style={st.ctaButtonOutlineText}>Practice an Exercise</Text>
       </TouchableOpacity>

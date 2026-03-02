@@ -13,7 +13,11 @@ interface BadgeProps {
 export default function Badge({ label, variant = 'info', style }: BadgeProps) {
   const config = variantConfig[variant];
   return (
-    <View style={[styles.badge, { backgroundColor: config.bg }, style]}>
+    <View
+      style={[styles.badge, { backgroundColor: config.bg }, style]}
+      accessibilityRole="text"
+      accessibilityLabel={label}
+    >
       <Text style={[styles.text, { color: config.text }]}>{label}</Text>
     </View>
   );

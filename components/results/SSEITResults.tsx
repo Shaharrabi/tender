@@ -110,6 +110,8 @@ export default function SSEITResults({ scores }: Props) {
           <TouchableOpacity
             style={styles.primaryButton}
             onPress={() => router.replace('/(app)/home')}
+            accessibilityRole="button"
+            accessibilityLabel="Back to Home"
           >
             <Text style={styles.primaryButtonText}>Back to Home</Text>
           </TouchableOpacity>

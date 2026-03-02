@@ -110,6 +110,9 @@ export default function ProfileBuilder({
             key={s.id}
             style={[styles.tab, activeSection === i && styles.tabActive]}
             onPress={() => setActiveSection(i)}
+            accessibilityRole="tab"
+            accessibilityLabel={s.title}
+            accessibilityState={{ selected: activeSection === i }}
           >
             {s.Icon ? (
               <s.Icon size={16} color={activeSection === i ? Colors.primary : Colors.textSecondary} />
@@ -148,6 +151,8 @@ export default function ProfileBuilder({
                     }}
                     keyboardType="number-pad"
                     maxLength={2}
+                    accessibilityRole="text"
+                    accessibilityLabel={`${field.label} minimum`}
                   />
                   <Text style={styles.rangeDash}>—</Text>
                   <TextInput
@@ -161,6 +166,8 @@ export default function ProfileBuilder({
                     }}
                     keyboardType="number-pad"
                     maxLength={2}
+                    accessibilityRole="text"
+                    accessibilityLabel={`${field.label} maximum`}
                   />
                 </View>
               ) : (
@@ -175,6 +182,9 @@ export default function ProfileBuilder({
                         key={opt}
                         style={[styles.chip, isSelected && styles.chipSelected]}
                         onPress={() => handleSelect(field.id, opt, field.type === 'multi')}
+                        accessibilityRole="button"
+                        accessibilityLabel={`${field.label}: ${opt}`}
+                        accessibilityState={{ selected: isSelected }}
                       >
                         <Text style={[styles.chipText, isSelected && styles.chipTextSelected]}>
                           {opt}
@@ -205,6 +215,8 @@ export default function ProfileBuilder({
           multiline
           maxLength={500}
           textAlignVertical="top"
+          accessibilityRole="text"
+          accessibilityLabel="Your letter to the lobby bio"
         />
         <Text style={styles.bioCounter}>{bio.length}/500</Text>
       </View>

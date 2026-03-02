@@ -167,6 +167,8 @@ export default function RitualBuilder({ onComplete, onSkip, phaseColor }: MiniGa
               style={[styles.primaryButton, { backgroundColor: phaseColor }]}
               onPress={() => setPhase('pickMoment')}
               activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Begin"
             >
               <Text style={styles.primaryButtonText}>BEGIN</Text>
             </TouchableOpacity>
@@ -213,6 +215,9 @@ export default function RitualBuilder({ onComplete, onSkip, phaseColor }: MiniGa
                     ]}
                     onPress={() => setSelectedMoment(moment)}
                     activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${moment.label}, ${moment.description}${isSelected ? ', selected' : ''}`}
+                    accessibilityState={{ selected: isSelected }}
                   >
                     <Text
                       style={[
@@ -248,6 +253,8 @@ export default function RitualBuilder({ onComplete, onSkip, phaseColor }: MiniGa
                 style={[styles.primaryButton, { backgroundColor: phaseColor }]}
                 onPress={() => setPhase('pickRitual')}
                 activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel="Next"
               >
                 <Text style={styles.primaryButtonText}>NEXT</Text>
               </TouchableOpacity>
@@ -300,6 +307,9 @@ export default function RitualBuilder({ onComplete, onSkip, phaseColor }: MiniGa
                       ]}
                       onPress={() => handleSelectRitual(ritual)}
                       activeOpacity={0.7}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${ritual}${isSelected ? ', selected' : ''}`}
+                      accessibilityState={{ selected: isSelected }}
                     >
                       <View
                         style={[
@@ -335,6 +345,9 @@ export default function RitualBuilder({ onComplete, onSkip, phaseColor }: MiniGa
                   ]}
                   onPress={handleCustomToggle}
                   activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Create my own ritual${showCustomInput ? ', selected' : ''}`}
+                  accessibilityState={{ selected: showCustomInput }}
                 >
                   <View
                     style={[
@@ -363,6 +376,8 @@ export default function RitualBuilder({ onComplete, onSkip, phaseColor }: MiniGa
                     multiline
                     textAlignVertical="top"
                     autoFocus
+                    accessibilityRole="text"
+                    accessibilityLabel="Describe your custom ritual"
                   />
                 </Animated.View>
               )}
@@ -374,6 +389,8 @@ export default function RitualBuilder({ onComplete, onSkip, phaseColor }: MiniGa
                   style={[styles.primaryButton, { backgroundColor: phaseColor }]}
                   onPress={() => setPhase('commitment')}
                   activeOpacity={0.8}
+                  accessibilityRole="button"
+                  accessibilityLabel="Next"
                 >
                   <Text style={styles.primaryButtonText}>NEXT</Text>
                 </TouchableOpacity>
@@ -426,6 +443,8 @@ export default function RitualBuilder({ onComplete, onSkip, phaseColor }: MiniGa
               style={[styles.sealButton, { backgroundColor: phaseColor }]}
               onPress={handleSeal}
               activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Seal this ritual"
             >
               <Text style={styles.sealButtonText}>SEAL THIS RITUAL</Text>
             </TouchableOpacity>
@@ -492,6 +511,8 @@ export default function RitualBuilder({ onComplete, onSkip, phaseColor }: MiniGa
             style={[styles.primaryButton, { backgroundColor: phaseColor }]}
             onPress={handleFinish}
             activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Continue"
           >
             <Text style={styles.primaryButtonText}>CONTINUE</Text>
           </TouchableOpacity>
@@ -507,7 +528,7 @@ function Header({ onSkip }: { onSkip: () => void }) {
   return (
     <View style={styles.header}>
       <Text style={styles.headerTitle}>Ritual Builder</Text>
-      <TouchableOpacity onPress={onSkip} activeOpacity={0.7} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+      <TouchableOpacity onPress={onSkip} activeOpacity={0.7} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} accessibilityRole="button" accessibilityLabel="Skip exercise">
         <Text style={styles.skipText}>Skip</Text>
       </TouchableOpacity>
     </View>

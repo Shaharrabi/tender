@@ -128,7 +128,7 @@ export default function TheUnsaid({ onComplete, onSkip, phaseColor }: MiniGameCo
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>The Unsaid</Text>
-          <TouchableOpacity onPress={onSkip} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+          <TouchableOpacity onPress={onSkip} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} accessibilityRole="button" accessibilityLabel="Skip exercise">
             <Text style={styles.skipText}>Skip</Text>
           </TouchableOpacity>
         </View>
@@ -158,6 +158,8 @@ export default function TheUnsaid({ onComplete, onSkip, phaseColor }: MiniGameCo
               style={[styles.primaryButton, { backgroundColor: phaseColor }]}
               onPress={() => setPhase('writing')}
               activeOpacity={0.85}
+              accessibilityRole="button"
+              accessibilityLabel="Begin"
             >
               <Text style={styles.primaryButtonText}>Begin</Text>
             </TouchableOpacity>
@@ -173,7 +175,7 @@ export default function TheUnsaid({ onComplete, onSkip, phaseColor }: MiniGameCo
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>The Unsaid</Text>
-          <TouchableOpacity onPress={onSkip} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+          <TouchableOpacity onPress={onSkip} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} accessibilityRole="button" accessibilityLabel="Skip exercise">
             <Text style={styles.skipText}>Skip</Text>
           </TouchableOpacity>
         </View>
@@ -235,6 +237,8 @@ export default function TheUnsaid({ onComplete, onSkip, phaseColor }: MiniGameCo
                   multiline
                   textAlignVertical="top"
                   autoFocus
+                  accessibilityRole="text"
+                  accessibilityLabel={`Prompt ${currentPrompt + 1}: ${PROMPTS[currentPrompt]}`}
                 />
               </View>
               {showValidation && !isValid && (
@@ -254,6 +258,8 @@ export default function TheUnsaid({ onComplete, onSkip, phaseColor }: MiniGameCo
                 ]}
                 onPress={handleContinue}
                 activeOpacity={0.85}
+                accessibilityRole="button"
+                accessibilityLabel={currentPrompt < PROMPTS.length - 1 ? 'Continue' : 'See your letter'}
               >
                 <Text style={styles.primaryButtonText}>
                   {currentPrompt < PROMPTS.length - 1 ? 'Continue' : 'See your letter'}
@@ -273,7 +279,7 @@ export default function TheUnsaid({ onComplete, onSkip, phaseColor }: MiniGameCo
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>The Unsaid</Text>
-        <TouchableOpacity onPress={onSkip} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+        <TouchableOpacity onPress={onSkip} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} accessibilityRole="button" accessibilityLabel="Skip exercise">
           <Text style={styles.skipText}>Skip</Text>
         </TouchableOpacity>
       </View>
@@ -322,6 +328,8 @@ export default function TheUnsaid({ onComplete, onSkip, phaseColor }: MiniGameCo
             style={[styles.primaryButton, { backgroundColor: phaseColor }]}
             onPress={handleComplete}
             activeOpacity={0.85}
+            accessibilityRole="button"
+            accessibilityLabel="Save to Journal"
           >
             <Text style={styles.primaryButtonText}>Save to Journal</Text>
           </TouchableOpacity>

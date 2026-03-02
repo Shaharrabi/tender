@@ -145,6 +145,8 @@ export default function RelationshipManifesto({ onComplete, onSkip, phaseColor }
               style={[styles.primaryButton, { backgroundColor: phaseColor }]}
               onPress={() => setPhase('prompts')}
               activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Begin"
             >
               <Text style={styles.primaryButtonText}>BEGIN</Text>
             </TouchableOpacity>
@@ -222,6 +224,8 @@ export default function RelationshipManifesto({ onComplete, onSkip, phaseColor }
                 multiline
                 textAlignVertical="top"
                 autoFocus={false}
+                accessibilityRole="text"
+                accessibilityLabel={`${currentPrompt.stem}`}
               />
             </Animated.View>
 
@@ -235,6 +239,9 @@ export default function RelationshipManifesto({ onComplete, onSkip, phaseColor }
                 onPress={handleSubmitPrompt}
                 activeOpacity={0.8}
                 disabled={!currentInput.trim()}
+                accessibilityRole="button"
+                accessibilityLabel={isLastPrompt ? 'Reveal my manifesto' : 'Next'}
+                accessibilityState={{ disabled: !currentInput.trim() }}
               >
                 <Text style={styles.primaryButtonText}>
                   {isLastPrompt ? 'REVEAL MY MANIFESTO' : 'NEXT'}
@@ -310,6 +317,8 @@ export default function RelationshipManifesto({ onComplete, onSkip, phaseColor }
             style={[styles.finishButton, { backgroundColor: phaseColor }]}
             onPress={handleFinish}
             activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Complete the journey"
           >
             <Text style={styles.finishButtonText}>COMPLETE THE JOURNEY</Text>
           </TouchableOpacity>
@@ -325,7 +334,7 @@ function Header({ onSkip }: { onSkip: () => void }) {
   return (
     <View style={styles.header}>
       <Text style={styles.headerTitle}>Your Manifesto</Text>
-      <TouchableOpacity onPress={onSkip} activeOpacity={0.7} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+      <TouchableOpacity onPress={onSkip} activeOpacity={0.7} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} accessibilityRole="button" accessibilityLabel="Skip exercise">
         <Text style={styles.skipText}>Skip</Text>
       </TouchableOpacity>
     </View>

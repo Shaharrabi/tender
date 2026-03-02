@@ -248,7 +248,7 @@ export default function PartnerScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.center}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={Colors.primary} accessibilityLabel="Loading" />
           <Text style={styles.loadingText}>Loading...</Text>
         </View>
       </SafeAreaView>
@@ -268,7 +268,7 @@ export default function PartnerScreen() {
       <SafeAreaView style={styles.container}>
         <ScrollView contentContainerStyle={styles.scroll}>
           {/* Header */}
-          <TouchableOpacity onPress={handleBack} style={styles.backBtn}>
+          <TouchableOpacity onPress={handleBack} style={styles.backBtn} accessibilityRole="button">
             <Text style={styles.backText}>{'< Back'}</Text>
           </TouchableOpacity>
 
@@ -298,6 +298,8 @@ export default function PartnerScreen() {
             style={[styles.card, styles.sharingCard]}
             onPress={() => router.push('/(app)/sharing-settings' as any)}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Sharing Settings"
           >
             <View style={styles.sharingRow}>
               <Text style={styles.sharingIcon}>{'🔄'}</Text>
@@ -316,6 +318,8 @@ export default function PartnerScreen() {
             style={[styles.card, styles.sharingCard]}
             onPress={() => router.push('/(app)/consent-waiver' as any)}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Data Consent"
           >
             <View style={styles.sharingRow}>
               <ShieldIcon size={20} color={Colors.primary} />
@@ -348,6 +352,7 @@ export default function PartnerScreen() {
                   }
                 }}
                 activeOpacity={0.7}
+                accessibilityRole="button"
               >
                 <View style={styles.assessmentHeader}>
                   <Text style={styles.assessmentName}>{assessment.shortName}</Text>
@@ -388,6 +393,8 @@ export default function PartnerScreen() {
                 style={[styles.card, styles.portalCard]}
                 onPress={() => router.push('/(app)/couple-portal' as any)}
                 activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="Couple Portal"
               >
                 <SparkleIcon size={24} color={Colors.secondary} />
                 <Text style={styles.portalTitle}>Couple Portal</Text>
@@ -418,7 +425,7 @@ export default function PartnerScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scroll}>
-        <TouchableOpacity onPress={handleBack} style={styles.backBtn}>
+        <TouchableOpacity onPress={handleBack} style={styles.backBtn} accessibilityRole="button">
           <Text style={styles.backText}>{'< Back'}</Text>
         </TouchableOpacity>
 
@@ -449,6 +456,8 @@ export default function PartnerScreen() {
                 }
               }}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Invite Your Partner"
             >
               <Text style={styles.shareButtonText}>
                 {Platform.OS === 'web' ? 'Copy Code' : 'Share Code'}
@@ -470,7 +479,9 @@ export default function PartnerScreen() {
                 value={displayName}
                 onChangeText={setDisplayName}
                 autoCapitalize="words"
-              />
+              accessibilityRole="text"
+            accessibilityLabel="Your first name (shown to partner)"
+          />
             )}
 
             <TouchableOpacity
@@ -478,9 +489,11 @@ export default function PartnerScreen() {
               onPress={handleCreateInvite}
               disabled={processing}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: processing }}
             >
               {processing ? (
-                <ActivityIndicator color={Colors.white} />
+                <ActivityIndicator color={Colors.white} accessibilityLabel="Loading" />
               ) : (
                 <Text style={styles.primaryBtnText}>
                   {showNameInput ? 'Generate Invite Code' : 'Create Invite'}
@@ -511,6 +524,8 @@ export default function PartnerScreen() {
             onChangeText={setAcceptCode}
             autoCapitalize="characters"
             maxLength={9}
+          accessibilityRole="text"
+            accessibilityLabel="XXXX-XXXX"
           />
           <TouchableOpacity
             style={[
@@ -520,9 +535,12 @@ export default function PartnerScreen() {
             onPress={handleAcceptInvite}
             disabled={!acceptCode.trim() || processing}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Connect"
+            accessibilityState={{ disabled: !acceptCode.trim() || processing }}
           >
             {processing ? (
-              <ActivityIndicator color={Colors.primary} />
+              <ActivityIndicator color={Colors.primary} accessibilityLabel="Loading" />
             ) : (
               <Text style={styles.secondaryBtnText}>Connect</Text>
             )}

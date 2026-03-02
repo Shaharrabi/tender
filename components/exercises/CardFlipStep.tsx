@@ -198,6 +198,9 @@ function FlipCard({
       activeOpacity={isFlipped ? 1 : 0.8}
       disabled={isFlipped}
       style={styles.cardWrapper}
+      accessibilityRole="button"
+      accessibilityLabel={`Flip card: ${card.front}${isFlipped ? '. Revealed: ' + card.back : ''}`}
+      accessibilityState={{ disabled: isFlipped }}
     >
       {/* Front */}
       <Animated.View

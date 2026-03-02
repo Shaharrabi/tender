@@ -81,6 +81,8 @@ export default function ModeSelectScreen() {
             onPress={() => router.back()}
             activeOpacity={0.7}
             style={styles.backButton}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
           >
             <ArrowLeftIcon size={16} color={Colors.primary} />
             <Text style={styles.backText}>Back</Text>
@@ -112,6 +114,9 @@ export default function ModeSelectScreen() {
                   style={[styles.optionButton, isSelected && styles.optionSelected]}
                   onPress={() => handleSelect(option.mode)}
                   activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${option.label}: ${option.description}`}
+                  accessibilityState={{ selected: isSelected }}
                 >
                   <View style={styles.optionIconWrapper}>
                     <Icon size={24} color={isSelected ? Colors.primaryDark : Colors.primary} />
@@ -138,6 +143,9 @@ export default function ModeSelectScreen() {
           onPress={handleContinue}
           disabled={!selected}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Continue"
+          accessibilityState={{ disabled: !selected }}
         >
           <Text style={[styles.continueButtonText, !selected && styles.continueButtonTextDisabled]}>
             Continue
@@ -151,6 +159,8 @@ export default function ModeSelectScreen() {
             router.push('/(onboarding)/goals' as any);
           }}
           activeOpacity={0.6}
+          accessibilityRole="button"
+          accessibilityLabel="Skip for now"
         >
           <Text style={styles.skipText}>Skip for now</Text>
         </TouchableOpacity>

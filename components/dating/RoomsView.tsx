@@ -54,6 +54,9 @@ export default function RoomsView() {
         <TouchableOpacity
           style={[styles.toggleButton, viewSection === 'hotel' && styles.toggleActive]}
           onPress={() => setViewSection('hotel')}
+          accessibilityRole="button"
+          accessibilityLabel="Self-guided journey"
+          accessibilityState={{ selected: viewSection === 'hotel' }}
         >
           <View style={styles.toggleInner}>
             <CompassIcon size={14} color={viewSection === 'hotel' ? Colors.primary : Colors.textSecondary} />
@@ -65,6 +68,9 @@ export default function RoomsView() {
         <TouchableOpacity
           style={[styles.toggleButton, viewSection === 'meeting' && styles.toggleActive]}
           onPress={() => setViewSection('meeting')}
+          accessibilityRole="button"
+          accessibilityLabel="Meeting rooms"
+          accessibilityState={{ selected: viewSection === 'meeting' }}
         >
           <View style={styles.toggleInner}>
             <ChatBubbleIcon size={14} color={viewSection === 'meeting' ? Colors.primary : Colors.textSecondary} />
@@ -123,6 +129,8 @@ function MeetingRoomsSection() {
             <TouchableOpacity
               style={styles.leaveButton}
               onPress={() => { setEnteredRoom(null); setResponse(''); }}
+              accessibilityRole="button"
+              accessibilityLabel="Leave room"
             >
               <Text style={styles.leaveButtonText}>Leave</Text>
             </TouchableOpacity>
@@ -147,6 +155,8 @@ function MeetingRoomsSection() {
               multiline
               textAlignVertical="top"
               maxLength={800}
+              accessibilityRole="text"
+              accessibilityLabel="Share your reflection"
             />
             <Text style={styles.activeRoomCounter}>{response.length}/800</Text>
           </View>
@@ -195,6 +205,9 @@ function MeetingRoomsSection() {
                   enteredRoom === i && styles.meetingButtonEntered,
                 ]}
                 disabled={room.status === 'upcoming'}
+                accessibilityRole="button"
+                accessibilityLabel={room.status === 'upcoming' ? `Notify me about ${room.name}` : enteredRoom === i ? `You are in ${room.name}` : `Enter ${room.name}`}
+                accessibilityState={{ disabled: room.status === 'upcoming' }}
                 onPress={() => {
                   if (room.status === 'active') {
                     setEnteredRoom(enteredRoom === i ? null : i);
@@ -292,6 +305,9 @@ function HotelRoomsSection({
         <TouchableOpacity
           onPress={() => activeRoom > 0 && goToRoom(activeRoom - 1)}
           disabled={activeRoom === 0}
+          accessibilityRole="button"
+          accessibilityLabel="Previous room"
+          accessibilityState={{ disabled: activeRoom === 0 }}
         >
           <Text
             style={[
@@ -312,6 +328,9 @@ function HotelRoomsSection({
             activeRoom < HOTEL_ROOMS.length - 1 && goToRoom(activeRoom + 1)
           }
           disabled={activeRoom === HOTEL_ROOMS.length - 1}
+          accessibilityRole="button"
+          accessibilityLabel="Next room"
+          accessibilityState={{ disabled: activeRoom === HOTEL_ROOMS.length - 1 }}
         >
           <Text
             style={[

@@ -139,7 +139,12 @@ export default function StepMiniGame({ stepNumber, onComplete, onSkip }: StepMin
         <Text style={styles.fallbackText}>
           This exercise is coming soon.
         </Text>
-        <TouchableOpacity onPress={onSkip} style={styles.skipButton}>
+        <TouchableOpacity
+          onPress={onSkip}
+          style={styles.skipButton}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
           <Text style={styles.skipText}>Go Back</Text>
         </TouchableOpacity>
       </View>
@@ -165,10 +170,17 @@ export default function StepMiniGame({ stepNumber, onComplete, onSkip }: StepMin
         <TouchableOpacity
           style={[styles.retryButton, { backgroundColor: phaseColor }]}
           onPress={handleRetry}
+          accessibilityRole="button"
+          accessibilityLabel="Try again"
         >
           <Text style={styles.retryButtonText}>Try Again</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.skipSaveButton} onPress={handleSkipSave}>
+        <TouchableOpacity
+          style={styles.skipSaveButton}
+          onPress={handleSkipSave}
+          accessibilityRole="button"
+          accessibilityLabel="Continue without saving"
+        >
           <Text style={styles.skipSaveText}>Continue without saving</Text>
         </TouchableOpacity>
       </Animated.View>

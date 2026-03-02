@@ -16,10 +16,20 @@ export default function SafetyBanner({ safetyResult, onDismiss }: Props) {
   if (safetyResult.safe) return null;
 
   return (
-    <View style={styles.container}>
+    <View
+      style={styles.container}
+      accessibilityRole="alert"
+      accessibilityLabel="Crisis support resources available"
+      accessibilityLiveRegion="assertive"
+    >
       <View style={styles.header}>
         <Text style={styles.title}>Support is available</Text>
-        <TouchableOpacity onPress={onDismiss} activeOpacity={0.7}>
+        <TouchableOpacity
+          onPress={onDismiss}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Dismiss safety banner"
+        >
           <Text style={styles.dismiss}>Dismiss</Text>
         </TouchableOpacity>
       </View>
@@ -41,6 +51,8 @@ export default function SafetyBanner({ safetyResult, onDismiss }: Props) {
             }
           }}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={`Call ${resource.name}: ${resource.contact}. ${resource.description}`}
         >
           <Text style={styles.resourceName}>{resource.name}</Text>
           <Text style={styles.resourceContact}>{resource.contact}</Text>

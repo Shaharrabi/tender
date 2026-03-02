@@ -75,6 +75,9 @@ export default function DiscoverView() {
             key={m.id}
             style={[styles.modeButton, viewMode === m.id && styles.modeButtonActive]}
             onPress={() => setViewMode(m.id)}
+            accessibilityRole="button"
+            accessibilityLabel={`View mode: ${m.label}`}
+            accessibilityState={{ selected: viewMode === m.id }}
           >
             <Text style={[styles.modeLabel, viewMode === m.id && styles.modeLabelActive]}>
               {m.label}
@@ -125,10 +128,10 @@ export default function DiscoverView() {
 
                 {/* Actions */}
                 <View style={styles.actionsRow}>
-                  <TouchableOpacity style={styles.sendLetterButton}>
+                  <TouchableOpacity style={styles.sendLetterButton} accessibilityRole="button" accessibilityLabel={`Send a letter to ${p.alias}`}>
                     <Text style={styles.sendLetterText}>Send a Letter</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.exploreButton}>
+                  <TouchableOpacity style={styles.exploreButton} accessibilityRole="button" accessibilityLabel={`Explore ${p.alias}'s profile`}>
                     <Text style={styles.exploreButtonText}>Explore</Text>
                   </TouchableOpacity>
                 </View>

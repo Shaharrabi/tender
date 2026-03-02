@@ -170,7 +170,7 @@ export default function RelationshipModeScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+        <ActivityIndicator size="large" color={Colors.primary} accessibilityLabel="Loading" />
       </SafeAreaView>
     );
   }
@@ -183,6 +183,8 @@ export default function RelationshipModeScreen() {
           onPress={() => router.back()}
           activeOpacity={0.7}
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          accessibilityRole="button"
+          accessibilityLabel="Relationship Mode"
         >
           <ArrowLeftIcon size={22} color={Colors.text} />
         </TouchableOpacity>
@@ -210,6 +212,7 @@ export default function RelationshipModeScreen() {
                   setSelectedMode(item.mode);
                 }}
                 activeOpacity={0.7}
+                accessibilityRole="button"
               >
                 <View style={styles.modeIconWrap}>
                   <Icon size={22} color={isSelected ? Colors.primaryDark : Colors.primary} />
@@ -248,6 +251,7 @@ export default function RelationshipModeScreen() {
                       setSelectedPartnerId(partner.id);
                     }}
                     activeOpacity={0.7}
+                    accessibilityRole="button"
                   >
                     <View style={[styles.partnerIconCircle, { backgroundColor: partner.color + '20' }]}>
                       <Icon size={24} color={partner.color} />
@@ -284,9 +288,12 @@ export default function RelationshipModeScreen() {
             onPress={handleSave}
             activeOpacity={0.8}
             disabled={saving}
+            accessibilityRole="button"
+            accessibilityLabel="Save Changes"
+            accessibilityState={{ disabled: saving }}
           >
             {saving ? (
-              <ActivityIndicator size="small" color={Colors.white} />
+              <ActivityIndicator size="small" color={Colors.white} accessibilityLabel="Loading" />
             ) : (
               <Text style={styles.saveText}>Save Changes</Text>
             )}

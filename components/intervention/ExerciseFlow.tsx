@@ -356,6 +356,8 @@ export default function ExerciseFlow({
             style={styles.backButton}
             onPress={handleSummaryBack}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Back to exercise steps"
           >
             <Text style={styles.backButtonText}>{'\u2039'} Back</Text>
           </TouchableOpacity>
@@ -364,6 +366,8 @@ export default function ExerciseFlow({
             style={styles.nextButton}
             onPress={handleSummaryContinue}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Continue to completion"
           >
             <Text style={styles.nextButtonText}>
               Continue {'\u203A'}
@@ -421,6 +425,9 @@ export default function ExerciseFlow({
                     onPress={() => setRating(star)}
                     activeOpacity={0.6}
                     style={styles.starButton}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Rate ${star} star${star > 1 ? 's' : ''}`}
+                    accessibilityState={{ selected: isFilled }}
                   >
                     <StarIcon
                       size={36}
@@ -455,6 +462,8 @@ export default function ExerciseFlow({
                 onChangeText={setFinalReflection}
                 multiline
                 textAlignVertical="top"
+                accessibilityRole="text"
+                accessibilityLabel="Final reflection: What are you taking away from this exercise?"
               />
             </View>
           </View>
@@ -464,6 +473,8 @@ export default function ExerciseFlow({
             style={styles.saveButton}
             onPress={handleFinish}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Save reflection and close exercise"
           >
             <Text style={styles.saveButtonText}>Save & Close</Text>
           </TouchableOpacity>
@@ -472,6 +483,8 @@ export default function ExerciseFlow({
             style={styles.skipButton}
             onPress={() => onComplete(undefined, undefined)}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Skip reflection and close exercise"
           >
             <Text style={styles.skipButtonText}>Skip & Close</Text>
           </TouchableOpacity>
@@ -545,6 +558,8 @@ export default function ExerciseFlow({
             style={styles.backButton}
             onPress={handlePrevious}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Go to previous step"
           >
             <Text style={styles.backButtonText}>{'\u2039'} Back</Text>
           </TouchableOpacity>
@@ -553,6 +568,8 @@ export default function ExerciseFlow({
             style={styles.backButton}
             onPress={onExit}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Exit exercise"
           >
             <Text style={styles.backButtonText}>{'\u2715'} Exit</Text>
           </TouchableOpacity>
@@ -562,6 +579,8 @@ export default function ExerciseFlow({
           style={styles.nextButton}
           onPress={handleNext}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={isLastStep ? 'Review responses' : 'Go to next step'}
         >
           <Text style={styles.nextButtonText}>
             {isLastStep ? 'Review \u203A' : 'Next \u203A'}
@@ -911,6 +930,8 @@ function ReflectionStep({
           onChangeText={onChangeText}
           multiline
           textAlignVertical="top"
+          accessibilityRole="text"
+          accessibilityLabel={`${step.title}: Write your reflections`}
         />
       </View>
     </View>
@@ -1032,6 +1053,8 @@ function TimerStep({ step }: { step: ExerciseStep }) {
         ]}
         onPress={handleStartPause}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={remaining === 0 ? 'Restart timer' : isRunning ? 'Pause timer' : 'Start timer'}
       >
         <Text style={stepStyles.timerButtonText}>
           {remaining === 0
@@ -1149,6 +1172,8 @@ function PromptStep({
           onChangeText={onChangeText}
           multiline
           textAlignVertical="top"
+          accessibilityRole="text"
+          accessibilityLabel={`${step.title}: Share your thoughts`}
         />
       </View>
     </View>

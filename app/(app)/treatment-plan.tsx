@@ -414,6 +414,7 @@ function PathwayCard({
           onPress={toggleExpand}
           activeOpacity={0.7}
           style={styles.pathwayHeader}
+          accessibilityRole="button"
         >
           <View style={[styles.pathwayNumberBadge, { backgroundColor: color }]}>
             <Text style={styles.pathwayNumberText}>{index + 1}</Text>
@@ -492,6 +493,7 @@ function PathwayCard({
                         ]}
                         onPress={() => onExercisePress(exerciseId)}
                         activeOpacity={0.7}
+                        accessibilityRole="button"
                       >
                         <View
                           style={[
@@ -566,6 +568,7 @@ function ExerciseCard({
         style={styles.exerciseCard}
         onPress={() => onPress(exerciseId)}
         activeOpacity={0.7}
+        accessibilityRole="button"
       >
         <View
           style={[
@@ -652,7 +655,7 @@ export default function TreatmentPlanScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
           <View style={styles.loadingPulse}>
-            <ActivityIndicator size="large" color={Colors.primary} />
+            <ActivityIndicator size="large" color={Colors.primary} accessibilityLabel="Loading" />
             <Text style={styles.loadingText}>
               Building your growth plan...
             </Text>
@@ -668,7 +671,7 @@ export default function TreatmentPlanScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={handleBack} activeOpacity={0.7}>
+          <TouchableOpacity onPress={handleBack} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Your Growth Plan">
             <Text style={styles.backText}>{'\u2190'} Back</Text>
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Your Growth Plan</Text>
@@ -686,6 +689,8 @@ export default function TreatmentPlanScreen() {
             style={styles.errorButton}
             onPress={handleBack}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Go Back"
           >
             <Text style={styles.errorButtonText}>Go Back</Text>
           </TouchableOpacity>
@@ -698,7 +703,7 @@ export default function TreatmentPlanScreen() {
     <SafeAreaView style={styles.container}>
       {/* ─── Header ─────────────────────────────────────── */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} activeOpacity={0.7}>
+        <TouchableOpacity onPress={handleBack} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Your Growth Plan">
           <Text style={styles.backText}>{'\u2190'} Back</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Your Growth Plan</Text>

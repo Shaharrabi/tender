@@ -172,6 +172,9 @@ export function ComposeFlow({
             style={[st.typeCard, type.locked && st.typeCardLocked]}
             onPress={() => handleSelectType(type.key, type.locked)}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={`Share ${type.label}${type.locked ? ', coming soon' : ''}`}
+            accessibilityState={{ disabled: type.locked }}
           >
             <type.Icon size={28} color={type.locked ? Colors.textMuted : Colors.primary} />
             <Text style={[st.typeLabel, type.locked && st.typeLabelLocked]}>
@@ -201,6 +204,8 @@ export function ComposeFlow({
             style={st.promptCard}
             onPress={() => handleSelectPrompt(prompt)}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={`Use prompt: ${prompt}`}
           >
             <Text style={st.promptText}>{`"${prompt}"`}</Text>
           </TouchableOpacity>
@@ -209,6 +214,8 @@ export function ComposeFlow({
           style={[st.promptCard, st.promptCardFree]}
           onPress={() => handleSelectPrompt(null)}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Write freely without a prompt"
         >
           <PenIcon size={16} color={Colors.primary} />
           <Text style={st.promptTextFree}>Write freely</Text>
@@ -238,6 +245,8 @@ export function ComposeFlow({
         maxLength={1000}
         textAlignVertical="top"
         autoFocus
+        accessibilityRole="text"
+        accessibilityLabel="Write your story"
       />
       <Text style={st.charCount}>{composeText.length}/1000</Text>
 
@@ -257,6 +266,9 @@ export function ComposeFlow({
               setComposeCategory(cat);
             }}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={`Category: ${cat}`}
+            accessibilityState={{ selected: composeCategory === cat }}
           >
             <Text style={[st.categoryText, composeCategory === cat && st.categoryTextActive]}>
               {cat}
@@ -276,6 +288,9 @@ export function ComposeFlow({
         onPress={handleSubmit}
         disabled={submitting || composeText.trim().length < 10}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel="Share story"
+        accessibilityState={{ disabled: submitting || composeText.trim().length < 10 }}
       >
         {submitting ? (
           <ActivityIndicator color={Colors.textOnPrimary} size="small" />
@@ -323,6 +338,8 @@ export function ComposeFlow({
                     onDismiss();
                   }
                 }}
+                accessibilityRole="button"
+                accessibilityLabel={step === 'type' ? 'Close compose flow' : 'Go back'}
               >
                 <Text style={st.modalClose}>
                   {step === 'type' ? '\u2715' : '\u2039 Back'}

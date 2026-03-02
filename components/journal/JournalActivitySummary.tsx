@@ -104,6 +104,9 @@ export default function JournalActivitySummary({
           onPress={onPressPractice}
           activeOpacity={onPressPractice ? 0.7 : 1}
           disabled={!onPressPractice}
+          accessibilityRole="button"
+          accessibilityLabel={`Today's practice: ${todaysPractice.title}`}
+          accessibilityState={{ disabled: !onPressPractice }}
         >
           <View style={styles.cardHeader}>
             <View style={styles.iconBadge}>
@@ -130,6 +133,9 @@ export default function JournalActivitySummary({
           onPress={onPressCourse}
           activeOpacity={onPressCourse ? 0.7 : 1}
           disabled={!onPressCourse}
+          accessibilityRole="button"
+          accessibilityLabel={`Mini course: ${activeCourse.course.title}. ${activeCourse.progress.lessonsCompleted} of ${activeCourse.progress.totalLessons} lessons completed`}
+          accessibilityState={{ disabled: !onPressCourse }}
         >
           <View style={styles.cardHeader}>
             <View style={styles.iconBadge}>

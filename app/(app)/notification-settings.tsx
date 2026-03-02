@@ -148,7 +148,7 @@ export default function NotificationSettingsScreen() {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} activeOpacity={0.7}>
+        <TouchableOpacity onPress={handleBack} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Notifications">
           <Text style={styles.backText}>{'\u2039'} Back</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Notifications</Text>
@@ -305,6 +305,7 @@ export default function NotificationSettingsScreen() {
               ]}
               onPress={() => updatePref('reminderTime', opt.key)}
               activeOpacity={0.7}
+              accessibilityRole="button"
             >
               <Text
                 style={[
@@ -369,6 +370,7 @@ function ToggleRow({
         onValueChange={onToggle}
         trackColor={{ false: Colors.borderLight, true: `${Colors.primary}80` }}
         thumbColor={value ? Colors.primary : Colors.textMuted}
+            accessibilityRole="switch"
       />
     </View>
   );

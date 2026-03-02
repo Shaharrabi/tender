@@ -71,6 +71,8 @@ export default function GoalsScreen() {
             onPress={() => router.back()}
             activeOpacity={0.7}
             style={styles.backButton}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
           >
             <ArrowLeftIcon size={16} color={Colors.primary} />
             <Text style={styles.backText}>Back</Text>
@@ -99,6 +101,9 @@ export default function GoalsScreen() {
                 style={[styles.optionButton, isSelected && styles.optionSelected]}
                 onPress={() => { SoundHaptics.tapSoft(); toggleGoal(goal.id); }}
                 activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={`${goal.label}: ${goal.desc}`}
+                accessibilityState={{ selected: isSelected }}
               >
                 <View style={styles.optionIconWrapper}>
                   <goal.Icon size={22} color={isSelected ? Colors.primaryDark : Colors.primary} />
@@ -133,6 +138,8 @@ export default function GoalsScreen() {
           style={[styles.continueButton, selected.length === 0 && styles.continueOutline]}
           onPress={() => router.push('/(onboarding)/time' as any)}
           activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel={selected.length > 0 ? 'Continue' : 'Skip for now'}
         >
           <Text style={[styles.continueText, selected.length === 0 && styles.continueTextOutline]}>
             {selected.length > 0 ? 'Continue' : 'Skip for now'}

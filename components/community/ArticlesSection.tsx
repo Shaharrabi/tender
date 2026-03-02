@@ -43,6 +43,8 @@ function ArticleCard({
         style={[styles.card, { borderLeftColor: article.accentColor }]}
         onPress={onPress}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={`Read article: ${article.title}`}
       >
         <View style={styles.cardTop}>
           <View style={[styles.cardIconBox, { backgroundColor: article.accentColor + '18' }]}>
@@ -87,7 +89,7 @@ function ArticleReader({
     <View style={styles.readerContainer}>
       {/* Back button */}
       <Animated.View entering={FadeIn.duration(300)} style={styles.readerHeader}>
-        <TouchableOpacity style={styles.readerBackBtn} onPress={onBack} activeOpacity={0.7}>
+        <TouchableOpacity style={styles.readerBackBtn} onPress={onBack} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Back to articles">
           <ArrowLeftIcon size={16} color={Colors.primary} />
           <Text style={styles.readerBackText}>Back to articles</Text>
         </TouchableOpacity>

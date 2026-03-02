@@ -109,7 +109,7 @@ export default function BehindTheWall({ onComplete, onSkip, phaseColor }: MiniGa
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Behind the Wall</Text>
-          <TouchableOpacity onPress={onSkip} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+          <TouchableOpacity onPress={onSkip} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} accessibilityRole="button" accessibilityLabel="Skip exercise">
             <Text style={styles.skipText}>Skip</Text>
           </TouchableOpacity>
         </View>
@@ -139,6 +139,8 @@ export default function BehindTheWall({ onComplete, onSkip, phaseColor }: MiniGa
               style={[styles.primaryButton, { backgroundColor: phaseColor }]}
               onPress={() => setPhase('scenario')}
               activeOpacity={0.85}
+              accessibilityRole="button"
+              accessibilityLabel="Begin"
             >
               <Text style={styles.primaryButtonText}>Begin</Text>
             </TouchableOpacity>
@@ -154,7 +156,7 @@ export default function BehindTheWall({ onComplete, onSkip, phaseColor }: MiniGa
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Behind the Wall</Text>
-          <TouchableOpacity onPress={onSkip} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+          <TouchableOpacity onPress={onSkip} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} accessibilityRole="button" accessibilityLabel="Skip exercise">
             <Text style={styles.skipText}>Skip</Text>
           </TouchableOpacity>
         </View>
@@ -179,6 +181,8 @@ export default function BehindTheWall({ onComplete, onSkip, phaseColor }: MiniGa
               style={[styles.primaryButton, { backgroundColor: phaseColor }]}
               onPress={() => setPhase('emotions')}
               activeOpacity={0.85}
+              accessibilityRole="button"
+              accessibilityLabel="I have a moment in mind"
             >
               <Text style={styles.primaryButtonText}>I have a moment in mind</Text>
             </TouchableOpacity>
@@ -194,7 +198,7 @@ export default function BehindTheWall({ onComplete, onSkip, phaseColor }: MiniGa
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Behind the Wall</Text>
-          <TouchableOpacity onPress={onSkip} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+          <TouchableOpacity onPress={onSkip} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} accessibilityRole="button" accessibilityLabel="Skip exercise">
             <Text style={styles.skipText}>Skip</Text>
           </TouchableOpacity>
         </View>
@@ -237,6 +241,9 @@ export default function BehindTheWall({ onComplete, onSkip, phaseColor }: MiniGa
                   ]}
                   onPress={() => toggleChip(emotion, selectedEmotions, setSelectedEmotions)}
                   activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${emotion}${selected ? ', selected' : ''}`}
+                  accessibilityState={{ selected }}
                 >
                   <Text style={[
                     styles.chipText,
@@ -271,6 +278,8 @@ export default function BehindTheWall({ onComplete, onSkip, phaseColor }: MiniGa
                 setPhase('needs');
               }}
               activeOpacity={0.85}
+              accessibilityRole="button"
+              accessibilityLabel="Continue"
             >
               <Text style={styles.primaryButtonText}>Continue</Text>
             </TouchableOpacity>
@@ -286,7 +295,7 @@ export default function BehindTheWall({ onComplete, onSkip, phaseColor }: MiniGa
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Behind the Wall</Text>
-          <TouchableOpacity onPress={onSkip} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+          <TouchableOpacity onPress={onSkip} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} accessibilityRole="button" accessibilityLabel="Skip exercise">
             <Text style={styles.skipText}>Skip</Text>
           </TouchableOpacity>
         </View>
@@ -329,6 +338,9 @@ export default function BehindTheWall({ onComplete, onSkip, phaseColor }: MiniGa
                   ]}
                   onPress={() => toggleChip(need, selectedNeeds, setSelectedNeeds)}
                   activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${need}${selected ? ', selected' : ''}`}
+                  accessibilityState={{ selected }}
                 >
                   <Text style={[
                     styles.chipText,
@@ -363,6 +375,8 @@ export default function BehindTheWall({ onComplete, onSkip, phaseColor }: MiniGa
                 setPhase('message');
               }}
               activeOpacity={0.85}
+              accessibilityRole="button"
+              accessibilityLabel="Continue"
             >
               <Text style={styles.primaryButtonText}>Continue</Text>
             </TouchableOpacity>
@@ -380,7 +394,7 @@ export default function BehindTheWall({ onComplete, onSkip, phaseColor }: MiniGa
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Behind the Wall</Text>
-          <TouchableOpacity onPress={onSkip} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+          <TouchableOpacity onPress={onSkip} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} accessibilityRole="button" accessibilityLabel="Skip exercise">
             <Text style={styles.skipText}>Skip</Text>
           </TouchableOpacity>
         </View>
@@ -427,6 +441,8 @@ export default function BehindTheWall({ onComplete, onSkip, phaseColor }: MiniGa
                   multiline
                   textAlignVertical="top"
                   autoFocus
+                  accessibilityRole="text"
+                  accessibilityLabel="Write a message to your partner about that moment"
                 />
               </View>
               {showValidation && !isMessageValid && (
@@ -451,6 +467,8 @@ export default function BehindTheWall({ onComplete, onSkip, phaseColor }: MiniGa
                   setPhase('summary');
                 }}
                 activeOpacity={0.85}
+                accessibilityRole="button"
+                accessibilityLabel="See what you discovered"
               >
                 <Text style={styles.primaryButtonText}>See what you discovered</Text>
               </TouchableOpacity>
@@ -468,7 +486,7 @@ export default function BehindTheWall({ onComplete, onSkip, phaseColor }: MiniGa
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Behind the Wall</Text>
-        <TouchableOpacity onPress={onSkip} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+        <TouchableOpacity onPress={onSkip} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} accessibilityRole="button" accessibilityLabel="Skip exercise">
           <Text style={styles.skipText}>Skip</Text>
         </TouchableOpacity>
       </View>
@@ -540,6 +558,8 @@ export default function BehindTheWall({ onComplete, onSkip, phaseColor }: MiniGa
             style={[styles.primaryButton, { backgroundColor: phaseColor }]}
             onPress={handleComplete}
             activeOpacity={0.85}
+            accessibilityRole="button"
+            accessibilityLabel="Save to Journal"
           >
             <Text style={styles.primaryButtonText}>Save to Journal</Text>
           </TouchableOpacity>

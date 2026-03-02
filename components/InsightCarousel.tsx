@@ -88,6 +88,9 @@ export default function InsightCarousel({ insights }: InsightCarouselProps) {
             ]}
             onPress={() => handleCardPress(insight)}
             disabled={!insight.actionRoute}
+            accessibilityRole="button"
+            accessibilityLabel={`${insight.title}: ${insight.body}`}
+            accessibilityState={{ disabled: !insight.actionRoute }}
           >
             <View style={styles.iconContainer}>
               <insight.icon size={22} color={Colors.primary} />

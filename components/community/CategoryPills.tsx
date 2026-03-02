@@ -40,6 +40,9 @@ export function CategoryPills({ activeCategory, onCategoryChange, categories }: 
             style={[st.pill, isActive && st.pillActive]}
             onPress={() => handlePress(cat)}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={`Filter by ${cat}`}
+            accessibilityState={{ selected: isActive }}
           >
             <Text style={[st.pillText, isActive && st.pillTextActive]}>
               {cat}

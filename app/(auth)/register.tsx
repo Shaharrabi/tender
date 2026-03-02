@@ -130,6 +130,8 @@ export default function RegisterScreen() {
               onChangeText={setFirstName}
               autoCapitalize="words"
               autoComplete="given-name"
+              accessibilityRole="text"
+              accessibilityLabel="First name"
             />
           </View>
 
@@ -147,6 +149,8 @@ export default function RegisterScreen() {
               keyboardType="email-address"
               autoCapitalize="none"
               autoComplete="email"
+              accessibilityRole="text"
+              accessibilityLabel="Email address"
             />
             {email.length > 0 && !isValidEmail(email) && (
               <Text style={styles.fieldHint}>Please enter a valid email</Text>
@@ -163,6 +167,8 @@ export default function RegisterScreen() {
               onChangeText={setPassword}
               secureTextEntry
               autoComplete="new-password"
+              accessibilityRole="text"
+              accessibilityLabel="Password"
             />
             {/* Password strength indicator */}
             {password.length > 0 && (
@@ -215,6 +221,8 @@ export default function RegisterScreen() {
               onChangeText={setConfirmPassword}
               secureTextEntry
               autoComplete="new-password"
+              accessibilityRole="text"
+              accessibilityLabel="Confirm password"
             />
             {confirmPassword.length > 0 && password !== confirmPassword && (
               <Text style={styles.fieldHint}>Passwords don't match</Text>
@@ -226,6 +234,9 @@ export default function RegisterScreen() {
             style={styles.termsRow}
             onPress={() => setAgreedToTerms(!agreedToTerms)}
             activeOpacity={0.7}
+            accessibilityRole="checkbox"
+            accessibilityLabel="Agree to data usage terms"
+            accessibilityState={{ checked: agreedToTerms }}
           >
             <View
               style={[
@@ -248,6 +259,9 @@ export default function RegisterScreen() {
             style={[styles.button, loading && styles.buttonDisabled]}
             onPress={handleRegister}
             disabled={loading}
+            accessibilityRole="button"
+            accessibilityLabel="Sign up"
+            accessibilityState={{ disabled: loading }}
           >
             {loading ? (
               <ActivityIndicator color={Colors.white} />
@@ -258,7 +272,11 @@ export default function RegisterScreen() {
         </View>
 
         <Link href="/(auth)/login" asChild>
-          <TouchableOpacity style={styles.linkContainer}>
+          <TouchableOpacity
+            style={styles.linkContainer}
+            accessibilityRole="link"
+            accessibilityLabel="Already have an account? Login"
+          >
             <Text style={styles.linkText}>
               Already have an account?{' '}
               <Text style={styles.linkBold}>Login</Text>

@@ -243,6 +243,8 @@ export default function SoftStartupSim({ onComplete, onSkip, phaseColor }: MiniG
               style={[styles.primaryButton, { backgroundColor: phaseColor }]}
               onPress={() => setPhase('scenarios')}
               activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Begin"
             >
               <Text style={styles.primaryButtonText}>BEGIN</Text>
             </TouchableOpacity>
@@ -324,6 +326,9 @@ export default function SoftStartupSim({ onComplete, onSkip, phaseColor }: MiniG
                   onPress={() => handleSelectOption(index)}
                   activeOpacity={0.7}
                   disabled={showFeedback}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Option ${index + 1}: ${option.text}`}
+                  accessibilityState={{ disabled: showFeedback }}
                 >
                   <Text style={styles.optionText}>{option.text}</Text>
 
@@ -364,6 +369,8 @@ export default function SoftStartupSim({ onComplete, onSkip, phaseColor }: MiniG
                 style={[styles.primaryButton, { backgroundColor: phaseColor, marginTop: Spacing.md }]}
                 onPress={handleNextScenario}
                 activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel={currentIndex < SCENARIOS.length - 1 ? 'Next' : 'Build your own'}
               >
                 <Text style={styles.primaryButtonText}>
                   {currentIndex < SCENARIOS.length - 1 ? 'NEXT' : 'BUILD YOUR OWN'}
@@ -412,6 +419,8 @@ export default function SoftStartupSim({ onComplete, onSkip, phaseColor }: MiniG
                 multiline
                 textAlignVertical="top"
                 autoFocus={false}
+                accessibilityRole="text"
+                accessibilityLabel="Write your own soft startup"
               />
             </Animated.View>
 
@@ -425,6 +434,9 @@ export default function SoftStartupSim({ onComplete, onSkip, phaseColor }: MiniG
                 onPress={() => customStartup.trim() && setPhase('summary')}
                 activeOpacity={0.8}
                 disabled={!customStartup.trim()}
+                accessibilityRole="button"
+                accessibilityLabel="See my results"
+                accessibilityState={{ disabled: !customStartup.trim() }}
               >
                 <Text style={styles.primaryButtonText}>SEE MY RESULTS</Text>
               </TouchableOpacity>
@@ -480,6 +492,8 @@ export default function SoftStartupSim({ onComplete, onSkip, phaseColor }: MiniG
             style={[styles.primaryButton, { backgroundColor: phaseColor }]}
             onPress={handleFinish}
             activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Continue"
           >
             <Text style={styles.primaryButtonText}>CONTINUE</Text>
           </TouchableOpacity>
@@ -495,7 +509,7 @@ function Header({ onSkip }: { onSkip: () => void }) {
   return (
     <View style={styles.header}>
       <Text style={styles.headerTitle}>Soft Startup Simulator</Text>
-      <TouchableOpacity onPress={onSkip} activeOpacity={0.7} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+      <TouchableOpacity onPress={onSkip} activeOpacity={0.7} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} accessibilityRole="button" accessibilityLabel="Skip exercise">
         <Text style={styles.skipText}>Skip</Text>
       </TouchableOpacity>
     </View>

@@ -170,6 +170,7 @@ export const Tooltip: React.FC<TooltipProps> = ({ config, onDismiss }) => {
       <Pressable
         style={styles.backdrop}
         onPress={handleDismiss}
+        accessibilityRole="button"
         accessibilityLabel="Dismiss tooltip"
       >
         {/* Target highlight border */}

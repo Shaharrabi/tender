@@ -157,6 +157,8 @@ export default function ExerciseCard({
         style={styles.card}
         onPress={onPress}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={`${exercise.title}, ${exercise.category}, ${exercise.duration} minutes, ${exercise.difficulty}${completionCount > 0 ? ', completed' : ''}`}
       >
         {/* Category accent bar */}
         <View style={[styles.accentBar, { backgroundColor: accentColor }]} />

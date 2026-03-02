@@ -295,6 +295,8 @@ export default function WelcomeScreen() {
           style={styles.skipButton}
           onPress={handleAdvance}
           activeOpacity={0.6}
+          accessibilityRole="button"
+          accessibilityLabel="Skip welcome"
         >
           <Text style={styles.skipText}>Skip</Text>
         </TouchableOpacity>
@@ -306,6 +308,8 @@ export default function WelcomeScreen() {
           style={styles.continueButton}
           onPress={handleAdvance}
           activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel="Continue"
         >
           <Text style={styles.continueText}>Continue</Text>
         </TouchableOpacity>

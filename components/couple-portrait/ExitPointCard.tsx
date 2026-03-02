@@ -21,6 +21,9 @@ export default function ExitPointCard({ exitPoint, partnerAName, partnerBName }:
       style={styles.card}
       onPress={() => setExpanded(!expanded)}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={`Exit point ${exitPoint.number}: ${exitPoint.stage.replace(/_/g, ' ')}. ${expanded ? 'Collapse' : 'Expand'} details`}
+      accessibilityState={{ expanded }}
     >
       <View style={styles.header}>
         <View style={styles.numberCircle}>

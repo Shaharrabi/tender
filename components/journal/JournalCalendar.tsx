@@ -125,6 +125,8 @@ export default function JournalCalendar({
           onPress={onPrevMonth}
           style={styles.navButton}
           activeOpacity={0.6}
+          accessibilityRole="button"
+          accessibilityLabel="Previous month"
         >
           <Text style={styles.navArrow}>{'\u2039'}</Text>
         </TouchableOpacity>
@@ -137,6 +139,9 @@ export default function JournalCalendar({
           onPress={isCurrentMonth ? undefined : onNextMonth}
           style={[styles.navButton, isCurrentMonth && styles.navButtonDisabled]}
           activeOpacity={isCurrentMonth ? 1 : 0.6}
+          accessibilityRole="button"
+          accessibilityLabel="Next month"
+          accessibilityState={{ disabled: isCurrentMonth }}
         >
           <Text style={[styles.navArrow, isCurrentMonth && styles.navArrowDisabled]}>
             {'\u203A'}
@@ -187,6 +192,9 @@ export default function JournalCalendar({
                 ]}
                 onPress={() => onSelectDate(dateStr)}
                 activeOpacity={0.6}
+                accessibilityRole="button"
+                accessibilityLabel={`${MONTH_NAMES[month - 1]} ${day}${isToday ? ', today' : ''}${hasActivity ? ', has activity' : ''}`}
+                accessibilityState={{ selected: isSelected }}
               >
                 <Text
                   style={[

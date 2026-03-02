@@ -34,7 +34,9 @@ export default function QuestionRenderer({
       {/* Likert */}
       {question.inputType === 'likert' && (question.likertScale || defaultLikertScale) && (
         <View style={styles.likertSection}>
-          {(question.likertScale || defaultLikertScale!).map((item) => (
+          {(question.likertScale || defaultLikertScale!).map((item) => {
+            const scale = question.likertScale || defaultLikertScale!;
+            return (
             <TouchableOpacity
               key={item.value}
               style={[
@@ -42,6 +44,9 @@ export default function QuestionRenderer({
                 currentAnswer === item.value && styles.likertOptionSelected,
               ]}
               onPress={() => onSelect(item.value)}
+              accessibilityRole="radio"
+              accessibilityLabel={`${item.label}, option ${item.value} of ${scale.length}`}
+              accessibilityState={{ selected: currentAnswer === item.value }}
             >
               <View
                 style={[
@@ -60,7 +65,8 @@ export default function QuestionRenderer({
                 {item.value} — {item.label}
               </Text>
             </TouchableOpacity>
-          ))}
+            );
+          })}
         </View>
       )}
 
@@ -76,6 +82,8 @@ export default function QuestionRenderer({
             multiline
             maxLength={question.charLimit || 500}
             textAlignVertical="top"
+            accessibilityRole="text"
+            accessibilityLabel={question.placeholder || 'Type your response'}
           />
           <Text style={styles.charCount}>
             {(currentAnswer || '').length}/{question.charLimit || 500}
@@ -86,7 +94,7 @@ export default function QuestionRenderer({
       {/* Choice */}
       {question.inputType === 'choice' && question.choices && (
         <View style={styles.choiceSection}>
-          {question.choices.map((choice) => (
+          {question.choices.map((choice, choiceIndex) => (
             <TouchableOpacity
               key={choice.key}
               style={[
@@ -94,6 +102,9 @@ export default function QuestionRenderer({
                 currentAnswer === choice.key && styles.choiceOptionSelected,
               ]}
               onPress={() => onSelect(choice.key)}
+              accessibilityRole="radio"
+              accessibilityLabel={`${choice.text}, option ${choiceIndex + 1} of ${question.choices!.length}`}
+              accessibilityState={{ selected: currentAnswer === choice.key }}
             >
               <View style={styles.choiceKeyBadge}>
                 <Text
@@ -145,6 +156,9 @@ export default function QuestionRenderer({
                     onSelect([...ranked, item.id]);
                   }
                 }}
+                accessibilityRole="button"
+                accessibilityLabel={`${item.label}${isSelected ? `, ranked ${position + 1} of ${question.rankCount || 5}` : ', not ranked'}`}
+                accessibilityState={{ disabled: !isSelected && isFull }}
               >
                 <View
                   style={[
@@ -177,8 +191,9 @@ const styles = StyleSheet.create({
   likertOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 14,
     paddingHorizontal: Spacing.md,
+    minHeight: 44,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: Colors.border,

@@ -139,6 +139,8 @@ export default function StepJourney({
                   <TouchableOpacity
                     onPress={() => handleStepToggle(step.stepNumber)}
                     activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Step ${step.stepNumber}, ${step.title}, ${isExpanded ? 'collapse' : 'expand'} details`}
                     style={[
                       styles.stepRow,
                       isCurrent && [
@@ -270,6 +272,8 @@ export default function StepJourney({
                                     onSelectPractice?.(practiceId)
                                   }
                                   activeOpacity={0.7}
+                                  accessibilityRole="button"
+                                  accessibilityLabel={`${exercise.title}, ${exercise.duration} minutes`}
                                 >
                                   <View style={styles.practiceCardContent}>
                                     <Text

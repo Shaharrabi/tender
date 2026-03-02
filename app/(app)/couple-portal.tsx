@@ -435,7 +435,7 @@ function CouplePortalScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.center}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={Colors.primary} accessibilityLabel="Loading" />
           <Text style={styles.loadingText}>
             {generating ? 'Weaving your shared portrait...' : 'Loading the space between you...'}
           </Text>
@@ -455,6 +455,8 @@ function CouplePortalScreen() {
               <TouchableOpacity
                 onPress={() => { setPortrait(null); setPortraitError(null); loadData(); }}
                 style={styles.retryBtn}
+                accessibilityRole="button"
+                accessibilityLabel="Try Again"
               >
                 <Text style={styles.retryText}>Try Again</Text>
               </TouchableOpacity>
@@ -468,6 +470,8 @@ function CouplePortalScreen() {
           <TouchableOpacity
             onPress={() => router.replace('/(app)/partner')}
             style={styles.backBtnCenter}
+            accessibilityRole="button"
+            accessibilityLabel="Back to Partner"
           >
             <View style={styles.backRow}>
               <ArrowLeftIcon size={16} color={Colors.primary} />
@@ -501,6 +505,8 @@ function CouplePortalScreen() {
           <TouchableOpacity
             onPress={() => { setDeepPortrait(null); setPortrait(null); loadData(); }}
             style={styles.retryBtn}
+            accessibilityRole="button"
+            accessibilityLabel="Refresh"
           >
             <Text style={styles.retryText}>Refresh</Text>
           </TouchableOpacity>
@@ -721,6 +727,8 @@ function CouplePortalScreen() {
           params: { coupleMode: 'true', coupleId: couple?.id || '' },
         })}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel="Talk to Your Couple Coach"
       >
         <View style={styles.journeyHeader}>
           <ChatBubbleIcon size={20} color={Colors.depth} />
@@ -1200,6 +1208,8 @@ function CouplePortalScreen() {
           style={styles.journeyCard}
           onPress={() => router.push('/(app)/growth' as any)}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Continue Your Healing Journey"
         >
           <View style={styles.journeyHeader}>
             <SeedlingIcon size={22} color={Colors.primary} />
@@ -1262,6 +1272,8 @@ function CouplePortalScreen() {
             <TouchableOpacity
               onPress={() => { setDeepPortrait(null); setPortrait(null); loadData(); }}
               style={styles.retryBtn}
+              accessibilityRole="button"
+              accessibilityLabel="Refresh"
             >
               <Text style={styles.retryText}>Refresh</Text>
             </TouchableOpacity>
@@ -1278,7 +1290,7 @@ function CouplePortalScreen() {
       <ScrollView contentContainerStyle={styles.scroll}>
         {/* Header Row */}
         <View style={styles.headerRow}>
-          <TouchableOpacity onPress={() => router.replace('/(app)/partner' as any)} style={styles.backBtn}>
+          <TouchableOpacity onPress={() => router.replace('/(app)/partner' as any)} style={styles.backBtn} accessibilityRole="button" accessibilityLabel="Back">
             <View style={styles.backRow}>
               <ArrowLeftIcon size={16} color={Colors.primary} />
               <Text style={styles.backText}>Back</Text>
@@ -1302,6 +1314,9 @@ function CouplePortalScreen() {
             activeOpacity={0.7}
             style={styles.exportBtn}
             disabled={!dp}
+            accessibilityRole="button"
+            accessibilityLabel="Export PDF"
+            accessibilityState={{ disabled: !dp }}
           >
             <Text style={[styles.exportBtnText, !dp && { opacity: 0.4 }]}>Export PDF</Text>
           </TouchableOpacity>
@@ -1335,6 +1350,7 @@ function CouplePortalScreen() {
               style={[styles.tab, activeTab === tab.key && styles.tabActive]}
               onPress={() => setActiveTab(tab.key)}
               activeOpacity={0.7}
+              accessibilityRole="button"
             >
               <Text style={[styles.tabText, activeTab === tab.key && styles.tabTextActive]}>
                 {tab.label}

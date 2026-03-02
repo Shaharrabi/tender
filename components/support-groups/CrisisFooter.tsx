@@ -23,7 +23,12 @@ export default function CrisisFooter() {
     <View style={styles.container}>
       <Text style={styles.text}>
         In crisis?{' '}
-        <Text style={styles.link} onPress={handleCall988}>
+        <Text
+          style={styles.link}
+          onPress={handleCall988}
+          accessibilityRole="link"
+          accessibilityLabel="Call 988 Suicide and Crisis Lifeline"
+        >
           Call 988
         </Text>
         {' '}(Suicide & Crisis Lifeline) or text HOME to 741741

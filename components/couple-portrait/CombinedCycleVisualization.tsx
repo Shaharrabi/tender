@@ -53,7 +53,14 @@ function CascadeStep({
   onToggle: () => void;
 }) {
   return (
-    <TouchableOpacity style={styles.stepCard} onPress={onToggle} activeOpacity={0.7}>
+    <TouchableOpacity
+      style={styles.stepCard}
+      onPress={onToggle}
+      activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={`${STAGE_LABELS[step.stage] || step.stage}. ${isExpanded ? 'Collapse' : 'Expand'} details`}
+      accessibilityState={{ expanded: isExpanded }}
+    >
       {/* Stage header */}
       <View style={styles.stepHeader}>
         {(() => {

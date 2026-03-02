@@ -148,6 +148,8 @@ export default function WindowOfTolerance({ onSelectPractice }: Props) {
               ]}
               onPress={() => handleZoneSelect(zone.zone)}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={`${zone.label} zone, ${zone.bodySignals}${isSelected ? ', selected' : ''}`}
             >
               <zone.Icon size={24} color={zone.color} />
               <View style={styles.zoneTextContainer}>
@@ -203,6 +205,8 @@ export default function WindowOfTolerance({ onSelectPractice }: Props) {
                   }
                 }}
                 activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={`Start practice: ${practice}`}
               >
                 <Text style={styles.practiceText}>
                   {'\u2022'} {practice}

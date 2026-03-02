@@ -155,7 +155,7 @@ export default function GrowthScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={Colors.primary} accessibilityLabel="Loading" />
         </View>
       </SafeAreaView>
     );
@@ -170,7 +170,7 @@ export default function GrowthScreen() {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} activeOpacity={0.7}>
+        <TouchableOpacity onPress={handleBack} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Your Healing Journey">
           <Text style={styles.backText}>{'\u2039'} Back</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Your Healing Journey</Text>
@@ -284,6 +284,7 @@ export default function GrowthScreen() {
           style={styles.treatmentPlanLink}
           onPress={handleViewTreatmentPlan}
           activeOpacity={0.7}
+          accessibilityRole="button"
         >
           <View style={styles.treatmentPlanContent}>
             <Text style={styles.treatmentPlanTitle}>

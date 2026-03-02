@@ -29,6 +29,9 @@ export default function DyadicDiscrepancyAlert({ discrepancy }: DyadicDiscrepanc
       style={[styles.card, { borderLeftColor: config.color }]}
       onPress={() => setExpanded(!expanded)}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={`${config.label}: ${discrepancy.title}. ${expanded ? 'Collapse' : 'Expand'} details`}
+      accessibilityState={{ expanded }}
     >
       <View style={styles.header}>
         <config.Icon size={20} color={config.color} />

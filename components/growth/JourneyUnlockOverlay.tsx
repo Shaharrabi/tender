@@ -179,6 +179,8 @@ export default function JourneyUnlockOverlay({
               style={styles.primaryButton}
               onPress={onExploreJourney}
               activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Explore your journey"
             >
               <SeedlingIcon size={18} color={Colors.white} />
               <Text style={styles.primaryButtonText}>Explore Your Journey</Text>
@@ -188,6 +190,8 @@ export default function JourneyUnlockOverlay({
               style={styles.secondaryButton}
               onPress={onDismiss}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Continue to home"
             >
               <Text style={styles.secondaryButtonText}>Continue to Home</Text>
             </TouchableOpacity>

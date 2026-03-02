@@ -151,7 +151,7 @@ export default function RepairInventory({ onComplete, onSkip, phaseColor }: Mini
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Repair Inventory</Text>
-          <TouchableOpacity onPress={onSkip} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+          <TouchableOpacity onPress={onSkip} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} accessibilityRole="button" accessibilityLabel="Skip exercise">
             <Text style={styles.skipText}>Skip</Text>
           </TouchableOpacity>
         </View>
@@ -182,6 +182,8 @@ export default function RepairInventory({ onComplete, onSkip, phaseColor }: Mini
               style={[styles.primaryButton, { backgroundColor: phaseColor }]}
               onPress={() => setPhase('rating')}
               activeOpacity={0.85}
+              accessibilityRole="button"
+              accessibilityLabel="Begin Inventory"
             >
               <Text style={styles.primaryButtonText}>Begin Inventory</Text>
             </TouchableOpacity>
@@ -200,7 +202,7 @@ export default function RepairInventory({ onComplete, onSkip, phaseColor }: Mini
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Repair Inventory</Text>
-          <TouchableOpacity onPress={onSkip} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+          <TouchableOpacity onPress={onSkip} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} accessibilityRole="button" accessibilityLabel="Skip exercise">
             <Text style={styles.skipText}>Skip</Text>
           </TouchableOpacity>
         </View>
@@ -259,6 +261,9 @@ export default function RepairInventory({ onComplete, onSkip, phaseColor }: Mini
                   ]}
                   onPress={() => handleRate(currentIndex, key)}
                   activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${label}${selected ? ', selected' : ''}`}
+                  accessibilityState={{ selected }}
                 >
                   <View style={[
                     styles.ratingRadio,
@@ -289,6 +294,8 @@ export default function RepairInventory({ onComplete, onSkip, phaseColor }: Mini
               ]}
               onPress={handleNext}
               activeOpacity={0.85}
+              accessibilityRole="button"
+              accessibilityLabel={currentIndex < STRATEGIES.length - 1 ? 'Next' : 'See your toolkit'}
             >
               <Text style={styles.primaryButtonText}>
                 {currentIndex < STRATEGIES.length - 1 ? 'Next' : 'See your toolkit'}
@@ -373,6 +380,8 @@ export default function RepairInventory({ onComplete, onSkip, phaseColor }: Mini
             style={[styles.primaryButton, { backgroundColor: phaseColor }]}
             onPress={handleComplete}
             activeOpacity={0.85}
+            accessibilityRole="button"
+            accessibilityLabel="Save to Journal"
           >
             <Text style={styles.primaryButtonText}>Save to Journal</Text>
           </TouchableOpacity>

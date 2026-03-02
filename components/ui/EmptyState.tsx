@@ -59,7 +59,11 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   style,
 }) => {
   return (
-    <View style={[styles.container, style]}>
+    <View
+      style={[styles.container, style]}
+      accessibilityRole="summary"
+      accessibilityLabel={`${title}. ${message}`}
+    >
       {/* Icon or illustration */}
       {illustration ? (
         <View style={styles.illustrationContainer}>{illustration}</View>

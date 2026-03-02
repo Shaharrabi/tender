@@ -56,7 +56,12 @@ export default class CouplePortalErrorBoundary extends Component<Props, State> {
                 </Text>
               </View>
             )}
-            <TouchableOpacity onPress={this.handleRetry} style={styles.retryBtn}>
+            <TouchableOpacity
+              onPress={this.handleRetry}
+              style={styles.retryBtn}
+              accessibilityRole="button"
+              accessibilityLabel="Try again"
+            >
               <Text style={styles.retryText}>Try Again</Text>
             </TouchableOpacity>
           </ScrollView>

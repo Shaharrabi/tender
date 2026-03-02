@@ -23,7 +23,11 @@ export default function SectionHeader({
       : FontSizes.headingM;
 
   return (
-    <View style={[styles.container, style]}>
+    <View
+      style={[styles.container, style]}
+      accessibilityRole="header"
+      accessibilityLabel={subtitle ? `${title}. ${subtitle}` : title}
+    >
       <Text style={[styles.title, { fontSize: titleSize }]}>{title}</Text>
       {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
     </View>

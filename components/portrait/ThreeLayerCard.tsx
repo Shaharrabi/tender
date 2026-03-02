@@ -133,6 +133,8 @@ export default function ThreeLayerCard({
         onPress={hasLayer2 ? toggleExpanded : undefined}
         activeOpacity={hasLayer2 ? 0.7 : 1}
         style={styles.layer1}
+        accessibilityRole="button"
+        accessibilityLabel={`${title}, ${expanded ? 'collapse' : 'expand'} details`}
       >
         {/* Icon + Title row */}
         <View style={styles.headerRow}>
@@ -197,6 +199,8 @@ export default function ThreeLayerCard({
               onPress={toggleDeep}
               style={styles.goEvenDeeper}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={deepExpanded ? 'Hide reflection and clinical detail' : 'Go even deeper, reflection and clinical detail'}
             >
               <Text style={styles.goEvenDeeperText}>
                 {deepExpanded
@@ -247,6 +251,8 @@ export default function ThreeLayerCard({
               onPress={onExportForTherapist}
               style={styles.exportButton}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Export for therapist"
             >
               <Text style={styles.exportButtonText}>Export for Therapist</Text>
             </TouchableOpacity>

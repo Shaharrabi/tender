@@ -81,6 +81,8 @@ function TappableSlider({
               key={segmentValue}
               onPress={() => onChange(segmentValue)}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={`Rating ${segmentValue} of 10`}
               style={[
                 sliderStyles.segment,
                 isFilled && { backgroundColor: phaseColor },
@@ -244,6 +246,8 @@ export default function StoryVsTruth({ onComplete, onSkip, phaseColor }: MiniGam
               style={[styles.primaryButton, { backgroundColor: phaseColor }]}
               onPress={() => setPhase('writeStory')}
               activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Begin exercise"
             >
               <Text style={styles.primaryButtonText}>BEGIN</Text>
             </TouchableOpacity>
@@ -296,6 +300,8 @@ export default function StoryVsTruth({ onComplete, onSkip, phaseColor }: MiniGam
                 multiline
                 textAlignVertical="top"
                 autoFocus={false}
+                accessibilityRole="text"
+                accessibilityLabel="Write the story your mind tells"
               />
             </Animated.View>
 
@@ -309,6 +315,9 @@ export default function StoryVsTruth({ onComplete, onSkip, phaseColor }: MiniGam
                 onPress={() => story.trim() && setPhase('examine')}
                 activeOpacity={0.8}
                 disabled={!story.trim()}
+                accessibilityRole="button"
+                accessibilityLabel="Next"
+                accessibilityState={{ disabled: !story.trim() }}
               >
                 <Text style={styles.primaryButtonText}>NEXT</Text>
               </TouchableOpacity>
@@ -372,6 +381,9 @@ export default function StoryVsTruth({ onComplete, onSkip, phaseColor }: MiniGam
               onPress={() => allSlidersAnswered && setPhase('partnerView')}
               activeOpacity={0.8}
               disabled={!allSlidersAnswered}
+              accessibilityRole="button"
+              accessibilityLabel="Next"
+              accessibilityState={{ disabled: !allSlidersAnswered }}
             >
               <Text style={styles.primaryButtonText}>NEXT</Text>
             </TouchableOpacity>
@@ -423,6 +435,8 @@ export default function StoryVsTruth({ onComplete, onSkip, phaseColor }: MiniGam
                 multiline
                 textAlignVertical="top"
                 autoFocus={false}
+                accessibilityRole="text"
+                accessibilityLabel="Write from your partner's perspective"
               />
             </Animated.View>
 
@@ -436,6 +450,9 @@ export default function StoryVsTruth({ onComplete, onSkip, phaseColor }: MiniGam
                 onPress={() => partnerPerspective.trim() && setPhase('summary')}
                 activeOpacity={0.8}
                 disabled={!partnerPerspective.trim()}
+                accessibilityRole="button"
+                accessibilityLabel="See both sides"
+                accessibilityState={{ disabled: !partnerPerspective.trim() }}
               >
                 <Text style={styles.primaryButtonText}>SEE BOTH SIDES</Text>
               </TouchableOpacity>
@@ -511,6 +528,8 @@ export default function StoryVsTruth({ onComplete, onSkip, phaseColor }: MiniGam
             style={[styles.primaryButton, { backgroundColor: phaseColor }]}
             onPress={handleFinish}
             activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Continue"
           >
             <Text style={styles.primaryButtonText}>CONTINUE</Text>
           </TouchableOpacity>
@@ -526,7 +545,13 @@ function Header({ onSkip }: { onSkip: () => void }) {
   return (
     <View style={styles.header}>
       <Text style={styles.headerTitle}>Story vs. Truth</Text>
-      <TouchableOpacity onPress={onSkip} activeOpacity={0.7} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+      <TouchableOpacity
+        onPress={onSkip}
+        activeOpacity={0.7}
+        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        accessibilityRole="button"
+        accessibilityLabel="Skip exercise"
+      >
         <Text style={styles.skipText}>Skip</Text>
       </TouchableOpacity>
     </View>

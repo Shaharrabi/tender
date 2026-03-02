@@ -64,6 +64,9 @@ export default function NotificationBanner({
           notification.actionRoute ? styles.cardTappable : undefined,
           pressed ? styles.cardPressed : undefined,
         ]}
+        accessibilityRole="button"
+        accessibilityLabel={`Notification: ${notification.title}`}
+        accessibilityState={{ disabled: !notification.actionRoute }}
       >
         {/* Icon */}
         <View style={styles.iconContainer}>
@@ -99,6 +102,8 @@ export default function NotificationBanner({
           onPress={onDismiss}
           hitSlop={12}
           style={styles.dismissButton}
+          accessibilityRole="button"
+          accessibilityLabel="Dismiss notification"
         >
           <CloseIcon size={14} color={Colors.textMuted} />
         </Pressable>

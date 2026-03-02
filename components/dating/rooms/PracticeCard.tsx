@@ -28,6 +28,9 @@ export default function PracticeCard({ practice, index }: PracticeCardProps) {
         onPress={() => setRevealed(!revealed)}
         style={styles.header}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={`Practice ${index + 1}: ${practice.name}. ${revealed ? 'Collapse' : 'Expand'}`}
+        accessibilityState={{ expanded: revealed }}
       >
         <View style={styles.numberCircle}>
           <Text style={styles.number}>{index + 1}</Text>

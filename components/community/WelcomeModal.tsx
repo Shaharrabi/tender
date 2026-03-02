@@ -57,6 +57,8 @@ export function WelcomeModal({ visible, alias, onDismiss }: WelcomeModalProps) {
             style={st.continueBtn}
             onPress={onDismiss}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Continue to community"
           >
             <Text style={st.continueBtnText}>Continue</Text>
           </TouchableOpacity>

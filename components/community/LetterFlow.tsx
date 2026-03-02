@@ -158,6 +158,8 @@ export function LetterFlow({
         style={st.startBtn}
         onPress={handleStartWriting}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel="Write a letter"
       >
         <Text style={st.startBtnText}>Write a Letter</Text>
       </TouchableOpacity>
@@ -190,6 +192,8 @@ export function LetterFlow({
         maxLength={500}
         textAlignVertical="top"
         autoFocus
+        accessibilityRole="text"
+        accessibilityLabel="Write your letter"
       />
       <Text style={st.charCount}>{letterText.length}/500</Text>
 
@@ -204,6 +208,9 @@ export function LetterFlow({
         onPress={handleSubmit}
         disabled={submitting || letterText.trim().length < 10}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel="Send letter"
+        accessibilityState={{ disabled: submitting || letterText.trim().length < 10 }}
       >
         {submitting ? (
           <ActivityIndicator color={Colors.textOnPrimary} size="small" />
@@ -252,6 +259,8 @@ export function LetterFlow({
                     onDismiss();
                   }
                 }}
+                accessibilityRole="button"
+                accessibilityLabel={step === 'prompt' ? 'Close letter flow' : 'Go back'}
               >
                 <Text style={st.modalClose}>
                   {step === 'prompt' ? '\u2715' : '\u2039 Back'}

@@ -180,6 +180,9 @@ export default function ScenarioChoiceStep({
               onPress={() => handleSelect(choice)}
               activeOpacity={selectedId ? 1 : 0.7}
               disabled={!!selectedId}
+              accessibilityRole="button"
+              accessibilityLabel={`Choice: ${choice.text}`}
+              accessibilityState={{ disabled: !!selectedId, selected: isSelected }}
             >
               <View style={styles.choiceRow}>
                 {/* Radio circle */}
@@ -271,6 +274,8 @@ export default function ScenarioChoiceStep({
             style={styles.changeButton}
             onPress={handleReset}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Change answer"
           >
             <Text style={styles.changeButtonText}>Change answer</Text>
           </TouchableOpacity>

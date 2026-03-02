@@ -65,6 +65,8 @@ export function LetterDesk({
           style={st.composeBtn}
           onPress={onCompose}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Write a letter"
         >
           <PenIcon size={16} color={Colors.textOnPrimary} />
           <Text style={st.composeBtnText}>Write a Letter</Text>

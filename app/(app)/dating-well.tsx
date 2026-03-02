@@ -169,7 +169,7 @@ export default function DatingWellScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+        <ActivityIndicator size="large" color={Colors.primary} accessibilityLabel="Loading" />
       </SafeAreaView>
     );
   }
@@ -181,6 +181,8 @@ export default function DatingWellScreen() {
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => (router.canGoBack() ? router.back() : router.replace('/(app)/home'))}
+          accessibilityRole="button"
+          accessibilityLabel="Tender presents"
         >
           <ArrowLeftIcon size={20} color={Colors.textSecondary} />
         </TouchableOpacity>
@@ -211,6 +213,8 @@ export default function DatingWellScreen() {
               onPress={() => handleTabPress(t.id)}
               disabled={locked}
               activeOpacity={locked ? 1 : 0.7}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: locked }}
             >
               <View style={[styles.tabIconWrap, locked && styles.tabIconLocked]}>
                 <t.Icon size={16} color={iconColor} />
@@ -295,10 +299,10 @@ function GameCompleteView({
         details — or jump straight to discovering who resonates with your field.
       </Text>
       <View style={styles.completeActions}>
-        <TouchableOpacity style={styles.primaryButton} onPress={onGoToProfile}>
+        <TouchableOpacity style={styles.primaryButton} onPress={onGoToProfile} accessibilityRole="button" accessibilityLabel="Shape My Profile">
           <Text style={styles.primaryButtonText}>Shape My Profile</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.secondaryButton} onPress={onGoToDiscover}>
+        <TouchableOpacity style={styles.secondaryButton} onPress={onGoToDiscover} accessibilityRole="button" accessibilityLabel="Start Discovering">
           <Text style={styles.secondaryButtonText}>Start Discovering</Text>
         </TouchableOpacity>
       </View>

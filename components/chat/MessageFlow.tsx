@@ -89,6 +89,8 @@ export default function MessageFlow({
               style={styles.starterPill}
               activeOpacity={0.7}
               onPress={() => onSuggestedTap?.(starter)}
+              accessibilityRole="button"
+              accessibilityLabel={`Start conversation: ${starter}`}
             >
               <Text style={styles.starterText}>{starter}</Text>
             </TouchableOpacity>
@@ -106,6 +108,9 @@ export default function MessageFlow({
       style={styles.container}
       contentContainerStyle={styles.scrollContent}
       keyboardShouldPersistTaps="handled"
+      accessibilityRole="list"
+      accessibilityLabel="Conversation messages"
+      accessibilityLiveRegion="polite"
     >
       {messages.map((msg, index) => {
         const prevMsg = index > 0 ? messages[index - 1] : null;
@@ -271,6 +276,9 @@ function MesnuanceBubble({
             isFirstInGroup && styles.userBubbleFirst,
             isLastInGroup && styles.userBubbleLast,
           ]}
+          accessible
+          accessibilityRole="text"
+          accessibilityLabel={`You said: ${message.content}`}
         >
           <Text style={styles.userBubbleText}>{message.content}</Text>
         </View>
@@ -323,6 +331,8 @@ function MesnuanceBubble({
                 style={styles.exerciseCard}
                 onPress={() => onExerciseTap?.(part.exerciseId!)}
                 activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel={`Start exercise: ${part.exerciseTitle}`}
               >
                 <View style={styles.exerciseBadge}>
                   <Text style={styles.exerciseBadgeText}>Exercise</Text>
@@ -344,6 +354,9 @@ function MesnuanceBubble({
                     idx === parts.filter((p) => p.text.trim() || p.exerciseId).length - 1 &&
                     styles.nuanceBubbleLast,
                 ]}
+                accessible
+                accessibilityRole="text"
+                accessibilityLabel={`${COACH.name} said: ${part.text.trim()}`}
               >
                 <Text style={styles.nuanceBubbleText}>{part.text.trim()}</Text>
               </View>
@@ -387,7 +400,12 @@ function TypingIndicator() {
   }, []);
 
   return (
-    <View style={[styles.bubbleRow, styles.bubbleRowNuance]}>
+    <View
+      style={[styles.bubbleRow, styles.bubbleRowNuance]}
+      accessibilityRole="text"
+      accessibilityLabel={`${COACH.name} is typing`}
+      accessibilityLiveRegion="polite"
+    >
       <View style={styles.avatarColumn}>
         <View style={styles.avatarCircle}>
           <Text style={styles.avatarEmoji}>{COACH.avatar}</Text>

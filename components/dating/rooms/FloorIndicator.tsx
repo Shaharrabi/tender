@@ -23,6 +23,9 @@ export default function FloorIndicator({ floor, active, color, onPress }: FloorI
         active && { shadowColor: color, shadowOpacity: 0.3, shadowRadius: 6, elevation: 3 },
       ]}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={`Floor ${floor}`}
+      accessibilityState={{ selected: active }}
     >
       <Text style={[styles.text, active && styles.textActive]}>{floor}</Text>
     </TouchableOpacity>

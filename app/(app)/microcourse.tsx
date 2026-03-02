@@ -329,7 +329,7 @@ export default function MicroCourseScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.center}>
-          <ActivityIndicator color={Colors.primary} />
+          <ActivityIndicator color={Colors.primary} accessibilityLabel="Loading" />
         </View>
       </SafeAreaView>
     );
@@ -343,7 +343,7 @@ export default function MicroCourseScreen() {
           <Text style={styles.errorText}>
             Could not load lesson {lessonNumber} of course "{courseId}".
           </Text>
-          <TouchableOpacity style={styles.exitButton} onPress={handleExit}>
+          <TouchableOpacity style={styles.exitButton} onPress={handleExit} accessibilityRole="button" accessibilityLabel="Go Back">
             <Text style={styles.exitButtonText}>Go Back</Text>
           </TouchableOpacity>
         </View>
@@ -656,6 +656,7 @@ export default function MicroCourseScreen() {
               style={styles.primaryButton}
               onPress={handleNextLesson}
               activeOpacity={0.7}
+              accessibilityRole="button"
             >
               <Text style={styles.primaryButtonText}>
                 Next Lesson {'\u203A'}
@@ -667,6 +668,7 @@ export default function MicroCourseScreen() {
             style={styles.secondaryButton}
             onPress={handleExit}
             activeOpacity={0.7}
+            accessibilityRole="button"
           >
             <Text style={styles.secondaryButtonText}>
               {isCourseComplete ? 'Return Home' : 'Save & Exit'}
@@ -749,6 +751,8 @@ export default function MicroCourseScreen() {
             style={styles.backButton}
             onPress={handleBack}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
           >
             <Text style={styles.backButtonText}>{'\u2039'} Back</Text>
           </TouchableOpacity>
@@ -757,6 +761,7 @@ export default function MicroCourseScreen() {
             style={styles.backButton}
             onPress={handleExit}
             activeOpacity={0.7}
+            accessibilityRole="button"
           >
             <Text style={styles.backButtonText}>{'\u2715'} Exit</Text>
           </TouchableOpacity>
@@ -767,6 +772,8 @@ export default function MicroCourseScreen() {
           onPress={handleNext}
           activeOpacity={0.7}
           disabled={saving}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: saving }}
         >
           <Text style={styles.nextButtonText}>
             {saving
@@ -845,7 +852,9 @@ function ReflectionStep({
           onChangeText={onChangeText}
           multiline
           textAlignVertical="top"
-        />
+        accessibilityRole="text"
+            accessibilityLabel="Take a moment and write what comes up..."
+          />
       </View>
     </View>
   );

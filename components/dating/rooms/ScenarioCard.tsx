@@ -61,6 +61,9 @@ export default function ScenarioCard({ scenario, index }: ScenarioCardProps) {
               ]}
               onPress={() => handleSelect(i)}
               disabled={showFeedback}
+              accessibilityRole="button"
+              accessibilityLabel={`Option: ${opt.label}`}
+              accessibilityState={{ disabled: showFeedback, selected: isSelected }}
             >
               <Text style={[styles.optionText, isSelected && styles.optionTextSelected]}>
                 {opt.label}
@@ -90,7 +93,7 @@ export default function ScenarioCard({ scenario, index }: ScenarioCardProps) {
             <Text style={styles.feedbackText}>
               {scenario.options[selected].feedback}
             </Text>
-            <TouchableOpacity onPress={handleReset}>
+            <TouchableOpacity onPress={handleReset} accessibilityRole="button" accessibilityLabel="Try again">
               <Text style={styles.tryAgain}>Try Again ↻</Text>
             </TouchableOpacity>
           </View>

@@ -218,7 +218,7 @@ export default function ArcadeGame({ onComplete }: ArcadeGameProps) {
               They'll shape who you resonate with in the rooms ahead.
             </Text>
 
-            <TouchableOpacity style={styles.enterLobbyButton} onPress={handleComplete}>
+            <TouchableOpacity style={styles.enterLobbyButton} onPress={handleComplete} accessibilityRole="button" accessibilityLabel="Enter the lobby">
               <Text style={styles.enterLobbyText}>Enter The Lobby</Text>
             </TouchableOpacity>
           </Animated.View>
@@ -252,6 +252,8 @@ export default function ArcadeGame({ onComplete }: ArcadeGameProps) {
             <TouchableOpacity
               style={styles.startButton}
               onPress={() => setStep(0)}
+              accessibilityRole="button"
+              accessibilityLabel="Begin the game"
             >
               <Text style={styles.startButtonText}>BEGIN</Text>
             </TouchableOpacity>
@@ -293,6 +295,9 @@ export default function ArcadeGame({ onComplete }: ArcadeGameProps) {
                 onPress={() => handleChoice(i)}
                 disabled={selectedOption !== null}
                 activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={`Option: ${opt.text}`}
+                accessibilityState={{ disabled: selectedOption !== null, selected: selectedOption === i }}
               >
                 <Text
                   style={[

@@ -944,7 +944,7 @@ export default function HomeScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator color={Colors.primary} size="large" />
+          <ActivityIndicator color={Colors.primary} size="large" accessibilityLabel="Loading" />
         </View>
       </SafeAreaView>
     );
@@ -1072,6 +1072,7 @@ export default function HomeScreen() {
               style={styles.demoPartnerCard}
               onPress={() => router.push('/(app)/chat' as any)}
               activeOpacity={0.8}
+              accessibilityRole="button"
             >
               <View style={styles.demoPartnerInfo}>
                 <View style={[
@@ -1098,6 +1099,7 @@ export default function HomeScreen() {
             style={styles.demoPartnerPrompt}
             onPress={() => router.push('/(app)/relationship-mode' as any)}
             activeOpacity={0.7}
+            accessibilityRole="button"
           >
             <CoupleIcon size={16} color={Colors.primary} />
             <Text style={styles.demoPartnerPromptText}>
@@ -1111,6 +1113,8 @@ export default function HomeScreen() {
             style={styles.consentBanner}
             onPress={() => router.push('/(app)/consent-waiver' as any)}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="All Assessments Complete!"
           >
             <ShieldIcon size={20} color={Colors.primary} />
             <View style={styles.consentBannerContent}>
@@ -1129,6 +1133,8 @@ export default function HomeScreen() {
             style={styles.realPartnerPrompt}
             onPress={() => router.push('/(app)/partner' as any)}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Connect With Your Partner"
           >
             <HeartDoubleIcon size={18} color={Colors.secondary} />
             <View style={styles.realPartnerPromptContent}>
@@ -1146,6 +1152,7 @@ export default function HomeScreen() {
             style={styles.couplePortalReadyBanner}
             onPress={() => router.push('/(app)/couple-portal' as any)}
             activeOpacity={0.7}
+            accessibilityRole="button"
           >
             <SparkleIcon size={18} color={Colors.secondary} />
             <Text style={styles.couplePortalReadyText}>
@@ -1234,6 +1241,8 @@ export default function HomeScreen() {
                     style={styles.tenderStartButton}
                     onPress={() => { SoundHaptics.tap(); router.push('/(app)/tender-assessment' as any); }}
                     activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityLabel="Start Assessment"
                   >
                     <Text style={styles.tenderStartButtonText}>Start Assessment</Text>
                   </TouchableOpacity>
@@ -1252,6 +1261,8 @@ export default function HomeScreen() {
                     style={styles.tenderStartButton}
                     onPress={() => { SoundHaptics.tap(); router.push('/(app)/tender-assessment' as any); }}
                     activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityLabel="Continue"
                   >
                     <Text style={styles.tenderStartButtonText}>Continue</Text>
                   </TouchableOpacity>
@@ -1268,9 +1279,11 @@ export default function HomeScreen() {
               onPress={handleGeneratePortrait}
               disabled={generating}
               activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: generating }}
             >
               {generating ? (
-                <ActivityIndicator color={Colors.white} />
+                <ActivityIndicator color={Colors.white} accessibilityLabel="Loading" />
               ) : (
                 <>
                   <Text style={styles.portraitGenerateTitle}>
@@ -1291,6 +1304,8 @@ export default function HomeScreen() {
             style={styles.healingJourneyCard}
             onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/growth' as any); }}
             activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="NEW"
           >
             <View style={styles.healingJourneyHeader}>
               <SeedlingIcon size={28} color={Colors.primary} />
@@ -1376,6 +1391,8 @@ export default function HomeScreen() {
               style={styles.portraitSummaryCard}
               onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/portrait' as any); }}
               activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="YOUR PORTRAIT"
             >
               <View style={styles.portraitSummaryHeader}>
                 <Text style={styles.portraitSummaryEyebrow}>YOUR PORTRAIT</Text>
@@ -1422,6 +1439,7 @@ export default function HomeScreen() {
             style={styles.weareSummaryCard}
             onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/couple-portal' as any); }}
             activeOpacity={0.8}
+            accessibilityRole="button"
           >
             <View style={styles.weareSummaryHeader}>
               <Text style={styles.weareSummaryTitle}>
@@ -1546,6 +1564,8 @@ export default function HomeScreen() {
                 style={styles.featureCard}
                 onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/portrait' as any); }}
                 activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel="View Portrait"
               >
                 <View style={styles.featureCardHeader}>
                   <SparkleIcon size={22} color={Colors.text} />
@@ -1563,6 +1583,8 @@ export default function HomeScreen() {
                 style={styles.featureCard}
                 onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/assessment-matrix' as any); }}
                 activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel="Explore Matrix"
               >
                 <View style={styles.featureCardHeader}>
                   <CompassIcon size={22} color={Colors.text} />
@@ -1581,6 +1603,8 @@ export default function HomeScreen() {
               style={styles.featureCard}
               onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/journal' as any); }}
               activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Journal"
             >
               <View style={styles.featureCardHeader}>
                 <BookOpenIcon size={22} color={Colors.text} />
@@ -1608,6 +1632,8 @@ export default function HomeScreen() {
                 }
               }}
               activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Nuance AI"
             >
               <View style={styles.featureCardHeader}>
                 <ChatBubbleIcon size={22} color={Colors.text} />
@@ -1647,6 +1673,7 @@ export default function HomeScreen() {
                   ]}
                   onPress={() => handleFeatureCardPress(card)}
                   activeOpacity={isUnlocked ? 0.8 : 0.6}
+                  accessibilityRole="button"
                 >
                   <View style={styles.featureCardHeader}>
                     <FeatureIcon Icon={card.icon} size={22} color={Colors.text} />
@@ -1696,6 +1723,7 @@ export default function HomeScreen() {
                     },
                   } as any)}
                   activeOpacity={0.8}
+                  accessibilityRole="button"
                 >
                   <View
                     style={[
@@ -1718,6 +1746,7 @@ export default function HomeScreen() {
                       router.push({ pathname: '/(app)/chat', params: { topic: card.title } } as any);
                     }}
                     activeOpacity={0.7}
+                    accessibilityRole="button"
                   >
                     <View style={styles.askNuanceContent}>
                       <ChatBubbleIcon size={11} color={Colors.primary} />
@@ -1740,6 +1769,8 @@ export default function HomeScreen() {
               style={styles.sectionTitleRow}
               onPress={() => setAssessmentsExpanded(!assessmentsExpanded)}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Revisit a Chapter"
             >
               <Text style={styles.retakeSectionLabel}>Revisit a Chapter</Text>
               <Text style={styles.expandArrow}>
@@ -1767,6 +1798,8 @@ export default function HomeScreen() {
                       }}
                       activeOpacity={0.7}
                       disabled={!isDone}
+                      accessibilityRole="button"
+                      accessibilityState={{ disabled: !isDone }}
                     >
                       <View style={styles.retakeRowLeft}>
                         <Text style={[styles.retakeRowNumber, !isDone && styles.retakeRowNumberDisabled]}>
@@ -1803,6 +1836,8 @@ export default function HomeScreen() {
               style={styles.modeChangeButton}
               onPress={() => router.push('/(app)/relationship-mode' as any)}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Change"
             >
               <Text style={styles.modeChangeText}>Change</Text>
             </TouchableOpacity>
@@ -1814,6 +1849,8 @@ export default function HomeScreen() {
           style={styles.logoutButton}
           onPress={handleLogout}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Logout"
         >
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>

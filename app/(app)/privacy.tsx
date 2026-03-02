@@ -152,7 +152,7 @@ export default function PrivacyScreen() {
       >
         {/* ── Header ──────────────────── */}
         <View style={s.header}>
-          <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7}>
+          <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Your Privacy">
             <Text style={s.backText}>{'←'} Back</Text>
           </TouchableOpacity>
         </View>
@@ -176,6 +176,7 @@ export default function PrivacyScreen() {
                 style={s.sectionCard}
                 onPress={() => toggleSection(section.id)}
                 activeOpacity={0.7}
+                accessibilityRole="button"
               >
                 <View style={s.sectionIcon}>
                   <section.Icon size={22} color={Colors.text} />
@@ -204,6 +205,8 @@ export default function PrivacyScreen() {
           style={s.controlButton}
           onPress={() => router.push('/(app)/sharing-settings' as any)}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Sharing Settings"
         >
           <View style={s.controlIcon}><RefreshIcon size={22} color={Colors.text} /></View>
           <View style={{ flex: 1 }}>
@@ -217,6 +220,8 @@ export default function PrivacyScreen() {
           style={s.controlButton}
           onPress={() => router.push('/(app)/notification-settings' as any)}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Notification Settings"
         >
           <View style={s.controlIcon}><SettingsIcon size={22} color={Colors.text} /></View>
           <View style={{ flex: 1 }}>
@@ -230,6 +235,8 @@ export default function PrivacyScreen() {
           style={s.controlButton}
           onPress={handleDownloadData}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Download My Data"
         >
           <View style={s.controlIcon}><ClipboardIcon size={22} color={Colors.text} /></View>
           <View style={{ flex: 1 }}>
@@ -244,9 +251,11 @@ export default function PrivacyScreen() {
           onPress={handleDeleteAllData}
           disabled={deleting}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: deleting }}
         >
           {deleting ? (
-            <ActivityIndicator color={Colors.error} size="small" />
+            <ActivityIndicator color={Colors.error} size="small" accessibilityLabel="Loading" />
           ) : (
             <>
               <View style={s.controlIcon}><CloseIcon size={22} color={Colors.error} /></View>

@@ -71,6 +71,9 @@ export function CommunityTabs({ activeTab, onTabChange }: CommunityTabsProps) {
             style={[st.tab, isActive && st.tabActive, tab.locked && st.tabLocked]}
             onPress={() => handleTabPress(tab)}
             activeOpacity={0.7}
+            accessibilityRole="tab"
+            accessibilityLabel={`${tab.label}${tab.locked ? ', coming soon' : ''}`}
+            accessibilityState={{ selected: isActive, disabled: tab.locked }}
           >
             <tab.Icon
               size={14}

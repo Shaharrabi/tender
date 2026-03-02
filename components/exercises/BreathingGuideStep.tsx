@@ -338,6 +338,8 @@ export default function BreathingGuideStep({
           style={[styles.startButton, { backgroundColor: currentColor }]}
           onPress={handleStart}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Begin breathing exercise"
         >
           <Text style={styles.startButtonText}>BEGIN</Text>
         </TouchableOpacity>
@@ -348,6 +350,8 @@ export default function BreathingGuideStep({
           style={styles.restartButton}
           onPress={handleRestart}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Start breathing exercise over"
         >
           <Text style={styles.restartButtonText}>Start Over</Text>
         </TouchableOpacity>

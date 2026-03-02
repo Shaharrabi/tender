@@ -102,7 +102,7 @@ export default function ExerciseScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.center}>
           {!id ? (
-            <ActivityIndicator color={Colors.primary} />
+            <ActivityIndicator color={Colors.primary} accessibilityLabel="Loading" />
           ) : (
             <>
               <Text style={styles.errorTitle}>Exercise Not Found</Text>

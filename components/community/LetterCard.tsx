@@ -59,6 +59,8 @@ export function LetterCard({ letter, onOpen }: LetterCardProps) {
         style={st.sealedCard}
         onPress={handleOpen}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={`Sealed letter from ${aliasName}. Tap to open`}
       >
         <MailboxIcon size={24} color={CommunityColors.quoteAccent} />
         <View style={st.sealedContent}>

@@ -118,6 +118,8 @@ export default function WeeklyCheckInCard({
             setEditing(true);
           }}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Update weekly check-in"
         >
           <Text style={styles.updateButtonText}>Update Check-In</Text>
         </TouchableOpacity>
@@ -172,6 +174,9 @@ export default function WeeklyCheckInCard({
               ]}
               onPress={() => setStress(val)}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={`Life pressure: ${val} of 10`}
+              accessibilityState={{ selected: val === stress }}
             />
           ))}
         </View>
@@ -207,6 +212,9 @@ export default function WeeklyCheckInCard({
               ]}
               onPress={() => setSupport(val)}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={`Support level: ${val} of 10`}
+              accessibilityState={{ selected: val === support }}
             />
           ))}
         </View>
@@ -242,6 +250,9 @@ export default function WeeklyCheckInCard({
               ]}
               onPress={() => setSatisfaction(val)}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={`Relationship aliveness: ${val} of 10`}
+              accessibilityState={{ selected: val === satisfaction }}
             />
           ))}
         </View>
@@ -262,6 +273,8 @@ export default function WeeklyCheckInCard({
         multiline
         numberOfLines={2}
         textAlignVertical="top"
+        accessibilityRole="text"
+        accessibilityLabel="Practice highlight note"
       />
 
       {/* ── Submit button ────────────────────────── */}
@@ -270,6 +283,9 @@ export default function WeeklyCheckInCard({
         onPress={handleSubmit}
         activeOpacity={0.7}
         disabled={submitting}
+        accessibilityRole="button"
+        accessibilityLabel={editing ? 'Save changes' : 'Submit check-in'}
+        accessibilityState={{ disabled: submitting }}
       >
         {submitting ? (
           <ActivityIndicator color={Colors.textOnPrimary} size="small" />
@@ -285,6 +301,8 @@ export default function WeeklyCheckInCard({
           style={styles.cancelButton}
           onPress={() => setEditing(false)}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Cancel editing"
         >
           <Text style={styles.cancelButtonText}>Cancel</Text>
         </TouchableOpacity>

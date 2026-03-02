@@ -42,6 +42,9 @@ export default function CoupleGrowthEdgeCard({
       style={styles.card}
       onPress={() => setExpanded(!expanded)}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel={`Growth edge ${index + 1}: ${edge.title}. ${expanded ? 'Collapse' : 'Expand'} details`}
+      accessibilityState={{ expanded }}
     >
       {/* Header */}
       <View style={styles.header}>

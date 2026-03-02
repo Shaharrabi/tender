@@ -119,6 +119,8 @@ export default function NotificationFeedScreen() {
           onPress={() => router.back()}
           hitSlop={12}
           style={styles.backButton}
+          accessibilityRole="button"
+          accessibilityLabel="Notifications"
         >
           <ArrowLeftIcon size={20} color={Colors.text} />
         </Pressable>
@@ -128,7 +130,7 @@ export default function NotificationFeedScreen() {
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator color={Colors.primary} size="small" />
+          <ActivityIndicator color={Colors.primary} size="small" accessibilityLabel="Loading" />
         </View>
       ) : groups.length === 0 ? (
         /* Empty state */

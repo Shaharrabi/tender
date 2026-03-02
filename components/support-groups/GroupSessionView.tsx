@@ -173,6 +173,8 @@ export default function GroupSessionView({
           style={[styles.zoomBtn, { backgroundColor: accentColor }]}
           onPress={handleJoinZoom}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Join session on Zoom"
         >
           <Text style={styles.zoomBtnText}>Join on Zoom</Text>
         </TouchableOpacity>
@@ -209,6 +211,8 @@ export default function GroupSessionView({
               style={[styles.outlineBtn, { borderColor: accentColor }]}
               onPress={onNavigateToStep}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Read full step"
             >
               <BookOpenIcon size={14} color={accentColor} />
               <Text style={[styles.outlineBtnText, { color: accentColor }]}>
@@ -262,6 +266,8 @@ export default function GroupSessionView({
                       setNoteText(session.attendance?.personalNotes || '');
                     }}
                     activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityLabel={hasNotes ? 'Edit reflection notes' : 'Add reflection notes'}
                   >
                     <PenIcon size={12} color={Colors.textMuted} />
                     <Text style={styles.noteToggleText}>
@@ -281,11 +287,15 @@ export default function GroupSessionView({
                       placeholderTextColor={Colors.textMuted}
                       multiline
                       numberOfLines={3}
+                      accessibilityRole="text"
+                      accessibilityLabel="Session reflection notes"
                     />
                     <View style={styles.noteActions}>
                       <TouchableOpacity
                         onPress={() => setNoteSessionId(null)}
                         activeOpacity={0.7}
+                        accessibilityRole="button"
+                        accessibilityLabel="Cancel editing notes"
                       >
                         <Text style={styles.noteCancelText}>Cancel</Text>
                       </TouchableOpacity>
@@ -293,6 +303,8 @@ export default function GroupSessionView({
                         style={[styles.noteSaveBtn, { backgroundColor: accentColor }]}
                         onPress={() => handleSaveNote(session.id)}
                         activeOpacity={0.7}
+                        accessibilityRole="button"
+                        accessibilityLabel="Save notes"
                       >
                         <Text style={styles.noteSaveText}>Save</Text>
                       </TouchableOpacity>
@@ -331,6 +343,8 @@ export default function GroupSessionView({
         }}
         activeOpacity={0.7}
         style={styles.leaveBtn}
+        accessibilityRole="button"
+        accessibilityLabel="Leave group"
       >
         <Text style={styles.leaveBtnText}>Leave Group</Text>
       </TouchableOpacity>
@@ -363,6 +377,9 @@ function SessionTabs({
         ]}
         onPress={() => onTabChange('sessions')}
         activeOpacity={0.7}
+        accessibilityRole="tab"
+        accessibilityLabel="Sessions tab"
+        accessibilityState={{ selected: activeTab === 'sessions' }}
       >
         <Text
           style={[
@@ -380,6 +397,9 @@ function SessionTabs({
         ]}
         onPress={() => onTabChange('room')}
         activeOpacity={0.7}
+        accessibilityRole="tab"
+        accessibilityLabel="Group Room tab"
+        accessibilityState={{ selected: activeTab === 'room' }}
       >
         <Text
           style={[

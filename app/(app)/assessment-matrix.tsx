@@ -317,7 +317,7 @@ export default function AssessmentMatrixScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+        <ActivityIndicator size="large" color={Colors.primary} accessibilityLabel="Loading" />
         <Text style={styles.loadingText}>Loading your data...</Text>
       </SafeAreaView>
     );
@@ -333,6 +333,8 @@ export default function AssessmentMatrixScreen() {
           style={styles.backButton}
           onPress={() => router.replace('/(app)/home' as any)}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Go Back"
         >
           <Text style={styles.backButtonText}>Go Back</Text>
         </TouchableOpacity>
@@ -348,6 +350,8 @@ export default function AssessmentMatrixScreen() {
           onPress={() => router.replace('/(app)/home' as any)}
           activeOpacity={0.7}
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          accessibilityRole="button"
+          accessibilityLabel="Your Matrix"
         >
           <ArrowLeftIcon size={22} color={Colors.text} />
         </TouchableOpacity>
@@ -374,6 +378,7 @@ export default function AssessmentMatrixScreen() {
               ]}
               onPress={() => !isLocked && setActiveSegment(seg.key)}
               activeOpacity={isLocked ? 1 : 0.7}
+              accessibilityRole="button"
             >
               {isLocked && <LockIcon size={10} color={Colors.textMuted} />}
               <Text

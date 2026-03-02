@@ -116,6 +116,8 @@ export const HighlightWrapper: React.FC<HighlightWrapperProps> = ({
 
   return (
     <Animated.View
+      accessibilityRole="none"
+      accessible={false}
       style={[
         style,
         {

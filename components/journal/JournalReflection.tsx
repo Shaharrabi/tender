@@ -250,6 +250,9 @@ export default function JournalReflection({
                 onPress={() => handleTagToggle(tag.label)}
                 activeOpacity={0.7}
                 disabled={!isToday}
+                accessibilityRole="button"
+                accessibilityLabel={`${tag.label} mood tag`}
+                accessibilityState={{ selected: isSelected, disabled: !isToday }}
               >
                 <TagIcon
                   size={14}
@@ -289,6 +292,8 @@ export default function JournalReflection({
               multiline
               textAlignVertical="top"
               editable={isToday}
+              accessibilityRole="text"
+              accessibilityLabel={`Answer for: ${question}`}
             />
           </View>
         ))}
@@ -312,6 +317,8 @@ export default function JournalReflection({
           multiline
           textAlignVertical="top"
           editable={isToday}
+          accessibilityRole="text"
+          accessibilityLabel="Open journal entry"
         />
       </View>
     </View>

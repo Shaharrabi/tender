@@ -30,6 +30,8 @@ export default function ResultsScreen() {
           <TouchableOpacity
             style={styles.button}
             onPress={() => router.replace('/(app)/home')}
+            accessibilityRole="button"
+            accessibilityLabel="Back to Home"
           >
             <Text style={styles.buttonText}>Back to Home</Text>
           </TouchableOpacity>
@@ -70,6 +72,8 @@ export default function ResultsScreen() {
             <TouchableOpacity
               style={styles.button}
               onPress={() => router.replace('/(app)/home')}
+              accessibilityRole="button"
+              accessibilityLabel="Back to Home"
             >
               <Text style={styles.buttonText}>Back to Home</Text>
             </TouchableOpacity>

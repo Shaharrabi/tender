@@ -92,6 +92,8 @@ export default function LoginScreen() {
             keyboardType="email-address"
             autoCapitalize="none"
             autoComplete="email"
+            accessibilityRole="text"
+            accessibilityLabel="Email address"
           />
 
           <TextInput
@@ -102,6 +104,8 @@ export default function LoginScreen() {
             onChangeText={setPassword}
             secureTextEntry
             autoComplete="password"
+            accessibilityRole="text"
+            accessibilityLabel="Password"
           />
 
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
@@ -110,6 +114,9 @@ export default function LoginScreen() {
             style={[styles.button, loading && styles.buttonDisabled]}
             onPress={handleLogin}
             disabled={loading}
+            accessibilityRole="button"
+            accessibilityLabel="Log in"
+            accessibilityState={{ disabled: loading }}
           >
             {loading ? (
               <ActivityIndicator color={Colors.white} />
@@ -120,7 +127,11 @@ export default function LoginScreen() {
         </View>
 
         <Link href="/(auth)/register" asChild>
-          <TouchableOpacity style={styles.linkContainer}>
+          <TouchableOpacity
+            style={styles.linkContainer}
+            accessibilityRole="link"
+            accessibilityLabel="Don't have an account? Register"
+          >
             <Text style={styles.linkText}>
               Don't have an account? <Text style={styles.linkBold}>Register</Text>
             </Text>
@@ -139,6 +150,8 @@ export default function LoginScreen() {
             await setGuestMode(true);
             router.replace('/(app)/home');
           }}
+          accessibilityRole="button"
+          accessibilityLabel="Continue as guest"
         >
           <Text style={styles.guestButtonText}>Continue as Guest</Text>
         </TouchableOpacity>

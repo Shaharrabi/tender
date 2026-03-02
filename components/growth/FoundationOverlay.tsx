@@ -202,6 +202,8 @@ export default function FoundationOverlay({ onDismiss }: FoundationOverlayProps)
               onPress={handleComplete}
               activeOpacity={0.7}
               style={styles.skipButton}
+              accessibilityRole="button"
+              accessibilityLabel="Skip foundation audio"
             >
               <Text style={styles.skipText}>Skip for now</Text>
             </TouchableOpacity>

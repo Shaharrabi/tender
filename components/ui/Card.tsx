@@ -25,6 +25,7 @@ export default function Card({
         { padding: Spacing[padding] },
         style,
       ]}
+      accessibilityRole="summary"
     >
       {children}
     </View>

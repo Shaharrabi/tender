@@ -25,6 +25,8 @@ export default function PortraitLens({ title, lens, type }: Props) {
         style={styles.header}
         onPress={() => setExpanded(!expanded)}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={`${title}, ${expanded ? 'collapse' : 'expand'} details`}
       >
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.toggle}>{expanded ? 'Less' : 'More'}</Text>

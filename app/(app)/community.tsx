@@ -451,7 +451,7 @@ export default function CommunityScreen() {
             )}
 
             {loadingPosts && posts.length === 0 ? (
-              <ActivityIndicator style={st.loader} color={Colors.primary} />
+              <ActivityIndicator style={st.loader} color={Colors.primary} accessibilityLabel="Loading" />
             ) : posts.length === 0 && initialLoadDone.current ? (
               <EmptyState
                 Icon={ThoughtBubbleIcon}

@@ -69,6 +69,8 @@ export default function PartnerSelectScreen() {
             onPress={() => router.back()}
             activeOpacity={0.7}
             style={styles.backButton}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
           >
             <ArrowLeftIcon size={16} color={Colors.primary} />
             <Text style={styles.backText}>Back</Text>
@@ -107,6 +109,9 @@ export default function PartnerSelectScreen() {
                 ]}
                 onPress={() => handleSelect(partner.id)}
                 activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={`${partner.name}: ${partner.shortDescription}`}
+                accessibilityState={{ selected: isSelected }}
               >
                 <View style={[styles.partnerIconCircle, { backgroundColor: partner.color + '20' }]}>
                   <Icon size={28} color={partner.color} />
@@ -131,6 +136,9 @@ export default function PartnerSelectScreen() {
           onPress={handleContinue}
           activeOpacity={selected ? 0.8 : 1}
           disabled={!selected}
+          accessibilityRole="button"
+          accessibilityLabel="Choose partner"
+          accessibilityState={{ disabled: !selected }}
         >
           <Text style={[styles.continueText, !selected && styles.continueTextDisabled]}>
             Choose Partner

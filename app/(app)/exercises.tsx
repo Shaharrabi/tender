@@ -150,7 +150,7 @@ export default function ExercisesScreen() {
     <SafeAreaView style={styles.container}>
       {/* ─── Header ─────────────────────────────────────── */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} activeOpacity={0.7}>
+        <TouchableOpacity onPress={handleBack} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Exercises">
           <Text style={styles.backText}>{'\u2039'} Back</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Exercises</Text>
@@ -231,6 +231,7 @@ export default function ExercisesScreen() {
                   style={styles.breakdownItem}
                   onPress={() => setActiveFilter(activeFilter === cat ? 'all' : cat)}
                   activeOpacity={0.7}
+                  accessibilityRole="button"
                 >
                   <View style={[styles.breakdownCircle, { borderColor: color }]}>
                     <CatIcon size={18} color={color} />
@@ -282,12 +283,15 @@ export default function ExercisesScreen() {
               onChangeText={setSearchQuery}
               returnKeyType="search"
               autoCorrect={false}
-            />
+            accessibilityRole="search"
+            accessibilityLabel="Search exercises..."
+          />
             {searchQuery.length > 0 && (
               <TouchableOpacity
                 onPress={() => setSearchQuery('')}
                 activeOpacity={0.6}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                accessibilityRole="button"
               >
                 <Text style={styles.clearIcon}>{'\u2715'}</Text>
               </TouchableOpacity>
@@ -319,6 +323,7 @@ export default function ExercisesScreen() {
                 ]}
                 onPress={() => setActiveFilter(cat.key)}
                 activeOpacity={0.7}
+                accessibilityRole="button"
               >
                 <Text
                   style={[
@@ -384,6 +389,8 @@ export default function ExercisesScreen() {
                   setActiveFilter('all');
                 }}
                 activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="Show all exercises"
               >
                 <Text style={styles.resetButtonText}>Show all exercises</Text>
               </TouchableOpacity>

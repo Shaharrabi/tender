@@ -645,6 +645,8 @@ export default function TenderAssessmentScreen() {
           <TouchableOpacity
             style={styles.completionButton}
             onPress={() => router.replace('/(app)/home')}
+            accessibilityRole="button"
+            accessibilityLabel="View Your Results"
           >
             <Text style={styles.completionButtonText}>View Your Results</Text>
           </TouchableOpacity>
@@ -736,6 +738,7 @@ export default function TenderAssessmentScreen() {
                   style={styles.chapterCard}
                   onPress={() => handleChapterTap(idx)}
                   activeOpacity={0.7}
+                  accessibilityRole="button"
                 >
                   {/* Status circle */}
                   <View style={[
@@ -770,6 +773,7 @@ export default function TenderAssessmentScreen() {
           <TouchableOpacity
             style={styles.welcomeCTA}
             onPress={handleWelcomeCTA}
+            accessibilityRole="button"
           >
             <Text style={styles.welcomeCTAText}>
               {allComplete
@@ -791,6 +795,8 @@ export default function TenderAssessmentScreen() {
           <TouchableOpacity
             style={styles.welcomeBackButton}
             onPress={() => router.back()}
+            accessibilityRole="button"
+            accessibilityLabel="Back"
           >
             <Text style={styles.welcomeBackText}>Back</Text>
           </TouchableOpacity>
@@ -870,13 +876,13 @@ export default function TenderAssessmentScreen() {
             </View>
 
             {/* Question-level progress */}
-            <Text style={styles.progressText}>
+            <Text style={styles.progressText} accessibilityLiveRegion="polite">
               Question {qIndex + 1} of {totalCombined}
             </Text>
             <View style={styles.progressBarBg}>
               <View style={[styles.progressBarFill, { width: `${sectionProgress}%` }]} />
             </View>
-            <Text style={styles.percentText}>
+            <Text style={styles.percentText} accessibilityLiveRegion="polite">
               {Math.round(globalProgress)}% of total assessment
             </Text>
           </View>
@@ -884,6 +890,8 @@ export default function TenderAssessmentScreen() {
           <TouchableOpacity
             style={styles.saveExitButton}
             onPress={handleSaveAndExit}
+            accessibilityRole="button"
+            accessibilityLabel="Save & Exit"
           >
             <Text style={styles.saveExitText}>Save & Exit</Text>
           </TouchableOpacity>
@@ -910,6 +918,8 @@ export default function TenderAssessmentScreen() {
             style={[styles.navButton, qIndex === 0 && styles.navButtonDisabled]}
             onPress={handlePrevious}
             disabled={qIndex === 0}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: qIndex === 0 }}
           >
             <Text
               style={[
@@ -929,6 +939,8 @@ export default function TenderAssessmentScreen() {
               ]}
               onPress={handleSubmitSection}
               disabled={!hasAnswer || submittingSection}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: !hasAnswer || submittingSection }}
             >
               <Text style={styles.submitButtonText}>
                 {submittingSection
@@ -942,6 +954,7 @@ export default function TenderAssessmentScreen() {
             <TouchableOpacity
               style={[styles.navButton, styles.navButtonPrimary]}
               onPress={handleNext}
+              accessibilityRole="button"
             >
               <Text style={styles.navButtonPrimaryText}>
                 {hasAnswer ? 'Next' : 'Skip'}

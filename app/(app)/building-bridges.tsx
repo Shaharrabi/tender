@@ -222,6 +222,8 @@ export default function BuildingBridgesScreen() {
         <TouchableOpacity
           onPress={() => phase === 'home' ? (router.canGoBack() ? router.back() : router.replace('/(app)/home' as any)) : handleGoHome()}
           style={styles.headerBackBtn}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
         >
           <ArrowLeftIcon size={20} color={Colors.textSecondary} />
         </TouchableOpacity>
@@ -332,6 +334,7 @@ function HomeView({
             key={tab.id}
             style={[styles.tab, homeTab === tab.id && styles.tabActive]}
             onPress={() => setHomeTab(tab.id)}
+            accessibilityRole="button"
           >
             <Text style={[styles.tabLabel, homeTab === tab.id && styles.tabLabelActive]}>
               {tab.label}
@@ -362,6 +365,8 @@ function HomeView({
             style={styles.primaryButton}
             onPress={() => drawCard('connection-builder')}
             activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Draw a Card"
           >
             <SparkleIcon size={18} color={Colors.textOnPrimary} />
             <Text style={styles.primaryButtonText}>Draw a Card</Text>
@@ -398,6 +403,7 @@ function HomeView({
                 setSelectedCategory(cat.id);
               }}
               activeOpacity={0.8}
+              accessibilityRole="button"
             >
               <View style={[styles.categoryDot, { backgroundColor: cat.color }]} />
               <View style={styles.categoryInfo}>
@@ -417,6 +423,7 @@ function HomeView({
                 style={[styles.primaryButton, { marginTop: Spacing.md }]}
                 onPress={() => drawCard('connection-builder', selectedCategory)}
                 activeOpacity={0.8}
+                accessibilityRole="button"
               >
                 <SparkleIcon size={18} color={Colors.textOnPrimary} />
                 <Text style={styles.primaryButtonText}>
@@ -451,6 +458,8 @@ function HomeView({
             style={[styles.primaryButton, { backgroundColor: OPEN_HEART_DECK.color }]}
             onPress={() => drawCard('open-heart')}
             activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Draw an Open Heart Card"
           >
             <HeartIcon size={18} color={Colors.textOnPrimary} />
             <Text style={styles.primaryButtonText}>Draw an Open Heart Card</Text>
@@ -573,7 +582,7 @@ function PlayingView({
         {/* Timer button */}
         {card.requiresTimer && !timerActive && isFlipped && (
           <Animated.View entering={FadeInUp.duration(300)}>
-            <TouchableOpacity style={styles.timerButton} onPress={onStartTimer} activeOpacity={0.8}>
+            <TouchableOpacity style={styles.timerButton} onPress={onStartTimer} activeOpacity={0.8} accessibilityRole="button">
               <Text style={styles.timerButtonText}>
                 Start {Math.floor((card.timerDuration ?? 180) / 60)}-min Timer
               </Text>
@@ -591,7 +600,7 @@ function PlayingView({
         {/* Ready to reflect */}
         {isFlipped && (
           <Animated.View entering={FadeInUp.duration(400).delay(200)}>
-            <TouchableOpacity style={styles.primaryButton} onPress={onReadyToReflect} activeOpacity={0.8}>
+            <TouchableOpacity style={styles.primaryButton} onPress={onReadyToReflect} activeOpacity={0.8} accessibilityRole="button" accessibilityLabel="Ready to Reflect">
               <Text style={styles.primaryButtonText}>Ready to Reflect</Text>
             </TouchableOpacity>
           </Animated.View>
@@ -637,6 +646,8 @@ function ReflectingView({
             multiline
             textAlignVertical="top"
             autoFocus={Platform.OS !== 'web'}
+          accessibilityRole="text"
+            accessibilityLabel="What came up for you? Write freely — there are no wrong answers..."
           />
           {reflection.length > 0 && (
             <View style={styles.reflectMeta}>
@@ -660,12 +671,14 @@ function ReflectingView({
           style={[styles.primaryButton, reflection.length === 0 && styles.buttonMuted]}
           onPress={onComplete}
           activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel="Mark Complete"
         >
           <CheckmarkIcon size={18} color={Colors.textOnPrimary} />
           <Text style={styles.primaryButtonText}>Mark Complete</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.skipButton} onPress={onSkip} activeOpacity={0.7}>
+        <TouchableOpacity style={styles.skipButton} onPress={onSkip} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Skip reflection">
           <Text style={styles.skipButtonText}>Skip reflection</Text>
         </TouchableOpacity>
       </Animated.View>
@@ -706,19 +719,19 @@ function CompleteView({
         </View>
 
         {/* Actions */}
-        <TouchableOpacity style={styles.primaryButton} onPress={onDrawAnother} activeOpacity={0.8}>
+        <TouchableOpacity style={styles.primaryButton} onPress={onDrawAnother} activeOpacity={0.8} accessibilityRole="button" accessibilityLabel="Draw Another Card">
           <RefreshIcon size={18} color={Colors.textOnPrimary} />
           <Text style={styles.primaryButtonText}>Draw Another Card</Text>
         </TouchableOpacity>
 
         {reflection.length > 0 && (
-          <TouchableOpacity style={styles.secondaryButton} onPress={onAskNuance} activeOpacity={0.8}>
+          <TouchableOpacity style={styles.secondaryButton} onPress={onAskNuance} activeOpacity={0.8} accessibilityRole="button" accessibilityLabel="Ask Nuance About This">
             <ChatBubbleIcon size={18} color={Colors.primary} />
             <Text style={styles.secondaryButtonText}>Ask Nuance About This</Text>
           </TouchableOpacity>
         )}
 
-        <TouchableOpacity style={styles.skipButton} onPress={onDone} activeOpacity={0.7}>
+        <TouchableOpacity style={styles.skipButton} onPress={onDone} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Done for now">
           <Text style={styles.skipButtonText}>Done for now</Text>
         </TouchableOpacity>
       </Animated.View>

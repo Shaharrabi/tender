@@ -257,6 +257,8 @@ export default function DCIResults({ scores }: Props) {
           <TouchableOpacity
             style={styles.primaryButton}
             onPress={() => router.replace('/(app)/couple-portal')}
+            accessibilityRole="button"
+            accessibilityLabel="Go to Couple Portal"
           >
             <Text style={styles.primaryButtonText}>Go to Couple Portal</Text>
           </TouchableOpacity>

@@ -116,6 +116,7 @@ function ChatScreenInner({ topic }: { topic?: string }) {
           onPress={handleBack}
           activeOpacity={0.7}
           style={styles.headerSide}
+          accessibilityRole="button"
         >
           <Text style={styles.backText}>{'\u2039'} Back</Text>
         </TouchableOpacity>
@@ -131,6 +132,8 @@ function ChatScreenInner({ topic }: { topic?: string }) {
           onPress={() => setShowSessions(true)}
           activeOpacity={0.7}
           style={[styles.headerSide, styles.headerSideRight]}
+          accessibilityRole="button"
+          accessibilityLabel="History"
         >
           <Text style={styles.historyText}>History</Text>
         </TouchableOpacity>
@@ -147,6 +150,7 @@ function ChatScreenInner({ topic }: { topic?: string }) {
           <TouchableOpacity
             onPress={() => router.replace('/(auth)/login' as any)}
             activeOpacity={0.7}
+            accessibilityRole="button"
           >
             <Text style={styles.authSignInText}>
               {isGuest ? 'Create Account' : 'Sign In'}
@@ -167,7 +171,7 @@ function ChatScreenInner({ topic }: { topic?: string }) {
       {error && (
         <View style={styles.errorBanner}>
           <Text style={styles.errorBannerText}>{error}</Text>
-          <TouchableOpacity onPress={startNewSession} activeOpacity={0.7}>
+          <TouchableOpacity onPress={startNewSession} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Retry">
             <Text style={styles.errorRetryText}>Retry</Text>
           </TouchableOpacity>
         </View>
@@ -224,6 +228,8 @@ function ChatScreenInner({ topic }: { topic?: string }) {
             <TouchableOpacity
               onPress={() => setShowSessions(false)}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Done"
             >
               <Text style={styles.modalClose}>Done</Text>
             </TouchableOpacity>

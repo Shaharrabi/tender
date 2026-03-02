@@ -204,6 +204,8 @@ export default function PatternSpotter({ onComplete, onSkip, phaseColor }: MiniG
               style={[styles.primaryButton, { backgroundColor: phaseColor }]}
               onPress={() => setPhase('questions')}
               activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Begin exercise"
             >
               <Text style={styles.primaryButtonText}>BEGIN</Text>
             </TouchableOpacity>
@@ -255,6 +257,8 @@ export default function PatternSpotter({ onComplete, onSkip, phaseColor }: MiniG
               style={[styles.responseButton, styles.familiarButton]}
               onPress={() => handleResponse(true)}
               activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="This feels familiar"
             >
               <Text style={[styles.responseButtonText, { color: phaseColor }]}>
                 This feels familiar
@@ -264,6 +268,8 @@ export default function PatternSpotter({ onComplete, onSkip, phaseColor }: MiniG
               style={[styles.responseButton, styles.notUsButton]}
               onPress={() => handleResponse(false)}
               activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Not us"
             >
               <Text style={styles.notUsButtonText}>Not us</Text>
             </TouchableOpacity>
@@ -322,6 +328,8 @@ export default function PatternSpotter({ onComplete, onSkip, phaseColor }: MiniG
             style={[styles.primaryButton, { backgroundColor: phaseColor }]}
             onPress={handleFinish}
             activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Continue"
           >
             <Text style={styles.primaryButtonText}>CONTINUE</Text>
           </TouchableOpacity>
@@ -337,7 +345,13 @@ function Header({ onSkip }: { onSkip: () => void }) {
   return (
     <View style={styles.header}>
       <Text style={styles.headerTitle}>The Pattern Spotter</Text>
-      <TouchableOpacity onPress={onSkip} activeOpacity={0.7} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+      <TouchableOpacity
+        onPress={onSkip}
+        activeOpacity={0.7}
+        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        accessibilityRole="button"
+        accessibilityLabel="Skip exercise"
+      >
         <Text style={styles.skipText}>Skip</Text>
       </TouchableOpacity>
     </View>

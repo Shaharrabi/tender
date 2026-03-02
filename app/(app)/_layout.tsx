@@ -8,7 +8,7 @@ export default function AppLayout() {
   const { isGuest } = useGuest();
 
   if (loading) {
-    return <ActivityIndicator style={{ flex: 1 }} />;
+    return <ActivityIndicator style={{ flex: 1 }} accessibilityLabel="Loading" />;
   }
 
   if (!session && !isGuest) {

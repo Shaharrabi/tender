@@ -121,6 +121,8 @@ export default function ConfirmationView({
           style={[styles.reviewBtn, { borderColor: accentColor }]}
           onPress={() => onNavigate('/(app)/growth')}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Review Step 1"
         >
           <SeedlingIcon size={14} color={accentColor} />
           <Text style={[styles.reviewBtnText, { color: accentColor }]}>
@@ -134,6 +136,8 @@ export default function ConfirmationView({
         style={[styles.primaryBtn, { backgroundColor: accentColor }]}
         onPress={onViewSession}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel="Go to my group"
       >
         <Text style={styles.primaryBtnText}>Go to My Group</Text>
       </TouchableOpacity>
@@ -142,6 +146,8 @@ export default function ConfirmationView({
         style={styles.secondaryBtn}
         onPress={onGoHome}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel="Back to therapy page"
       >
         <Text style={styles.secondaryBtnText}>Back to Therapy Page</Text>
       </TouchableOpacity>
@@ -188,6 +194,8 @@ function WaitlistView({
           style={styles.waitlistAction}
           onPress={() => onNavigate('/(app)/growth')}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Continue the 12 Steps"
         >
           <SeedlingIcon size={16} color={Colors.primary} />
           <Text style={styles.waitlistActionText}>Continue the 12 Steps</Text>
@@ -197,6 +205,8 @@ function WaitlistView({
           style={styles.waitlistAction}
           onPress={() => onNavigate('/(app)/chat')}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Practice with Nuance"
         >
           <ChatBubbleIcon size={16} color={Colors.secondary} />
           <Text style={styles.waitlistActionText}>Practice with Nuance</Text>
@@ -206,6 +216,8 @@ function WaitlistView({
           style={styles.waitlistAction}
           onPress={() => onNavigate('/(app)/community')}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Join the Community"
         >
           <CommunityIcon size={16} color={Colors.accentGold} />
           <Text style={styles.waitlistActionText}>Join the Community</Text>
@@ -222,6 +234,8 @@ function WaitlistView({
         style={styles.secondaryBtn}
         onPress={onGoHome}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel="Back to therapy page"
       >
         <Text style={styles.secondaryBtnText}>Back to Therapy Page</Text>
       </TouchableOpacity>

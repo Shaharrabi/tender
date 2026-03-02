@@ -242,6 +242,8 @@ export default function BidOrMiss({ onComplete, onSkip, phaseColor }: MiniGameCo
               style={[styles.primaryButton, { backgroundColor: phaseColor }]}
               onPress={() => setPhase('cards')}
               activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Begin exercise"
             >
               <Text style={styles.primaryButtonText}>BEGIN</Text>
             </TouchableOpacity>
@@ -293,6 +295,8 @@ export default function BidOrMiss({ onComplete, onSkip, phaseColor }: MiniGameCo
               style={[styles.primaryButton, { backgroundColor: phaseColor }]}
               onPress={handleNextCard}
               activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel={currentIndex < BID_CARDS.length - 1 ? 'Next' : 'See results'}
             >
               <Text style={styles.primaryButtonText}>
                 {currentIndex < BID_CARDS.length - 1 ? 'NEXT' : 'SEE RESULTS'}
@@ -353,6 +357,8 @@ export default function BidOrMiss({ onComplete, onSkip, phaseColor }: MiniGameCo
                   ]}
                   onPress={() => handleAnswer(option.key)}
                   activeOpacity={0.8}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${option.label}, ${option.sublabel}`}
                 >
                   <Text
                     style={[
@@ -430,6 +436,8 @@ export default function BidOrMiss({ onComplete, onSkip, phaseColor }: MiniGameCo
             style={[styles.primaryButton, { backgroundColor: phaseColor }]}
             onPress={handleFinish}
             activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Continue"
           >
             <Text style={styles.primaryButtonText}>CONTINUE</Text>
           </TouchableOpacity>
@@ -445,7 +453,13 @@ function Header({ onSkip }: { onSkip: () => void }) {
   return (
     <View style={styles.header}>
       <Text style={styles.headerTitle}>Bid or Miss</Text>
-      <TouchableOpacity onPress={onSkip} activeOpacity={0.7} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+      <TouchableOpacity
+        onPress={onSkip}
+        activeOpacity={0.7}
+        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        accessibilityRole="button"
+        accessibilityLabel="Skip exercise"
+      >
         <Text style={styles.skipText}>Skip</Text>
       </TouchableOpacity>
     </View>

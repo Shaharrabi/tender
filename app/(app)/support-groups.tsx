@@ -263,7 +263,7 @@ export default function SupportGroupsScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingCenter}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={Colors.primary} accessibilityLabel="Loading" />
         </View>
       </SafeAreaView>
     );
@@ -290,6 +290,8 @@ export default function SupportGroupsScreen() {
               onPress={() => router.back()}
               activeOpacity={0.7}
               style={styles.backBtn}
+              accessibilityRole="button"
+              accessibilityLabel="Therapy"
             >
               <ArrowLeftIcon size={16} color={Colors.primary} />
               <Text style={styles.backText}>Therapy</Text>
@@ -314,7 +316,7 @@ export default function SupportGroupsScreen() {
           <Animated.View entering={FadeIn.duration(400)} style={styles.screenWrap}>
             {submitting ? (
               <View style={styles.loadingCenter}>
-                <ActivityIndicator size="large" color={Colors.primary} />
+                <ActivityIndicator size="large" color={Colors.primary} accessibilityLabel="Loading" />
                 <Text style={styles.loadingText}>Registering...</Text>
               </View>
             ) : (
@@ -360,6 +362,8 @@ export default function SupportGroupsScreen() {
                 onPress={() => router.back()}
                 activeOpacity={0.7}
                 style={styles.backBtn}
+                accessibilityRole="button"
+                accessibilityLabel="Therapy"
               >
                 <ArrowLeftIcon size={16} color={Colors.primary} />
                 <Text style={styles.backText}>Therapy</Text>

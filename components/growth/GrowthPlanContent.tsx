@@ -247,6 +247,8 @@ export default function GrowthPlanContent({ portrait, router }: GrowthPlanConten
                             style={[s.exerciseRow, isDone && s.exerciseRowDone]}
                             activeOpacity={0.7}
                             onPress={() => router.push({ pathname: '/(app)/exercise', params: { id: ex.id } } as any)}
+                            accessibilityRole="link"
+                            accessibilityLabel={`${ex.title}, ${isDone ? 'completed' : `${ex.duration} minutes`}`}
                           >
                             {isDone ? (
                               <View style={s.exerciseCheckmark}>
@@ -366,6 +368,8 @@ export default function GrowthPlanContent({ portrait, router }: GrowthPlanConten
                       style={[s.exerciseRow, isDone && s.exerciseRowDone]}
                       activeOpacity={0.7}
                       onPress={() => router.push({ pathname: '/(app)/exercise', params: { id: ex.id } } as any)}
+                      accessibilityRole="link"
+                      accessibilityLabel={`${ex.title}, ${isDone ? 'completed' : `${ex.duration} minutes`}`}
                     >
                       {isDone ? (
                         <View style={s.exerciseCheckmark}>

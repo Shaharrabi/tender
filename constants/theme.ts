@@ -10,14 +10,14 @@
 // ─── Colors ──────────────────────────────────────────────
 
 export const Colors = {
-  // Primary — Dusty Rose
-  primary: '#C4616E',
+  // Primary — Dusty Rose (darkened for WCAG AA: #A84D59 on white ≥ 4.5:1)
+  primary: '#A84D59',
   primaryLight: '#E6A0C4',    // Mendl's Pink
   primaryDark: '#8B3A4A',     // Deep Rose
   primaryFaded: '#F4D5D0',    // Blush Whisper — subtle backgrounds, cards
 
-  // Secondary — Lobby Blue
-  secondary: '#7294D4',
+  // Secondary — Lobby Blue (darkened for WCAG AA: #4A6FA8 on white ≥ 4.5:1)
+  secondary: '#4A6FA8',
   secondaryLight: '#C6CDF7',  // Lavender Haze
   secondaryDark: '#4A6699',   // Twilight Blue
 
@@ -40,14 +40,14 @@ export const Colors = {
   // Text
   text: '#2D2226',            // Warm Almost-Black
   textSecondary: '#6B5B5E',   // Warm Gray
-  textMuted: '#9B8E91',       // Muted Mauve
+  textMuted: '#6B5E61',       // Muted Mauve (darkened for WCAG AA: ≥ 4.5:1 on #FDF6F0)
   textOnPrimary: '#FFFFFF',
   textOnSecondary: '#FFFFFF',
 
   // Borders
   border: '#E0D3CE',          // Warm Sand
   borderLight: '#F0E6E0',     // Faint Blush
-  borderFocus: '#C4616E',     // Dusty Rose — focused inputs
+  borderFocus: '#A84D59',     // Dusty Rose — focused inputs (matches primary)
 
   // Semantic
   success: '#6B9080',         // Muted Sage
@@ -57,18 +57,18 @@ export const Colors = {
 
   // Attachment style quadrants
   attachmentSecure: '#6B9080',   // Muted Sage — calm, grounded
-  attachmentAnxious: '#C4616E',  // Dusty Rose — conflicted, tender
-  attachmentAvoidant: '#7294D4', // Lobby Blue — distant, cool
+  attachmentAnxious: '#A84D59',  // Dusty Rose — conflicted, tender (matches primary)
+  attachmentAvoidant: '#4A6FA8', // Lobby Blue — distant, cool (matches secondary)
   attachmentFearful: '#D8A499',  // Warm Terracotta — seeking, alert
 
   // Assessment progress
   progressTrack: '#F0E6E0',     // Faint Blush — unfilled
-  progressFill: '#C4616E',      // Dusty Rose — filled
+  progressFill: '#A84D59',      // Dusty Rose — filled (matches primary)
   progressComplete: '#6B9080',  // Muted Sage — completed
 
   // Aliases & extensions
   pink: '#E6A0C4',              // Alias for primaryLight (Mendl's Pink)
-  focus: '#7294D4',             // Alias for secondary — focus states
+  focus: '#4A6FA8',             // Alias for secondary — focus states (matches secondary)
 
   // Utility
   white: '#FFFFFF',

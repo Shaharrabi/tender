@@ -26,6 +26,8 @@ export default function SessionList({
         style={styles.newButton}
         onPress={onNewSession}
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel="Start a new conversation"
       >
         <Text style={styles.newButtonText}>+ New Conversation</Text>
       </TouchableOpacity>
@@ -36,6 +38,8 @@ export default function SessionList({
         <FlatList
           data={sessions}
           keyExtractor={(item) => item.id}
+          accessibilityRole="list"
+          accessibilityLabel="Past conversations"
           renderItem={({ item }) => (
             <TouchableOpacity
               style={[
@@ -44,6 +48,9 @@ export default function SessionList({
               ]}
               onPress={() => onSelect(item.id)}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={`Open conversation: ${item.title}, ${formatDate(item.updatedAt)}`}
+              accessibilityState={{ selected: item.id === activeSessionId }}
             >
               <Text
                 style={[

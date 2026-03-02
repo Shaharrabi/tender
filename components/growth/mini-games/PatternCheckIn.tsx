@@ -179,6 +179,8 @@ export default function PatternCheckIn({ onComplete, onSkip, phaseColor }: MiniG
               style={[styles.primaryButton, { backgroundColor: phaseColor }]}
               onPress={() => setPhase('rating')}
               activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Begin"
             >
               <Text style={styles.primaryButtonText}>BEGIN</Text>
             </TouchableOpacity>
@@ -246,6 +248,9 @@ export default function PatternCheckIn({ onComplete, onSkip, phaseColor }: MiniG
                     ]}
                     onPress={() => handleRate(value)}
                     activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Rating ${value} of 10${isSelected ? ', selected' : ''}`}
+                    accessibilityState={{ selected: isSelected }}
                   >
                     <Text
                       style={[
@@ -277,6 +282,8 @@ export default function PatternCheckIn({ onComplete, onSkip, phaseColor }: MiniG
                 style={[styles.primaryButton, { backgroundColor: phaseColor }]}
                 onPress={handleNext}
                 activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel={currentIndex < DIMENSIONS.length - 1 ? 'Next' : 'See snapshot'}
               >
                 <Text style={styles.primaryButtonText}>
                   {currentIndex < DIMENSIONS.length - 1 ? 'NEXT' : 'SEE SNAPSHOT'}
@@ -363,6 +370,8 @@ export default function PatternCheckIn({ onComplete, onSkip, phaseColor }: MiniG
             style={[styles.primaryButton, { backgroundColor: phaseColor }]}
             onPress={handleFinish}
             activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Continue"
           >
             <Text style={styles.primaryButtonText}>CONTINUE</Text>
           </TouchableOpacity>
@@ -378,7 +387,7 @@ function Header({ onSkip }: { onSkip: () => void }) {
   return (
     <View style={styles.header}>
       <Text style={styles.headerTitle}>Pattern Check-In</Text>
-      <TouchableOpacity onPress={onSkip} activeOpacity={0.7} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+      <TouchableOpacity onPress={onSkip} activeOpacity={0.7} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} accessibilityRole="button" accessibilityLabel="Skip exercise">
         <Text style={styles.skipText}>Skip</Text>
       </TouchableOpacity>
     </View>
