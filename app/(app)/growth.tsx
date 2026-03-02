@@ -44,6 +44,7 @@ import { getMyCouple } from '@/services/couples';
 import { getThisWeeksCheckIn, saveWeeklyCheckIn } from '@/services/weare';
 import WeeklyCheckInCard from '@/components/weare/WeeklyCheckInCard';
 import { getPracticesForStep } from '@/utils/steps/twelve-steps';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import type { GrowthEdgeProgress, DailyCheckIn, StepProgress } from '@/types/growth';
 import type { Couple } from '@/types/couples';
 import type { WeeklyCheckIn } from '@/types/weare';
@@ -162,6 +163,7 @@ export default function GrowthScreen() {
   }
 
   return (
+    <ErrorBoundary>
     <SafeAreaView style={styles.container}>
       {/* Foundation Audio Overlay — first visit only */}
       {showFoundation && (
@@ -298,6 +300,7 @@ export default function GrowthScreen() {
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
+    </ErrorBoundary>
   );
 }
 

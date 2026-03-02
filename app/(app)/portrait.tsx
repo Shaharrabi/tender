@@ -45,6 +45,7 @@ import type { FieldAwarenessLens } from '@/types/portrait';
 
 import PortraitLens from '@/components/portrait/PortraitLens';
 import AppIcon from '@/components/ui/AppIcon';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { synthesizeAssessments, type AssessmentSynthesis } from '@/utils/portrait/assessment-synthesis';
 import { getStep } from '@/utils/steps/twelve-steps';
 import { STAT_ICONS } from '@/constants/icons';
@@ -625,6 +626,7 @@ export default function PortraitScreen() {
   const overallScore = getOverallScore(portrait.compositeScores);
 
   return (
+    <ErrorBoundary>
     <SafeAreaView style={st.container}>
       {/* ── Header ────────────────────────────────── */}
       <View style={st.header}>
@@ -793,6 +795,7 @@ export default function PortraitScreen() {
       <WelcomeAudio screenKey="portrait" />
       <HomeButton />
     </SafeAreaView>
+    </ErrorBoundary>
   );
 }
 

@@ -18,7 +18,7 @@ interface SectionBreakProps {
   sectionProgress?: { completed: number; total: number };
 }
 
-export default function SectionBreak({
+function SectionBreak({
   section,
   totalQuestions,
   questionsCompleted,
@@ -84,6 +84,8 @@ export default function SectionBreak({
     </SafeAreaView>
   );
 }
+
+export default React.memo(SectionBreak);
 
 const styles = StyleSheet.create({
   container: {

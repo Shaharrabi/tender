@@ -115,7 +115,7 @@ const MODE_CONFIG: Record<
   },
 };
 
-export default function ExerciseCard({
+function ExerciseCard({
   exercise,
   onPress,
   delay = 0,
@@ -233,6 +233,8 @@ export default function ExerciseCard({
     </Animated.View>
   );
 }
+
+export default React.memo(ExerciseCard);
 
 const styles = StyleSheet.create({
   card: {

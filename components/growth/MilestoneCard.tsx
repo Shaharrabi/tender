@@ -26,7 +26,7 @@ interface MilestoneCardProps {
   accentColor?: string;
 }
 
-export default function MilestoneCard({
+function MilestoneCard({
   text,
   achieved,
   index = 0,
@@ -116,6 +116,8 @@ export default function MilestoneCard({
     </View>
   );
 }
+
+export default React.memo(MilestoneCard);
 
 const styles = StyleSheet.create({
   container: {

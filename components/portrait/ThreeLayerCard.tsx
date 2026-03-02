@@ -94,7 +94,7 @@ function ConfidenceBadge({
 
 // ─── Component ────────────────────────────────────────
 
-export default function ThreeLayerCard({
+function ThreeLayerCard({
   icon,
   iconColor = Colors.primary,
   title,
@@ -262,6 +262,8 @@ export default function ThreeLayerCard({
     </View>
   );
 }
+
+export default React.memo(ThreeLayerCard);
 
 // ─── Styles ───────────────────────────────────────────
 

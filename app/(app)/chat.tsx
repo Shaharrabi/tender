@@ -25,6 +25,7 @@ import UserInput from '@/components/chat/UserInput';
 import SafetyBanner from '@/components/chat/SafetyBanner';
 import SessionList from '@/components/chat/SessionList';
 import HomeButton from '@/components/HomeButton';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { COACH } from '@/constants/coach';
 import { Colors, Spacing, FontSizes, FontFamilies, BorderRadius } from '@/constants/theme';
 import { getCurrentStepNumber } from '@/services/steps';
@@ -261,12 +262,14 @@ export default function ChatScreen() {
   }>();
 
   return (
-    <ChatProvider
-      coupleMode={coupleMode === 'true'}
-      coupleId={coupleId || undefined}
-    >
-      <ChatScreenInner topic={topic || undefined} />
-    </ChatProvider>
+    <ErrorBoundary>
+      <ChatProvider
+        coupleMode={coupleMode === 'true'}
+        coupleId={coupleId || undefined}
+      >
+        <ChatScreenInner topic={topic || undefined} />
+      </ChatProvider>
+    </ErrorBoundary>
   );
 }
 

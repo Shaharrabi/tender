@@ -6,11 +6,12 @@
  * Includes typing indicator, message grouping, and animated entrance.
  */
 
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
   ScrollView,
+  FlatList,
   TouchableOpacity,
   StyleSheet,
   Animated,
@@ -56,7 +57,7 @@ export default function MessageFlow({
   suggestedStarters,
 }: Props) {
   const starters = suggestedStarters ?? DEFAULT_STARTERS;
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<FlatList<ChatMessage>>(null);
 
   // Track streaming content growth for auto-scroll (throttled to every ~200 chars)
   const lastMsg = messages.length > 0 ? messages[messages.length - 1] : null;
@@ -64,8 +65,9 @@ export default function MessageFlow({
 
   useEffect(() => {
     // Auto-scroll to bottom when new messages arrive or streaming content grows
+    // For inverted FlatList, scrolling to offset 0 scrolls to the bottom (newest messages)
     setTimeout(() => {
-      scrollRef.current?.scrollToEnd({ animated: true });
+      scrollRef.current?.scrollToOffset({ offset: 0, animated: true });
     }, 100);
   }, [messages.length, sending, streamScrollKey]);
 
@@ -74,7 +76,6 @@ export default function MessageFlow({
   if (messages.length === 0) {
     return (
       <ScrollView
-        ref={scrollRef}
         style={styles.container}
         contentContainerStyle={styles.emptyContent}
       >
@@ -102,43 +103,67 @@ export default function MessageFlow({
 
   // ── Messages list ──
 
+  // Reverse messages for inverted FlatList: newest message (last in original)
+  // becomes first in reversed array, which appears at the bottom of an inverted list.
+  const reversedMessages = useMemo(
+    () => [...messages].reverse(),
+    [messages]
+  );
+
+  const renderItem = useCallback(
+    ({ item: msg, index }: { item: ChatMessage; index: number }) => {
+      // reversedMessages is newest-first; map indices back to original order
+      const originalIndex = messages.length - 1 - index;
+      const prevMsg = originalIndex > 0 ? messages[originalIndex - 1] : null;
+      const nextMsg =
+        originalIndex < messages.length - 1
+          ? messages[originalIndex + 1]
+          : null;
+      const isFirstInGroup = !prevMsg || prevMsg.role !== msg.role;
+      const isLastInGroup = !nextMsg || nextMsg.role !== msg.role;
+      const showTimestamp = shouldShowTimestamp(msg, prevMsg);
+
+      return (
+        <React.Fragment>
+          {showTimestamp && (
+            <Text style={styles.timestamp}>
+              {formatTimestamp(msg.createdAt)}
+            </Text>
+          )}
+          <MesnuanceBubble
+            message={msg}
+            isFirstInGroup={isFirstInGroup}
+            isLastInGroup={isLastInGroup}
+            isLastMessage={originalIndex === messages.length - 1}
+            onExerciseTap={onExerciseTap}
+          />
+        </React.Fragment>
+      );
+    },
+    [messages, onExerciseTap]
+  );
+
+  const typingHeader = useCallback(
+    () => (sending ? <TypingIndicator /> : null),
+    [sending]
+  );
+
   return (
-    <ScrollView
+    <FlatList<ChatMessage>
       ref={scrollRef}
+      data={reversedMessages}
+      renderItem={renderItem}
+      keyExtractor={(item) => item.id}
+      inverted
       style={styles.container}
       contentContainerStyle={styles.scrollContent}
       keyboardShouldPersistTaps="handled"
       accessibilityRole="list"
       accessibilityLabel="Conversation messages"
       accessibilityLiveRegion="polite"
-    >
-      {messages.map((msg, index) => {
-        const prevMsg = index > 0 ? messages[index - 1] : null;
-        const nextMsg = index < messages.length - 1 ? messages[index + 1] : null;
-        const isFirstInGroup = !prevMsg || prevMsg.role !== msg.role;
-        const isLastInGroup = !nextMsg || nextMsg.role !== msg.role;
-        const showTimestamp = shouldShowTimestamp(msg, prevMsg);
-
-        return (
-          <React.Fragment key={msg.id}>
-            {showTimestamp && (
-              <Text style={styles.timestamp}>
-                {formatTimestamp(msg.createdAt)}
-              </Text>
-            )}
-            <MesnuanceBubble
-              message={msg}
-              isFirstInGroup={isFirstInGroup}
-              isLastInGroup={isLastInGroup}
-              isLastMessage={index === messages.length - 1}
-              onExerciseTap={onExerciseTap}
-            />
-          </React.Fragment>
-        );
-      })}
-
-      {sending && <TypingIndicator />}
-    </ScrollView>
+      ListHeaderComponent={typingHeader}
+      onEndReached={() => {}}
+    />
   );
 }
 

@@ -2,7 +2,7 @@
  * Chat context — manages active session, messages, and AI communication.
  */
 
-import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useAuth } from './AuthContext';
 import { getPortrait } from '@/services/portrait';
 import { supabase } from '@/services/supabase';
@@ -437,23 +437,23 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
     setSafetyAlert(null);
   }, []);
 
+  const contextValue = useMemo(() => ({
+    activeSession,
+    sessions,
+    messages,
+    loading,
+    sending,
+    error,
+    safetyAlert,
+    sendMessage,
+    startNewSession,
+    loadSession,
+    loadSessions,
+    dismissSafetyAlert,
+  }), [activeSession, sessions, messages, loading, sending, error, safetyAlert, sendMessage, startNewSession, loadSession, loadSessions, dismissSafetyAlert]);
+
   return (
-    <ChatContext.Provider
-      value={{
-        activeSession,
-        sessions,
-        messages,
-        loading,
-        sending,
-        error,
-        safetyAlert,
-        sendMessage,
-        startNewSession,
-        loadSession,
-        loadSessions,
-        dismissSafetyAlert,
-      }}
-    >
+    <ChatContext.Provider value={contextValue}>
       {children}
     </ChatContext.Provider>
   );

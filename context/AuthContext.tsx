@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@/services/supabase';
 import {
   checkRateLimit,
@@ -121,6 +122,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     await clearNotificationState();
     await supabase.auth.signOut();
+
+    // Clear cached user data on logout
+    try {
+      await AsyncStorage.multiRemove([
+        'guestScores',
+        'assessmentCache',
+        'pending_display_name',
+        'onboarding_complete',
+        'ftue_complete',
+        'daily_checkin_cache',
+        'nudge_dismissed',
+        'demo_mode',
+        'tender_assessment_progress',
+        'tender_notification_prefs',
+        'has_seen_journey_unlock',
+        'has_heard_foundation',
+        'guest_mode',
+      ]);
+    } catch {
+      // Non-blocking — stale cache will be ignored on next login
+    }
+
     setSession(null);
   };
 
