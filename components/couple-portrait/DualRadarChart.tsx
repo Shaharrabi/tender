@@ -19,7 +19,7 @@ interface DualRadarChartProps {
   size?: number;
 }
 
-const OVERLAP_COLOR = '#9B7BA7';
+const OVERLAP_COLOR = Colors.overlapPurple;
 
 export default function DualRadarChart({
   radarOverlap,

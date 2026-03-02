@@ -215,13 +215,13 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#E3EFE5',
+    backgroundColor: Colors.successLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
   iconText: {
     fontSize: 18,
-    color: '#4A6F50',
+    color: Colors.successDark,
   },
   title: {
     fontSize: FontSizes.headingM,
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
   },
   progressMet: {
-    color: '#4A6F50',
+    color: Colors.successDark,
   },
 
   // Items
@@ -265,8 +265,8 @@ const styles = StyleSheet.create({
     ...Shadows.subtle,
   },
   itemCardChecked: {
-    borderColor: '#4A6F50' + '60',
-    backgroundColor: '#E3EFE5' + '40',
+    borderColor: Colors.successDark + '60',
+    backgroundColor: Colors.successLight + '40',
   },
 
   // Checkbox
@@ -281,8 +281,8 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   checkboxChecked: {
-    backgroundColor: '#4A6F50',
-    borderColor: '#4A6F50',
+    backgroundColor: Colors.successDark,
+    borderColor: Colors.successDark,
   },
 
   // Text
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
   summary: {
     fontSize: 13,
     fontFamily: 'Jost_500Medium',
-    color: '#4A6F50',
+    color: Colors.successDark,
     textAlign: 'center',
     marginTop: Spacing.xs,
     letterSpacing: 0.5,

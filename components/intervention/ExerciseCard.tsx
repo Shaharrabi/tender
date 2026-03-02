@@ -50,22 +50,22 @@ interface ExerciseCardProps {
 
 // ─── Category Colors ─────────────────────────────────────
 export const CATEGORY_ACCENT_COLORS: Record<InterventionCategory, string> = {
-  regulation: '#6BA3A0',   // calm / teal
-  communication: Colors.secondary, // secondary
-  attachment: Colors.primary,      // primary
-  values: Colors.accent,           // accent
-  differentiation: '#5B6B8A', // depth / indigo
+  regulation: Colors.calm,          // calm / teal
+  communication: Colors.secondary,  // secondary
+  attachment: Colors.primary,       // primary
+  values: Colors.accent,            // accent
+  differentiation: Colors.depth,    // depth / indigo
 };
 
 const CATEGORY_BADGE_COLORS: Record<
   InterventionCategory,
   { bg: string; text: string }
 > = {
-  regulation: { bg: '#E0F0F0', text: '#3D7A77' },
-  communication: { bg: '#FAEAE3', text: '#9E5B3C' },
-  attachment: { bg: '#E3EFE5', text: '#4A6F50' },
-  values: { bg: '#F5EDD8', text: '#8B7030' },
-  differentiation: { bg: '#E3E8F0', text: '#4A5872' },
+  regulation: { bg: Colors.calmLight, text: Colors.calmDark },
+  communication: { bg: Colors.accentLight, text: Colors.accentDark },
+  attachment: { bg: Colors.successLight, text: Colors.successDark },
+  values: { bg: Colors.warningFaded, text: Colors.warningDark },
+  differentiation: { bg: Colors.depthLight, text: Colors.depthDark },
 };
 
 // ─── Difficulty Colors ───────────────────────────────────
@@ -75,18 +75,18 @@ const DIFFICULTY_CONFIG: Record<
 > = {
   beginner: {
     label: 'Beginner',
-    color: '#4A6F50',
-    bg: '#E3EFE5',
+    color: Colors.successDark,
+    bg: Colors.successLight,
   },
   intermediate: {
     label: 'Intermediate',
-    color: '#8B7030',
-    bg: '#F5EDD8',
+    color: Colors.warningDark,
+    bg: Colors.warningFaded,
   },
   advanced: {
     label: 'Advanced',
-    color: '#9E5B3C',
-    bg: '#FAEAE3',
+    color: Colors.accentDark,
+    bg: Colors.accentLight,
   },
 };
 
@@ -98,20 +98,20 @@ const MODE_CONFIG: Record<
   solo: {
     Icon: MeditationIcon,
     label: 'Solo',
-    color: '#3D7A77',
-    bg: '#E0F0F0',
+    color: Colors.calmDark,
+    bg: Colors.calmLight,
   },
   together: {
     Icon: CoupleIcon,
     label: 'Together',
-    color: '#9E5B3C',
-    bg: '#FAEAE3',
+    color: Colors.accentDark,
+    bg: Colors.accentLight,
   },
   either: {
     Icon: RefreshIcon,
     label: 'Either',
-    color: '#4A5872',
-    bg: '#E3E8F0',
+    color: Colors.depthDark,
+    bg: Colors.depthLight,
   },
 };
 
@@ -179,7 +179,7 @@ function ExerciseCard({
             </View>
             {completionCount > 0 && (
               <View style={styles.completionBadge}>
-                <CheckmarkIcon size={11} color="#4A6F50" />
+                <CheckmarkIcon size={11} color={Colors.successDark} />
                 <Text style={styles.completionText}>
                   {completionCount === 1 ? 'Done' : `${completionCount}×`}
                 </Text>
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
   completionBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E3EFE5',
+    backgroundColor: Colors.successLight,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: BorderRadius.pill,
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
   completionText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#4A6F50',
+    color: Colors.successDark,
   },
 
   // Title & description

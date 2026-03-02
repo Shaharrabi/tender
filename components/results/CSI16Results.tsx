@@ -26,9 +26,9 @@ const LEVEL_COLORS: Record<CSI16Scores['satisfactionLevel'], string> = {
 };
 
 const LEVEL_BG: Record<CSI16Scores['satisfactionLevel'], string> = {
-  high: '#EAF3EE',
-  moderate: '#FDF5E6',
-  low: '#FBF0ED',
+  high: Colors.successLight,
+  moderate: Colors.accentGoldLight,
+  low: Colors.accentLight,
   crisis: Colors.errorLight,
 };
 

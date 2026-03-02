@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     top: (28 - THUMB_SIZE) / 2,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
+    shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,
     shadowRadius: 3,

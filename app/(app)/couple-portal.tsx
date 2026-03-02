@@ -1043,10 +1043,10 @@ function CouplePortalScreen() {
           <AssessmentCard
             title="Relationship Adjustment"
             subtitle="RDAS — Consensus, satisfaction, and cohesion in the relationship"
-            accentColor="#7294D4"
+            accentColor={Colors.secondary}
           >
-            <CompareRow label="Total Score" valueA={rdas.partnerA?.total ?? null} valueB={rdas.partnerB?.total ?? null} max={69} color="#7294D4" />
-            <CompareRow label="Consensus" valueA={rdas.partnerA?.consensus ?? null} valueB={rdas.partnerB?.consensus ?? null} max={30} color="#7294D4" />
+            <CompareRow label="Total Score" valueA={rdas.partnerA?.total ?? null} valueB={rdas.partnerB?.total ?? null} max={69} color={Colors.secondary} />
+            <CompareRow label="Consensus" valueA={rdas.partnerA?.consensus ?? null} valueB={rdas.partnerB?.consensus ?? null} max={30} color={Colors.secondary} />
             <CompareRow label="Satisfaction" valueA={rdas.partnerA?.satisfaction ?? null} valueB={rdas.partnerB?.satisfaction ?? null} max={20} color={Colors.secondary} />
             <CompareRow label="Cohesion" valueA={rdas.partnerA?.cohesion ?? null} valueB={rdas.partnerB?.cohesion ?? null} max={20} color={Colors.success} />
 
@@ -1090,10 +1090,10 @@ function CouplePortalScreen() {
             accentColor={Colors.success}
           >
             <CompareRow label="Positive Coping (Total)" valueA={dci.partnerA?.totalPositive ?? null} valueB={dci.partnerB?.totalPositive ?? null} max={90} color={Colors.success} />
-            <CompareRow label="Stress Communication" valueA={dci.partnerA?.stressCommunicationBySelf ?? null} valueB={dci.partnerB?.stressCommunicationBySelf ?? null} max={20} color="#7294D4" />
+            <CompareRow label="Stress Communication" valueA={dci.partnerA?.stressCommunicationBySelf ?? null} valueB={dci.partnerB?.stressCommunicationBySelf ?? null} max={20} color={Colors.secondary} />
             <CompareRow label="Supportive Coping" valueA={dci.partnerA?.supportiveBySelf ?? null} valueB={dci.partnerB?.supportiveBySelf ?? null} max={25} color={Colors.success} />
             <CompareRow label="Delegated Coping" valueA={dci.partnerA?.delegatedBySelf ?? null} valueB={dci.partnerB?.delegatedBySelf ?? null} max={10} color={Colors.secondary} />
-            <CompareRow label="Common Coping" valueA={dci.partnerA?.commonCoping ?? null} valueB={dci.partnerB?.commonCoping ?? null} max={25} color="#D4A843" />
+            <CompareRow label="Common Coping" valueA={dci.partnerA?.commonCoping ?? null} valueB={dci.partnerB?.commonCoping ?? null} max={25} color={Colors.warning} />
             <CompareRow label="Negative Coping" valueA={dci.partnerA?.negativeBySelf ?? null} valueB={dci.partnerB?.negativeBySelf ?? null} max={20} color={Colors.error} />
 
             {/* Level badges */}
@@ -1481,7 +1481,7 @@ const styles = StyleSheet.create({
 
   // Overview
   narrativeCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Colors.surface,
     borderRadius: BorderRadius.lg,
     padding: Spacing.lg,
     marginBottom: Spacing.md,

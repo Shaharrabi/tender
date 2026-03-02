@@ -73,14 +73,14 @@ const SHARING_ITEMS: SharingItem[] = [
   {
     type: 'ipip-neo-120',
     Icon: BrainIcon,
-    iconColor: '#5B6B8A',
+    iconColor: Colors.depth,
     name: 'Personality Profile',
     desc: 'Big Five personality traits and facets',
   },
   {
     type: 'sseit',
     Icon: MasksIcon,
-    iconColor: '#6BA3A0',
+    iconColor: Colors.calm,
     name: 'Emotional Intelligence',
     desc: 'How you perceive and manage emotions',
   },
@@ -101,7 +101,7 @@ const SHARING_ITEMS: SharingItem[] = [
   {
     type: 'values',
     Icon: CompassIcon,
-    iconColor: '#8B6914',
+    iconColor: Colors.warningDark,
     name: 'Values Profile',
     desc: 'Core values, priorities, and aspirational vision',
   },

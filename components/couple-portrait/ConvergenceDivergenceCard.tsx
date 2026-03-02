@@ -81,8 +81,8 @@ export function ComplementaryGiftCard({
       accessibilityState={{ expanded }}
     >
       <View style={styles.cardHeader}>
-        <View style={[styles.iconBadge, { backgroundColor: '#F0E6FF' }]}>
-          <PuzzleIcon size={16} color="#9B7BA7" />
+        <View style={[styles.iconBadge, { backgroundColor: Colors.overlapPurpleLight }]}>
+          <PuzzleIcon size={16} color={Colors.overlapPurple} />
         </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.cardTitle}>{item.dimensionLabel}</Text>
@@ -177,7 +177,7 @@ export function ValuesTensionCard({ item }: { item: ValuesTension }) {
       accessibilityState={{ expanded }}
     >
       <View style={styles.cardHeader}>
-        <View style={[styles.iconBadge, { backgroundColor: '#FFF3E0' }]}>
+        <View style={[styles.iconBadge, { backgroundColor: Colors.accentGoldLight }]}>
           <ScaleIcon size={16} color={Colors.accent} />
         </View>
         <Text style={styles.cardTitle}>{item.valueA} vs. {item.valueB}</Text>
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
   },
   giftCard: {
     borderLeftWidth: 3,
-    borderLeftColor: '#9B7BA7',
+    borderLeftColor: Colors.overlapPurple,
   },
   frictionCard: {
     borderLeftWidth: 3,

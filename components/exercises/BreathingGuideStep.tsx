@@ -83,8 +83,8 @@ export default function BreathingGuideStep({
   const config = step.interactiveConfig as BreathingGuideConfig | undefined;
   const pattern = config?.pattern ?? { inhale: 4, exhale: 6 };
   const totalCycles = config?.cycles ?? 6;
-  const colorStart = config?.colorShift?.start ?? '#E07A5F';
-  const colorEnd = config?.colorShift?.end ?? '#8F9E8B';
+  const colorStart = config?.colorShift?.start ?? Colors.accent;
+  const colorEnd = config?.colorShift?.end ?? Colors.success;
 
   const [phase, setPhase] = useState<BreathPhase>('idle');
   const [currentCycle, setCurrentCycle] = useState(0);

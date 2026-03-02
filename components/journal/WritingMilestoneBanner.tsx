@@ -55,7 +55,7 @@ const MILESTONE_CONFIG: Record<
     subtitle: 'That takes real courage. Be proud.',
     sound: () => SoundHaptics.playLevelUp(),
     Icon: StarIcon,
-    accentColor: '#D4A574', // warm gold
+    accentColor: Colors.accentGold, // warm gold
   },
 };
 

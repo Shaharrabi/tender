@@ -50,7 +50,7 @@ const ZONE_RESPONSES: ZoneResponse[] = [
     zone: 'hyperarousal',
     label: 'Activated',
     Icon: FireIcon,
-    color: '#E07A5F',
+    color: Colors.zoneHyper,
     validation: 'Your system is activated right now. That makes sense.',
     bodySignals: 'Racing heart, tension, heat, restlessness, urgency.',
     practices: [
@@ -65,7 +65,7 @@ const ZONE_RESPONSES: ZoneResponse[] = [
     zone: 'inWindow',
     label: 'Regulated',
     Icon: GreenHeartIcon,
-    color: '#8B9E7E',
+    color: Colors.zoneRegulated,
     validation: 'You are in your window right now. This is where growth happens.',
     bodySignals: 'Breathing is steady, thinking is clear, body feels settled.',
     practices: [
@@ -80,7 +80,7 @@ const ZONE_RESPONSES: ZoneResponse[] = [
     zone: 'hypoarousal',
     label: 'Shutdown',
     Icon: SnowflakeIcon,
-    color: '#7B9CC4',
+    color: Colors.zoneHypo,
     validation: 'Your system has moved into protection mode. That\u2019s okay.',
     bodySignals: 'Heaviness, fog, numbness, flatness, disconnection.',
     practices: [

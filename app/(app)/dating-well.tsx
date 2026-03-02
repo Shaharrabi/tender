@@ -462,7 +462,7 @@ const styles = StyleSheet.create({
     fontFamily: 'JosefinSans_400Regular',
     fontSize: 13,
     fontWeight: '600',
-    color: '#fff',
+    color: Colors.white,
     letterSpacing: 1,
   },
   secondaryButton: {

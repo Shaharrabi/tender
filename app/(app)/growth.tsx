@@ -421,12 +421,12 @@ const styles = StyleSheet.create({
     color: Colors.text,
   },
   practicedPill: {
-    backgroundColor: '#DFF0E0',
+    backgroundColor: Colors.successFaded,
   },
   practicedText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#2D5F34',
+    color: Colors.successDarkText,
   },
 
   // Empty growth edges fallback

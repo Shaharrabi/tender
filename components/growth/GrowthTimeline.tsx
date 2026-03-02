@@ -28,25 +28,25 @@ const STAGE_CONFIG: Record<GrowthStage, { label: string; color: string; bg: stri
   emerging: {
     label: 'Emerging',
     color: Colors.calm,
-    bg: '#E0F0F0',
+    bg: Colors.calmLight,
     progress: 0.25,
   },
   practicing: {
     label: 'Practicing',
     color: Colors.accent,
-    bg: '#FDF3E0',
+    bg: Colors.accentGoldLight,
     progress: 0.5,
   },
   integrating: {
     label: 'Integrating',
     color: Colors.secondary,
-    bg: '#F5E8E0',
+    bg: Colors.accentLightAlt,
     progress: 0.75,
   },
   integrated: {
     label: 'Integrated',
     color: Colors.primary,
-    bg: '#DFF0E0',
+    bg: Colors.successFaded,
     progress: 1.0,
   },
 };

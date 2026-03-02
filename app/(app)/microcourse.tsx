@@ -880,7 +880,7 @@ const stepStyles = StyleSheet.create({
 
   // ─── Read ─────────────────────────────
   readCard: {
-    backgroundColor: '#FBF7F2',
+    backgroundColor: Colors.backgroundAlt,
     borderRadius: BorderRadius.lg,
     padding: Spacing.lg,
     borderWidth: 1,
@@ -971,7 +971,7 @@ const stepStyles = StyleSheet.create({
     borderRadius: BorderRadius.md,
     borderWidth: 1.5,
     borderColor: Colors.accent + '60',
-    backgroundColor: '#FFFCF7',
+    backgroundColor: Colors.surfaceElevated,
     overflow: 'hidden',
   },
   input: {

@@ -328,18 +328,18 @@ const styles = StyleSheet.create({
 
   // ── Auth banner ──
   authBanner: {
-    backgroundColor: '#FFF8E7',
+    backgroundColor: Colors.warningLight,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.md,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: '#F0E0B8',
+    borderBottomColor: Colors.warningBorder,
   },
   authBannerText: {
     fontSize: FontSizes.bodySmall,
-    color: '#8B6914',
+    color: Colors.warningDark,
     flex: 1,
     fontWeight: '500',
   },
@@ -352,18 +352,18 @@ const styles = StyleSheet.create({
 
   // ── Error banner ──
   errorBanner: {
-    backgroundColor: '#FFF0F0',
+    backgroundColor: Colors.errorFaded,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: '#FFD0D0',
+    borderBottomColor: Colors.errorBorder,
   },
   errorBannerText: {
     fontSize: FontSizes.caption,
-    color: '#C44',
+    color: Colors.errorText,
     flex: 1,
   },
   errorRetryText: {

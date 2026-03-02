@@ -337,17 +337,17 @@ const styles = StyleSheet.create({
 
   // Back
   cardBack: {
-    backgroundColor: '#FBF7F2',
+    backgroundColor: Colors.surfaceElevated,
     borderWidth: 2,
-    borderColor: '#4A6F50' + '40',
+    borderColor: Colors.successDark + '40',
     borderLeftWidth: 4,
-    borderLeftColor: '#4A6F50',
+    borderLeftColor: Colors.successDark,
   },
   antidoteBadge: {
     position: 'absolute',
     top: 12,
     right: 12,
-    backgroundColor: '#E3EFE5',
+    backgroundColor: Colors.successLight,
     paddingHorizontal: 10,
     paddingVertical: 3,
     borderRadius: BorderRadius.pill,
@@ -355,7 +355,7 @@ const styles = StyleSheet.create({
   antidoteBadgeText: {
     fontSize: 10,
     fontFamily: 'Jost_600SemiBold',
-    color: '#4A6F50',
+    color: Colors.successDark,
     letterSpacing: 1,
   },
   cardBackText: {

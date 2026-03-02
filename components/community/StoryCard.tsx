@@ -44,7 +44,7 @@ const REACTION_CONFIG = [
     type: 'felt_seen' as ReactionType,
     label: 'Seen',
     Icon: SparkleIcon,
-    activeColor: '#D4A843', // warm gold
+    activeColor: Colors.accentGold, // warm gold
     countKey: 'feltSeenCount' as const,
     hasKey: 'hasFeltSeen' as const,
     hapticMethod: 'success' as const,
@@ -53,7 +53,7 @@ const REACTION_CONFIG = [
     type: 'been_there' as ReactionType,
     label: 'Been there',
     Icon: HandshakeIcon,
-    activeColor: '#6BA3A0', // calm teal
+    activeColor: Colors.calm, // calm teal
     countKey: 'beenThereCount' as const,
     hasKey: 'hasBeenThere' as const,
     hapticMethod: 'tap' as const,

@@ -24,7 +24,7 @@ export default function Badge({ label, variant = 'info', style }: BadgeProps) {
 }
 
 const variantConfig: Record<BadgeVariant, { bg: string; text: string }> = {
-  completed: { bg: '#DFF0E0', text: '#2D5F34' },
+  completed: { bg: Colors.successLight, text: '#2D5F34' },
   inProgress: { bg: '#FDF3E0', text: '#8B6914' },
   notStarted: { bg: Colors.surface, text: Colors.textSecondary },
   info: { bg: '#E0EDF5', text: Colors.depth },

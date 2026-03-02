@@ -51,9 +51,38 @@ export const Colors = {
 
   // Semantic
   success: '#6B9080',         // Muted Sage
+  successLight: '#E3EFE5',    // Sage Mist — success backgrounds, completion badges
+  successFaded: '#DFF0E0',    // Mint Mist — softer success tint (badges, pills)
+  successDark: '#4A6F50',     // Deep Sage — success text on light bg, checkmarks
+  successDarkText: '#2D5F34', // Forest — bold success text on faded backgrounds
+  successMuted: '#3D6B42',    // Shaded Sage — secondary success text
   warning: '#D4A843',         // Concierge Gold
+  warningLight: '#FFF8E7',    // Gold Whisper — warning banner backgrounds
+  warningFaded: '#F5EDD8',    // Gold Parchment — muted warning backgrounds
+  warningDark: '#8B6914',     // Deep Amber — warning text on light bg
+  warningBorder: '#F0E0B8',   // Gold Sand — warning banner borders
   error: '#C93312',           // Anderson Red
   errorLight: '#FDEAE5',      // Pale Rose
+  errorFaded: '#FFF0F0',      // Blush Mist — error banner backgrounds
+  errorBorder: '#FFD0D0',     // Rose Sand — error banner borders
+  errorText: '#CC4444',       // Crimson — error banner text
+
+  // Semantic tint backgrounds (badges, chips, category accents)
+  calmLight: '#E0F0F0',       // Pale Teal — regulation backgrounds
+  calmDark: '#3D7A77',        // Deep Teal — regulation text on light bg
+  depthLight: '#E3E8F0',      // Pale Indigo — differentiation backgrounds
+  depthDark: '#4A5872',       // Deep Indigo — differentiation text on light bg
+  accentLight: '#FAEAE3',     // Warm Blush — communication/accent backgrounds
+  accentLightAlt: '#F5E8E0',  // Dusty Blush — softer accent tint (stage backgrounds)
+  accentDark: '#9E5B3C',      // Deep Terracotta — communication text on light bg
+  accentGoldLight: '#FDF3E0', // Pale Gold — assessment/gold backgrounds
+
+  // Nervous-system zone colors (Window of Tolerance)
+  zoneHyper: '#E07A5F',       // Terracotta Flame — hyperarousal / activated
+  zoneRegulated: '#8B9E7E',   // Sage Leaf — in-window / regulated
+  zoneHypo: '#7B9CC4',        // Soft Steel — hypoarousal / shutdown
+  overlapPurple: '#9B7BA7',   // Lavender Blend — couple overlap, convergence
+  overlapPurpleLight: '#F0E6FF', // Pale Lavender — overlap badge backgrounds
 
   // Attachment style quadrants
   attachmentSecure: '#6B9080',   // Muted Sage — calm, grounded
@@ -255,12 +284,13 @@ export const ButtonSizes = {
 };
 
 export const BorderRadius = {
-  sm: 4,       // Crisp — Anderson geometric precision
-  md: 8,       // Standard cards
-  lg: 12,      // Buttons, prominent cards
-  xl: 20,      // Modal containers
+  sm: 8,       // Subtle rounding — inputs, small elements
+  md: 12,      // Standard cards
+  lg: 16,      // Buttons, prominent cards
+  xl: 24,      // Modal containers
   pill: 999,
   round: 999,  // Alias for pill — fully round
+  full: 9999,  // Fully round — avatars, circular elements
 };
 
 // ─── Shadows ─────────────────────────────────────────────

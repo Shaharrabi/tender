@@ -18,7 +18,7 @@ interface TwinOrbsFieldProps {
   partnerBName: string;
 }
 
-const OVERLAP_COLOR = '#9B7BA7'; // Blend of primary + secondary
+const OVERLAP_COLOR = Colors.overlapPurple; // Blend of primary + secondary
 
 export default function TwinOrbsField({ field, partnerAName, partnerBName }: TwinOrbsFieldProps) {
   const pulseA = useRef(new Animated.Value(0.8)).current;

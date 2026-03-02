@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
   },
   likertOptionSelected: {
     borderColor: Colors.primary,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: Colors.primaryFaded,
   },
   radio: {
     width: 22,
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
   },
   choiceOptionSelected: {
     borderColor: Colors.primary,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: Colors.primaryFaded,
   },
   choiceKeyBadge: {
     width: 28,
@@ -296,7 +296,7 @@ const styles = StyleSheet.create({
   },
   rankingItemSelected: {
     borderColor: Colors.primary,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: Colors.primaryFaded,
   },
   rankingItemDisabled: { opacity: 0.4 },
   rankBadge: {

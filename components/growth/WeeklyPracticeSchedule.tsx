@@ -207,7 +207,7 @@ export default function WeeklyPracticeSchedule({
                 ]}
               >
                 {isCompleted && (
-                  <CheckmarkIcon size={11} color="#FFFFFF" />
+                  <CheckmarkIcon size={11} color={Colors.white} />
                 )}
               </View>
 
@@ -305,7 +305,7 @@ export default function WeeklyPracticeSchedule({
                   ]}
                 >
                   {done && (
-                    <CheckmarkIcon size={11} color="#FFFFFF" />
+                    <CheckmarkIcon size={11} color={Colors.white} />
                   )}
                 </View>
                 <View style={styles.practiceRowInfo}>

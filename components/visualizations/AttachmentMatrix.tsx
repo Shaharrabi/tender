@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: DOT_COLOR,
     borderWidth: 2,
-    borderColor: '#FFF',
+    borderColor: Colors.white,
     shadowColor: DOT_COLOR,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4,

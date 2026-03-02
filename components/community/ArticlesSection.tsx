@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   readMoreArrowText: {
-    color: '#FFFFFF',
+    color: Colors.white,
     fontSize: 12,
     fontWeight: '700',
   },

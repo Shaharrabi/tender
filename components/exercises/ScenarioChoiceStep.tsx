@@ -210,7 +210,7 @@ export default function ScenarioChoiceStep({
               {/* Recommended badge */}
               {choice.isRecommended && isSelected && (
                 <View style={styles.recommendedBadge}>
-                  <CheckmarkIcon size={12} color="#4A6F50" />
+                  <CheckmarkIcon size={12} color={Colors.successDark} />
                   <Text style={styles.recommendedText}>Recommended</Text>
                 </View>
               )}
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
 
   // Scenario card
   scenarioCard: {
-    backgroundColor: '#FBF7F2',
+    backgroundColor: Colors.surfaceElevated,
     borderRadius: BorderRadius.lg,
     padding: Spacing.lg,
     borderWidth: 1.5,
@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#E3EFE5',
+    backgroundColor: Colors.successLight,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: BorderRadius.pill,
@@ -422,7 +422,7 @@ const styles = StyleSheet.create({
   recommendedText: {
     fontSize: 11,
     fontFamily: 'Jost_500Medium',
-    color: '#4A6F50',
+    color: Colors.successDark,
     letterSpacing: 0.5,
   },
 
@@ -441,7 +441,7 @@ const styles = StyleSheet.create({
   feedbackCardChosen: {
     borderLeftWidth: 4,
     borderLeftColor: Colors.primary,
-    backgroundColor: '#FBF7F2',
+    backgroundColor: Colors.surfaceElevated,
   },
   feedbackChosenBadge: {
     alignSelf: 'flex-start',

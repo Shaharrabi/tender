@@ -51,6 +51,6 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
   },
   textActive: {
-    color: '#FFF',
+    color: Colors.white,
   },
 });

@@ -145,7 +145,7 @@ export default function GrowthPlanContent({ portrait, router }: GrowthPlanConten
                           s.phaseProgressMiniFill,
                           {
                             width: `${Math.max(p.pct, 4)}%` as any,
-                            backgroundColor: p.isComplete ? '#4A6F50' : Colors.secondary,
+                            backgroundColor: p.isComplete ? Colors.successDark : Colors.secondary,
                           },
                         ]}
                       />
@@ -220,7 +220,7 @@ export default function GrowthPlanContent({ portrait, router }: GrowthPlanConten
                     <View style={[
                       s.phaseIndicator,
                       phaseIsComplete
-                        ? { backgroundColor: '#4A6F50' }
+                        ? { backgroundColor: Colors.successDark }
                         : i === 0 && { backgroundColor: Colors.secondary },
                     ]} />
                     <View style={{ flex: 1 }}>
@@ -239,7 +239,7 @@ export default function GrowthPlanContent({ portrait, router }: GrowthPlanConten
                       {phaseExercises.map((ex: any) => {
                         const isDone = (completionMap[ex.id] ?? 0) > 0;
                         const accentColor = isDone
-                          ? '#4A6F50'
+                          ? Colors.successDark
                           : CATEGORY_ACCENT_COLORS[ex.category as keyof typeof CATEGORY_ACCENT_COLORS] || Colors.primary;
                         return (
                           <TouchableOpacity
@@ -360,7 +360,7 @@ export default function GrowthPlanContent({ portrait, router }: GrowthPlanConten
                 {edgeExercises.map((ex: any) => {
                   const isDone = (completionMap[ex.id] ?? 0) > 0;
                   const accentColor = isDone
-                    ? '#4A6F50'
+                    ? Colors.successDark
                     : CATEGORY_ACCENT_COLORS[ex.category as keyof typeof CATEGORY_ACCENT_COLORS] || Colors.primary;
                   return (
                     <TouchableOpacity
@@ -582,14 +582,14 @@ const s = StyleSheet.create({
     fontWeight: '300' as const,
   },
   exerciseRowDone: {
-    backgroundColor: '#E3EFE5',
+    backgroundColor: Colors.successLight,
     opacity: 0.85,
   },
   exerciseCheckmark: {
     width: 18,
     height: 18,
     borderRadius: 9,
-    backgroundColor: '#4A6F50',
+    backgroundColor: Colors.successDark,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
     marginRight: 10,
@@ -600,12 +600,12 @@ const s = StyleSheet.create({
     fontWeight: '700' as const,
   },
   exerciseRowTitleDone: {
-    color: '#4A6F50',
+    color: Colors.successDark,
   },
 
   // Guidance / Contraindications
   guidanceContainer: {
-    backgroundColor: '#FFF8F0',
+    backgroundColor: Colors.surfaceElevated,
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
     marginBottom: Spacing.lg,
@@ -693,12 +693,12 @@ const s = StyleSheet.create({
 
   // Phase Completion Summary
   phaseCompleteSummary: {
-    backgroundColor: '#E3EFE5',
+    backgroundColor: Colors.successLight,
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
     marginTop: Spacing.sm,
     borderLeftWidth: 3,
-    borderLeftColor: '#4A6F50',
+    borderLeftColor: Colors.successDark,
   },
   phaseCompleteIcon: {
     fontSize: 18,
@@ -707,12 +707,12 @@ const s = StyleSheet.create({
   phaseCompleteTitle: {
     fontSize: FontSizes.bodySmall,
     fontWeight: '700' as const,
-    color: '#4A6F50',
+    color: Colors.successDark,
     marginBottom: 4,
   },
   phaseCompleteText: {
     fontSize: FontSizes.bodySmall,
-    color: '#3D6B42',
+    color: Colors.successMuted,
     lineHeight: 20,
   },
 

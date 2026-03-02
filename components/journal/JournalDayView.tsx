@@ -62,37 +62,37 @@ const TYPE_CONFIG: Record<JournalEntryType, {
   },
   assessment: {
     color: Colors.accentGold,
-    bg: '#FDF3E0',
+    bg: Colors.accentGoldLight,
     label: 'Assessment',
     Icon: StarIcon,
   },
   chat: {
     color: Colors.calm,
-    bg: '#E0F0F0',
+    bg: Colors.calmLight,
     label: 'Chat',
     Icon: ChatBubbleIcon,
   },
   xp: {
     color: Colors.accent,
-    bg: '#FDF0E6',
+    bg: Colors.accentLight,
     label: 'XP',
     Icon: StarIcon,
   },
   minigame: {
     color: Colors.accentGold,
-    bg: '#FFF8E8',
+    bg: Colors.accentGoldLight,
     label: 'Step Exercise',
     Icon: SparkleIcon,
   },
   step_milestone: {
     color: Colors.success,
-    bg: '#E8F5E9',
+    bg: Colors.successLight,
     label: 'Step Milestone',
     Icon: StarIcon,
   },
   card_game: {
     color: Colors.accent,
-    bg: '#FDF0E6',
+    bg: Colors.accentLight,
     label: 'Card Game',
     Icon: RainbowIcon,
   },
@@ -820,7 +820,7 @@ const cardStyles = StyleSheet.create({
 
   // Assessment badge + scores
   assessmentBadge: {
-    backgroundColor: '#FDF3E0',
+    backgroundColor: Colors.accentGoldLight,
     paddingHorizontal: Spacing.sm,
     paddingVertical: 3,
     borderRadius: BorderRadius.pill,

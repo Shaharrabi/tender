@@ -167,7 +167,7 @@ export default function StepJourney({
                       ]}
                     >
                       {isCompleted && (
-                        <CheckmarkIcon size={10} color="#FFFFFF" />
+                        <CheckmarkIcon size={10} color={Colors.white} />
                       )}
                       {isCurrent && (
                         <View

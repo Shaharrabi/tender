@@ -458,7 +458,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
     borderWidth: 1.5,
     borderColor: Colors.accent + '50',
-    backgroundColor: '#FFFCF7',
+    backgroundColor: Colors.surfaceElevated,
     overflow: 'hidden',
   },
   activeInput: {
@@ -501,7 +501,7 @@ const styles = StyleSheet.create({
 
   // Composed result card
   composedCard: {
-    backgroundColor: '#FBF7F2',
+    backgroundColor: Colors.surfaceElevated,
     borderRadius: BorderRadius.lg,
     padding: Spacing.lg,
     borderWidth: 1,
@@ -547,7 +547,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
     borderWidth: 1.5,
     borderColor: Colors.accent + '60',
-    backgroundColor: '#FFFCF7',
+    backgroundColor: Colors.surfaceElevated,
     overflow: 'hidden',
   },
   textInput: {

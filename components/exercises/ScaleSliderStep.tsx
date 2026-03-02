@@ -158,10 +158,10 @@ export default function ScaleSliderStep({
   // Color interpolation based on value
   const fillColor =
     sliderValue < 33
-      ? '#6BA3A0' // calm teal
+      ? Colors.calm // calm teal
       : sliderValue < 66
-        ? '#D4A259' // warm amber
-        : '#C4616E'; // rose
+        ? Colors.accentGold // warm amber
+        : Colors.primary; // rose
 
   if (!config) {
     return (
@@ -389,7 +389,7 @@ const styles = StyleSheet.create({
 
   // Zone card
   zoneCard: {
-    backgroundColor: '#FBF7F2',
+    backgroundColor: Colors.surfaceElevated,
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
     borderWidth: 1,

@@ -2609,20 +2609,20 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.pill,
   },
   badgeCompleted: {
-    backgroundColor: '#DFF0E0',
+    backgroundColor: Colors.successFaded,
   },
   badgeCompletedText: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#2D5F34',
+    color: Colors.successDarkText,
   },
   badgeInProgress: {
-    backgroundColor: '#FDF3E0',
+    backgroundColor: Colors.accentGoldLight,
   },
   badgeInProgressText: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#8B6914',
+    color: Colors.warningDark,
   },
 
   // ── Step Progress Dots ──
@@ -2837,16 +2837,16 @@ const styles = StyleSheet.create({
     fontWeight: '600' as const,
   },
   quickPracticeRowDone: {
-    backgroundColor: '#E3EFE5',
+    backgroundColor: Colors.successLight,
   },
   quickPracticeCheck: {
     fontSize: 13,
-    color: '#4A6F50',
+    color: Colors.successDark,
     fontWeight: '700' as const,
     marginRight: 8,
   },
   quickPracticeTitleDone: {
-    color: '#4A6F50',
+    color: Colors.successDark,
   },
   // Growth plan styles removed — replaced by portrait summary card above
 

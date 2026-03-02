@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
   },
   retryButtonText: {
     ...Typography.button,
-    color: '#FFFFFF',
+    color: Colors.white,
   },
   skipSaveButton: {
     paddingHorizontal: Spacing.lg,
