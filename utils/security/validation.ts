@@ -61,12 +61,17 @@ export function checkPasswordStrength(password: string): PasswordStrength {
 /**
  * Sanitize text input — strips dangerous characters while
  * preserving normal punctuation and unicode.
+ *
+ * Matches the server-side sanitization in supabase/functions/chat/index.ts.
+ * Both client and server sanitize as defense in depth.
  */
 export function sanitizeTextInput(input: string): string {
   return input
-    .replace(/<[^>]*>/g, '') // Strip HTML tags
-    .replace(/javascript:/gi, '') // Strip javascript: URIs
-    .replace(/on\w+\s*=/gi, '') // Strip event handlers
+    .replace(/<[^>]*>/g, '')           // Strip HTML tags
+    .replace(/javascript\s*:/gi, '')   // Strip javascript: URIs (with optional whitespace)
+    .replace(/on\w+\s*=/gi, '')        // Strip event handlers (onclick=, onerror=, etc.)
+    .replace(/\x00/g, '')             // Strip null bytes
+    .replace(/data\s*:[^,]*,/gi, '')  // Strip data: URIs (base64 payloads)
     .trim();
 }
 

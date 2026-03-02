@@ -27,8 +27,9 @@
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "supabaseUrl": "https://qwqclhzezyzeflxrtfjy.supabase.co",
-      "supabaseAnonKey": "sb_publishable_X44nRh0JlS952CarvKJfcg_WAJLktxq"
+      "eas": {
+        "projectId": "your-eas-project-id"
+      }
     }
   }
 }

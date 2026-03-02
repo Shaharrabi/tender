@@ -71,8 +71,47 @@ const createStorage = () => {
       removeItem: (k: string) => { delete mem[k]; return Promise.resolve(); },
     };
   }
-  // Native → AsyncStorage
-  return require('@react-native-async-storage/async-storage').default;
+  // Native → SecureStore (iOS Keychain / Android Keystore)
+  // Falls back to AsyncStorage if SecureStore is unavailable or value too large.
+  // On first launch after this migration, existing sessions stored in AsyncStorage
+  // are transparently read and migrated to SecureStore on next write.
+  let SecureStore: typeof import('expo-secure-store') | null = null;
+  let AsyncStorageFallback: any = null;
+  try { SecureStore = require('expo-secure-store'); } catch {}
+  try { AsyncStorageFallback = require('@react-native-async-storage/async-storage').default; } catch {}
+
+  if (SecureStore) {
+    return {
+      getItem: async (key: string): Promise<string | null> => {
+        try {
+          const value = await SecureStore!.getItemAsync(key);
+          if (value !== null) return value;
+          // Not in SecureStore — check AsyncStorage (migration from old installs)
+          return await AsyncStorageFallback?.getItem(key) ?? null;
+        } catch {
+          return await AsyncStorageFallback?.getItem(key) ?? null;
+        }
+      },
+      setItem: async (key: string, value: string): Promise<void> => {
+        try {
+          await SecureStore!.setItemAsync(key, value);
+          // Clean up old AsyncStorage entry if it existed (one-time migration)
+          AsyncStorageFallback?.removeItem(key).catch(() => {});
+        } catch {
+          // Value too large for SecureStore — fall back to AsyncStorage
+          await AsyncStorageFallback?.setItem(key, value);
+        }
+      },
+      removeItem: async (key: string): Promise<void> => {
+        // Remove from both stores to ensure clean logout
+        try { await SecureStore!.deleteItemAsync(key); } catch {}
+        try { await AsyncStorageFallback?.removeItem(key); } catch {}
+      },
+    };
+  }
+
+  // SecureStore unavailable (e.g., Expo Go limitations) — AsyncStorage fallback
+  return AsyncStorageFallback;
 };
 
 // ─── Null-object client for build/SSR when env vars are missing ────

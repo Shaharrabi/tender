@@ -18,9 +18,9 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
 // ─── CORS — restrict to your domains only ────────────
 const ALLOWED_ORIGINS = [
-  // TODO: Replace with your production domain, e.g. 'https://tender-app.netlify.app'
-  'http://localhost:8081',      // Expo dev
-  'http://localhost:19006',     // Expo web dev
+  'https://couples-app-demo.netlify.app', // Production
+  'http://localhost:8081',           // Expo dev
+  'http://localhost:19006',          // Expo web dev
 ];
 
 function getCorsHeaders(req: Request) {
@@ -120,9 +120,17 @@ serve(async (req: Request) => {
       );
     }
 
-    // ─── MESSAGE VALIDATION ───────────────────────────────
-    // Sanitize and limit message length
-    const sanitizedMessage = message.toString().trim();
+    // ─── MESSAGE VALIDATION & SANITIZATION ──────────────────
+    // Defense in depth — never trust client-side sanitization alone.
+    // Strip HTML tags, javascript: URIs, event handlers, and null bytes.
+    const sanitizedMessage = message
+      .toString()
+      .replace(/<[^>]*>/g, '')           // Strip HTML tags
+      .replace(/javascript\s*:/gi, '')   // Strip javascript: URIs
+      .replace(/on\w+\s*=/gi, '')        // Strip event handlers (onclick=, onerror=, etc.)
+      .replace(/\x00/g, '')             // Strip null bytes
+      .replace(/data\s*:[^,]*,/gi, '')  // Strip data: URIs (base64 payloads)
+      .trim();
     if (sanitizedMessage.length === 0) {
       return new Response(
         JSON.stringify({ error: 'Message cannot be empty' }),

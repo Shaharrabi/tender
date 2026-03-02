@@ -22,6 +22,8 @@ import {
   PlayfairDisplay_600SemiBold,
   PlayfairDisplay_700Bold,
 } from '@expo-google-fonts/playfair-display';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from '@/services/query-client';
 import { AuthProvider } from '@/context/AuthContext';
 import { GuestProvider } from '@/context/GuestContext';
 import { GamificationProvider } from '@/context/GamificationContext';
@@ -72,20 +74,22 @@ export default function RootLayout() {
   }
 
   return (
-    <AuthProvider>
-      <GamificationProvider>
-        <GuestProvider>
-          <FirstTimeProvider>
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="index" />
-              <Stack.Screen name="(auth)" />
-              <Stack.Screen name="(onboarding)" />
-              <Stack.Screen name="(app)" />
-            </Stack>
-            <StatusBar style="dark" />
-          </FirstTimeProvider>
-        </GuestProvider>
-      </GamificationProvider>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <GamificationProvider>
+          <GuestProvider>
+            <FirstTimeProvider>
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="index" />
+                <Stack.Screen name="(auth)" />
+                <Stack.Screen name="(onboarding)" />
+                <Stack.Screen name="(app)" />
+              </Stack>
+              <StatusBar style="dark" />
+            </FirstTimeProvider>
+          </GuestProvider>
+        </GamificationProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
