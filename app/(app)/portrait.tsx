@@ -10,7 +10,6 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   ScrollView,
   StyleSheet,
@@ -24,6 +23,7 @@ import {
   Platform,
   UIManager,
 } from 'react-native';
+import TenderText from '@/components/ui/TenderText';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { TooltipManager } from '@/components/ftue/TooltipManager';
@@ -34,9 +34,7 @@ import { getUserConsent, eraseUserData } from '@/services/consent';
 import {
   Colors,
   Spacing,
-  FontSizes,
   ButtonSizes,
-  FontFamilies,
   BorderRadius,
   Shadows,
 } from '@/constants/theme';
@@ -231,8 +229,8 @@ function AnimatedScoreBar({
   return (
     <Animated.View style={[st.barContainer, { opacity: opacityAnim }]}>
       <View style={st.barLabelRow}>
-        <Text style={st.barLabel}>{label}</Text>
-        <Text style={[st.barValue, { color: tier.color }]}>{value}</Text>
+        <TenderText variant="bodySmall">{label}</TenderText>
+        <TenderText variant="bodySmall" color={tier.color} style={{ fontWeight: '700' }}>{value}</TenderText>
       </View>
       <View style={st.barTrack}>
         <Animated.View
@@ -246,9 +244,9 @@ function AnimatedScoreBar({
         />
       </View>
       {interpretation && (
-        <Text style={[st.barInterpretation, { color: tier.color }]}>
+        <TenderText variant="caption" color={tier.color} style={{ fontStyle: 'italic' }}>
           {interpretation}
-        </Text>
+        </TenderText>
       )}
     </Animated.View>
   );
@@ -301,12 +299,10 @@ function AnimatedScoreCircle({ score }: { score: number }) {
       ]}
     >
       <View style={[st.scoreCircleOuter, { borderColor: tier.color }]}>
-        <Text style={[st.scoreCircleNumber, { color: tier.color }]}>
-          {displayCount}
-        </Text>
-        <Text style={st.scoreCircleLabel}>overall</Text>
+        <TenderText variant="headingXL" color={tier.color}>{displayCount}</TenderText>
+        <TenderText variant="caption" color={Colors.textMuted} style={st.scoreCircleLabel}>overall</TenderText>
       </View>
-      <Text style={[st.scoreCircleTier, { color: tier.color }]}>{tier.label}</Text>
+      <TenderText variant="bodySmall" color={tier.color} style={st.scoreCircleTier}>{tier.label}</TenderText>
     </Animated.View>
   );
 }
@@ -360,8 +356,8 @@ function StatCard({
       <View style={[st.statIcon, { backgroundColor: color }]}>
         <IconComp size={16} color={Colors.white} />
       </View>
-      <Text style={st.statLabel}>{label}</Text>
-      <Text style={st.statValue} numberOfLines={2}>{value}</Text>
+      <TenderText variant="caption" color={Colors.textMuted} style={st.statLabel}>{label}</TenderText>
+      <TenderText variant="bodySmall" style={st.statValue} numberOfLines={2}>{value}</TenderText>
     </Animated.View>
   );
 }
@@ -429,10 +425,10 @@ function AREScoreRing({
       <View style={[st.areRingOuter, { borderColor: color }]}>
         {/* Background track */}
         <View style={[st.areRingTrack, { borderColor: color + '20' }]} />
-        <Text style={[st.areRingValue, { color }]}>{displayCount}</Text>
+        <TenderText variant="headingM" color={color}>{displayCount}</TenderText>
       </View>
-      <Text style={st.areRingLabel}>{label}</Text>
-      <Text style={[st.areRingTier, { color: tier.color }]}>{tier.label}</Text>
+      <TenderText variant="caption" style={st.areRingLabel}>{label}</TenderText>
+      <TenderText variant="caption" color={tier.color} style={st.areRingTier}>{tier.label}</TenderText>
     </Animated.View>
   );
 }
@@ -638,16 +634,16 @@ export default function PortraitScreen() {
     return (
       <SafeAreaView style={st.container}>
         <View style={st.center}>
-          <Text style={st.errorText}>
+          <TenderText variant="body" color={Colors.textSecondary} align="center">
             No portrait found. Complete all 6 assessments first.
-          </Text>
+          </TenderText>
           <TouchableOpacity
             style={st.button}
             onPress={() => router.replace('/(app)/home')}
             accessibilityRole="button"
             accessibilityLabel="Back to Home"
           >
-            <Text style={st.buttonText}>Back to Home</Text>
+            <TenderText variant="button" color={Colors.white}>Back to Home</TenderText>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -674,11 +670,13 @@ export default function PortraitScreen() {
           accessibilityRole="button"
           accessibilityLabel="Your Portrait"
         >
-          <Text style={st.headerBackText}>{'<'} Back</Text>
+          <TenderText variant="bodySmall" color={Colors.primary} style={{ fontWeight: '600' }}>{'<'} Back</TenderText>
         </TouchableOpacity>
         <View style={st.headerCenter}>
-          <Text style={st.headerTitle}>Your Portrait</Text>
-          <Text style={st.headerDate}>{dateStr}</Text>
+          <TenderText variant="headingS" style={{ fontWeight: '700' }}>Your Portrait</TenderText>
+          <TenderText variant="caption" color={Colors.textMuted} style={{ marginTop: 1 }}>
+            {dateStr}
+          </TenderText>
         </View>
         <TouchableOpacity
           onPress={async () => {
@@ -697,16 +695,16 @@ export default function PortraitScreen() {
           accessibilityRole="button"
           accessibilityLabel="Export PDF"
         >
-          <Text style={st.headerBackText}>Export PDF</Text>
+          <TenderText variant="bodySmall" color={Colors.primary} style={{ fontWeight: '600' }}>Export PDF</TenderText>
         </TouchableOpacity>
       </View>
 
       {/* ── View-and-Erase Warning ─────────────── */}
       {isViewAndErase && (
         <View style={st.viewAndEraseBanner}>
-          <Text style={st.viewAndEraseBannerText}>
+          <TenderText variant="bodySmall" color={Colors.warning} align="center" style={{ fontWeight: '600' }}>
             One-time view — your data will be erased when you leave this screen
-          </Text>
+          </TenderText>
         </View>
       )}
 
@@ -734,14 +732,13 @@ export default function PortraitScreen() {
                 <View style={st.tabIcon}>
                   <tab.Icon size={14} color={isActive ? tab.color : Colors.textMuted} />
                 </View>
-                <Text
-                  style={[
-                    st.tabLabel,
-                    isActive && { color: tab.color, fontWeight: '700' },
-                  ]}
+                <TenderText
+                  variant="caption"
+                  color={isActive ? tab.color : Colors.textSecondary}
+                  style={isActive ? { fontWeight: '700' } : { fontWeight: '500' }}
                 >
                   {tab.label}
-                </Text>
+                </TenderText>
               </TouchableOpacity>
             );
           })}
@@ -758,12 +755,12 @@ export default function PortraitScreen() {
           nativeID="portrait-export-root"
         >
           <View style={st.exportSectionHeader}>
-            <Text style={st.exportTitle}>Your Portrait — Full Report</Text>
-            <Text style={st.exportDate}>{dateStr}</Text>
+            <TenderText variant="headingXL" style={{ fontWeight: '700' }}>Your Portrait — Full Report</TenderText>
+            <TenderText variant="body" color={Colors.textSecondary} style={{ marginTop: 4 }}>{dateStr}</TenderText>
           </View>
 
           <View style={st.exportSection}>
-            <Text style={st.exportSectionLabel}>Overview</Text>
+            <TenderText variant="headingL" color={Colors.primary} style={st.exportSectionLabel}>Overview</TenderText>
             <OverviewTab
               portrait={portrait}
               userName={userName}
@@ -774,27 +771,27 @@ export default function PortraitScreen() {
           </View>
 
           <View style={st.exportSection}>
-            <Text style={st.exportSectionLabel}>Scores</Text>
+            <TenderText variant="headingL" color={Colors.primary} style={st.exportSectionLabel}>Scores</TenderText>
             <ScoresTab portrait={portrait} overallScore={overallScore} rawScores={rawScores} />
           </View>
 
           <View style={st.exportSection}>
-            <Text style={st.exportSectionLabel}>Lenses</Text>
+            <TenderText variant="headingL" color={Colors.primary} style={st.exportSectionLabel}>Lenses</TenderText>
             <LensesTab portrait={portrait} rawScores={rawScores} />
           </View>
 
           <View style={st.exportSection}>
-            <Text style={st.exportSectionLabel}>Cycle</Text>
+            <TenderText variant="headingL" color={Colors.primary} style={st.exportSectionLabel}>Cycle</TenderText>
             <CycleTab portrait={portrait} rawScores={rawScores} />
           </View>
 
           <View style={st.exportSection}>
-            <Text style={st.exportSectionLabel}>Growth</Text>
+            <TenderText variant="headingL" color={Colors.primary} style={st.exportSectionLabel}>Growth</TenderText>
             <GrowthTab portrait={portrait} router={router} />
           </View>
 
           <View style={st.exportSection}>
-            <Text style={st.exportSectionLabel}>Anchors & Partner Guide</Text>
+            <TenderText variant="headingL" color={Colors.primary} style={st.exportSectionLabel}>Anchors & Partner Guide</TenderText>
             <AnchorsTab portrait={portrait} router={router} />
           </View>
         </ScrollView>
@@ -880,8 +877,8 @@ function OverviewTab({
     <Animated.View style={{ opacity: fadeAnim }}>
       {/* Landing hero */}
       <View style={st.heroSection}>
-        <Text style={st.heroEyebrow}>YOUR RELATIONAL PORTRAIT</Text>
-        <Text style={st.heroTitle}>{userName}</Text>
+        <TenderText variant="label" color={Colors.primary} style={{ letterSpacing: 2 }}>YOUR RELATIONAL PORTRAIT</TenderText>
+        <TenderText variant="headingXL" style={st.heroTitle}>{userName}</TenderText>
         {/* Three-Layer Dashboard replaces the single score circle */}
         <ThreeLayerDashboard
           compositeScores={cs}
@@ -894,8 +891,8 @@ function OverviewTab({
 
       {/* Narrative */}
       <View style={st.card}>
-        <Text style={st.cardHeading}>Here's what we learned</Text>
-        <Text style={st.cardBody}>{narrative}</Text>
+        <TenderText variant="headingM">Here's what we learned</TenderText>
+        <TenderText variant="body" style={{ lineHeight: 26 }}>{narrative}</TenderText>
       </View>
 
       {/* Cross-Assessment Synthesis */}
@@ -908,7 +905,7 @@ function OverviewTab({
 
       {/* A.R.E. Radar / Ring Chart */}
       <View style={st.areRingsCard}>
-        <Text style={st.scoreGroupLabel}>A.R.E. ATTACHMENT QUALITY</Text>
+        <TenderText variant="label" color={Colors.primary} style={{ letterSpacing: 1.2 }}>A.R.E. ATTACHMENT QUALITY</TenderText>
         <View style={st.scoreGroupDivider} />
         <View style={st.areRingsRow}>
           <AREScoreRing label="Accessible" value={cs.accessibility} color={Colors.calm} delay={200} />
@@ -918,7 +915,7 @@ function OverviewTab({
       </View>
 
       {/* Quick Stats Grid */}
-      <Text style={st.sectionLabel}>AT A GLANCE</Text>
+      <TenderText variant="label" color={Colors.textMuted} style={st.sectionLabel}>AT A GLANCE</TenderText>
       <View style={st.statsGrid}>
         <StatCard
           icon={STAT_ICONS.cycle}
@@ -951,7 +948,7 @@ function OverviewTab({
       </View>
 
       {/* Quick navigation */}
-      <Text style={st.sectionLabel}>EXPLORE YOUR PORTRAIT</Text>
+      <TenderText variant="label" color={Colors.textMuted} style={st.sectionLabel}>EXPLORE YOUR PORTRAIT</TenderText>
       <View style={st.navCards}>
         {TABS.slice(1).map((tab) => (
           <TouchableOpacity
@@ -964,8 +961,8 @@ function OverviewTab({
             <View style={[st.navCardIcon, { backgroundColor: tab.color }]}>
               <tab.Icon size={16} color={Colors.white} />
             </View>
-            <Text style={st.navCardLabel}>{tab.label}</Text>
-            <Text style={st.navCardArrow}>{'>'}</Text>
+            <TenderText variant="bodyMedium" style={st.navCardLabel}>{tab.label}</TenderText>
+            <TenderText variant="headingM" color={Colors.textMuted} style={{ fontWeight: '300' }}>{'>'}</TenderText>
           </TouchableOpacity>
         ))}
       </View>
@@ -990,11 +987,11 @@ function FieldAwarenessCard({ fieldAwareness }: { fieldAwareness: FieldAwareness
 
   return (
     <Animated.View style={[st.synthesisCard, { opacity: fadeAnim }]}>
-      <Text style={st.synthesisSectionLabel}>RELATIONAL FIELD AWARENESS</Text>
+      <TenderText variant="label" color={Colors.depth} style={{ letterSpacing: 1.5 }}>RELATIONAL FIELD AWARENESS</TenderText>
       <View style={st.scoreGroupDivider} />
 
       {/* Narrative */}
-      <Text style={st.synthesisNarrative}>{fieldAwareness.narrative}</Text>
+      <TenderText variant="bodySmall" color={Colors.textSecondary} style={{ lineHeight: 22 }}>{fieldAwareness.narrative}</TenderText>
 
       {/* Score bars */}
       <View style={st.fieldScoresRow}>
@@ -1007,9 +1004,9 @@ function FieldAwarenessCard({ fieldAwareness }: { fieldAwareness: FieldAwareness
       {fieldAwareness.metacognitiveCapacity && (
         <View style={st.fieldBadgeRow}>
           <View style={st.fieldMetaBadge}>
-            <Text style={st.fieldMetaBadgeText}>Metacognitive Capacity</Text>
+            <TenderText variant="caption" color={Colors.depth} style={{ fontWeight: '600' }}>Metacognitive Capacity</TenderText>
           </View>
-          <Text style={st.fieldMetaHint}>You can observe your patterns while they unfold</Text>
+          <TenderText variant="caption" color={Colors.textSecondary} style={{ flex: 1 }}>You can observe your patterns while they unfold</TenderText>
         </View>
       )}
 
@@ -1025,15 +1022,15 @@ function FieldAwarenessCard({ fieldAwareness }: { fieldAwareness: FieldAwareness
             activeOpacity={0.7}
             accessibilityRole="button"
           >
-            <Text style={st.fieldExpandLabel}>
+            <TenderText variant="bodySmall" color={Colors.primary} style={{ fontWeight: '600' }}>
               Cross-Pattern Insights ({fieldAwareness.crossPatterns.length})
-            </Text>
-            <Text style={st.fieldExpandArrow}>{expanded ? '▲' : '▼'}</Text>
+            </TenderText>
+            <TenderText variant="caption" color={Colors.textSecondary}>{expanded ? '▲' : '▼'}</TenderText>
           </TouchableOpacity>
           {expanded && fieldAwareness.crossPatterns.map((insight, i) => (
             <View key={i} style={st.synthesisListItem}>
               <View style={[st.synthesisListDot, { backgroundColor: Colors.depth }]} />
-              <Text style={st.synthesisListText}>{insight}</Text>
+              <TenderText variant="bodySmall" color={Colors.textSecondary} style={{ flex: 1, lineHeight: 20 }}>{insight}</TenderText>
             </View>
           ))}
         </View>
@@ -1057,7 +1054,7 @@ function FieldScoreBar({ label, value, color, maxScale = 7 }: { label: string; v
 
   return (
     <View style={st.fieldScoreItem}>
-      <Text style={st.fieldScoreLabel}>{label}</Text>
+      <TenderText variant="caption" color={Colors.textSecondary} style={st.fieldScoreLabel}>{label}</TenderText>
       <View style={st.fieldScoreBarBg}>
         <Animated.View
           style={[
@@ -1072,7 +1069,7 @@ function FieldScoreBar({ label, value, color, maxScale = 7 }: { label: string; v
           ]}
         />
       </View>
-      <Text style={st.fieldScoreValue}>{value.toFixed(1)}/{maxScale}</Text>
+      <TenderText variant="caption" color={Colors.textSecondary} style={st.fieldScoreValue}>{value.toFixed(1)}/{maxScale}</TenderText>
     </View>
   );
 }
@@ -1094,26 +1091,26 @@ function SynthesisCard({ synthesis }: { synthesis: AssessmentSynthesis }) {
 
   return (
     <Animated.View style={[st.synthesisCard, { opacity: fadeAnim }]}>
-      <Text style={st.synthesisSectionLabel}>CROSS-ASSESSMENT SYNTHESIS</Text>
+      <TenderText variant="label" color={Colors.depth} style={{ letterSpacing: 1.5 }}>CROSS-ASSESSMENT SYNTHESIS</TenderText>
       <View style={st.scoreGroupDivider} />
 
       {/* Primary Dynamic */}
       <View style={st.synthesisPatternBox}>
-        <Text style={st.synthesisPatternLabel}>Primary Dynamic</Text>
-        <Text style={st.synthesisPatternText}>{synthesis.primaryPattern}</Text>
+        <TenderText variant="label" color={Colors.depth}>Primary Dynamic</TenderText>
+        <TenderText variant="bodyMedium" style={{ lineHeight: 24 }}>{synthesis.primaryPattern}</TenderText>
       </View>
 
       {/* Core Narrative */}
-      <Text style={st.synthesisNarrative}>{synthesis.coreNarrative}</Text>
+      <TenderText variant="bodySmall" color={Colors.textSecondary} style={{ lineHeight: 22 }}>{synthesis.coreNarrative}</TenderText>
 
       {/* Reinforcing Factors */}
       {synthesis.reinforcingFactors.length > 0 && (
         <View style={st.synthesisSection}>
-          <Text style={st.synthesisSectionTitle}>Converging Patterns</Text>
+          <TenderText variant="bodySmall" style={st.synthesisSectionTitle}>Converging Patterns</TenderText>
           {synthesis.reinforcingFactors.map((f, i) => (
             <View key={i} style={st.synthesisListItem}>
               <View style={[st.synthesisListDot, { backgroundColor: Colors.secondary }]} />
-              <Text style={st.synthesisListText}>{f}</Text>
+              <TenderText variant="bodySmall" color={Colors.textSecondary} style={{ flex: 1, lineHeight: 20 }}>{f}</TenderText>
             </View>
           ))}
         </View>
@@ -1122,11 +1119,11 @@ function SynthesisCard({ synthesis }: { synthesis: AssessmentSynthesis }) {
       {/* Contradictions — surfaced prominently */}
       {synthesis.contradictions.length > 0 && (
         <View style={st.synthesisSection}>
-          <Text style={st.synthesisSectionTitle}>Interesting Tensions</Text>
+          <TenderText variant="bodySmall" style={st.synthesisSectionTitle}>Interesting Tensions</TenderText>
           {synthesis.contradictions.map((c, i) => (
             <View key={i} style={st.synthesisListItem}>
               <View style={[st.synthesisListDot, { backgroundColor: Colors.depth }]} />
-              <Text style={st.synthesisListText}>{c}</Text>
+              <TenderText variant="bodySmall" color={Colors.textSecondary} style={{ flex: 1, lineHeight: 20 }}>{c}</TenderText>
             </View>
           ))}
         </View>
@@ -1135,11 +1132,11 @@ function SynthesisCard({ synthesis }: { synthesis: AssessmentSynthesis }) {
       {/* Protective Factors */}
       {synthesis.protectiveFactors.length > 0 && (
         <View style={st.synthesisSection}>
-          <Text style={st.synthesisSectionTitle}>Your Strengths</Text>
+          <TenderText variant="bodySmall" style={st.synthesisSectionTitle}>Your Strengths</TenderText>
           {synthesis.protectiveFactors.map((f, i) => (
             <View key={i} style={st.synthesisListItem}>
               <View style={[st.synthesisListDot, { backgroundColor: Colors.success }]} />
-              <Text style={st.synthesisListText}>{f}</Text>
+              <TenderText variant="bodySmall" color={Colors.textSecondary} style={{ flex: 1, lineHeight: 20 }}>{f}</TenderText>
             </View>
           ))}
         </View>
@@ -1148,11 +1145,11 @@ function SynthesisCard({ synthesis }: { synthesis: AssessmentSynthesis }) {
       {/* Growth Edges */}
       {synthesis.growthEdges.length > 0 && (
         <View style={st.synthesisSection}>
-          <Text style={st.synthesisSectionTitle}>Growth Edges</Text>
+          <TenderText variant="bodySmall" style={st.synthesisSectionTitle}>Growth Edges</TenderText>
           {synthesis.growthEdges.map((e, i) => (
             <View key={i} style={st.synthesisListItem}>
               <View style={[st.synthesisListDot, { backgroundColor: Colors.warning }]} />
-              <Text style={st.synthesisListText}>{e}</Text>
+              <TenderText variant="bodySmall" color={Colors.textSecondary} style={{ flex: 1, lineHeight: 20 }}>{e}</TenderText>
             </View>
           ))}
         </View>
@@ -1160,14 +1157,14 @@ function SynthesisCard({ synthesis }: { synthesis: AssessmentSynthesis }) {
 
       {/* Recommended Step */}
       <View style={st.synthesisStepBox}>
-        <Text style={st.synthesisStepLabel}>RECOMMENDED STARTING POINT</Text>
-        <Text style={st.synthesisStepName}>
+        <TenderText variant="label" color={Colors.primary} style={{ fontSize: 10, letterSpacing: 1.5 }}>RECOMMENDED STARTING POINT</TenderText>
+        <TenderText variant="headingM" style={{ fontWeight: '700' }}>
           Step {synthesis.recommendedStep}
           {stepInfo ? `: ${stepInfo.title}` : ''}
-        </Text>
-        <Text style={st.synthesisStepRationale}>
+        </TenderText>
+        <TenderText variant="bodySmall" color={Colors.textSecondary} style={{ lineHeight: 20 }}>
           {synthesis.recommendedStepRationale}
-        </Text>
+        </TenderText>
       </View>
     </Animated.View>
   );
@@ -1200,7 +1197,7 @@ function ValuesCompassInfographic({
     <Animated.View style={[st.valuesCompassContainer, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }]}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
         <CompassIcon size={16} color={Colors.textMuted} />
-        <Text style={st.scoreGroupLabel}>VALUES COMPASS</Text>
+        <TenderText variant="label" color={Colors.primary} style={{ letterSpacing: 1.2 }}>VALUES COMPASS</TenderText>
       </View>
       <View style={st.scoreGroupDivider} />
 
@@ -1229,9 +1226,9 @@ function ValuesCompassInfographic({
               ]}
             >
               <View style={[st.valuesCompassDot, { width: dotSize, height: dotSize, borderRadius: dotSize / 2, backgroundColor: dotColor }]}>
-                <Text style={st.valuesCompassDotText}>{v.charAt(0)}</Text>
+                <TenderText variant="caption" color={Colors.white} style={{ fontWeight: '700', fontSize: 13 }}>{v.charAt(0)}</TenderText>
               </View>
-              <Text style={st.valuesCompassLabel} numberOfLines={1}>{v}</Text>
+              <TenderText variant="caption" style={st.valuesCompassLabel} numberOfLines={1}>{v}</TenderText>
             </View>
           );
         })}
@@ -1243,27 +1240,25 @@ function ValuesCompassInfographic({
       {/* Gap bars */}
       {gaps.length > 0 && (
         <View style={st.valuesGapSection}>
-          <Text style={st.valuesGapTitle}>Values-Action Gaps</Text>
-          <Text style={st.valuesGapDescription}>
+          <TenderText variant="caption" style={st.valuesGapTitle}>Values-Action Gaps</TenderText>
+          <TenderText variant="caption" color={Colors.textSecondary} style={st.valuesGapDescription}>
             The distance between how important a value is to you and how much you're currently living it. A gap of 3+ means this value matters deeply but your daily actions aren't yet matching.
-          </Text>
+          </TenderText>
           {gaps.map((g) => (
             <View key={g.value} style={st.valuesGapRow}>
-              <Text style={st.valuesGapLabel}>{g.value}</Text>
+              <TenderText variant="caption" style={st.valuesGapLabel}>{g.value}</TenderText>
               <View style={st.valuesGapBarTrack}>
                 <View style={[st.valuesGapBarFill, {
                   width: `${Math.min(100, (g.gap / 10) * 100)}%`,
                   backgroundColor: g.gap >= 5 ? Colors.warning : g.gap >= 3 ? Colors.calm : Colors.success,
                 }]} />
               </View>
-              <Text style={[st.valuesGapScore, {
-                color: g.gap >= 5 ? Colors.warning : Colors.calm,
-              }]}>{g.gap}/10</Text>
+              <TenderText variant="caption" color={g.gap >= 5 ? Colors.warning : Colors.calm} style={st.valuesGapScore}>{g.gap}/10</TenderText>
             </View>
           ))}
-          <Text style={st.valuesGapHint}>
+          <TenderText variant="caption" color={Colors.textMuted} style={st.valuesGapHint}>
             Importance: {gaps[0]?.importance ?? '—'}/10 · Gap shows room to align action with values
-          </Text>
+          </TenderText>
         </View>
       )}
     </Animated.View>
@@ -1290,15 +1285,15 @@ function PartsMapInfographic({
     <Animated.View style={[st.partsMapContainer, { opacity: fadeAnim }]}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
         <MasksIcon size={16} color={Colors.textMuted} />
-        <Text style={st.scoreGroupLabel}>INNER PARTS MAP</Text>
+        <TenderText variant="label" color={Colors.primary} style={{ letterSpacing: 1.2 }}>INNER PARTS MAP</TenderText>
       </View>
       <View style={st.scoreGroupDivider} />
 
       {/* Self-Leadership Circle */}
       <View style={st.partsMapCenter}>
         <View style={[st.partsMapSelfCircle, { borderColor: selfTier.color }]}>
-          <Text style={[st.partsMapSelfScore, { color: selfTier.color }]}>{selfScore}</Text>
-          <Text style={st.partsMapSelfLabel}>Self{'\n'}Leadership</Text>
+          <TenderText variant="headingM" color={selfTier.color} style={{ fontWeight: '700' }}>{selfScore}</TenderText>
+          <TenderText variant="caption" color={Colors.textMuted} align="center">Self{'\n'}Leadership</TenderText>
         </View>
       </View>
 
@@ -1306,16 +1301,16 @@ function PartsMapInfographic({
       <View style={st.partsMapSection}>
         <View style={[st.partsMapSectionHeader, { backgroundColor: Colors.warning + '15' }]}>
           <View style={st.partsMapSectionIcon}><ShieldIcon size={16} color={Colors.warning} /></View>
-          <Text style={st.partsMapSectionTitle}>Manager Parts</Text>
-          <Text style={st.partsMapSectionHint}>Try to prevent pain</Text>
+          <TenderText variant="bodySmall" style={{ fontWeight: '700' }}>Manager Parts</TenderText>
+          <TenderText variant="caption" color={Colors.textMuted} style={st.partsMapSectionHint}>Try to prevent pain</TenderText>
         </View>
         <View style={st.partsMapCards}>
           {parts.managerParts.map((p) => {
             const [title, desc] = p.includes(' — ') ? p.split(' — ') : [p, ''];
             return (
               <View key={p} style={[st.partsMapCard, { borderLeftColor: Colors.warning }]}>
-                <Text style={[st.partsMapCardTitle, { color: Colors.warning }]}>{title}</Text>
-                {desc ? <Text style={st.partsMapCardDesc}>{desc}</Text> : null}
+                <TenderText variant="bodySmall" color={Colors.warning} style={st.partsMapCardTitle}>{title}</TenderText>
+                {desc ? <TenderText variant="caption" color={Colors.textSecondary}>{desc}</TenderText> : null}
               </View>
             );
           })}
@@ -1326,16 +1321,16 @@ function PartsMapInfographic({
       <View style={st.partsMapSection}>
         <View style={[st.partsMapSectionHeader, { backgroundColor: Colors.error + '12' }]}>
           <View style={st.partsMapSectionIcon}><FireIcon size={16} color={Colors.error} /></View>
-          <Text style={st.partsMapSectionTitle}>Firefighter Parts</Text>
-          <Text style={st.partsMapSectionHint}>React when pain breaks through</Text>
+          <TenderText variant="bodySmall" style={{ fontWeight: '700' }}>Firefighter Parts</TenderText>
+          <TenderText variant="caption" color={Colors.textMuted} style={st.partsMapSectionHint}>React when pain breaks through</TenderText>
         </View>
         <View style={st.partsMapCards}>
           {parts.firefighterParts.map((p) => {
             const [title, desc] = p.includes(' — ') ? p.split(' — ') : [p, ''];
             return (
               <View key={p} style={[st.partsMapCard, { borderLeftColor: Colors.error }]}>
-                <Text style={[st.partsMapCardTitle, { color: Colors.error }]}>{title}</Text>
-                {desc ? <Text style={st.partsMapCardDesc}>{desc}</Text> : null}
+                <TenderText variant="bodySmall" color={Colors.error} style={st.partsMapCardTitle}>{title}</TenderText>
+                {desc ? <TenderText variant="caption" color={Colors.textSecondary}>{desc}</TenderText> : null}
               </View>
             );
           })}
@@ -1347,11 +1342,11 @@ function PartsMapInfographic({
         <View style={st.partsMapSection}>
           <View style={[st.partsMapSectionHeader, { backgroundColor: Colors.depth + '10' }]}>
             <View style={st.partsMapSectionIcon}><ScaleIcon size={16} color={Colors.depth} /></View>
-            <Text style={st.partsMapSectionTitle}>Inner Tensions</Text>
+            <TenderText variant="bodySmall" style={{ fontWeight: '700' }}>Inner Tensions</TenderText>
           </View>
           {parts.polarities.map((p, i) => (
             <View key={i} style={st.partsMapPolarity}>
-              <Text style={st.partsMapPolarityText}>{p}</Text>
+              <TenderText variant="caption">{p}</TenderText>
             </View>
           ))}
         </View>
@@ -1394,7 +1389,7 @@ function CycleDiagramInfographic({
     <Animated.View style={[st.cycleDiagramContainer, { opacity: fadeAnim }]}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
         <RefreshIcon size={13} color={Colors.textMuted} />
-        <Text style={[st.scoreGroupLabel, { fontSize: 10, letterSpacing: 1.0 }]}>YOUR CYCLE POSITION</Text>
+        <TenderText variant="label" color={Colors.primary} style={{ fontSize: 10, letterSpacing: 1.0 }}>YOUR CYCLE POSITION</TenderText>
       </View>
       <View style={st.scoreGroupDivider} />
 
@@ -1402,7 +1397,7 @@ function CycleDiagramInfographic({
       <View style={st.cycleDiagramVisual}>
         {/* Rotating arrows */}
         <Animated.View style={[st.cycleDiagramArrowRing, { transform: [{ rotate: spin }] }]}>
-          <Text style={st.cycleDiagramArrow}>{'↻'}</Text>
+          <TenderText variant="body">{'↻'}</TenderText>
         </Animated.View>
 
         {/* Your position */}
@@ -1410,10 +1405,10 @@ function CycleDiagramInfographic({
           st.cycleDiagramYouBadge,
           { backgroundColor: isPursuer ? Colors.secondary : Colors.depth },
         ]}>
-          <Text style={st.cycleDiagramYouText}>You</Text>
-          <Text style={st.cycleDiagramYouRole}>
+          <TenderText variant="caption" color={Colors.white} style={st.cycleDiagramYouText}>You</TenderText>
+          <TenderText variant="caption" color={Colors.white}>
             {isPursuer ? 'Pursuer' : negativeCycle.position === 'withdrawer' ? 'Withdrawer' : 'Mixed'}
-          </Text>
+          </TenderText>
         </View>
 
         {/* Partner position */}
@@ -1421,35 +1416,35 @@ function CycleDiagramInfographic({
           st.cycleDiagramPartnerBadge,
           { backgroundColor: isPursuer ? Colors.depth + '60' : Colors.secondary + '60' },
         ]}>
-          <Text style={st.cycleDiagramPartnerText}>Partner</Text>
-          <Text style={st.cycleDiagramPartnerRole}>
+          <TenderText variant="caption" color={Colors.white} style={st.cycleDiagramPartnerText}>Partner</TenderText>
+          <TenderText variant="caption" color={Colors.white}>
             {isPursuer ? 'Withdrawer' : 'Pursuer'}
-          </Text>
+          </TenderText>
         </View>
 
         {/* Connection lines */}
         <View style={st.cycleDiagramLineTop}>
-          <Text style={st.cycleDiagramLineLabel}>
+          <TenderText variant="caption" color={Colors.textMuted}>
             {isPursuer ? 'You pursue →' : '← Partner pursues'}
-          </Text>
+          </TenderText>
         </View>
         <View style={st.cycleDiagramLineBottom}>
-          <Text style={st.cycleDiagramLineLabel}>
+          <TenderText variant="caption" color={Colors.textMuted}>
             {isPursuer ? '← Partner withdraws' : 'You withdraw →'}
-          </Text>
+          </TenderText>
         </View>
       </View>
 
       {/* Key insight */}
       <View style={st.cycleDiagramInsight}>
-        <Text style={st.cycleDiagramInsightText}>
+        <TenderText variant="bodySmall">
           {isPursuer
             ? 'The more you pursue, the more they withdraw. The more they withdraw, the more you pursue.'
             : 'The more you withdraw, the more they pursue. The more they pursue, the more you withdraw.'}
-        </Text>
-        <Text style={st.cycleDiagramInsightSub}>
+        </TenderText>
+        <TenderText variant="caption" color={Colors.textMuted} style={{ marginTop: 4 }}>
           Neither of you is "wrong" — you're both caught in the dance.
-        </Text>
+        </TenderText>
       </View>
     </Animated.View>
   );
@@ -1512,18 +1507,18 @@ function ScoresTab({
         {TIERS.map((t) => (
           <View key={t.label} style={st.legendItem}>
             <View style={[st.legendDot, { backgroundColor: t.color }]} />
-            <Text style={st.legendText}>{t.label}</Text>
-            <Text style={st.legendRange}>{t.range}</Text>
+            <TenderText variant="caption" style={{ fontWeight: '500' }}>{t.label}</TenderText>
+            <TenderText variant="caption" color={Colors.textMuted}>{t.range}</TenderText>
           </View>
         ))}
       </View>
 
       {/* A.R.E. Group */}
       <View style={st.scoreGroupCard}>
-        <Text style={st.scoreGroupLabel}>A.R.E. — ATTACHMENT QUALITY</Text>
-        <Text style={st.scoreGroupDescription}>
+        <TenderText variant="label" color={Colors.primary} style={{ letterSpacing: 1.2 }}>A.R.E. — ATTACHMENT QUALITY</TenderText>
+        <TenderText variant="caption" color={Colors.textSecondary} style={st.scoreGroupDescription}>
           Based on Emotionally Focused Therapy: Are you emotionally reachable, do you tune in to your partner's needs, and are you invested in the connection?
-        </Text>
+        </TenderText>
         <View style={st.scoreGroupDivider} />
         <AnimatedScoreBar label="Accessible" value={cs.accessibility} delay={100} interpretation={getInterpretation('accessibility', cs.accessibility)} />
         <AnimatedScoreBar label="Responsive" value={cs.responsiveness} delay={200} interpretation={getInterpretation('responsiveness', cs.responsiveness)} />
@@ -1532,10 +1527,10 @@ function ScoresTab({
 
       {/* Capacity Group */}
       <View style={st.scoreGroupCard}>
-        <Text style={st.scoreGroupLabel}>CAPACITY — INNER RESOURCES</Text>
-        <Text style={st.scoreGroupDescription}>
+        <TenderText variant="label" color={Colors.primary} style={{ letterSpacing: 1.2 }}>CAPACITY — INNER RESOURCES</TenderText>
+        <TenderText variant="caption" color={Colors.textSecondary} style={st.scoreGroupDescription}>
           Your internal toolkit for staying grounded. Regulation measures how well you recover from emotional activation, window width shows how much stress you can hold, and self-leadership reflects your ability to observe your own patterns.
-        </Text>
+        </TenderText>
         <View style={st.scoreGroupDivider} />
         <AnimatedScoreBar label="Regulation" value={cs.regulationScore} delay={400} interpretation={getInterpretation('regulationScore', cs.regulationScore)} />
         <AnimatedScoreBar label="Window Width" value={cs.windowWidth} delay={500} interpretation={getInterpretation('windowWidth', cs.windowWidth)} />
@@ -1544,10 +1539,10 @@ function ScoresTab({
 
       {/* Values Group */}
       <View style={st.scoreGroupCard}>
-        <Text style={st.scoreGroupLabel}>VALUES — ALIGNMENT</Text>
-        <Text style={st.scoreGroupDescription}>
+        <TenderText variant="label" color={Colors.primary} style={{ letterSpacing: 1.2 }}>VALUES — ALIGNMENT</TenderText>
+        <TenderText variant="caption" color={Colors.textSecondary} style={st.scoreGroupDescription}>
           How closely your daily actions match what you say matters most to you. A high score means you're living in line with your values; a lower score points to protective patterns overriding your intentions.
-        </Text>
+        </TenderText>
         <View style={st.scoreGroupDivider} />
         <AnimatedScoreBar label="Values Congruence" value={cs.valuesCongruence} delay={700} interpretation={getInterpretation('valuesCongruence', cs.valuesCongruence)} />
       </View>
@@ -1593,11 +1588,11 @@ function LensesTab({ portrait, rawScores }: { portrait: IndividualPortrait; rawS
 
   return (
     <Animated.View style={{ opacity: fadeAnim }}>
-      <Text style={st.tabIntro}>
+      <TenderText variant="body" color={Colors.textSecondary} style={st.tabIntro}>
         {hasFieldAwareness
           ? 'Five distinct perspectives that together form a complete picture of how you relate.'
           : 'Four distinct perspectives that together form a complete picture of how you relate.'}
-      </Text>
+      </TenderText>
 
       <PortraitLens
         title="Attachment & Protection"
@@ -1642,15 +1637,15 @@ function LensesTab({ portrait, rawScores }: { portrait: IndividualPortrait; rawS
             <View style={[st.lensIconCircle, { backgroundColor: Colors.depth + '20' }]}>
               <WaveIcon size={16} color={Colors.depth} />
             </View>
-            <Text style={[st.cardHeading, { flex: 1 }]}>Field Awareness</Text>
+            <TenderText variant="headingM" style={{ flex: 1 }}>Field Awareness</TenderText>
           </View>
-          <Text style={st.cardBody}>{portrait.fourLens.fieldAwareness.narrative}</Text>
+          <TenderText variant="body" style={{ lineHeight: 26 }}>{portrait.fourLens.fieldAwareness.narrative}</TenderText>
           {portrait.fourLens.fieldAwareness.crossPatterns.length > 0 && (
             <View style={{ marginTop: Spacing.sm }}>
               {portrait.fourLens.fieldAwareness.crossPatterns.map((cp, i) => (
                 <View key={i} style={st.listItem}>
-                  <Text style={st.listBullet}>{'•'}</Text>
-                  <Text style={st.listText}>{cp}</Text>
+                  <TenderText variant="body" color={Colors.textMuted} style={{ lineHeight: 24 }}>{'•'}</TenderText>
+                  <TenderText variant="bodySmall" style={st.listText}>{cp}</TenderText>
                 </View>
               ))}
             </View>
@@ -1691,19 +1686,19 @@ function BigFiveReframesSection({ reframes }: { reframes: string[] }) {
           <View style={[st.lensIconCircle, { backgroundColor: Colors.secondary + '20' }]}>
             <SearchIcon size={16} color={Colors.secondary} />
           </View>
-          <Text style={[st.cardHeading, { flex: 1 }]}>Personality Reframes</Text>
-          <Text style={st.fieldExpandArrow}>{expanded ? '▲' : '▼'}</Text>
+          <TenderText variant="headingM" style={{ flex: 1 }}>Personality Reframes</TenderText>
+          <TenderText variant="caption" color={Colors.textSecondary}>{expanded ? '▲' : '▼'}</TenderText>
         </View>
-        <Text style={[st.cardBody, { marginTop: Spacing.xs }]}>
+        <TenderText variant="body" style={{ marginTop: Spacing.xs, lineHeight: 26 }}>
           Your Big Five personality traits through a relational lens — how they shape connection.
-        </Text>
+        </TenderText>
       </TouchableOpacity>
       {expanded && reframes.map((reframe, i) => (
         <View
           key={i}
           style={[st.reframeItem, i > 0 && { borderTopWidth: 1, borderTopColor: Colors.border }]}
         >
-          <Text style={st.cardBody}>{reframe}</Text>
+          <TenderText variant="body" style={{ lineHeight: 26 }}>{reframe}</TenderText>
         </View>
       ))}
     </View>
@@ -1734,12 +1729,12 @@ function CycleTab({ portrait, rawScores }: { portrait: IndividualPortrait; rawSc
       {/* Position Hero */}
       <View style={[st.cycleHero, { backgroundColor: positionColor + '12' }]}>
         <View style={[st.cycleBadge, { backgroundColor: positionColor }]}>
-          <Text style={st.cycleBadgeText}>
+          <TenderText variant="caption" color={Colors.white} style={st.cycleBadgeText}>
             {nc.position.toUpperCase()}
-          </Text>
+          </TenderText>
         </View>
-        <Text style={st.cycleHeroTitle}>Your Negative Cycle</Text>
-        <Text style={st.cycleHeroBody}>{nc.description}</Text>
+        <TenderText variant="headingM">Your Negative Cycle</TenderText>
+        <TenderText variant="caption" color={Colors.text} align="center">{nc.description}</TenderText>
       </View>
 
       {/* Cycle Diagram */}
@@ -1754,12 +1749,12 @@ function CycleTab({ portrait, rawScores }: { portrait: IndividualPortrait; rawSc
       <View style={st.card}>
         <View style={st.cardHeaderRow}>
           <LightningIcon size={16} color={Colors.warning} />
-          <Text style={st.cardHeading}>Triggers</Text>
+          <TenderText variant="headingM">Triggers</TenderText>
         </View>
         {nc.primaryTriggers.map((t, i) => (
           <View key={i} style={st.listItem}>
-            <Text style={st.listBullet}>{'•'}</Text>
-            <Text style={st.listText}>{t}</Text>
+            <TenderText variant="body" color={Colors.textMuted} style={{ lineHeight: 24 }}>{'•'}</TenderText>
+            <TenderText variant="bodySmall" style={st.listText}>{t}</TenderText>
           </View>
         ))}
       </View>
@@ -1768,12 +1763,12 @@ function CycleTab({ portrait, rawScores }: { portrait: IndividualPortrait; rawSc
       <View style={st.card}>
         <View style={st.cardHeaderRow}>
           <MasksIcon size={16} color={Colors.secondary} />
-          <Text style={st.cardHeading}>Typical Moves</Text>
+          <TenderText variant="headingM">Typical Moves</TenderText>
         </View>
         {nc.typicalMoves.map((m, i) => (
           <View key={i} style={st.listItem}>
-            <Text style={st.listBullet}>{'•'}</Text>
-            <Text style={st.listText}>{m}</Text>
+            <TenderText variant="body" color={Colors.textMuted} style={{ lineHeight: 24 }}>{'•'}</TenderText>
+            <TenderText variant="bodySmall" style={st.listText}>{m}</TenderText>
           </View>
         ))}
       </View>
@@ -1782,12 +1777,12 @@ function CycleTab({ portrait, rawScores }: { portrait: IndividualPortrait; rawSc
       <View style={st.card}>
         <View style={st.cardHeaderRow}>
           <DoveIcon size={16} color={Colors.calm} />
-          <Text style={st.cardHeading}>De-escalators</Text>
+          <TenderText variant="headingM">De-escalators</TenderText>
         </View>
         {nc.deEscalators.map((d, i) => (
           <View key={i} style={st.listItem}>
-            <Text style={st.listBullet}>{'•'}</Text>
-            <Text style={st.listText}>{d}</Text>
+            <TenderText variant="body" color={Colors.textMuted} style={{ lineHeight: 24 }}>{'•'}</TenderText>
+            <TenderText variant="bodySmall" style={st.listText}>{d}</TenderText>
           </View>
         ))}
       </View>
@@ -1795,25 +1790,23 @@ function CycleTab({ portrait, rawScores }: { portrait: IndividualPortrait; rawSc
       {/* Patterns */}
       {portrait.patterns.length > 0 && (
         <>
-          <Text style={st.sectionLabel}>DETECTED PATTERNS</Text>
+          <TenderText variant="label" color={Colors.textMuted} style={st.sectionLabel}>DETECTED PATTERNS</TenderText>
           {portrait.patterns.map((pattern) => (
             <View key={pattern.id} style={st.patternCard}>
               <View style={st.patternHeader}>
                 <View style={[st.patternBadge, {
                   backgroundColor: pattern.confidence === 'high' ? Colors.success + '20' : Colors.warning + '20',
                 }]}>
-                  <Text style={[st.patternBadgeText, {
-                    color: pattern.confidence === 'high' ? Colors.success : Colors.warning,
-                  }]}>
+                  <TenderText variant="caption" color={pattern.confidence === 'high' ? Colors.success : Colors.warning} style={st.patternBadgeText}>
                     {pattern.confidence} confidence
-                  </Text>
+                  </TenderText>
                 </View>
-                <Text style={st.patternCategory}>
+                <TenderText variant="caption" color={Colors.textMuted} style={{ textTransform: 'capitalize' }}>
                   {pattern.category.replace(/-/g, ' ')}
-                </Text>
+                </TenderText>
               </View>
-              <Text style={st.patternDescription}>{pattern.description}</Text>
-              <Text style={st.patternInterpretation}>{pattern.interpretation}</Text>
+              <TenderText variant="bodySmall" style={{ lineHeight: 22 }}>{pattern.description}</TenderText>
+              <TenderText variant="bodySmall" color={Colors.textSecondary} style={{ lineHeight: 20, fontStyle: 'italic' }}>{pattern.interpretation}</TenderText>
             </View>
           ))}
         </>
@@ -1857,9 +1850,9 @@ function AnchorsTab({
 
   return (
     <Animated.View style={{ opacity: fadeAnim }}>
-      <Text style={st.tabIntro}>
+      <TenderText variant="body" color={Colors.textSecondary} style={st.tabIntro}>
         Short phrases for difficult moments. Save the ones that resonate.
-      </Text>
+      </TenderText>
 
       {ANCHOR_ITEMS.slice(0, 2).map(({ key, label, Icon, color }) => {
         const anchor = portrait.anchorPoints[key];
@@ -1871,24 +1864,24 @@ function AnchorsTab({
               <View style={[st.anchorIcon, { backgroundColor: color + '15' }]}>
                 <Icon size={18} color={color} />
               </View>
-              <Text style={[st.anchorLabel, { color }]}>{label}</Text>
+              <TenderText variant="label" color={color}>{label}</TenderText>
             </View>
-            <Text style={st.anchorText}>
+            <TenderText variant="body" style={st.anchorText}>
               {isRich ? (anchor as any).primary : anchor}
-            </Text>
+            </TenderText>
             {isRich && (
               <>
-                <Text style={st.anchorSubhead}>Remember</Text>
+                <TenderText variant="label" color={Colors.textSecondary} style={st.anchorSubhead}>Remember</TenderText>
                 {((anchor as any).whatToRemember ?? []).map((item: string, i: number) => (
-                  <Text key={`r${i}`} style={st.anchorListItem}>{'•'} {item}</Text>
+                  <TenderText key={`r${i}`} variant="bodySmall" style={st.anchorListItem}>{'•'} {item}</TenderText>
                 ))}
-                <Text style={st.anchorSubhead}>Do</Text>
+                <TenderText variant="label" color={Colors.textSecondary} style={st.anchorSubhead}>Do</TenderText>
                 {((anchor as any).whatToDo ?? []).map((item: string, i: number) => (
-                  <Text key={`d${i}`} style={st.anchorListItem}>{'•'} {item}</Text>
+                  <TenderText key={`d${i}`} variant="bodySmall" style={st.anchorListItem}>{'•'} {item}</TenderText>
                 ))}
-                <Text style={st.anchorSubhead}>Don't</Text>
+                <TenderText variant="label" color={Colors.textSecondary} style={st.anchorSubhead}>Don't</TenderText>
                 {((anchor as any).whatNotToDo ?? []).map((item: string, i: number) => (
-                  <Text key={`n${i}`} style={st.anchorListItem}>{'•'} {item}</Text>
+                  <TenderText key={`n${i}`} variant="bodySmall" style={st.anchorListItem}>{'•'} {item}</TenderText>
                 ))}
               </>
             )}
@@ -1906,12 +1899,12 @@ function AnchorsTab({
               <View style={[st.anchorIcon, { backgroundColor: Colors.warning + '15' }]}>
                 <HourglassIcon size={18} color={Colors.warning} />
               </View>
-              <Text style={[st.anchorLabel, { color: Colors.warning }]}>Pattern Interrupts</Text>
+              <TenderText variant="label" color={Colors.warning}>Pattern Interrupts</TenderText>
             </View>
             {isArr ? (pi as string[]).map((item, i) => (
-              <Text key={i} style={st.anchorText}>"{item}"</Text>
+              <TenderText key={i} variant="body" style={st.anchorText}>"{item}"</TenderText>
             )) : (
-              <Text style={st.anchorText}>{pi}</Text>
+              <TenderText variant="body" style={st.anchorText}>{pi}</TenderText>
             )}
           </View>
         );
@@ -1927,21 +1920,21 @@ function AnchorsTab({
               <View style={[st.anchorIcon, { backgroundColor: Colors.secondary + '15' }]}>
                 <HeartIcon size={18} color={Colors.secondary} />
               </View>
-              <Text style={[st.anchorLabel, { color: Colors.secondary }]}>Repair</Text>
+              <TenderText variant="label" color={Colors.secondary}>Repair</TenderText>
             </View>
             {isRich ? (
               <>
-                <Text style={st.anchorSubhead}>Signs you're ready</Text>
+                <TenderText variant="label" color={Colors.textSecondary} style={st.anchorSubhead}>Signs you're ready</TenderText>
                 {((rep as any).signsYoureReady ?? []).map((item: string, i: number) => (
-                  <Text key={`s${i}`} style={st.anchorListItem}>{'•'} {item}</Text>
+                  <TenderText key={`s${i}`} variant="bodySmall" style={st.anchorListItem}>{'•'} {item}</TenderText>
                 ))}
-                <Text style={st.anchorSubhead}>Try saying</Text>
+                <TenderText variant="label" color={Colors.textSecondary} style={st.anchorSubhead}>Try saying</TenderText>
                 {((rep as any).repairStarters ?? []).map((item: string, i: number) => (
-                  <Text key={`rs${i}`} style={st.anchorText}>"{item}"</Text>
+                  <TenderText key={`rs${i}`} variant="body" style={st.anchorText}>"{item}"</TenderText>
                 ))}
               </>
             ) : (
-              <Text style={st.anchorText}>{String(rep)}</Text>
+              <TenderText variant="body" style={st.anchorText}>{String(rep)}</TenderText>
             )}
           </View>
         );
@@ -1957,48 +1950,48 @@ function AnchorsTab({
               <View style={[st.anchorIcon, { backgroundColor: Colors.primary + '15' }]}>
                 <GreenHeartIcon size={18} color={Colors.primary} />
               </View>
-              <Text style={[st.anchorLabel, { color: Colors.primary }]}>Self-Compassion</Text>
+              <TenderText variant="label" color={Colors.primary}>Self-Compassion</TenderText>
             </View>
             {isRich ? (
               <>
                 {((sc as any).reminders ?? []).map((item: string, i: number) => (
-                  <Text key={`r${i}`} style={st.anchorListItem}>{'•'} {item}</Text>
+                  <TenderText key={`r${i}`} variant="bodySmall" style={st.anchorListItem}>{'•'} {item}</TenderText>
                 ))}
                 {(sc as any).personalizedMessage && (
                   <View style={[st.insightBox, { marginTop: 8 }]}>
-                    <Text style={st.insightText}>{(sc as any).personalizedMessage}</Text>
+                    <TenderText variant="bodySmall">{(sc as any).personalizedMessage}</TenderText>
                   </View>
                 )}
               </>
             ) : (
-              <Text style={st.anchorText}>{sc as string}</Text>
+              <TenderText variant="body" style={st.anchorText}>{sc as string}</TenderText>
             )}
           </View>
         );
       })()}
 
       {/* Partner Guide */}
-      <Text style={st.sectionLabel}>FOR YOUR PARTNER</Text>
+      <TenderText variant="label" color={Colors.textMuted} style={st.sectionLabel}>FOR YOUR PARTNER</TenderText>
       <View style={st.card}>
-        <Text style={st.cardBody}>{portrait.partnerGuide.whatToKnow}</Text>
+        <TenderText variant="body" style={{ lineHeight: 26 }}>{portrait.partnerGuide.whatToKnow}</TenderText>
       </View>
 
       {/* Deepest longing — the most therapeutically powerful sentence */}
       {portrait.partnerGuide.deepestLonging && (
         <View style={[st.card, { borderLeftWidth: 3, borderLeftColor: Colors.primary }]}>
-          <Text style={st.cardHeading}>What I really need you to understand</Text>
-          <Text style={[st.cardBody, { fontStyle: 'italic' }]}>
+          <TenderText variant="headingM">What I really need you to understand</TenderText>
+          <TenderText variant="body" style={{ lineHeight: 26, fontStyle: 'italic' }}>
             "{portrait.partnerGuide.deepestLonging}"
-          </Text>
+          </TenderText>
         </View>
       )}
 
       <View style={st.card}>
-        <Text style={st.cardHeading}>When I'm struggling, I need...</Text>
+        <TenderText variant="headingM">When I'm struggling, I need...</TenderText>
         {portrait.partnerGuide.whenStrugglingINeed.map((item, i) => (
           <View key={i} style={st.listItem}>
-            <Text style={st.listBullet}>{'•'}</Text>
-            <Text style={st.listText}>{item}</Text>
+            <TenderText variant="body" color={Colors.textMuted} style={{ lineHeight: 24 }}>{'•'}</TenderText>
+            <TenderText variant="bodySmall" style={st.listText}>{item}</TenderText>
           </View>
         ))}
       </View>
@@ -2006,28 +1999,28 @@ function AnchorsTab({
       {/* State-specific guidance (new enriched fields) */}
       {portrait.partnerGuide.whenActivated && (
         <View style={st.card}>
-          <Text style={[st.cardHeading, { color: Colors.error }]}>When I'm activated (fight/flight)</Text>
-          <Text style={st.anchorSubhead}>What helps</Text>
+          <TenderText variant="headingM" color={Colors.error}>When I'm activated (fight/flight)</TenderText>
+          <TenderText variant="label" color={Colors.textSecondary} style={st.anchorSubhead}>What helps</TenderText>
           {portrait.partnerGuide.whenActivated.whatHelps.map((item, i) => (
-            <Text key={`ah${i}`} style={st.anchorListItem}>{'•'} {item}</Text>
+            <TenderText key={`ah${i}`} variant="bodySmall" style={st.anchorListItem}>{'•'} {item}</TenderText>
           ))}
-          <Text style={st.anchorSubhead}>What to say</Text>
+          <TenderText variant="label" color={Colors.textSecondary} style={st.anchorSubhead}>What to say</TenderText>
           {portrait.partnerGuide.whenActivated.whatToSay.map((item, i) => (
-            <Text key={`as${i}`} style={[st.anchorText, { fontStyle: 'italic' }]}>"{item}"</Text>
+            <TenderText key={`as${i}`} variant="body" style={[st.anchorText, { fontStyle: 'italic' }]}>"{item}"</TenderText>
           ))}
         </View>
       )}
 
       {portrait.partnerGuide.whenShutdown && (
         <View style={st.card}>
-          <Text style={[st.cardHeading, { color: Colors.depth }]}>When I've shut down (freeze)</Text>
-          <Text style={st.anchorSubhead}>What helps</Text>
+          <TenderText variant="headingM" color={Colors.depth}>When I've shut down (freeze)</TenderText>
+          <TenderText variant="label" color={Colors.textSecondary} style={st.anchorSubhead}>What helps</TenderText>
           {portrait.partnerGuide.whenShutdown.whatHelps.map((item, i) => (
-            <Text key={`sh${i}`} style={st.anchorListItem}>{'•'} {item}</Text>
+            <TenderText key={`sh${i}`} variant="bodySmall" style={st.anchorListItem}>{'•'} {item}</TenderText>
           ))}
-          <Text style={st.anchorSubhead}>What to say</Text>
+          <TenderText variant="label" color={Colors.textSecondary} style={st.anchorSubhead}>What to say</TenderText>
           {portrait.partnerGuide.whenShutdown.whatToSay.map((item, i) => (
-            <Text key={`ss${i}`} style={[st.anchorText, { fontStyle: 'italic' }]}>"{item}"</Text>
+            <TenderText key={`ss${i}`} variant="body" style={[st.anchorText, { fontStyle: 'italic' }]}>"{item}"</TenderText>
           ))}
         </View>
       )}
@@ -2036,28 +2029,28 @@ function AnchorsTab({
       <View style={st.card}>
         <View style={st.twoCol}>
           <View style={st.colCard}>
-            <Text style={[st.colCardTitle, { color: Colors.success }]}>What helps</Text>
+            <TenderText variant="label" color={Colors.success} style={st.colCardTitle}>What helps</TenderText>
             {portrait.partnerGuide.whatHelps.map((item, i) => (
-              <Text key={i} style={st.colCardItem}>{'•'} {item}</Text>
+              <TenderText key={i} variant="caption">{'•'} {item}</TenderText>
             ))}
           </View>
           <View style={st.colCard}>
-            <Text style={[st.colCardTitle, { color: Colors.error }]}>What doesn't</Text>
+            <TenderText variant="label" color={Colors.error} style={st.colCardTitle}>What doesn't</TenderText>
             {portrait.partnerGuide.whatDoesntHelp.map((item, i) => (
-              <Text key={i} style={st.colCardItem}>{'•'} {item}</Text>
+              <TenderText key={i} variant="caption">{'•'} {item}</TenderText>
             ))}
           </View>
         </View>
       </View>
 
       {/* What's Next */}
-      <Text style={st.sectionLabel}>WHAT'S NEXT</Text>
+      <TenderText variant="label" color={Colors.textMuted} style={st.sectionLabel}>WHAT'S NEXT</TenderText>
       <View style={st.card}>
-        <Text style={st.cardBody}>
+        <TenderText variant="body" style={{ lineHeight: 26 }}>
           This portrait is a starting point, not a verdict. Return to it when you
           are stuck, share it with your partner when you are ready, and use it as
           a guide for the work ahead.
-        </Text>
+        </TenderText>
       </View>
 
       <TouchableOpacity
@@ -2068,7 +2061,7 @@ function AnchorsTab({
         accessibilityLabel="Nuance AI"
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <Text style={st.ctaButtonText}>Nuance AI</Text>
+          <TenderText variant="button" color={Colors.white}>Nuance AI</TenderText>
           <SparkleIcon size={14} color={Colors.white} />
         </View>
       </TouchableOpacity>
@@ -2080,7 +2073,7 @@ function AnchorsTab({
         accessibilityRole="button"
         accessibilityLabel="Practice an Exercise"
       >
-        <Text style={st.ctaButtonOutlineText}>Practice an Exercise</Text>
+        <TenderText variant="button" color={Colors.primary}>Practice an Exercise</TenderText>
       </TouchableOpacity>
 
       <View style={{ height: Spacing.xxl }} />
@@ -2107,12 +2100,7 @@ const st = StyleSheet.create({
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.md,
   },
-  viewAndEraseBannerText: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.warning,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
+  // viewAndEraseBannerText — text props moved to TenderText
   center: {
     flex: 1,
     justifyContent: 'center',
@@ -2120,11 +2108,7 @@ const st = StyleSheet.create({
     padding: Spacing.xl,
     gap: Spacing.lg,
   },
-  errorText: {
-    fontSize: FontSizes.body,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-  },
+  // errorText — text props moved to TenderText
   button: {
     backgroundColor: Colors.primary,
     height: ButtonSizes.large,
@@ -2133,11 +2117,7 @@ const st = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: Spacing.xl,
   },
-  buttonText: {
-    color: Colors.white,
-    fontSize: FontSizes.body,
-    fontWeight: '600',
-  },
+  // buttonText — text props moved to TenderText
 
   // ── Header ──
   header: {
@@ -2151,26 +2131,13 @@ const st = StyleSheet.create({
   headerBackBtn: {
     width: 70,
   },
-  headerBackText: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.primary,
-    fontWeight: '600',
-  },
+  // headerBackText — text props moved to TenderText
   headerCenter: {
     flex: 1,
     alignItems: 'center',
   },
-  headerTitle: {
-    fontSize: FontSizes.body,
-    fontWeight: '700',
-    fontFamily: FontFamilies.heading,
-    color: Colors.text,
-  },
-  headerDate: {
-    fontSize: FontSizes.caption,
-    color: Colors.textMuted,
-    marginTop: 1,
-  },
+  // headerTitle — text props moved to TenderText
+  // headerDate — text props moved to TenderText
 
   // ── Tab Bar ──
   tabBarWrapper: {
@@ -2197,11 +2164,7 @@ const st = StyleSheet.create({
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
   },
-  tabLabel: {
-    fontSize: FontSizes.caption,
-    color: Colors.textSecondary,
-    fontWeight: '500',
-  },
+  // tabLabel — text props moved to TenderText
 
   // ── Content ──
   contentScroll: {
@@ -2218,17 +2181,8 @@ const st = StyleSheet.create({
     paddingVertical: Spacing.lg,
     gap: Spacing.sm,
   },
-  heroEyebrow: {
-    fontSize: FontSizes.caption,
-    color: Colors.primary,
-    fontWeight: '600',
-    letterSpacing: 2,
-  },
+  // heroEyebrow — text props moved to TenderText
   heroTitle: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: Colors.text,
-    fontFamily: FontFamilies.heading,
     textTransform: 'capitalize',
   },
 
@@ -2247,22 +2201,13 @@ const st = StyleSheet.create({
     backgroundColor: Colors.surfaceElevated,
     ...Shadows.elevated,
   },
-  scoreCircleNumber: {
-    fontSize: 28,
-    fontFamily: FontFamilies.heading,
-    fontWeight: '700',
-    lineHeight: 32,
-  },
+  // scoreCircleNumber — text props moved to TenderText
   scoreCircleLabel: {
-    fontSize: 10,
-    color: Colors.textMuted,
     textTransform: 'uppercase',
     letterSpacing: 1,
     marginTop: -2,
   },
   scoreCircleTier: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '600',
     marginTop: Spacing.xs,
   },
 
@@ -2301,18 +2246,11 @@ const st = StyleSheet.create({
     borderRadius: 36,
     borderWidth: 5,
   },
-  areRingValue: {
-    fontSize: 20,
-    fontWeight: '700',
-    fontFamily: FontFamilies.heading,
-  },
+  // areRingValue — text props moved to TenderText
   areRingLabel: {
-    fontSize: FontSizes.caption,
     fontWeight: '600',
-    color: Colors.text,
   },
   areRingTier: {
-    fontSize: 10,
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -2327,17 +2265,8 @@ const st = StyleSheet.create({
     gap: Spacing.sm,
     ...Shadows.card,
   },
-  cardHeading: {
-    fontSize: FontSizes.headingM,
-    fontWeight: '600',
-    fontFamily: FontFamilies.heading,
-    color: Colors.text,
-  },
-  cardBody: {
-    fontSize: FontSizes.body,
-    color: Colors.text,
-    lineHeight: 26,
-  },
+  // cardHeading — text props moved to TenderText
+  // cardBody — text props moved to TenderText
   cardHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2351,9 +2280,6 @@ const st = StyleSheet.create({
 
   // ── Section Label ──
   sectionLabel: {
-    fontSize: FontSizes.caption,
-    color: Colors.textMuted,
-    fontWeight: '700',
     letterSpacing: 1.5,
     marginTop: Spacing.lg,
     marginBottom: Spacing.md,
@@ -2381,21 +2307,12 @@ const st = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  statIconText: {
-    fontSize: 16,
-    color: Colors.white,
-    fontWeight: '700',
-  },
+  // statIconText — unused, text props moved to TenderText
   statLabel: {
-    fontSize: FontSizes.caption,
-    color: Colors.textMuted,
-    fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   statValue: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.text,
     fontWeight: '600',
   },
 
@@ -2420,22 +2337,11 @@ const st = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  navCardIconText: {
-    fontSize: 16,
-    color: Colors.white,
-    fontWeight: '700',
-  },
+  // navCardIconText — unused, text props moved to TenderText
   navCardLabel: {
     flex: 1,
-    fontSize: FontSizes.body,
-    fontWeight: '600',
-    color: Colors.text,
   },
-  navCardArrow: {
-    fontSize: 20,
-    color: Colors.textMuted,
-    fontWeight: '300',
-  },
+  // navCardArrow — pure text, moved to TenderText
 
   // ── Legend ──
   legendRow: {
@@ -2459,15 +2365,8 @@ const st = StyleSheet.create({
     height: 10,
     borderRadius: 5,
   },
-  legendText: {
-    fontSize: FontSizes.caption,
-    color: Colors.text,
-    fontWeight: '500',
-  },
-  legendRange: {
-    fontSize: FontSizes.caption,
-    color: Colors.textMuted,
-  },
+  // legendText — pure text, moved to TenderText
+  // legendRange — pure text, moved to TenderText
 
   // ── Score Group Card ──
   scoreGroupCard: {
@@ -2479,16 +2378,9 @@ const st = StyleSheet.create({
     ...Shadows.card,
   },
   scoreGroupLabel: {
-    fontSize: FontSizes.caption,
-    fontWeight: '700',
-    color: Colors.primary,
     letterSpacing: 1.2,
   },
   scoreGroupDescription: {
-    fontFamily: FontFamilies.body,
-    fontSize: 13,
-    color: Colors.textSecondary,
-    lineHeight: 19,
     marginTop: 4,
     marginBottom: 4,
   },
@@ -2508,15 +2400,8 @@ const st = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  barLabel: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '500',
-    color: Colors.text,
-  },
-  barValue: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '700',
-  },
+  // barLabel — pure text, moved to TenderText
+  // barValue — pure text, moved to TenderText
   barTrack: {
     height: 14,
     backgroundColor: Colors.surface,
@@ -2527,16 +2412,10 @@ const st = StyleSheet.create({
     height: 14,
     borderRadius: 7,
   },
-  barInterpretation: {
-    fontSize: FontSizes.caption,
-    fontStyle: 'italic',
-  },
+  // barInterpretation — pure text, moved to TenderText
 
   // ── Tab Intro ──
   tabIntro: {
-    fontSize: FontSizes.body,
-    color: Colors.textSecondary,
-    lineHeight: 24,
     marginBottom: Spacing.lg,
   },
 
@@ -2554,23 +2433,10 @@ const st = StyleSheet.create({
     borderRadius: BorderRadius.pill,
   },
   cycleBadgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: Colors.white,
     letterSpacing: 1.0,
   },
-  cycleHeroTitle: {
-    fontSize: FontSizes.headingM,
-    fontWeight: '600',
-    fontFamily: FontFamilies.heading,
-    color: Colors.text,
-  },
-  cycleHeroBody: {
-    fontSize: 13,
-    color: Colors.text,
-    lineHeight: 20,
-    textAlign: 'center',
-  },
+  // cycleHeroTitle — pure text, moved to TenderText
+  // cycleHeroBody — pure text, moved to TenderText
 
   // ── Lists ──
   listItem: {
@@ -2578,16 +2444,9 @@ const st = StyleSheet.create({
     gap: Spacing.sm,
     paddingLeft: Spacing.xs,
   },
-  listBullet: {
-    fontSize: FontSizes.body,
-    color: Colors.textMuted,
-    lineHeight: 24,
-  },
+  // listBullet — pure text, moved to TenderText
   listText: {
     flex: 1,
-    fontSize: FontSizes.bodySmall,
-    color: Colors.text,
-    lineHeight: 22,
   },
 
   // ── Patterns ──
@@ -2610,63 +2469,35 @@ const st = StyleSheet.create({
     borderRadius: BorderRadius.pill,
   },
   patternBadgeText: {
-    fontSize: 10,
-    fontWeight: '600',
     textTransform: 'capitalize',
   },
   patternCategory: {
-    fontSize: FontSizes.caption,
-    color: Colors.textMuted,
     textTransform: 'capitalize',
   },
-  patternDescription: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.text,
-    lineHeight: 22,
-  },
-  patternInterpretation: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.textSecondary,
-    lineHeight: 20,
-    fontStyle: 'italic',
-  },
+  // patternDescription — pure text, moved to TenderText
+  // patternInterpretation — pure text, moved to TenderText
 
   // ── Protocol / Growth Plan styles ──
   protocolSection: {
     marginBottom: Spacing.xl,
   },
   protocolEyebrow: {
-    fontSize: FontSizes.caption,
-    fontWeight: '700' as const,
-    color: Colors.secondary,
-    textTransform: 'uppercase' as const,
     letterSpacing: 1.5,
     marginBottom: Spacing.xs,
   },
   protocolName: {
-    fontSize: FontSizes.headingM,
-    fontWeight: '700' as const,
-    color: Colors.text,
     marginBottom: Spacing.sm,
   },
   protocolDescription: {
-    fontSize: FontSizes.body,
-    color: Colors.textSecondary,
-    lineHeight: 24,
     marginBottom: Spacing.lg,
   },
   movementsContainer: {
     marginBottom: Spacing.lg,
   },
   movementsSectionTitle: {
-    fontSize: FontSizes.body,
-    fontWeight: '700' as const,
-    color: Colors.text,
     marginBottom: Spacing.xs,
   },
   movementsSubtitle: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.textSecondary,
     marginBottom: Spacing.md,
   },
   movementCard: {
@@ -2683,24 +2514,11 @@ const st = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   movementIcon: {
-    fontSize: 20,
     marginRight: Spacing.sm,
   },
-  movementName: {
-    fontSize: FontSizes.body,
-    fontWeight: '600' as const,
-    color: Colors.text,
-  },
-  movementQuestion: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.textSecondary,
-    fontStyle: 'italic' as const,
-  },
-  movementScore: {
-    fontSize: FontSizes.body,
-    fontWeight: '700' as const,
-    color: Colors.secondary,
-  },
+  // movementName — pure text, moved to TenderText
+  // movementQuestion — pure text, moved to TenderText
+  // movementScore — pure text, moved to TenderText
   movementProgressTrack: {
     height: 6,
     backgroundColor: Colors.border,
@@ -2713,11 +2531,7 @@ const st = StyleSheet.create({
     backgroundColor: Colors.secondary,
     borderRadius: 3,
   },
-  movementDescription: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.textSecondary,
-    lineHeight: 20,
-  },
+  // movementDescription — pure text, moved to TenderText
   phasesContainer: {
     marginBottom: Spacing.lg,
   },
@@ -2741,19 +2555,9 @@ const st = StyleSheet.create({
     backgroundColor: Colors.border,
     marginRight: Spacing.sm,
   },
-  phaseName: {
-    fontSize: FontSizes.body,
-    fontWeight: '600' as const,
-    color: Colors.text,
-  },
-  phaseWeeks: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.textSecondary,
-  },
+  // phaseName — pure text, moved to TenderText
+  // phaseWeeks — pure text, moved to TenderText
   phaseFocus: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.textSecondary,
-    lineHeight: 20,
     paddingLeft: Spacing.md + Spacing.sm,
   },
   phaseExercises: {
@@ -2761,10 +2565,6 @@ const st = StyleSheet.create({
     paddingLeft: Spacing.md + Spacing.sm,
   },
   phaseExercisesLabel: {
-    fontSize: 11,
-    fontWeight: '700' as const,
-    color: Colors.textMuted,
-    textTransform: 'uppercase' as const,
     letterSpacing: 0.8,
     marginBottom: 6,
   },
@@ -2785,20 +2585,11 @@ const st = StyleSheet.create({
   },
   exerciseRowTitle: {
     flex: 1,
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '600' as const,
-    color: Colors.text,
   },
   exerciseRowMeta: {
-    fontSize: 11,
-    color: Colors.textMuted,
     marginRight: 8,
   },
-  exerciseRowArrow: {
-    fontSize: 18,
-    color: Colors.textMuted,
-    fontWeight: '300' as const,
-  },
+  // exerciseRowArrow — pure text, moved to TenderText
   guidanceContainer: {
     backgroundColor: Colors.surfaceElevated,
     borderRadius: BorderRadius.md,
@@ -2806,15 +2597,9 @@ const st = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   guidanceTitle: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '600' as const,
-    color: Colors.text,
     marginBottom: Spacing.sm,
   },
   guidanceItem: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.textSecondary,
-    lineHeight: 20,
     marginBottom: Spacing.xs,
   },
 
@@ -2840,32 +2625,16 @@ const st = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  growthEdgeNumberText: {
-    fontSize: FontSizes.body,
-    fontWeight: '700',
-    color: Colors.white,
-  },
+  // growthEdgeNumberText — pure text, moved to TenderText
   growthEdgeHeaderText: {
     flex: 1,
     gap: 2,
   },
   growthEdgeLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: Colors.warning,
     letterSpacing: 1,
   },
-  growthEdgeTitle: {
-    fontSize: FontSizes.headingM,
-    fontWeight: '600',
-    fontFamily: FontFamilies.heading,
-    color: Colors.text,
-  },
-  growthEdgeDescription: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.text,
-    lineHeight: 22,
-  },
+  // growthEdgeTitle — pure text, moved to TenderText
+  // growthEdgeDescription — pure text, moved to TenderText
   growthEdgeRationaleBox: {
     backgroundColor: Colors.surface,
     borderRadius: BorderRadius.sm,
@@ -2873,20 +2642,12 @@ const st = StyleSheet.create({
     borderLeftWidth: 3,
     borderLeftColor: Colors.warning,
   },
-  growthEdgeRationale: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.textSecondary,
-    lineHeight: 20,
-    fontStyle: 'italic',
-  },
+  // growthEdgeRationale — pure text, moved to TenderText
   practicesSection: {
     marginTop: Spacing.xs,
     gap: Spacing.xs,
   },
   practicesTitle: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '700',
-    color: Colors.text,
     marginBottom: Spacing.xs,
   },
   practiceItem: {
@@ -2904,15 +2665,9 @@ const st = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 1,
   },
-  practiceCheckboxText: {
-    fontSize: 10,
-    color: Colors.textMuted,
-  },
+  // practiceCheckboxText — pure text, moved to TenderText
   practiceText: {
     flex: 1,
-    fontSize: FontSizes.bodySmall,
-    color: Colors.text,
-    lineHeight: 22,
   },
 
   // ── Anchors ──
@@ -2936,35 +2691,19 @@ const st = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  anchorIconText: {
-    fontSize: 16,
-  },
+  // anchorIconText — pure text, moved to TenderText
   anchorLabel: {
-    fontSize: FontSizes.caption,
-    fontWeight: '700',
-    textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   anchorText: {
-    fontSize: FontSizes.body,
-    color: Colors.text,
-    lineHeight: 24,
-    fontStyle: 'italic',
     marginBottom: 4,
   },
   anchorSubhead: {
-    fontSize: FontSizes.caption,
-    fontWeight: '700',
-    color: Colors.textSecondary,
-    textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginTop: 10,
     marginBottom: 4,
   },
   anchorListItem: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.text,
-    lineHeight: 20,
     paddingLeft: 4,
     marginBottom: 2,
   },
@@ -2975,12 +2714,7 @@ const st = StyleSheet.create({
     borderLeftWidth: 3,
     borderLeftColor: Colors.primary,
   },
-  insightText: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.text,
-    lineHeight: 20,
-    fontStyle: 'italic',
-  },
+  // insightText — pure text, moved to TenderText
 
   // ── Two Column ──
   twoCol: {
@@ -2995,17 +2729,10 @@ const st = StyleSheet.create({
     gap: Spacing.xs,
   },
   colCardTitle: {
-    fontSize: FontSizes.caption,
-    fontWeight: '700',
-    textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 2,
   },
-  colCardItem: {
-    fontSize: FontSizes.caption,
-    color: Colors.text,
-    lineHeight: 18,
-  },
+  // colCardItem — pure text, moved to TenderText
 
 
   // ── Values Compass Infographic ──
@@ -3034,16 +2761,8 @@ const st = StyleSheet.create({
     justifyContent: 'center',
     ...Shadows.subtle,
   },
-  valuesCompassDotText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: Colors.white,
-  },
+  // valuesCompassDotText — pure text, moved to TenderText
   valuesCompassLabel: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: Colors.text,
-    textAlign: 'center',
     marginTop: 3,
   },
   valuesCompassCenter: {
@@ -3058,24 +2777,15 @@ const st = StyleSheet.create({
     top: 83,
     ...Shadows.subtle,
   },
-  valuesCompassCenterText: {
-    fontSize: 20,
-  },
+  // valuesCompassCenterText — pure text, moved to TenderText
   valuesGapSection: {
     gap: Spacing.xs,
     marginTop: Spacing.sm,
   },
   valuesGapTitle: {
-    fontSize: FontSizes.caption,
-    fontWeight: '700',
-    color: Colors.text,
     marginBottom: 2,
   },
   valuesGapDescription: {
-    fontFamily: FontFamilies.body,
-    fontSize: 12,
-    color: Colors.textSecondary,
-    lineHeight: 17,
     marginBottom: 6,
   },
   valuesGapRow: {
@@ -3085,9 +2795,6 @@ const st = StyleSheet.create({
   },
   valuesGapLabel: {
     width: 80,
-    fontSize: FontSizes.caption,
-    color: Colors.text,
-    fontWeight: '500',
   },
   valuesGapBarTrack: {
     flex: 1,
@@ -3102,14 +2809,8 @@ const st = StyleSheet.create({
   },
   valuesGapScore: {
     width: 24,
-    fontSize: FontSizes.caption,
-    fontWeight: '700',
-    textAlign: 'right',
   },
   valuesGapHint: {
-    fontSize: 10,
-    color: Colors.textMuted,
-    fontStyle: 'italic',
     marginTop: 4,
   },
 
@@ -3136,17 +2837,8 @@ const st = StyleSheet.create({
     backgroundColor: Colors.surfaceElevated,
     ...Shadows.elevated,
   },
-  partsMapSelfScore: {
-    fontSize: 22,
-    fontWeight: '700',
-    fontFamily: FontFamilies.heading,
-  },
-  partsMapSelfLabel: {
-    fontSize: 9,
-    color: Colors.textMuted,
-    textAlign: 'center',
-    lineHeight: 11,
-  },
+  // partsMapSelfScore — pure text, moved to TenderText
+  // partsMapSelfLabel — pure text, moved to TenderText
   partsMapSection: {
     gap: Spacing.xs,
   },
@@ -3162,17 +2854,9 @@ const st = StyleSheet.create({
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
   },
-  partsMapSectionTitle: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '700',
-    color: Colors.text,
-  },
+  // partsMapSectionTitle — pure text, moved to TenderText
   partsMapSectionHint: {
-    fontSize: 10,
-    color: Colors.textMuted,
-    fontStyle: 'italic',
     flex: 1,
-    textAlign: 'right',
   },
   partsMapPills: {
     flexDirection: 'row',
@@ -3186,10 +2870,7 @@ const st = StyleSheet.create({
     borderRadius: BorderRadius.pill,
     borderWidth: 1,
   },
-  partsMapPillText: {
-    fontSize: FontSizes.caption,
-    fontWeight: '600',
-  },
+  // partsMapPillText — pure text, moved to TenderText
   partsMapCards: {
     gap: Spacing.xs,
     paddingLeft: Spacing.sm,
@@ -3202,17 +2883,9 @@ const st = StyleSheet.create({
     paddingVertical: Spacing.xs + 2,
   },
   partsMapCardTitle: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '700',
-    fontFamily: FontFamilies.heading,
     marginBottom: 2,
   },
-  partsMapCardDesc: {
-    fontSize: FontSizes.caption,
-    color: Colors.textSecondary,
-    fontFamily: FontFamilies.body,
-    lineHeight: 16,
-  },
+  // partsMapCardDesc — pure text, moved to TenderText
   partsMapPolarity: {
     paddingHorizontal: Spacing.sm,
     paddingVertical: Spacing.xs,
@@ -3221,12 +2894,7 @@ const st = StyleSheet.create({
     borderLeftWidth: 2,
     borderLeftColor: Colors.depth,
   },
-  partsMapPolarityText: {
-    fontSize: FontSizes.caption,
-    color: Colors.text,
-    fontStyle: 'italic',
-    lineHeight: 18,
-  },
+  // partsMapPolarityText — pure text, moved to TenderText
 
   // ── Cycle Diagram Infographic ──
   cycleDiagramContainer: {
@@ -3250,11 +2918,7 @@ const st = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cycleDiagramArrow: {
-    fontSize: 70,
-    color: Colors.textMuted + '20',
-    fontWeight: '200',
-  },
+  // cycleDiagramArrow — pure text, moved to TenderText
   cycleDiagramYouBadge: {
     position: 'absolute',
     left: 16,
@@ -3268,17 +2932,9 @@ const st = StyleSheet.create({
     ...Shadows.elevated,
   },
   cycleDiagramYouText: {
-    fontSize: 7,
-    color: Colors.white,
-    fontWeight: '600',
-    textTransform: 'uppercase',
     letterSpacing: 0.6,
   },
-  cycleDiagramYouRole: {
-    fontSize: 9,
-    color: Colors.white,
-    fontWeight: '700',
-  },
+  // cycleDiagramYouRole — pure text, moved to TenderText
   cycleDiagramPartnerBadge: {
     position: 'absolute',
     right: 16,
@@ -3291,17 +2947,9 @@ const st = StyleSheet.create({
     justifyContent: 'center',
   },
   cycleDiagramPartnerText: {
-    fontSize: 7,
-    color: Colors.white,
-    fontWeight: '600',
-    textTransform: 'uppercase',
     letterSpacing: 0.6,
   },
-  cycleDiagramPartnerRole: {
-    fontSize: 9,
-    color: Colors.white,
-    fontWeight: '700',
-  },
+  // cycleDiagramPartnerRole — pure text, moved to TenderText
   cycleDiagramLineTop: {
     position: 'absolute',
     top: 10,
@@ -3312,12 +2960,7 @@ const st = StyleSheet.create({
     bottom: 10,
     alignItems: 'center',
   },
-  cycleDiagramLineLabel: {
-    fontSize: 9,
-    color: Colors.textMuted,
-    fontWeight: '500',
-    fontStyle: 'italic',
-  },
+  // cycleDiagramLineLabel — pure text, moved to TenderText
   cycleDiagramInsight: {
     backgroundColor: Colors.surface,
     borderRadius: BorderRadius.sm,
@@ -3326,15 +2969,8 @@ const st = StyleSheet.create({
     borderLeftWidth: 3,
     borderLeftColor: Colors.secondary,
   },
-  cycleDiagramInsightText: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.text,
-    lineHeight: 20,
-    fontStyle: 'italic',
-  },
+  // cycleDiagramInsightText — pure text, moved to TenderText
   cycleDiagramInsightSub: {
-    fontSize: FontSizes.caption,
-    color: Colors.textMuted,
     marginTop: 4,
   },
 
@@ -3348,11 +2984,7 @@ const st = StyleSheet.create({
     marginBottom: Spacing.sm,
     ...Shadows.card,
   },
-  ctaButtonText: {
-    color: Colors.white,
-    fontSize: FontSizes.body,
-    fontWeight: '700',
-  },
+  // ctaButtonText — pure text, moved to TenderText
   ctaButtonOutline: {
     borderWidth: 1.5,
     borderColor: Colors.primary,
@@ -3362,11 +2994,7 @@ const st = StyleSheet.create({
     alignItems: 'center',
     marginBottom: Spacing.sm,
   },
-  ctaButtonOutlineText: {
-    color: Colors.primary,
-    fontSize: FontSizes.body,
-    fontWeight: '600',
-  },
+  // ctaButtonOutlineText — pure text, moved to TenderText
 
   // ── Synthesis Card ──
   synthesisCard: {
@@ -3380,9 +3008,6 @@ const st = StyleSheet.create({
     ...Shadows.card,
   },
   synthesisSectionLabel: {
-    fontSize: FontSizes.caption,
-    color: Colors.depth,
-    fontWeight: '700',
     letterSpacing: 1.5,
   },
   synthesisPatternBox: {
@@ -3392,31 +3017,14 @@ const st = StyleSheet.create({
     gap: Spacing.xs,
   },
   synthesisPatternLabel: {
-    fontSize: FontSizes.caption,
-    color: Colors.depth,
-    fontWeight: '700',
-    textTransform: 'uppercase' as const,
     letterSpacing: 1,
   },
-  synthesisPatternText: {
-    fontSize: FontSizes.body,
-    color: Colors.text,
-    fontWeight: '500',
-    lineHeight: 24,
-  },
-  synthesisNarrative: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.textSecondary,
-    lineHeight: 22,
-  },
+  // synthesisPatternText — pure text, moved to TenderText
+  // synthesisNarrative — pure text, moved to TenderText
   synthesisSection: {
     gap: Spacing.xs,
   },
   synthesisSectionTitle: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '700',
-    fontFamily: FontFamilies.heading,
-    color: Colors.text,
     marginBottom: 2,
   },
   synthesisListItem: {
@@ -3433,9 +3041,6 @@ const st = StyleSheet.create({
   },
   synthesisListText: {
     flex: 1,
-    fontSize: FontSizes.bodySmall,
-    color: Colors.textSecondary,
-    lineHeight: 20,
   },
   synthesisStepBox: {
     backgroundColor: `${Colors.primary}12`,
@@ -3446,22 +3051,10 @@ const st = StyleSheet.create({
     borderColor: `${Colors.primary}30`,
   },
   synthesisStepLabel: {
-    fontSize: 10,
-    color: Colors.primary,
-    fontWeight: '700',
     letterSpacing: 1.5,
   },
-  synthesisStepName: {
-    fontSize: FontSizes.headingM,
-    fontWeight: '700',
-    fontFamily: FontFamilies.heading,
-    color: Colors.text,
-  },
-  synthesisStepRationale: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.textSecondary,
-    lineHeight: 20,
-  },
+  // synthesisStepName — pure text, moved to TenderText
+  // synthesisStepRationale — pure text, moved to TenderText
 
   // ── Growth Progress ──
   growthProgressContainer: {
@@ -3478,16 +3071,8 @@ const st = StyleSheet.create({
     alignItems: 'center' as const,
     marginBottom: Spacing.sm,
   },
-  growthProgressLabel: {
-    fontSize: FontSizes.body,
-    fontWeight: '700' as const,
-    color: Colors.text,
-  },
-  growthProgressPct: {
-    fontSize: FontSizes.headingM,
-    fontWeight: '700' as const,
-    color: Colors.secondary,
-  },
+  // growthProgressLabel — pure text, moved to TenderText
+  // growthProgressPct — pure text, moved to TenderText
   growthProgressTrack: {
     height: 10,
     backgroundColor: Colors.border,
@@ -3518,11 +3103,7 @@ const st = StyleSheet.create({
     height: '100%' as any,
     borderRadius: 2,
   },
-  phaseProgressMiniLabel: {
-    fontSize: 9,
-    color: Colors.textMuted,
-    fontWeight: '600' as const,
-  },
+  // phaseProgressMiniLabel — pure text, moved to TenderText
 
   // ── Exercise Done States ──
   exerciseRowDone: {
@@ -3538,20 +3119,10 @@ const st = StyleSheet.create({
     justifyContent: 'center' as const,
     marginRight: 10,
   },
-  exerciseCheckmarkText: {
-    fontSize: 11,
-    color: Colors.white,
-    fontWeight: '700' as const,
-  },
-  exerciseRowTitleDone: {
-    color: Colors.success,
-  },
+  // exerciseCheckmarkText — pure text, moved to TenderText
+  // exerciseRowTitleDone — pure text (color override), moved to TenderText
   phaseProgressText: {
-    fontSize: 11,
-    color: Colors.textMuted,
-    fontWeight: '600' as const,
     marginTop: 4,
-    textAlign: 'right' as const,
   },
 
   // ── Phase Completion Summary ──
@@ -3564,20 +3135,12 @@ const st = StyleSheet.create({
     borderLeftColor: Colors.success,
   },
   phaseCompleteIcon: {
-    fontSize: 18,
     marginBottom: 4,
   },
   phaseCompleteTitle: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '700' as const,
-    color: Colors.success,
     marginBottom: 4,
   },
-  phaseCompleteText: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.success,
-    lineHeight: 20,
-  },
+  // phaseCompleteText — pure text, moved to TenderText
 
   // ── Export Mode Styles ──
   exportSectionHeader: {
@@ -3587,15 +3150,8 @@ const st = StyleSheet.create({
     borderBottomWidth: 2,
     borderBottomColor: Colors.primary,
   },
-  exportTitle: {
-    fontSize: 26,
-    fontWeight: '700' as const,
-    fontFamily: FontFamilies.heading,
-    color: Colors.text,
-  },
+  // exportTitle — pure text, moved to TenderText
   exportDate: {
-    fontSize: FontSizes.body,
-    color: Colors.textSecondary,
     marginTop: 4,
   },
   exportSection: {
@@ -3605,12 +3161,7 @@ const st = StyleSheet.create({
     borderBottomColor: Colors.border,
   },
   exportSectionLabel: {
-    fontSize: FontSizes.headingL,
-    fontWeight: '700' as const,
-    fontFamily: FontFamilies.heading,
-    color: Colors.primary,
     marginBottom: Spacing.md,
-    textTransform: 'uppercase' as const,
     letterSpacing: 1.5,
   },
 
@@ -3625,10 +3176,7 @@ const st = StyleSheet.create({
     gap: Spacing.xs,
   },
   fieldScoreLabel: {
-    fontSize: FontSizes.caption,
-    color: Colors.textSecondary,
     width: 110,
-    fontWeight: '500' as const,
   },
   fieldScoreBarBg: {
     flex: 1,
@@ -3642,10 +3190,7 @@ const st = StyleSheet.create({
     borderRadius: 3,
   },
   fieldScoreValue: {
-    fontSize: FontSizes.caption,
-    color: Colors.textSecondary,
     width: 36,
-    textAlign: 'right' as const,
   },
   fieldBadgeRow: {
     flexDirection: 'row' as const,
@@ -3659,14 +3204,8 @@ const st = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: BorderRadius.pill,
   },
-  fieldMetaBadgeText: {
-    fontSize: FontSizes.caption,
-    color: Colors.depth,
-    fontWeight: '600' as const,
-  },
+  // fieldMetaBadgeText — pure text, moved to TenderText
   fieldMetaHint: {
-    fontSize: FontSizes.caption,
-    color: Colors.textSecondary,
     flex: 1,
   },
   fieldExpandBtn: {
@@ -3675,15 +3214,8 @@ const st = StyleSheet.create({
     alignItems: 'center' as const,
     paddingVertical: Spacing.xs,
   },
-  fieldExpandLabel: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.primary,
-    fontWeight: '600' as const,
-  },
-  fieldExpandArrow: {
-    fontSize: FontSizes.caption,
-    color: Colors.textSecondary,
-  },
+  // fieldExpandLabel — pure text, moved to TenderText
+  // fieldExpandArrow — pure text, moved to TenderText
 
   // ── Phase 3: Lens icon + Reframes styles ──
   lensIconCircle: {

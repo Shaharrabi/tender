@@ -5,15 +5,14 @@
  */
 
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import {
   Colors,
   Spacing,
-  FontSizes,
-  FontFamilies,
   BorderRadius,
   Shadows,
 } from '@/constants/theme';
+import TenderText from '@/components/ui/TenderText';
 import {
   LockIcon,
   SparkleIcon,
@@ -64,20 +63,30 @@ export default function LockedPortraitPreview({
       {/* Header */}
       <View style={styles.header}>
         <LockIcon size={16} color={Colors.primary} />
-        <Text style={styles.headerTitle}>Your Relational Portrait</Text>
+        <TenderText variant="bodyMedium" style={{ fontWeight: '700' }}>
+          Your Relational Portrait
+        </TenderText>
       </View>
 
-      <Text style={styles.headerSubtitle}>
+      <TenderText
+        variant="bodySmall"
+        color={Colors.textSecondary}
+        style={{ marginBottom: Spacing.md, lineHeight: 20 }}
+      >
         Complete all 6 sections to unlock your full portrait
-      </Text>
+      </TenderText>
 
       {/* Progress bar */}
       <View style={styles.progressTrack}>
         <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
       </View>
-      <Text style={styles.progressText}>
+      <TenderText
+        variant="caption"
+        color={Colors.textMuted}
+        style={{ fontSize: 11, fontWeight: '600', marginBottom: Spacing.md }}
+      >
         {completedCount} of {totalRequired} sections complete
-      </Text>
+      </TenderText>
 
       {/* Portrait tab previews — frosted */}
       <View style={styles.tabsGrid}>
@@ -86,7 +95,13 @@ export default function LockedPortraitPreview({
             <View style={[styles.tabIconCircle, { backgroundColor: color + '15' }]}>
               <Icon size={16} color={color + '60'} />
             </View>
-            <Text style={styles.tabLabel}>{label}</Text>
+            <TenderText
+              variant="caption"
+              color={Colors.textMuted}
+              style={{ fontSize: 10, fontWeight: '600', letterSpacing: 0.3 }}
+            >
+              {label}
+            </TenderText>
           </View>
         ))}
       </View>
@@ -99,9 +114,9 @@ export default function LockedPortraitPreview({
         accessibilityRole="button"
         accessibilityLabel={expanded ? 'Hide details' : 'See what is remaining'}
       >
-        <Text style={styles.expandButtonText}>
+        <TenderText variant="bodySmall" color={Colors.primary} style={{ fontWeight: '600' }}>
           {expanded ? 'Hide details' : 'See what\u2019s remaining'}
-        </Text>
+        </TenderText>
       </TouchableOpacity>
 
       {expanded && (
@@ -117,9 +132,16 @@ export default function LockedPortraitPreview({
                 ) : (
                   <View style={styles.checkCirclePending} />
                 )}
-                <Text style={[styles.checklistLabel, isDone && styles.checklistLabelDone]}>
+                <TenderText
+                  variant="bodySmall"
+                  color={isDone ? Colors.textSecondary : Colors.text}
+                  style={[
+                    { fontWeight: '500' },
+                    isDone && { textDecorationLine: 'line-through' },
+                  ]}
+                >
                   {ASSESSMENT_LABELS[type] || type}
-                </Text>
+                </TenderText>
               </View>
             );
           })}
@@ -146,18 +168,6 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
     marginBottom: 4,
   },
-  headerTitle: {
-    fontSize: FontSizes.body,
-    fontWeight: '700',
-    fontFamily: FontFamilies.heading,
-    color: Colors.text,
-  },
-  headerSubtitle: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.textSecondary,
-    marginBottom: Spacing.md,
-    lineHeight: 20,
-  },
   progressTrack: {
     height: 6,
     backgroundColor: Colors.borderLight,
@@ -169,12 +179,6 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: Colors.primary,
     borderRadius: 3,
-  },
-  progressText: {
-    fontSize: 11,
-    color: Colors.textMuted,
-    fontWeight: '600',
-    marginBottom: Spacing.md,
   },
   tabsGrid: {
     flexDirection: 'row',
@@ -196,21 +200,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  tabLabel: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: Colors.textMuted,
-    letterSpacing: 0.3,
-  },
   expandButton: {
     alignSelf: 'center',
     paddingVertical: 6,
     paddingHorizontal: Spacing.md,
-  },
-  expandButtonText: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.primary,
-    fontWeight: '600',
   },
   checklist: {
     marginTop: Spacing.sm,
@@ -235,14 +228,5 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 2,
     borderColor: Colors.borderLight,
-  },
-  checklistLabel: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.text,
-    fontWeight: '500',
-  },
-  checklistLabelDone: {
-    color: Colors.textSecondary,
-    textDecorationLine: 'line-through',
   },
 });

@@ -12,7 +12,6 @@
 import React, { useState, useCallback } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   TouchableOpacity,
   LayoutAnimation,
@@ -27,6 +26,7 @@ import {
   BorderRadius,
   FontFamilies,
 } from '@/constants/theme';
+import TenderText from '@/components/ui/TenderText';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -87,7 +87,7 @@ function ConfidenceBadge({
   return (
     <View style={[styles.confidenceBadge, { borderColor: color + '30' }]}>
       <View style={[styles.confidenceDot, { backgroundColor: color }]} />
-      <Text style={[styles.confidenceText, { color }]}>{label}</Text>
+      <TenderText variant="caption" color={color} style={{ fontWeight: '500' }}>{label}</TenderText>
     </View>
   );
 }
@@ -141,18 +141,24 @@ function ThreeLayerCard({
           <View style={[styles.iconCircle, { backgroundColor: iconColor + '15' }]}>
             {icon}
           </View>
-          <Text style={styles.title}>{title}</Text>
+          <TenderText variant="headingS" style={{ flex: 1 }}>{title}</TenderText>
         </View>
 
         {/* Essence quote */}
-        <Text style={styles.essence}>{`"${essence}"`}</Text>
+        <TenderText variant="serifItalic" color={Colors.textSecondary} style={{ fontSize: 15, lineHeight: 22, marginBottom: Spacing.md }}>
+          {`"${essence}"`}
+        </TenderText>
 
         {/* Meta items */}
         <View style={styles.metaRow}>
           {meta.map((item) => (
             <View key={item.label} style={styles.metaItem}>
-              <Text style={styles.metaLabel}>{item.label}</Text>
-              <Text style={styles.metaValue}>{item.value}</Text>
+              <TenderText variant="caption" color={Colors.textMuted} style={{ textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 1 }}>
+                {item.label}
+              </TenderText>
+              <TenderText variant="caption" style={{ fontSize: 13, fontWeight: '500' }}>
+                {item.value}
+              </TenderText>
             </View>
           ))}
         </View>
@@ -160,9 +166,9 @@ function ThreeLayerCard({
         {/* Go deeper CTA */}
         {hasLayer2 && (
           <View style={styles.goDeeper}>
-            <Text style={styles.goDeeperText}>
+            <TenderText variant="caption" color={Colors.primary} style={{ fontSize: 13, letterSpacing: 0.3 }}>
               {expanded ? 'Show less' : 'Go deeper'}
-            </Text>
+            </TenderText>
             <ArrowRightIcon
               size={12}
               color={Colors.primary}
@@ -178,9 +184,9 @@ function ThreeLayerCard({
 
           {/* Narrative paragraphs */}
           {narrativeParagraphs?.map((p, i) => (
-            <Text key={i} style={styles.narrativeParagraph}>
+            <TenderText key={i} variant="body" style={{ marginBottom: Spacing.md, lineHeight: 24 }}>
               {p}
-            </Text>
+            </TenderText>
           ))}
 
           {/* Embedded visualization */}
@@ -202,11 +208,11 @@ function ThreeLayerCard({
               accessibilityRole="button"
               accessibilityLabel={deepExpanded ? 'Hide reflection and clinical detail' : 'Go even deeper, reflection and clinical detail'}
             >
-              <Text style={styles.goEvenDeeperText}>
+              <TenderText variant="caption" color={Colors.primary} style={{ fontSize: 13, letterSpacing: 0.3 }}>
                 {deepExpanded
                   ? 'Hide reflection & clinical detail'
                   : 'Go even deeper — reflection + clinical detail'}
-              </Text>
+              </TenderText>
             </TouchableOpacity>
           )}
         </View>
@@ -220,11 +226,15 @@ function ThreeLayerCard({
           {/* Reflection questions */}
           {reflectionQuestions && reflectionQuestions.length > 0 && (
             <>
-              <Text style={styles.layer3Heading}>Reflection Questions</Text>
+              <TenderText variant="headingS" style={{ marginBottom: Spacing.sm }}>Reflection Questions</TenderText>
               {reflectionQuestions.map((q, i) => (
                 <View key={i} style={styles.reflectionItem}>
-                  <Text style={styles.reflectionNumber}>{i + 1}</Text>
-                  <Text style={styles.reflectionQuestion}>{q}</Text>
+                  <TenderText variant="bodySmall" color={Colors.primary} style={{ fontWeight: '600', width: 18 }}>
+                    {i + 1}
+                  </TenderText>
+                  <TenderText variant="body" style={{ flex: 1, lineHeight: 22, fontStyle: 'italic' }}>
+                    {q}
+                  </TenderText>
                 </View>
               ))}
             </>
@@ -233,13 +243,13 @@ function ThreeLayerCard({
           {/* Clinical detail */}
           {clinicalRows && clinicalRows.length > 0 && (
             <View style={styles.clinicalContainer}>
-              <Text style={styles.clinicalLabel}>
+              <TenderText variant="label" color={Colors.textMuted} style={{ marginBottom: Spacing.sm }}>
                 Clinical Detail (for your therapist)
-              </Text>
+              </TenderText>
               {clinicalRows.map((row, i) => (
                 <View key={i} style={styles.clinicalRow}>
-                  <Text style={styles.clinicalRowLabel}>{row.label}</Text>
-                  <Text style={styles.clinicalRowValue}>{row.value}</Text>
+                  <TenderText variant="caption" color={Colors.textSecondary}>{row.label}</TenderText>
+                  <TenderText variant="caption" color={Colors.text} style={{ fontWeight: '600' }}>{row.value}</TenderText>
                 </View>
               ))}
             </View>
@@ -254,7 +264,7 @@ function ThreeLayerCard({
               accessibilityRole="button"
               accessibilityLabel="Export for therapist"
             >
-              <Text style={styles.exportButtonText}>Export for Therapist</Text>
+              <TenderText variant="buttonSmall">Export for Therapist</TenderText>
             </TouchableOpacity>
           )}
         </View>
@@ -293,19 +303,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  title: {
-    ...Typography.headingS,
-    color: Colors.text,
-    flex: 1,
-  },
-  essence: {
-    fontFamily: 'PlayfairDisplay_400Regular_Italic',
-    fontSize: 15,
-    lineHeight: 22,
-    color: Colors.textSecondary,
-    fontStyle: 'italic',
-    marginBottom: Spacing.md,
-  },
   metaRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -320,30 +317,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.borderLight,
   },
-  metaLabel: {
-    ...Typography.caption,
-    color: Colors.textMuted,
-    textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    marginBottom: 1,
-  },
-  metaValue: {
-    fontFamily: FontFamilies.body,
-    fontSize: 13,
-    fontWeight: '500',
-    color: Colors.text,
-  },
   goDeeper: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
     marginTop: Spacing.xs,
-  },
-  goDeeperText: {
-    fontFamily: FontFamilies.body,
-    fontSize: 13,
-    color: Colors.primary,
-    letterSpacing: 0.3,
   },
 
   // Layer 2
@@ -355,12 +333,6 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: Colors.borderLight,
     marginBottom: Spacing.md,
-  },
-  narrativeParagraph: {
-    ...Typography.body,
-    color: Colors.text,
-    marginBottom: Spacing.md,
-    lineHeight: 24,
   },
   vizContainer: {
     marginVertical: Spacing.md,
@@ -381,20 +353,9 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 3,
   },
-  confidenceText: {
-    fontFamily: FontFamilies.body,
-    fontSize: 12,
-    fontWeight: '500',
-  },
   goEvenDeeper: {
     marginTop: Spacing.md,
     alignSelf: 'flex-start',
-  },
-  goEvenDeeperText: {
-    fontFamily: FontFamilies.body,
-    fontSize: 13,
-    color: Colors.primary,
-    letterSpacing: 0.3,
   },
 
   // Layer 3
@@ -407,30 +368,11 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.borderLight,
     marginBottom: Spacing.md,
   },
-  layer3Heading: {
-    ...Typography.headingS,
-    color: Colors.text,
-    marginBottom: Spacing.sm,
-  },
   reflectionItem: {
     flexDirection: 'row',
     gap: Spacing.sm,
     marginBottom: Spacing.sm,
     paddingLeft: Spacing.xs,
-  },
-  reflectionNumber: {
-    fontFamily: FontFamilies.accent,
-    fontSize: 14,
-    color: Colors.primary,
-    fontWeight: '600',
-    width: 18,
-  },
-  reflectionQuestion: {
-    ...Typography.body,
-    color: Colors.text,
-    flex: 1,
-    lineHeight: 22,
-    fontStyle: 'italic',
   },
 
   // Clinical detail
@@ -442,27 +384,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.borderLight,
   },
-  clinicalLabel: {
-    ...Typography.label,
-    color: Colors.textMuted,
-    marginBottom: Spacing.sm,
-  },
   clinicalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 4,
     borderBottomWidth: 1,
     borderBottomColor: Colors.borderLight,
-  },
-  clinicalRowLabel: {
-    ...Typography.caption,
-    color: Colors.textSecondary,
-  },
-  clinicalRowValue: {
-    fontFamily: FontFamilies.accent,
-    fontSize: 12,
-    color: Colors.text,
-    fontWeight: '600',
   },
 
   // Export button
@@ -474,9 +401,5 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.lg,
     paddingVertical: Spacing.sm,
     alignItems: 'center',
-  },
-  exportButtonText: {
-    ...Typography.buttonSmall,
-    color: Colors.text,
   },
 });

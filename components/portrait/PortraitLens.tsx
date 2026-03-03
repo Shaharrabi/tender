@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { Colors, Spacing, FontSizes } from '@/constants/theme';
+import TenderText from '@/components/ui/TenderText';
 import type {
   AttachmentLens,
   PartsLens,
@@ -28,11 +29,15 @@ export default function PortraitLens({ title, lens, type }: Props) {
         accessibilityRole="button"
         accessibilityLabel={`${title}, ${expanded ? 'collapse' : 'expand'} details`}
       >
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.toggle}>{expanded ? 'Less' : 'More'}</Text>
+        <TenderText variant="headingM">{title}</TenderText>
+        <TenderText variant="bodySmall" color={Colors.primary} style={{ fontWeight: '600' }}>
+          {expanded ? 'Less' : 'More'}
+        </TenderText>
       </TouchableOpacity>
 
-      <Text style={styles.narrative}>{lens.narrative}</Text>
+      <TenderText variant="body" style={{ lineHeight: 24 }}>
+        {lens.narrative}
+      </TenderText>
 
       {expanded && renderDetails(lens, type)}
     </View>
@@ -63,17 +68,25 @@ function AttachmentDetails({ lens }: { lens: AttachmentLens }) {
 
       {lens.triggers.length > 0 && (
         <View>
-          <Text style={styles.detailLabel}>Triggers</Text>
+          <TenderText variant="bodySmall" style={{ fontWeight: '700', marginBottom: 4 }}>
+            Triggers
+          </TenderText>
           {lens.triggers.map((t, i) => (
-            <Text key={i} style={styles.bullet}>
+            <TenderText
+              key={i}
+              variant="bodySmall"
+              style={{ lineHeight: 22, paddingLeft: Spacing.sm }}
+            >
               {'\u2022'} {t}
-            </Text>
+            </TenderText>
           ))}
         </View>
       )}
 
       <View>
-        <Text style={styles.detailLabel}>A.R.E. Profile</Text>
+        <TenderText variant="bodySmall" style={{ fontWeight: '700', marginBottom: 4 }}>
+          A.R.E. Profile
+        </TenderText>
         <AREBar label="Accessible" value={lens.areProfile.accessible} />
         <AREBar label="Responsive" value={lens.areProfile.responsive} />
         <AREBar label="Engaged" value={lens.areProfile.engaged} />
@@ -85,13 +98,17 @@ function AttachmentDetails({ lens }: { lens: AttachmentLens }) {
 function AREBar({ label, value }: { label: string; value: number }) {
   return (
     <View style={styles.areRow}>
-      <Text style={styles.areLabel}>{label}</Text>
+      <TenderText variant="caption" style={{ width: 90 }}>
+        {label}
+      </TenderText>
       <View style={styles.areBarBg}>
         <View
           style={[styles.areBarFill, { width: `${value}%` }]}
         />
       </View>
-      <Text style={styles.areValue}>{value}</Text>
+      <TenderText variant="caption" color={Colors.textSecondary} align="right" style={{ width: 24 }}>
+        {value}
+      </TenderText>
     </View>
   );
 }
@@ -102,41 +119,20 @@ function PartsDetails({ lens }: { lens: PartsLens }) {
   return (
     <View style={styles.details}>
       {lens.managerParts.length > 0 && (
-        <View>
-          <Text style={styles.detailLabel}>Manager Parts</Text>
-          {lens.managerParts.map((p, i) => (
-            <Text key={i} style={styles.bullet}>
-              {'\u2022'} {p}
-            </Text>
-          ))}
-        </View>
+        <BulletSection label="Manager Parts" items={lens.managerParts} />
       )}
 
       {lens.firefighterParts.length > 0 && (
-        <View>
-          <Text style={styles.detailLabel}>Firefighter Parts</Text>
-          {lens.firefighterParts.map((p, i) => (
-            <Text key={i} style={styles.bullet}>
-              {'\u2022'} {p}
-            </Text>
-          ))}
-        </View>
+        <BulletSection label="Firefighter Parts" items={lens.firefighterParts} />
       )}
 
       {lens.polarities.length > 0 && (
-        <View>
-          <Text style={styles.detailLabel}>Inner Polarities</Text>
-          {lens.polarities.map((p, i) => (
-            <Text key={i} style={styles.bullet}>
-              {'\u2022'} {p}
-            </Text>
-          ))}
-        </View>
+        <BulletSection label="Inner Polarities" items={lens.polarities} />
       )}
 
-      <Text style={styles.detailMeta}>
+      <TenderText variant="caption" color={Colors.textSecondary} style={{ fontWeight: '600' }}>
         Self-Leadership Score: {lens.selfLeadershipScore}/100
-      </Text>
+      </TenderText>
     </View>
   );
 }
@@ -146,41 +142,20 @@ function PartsDetails({ lens }: { lens: PartsLens }) {
 function RegulationDetails({ lens }: { lens: RegulationLens }) {
   return (
     <View style={styles.details}>
-      <Text style={styles.detailMeta}>
+      <TenderText variant="caption" color={Colors.textSecondary} style={{ fontWeight: '600' }}>
         Window Width: {lens.windowWidth}/100
-      </Text>
+      </TenderText>
 
       {lens.activationPatterns.length > 0 && (
-        <View>
-          <Text style={styles.detailLabel}>When Activated</Text>
-          {lens.activationPatterns.map((p, i) => (
-            <Text key={i} style={styles.bullet}>
-              {'\u2022'} {p}
-            </Text>
-          ))}
-        </View>
+        <BulletSection label="When Activated" items={lens.activationPatterns} />
       )}
 
       {lens.shutdownPatterns.length > 0 && (
-        <View>
-          <Text style={styles.detailLabel}>When Shutdown</Text>
-          {lens.shutdownPatterns.map((p, i) => (
-            <Text key={i} style={styles.bullet}>
-              {'\u2022'} {p}
-            </Text>
-          ))}
-        </View>
+        <BulletSection label="When Shutdown" items={lens.shutdownPatterns} />
       )}
 
       {lens.floodingMarkers.length > 0 && (
-        <View>
-          <Text style={styles.detailLabel}>Flooding Signs</Text>
-          {lens.floodingMarkers.map((m, i) => (
-            <Text key={i} style={styles.bullet}>
-              {'\u2022'} {m}
-            </Text>
-          ))}
-        </View>
+        <BulletSection label="Flooding Signs" items={lens.floodingMarkers} />
       )}
     </View>
   );
@@ -193,48 +168,76 @@ function ValuesDetails({ lens }: { lens: ValuesLens }) {
     <View style={styles.details}>
       {lens.coreValues.length > 0 && (
         <View>
-          <Text style={styles.detailLabel}>Core Values</Text>
+          <TenderText variant="bodySmall" style={{ fontWeight: '700', marginBottom: 4 }}>
+            Core Values
+          </TenderText>
           {lens.coreValues.map((v, i) => (
-            <Text key={i} style={styles.bullet}>
+            <TenderText
+              key={i}
+              variant="bodySmall"
+              style={{ lineHeight: 22, paddingLeft: Spacing.sm }}
+            >
               {i + 1}. {v}
-            </Text>
+            </TenderText>
           ))}
         </View>
       )}
 
       {lens.significantGaps.length > 0 && (
         <View>
-          <Text style={styles.detailLabel}>Growth Areas</Text>
+          <TenderText variant="bodySmall" style={{ fontWeight: '700', marginBottom: 4 }}>
+            Growth Areas
+          </TenderText>
           {lens.significantGaps.map((g, i) => (
-            <Text key={i} style={styles.bullet}>
+            <TenderText
+              key={i}
+              variant="bodySmall"
+              style={{ lineHeight: 22, paddingLeft: Spacing.sm }}
+            >
               {'\u2022'} {g.value}: {g.importance}/10 importance, gap of{' '}
               {g.gap.toFixed(1)}
-            </Text>
+            </TenderText>
           ))}
         </View>
       )}
 
       {lens.developmentalInvitations.length > 0 && (
-        <View>
-          <Text style={styles.detailLabel}>Invitations</Text>
-          {lens.developmentalInvitations.map((inv, i) => (
-            <Text key={i} style={styles.bullet}>
-              {'\u2022'} {inv}
-            </Text>
-          ))}
-        </View>
+        <BulletSection label="Invitations" items={lens.developmentalInvitations} />
       )}
     </View>
   );
 }
 
-// ─── Helpers ─────────────────────────────────────────────
+// ─── Shared Helpers ──────────────────────────────────────
 
 function DetailBlock({ label, text }: { label: string; text: string }) {
   return (
     <View>
-      <Text style={styles.detailLabel}>{label}</Text>
-      <Text style={styles.detailText}>{text}</Text>
+      <TenderText variant="bodySmall" style={{ fontWeight: '700', marginBottom: 4 }}>
+        {label}
+      </TenderText>
+      <TenderText variant="bodySmall" style={{ lineHeight: 20 }}>
+        {text}
+      </TenderText>
+    </View>
+  );
+}
+
+function BulletSection({ label, items }: { label: string; items: string[] }) {
+  return (
+    <View>
+      <TenderText variant="bodySmall" style={{ fontWeight: '700', marginBottom: 4 }}>
+        {label}
+      </TenderText>
+      {items.map((item, i) => (
+        <TenderText
+          key={i}
+          variant="bodySmall"
+          style={{ lineHeight: 22, paddingLeft: Spacing.sm }}
+        >
+          {'\u2022'} {item}
+        </TenderText>
+      ))}
     </View>
   );
 }
@@ -254,58 +257,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: Spacing.sm,
   },
-  title: {
-    fontSize: FontSizes.headingM,
-    fontWeight: '600',
-    color: Colors.text,
-  },
-  toggle: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.primary,
-    fontWeight: '600',
-  },
-  narrative: {
-    fontSize: FontSizes.body,
-    color: Colors.text,
-    lineHeight: 24,
-  },
   details: {
     marginTop: Spacing.md,
     gap: Spacing.md,
-  },
-  detailLabel: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '700',
-    color: Colors.text,
-    marginBottom: 4,
-  },
-  detailText: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.text,
-    lineHeight: 20,
-  },
-  detailMeta: {
-    fontSize: FontSizes.caption,
-    color: Colors.textSecondary,
-    fontWeight: '600',
-  },
-  bullet: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.text,
-    lineHeight: 22,
-    paddingLeft: Spacing.sm,
-    flexShrink: 1,
   },
   areRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.sm,
     marginBottom: 4,
-  },
-  areLabel: {
-    width: 90,
-    fontSize: FontSizes.caption,
-    color: Colors.text,
   },
   areBarBg: {
     flex: 1,
@@ -318,11 +278,5 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
     backgroundColor: Colors.primary,
-  },
-  areValue: {
-    width: 24,
-    fontSize: FontSizes.caption,
-    color: Colors.textSecondary,
-    textAlign: 'right',
   },
 });

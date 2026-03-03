@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Colors, Spacing, FontSizes } from '@/constants/theme';
+import { View, StyleSheet } from 'react-native';
+import { Colors, Spacing, BorderRadius } from '@/constants/theme';
+import TenderText from '@/components/ui/TenderText';
 import type { GrowthEdge } from '@/types';
 
 interface Props {
@@ -11,18 +12,34 @@ interface Props {
 export default function PortraitGrowthEdge({ edge, index }: Props) {
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>GROWTH EDGE {index}</Text>
-      <Text style={styles.title}>{edge.title}</Text>
-      <Text style={styles.description}>{edge.description}</Text>
-      <Text style={styles.rationale}>{edge.rationale}</Text>
+      <TenderText variant="label" color={Colors.primary}>
+        GROWTH EDGE {index}
+      </TenderText>
+      <TenderText variant="headingM">{edge.title}</TenderText>
+      <TenderText variant="bodySmall" style={{ lineHeight: 22 }}>
+        {edge.description}
+      </TenderText>
+      <TenderText
+        variant="bodySmall"
+        color={Colors.textSecondary}
+        style={{ fontStyle: 'italic', lineHeight: 20 }}
+      >
+        {edge.rationale}
+      </TenderText>
 
       {edge.practices.length > 0 && (
         <View style={styles.practicesBlock}>
-          <Text style={styles.practicesLabel}>Practices</Text>
+          <TenderText variant="bodySmall" style={{ fontWeight: '700' }}>
+            Practices
+          </TenderText>
           {edge.practices.map((p, i) => (
-            <Text key={i} style={styles.practice}>
+            <TenderText
+              key={i}
+              variant="bodySmall"
+              style={{ lineHeight: 22, paddingLeft: Spacing.sm }}
+            >
               {i + 1}. {p}
-            </Text>
+            </TenderText>
           ))}
         </View>
       )}
@@ -35,45 +52,12 @@ const styles = StyleSheet.create({
     marginHorizontal: Spacing.xl,
     marginBottom: Spacing.md,
     backgroundColor: Colors.surface,
-    borderRadius: 12,
+    borderRadius: BorderRadius.md,
     padding: Spacing.md,
     gap: Spacing.xs,
-  },
-  label: {
-    fontSize: FontSizes.caption,
-    fontWeight: '700',
-    color: Colors.primary,
-    letterSpacing: 1,
-  },
-  title: {
-    fontSize: FontSizes.headingM,
-    fontWeight: '600',
-    color: Colors.text,
-  },
-  description: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.text,
-    lineHeight: 22,
-  },
-  rationale: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.textSecondary,
-    lineHeight: 20,
-    fontStyle: 'italic',
   },
   practicesBlock: {
     marginTop: Spacing.sm,
     gap: 4,
-  },
-  practicesLabel: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '700',
-    color: Colors.text,
-  },
-  practice: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.text,
-    lineHeight: 22,
-    paddingLeft: Spacing.sm,
   },
 });

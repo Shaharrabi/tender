@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Colors, Spacing, Typography } from '@/constants/theme';
+import { View, StyleSheet } from 'react-native';
+import { Colors, Spacing, BorderRadius } from '@/constants/theme';
+import TenderText from '@/components/ui/TenderText';
 import type { AnchorPoints, AnchorCategory } from '@/types';
 
 interface Props {
@@ -39,15 +40,23 @@ const LABELS: Array<{ key: keyof AnchorPoints; label: string }> = [
 export default function PortraitAnchors({ anchors }: Props) {
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>Anchor Points</Text>
-      <Text style={styles.sectionSubtitle}>
+      <TenderText variant="headingL">Anchor Points</TenderText>
+      <TenderText
+        variant="bodySmall"
+        color={Colors.textSecondary}
+        style={{ marginBottom: Spacing.sm }}
+      >
         Short phrases for difficult moments. Save the ones that resonate.
-      </Text>
+      </TenderText>
 
       {LABELS.map(({ key, label }) => (
         <View key={key} style={styles.card}>
-          <Text style={styles.anchorLabel}>{label}</Text>
-          <Text style={styles.anchorText}>{renderAnchorValue(anchors[key])}</Text>
+          <TenderText variant="label" color={Colors.primary}>
+            {label}
+          </TenderText>
+          <TenderText variant="body" style={{ lineHeight: 24, fontStyle: 'italic' }}>
+            {renderAnchorValue(anchors[key])}
+          </TenderText>
         </View>
       ))}
     </View>
@@ -59,29 +68,10 @@ const styles = StyleSheet.create({
     padding: Spacing.xl,
     gap: Spacing.sm,
   },
-  sectionTitle: {
-    ...Typography.headingL,
-    color: Colors.text,
-  },
-  sectionSubtitle: {
-    ...Typography.bodySmall,
-    color: Colors.textSecondary,
-    marginBottom: Spacing.sm,
-  },
   card: {
     backgroundColor: Colors.surface,
-    borderRadius: 10,
+    borderRadius: BorderRadius.sm,
     padding: Spacing.md,
     gap: 4,
-  },
-  anchorLabel: {
-    ...Typography.label,
-    color: Colors.primary,
-  },
-  anchorText: {
-    ...Typography.body,
-    color: Colors.text,
-    lineHeight: 24,
-    fontStyle: 'italic' as const,
   },
 });

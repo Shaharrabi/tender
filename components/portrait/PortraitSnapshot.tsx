@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Colors, Spacing, FontSizes, FontFamilies, BorderRadius, Shadows } from '@/constants/theme';
+import { View, StyleSheet } from 'react-native';
+import { Colors, Spacing, BorderRadius, Shadows } from '@/constants/theme';
+import TenderText from '@/components/ui/TenderText';
 import type { CompositeScores } from '@/types';
 
 // ─── Types ───────────────────────────────────────────────
@@ -112,14 +113,32 @@ function OverallScoreCircle({ score }: { score: number }) {
     <View style={styles.overallContainer}>
       <View style={[styles.scoreCircleOuter, { borderColor: tier.color }]}>
         <View style={styles.scoreCircleInner}>
-          <Text style={[styles.scoreCircleValue, { color: tier.color }]}>{score}</Text>
-          <Text style={styles.scoreCircleLabel}>overall</Text>
+          <TenderText
+            variant="headingL"
+            color={tier.color}
+            style={{ fontWeight: '700', lineHeight: 28 }}
+          >
+            {score}
+          </TenderText>
+          <TenderText
+            variant="label"
+            color={Colors.textSecondary}
+            style={{ marginTop: 0 }}
+          >
+            overall
+          </TenderText>
         </View>
       </View>
-      <Text style={[styles.overallTierLabel, { color: tier.color }]}>{tier.label}</Text>
-      <Text style={styles.overallDescription}>
+      <TenderText
+        variant="bodyMedium"
+        color={tier.color}
+        style={{ marginTop: Spacing.sm }}
+      >
+        {tier.label}
+      </TenderText>
+      <TenderText variant="caption" color={Colors.textMuted} style={{ marginTop: 2 }}>
         Composite across all dimensions
-      </Text>
+      </TenderText>
     </View>
   );
 }
@@ -130,8 +149,12 @@ function Legend() {
       {TIERS.map((tier) => (
         <View key={tier.label} style={styles.legendItem}>
           <View style={[styles.legendDot, { backgroundColor: tier.color }]} />
-          <Text style={styles.legendText}>{tier.label}</Text>
-          <Text style={styles.legendRange}>{tier.range}</Text>
+          <TenderText variant="caption" style={{ fontWeight: '500' }}>
+            {tier.label}
+          </TenderText>
+          <TenderText variant="caption" color={Colors.textMuted}>
+            {tier.range}
+          </TenderText>
         </View>
       ))}
     </View>
@@ -153,11 +176,13 @@ function ScoreBar({
     <View style={styles.scoreBarContainer}>
       {/* Label row */}
       <View style={styles.scoreBarLabelRow}>
-        <Text style={styles.scoreBarLabel}>{meta.label}</Text>
+        <TenderText variant="bodySmall" style={{ fontWeight: '500' }}>
+          {meta.label}
+        </TenderText>
         {!showInside && (
-          <Text style={[styles.scoreBarValueOutside, { color: tier.color }]}>
+          <TenderText variant="caption" color={tier.color} style={{ fontWeight: '700' }}>
             {value}
-          </Text>
+          </TenderText>
         )}
       </View>
 
@@ -173,15 +198,21 @@ function ScoreBar({
           ]}
         >
           {showInside && (
-            <Text style={styles.barValueInside}>{value}</Text>
+            <TenderText
+              variant="caption"
+              color={Colors.white}
+              style={{ fontSize: 10, fontWeight: '700' }}
+            >
+              {value}
+            </TenderText>
           )}
         </View>
       </View>
 
       {/* Interpretation */}
-      <Text style={[styles.interpretation, { color: tier.color }]}>
+      <TenderText variant="caption" color={tier.color} style={{ fontStyle: 'italic' }}>
         {interpretation}
-      </Text>
+      </TenderText>
     </View>
   );
 }
@@ -197,7 +228,9 @@ function GroupCard({
 
   return (
     <View style={styles.groupCard}>
-      <Text style={styles.groupLabel}>{group}</Text>
+      <TenderText variant="label" color={Colors.primary} style={{ letterSpacing: 1.2 }}>
+        {group}
+      </TenderText>
       <View style={styles.groupDivider} />
       {items.map((meta) => (
         <ScoreBar key={meta.key} meta={meta} value={scores[meta.key] ?? 0} />
@@ -214,10 +247,14 @@ export default function PortraitSnapshot({ compositeScores }: Props) {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <Text style={styles.sectionTitle}>Snapshot</Text>
-      <Text style={styles.sectionSubtitle}>
+      <TenderText variant="headingL">Snapshot</TenderText>
+      <TenderText
+        variant="bodySmall"
+        color={Colors.textSecondary}
+        style={{ marginBottom: Spacing.sm }}
+      >
         A visual overview of your key dimensions
-      </Text>
+      </TenderText>
 
       {/* Overall composite score */}
       <OverallScoreCircle score={overallScore} />
@@ -247,21 +284,6 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
   },
 
-  // Section header
-  sectionTitle: {
-    fontSize: FontSizes.headingL,
-    fontFamily: FontFamilies.heading,
-    fontWeight: '600',
-    color: Colors.text,
-    marginBottom: 2,
-  },
-  sectionSubtitle: {
-    fontSize: FontSizes.bodySmall,
-    fontFamily: FontFamilies.body,
-    color: Colors.textSecondary,
-    marginBottom: Spacing.sm,
-  },
-
   // Overall score circle
   overallContainer: {
     alignItems: 'center',
@@ -280,32 +302,6 @@ const styles = StyleSheet.create({
   scoreCircleInner: {
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  scoreCircleValue: {
-    fontSize: FontSizes.headingL,
-    fontFamily: FontFamilies.heading,
-    fontWeight: '700',
-    lineHeight: 28,
-  },
-  scoreCircleLabel: {
-    fontSize: FontSizes.caption,
-    fontFamily: FontFamilies.body,
-    color: Colors.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginTop: 0,
-  },
-  overallTierLabel: {
-    fontSize: FontSizes.body,
-    fontFamily: FontFamilies.body,
-    fontWeight: '600',
-    marginTop: Spacing.sm,
-  },
-  overallDescription: {
-    fontSize: FontSizes.caption,
-    fontFamily: FontFamilies.body,
-    color: Colors.textMuted,
-    marginTop: 2,
   },
 
   // Legend
@@ -329,17 +325,6 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 5,
   },
-  legendText: {
-    fontSize: FontSizes.caption,
-    fontFamily: FontFamilies.body,
-    color: Colors.text,
-    fontWeight: '500',
-  },
-  legendRange: {
-    fontSize: FontSizes.caption,
-    fontFamily: FontFamilies.body,
-    color: Colors.textMuted,
-  },
 
   // Group card
   groupCard: {
@@ -348,14 +333,6 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     gap: Spacing.sm,
     ...Shadows.subtle,
-  },
-  groupLabel: {
-    fontSize: FontSizes.bodySmall,
-    fontFamily: FontFamilies.body,
-    fontWeight: '700',
-    color: Colors.primary,
-    textTransform: 'uppercase',
-    letterSpacing: 1.2,
   },
   groupDivider: {
     height: 1,
@@ -373,17 +350,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  scoreBarLabel: {
-    fontSize: FontSizes.bodySmall,
-    fontFamily: FontFamilies.body,
-    color: Colors.text,
-    fontWeight: '500',
-  },
-  scoreBarValueOutside: {
-    fontSize: FontSizes.caption,
-    fontFamily: FontFamilies.body,
-    fontWeight: '700',
-  },
 
   // Bar
   barBackground: {
@@ -398,18 +364,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'flex-end',
     paddingRight: 6,
-  },
-  barValueInside: {
-    fontSize: 10,
-    fontFamily: FontFamilies.body,
-    fontWeight: '700',
-    color: Colors.white,
-  },
-
-  // Interpretation
-  interpretation: {
-    fontSize: FontSizes.caption,
-    fontFamily: FontFamilies.body,
-    fontStyle: 'italic',
   },
 });

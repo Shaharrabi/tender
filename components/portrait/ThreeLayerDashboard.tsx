@@ -11,16 +11,15 @@
  */
 
 import React, { useEffect, useRef, useMemo } from 'react';
-import { View, Text, StyleSheet, Animated, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Animated, TouchableOpacity } from 'react-native';
 import Svg, { Circle, Line, Path } from 'react-native-svg';
 import {
   Colors,
-  Typography,
   Spacing,
   Shadows,
   BorderRadius,
-  FontFamilies,
 } from '@/constants/theme';
+import TenderText from '@/components/ui/TenderText';
 import type { CompositeScores } from '@/types';
 
 // Icons
@@ -161,10 +160,12 @@ function ResonancePulse({ score }: { score: number }) {
       </Animated.View>
 
       <View style={styles.resonanceTextContainer}>
-        <Text style={[styles.resonanceStatus, { color: orbColors.outer }]}>
+        <TenderText variant="headingS" color={orbColors.outer} align="center" style={{ marginBottom: 4 }}>
           {status.status}
-        </Text>
-        <Text style={styles.resonanceSubtitle}>{status.subtitle}</Text>
+        </TenderText>
+        <TenderText variant="bodySmall" color={Colors.textSecondary} align="center">
+          {status.subtitle}
+        </TenderText>
       </View>
     </Animated.View>
   );
@@ -201,8 +202,10 @@ function EmergenceDirection({ score }: { score: number }) {
         <CompassIcon size={22} color={Colors.success} />
       </Animated.View>
       <View style={styles.directionTextContainer}>
-        <Text style={styles.directionLabel}>Emergence Direction</Text>
-        <Text style={styles.directionDescription}>{direction.description}</Text>
+        <TenderText variant="label" color={Colors.success} style={{ marginBottom: 2 }}>
+          Emergence Direction
+        </TenderText>
+        <TenderText variant="bodySmall">{direction.description}</TenderText>
       </View>
     </View>
   );
@@ -237,7 +240,9 @@ function RelationalVitality({
 
   return (
     <View style={styles.vitalityContainer}>
-      <Text style={styles.vitalityLabel}>Relational Vitality</Text>
+      <TenderText variant="label" color={Colors.textMuted} style={{ marginBottom: Spacing.md }}>
+        Relational Vitality
+      </TenderText>
 
       {/* Gradient spectrum bar */}
       <View style={styles.spectrumBar}>
@@ -258,24 +263,28 @@ function RelationalVitality({
       {/* Band labels */}
       <View style={styles.spectrumLabels}>
         {VITALITY_BANDS.map((b) => (
-          <Text
+          <TenderText
             key={b.label}
+            variant="caption"
+            color={b.label === band.label ? band.color : Colors.textMuted}
             style={[
-              styles.spectrumLabelText,
-              b.label === band.label && { color: band.color, fontWeight: '600' },
+              { fontSize: 10, letterSpacing: 0.3 },
+              b.label === band.label && { fontWeight: '600' },
             ]}
           >
             {b.label}
-          </Text>
+          </TenderText>
         ))}
       </View>
 
       {/* Current band result */}
       <View style={styles.vitalityResult}>
-        <Text style={[styles.vitalityBandName, { color: band.color }]}>
+        <TenderText variant="serifBody" color={band.color} style={{ fontWeight: '600' }}>
           {band.label}
-        </Text>
-        <Text style={styles.vitalityDescription}>{band.description}</Text>
+        </TenderText>
+        <TenderText variant="caption" color={Colors.textSecondary} align="center" style={{ marginTop: 4 }}>
+          {band.description}
+        </TenderText>
       </View>
 
       {/* See details link */}
@@ -286,7 +295,9 @@ function RelationalVitality({
           accessibilityRole="button"
           accessibilityLabel="See what is underneath"
         >
-          <Text style={styles.seeDetails}>See what's underneath</Text>
+          <TenderText variant="caption" color={Colors.primary} align="center" style={{ marginTop: Spacing.sm, letterSpacing: 0.5 }}>
+            See what's underneath
+          </TenderText>
         </TouchableOpacity>
       )}
     </View>
@@ -354,17 +365,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: Spacing.md,
   },
-  resonanceStatus: {
-    fontFamily: FontFamilies.heading,
-    fontSize: 18,
-    textAlign: 'center',
-    marginBottom: 4,
-  },
-  resonanceSubtitle: {
-    ...Typography.bodySmall,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-  },
 
   // Layer 2: Emergence Direction
   directionContainer: {
@@ -390,15 +390,6 @@ const styles = StyleSheet.create({
   directionTextContainer: {
     flex: 1,
   },
-  directionLabel: {
-    ...Typography.label,
-    color: Colors.success,
-    marginBottom: 2,
-  },
-  directionDescription: {
-    ...Typography.bodySmall,
-    color: Colors.text,
-  },
 
   // Layer 3: Relational Vitality
   vitalityContainer: {
@@ -409,11 +400,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.borderLight,
     ...Shadows.subtle,
-  },
-  vitalityLabel: {
-    ...Typography.label,
-    color: Colors.textMuted,
-    marginBottom: Spacing.md,
   },
   spectrumBar: {
     height: SPECTRUM_HEIGHT,
@@ -449,31 +435,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 4,
   },
-  spectrumLabelText: {
-    fontFamily: FontFamilies.body,
-    fontSize: 10,
-    color: Colors.textMuted,
-    letterSpacing: 0.3,
-  },
   vitalityResult: {
     alignItems: 'center',
     marginTop: Spacing.md,
-  },
-  vitalityBandName: {
-    fontFamily: 'PlayfairDisplay_600SemiBold',
-    fontSize: 18,
-  },
-  vitalityDescription: {
-    ...Typography.caption,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    marginTop: 4,
-  },
-  seeDetails: {
-    ...Typography.caption,
-    color: Colors.primary,
-    textAlign: 'center',
-    marginTop: Spacing.sm,
-    letterSpacing: 0.5,
   },
 });

@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Colors, Spacing, FontSizes } from '@/constants/theme';
+import { View, StyleSheet } from 'react-native';
+import { Colors, Spacing } from '@/constants/theme';
+import TenderText from '@/components/ui/TenderText';
 import type { PartnerGuide } from '@/types';
 
 interface Props {
@@ -10,12 +11,14 @@ interface Props {
 export default function PortraitPartnerGuide({ guide }: Props) {
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>Partner Guide</Text>
-      <Text style={styles.sectionSubtitle}>
+      <TenderText variant="headingL">Partner Guide</TenderText>
+      <TenderText variant="bodySmall" color={Colors.textSecondary}>
         What your partner needs to know to support you
-      </Text>
+      </TenderText>
 
-      <Text style={styles.narrative}>{guide.whatToKnow}</Text>
+      <TenderText variant="body" style={{ lineHeight: 24 }}>
+        {guide.whatToKnow}
+      </TenderText>
 
       <ListBlock
         label="When I am struggling, I need..."
@@ -31,11 +34,17 @@ function ListBlock({ label, items }: { label: string; items: string[] }) {
   if (items.length === 0) return null;
   return (
     <View style={styles.listBlock}>
-      <Text style={styles.listLabel}>{label}</Text>
+      <TenderText variant="bodySmall" style={{ fontWeight: '700' }}>
+        {label}
+      </TenderText>
       {items.map((item, i) => (
-        <Text key={i} style={styles.bullet}>
+        <TenderText
+          key={i}
+          variant="bodySmall"
+          style={{ lineHeight: 22, paddingLeft: Spacing.sm }}
+        >
           {'\u2022'} {item}
-        </Text>
+        </TenderText>
       ))}
     </View>
   );
@@ -46,32 +55,7 @@ const styles = StyleSheet.create({
     padding: Spacing.xl,
     gap: Spacing.md,
   },
-  sectionTitle: {
-    fontSize: FontSizes.headingL,
-    fontWeight: '600',
-    color: Colors.text,
-  },
-  sectionSubtitle: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.textSecondary,
-  },
-  narrative: {
-    fontSize: FontSizes.body,
-    color: Colors.text,
-    lineHeight: 24,
-  },
   listBlock: {
     gap: 4,
-  },
-  listLabel: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '700',
-    color: Colors.text,
-  },
-  bullet: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.text,
-    lineHeight: 22,
-    paddingLeft: Spacing.sm,
   },
 });
