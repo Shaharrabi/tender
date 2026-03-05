@@ -1,16 +1,14 @@
 /**
- * Your Healing Journey Screen — Sprint C Enhancement
+ * Your Relational Journey Screen — Simplified Journey Map
  *
- * Reorganized layout:
- * 1. CurrentStepFocus — Hero card showing where you are
- * 2. Daily Check-In — Daily touchpoint (moved up)
- * 3. WeeklyPracticeSchedule — What to do this week
- * 4. WindowOfTolerance — Nervous system check
- * 5. StepJourney — Full 12-step map (enriched with courses, criteria)
- * 6. Weekly Check-In — Couple-only weekly reflection
- * 7. Growth Edges — Portrait-derived edges
- * 8. Recent Check-Ins — Last 5 entries
- * 9. Treatment Plan link
+ * One purpose: show where you are in the 12 steps.
+ * 1. Header: "Your Relational Journey"
+ * 2. Tagline: "Tending the field between you — in 12 steps"
+ * 3. CurrentStepFocus — simplified hero card
+ * 4. StepJourney — 12-step map grouped by phases
+ * 5. Treatment Plan link (bottom)
+ *
+ * Daily content (check-in, practices, nervous system) lives on home.
  */
 
 import React, { useCallback, useState, useEffect } from 'react';
@@ -34,42 +32,25 @@ import {
   FontFamilies,
   BorderRadius,
   Shadows,
+  Typography,
 } from '@/constants/theme';
 import CurrentStepFocus from '@/components/growth/CurrentStepFocus';
 import StepJourney from '@/components/growth/StepJourney';
-import GrowthTimeline from '@/components/growth/GrowthTimeline';
-import CheckInCard from '@/components/growth/CheckInCard';
-import WindowOfTolerance from '@/components/growth/WindowOfTolerance';
-import WeeklyPracticeSchedule from '@/components/growth/WeeklyPracticeSchedule';
 import FoundationOverlay, { hasHeardFoundation } from '@/components/growth/FoundationOverlay';
-import {
-  ensureGrowthEdgesFromPortrait,
-  getTodaysCheckIn,
-  getRecentCheckIns,
-  saveDailyCheckIn,
-} from '@/services/growth';
 import { ensureStepProgress } from '@/services/steps';
 import { getMyCouple, isSelfCouple } from '@/services/couples';
-import { getThisWeeksCheckIn, saveWeeklyCheckIn } from '@/services/weare';
-import WeeklyCheckInCard from '@/components/weare/WeeklyCheckInCard';
-import { getPracticesForStep } from '@/utils/steps/twelve-steps';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
-import type { GrowthEdgeProgress, DailyCheckIn, StepProgress } from '@/types/growth';
+import type { StepProgress } from '@/types/growth';
 import type { Couple } from '@/types/couples';
-import type { WeeklyCheckIn } from '@/types/weare';
 
 export default function GrowthScreen() {
   const { user } = useAuth();
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);
-  const [edges, setEdges] = useState<GrowthEdgeProgress[]>([]);
-  const [todaysCheckIn, setTodaysCheckIn] = useState<DailyCheckIn | null>(null);
-  const [recentCheckIns, setRecentCheckIns] = useState<DailyCheckIn[]>([]);
   const [stepProgress, setStepProgress] = useState<StepProgress[]>([]);
   const [currentStepNumber, setCurrentStepNumber] = useState(1);
   const [couple, setCouple] = useState<Couple | null>(null);
-  const [weeklyCheckIn, setWeeklyCheckIn] = useState<WeeklyCheckIn | null>(null);
   const [showFoundation, setShowFoundation] = useState(false);
 
   // Check if Foundation audio should auto-play on first visit
@@ -82,32 +63,21 @@ export default function GrowthScreen() {
   const loadData = useCallback(async () => {
     if (!user) return;
     try {
-      const [edgeData, todayData, recentData, stepData] = await Promise.all([
-        ensureGrowthEdgesFromPortrait(user.id),
-        getTodaysCheckIn(user.id),
-        getRecentCheckIns(user.id, 7),
+      const [stepData] = await Promise.all([
         ensureStepProgress(user.id),
       ]);
-      setEdges(edgeData);
-      setTodaysCheckIn(todayData);
-      setRecentCheckIns(recentData);
       setStepProgress(stepData);
 
       // Find the current active step
       const activeStep = stepData.find((sp) => sp.status === 'active');
       setCurrentStepNumber(activeStep?.stepNumber ?? 1);
 
-      // Load couple + weekly check-in (non-blocking)
+      // Load couple (non-blocking)
       try {
         const myCouple = await getMyCouple(user.id);
         setCouple(myCouple);
-        if (myCouple) {
-          const wci = await getThisWeeksCheckIn(myCouple.id, user.id);
-          setWeeklyCheckIn(wci);
-        }
       } catch {
         setCouple(null);
-        setWeeklyCheckIn(null);
       }
     } catch (err) {
       console.error('Failed to load growth data:', err);
@@ -122,32 +92,8 @@ export default function GrowthScreen() {
     }, [loadData])
   );
 
-  const handleCheckInSubmit = async (
-    mood: number,
-    relationship: number,
-    practiced: boolean,
-    note?: string
-  ) => {
-    if (!user) return;
-    const checkIn = await saveDailyCheckIn(user.id, mood, relationship, practiced, note);
-    setTodaysCheckIn(checkIn);
-    const recent = await getRecentCheckIns(user.id, 7);
-    setRecentCheckIns(recent);
-  };
-
   const handleBack = () => {
     router.back();
-  };
-
-  const handleViewTreatmentPlan = () => {
-    router.push('/(app)/treatment-plan' as any);
-  };
-
-  const handleSelectPractice = (practiceId: string) => {
-    router.push({
-      pathname: '/(app)/exercise' as any,
-      params: { id: practiceId },
-    });
   };
 
   const handleNavigateToStep = (stepNumber: number) => {
@@ -157,16 +103,8 @@ export default function GrowthScreen() {
     });
   };
 
-  const handleNavigateToCourse = (courseId: string) => {
-    router.push({
-      pathname: '/(app)/microcourse' as any,
-      params: { courseId },
-    });
-  };
-
-  const handleStepPress = (stepNumber: number) => {
-    // Tapping a step in the journey just expands/collapses it —
-    // navigation happens via the "Continue This Step" button inside.
+  const handleViewTreatmentPlan = () => {
+    router.push('/(app)/treatment-plan' as any);
   };
 
   if (loading) {
@@ -178,6 +116,17 @@ export default function GrowthScreen() {
       </SafeAreaView>
     );
   }
+
+  const completedCount = stepProgress.filter((sp) => sp.status === 'completed').length;
+  const activePhase = (() => {
+    const activeStep = stepProgress.find((sp) => sp.status === 'active');
+    const sn = activeStep?.stepNumber ?? 1;
+    if (sn <= 2) return 'SEEING';
+    if (sn <= 4) return 'FEELING';
+    if (sn <= 7) return 'SHIFTING';
+    if (sn <= 10) return 'INTEGRATING';
+    return 'SUSTAINING';
+  })();
 
   return (
     <ErrorBoundary>
@@ -192,7 +141,7 @@ export default function GrowthScreen() {
         <TouchableOpacity onPress={handleBack} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Go back">
           <Text style={styles.backText}>{'\u2039'} Back</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Your Healing Journey</Text>
+        <Text style={styles.headerTitle}>Your Relational Journey</Text>
         <View style={styles.headerSpacer} />
       </View>
 
@@ -200,119 +149,30 @@ export default function GrowthScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* 1. Current Step Focus — Hero card */}
+        {/* Tagline + Progress Summary */}
+        <View style={styles.introSection}>
+          <Text style={styles.tagline}>Tending the field between you — in 12 steps</Text>
+          <Text style={styles.progressSummary}>
+            Step {currentStepNumber} of 12 · {activePhase} phase · {completedCount} of 12 steps completed
+          </Text>
+        </View>
+
+        {/* Current Step Focus — Hero card */}
         <CurrentStepFocus
           stepProgress={stepProgress}
           currentStepNumber={currentStepNumber}
           onContinue={handleNavigateToStep}
         />
 
-        {/* 2. Daily Check-In — Daily touchpoint */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Daily Check-In</Text>
-          <CheckInCard
-            todaysCheckIn={todaysCheckIn}
-            onSubmit={handleCheckInSubmit}
-          />
-        </View>
-
-        {/* 3. Weekly Practice Schedule */}
-        <View style={styles.section}>
-          <WeeklyPracticeSchedule
-            currentStepNumber={currentStepNumber}
-            onSelectPractice={handleSelectPractice}
-          />
-        </View>
-
-        {/* 4. Window of Tolerance Interactive */}
-        <View style={styles.section}>
-          <WindowOfTolerance onSelectPractice={handleSelectPractice} />
-        </View>
-
-        {/* 5. Full Step Journey Map — enriched */}
+        {/* Full Step Journey Map */}
         <StepJourney
           stepProgress={stepProgress}
           currentStepNumber={currentStepNumber}
-          onStepPress={handleStepPress}
-          onSelectPractice={handleSelectPractice}
           onNavigateToStep={handleNavigateToStep}
-          onNavigateToCourse={handleNavigateToCourse}
           isCoupled={!!(couple && !isSelfCouple(couple))}
         />
 
-        {/* 6. Weekly Check-In — couple only */}
-        {couple && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Weekly Check-In</Text>
-            <Text style={styles.sectionSubtitle}>
-              Reflect on the space between you this week
-            </Text>
-            <WeeklyCheckInCard
-              existingCheckIn={weeklyCheckIn}
-              onSubmit={async (stress, support, satisfaction, highlight) => {
-                if (!user || !couple) return;
-                const saved = await saveWeeklyCheckIn(
-                  user.id, couple.id, stress, support, satisfaction, highlight
-                );
-                setWeeklyCheckIn(saved);
-              }}
-            />
-          </View>
-        )}
-
-        {/* 7. Growth Timeline */}
-        {edges.length > 0 ? (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Your Growth Edges</Text>
-            <GrowthTimeline edges={edges} />
-          </View>
-        ) : (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Your Growth Edges</Text>
-            <View style={styles.emptyEdgesCard}>
-              <Text style={styles.emptyEdgesText}>
-                Complete all 6 assessments to generate your relational portrait and unlock personalized growth edges.
-              </Text>
-            </View>
-          </View>
-        )}
-
-        {/* 8. Recent Check-Ins Summary */}
-        {recentCheckIns.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Recent Check-Ins</Text>
-            <View style={styles.recentList}>
-              {recentCheckIns.slice(0, 5).map((checkIn) => (
-                <View key={checkIn.id} style={styles.recentRow}>
-                  <Text style={styles.recentDate}>
-                    {formatCheckInDate(checkIn.checkinDate)}
-                  </Text>
-                  <View style={styles.recentStats}>
-                    <View style={styles.recentStatPill}>
-                      <Text style={styles.recentStatLabel}>Inner</Text>
-                      <Text style={styles.recentStatValue}>
-                        {checkIn.moodRating}
-                      </Text>
-                    </View>
-                    <View style={styles.recentStatPill}>
-                      <Text style={styles.recentStatLabel}>Connection</Text>
-                      <Text style={styles.recentStatValue}>
-                        {checkIn.relationshipRating}
-                      </Text>
-                    </View>
-                    {checkIn.practicedGrowthEdge && (
-                      <View style={[styles.recentStatPill, styles.practicedPill]}>
-                        <Text style={styles.practicedText}>Practiced</Text>
-                      </View>
-                    )}
-                  </View>
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {/* 9. Treatment Plan Link */}
+        {/* Treatment Plan Link */}
         <TouchableOpacity
           style={styles.treatmentPlanLink}
           onPress={handleViewTreatmentPlan}
@@ -334,20 +194,6 @@ export default function GrowthScreen() {
     </SafeAreaView>
     </ErrorBoundary>
   );
-}
-
-// ─── Helpers ────────────────────────────────────────────
-
-function formatCheckInDate(dateString: string): string {
-  const date = new Date(dateString + 'T00:00:00');
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const diffMs = today.getTime() - date.getTime();
-  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Yesterday';
-  return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 }
 
 // ─── Styles ─────────────────────────────────────────────
@@ -393,96 +239,25 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: Spacing.xl,
     paddingBottom: Spacing.scrollPadBottom,
-    gap: Spacing.xl,
+    gap: Spacing.lg,
   },
 
-  // Sections
-  section: {
-    gap: Spacing.md,
-  },
-  sectionTitle: {
-    fontFamily: FontFamilies.heading,
-    fontSize: FontSizes.headingM,
-    fontWeight: '700',
-    color: Colors.text,
-  },
-  sectionSubtitle: {
-    fontSize: FontSizes.bodySmall,
-    fontFamily: FontFamilies.body,
-    color: Colors.textSecondary,
-    marginTop: -Spacing.sm,
-    lineHeight: 20,
-  },
-
-  // Recent check-ins
-  recentList: {
-    backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.md,
-    overflow: 'hidden',
-    ...Shadows.card,
-  },
-  recentRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm + 2,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
-  },
-  recentDate: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.text,
-    fontWeight: '500',
-    minWidth: 80,
-  },
-  recentStats: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  // Intro / tagline
+  introSection: {
     gap: Spacing.xs,
-  },
-  recentStatPill: {
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
-    backgroundColor: Colors.borderLight,
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 2,
-    borderRadius: BorderRadius.pill,
   },
-  recentStatLabel: {
-    fontSize: 11,
-    color: Colors.textSecondary,
+  tagline: {
+    ...Typography.serifItalic,
+    fontSize: 15,
+    color: Colors.secondary,
+    textAlign: 'center',
   },
-  recentStatValue: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: Colors.text,
-  },
-  practicedPill: {
-    backgroundColor: Colors.successFaded,
-  },
-  practicedText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: Colors.successDarkText,
-  },
-
-  // Empty growth edges fallback
-  emptyEdgesCard: {
-    backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.lg,
-    alignItems: 'center' as const,
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
-  },
-  emptyEdgesText: {
-    fontSize: FontSizes.bodySmall,
-    fontFamily: FontFamilies.body,
-    color: Colors.textSecondary,
-    textAlign: 'center' as const,
-    lineHeight: 22,
+  progressSummary: {
+    ...Typography.caption,
+    color: Colors.textMuted,
+    textAlign: 'center',
+    letterSpacing: 0.3,
   },
 
   // Treatment plan link

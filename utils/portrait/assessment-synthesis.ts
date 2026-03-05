@@ -676,7 +676,7 @@ function buildCoreNarrative(
       simplifyContradiction(contradictions[0]) + '.'
     : '';
 
-  const paragraph3 = `${strengthSentence} ${edgeSentence} Every step in your healing journey builds on what is already working. Understanding your patterns is not about fixing what is broken — it is about seeing clearly so you can choose differently.`;
+  const paragraph3 = `${strengthSentence} ${edgeSentence} Every step in your relational journey builds on what is already working. Understanding your patterns is not about fixing what is broken — it is about seeing clearly so you can choose differently.`;
 
   return `${paragraph1}\n\n${crossAssessmentInsight}\n\n${paragraph3}`;
 }

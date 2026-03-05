@@ -146,7 +146,7 @@ export default function JourneyUnlockOverlay({
           {/* Title */}
           <Animated.View entering={FadeInDown.delay(500).duration(600)}>
             <Text style={styles.title}>
-              Your Healing Journey{'\n'}Has Begun
+              Your Relational Journey{'\n'}Has Begun
             </Text>
           </Animated.View>
 

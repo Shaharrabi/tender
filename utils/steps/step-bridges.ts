@@ -278,117 +278,157 @@ function buildStep7Bridge(p: IndividualPortrait): StepBridge {
 // ── Step 8: Create New Patterns ─────────────────────────
 
 function buildStep8Bridge(p: IndividualPortrait): StepBridge {
-  const pos = p.negativeCycle.position;
-  const regulation = p.compositeScores.regulationScore;
-  const parts: string[] = [];
+  const pos = p.negativeCycle?.position;
+  const selfLeadership = p.compositeScores?.selfLeadership;
 
-  if (pos === 'pursuer' && isLow(regulation)) {
-    parts.push(
-      'Your portrait suggests you may need regulation-first patterns \u2014 learning to soothe your own activation before trying new moves with your partner. The practices here are sequenced with that in mind.'
-    );
-  } else if (pos === 'withdrawer') {
-    parts.push(
-      'Your portrait suggests graded-exposure patterns will serve you best \u2014 small, safe steps toward staying present rather than retreating. Each new move builds on the last.'
-    );
-  } else {
-    parts.push(
-      'Your portrait shows flexibility in your pattern. This step is about choosing which new moves feel most aligned with the growth edge you\u2019re working.'
-    );
+  if (pos === 'pursuer') {
+    return {
+      text: 'Your protocol here emphasizes regulation BEFORE connection attempts. The new pattern: notice the urge to pursue \u2192 pause \u2192 ground yourself \u2192 THEN reach. The practices in this step train that pause. Imperfect practice is still practice \u2014 every time you catch the urge even a second earlier, something shifts.',
+      insightLabel: 'Your growth edge: pausing before reaching',
+    };
   }
 
-  return { text: parts.join(' ') };
+  if (pos === 'withdrawer') {
+    return {
+      text: 'Your protocol here emphasizes graded exposure. The new pattern: notice the urge to withdraw \u2192 stay 10% longer \u2192 name what you\u2019re feeling \u2192 THEN take space if needed. Small doses build tolerance. You don\u2019t have to stay forever \u2014 just a little longer than your system says is safe.',
+      insightLabel: 'Your growth edge: staying a little longer',
+    };
+  }
+
+  if (selfLeadership !== undefined && isLow(selfLeadership)) {
+    return {
+      text: 'Your growth edge here is the I-position \u2014 the ability to hold your own ground while staying connected. The new pattern: notice when you\u2019re about to abandon your own needs \u2192 state what you want \u2192 tolerate the tension of disagreement. This isn\u2019t about winning. It\u2019s about staying whole inside the relationship.',
+      insightLabel: 'Your growth edge: holding your own ground',
+    };
+  }
+
+  return {
+    text: 'This step is about trying new relational moves \u2014 and letting them be imperfect. You don\u2019t have to get it right. You just have to try something different than the old pattern, even once. One new move, repeated awkwardly, eventually becomes a new way of being together.',
+  };
 }
 
 // ── Step 9: Practice Repair ─────────────────────────────
 
 function buildStep9Bridge(p: IndividualPortrait): StepBridge {
-  const pos = p.negativeCycle.position;
-  const parts: string[] = [];
+  const pos = p.negativeCycle?.position;
+  const regulation = p.compositeScores?.regulationScore;
 
   if (pos === 'pursuer') {
-    parts.push(
-      'Your repair challenge is often about softening the approach \u2014 reaching without criticism, expressing need without blame. The repair scripts in this step are tailored for that pattern.'
-    );
-  } else if (pos === 'withdrawer') {
-    parts.push(
-      'Your repair challenge is often about showing up at all \u2014 initiating repair rather than waiting for it to blow over. The practices here help you take the first step back toward connection.'
-    );
-  } else {
-    parts.push(
-      'Repair looks different depending on the moment. This step helps you build a flexible repair toolkit that matches your unique relational pattern.'
-    );
+    return {
+      text: 'Your repair challenge is over-repairing \u2014 apologizing for things that aren\u2019t yours to own, or pursuing repair before your partner is ready to receive it. The urgency to make things okay can actually delay the healing. The practices here help you repair at the right moment, not the first moment.',
+      insightLabel: 'Your edge: timing your repair',
+    };
   }
 
-  return { text: parts.join(' ') };
+  if (pos === 'withdrawer') {
+    return {
+      text: 'Your repair challenge is avoiding repair altogether \u2014 hoping it blows over, waiting so long the moment passes, telling yourself it wasn\u2019t that big a deal. But unrepaired ruptures accumulate. The practices here help you initiate repair while it still matters, before distance becomes the default.',
+      insightLabel: 'Your edge: initiating repair',
+    };
+  }
+
+  if (regulation !== undefined && isHigh(regulation)) {
+    return {
+      text: 'Your grounded self-awareness is a real asset for repair. You can stay regulated enough to take responsibility without losing your center. The challenge may be expecting the same steadiness from your partner \u2014 their repair process might look messier than yours, and that\u2019s okay.',
+      insightLabel: 'From regulation to repair',
+    };
+  }
+
+  return {
+    text: 'Repair is a skill, and like any skill it improves with practice. It doesn\u2019t require perfection \u2014 it requires willingness. A clumsy repair offered sincerely lands better than a polished apology that comes too late. Start with what\u2019s true, even if the words aren\u2019t elegant.',
+  };
 }
 
 // ── Step 10: Build Rituals ──────────────────────────────
 
 function buildStep10Bridge(p: IndividualPortrait): StepBridge {
-  const engagement = p.compositeScores.engagement;
-  const responsiveness = p.compositeScores.responsiveness;
-  const parts: string[] = [];
+  const engagement = p.compositeScores?.engagement;
+  const accessibility = p.compositeScores?.accessibility;
+  const valuesCongruence = p.compositeScores?.valuesCongruence;
 
-  if (isLow(engagement)) {
-    parts.push(
-      'Rituals are the direct path to rebuilding engagement. When the habit of turning toward has faded, rituals create the structure that makes it happen consistently.'
-    );
-  } else if (isLow(responsiveness)) {
-    parts.push(
-      'Your portrait suggests rituals that focus on presence rather than talking \u2014 shared silence, physical proximity, parallel activities \u2014 may feel more natural for you.'
-    );
-  } else {
-    parts.push(
-      'You already have building blocks of connection. This step is about making them intentional \u2014 choosing the moments that matter and protecting them from the busyness of life.'
-    );
+  if (engagement !== undefined && isLow(engagement)) {
+    return {
+      text: 'Your portrait shows that quality time together is your lowest relational variable right now. The rituals you build in this step will shift that directly. Even five minutes of intentional connection each day changes the trajectory. This isn\u2019t about grand gestures \u2014 it\u2019s about consistency.',
+      insightLabel: 'Your direct intervention point',
+    };
   }
 
-  return { text: parts.join(' ') };
+  if (accessibility !== undefined && isLow(accessibility)) {
+    return {
+      text: 'Your rituals should emphasize presence over activity. A five-minute silent sit together is more powerful than a two-hour date where both of you are distracted. What matters isn\u2019t what you do \u2014 it\u2019s whether you\u2019re actually there. The practices here are designed for building that kind of quiet availability.',
+      insightLabel: 'Presence over activity',
+    };
+  }
+
+  if (valuesCongruence !== undefined && isHigh(valuesCongruence)) {
+    return {
+      text: 'Your values are clear \u2014 that\u2019s a genuine strength. Rituals are how you make those values visible in daily life. What does your top value look like as a daily practice? This step turns intention into something your partner can actually see and feel.',
+      insightLabel: 'Values made visible',
+    };
+  }
+
+  return {
+    text: 'Rituals are the scaffolding that holds new patterns in place. Without them, even the best intentions get swallowed by the pace of daily life. This step is about building consistent connection points \u2014 small, protected moments that tell your partner: this matters to me.',
+  };
 }
 
 // ── Step 11: Sustain the Patterns ───────────────────────
 
 function buildStep11Bridge(p: IndividualPortrait): StepBridge {
-  const parts: string[] = [];
+  const selfLeadership = p.compositeScores?.selfLeadership;
+  const regulation = p.compositeScores?.regulationScore;
 
-  parts.push(
-    'This is a good time to notice how far you\u2019ve come. Take a moment to sense what\u2019s different in the field between you compared to when you started.'
-  );
+  if (selfLeadership !== undefined && isHigh(selfLeadership)) {
+    return {
+      text: 'You\u2019re well-equipped for this step. Your self-observation skills mean you\u2019ll catch drift early \u2014 you\u2019ll notice when old patterns start creeping back before they take hold. The challenge is staying compassionate when you notice it, rather than getting rigid or self-critical. Sustainability requires gentleness with yourself.',
+      insightLabel: 'Self-awareness as sustaining force',
+    };
+  }
 
-  if (p.growthEdges.length > 0) {
-    parts.push(
-      `Your growth edge "${p.growthEdges[0].title}" is the area to watch most closely as you sustain \u2014 it\u2019s where old patterns are most likely to reassert themselves.`
-    );
+  if (regulation !== undefined && isLow(regulation)) {
+    return {
+      text: 'Under stress, the old pattern will reassert itself \u2014 that\u2019s not a sign of going backward, it\u2019s the nature of deep habits. Building regulation capacity is the key to sustainability. When your nervous system is resourced, the new pattern holds. When it\u2019s depleted, the old one returns. The practices here focus on keeping your system resourced.',
+      insightLabel: 'Regulation sustains the new pattern',
+    };
   }
 
   return {
-    text: parts.join(' '),
-    insightLabel: 'Reassessing your attachment pattern now can show you how much has shifted.',
+    text: 'Growth moves in a spiral, not a straight line. You\u2019ll revisit familiar themes at deeper levels \u2014 that\u2019s not going backward, it\u2019s integration. This step is about trusting the process, noticing what wants to shift next, and using reassessment to see how far you\u2019ve already come.',
   };
 }
 
 // ── Step 12: Become a Refuge ────────────────────────────
 
 function buildStep12Bridge(p: IndividualPortrait): StepBridge {
-  const parts: string[] = [];
+  const scores = p.compositeScores;
+  const growthEdge = p.growthEdges?.[0];
 
-  parts.push(
-    'You\u2019ve traveled the full journey. Your portrait \u2014 who you are in relationship \u2014 is deeper and richer than when you began.'
-  );
+  // Check if at least 3 of 5 core composite dimensions are high
+  if (scores) {
+    const highCount = [
+      scores.regulationScore,
+      scores.accessibility,
+      scores.responsiveness,
+      scores.engagement,
+      scores.selfLeadership,
+    ].filter((s) => s !== undefined && isHigh(s)).length;
 
-  const pos = p.negativeCycle.position;
-  if (pos === 'pursuer') {
-    parts.push(
-      'The reaching that once felt desperate can now feel generous. You\u2019ve learned that connection doesn\u2019t require urgency.'
-    );
-  } else if (pos === 'withdrawer') {
-    parts.push(
-      'The space you once needed to survive can now be offered as a gift \u2014 a calm, steady presence that your partner can lean into.'
-    );
+    if (highCount >= 3) {
+      return {
+        text: 'Your portrait shows a strong relational foundation. The capacity for refuge is already present in how you show up \u2014 this step is about living it intentionally. Refuge isn\u2019t something you build from scratch. It\u2019s something you choose, daily, from the strength you\u2019ve cultivated.',
+        insightLabel: 'Your foundation is strong',
+      };
+    }
+  }
+
+  if (growthEdge) {
+    return {
+      text: `Your primary growth edge \u2014 "${growthEdge.title}" \u2014 is your ongoing practice. Even at Step 12, this edge continues to deepen. Becoming a refuge doesn\u2019t mean the work is done. It means you\u2019ve learned to hold the work lightly, with compassion rather than urgency.`,
+      insightLabel: 'Your continuing edge',
+    };
   }
 
   return {
-    text: parts.join(' '),
-    insightLabel: 'The journey never ends \u2014 it becomes how you live.',
+    text: 'Becoming a refuge is a daily choice, not a destination. Some days it will feel effortless; other days the old patterns will tug. Both are part of the journey. Celebrate how far you\u2019ve come \u2014 the willingness to look, to feel, to stay. You arrived here not because you were broken, but because you were brave enough to look.',
   };
 }

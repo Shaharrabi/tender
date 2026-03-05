@@ -350,7 +350,7 @@ export async function getJournalEntriesForDate(
         type: 'step_milestone',
         timestamp: row.completed_at,
         title: `Step ${row.step_number} Completed`,
-        subtitle: 'Healing Journey Milestone',
+        subtitle: 'Relational Journey Milestone',
         data: {
           stepNumber: row.step_number,
           status: row.status,
@@ -412,7 +412,7 @@ export async function getJournalEntriesForDate(
         type: 'reflection',
         timestamp: row.updated_at,
         title: `Step ${row.step_number} Reflection`,
-        subtitle: step?.title ?? 'Healing Journey',
+        subtitle: step?.title ?? 'Relational Journey',
         data: {
           stepNumber: row.step_number,
           stepTitle: step?.title,

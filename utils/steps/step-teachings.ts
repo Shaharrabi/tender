@@ -6,8 +6,7 @@
  * - whyAfterPrevious: string | null — connects to the previous step
  * - courseConnection: string | null — links to the micro-course gateway
  *
- * Steps 1-7: Full text.
- * Steps 8-12: Placeholder text (to be replaced with full content later).
+ * Steps 1-12: Full text.
  *
  * NOTE: Dynamic/personalized content ("What your portrait tells us")
  * is handled by step-bridges.ts, NOT embedded here.
@@ -123,64 +122,76 @@ const STEP_TEACHINGS: Record<number, StepTeaching> = {
     courseConnection: null,
   },
 
-  // ── Step 8: Create New Patterns (placeholder) ───────
+  // ── Step 8: Create New Patterns ─────────────────────
 
   8: {
     stepNumber: 8,
     teaching: [
-      'Knowledge isn\u2019t enough. New patterns require new moves \u2014 and new moves feel awkward. That\u2019s how you know they\u2019re working.',
-      'Your old pattern is like a well-worn path in a forest. The new pattern is machete work through underbrush. It\u2019s slower, harder, and you\u2019ll want to go back to the path. Don\u2019t. The underbrush becomes a path with practice.',
+      'Knowledge isn\u2019t enough. You\u2019ve seen your patterns (Steps 1-2). You\u2019ve felt what\u2019s underneath (3-4). You\u2019ve shared your truth and released the enemy story (5-6). You\u2019ve invited your partner in (7).',
+      'Now comes the harder part: doing something different.',
+      'New patterns don\u2019t emerge from insight alone. They require practice. Repetition. Awkwardness. You\u2019re going to try new moves, and sometimes they\u2019ll feel clunky. You\u2019ll say the Soft Startup phrase and it\u2019ll sound rehearsed. You\u2019ll try to pause before reacting and catch yourself three seconds too late. You\u2019ll reach for your partner when every cell says withdraw.',
+      'That\u2019s not failure. That\u2019s neuroplasticity. Your old pattern is like a well-worn path in a forest \u2014 your feet find it automatically. The new pattern is machete work through underbrush. It\u2019s slower, harder, and you\u2019ll want to go back to the path. Keep going. The underbrush becomes a path with practice.',
+      'The research is specific: it takes about 66 days for a new behavior to feel automatic. Not 21 \u2014 that\u2019s a myth. Sixty-six days of imperfect practice. This step gives you the structure for that practice.',
     ],
-    whyAfterPrevious: 'You\u2019ve invited your partner in. Now comes the work of building new ways of being together \u2014 moves that feel foreign at first but become natural with practice.',
-    courseConnection: 'The Boundaries micro-courses deepen this step \u2014 teaching you where healthy limits create safety for new patterns to take root.',
+    whyAfterPrevious: 'You invited your partner in. They said yes (or you\u2019re building that capacity solo). Now you have the relational permission to try new things together. Without that foundation of goodwill from Step 7, new patterns feel like demands. With it, they feel like adventures.',
+    courseConnection: 'Boundaries That Connect and Boundaries Deep teach what a boundary FEELS like in the body before you speak it. New patterns require clear boundaries \u2014 not walls, but information that serves love.',
   },
 
-  // ── Step 9: Practice Repair (placeholder) ───────────
+  // ── Step 9: Practice Repair ─────────────────────────
 
   9: {
     stepNumber: 9,
     teaching: [
-      'It\u2019s not whether you fight. It\u2019s whether you repair. Research shows that masters of relationships aren\u2019t conflict-free \u2014 they repair quickly, genuinely, and completely.',
-      'This step makes repair a reflex, not an afterthought.',
+      'Here\u2019s what the research says \u2014 and it might surprise you: the strongest relationships are not the ones with the least conflict. They\u2019re the ones with the fastest repair.',
+      'John Gottman found that masters of relationship don\u2019t avoid rupture. They repair within minutes. Not hours. Not days. Minutes. And they repair genuinely \u2014 not with a perfunctory \u2018sorry\u2019 but with real acknowledgment: \u2018I see that I hurt you. That wasn\u2019t my intention. What do you need right now?\u2019',
+      'Repair is a skill. Like any skill, it\u2019s awkward at first. You\u2019ll feel vulnerable saying \u2018I think I messed up\u2019 in the middle of an argument. Your protective parts will scream that you\u2019re giving in, losing ground, being weak. They\u2019re wrong. Repair from a grounded place is the strongest relational move there is.',
+      'This step makes repair a reflex. Not something you think about for three days and then bring up over dinner. Something you do in the moment \u2014 or as close to the moment as you can get.',
     ],
-    whyAfterPrevious: 'You\u2019ve started creating new patterns. But new patterns will break sometimes \u2014 that\u2019s guaranteed. What matters is what happens next. This step teaches you to come back.',
-    courseConnection: '\u201CTrust Repair\u201D and \u201CThe Lightness Lab\u201D work together here \u2014 one teaches the hard skill of rebuilding after rupture, the other reminds you that play and lightness are part of healing.',
+    whyAfterPrevious: 'You tried new patterns in Step 8. Some of them worked. Some didn\u2019t. The ones that didn\u2019t created new ruptures \u2014 and THAT\u2019S the material for this step. You have fresh, real, recent moments where things went sideways despite your best efforts. Now you learn to repair them.',
+    courseConnection: 'Trust Repair \u2014 After Betrayal for those who need deeper work, plus The Lightness Lab \u2014 Play as Medicine, because repair doesn\u2019t always have to be heavy. Sometimes humor and play are the best repair tools.',
   },
 
-  // ── Step 10: Build Rituals (placeholder) ────────────
+  // ── Step 10: Build Rituals ──────────────────────────
 
   10: {
     stepNumber: 10,
     teaching: [
-      'Small consistent moments beat grand gestures. The goodbye kiss. The how-was-your-day conversation. The weekly check-in. Rituals are values made visible.',
-      'This step is about choosing the moments that matter and protecting them \u2014 not because they\u2019re dramatic, but because they\u2019re reliable.',
+      'The research is clear: couples who last have rituals. Not fancy date nights (though those are fine). Small, consistent moments of connection. The goodbye kiss \u2014 every morning, even when you\u2019re annoyed. The how-was-your-day conversation \u2014 where you actually listen, not scroll your phone. The weekly check-in \u2014 20 minutes to ask \u2018how are WE doing?\u2019',
+      'Rituals do something that sporadic grand gestures cannot: they create predictability. And predictability is the foundation of safety. When your nervous system knows that connection is reliable \u2014 that it shows up at the same time, in the same way, every day \u2014 it stops bracing for abandonment. It stops scanning for threat. It settles.',
+      'This is neuroscience, not sentimentality. Your attachment system needs consistent signals of safety to shift from insecure to earned-secure. Rituals are those signals.',
+      'This step is about designing yours. Not imitating someone else\u2019s relationship. Yours. What works for YOU as a couple (or for you as an individual building relational capacity).',
     ],
-    whyAfterPrevious: 'You\u2019ve learned to repair. Now you\u2019re building the daily fabric that reduces the need for repair in the first place \u2014 small, consistent deposits into the relational field.',
-    courseConnection: '\u201CWhat Matters Most (Together)\u201D helps you align your rituals with your deepest values \u2014 so what you do every day reflects what you say matters most.',
+    whyAfterPrevious: 'You can repair now. Rituals will sometimes get disrupted (life happens). Without repair skills, a missed ritual becomes evidence of failure. With repair skills, a missed ritual becomes a moment of reconnection: \u2018We missed our check-in this week. Let\u2019s do it now.\u2019',
+    courseConnection: 'What Matters Most (Together) \u2014 values, shared compass, building a life that reflects what matters. Your rituals should flow from your values.',
   },
 
-  // ── Step 11: Sustain the Patterns (placeholder) ─────
+  // ── Step 11: Sustain the Patterns ───────────────────
 
   11: {
     stepNumber: 11,
     teaching: [
-      'Growth isn\u2019t a destination. It\u2019s a practice. This step is about catching yourself when you drift \u2014 and having the tools to come back.',
-      'The patterns you\u2019ve built are real. But they\u2019re also fragile without attention. Like a garden, they need tending.',
+      'Growth isn\u2019t a destination. It\u2019s not a finish line you cross and then relax. It\u2019s a practice \u2014 like meditation, like fitness, like sobriety. The 12-step tradition knew this: continued to take personal inventory, and when we were wrong, promptly admitted it.',
+      'You\u2019ve come far. You\u2019ve seen your patterns, felt what\u2019s underneath, tried new moves, practiced repair, built rituals. Now comes the longest step: sustaining. Because the old patterns will come back. Not because you failed \u2014 because that\u2019s how neural pathways work. Under stress, the brain defaults to its most practiced route. Your old route has years of mileage on it. Your new route has weeks.',
+      'This step is about catching yourself when you drift. Having the tools to come back. And \u2014 crucially \u2014 not shaming yourself for drifting. \u2018Oh, there\u2019s the old pattern. I know this one. Let me try the new move.\u2019',
+      'The spiral, not the line. You\u2019ll revisit themes from earlier steps. That\u2019s not going backward \u2014 it\u2019s going deeper. The same issue at Step 11 isn\u2019t the same issue it was at Step 1. You\u2019re different now. You see more. You have more tools. The spiral rises.',
     ],
-    whyAfterPrevious: 'You\u2019ve built rituals. Now comes the long game \u2014 sustaining what you\u2019ve created through the inevitable seasons of closeness and distance.',
-    courseConnection: '\u201CThe Text Between Us\u201D adds a layer of digital awareness \u2014 how your communication patterns in text reflect and shape the field between you.',
+    whyAfterPrevious: 'Rituals give you the structure for sustaining. Without daily and weekly rituals, sustainability depends on willpower \u2014 and willpower is a depleting resource. With rituals, it depends on structure \u2014 and structure endures.',
+    courseConnection: 'The Text Between Us \u2014 because sustaining means tending ALL channels of connection, including the digital one where most daily communication happens.',
   },
 
-  // ── Step 12: Become a Refuge (placeholder) ──────────
+  // ── Step 12: Become a Refuge ────────────────────────
 
   12: {
     stepNumber: 12,
     teaching: [
-      'Your relationship can be a sanctuary \u2014 for both of you. Not perfect. Not conflict-free. But a place where both of you can come as you are and be held.',
-      'This isn\u2019t an ending. It\u2019s a way of living. The journey continues \u2014 it just becomes how you show up, every day.',
+      'This is the vision: a relationship that\u2019s a refuge. A place where both of you can come as you are \u2014 tired, scared, imperfect \u2014 and be held. Not fixed. Held.',
+      'This doesn\u2019t mean no conflict. It means that underneath the conflict, there\u2019s a deep knowing: we\u2019ve got each other. Sue Johnson calls it \u2018hold me tight.\u2019 Stan Tatkin calls it the \u2018couple bubble.\u2019 Bowlby called it a \u2018secure base.\u2019 Different words for the same thing: the feeling that someone has your back, no matter what.',
+      'Not everyone will reach this step with a partner. Some of you are doing this alone \u2014 building the capacity to BE a refuge, to OFFER secure attachment, for the relationship you\u2019re in now or the one you\u2019ll enter next. That matters just as much. You can\u2019t build a refuge with someone else until you can be one for yourself.',
+      'This step never ends. It\u2019s not a destination. It\u2019s how you live. Every morning you wake up and choose it again. Some days it\u2019s easy. Some days it\u2019s the hardest thing you do. But you keep choosing it \u2014 because this is what you said matters to you, all the way back at Step 1 when you acknowledged the strain and decided: something needs to change.',
+      'Something changed. You did.',
     ],
-    whyAfterPrevious: 'You\u2019ve sustained your patterns through difficulty. The relationship itself has become the practice \u2014 a living, breathing thing you both tend.',
-    courseConnection: 'Every micro-course is now open to you. Revisit, deepen, explore. The learning never stops.',
+    whyAfterPrevious: 'Everything before this was preparation. Seeing, feeling, shifting, integrating. Now you live it. The 12 steps don\u2019t end \u2014 they become your rhythm. Daily practice, weekly ritual, monthly reflection, quarterly reassessment. The field between you stays alive because you tend it.',
+    courseConnection: 'All 14 courses are now available for review and deepening. The Journey becomes a library you return to.',
   },
 };
 

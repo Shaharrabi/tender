@@ -1273,11 +1273,11 @@ function CouplePortalScreen() {
           onPress={() => router.push('/(app)/growth' as any)}
           activeOpacity={0.7}
           accessibilityRole="button"
-          accessibilityLabel="Continue Your Healing Journey"
+          accessibilityLabel="Continue Your Relational Journey"
         >
           <View style={styles.journeyHeader}>
             <SeedlingIcon size={22} color={Colors.primary} />
-            <TenderText variant="headingS" color={Colors.primary}>Continue Your Healing Journey</TenderText>
+            <TenderText variant="headingS" color={Colors.primary}>Continue Your Relational Journey</TenderText>
           </View>
           <TenderText variant="bodySmall" color={Colors.textSecondary} style={styles.journeyDesc}>
             Twelve steps of relational growth — practices, reflections, and milestones

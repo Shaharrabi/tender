@@ -238,7 +238,7 @@ export const FEATURE_CARDS: FeatureCard[] = [
   },
   {
     key: 'healingJourney',
-    title: 'Your Healing Journey',
+    title: 'Your Relational Journey',
     subtitle: 'Twelve steps, practices, and your growth arc',
     icon: SeedlingIcon,
     color: Colors.primary,

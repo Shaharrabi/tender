@@ -1390,7 +1390,7 @@ export default function HomeScreen() {
                 <Text style={styles.healingJourneyNewBadgeText}>NEW</Text>
               </View>
             </View>
-            <Text style={styles.healingJourneyTitle}>Your Healing Journey</Text>
+            <Text style={styles.healingJourneyTitle}>Your Relational Journey</Text>
             <Text style={styles.healingJourneySubtitle}>
               Twelve steps, daily practices, and your growth arc are ready to explore.
             </Text>
