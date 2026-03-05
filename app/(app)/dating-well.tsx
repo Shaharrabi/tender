@@ -421,7 +421,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: Spacing.md,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
     maxWidth: 560,
     alignSelf: 'center',
     width: '100%',

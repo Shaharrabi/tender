@@ -554,7 +554,7 @@ const styles = StyleSheet.create({
   introContent: {
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.xl,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
     alignItems: 'center',
   },
   title: {
@@ -731,7 +731,7 @@ const styles = StyleSheet.create({
   insightContent: {
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.xl,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
   },
   insightCard: {
     backgroundColor: Colors.surfaceElevated,
@@ -792,7 +792,7 @@ const styles = StyleSheet.create({
   templateContent: {
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.xl,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
     alignItems: 'center',
   },
   templateStep: {

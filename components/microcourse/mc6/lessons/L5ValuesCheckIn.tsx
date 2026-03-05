@@ -283,7 +283,7 @@ const s = StyleSheet.create({
 
   // ─── Questions ────────────────────────
   questionsContent: {
-    paddingHorizontal: Spacing.md, paddingTop: Spacing.lg, paddingBottom: Spacing.xxxl,
+    paddingHorizontal: Spacing.md, paddingTop: Spacing.lg, paddingBottom: Spacing.scrollPadBottom,
   },
   questionCard: {
     backgroundColor: MC6_PALETTE.softGold, borderRadius: BorderRadius.lg,
@@ -323,7 +323,7 @@ const s = StyleSheet.create({
 
   // ─── Review ───────────────────────────
   reviewContent: {
-    paddingHorizontal: Spacing.lg, paddingTop: Spacing.xl, paddingBottom: Spacing.xxxl,
+    paddingHorizontal: Spacing.lg, paddingTop: Spacing.xl, paddingBottom: Spacing.scrollPadBottom,
     alignItems: 'center',
   },
   reviewTitle: {

@@ -214,7 +214,7 @@ const s = StyleSheet.create({
   },
   dialContent: {
     paddingHorizontal: Spacing.lg, paddingTop: Spacing.xl,
-    paddingBottom: Spacing.xxxl, alignItems: 'center',
+    paddingBottom: Spacing.scrollPadBottom, alignItems: 'center',
   },
   question: {
     fontSize: FontSizes.body, fontFamily: FontFamilies.body, color: Colors.text,

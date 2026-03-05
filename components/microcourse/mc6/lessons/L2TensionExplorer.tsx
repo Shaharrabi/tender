@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
   introContent: {
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.xl,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
     alignItems: 'center',
   },
   title: {
@@ -468,7 +468,7 @@ const styles = StyleSheet.create({
   summaryContent: {
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.xl,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
     alignItems: 'center',
   },
   groupSection: {

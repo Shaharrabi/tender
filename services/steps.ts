@@ -202,6 +202,110 @@ export async function countPracticeCompletionsForStep(
   return count ?? 0;
 }
 
+// ─── Reflections & Partner Round ─────────────────────────
+
+/** Save a reflection response into reflection_notes JSONB. */
+export async function saveReflection(
+  userId: string,
+  stepNumber: number,
+  promptIndex: number,
+  text: string
+): Promise<void> {
+  const { data: row } = await supabase
+    .from('step_progress')
+    .select('reflection_notes')
+    .eq('user_id', userId)
+    .eq('step_number', stepNumber)
+    .single();
+
+  const notes = (row?.reflection_notes as Record<string, any>) ?? {};
+  const reflections = notes.reflections ?? {};
+  reflections[String(promptIndex)] = text;
+
+  await supabase
+    .from('step_progress')
+    .update({
+      reflection_notes: { ...notes, reflections },
+      updated_at: new Date().toISOString(),
+    })
+    .eq('user_id', userId)
+    .eq('step_number', stepNumber);
+}
+
+/** Save a partner round response into reflection_notes JSONB. */
+export async function savePartnerRoundResponse(
+  userId: string,
+  stepNumber: number,
+  response: string
+): Promise<void> {
+  const { data: row } = await supabase
+    .from('step_progress')
+    .select('reflection_notes')
+    .eq('user_id', userId)
+    .eq('step_number', stepNumber)
+    .single();
+
+  const notes = (row?.reflection_notes as Record<string, any>) ?? {};
+
+  await supabase
+    .from('step_progress')
+    .update({
+      reflection_notes: { ...notes, partnerRoundResponse: response },
+      updated_at: new Date().toISOString(),
+    })
+    .eq('user_id', userId)
+    .eq('step_number', stepNumber);
+}
+
+/**
+ * Read partner's step response from their step_progress row.
+ * Returns the partnerRoundResponse string or null.
+ */
+export async function getPartnerStepResponse(
+  _coupleId: string,
+  partnerUserId: string,
+  stepNumber: number
+): Promise<string | null> {
+  const { data: row, error } = await supabase
+    .from('step_progress')
+    .select('reflection_notes')
+    .eq('user_id', partnerUserId)
+    .eq('step_number', stepNumber)
+    .single();
+
+  if (error || !row) return null;
+  const notes = row.reflection_notes as Record<string, any> | null;
+  return notes?.partnerRoundResponse ?? null;
+}
+
+/**
+ * Save a partner exchange follow-up response into reflection_notes JSONB.
+ * This stores the user's reflection after seeing their partner's response.
+ */
+export async function savePartnerExchangeFollowUp(
+  userId: string,
+  stepNumber: number,
+  followUpResponse: string
+): Promise<void> {
+  const { data: row } = await supabase
+    .from('step_progress')
+    .select('reflection_notes')
+    .eq('user_id', userId)
+    .eq('step_number', stepNumber)
+    .single();
+
+  const notes = (row?.reflection_notes as Record<string, any>) ?? {};
+
+  await supabase
+    .from('step_progress')
+    .update({
+      reflection_notes: { ...notes, partnerExchangeFollowUp: followUpResponse },
+      updated_at: new Date().toISOString(),
+    })
+    .eq('user_id', userId)
+    .eq('step_number', stepNumber);
+}
+
 // ─── Mappers ────────────────────────────────────────────
 
 function mapStepProgress(row: any): StepProgress {

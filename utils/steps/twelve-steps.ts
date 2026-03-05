@@ -172,6 +172,14 @@ export const TWELVE_STEPS: HealingStep[] = [
     introText:
       'Every couple has patterns — ways you move around each other when things get hard. One reaches, the other retreats. Or both go loud. Or both go quiet. These patterns aren’t anyone’s fault. They developed for reasons that made sense once. In this step, you’ll learn to see your pattern together — not as blame, but as something that happens between you.',
     miniGameId: 'pattern-spotter',
+    reflectionPrompts: [
+      'What\'s the strain you\'re carrying? Name it without judgment.',
+      'How long have you been carrying this?',
+      'What would it mean if things could be different?',
+    ],
+    partnerRoundPrompt: 'What made you decide to try this?',
+    togetherPractices: ['stress-reducing-conversation'],
+    courseGatewayIds: ['mc-attachment-101'],
   },
   {
     stepNumber: 2,
@@ -198,6 +206,14 @@ export const TWELVE_STEPS: HealingStep[] = [
     introText:
       'This step asks something that might feel hard: trust that something good can emerge when you both show up. Not trust that your partner will be perfect. But trust in the “we” — the space between you that comes alive when you’re both present. You don’t start with trust. You start with tiny experiments. Small moments of turning toward instead of away.',
     miniGameId: 'bid-or-miss',
+    reflectionPrompts: [
+      'What did you notice about the space between you this week?',
+      'When did the field feel alive? When did it feel stuck?',
+      'What surprised you about your partner\'s inner world?',
+    ],
+    partnerRoundPrompt: 'When do you feel the space between us is warm? When does it feel cold?',
+    togetherPractices: ['turning-toward', 'love-maps'],
+    courseGatewayIds: ['mc-bids-connection'],
   },
   {
     stepNumber: 3,
@@ -223,6 +239,14 @@ export const TWELVE_STEPS: HealingStep[] = [
     introText:
       'What if the story you tell about your partner isn’t the whole truth? We all carry stories. Some have truth in them. But even true stories become traps when they prevent us from seeing our partner fresh. This step invites you to hold your certainty a little more loosely. Not to pretend you haven’t been hurt — but to wonder: what else might be true?',
     miniGameId: 'story-vs-truth',
+    reflectionPrompts: [
+      'What story did you notice yourself telling this week?',
+      'What happened when you held it more lightly?',
+      'What became possible when you weren\'t so certain?',
+    ],
+    partnerRoundPrompt: 'What\'s a story you\'ve told yourself about me that might not be the whole picture?',
+    togetherPractices: ['unified-detachment', 'externalizing-the-problem'],
+    courseGatewayIds: ['mc-act-defusion'],
   },
   {
     stepNumber: 4,
@@ -249,6 +273,14 @@ export const TWELVE_STEPS: HealingStep[] = [
     introText:
       'This step turns the spotlight inward — and that can be uncomfortable. But stay with it. Looking at your own patterns isn’t about blame. It’s about power. Because your part is the only part you can actually change. What rises in you before you even decide to respond? None of these reactions make you bad. They make you human.',
     miniGameId: 'my-horseman',
+    reflectionPrompts: [
+      'What\'s your go-to move when things get hard?',
+      'Where did you learn that move?',
+      'What\'s underneath it — what are you trying to protect?',
+    ],
+    partnerRoundPrompt: 'What\'s one move I make in our conflicts that I know doesn\'t help?',
+    togetherPractices: ['recognize-cycle', 'protest-polka'],
+    courseGatewayIds: ['mc-regulation'],
   },
   {
     stepNumber: 5,
@@ -274,6 +306,14 @@ export const TWELVE_STEPS: HealingStep[] = [
     introText:
       'This is the step of vulnerability. There are things you’ve never said. Maybe fears about the relationship itself. Maybe needs you’ve swallowed because asking felt too risky. Vulnerability is not weakness. It’s the foundation of intimacy. Without it, you’re two people performing closeness instead of living it.',
     miniGameId: 'the-unsaid',
+    reflectionPrompts: [
+      'What truth did you share this week?',
+      'What happened when you let yourself be seen?',
+      'What\'s still waiting to be said?',
+    ],
+    partnerRoundPrompt: 'What\'s something true that I\'ve been afraid to tell you?',
+    togetherPractices: ['hold-me-tight', 'bonding-through-vulnerability'],
+    courseGatewayIds: ['mc-seen'],
   },
   {
     stepNumber: 6,
@@ -299,6 +339,14 @@ export const TWELVE_STEPS: HealingStep[] = [
     introText:
       'When things are hard, it’s easy to cast your partner as the villain. But what if their walls came from protection, not malice? This step asks you to look behind your partner’s difficult behavior. Not to excuse it. But to understand it. When you understand, something shifts. You stop fighting each other and start fighting the pattern together.',
     miniGameId: 'behind-the-wall',
+    reflectionPrompts: [
+      'When did you catch yourself seeing your partner as the enemy this week?',
+      'What happened when you named the pattern instead?',
+      'What does your partner need that\'s hard for them to ask for?',
+    ],
+    partnerRoundPrompt: 'What\'s one thing I do that I know triggers you? What do you think I\'m actually trying to communicate underneath it?',
+    togetherPractices: ['externalizing-the-problem', 'aftermath-of-fight', 'repair-attempt'],
+    courseGatewayIds: ['mc-conflict-repair'],
   },
   {
     stepNumber: 7,
@@ -324,6 +372,14 @@ export const TWELVE_STEPS: HealingStep[] = [
     introText:
       'Understanding is not the same as change. You can know exactly why you fall into old patterns and still fall into them tomorrow. What makes the difference is practice. Not grand gestures, but small, sustainable rituals that keep you oriented toward connection even when life gets hard.',
     miniGameId: 'ritual-builder',
+    reflectionPrompts: [
+      'What invitation did you extend this week?',
+      'How did your partner respond?',
+      'What did you remember about why you chose each other?',
+    ],
+    partnerRoundPrompt: 'What\'s one small thing I do that makes you feel loved?',
+    togetherPractices: ['fondness-admiration', 'rituals-of-connection', 'reassurance-menu', 'little-you-photo-share'],
+    courseGatewayIds: ['mc-orientation-pleasure', 'mc-fondness-gratitude'],
   },
   {
     stepNumber: 8,
@@ -349,6 +405,14 @@ export const TWELVE_STEPS: HealingStep[] = [
     introText:
       'Every relationship has ruptures. Some get repaired. Some get buried — still there, still tender, just not talked about. This step is about bringing attention to what’s been wounded. Not to rip it open. But to finally tend to it properly. You don’t have to do it all at once. You just have to acknowledge that it’s there.',
     miniGameId: 'repair-inventory',
+    reflectionPrompts: [
+      'What new move did you try this week?',
+      'What happened? (No judgment — just observation)',
+      'What will you try next?',
+    ],
+    partnerRoundPrompt: 'What\'s one new move you\'re trying to make? How can I support it?',
+    togetherPractices: ['turning-toward', 'dreams-within-conflict', 'empathic-joining'],
+    courseGatewayIds: ['mc-boundaries', 'mc-boundaries-deep'],
   },
   {
     stepNumber: 9,
@@ -375,6 +439,14 @@ export const TWELVE_STEPS: HealingStep[] = [
     introText:
       'Apologies matter. But at some point, you have to show rather than tell. Trust isn’t rebuilt through words alone. It’s rebuilt through consistent action over time — showing up differently, again and again. This step gives you tools for repair and the skill of soft startup — how to begin hard conversations in a way that invites your partner closer.',
     miniGameId: 'soft-startup-sim',
+    reflectionPrompts: [
+      'What rupture happened this week?',
+      'How did you repair it?',
+      'What did you learn about what works?',
+    ],
+    partnerRoundPrompt: 'What\'s the repair gesture from me that works best for you?',
+    togetherPractices: ['aftermath-of-fight', 'hold-me-tight', 'couple-bubble'],
+    courseGatewayIds: ['mc-trust-repair', 'mc-lightness-lab'],
   },
   {
     stepNumber: 10,
@@ -400,6 +472,14 @@ export const TWELVE_STEPS: HealingStep[] = [
     introText:
       'Here’s something important: you will slip back into old patterns. Not because you failed — because you’re human. The question isn’t whether you’ll stumble. It’s how quickly you catch yourself and how gently you return to connection. When you catch yourselves doing “that thing” again, it’s not defeat — it’s awareness.',
     miniGameId: 'pattern-check-in',
+    reflectionPrompts: [
+      'What ritual did you practice this week?',
+      'How did it feel?',
+      'What ritual do you want to keep forever?',
+    ],
+    partnerRoundPrompt: 'What small ritual do you want us to never lose?',
+    togetherPractices: ['rituals-of-connection', 'stress-reducing-conversation', 'relationship-mission-statement', 'eulogy-exercise'],
+    courseGatewayIds: ['mc-values-alignment'],
   },
   {
     stepNumber: 11,
@@ -425,6 +505,14 @@ export const TWELVE_STEPS: HealingStep[] = [
     introText:
       'By now, something has shifted. You’re not just two individuals managing a relationship — you’re learning to sense the relationship as its own living thing. What does it need right now? Where is it growing? Where is it still tender? This step asks you to create space for the relationship itself to speak.',
     miniGameId: 'the-third-voice',
+    reflectionPrompts: [
+      'What pattern did you sustain this week?',
+      'Where did you drift?',
+      'What brought you back?',
+    ],
+    partnerRoundPrompt: 'What\'s one moment this week where we got it right?',
+    togetherPractices: ['stress-reducing-conversation'],
+    courseGatewayIds: ['mc-text-between-us'],
   },
   {
     stepNumber: 12,
@@ -450,6 +538,19 @@ export const TWELVE_STEPS: HealingStep[] = [
     introText:
       'You’ve come a long way. The seeing. The softening. The rebuilding. The practicing. This final step isn’t about adding more work. It’s about integration — letting everything you’ve learned become part of who you are. Changed people change the world around them. Not by preaching, but by being.',
     miniGameId: 'relationship-manifesto',
+    reflectionPrompts: [
+      'In what moments is your relationship already a refuge?',
+      'What\'s still being built?',
+      'What do you want to give to this space?',
+    ],
+    partnerRoundPrompt: undefined, // Step 12 is ongoing — no single prompt
+    togetherPractices: ['relationship-mission-statement', 'eulogy-exercise', 'couple-bubble'],
+    courseGatewayIds: [
+      'mc-attachment-101', 'mc-bids-connection', 'mc-act-defusion', 'mc-regulation',
+      'mc-seen', 'mc-conflict-repair', 'mc-orientation-pleasure', 'mc-fondness-gratitude',
+      'mc-boundaries', 'mc-boundaries-deep', 'mc-trust-repair', 'mc-lightness-lab',
+      'mc-values-alignment', 'mc-text-between-us',
+    ],
   },
 ];
 
@@ -972,3 +1073,83 @@ export const SOLO_LANGUAGE_MAP: [RegExp, string][] = [
   [/both partners/gi, 'you'],
   [/between you/gi, 'in your patterns'],
 ];
+
+// ─── Step-Specific Journal Prompts ──────────────────────
+// Used on the home page Daily Rhythm section. Each step has
+// multiple prompts that rotate by day-of-year.
+
+export interface StepJournalPrompt {
+  question: string;
+  solo?: string; // solo-mode alternative wording (optional)
+}
+
+export const STEP_JOURNAL_PROMPTS: Record<number, StepJournalPrompt[]> = {
+  1: [
+    { question: 'What pattern did you notice between you today?', solo: 'What pattern did you notice in your relationships today?' },
+    { question: 'When did the strain show up this week, and how did you respond?', solo: 'When did relational strain show up this week?' },
+    { question: 'What would it look like to acknowledge the strain without trying to fix it?', solo: 'What would it look like to acknowledge strain without trying to fix it?' },
+  ],
+  2: [
+    { question: 'What moment of connection surprised you recently?' },
+    { question: 'Where did you feel the relational field shift today \u2014 toward warmth or distance?' },
+    { question: 'What would trusting the space between you look like right now?', solo: 'What would trusting the process look like right now?' },
+  ],
+  3: [
+    { question: 'What story did you notice yourself telling about your partner today?', solo: 'What story did you notice yourself telling about a relationship today?' },
+    { question: 'Where did you hold on to being right instead of being curious?' },
+    { question: 'What would releasing certainty feel like in your body?' },
+  ],
+  4: [
+    { question: 'What part of the pattern do you contribute to?' },
+    { question: 'When did your protector show up today, and what was it guarding?' },
+    { question: 'What would it mean to truly own your side of the dance?' },
+  ],
+  5: [
+    { question: 'What truth have you been holding back, and what keeps you from sharing it?', solo: 'What truth have you been holding back?' },
+    { question: 'When did you feel most known today, and what made that possible?' },
+    { question: 'What would safe vulnerability look like in your relationship right now?', solo: 'What would safe vulnerability look like right now?' },
+  ],
+  6: [
+    { question: 'When did you catch yourself seeing your partner as the enemy this week?', solo: 'When did you catch yourself casting someone as the enemy this week?' },
+    { question: 'What would it take to see the hurt behind the behavior?' },
+    { question: 'Where could you replace judgment with curiosity today?' },
+  ],
+  7: [
+    { question: 'What invitation could you extend to your partner today?', solo: 'What invitation could you extend to someone you care about today?' },
+    { question: 'How did you respond to your partner\u2019s last bid for connection?', solo: 'How did you respond to the last bid for connection directed at you?' },
+    { question: 'What would it look like to make space for your partner\u2019s experience?', solo: 'What would it look like to make space for someone else\u2019s experience?' },
+  ],
+  8: [
+    { question: 'What new response did you try today, even a small one?' },
+    { question: 'Where did you interrupt an old pattern this week?' },
+    { question: 'What does the new pattern you\u2019re building feel like compared to the old one?' },
+  ],
+  9: [
+    { question: 'What repair attempt did you make or receive this week?' },
+    { question: 'What makes it hard for you to say \u201CI\u2019m sorry\u201D or \u201CI hear you\u201D?' },
+    { question: 'Where did you choose repair over retreat today?' },
+  ],
+  10: [
+    { question: 'What small ritual grounds your relationship right now?', solo: 'What small ritual grounds you right now?' },
+    { question: 'How did you mark a transition today \u2014 leaving, arriving, or reconnecting?', solo: 'How did you mark a transition today?' },
+    { question: 'What ritual of connection would you like to build?', solo: 'What relational ritual would you like to build?' },
+  ],
+  11: [
+    { question: 'What pattern felt easiest to sustain today, and what still takes effort?' },
+    { question: 'Where did your growth show up without you trying?' },
+    { question: 'What does sustaining feel like compared to striving?' },
+  ],
+  12: [
+    { question: 'How did you offer refuge to your partner today?', solo: 'How did you offer refuge to someone today?' },
+    { question: 'Where did you feel most at home in your relationship this week?', solo: 'Where did you feel most at home in yourself this week?' },
+    { question: 'What does it mean to become a refuge for someone you love?', solo: 'What does it mean to become a refuge?' },
+  ],
+};
+
+/** Get today\u2019s journal prompt for a given step, with optional solo-mode wording. */
+export function getJournalPromptForStep(stepNumber: number, isSolo?: boolean): string {
+  const prompts = STEP_JOURNAL_PROMPTS[stepNumber] ?? STEP_JOURNAL_PROMPTS[1];
+  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
+  const prompt = prompts[dayOfYear % prompts.length];
+  return (isSolo && prompt.solo) ? prompt.solo : prompt.question;
+}

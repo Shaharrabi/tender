@@ -379,7 +379,7 @@ const styles = StyleSheet.create({
   cardsContent: {
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.xl,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
     alignItems: 'center',
   },
   progress: {
@@ -507,7 +507,7 @@ const styles = StyleSheet.create({
   commitmentContent: {
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.xl,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
   },
   sectionTitle: {
     fontSize: FontSizes.headingM,

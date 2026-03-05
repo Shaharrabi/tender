@@ -39,7 +39,7 @@ import {
   PenIcon,
   CheckmarkIcon,
 } from '@/assets/graphics/icons';
-import HomeButton from '@/components/HomeButton';
+import QuickLinksBar from '@/components/QuickLinksBar';
 import { useAuth } from '@/context/AuthContext';
 import { useGamification } from '@/context/GamificationContext';
 import { saveCompletion, getCompletionByExerciseId } from '@/services/intervention';
@@ -784,7 +784,7 @@ export default function MicroCourseScreen() {
           </Text>
         </TouchableOpacity>
       </View>
-      <HomeButton />
+      <QuickLinksBar />
     </SafeAreaView>
   );
 }
@@ -1074,7 +1074,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: Spacing.lg,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
   },
 
   // ─── Navigation ─────────────────────────
@@ -1124,7 +1124,7 @@ const styles = StyleSheet.create({
   completionScroll: {
     paddingHorizontal: Spacing.xl,
     paddingTop: Spacing.xxl * 2,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
     alignItems: 'center',
     gap: Spacing.md,
   },

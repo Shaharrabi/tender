@@ -1,16 +1,19 @@
 /**
  * StepJourney — Twelve Steps Expandable Journey View
  *
- * Redesigned to let users explore all 12 steps:
+ * Sprint C enhancement:
  * - Intro section explaining the healing journey
  * - Steps grouped by healing phase with phase headers
  * - Each step is tappable to expand/collapse
- * - Expanded view shows: subtitle, quote, goals, practices
+ * - Expanded view shows: subtitle, quote, goals, practices,
+ *   course gateway, transition criteria, step-detail nav
  * - Active step auto-expanded, locked steps dimmed but readable
  * - Practice cards are tappable to launch exercises
+ * - Course gateway cards link to micro-courses
+ * - Transition criteria show progress for active/completed steps
  */
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -29,6 +32,7 @@ import {
   Shadows,
 } from '@/constants/theme';
 import CheckmarkIcon from '@/assets/graphics/icons/CheckmarkIcon';
+import { BookOpenIcon, HeartDoubleIcon, CoupleIcon } from '@/assets/graphics/icons';
 import type { StepProgress } from '@/types/growth';
 import {
   TWELVE_STEPS,
@@ -36,6 +40,7 @@ import {
   getPhaseForStep,
 } from '@/utils/steps/twelve-steps';
 import { getExerciseById } from '@/utils/interventions/registry';
+import { getCourseById } from '@/utils/microcourses/course-registry';
 
 // Enable LayoutAnimation on Android
 if (
@@ -50,6 +55,12 @@ interface Props {
   currentStepNumber: number;
   onStepPress?: (stepNumber: number) => void;
   onSelectPractice?: (practiceId: string) => void;
+  /** Navigate to the step-detail screen */
+  onNavigateToStep?: (stepNumber: number) => void;
+  /** Navigate to a micro-course */
+  onNavigateToCourse?: (courseId: string) => void;
+  /** Whether user is in a couple (shows partner/together content) */
+  isCoupled?: boolean;
 }
 
 export default function StepJourney({
@@ -57,6 +68,9 @@ export default function StepJourney({
   currentStepNumber,
   onStepPress,
   onSelectPractice,
+  onNavigateToStep,
+  onNavigateToCourse,
+  isCoupled = false,
 }: Props) {
   const [expandedStep, setExpandedStep] = useState<number | null>(
     currentStepNumber
@@ -300,6 +314,154 @@ export default function StepJourney({
                             })}
                           </View>
                         </View>
+                      )}
+
+                      {/* Course Gateway */}
+                      {step.courseGatewayIds && step.courseGatewayIds.length > 0 && (
+                        <View style={styles.courseGatewaySection}>
+                          <Text style={styles.detailLabel}>COURSE GATEWAY</Text>
+                          {step.courseGatewayIds.map((courseId) => {
+                            const course = getCourseById(courseId);
+                            if (!course) return null;
+                            return (
+                              <TouchableOpacity
+                                key={courseId}
+                                style={[
+                                  styles.courseCard,
+                                  { borderLeftColor: phaseColor },
+                                ]}
+                                onPress={() => onNavigateToCourse?.(courseId)}
+                                activeOpacity={0.7}
+                                accessibilityRole="button"
+                                accessibilityLabel={`Course: ${course.title}, ${course.estimatedMinutes} minutes`}
+                              >
+                                <BookOpenIcon size={16} color={phaseColor} />
+                                <View style={styles.courseCardContent}>
+                                  <Text style={styles.courseTitle} numberOfLines={1}>
+                                    {course.title}
+                                  </Text>
+                                  <Text style={styles.courseMeta}>
+                                    {course.totalLessons} lessons
+                                    {' \u00B7 '}
+                                    {course.estimatedMinutes} min
+                                  </Text>
+                                </View>
+                                <Text style={[styles.practiceArrow, { color: phaseColor }]}>
+                                  {'\u203A'}
+                                </Text>
+                              </TouchableOpacity>
+                            );
+                          })}
+                        </View>
+                      )}
+
+                      {/* Partner Round Prompt (couple-only) */}
+                      {isCoupled && step.partnerRoundPrompt && !isLocked && (
+                        <View style={styles.partnerRoundSection}>
+                          <View style={styles.coupleLabel}>
+                            <HeartDoubleIcon size={12} color={Colors.secondary} />
+                            <Text style={styles.coupleLabelText}>PARTNER ROUND</Text>
+                          </View>
+                          <View style={styles.partnerRoundCard}>
+                            <Text style={styles.partnerRoundPrompt}>
+                              {step.partnerRoundPrompt}
+                            </Text>
+                            <Text style={styles.partnerRoundHint}>
+                              Open this step to write and share your response
+                            </Text>
+                          </View>
+                        </View>
+                      )}
+
+                      {/* Together Practices (couple-only) */}
+                      {isCoupled && step.togetherPractices && step.togetherPractices.length > 0 && !isLocked && (
+                        <View style={styles.togetherSection}>
+                          <View style={styles.coupleLabel}>
+                            <CoupleIcon size={12} color={Colors.secondary} />
+                            <Text style={styles.coupleLabelText}>TOGETHER PRACTICES</Text>
+                          </View>
+                          <View style={styles.practicesList}>
+                            {step.togetherPractices.map((practiceId) => {
+                              const exercise = getExerciseById(practiceId);
+                              if (!exercise) return null;
+                              return (
+                                <TouchableOpacity
+                                  key={practiceId}
+                                  style={[styles.practiceCard, styles.togetherPracticeCard]}
+                                  onPress={() => onSelectPractice?.(practiceId)}
+                                  activeOpacity={0.7}
+                                  accessibilityRole="button"
+                                  accessibilityLabel={`Together practice: ${exercise.title}, ${exercise.duration} minutes`}
+                                >
+                                  <View style={styles.practiceCardContent}>
+                                    <Text style={[styles.practiceTitle, { color: Colors.secondary }]} numberOfLines={1}>
+                                      {exercise.title}
+                                    </Text>
+                                    <Text style={styles.practiceMeta}>
+                                      {exercise.duration} min {'\u00B7'} Together
+                                    </Text>
+                                  </View>
+                                  <Text style={[styles.practiceArrow, { color: Colors.secondary }]}>
+                                    {'\u203A'}
+                                  </Text>
+                                </TouchableOpacity>
+                              );
+                            })}
+                          </View>
+                        </View>
+                      )}
+
+                      {/* Transition Criteria (active + completed steps only) */}
+                      {!isLocked && step.completionCriteria.length > 0 && (() => {
+                        const sp = stepProgress.find((p) => p.stepNumber === step.stepNumber);
+                        const notes = sp?.reflectionNotes as Record<string, any> | undefined;
+                        const completedCriteria: number[] = notes?.completedCriteria ?? [];
+
+                        return (
+                          <View style={styles.criteriaSection}>
+                            <Text style={styles.detailLabel}>MILESTONES</Text>
+                            {step.completionCriteria.map((criterion, ci) => {
+                              const done = completedCriteria.includes(ci);
+                              return (
+                                <View key={ci} style={styles.criterionRow}>
+                                  <View
+                                    style={[
+                                      styles.criterionDot,
+                                      done && [styles.criterionDotDone, { backgroundColor: phaseColor }],
+                                    ]}
+                                  >
+                                    {done && <CheckmarkIcon size={8} color={Colors.white} />}
+                                  </View>
+                                  <Text
+                                    style={[
+                                      styles.criterionText,
+                                      done && styles.criterionTextDone,
+                                    ]}
+                                    numberOfLines={2}
+                                  >
+                                    {criterion}
+                                  </Text>
+                                </View>
+                              );
+                            })}
+                          </View>
+                        );
+                      })()}
+
+                      {/* Open Step Detail button (active + completed only) */}
+                      {!isLocked && onNavigateToStep && (
+                        <TouchableOpacity
+                          style={[styles.openDetailButton, { backgroundColor: phaseColor }]}
+                          onPress={() => onNavigateToStep(step.stepNumber)}
+                          activeOpacity={0.7}
+                          accessibilityRole="button"
+                          accessibilityLabel={`Open Step ${step.stepNumber} detail`}
+                        >
+                          <Text style={styles.openDetailText}>
+                            {isCurrent ? 'Continue This Step' : 'Review Step'}
+                          </Text>
+                          <Text style={styles.openDetailArrow}>{'\u203A'}</Text>
+                        </TouchableOpacity>
                       )}
 
                       {/* Current step callout */}
@@ -581,6 +743,133 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontWeight: '300',
     marginLeft: Spacing.sm,
+  },
+
+  // Course Gateway
+  courseGatewaySection: {
+    gap: Spacing.xs,
+  },
+  courseCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.sm,
+    padding: Spacing.sm + 2,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+    borderLeftWidth: 3,
+    gap: Spacing.sm,
+  },
+  courseCardContent: {
+    flex: 1,
+    gap: 2,
+  },
+  courseTitle: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '600',
+    fontFamily: FontFamilies.heading,
+    color: Colors.text,
+  },
+  courseMeta: {
+    fontSize: FontSizes.caption,
+    fontFamily: FontFamilies.body,
+    color: Colors.textMuted,
+  },
+
+  // Couple sections
+  coupleLabel: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    marginBottom: Spacing.xs,
+  },
+  coupleLabelText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: Colors.secondary,
+    letterSpacing: 1.2,
+  },
+  partnerRoundSection: {
+    gap: 0,
+  },
+  partnerRoundCard: {
+    backgroundColor: Colors.secondary + '08',
+    borderRadius: BorderRadius.sm,
+    padding: Spacing.sm + 2,
+    borderWidth: 1,
+    borderColor: Colors.secondary + '20',
+    gap: Spacing.xs,
+  },
+  partnerRoundPrompt: {
+    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    color: Colors.text,
+    fontStyle: 'italic',
+    lineHeight: 20,
+  },
+  partnerRoundHint: {
+    fontSize: FontSizes.caption,
+    color: Colors.textMuted,
+  },
+  togetherSection: {
+    gap: 0,
+  },
+  togetherPracticeCard: {
+    borderColor: Colors.secondary + '30',
+  },
+
+  // Transition Criteria
+  criteriaSection: {
+    gap: Spacing.xs,
+  },
+  criterionRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.sm,
+  },
+  criterionDot: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: Colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+  },
+  criterionDotDone: {
+    borderColor: 'transparent',
+  },
+  criterionText: {
+    flex: 1,
+    fontSize: FontSizes.caption,
+    color: Colors.textSecondary,
+    lineHeight: 18,
+  },
+  criterionTextDone: {
+    color: Colors.textMuted,
+    textDecorationLine: 'line-through',
+  },
+
+  // Open Step Detail
+  openDetailButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.pill,
+    gap: Spacing.xs,
+    marginTop: Spacing.xs,
+  },
+  openDetailText: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '600',
+    color: Colors.textOnPrimary,
+  },
+  openDetailArrow: {
+    fontSize: FontSizes.headingM,
+    color: Colors.textOnPrimary,
+    fontWeight: '400',
   },
 
   // Current badge

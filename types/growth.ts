@@ -78,6 +78,14 @@ export interface HealingStep {
   introText?: string;
   /** V3 — Mini-game identifier for this step */
   miniGameId?: string;
+  /** Sprint B — Reflection prompts (3 per step) */
+  reflectionPrompts?: string[];
+  /** Sprint B — Async partner round prompt (couple-only) */
+  partnerRoundPrompt?: string;
+  /** Sprint B — Exercise IDs for together round (couple-only) */
+  togetherPractices?: string[];
+  /** Sprint B — Micro-course IDs unlocked at this step */
+  courseGatewayIds?: string[];
 }
 
 export interface StepProgress {

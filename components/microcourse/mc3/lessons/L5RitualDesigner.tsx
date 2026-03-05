@@ -400,7 +400,7 @@ const styles = StyleSheet.create({
   introContent: {
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.xl,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
     alignItems: 'center',
   },
   buildingContent: {
@@ -411,13 +411,13 @@ const styles = StyleSheet.create({
   previewContent: {
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.xl,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
     alignItems: 'center',
   },
   commitmentContent: {
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.xxxl,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
     alignItems: 'center',
   },
   title: {

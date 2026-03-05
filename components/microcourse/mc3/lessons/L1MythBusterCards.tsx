@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
   cardsContent: {
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.xl,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
     alignItems: 'center',
   },
   title: {
@@ -530,7 +530,7 @@ const styles = StyleSheet.create({
   reflectionContent: {
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.xl,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
   },
   reflectionTitle: {
     fontSize: FontSizes.headingM,

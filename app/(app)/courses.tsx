@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useCallback, useMemo } from 'react';
-import HomeButton from '@/components/HomeButton';
+import QuickLinksBar from '@/components/QuickLinksBar';
 import {
   View,
   Text,
@@ -255,7 +255,7 @@ export default function CoursesScreen() {
         <View style={{ height: Spacing.xxxl }} />
       </ScrollView>
 
-      <HomeButton />
+      <QuickLinksBar currentScreen="courses" />
 
       {/* FTUE Overlays */}
       <TooltipManager screen="courses" />

@@ -750,7 +750,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
   },
 
   // Header
@@ -1089,7 +1089,7 @@ const styles = StyleSheet.create({
   // Reflecting view
   reflectingContent: {
     padding: Spacing.md,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
   },
   reflectTitle: {
     fontFamily: FontFamilies.heading,
@@ -1161,7 +1161,7 @@ const styles = StyleSheet.create({
   // Complete view
   completeContent: {
     padding: Spacing.md,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
     alignItems: 'center',
   },
   completeInner: {

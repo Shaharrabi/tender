@@ -328,7 +328,7 @@ export default function GroupRegistrationForm({
 
 const styles = StyleSheet.create({
   scrollContent: {
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
   },
   backBtn: {
     flexDirection: 'row',

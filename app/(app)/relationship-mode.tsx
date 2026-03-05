@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import HomeButton from '@/components/HomeButton';
+import QuickLinksBar from '@/components/QuickLinksBar';
 import {
   View,
   Text,
@@ -278,7 +278,7 @@ export default function RelationshipModeScreen() {
         </View>
       </ScrollView>
 
-      <HomeButton />
+      <QuickLinksBar />
 
       {/* Save button */}
       {hasChanges && (
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
   },
   sectionLabel: {
     fontSize: FontSizes.caption,

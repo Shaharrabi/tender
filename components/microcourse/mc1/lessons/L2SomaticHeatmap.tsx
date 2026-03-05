@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
   },
   introContent: {
     padding: Spacing.lg,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
     alignItems: 'center',
   },
   iconCircle: {
@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
   // ─── Map ─────────────────────────────
   mapContent: {
     padding: Spacing.lg,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
   },
   mapTitle: {
     fontSize: FontSizes.body,

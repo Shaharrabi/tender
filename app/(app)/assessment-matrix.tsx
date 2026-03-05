@@ -8,7 +8,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import HomeButton from '@/components/HomeButton';
+import QuickLinksBar from '@/components/QuickLinksBar';
 import {
   View,
   Text,
@@ -631,7 +631,7 @@ export default function AssessmentMatrixScreen() {
           </View>
         )}
       </ScrollView>
-      <HomeButton />
+      <QuickLinksBar />
     </SafeAreaView>
   );
 }
@@ -743,7 +743,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
   },
   segmentContent: {
     paddingHorizontal: Spacing.lg,

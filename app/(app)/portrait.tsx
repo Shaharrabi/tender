@@ -28,7 +28,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { TooltipManager } from '@/components/ftue/TooltipManager';
 import { WelcomeAudio } from '@/components/ftue/WelcomeAudio';
-import HomeButton from '@/components/HomeButton';
+import QuickLinksBar from '@/components/QuickLinksBar';
 import { getPortrait, savePortrait, extractSupplementScores, fetchPreviousScores } from '@/services/portrait';
 import { getUserConsent, eraseUserData } from '@/services/consent';
 import {
@@ -835,7 +835,7 @@ export default function PortraitScreen() {
       {/* FTUE Overlays */}
       <TooltipManager screen="portrait" />
       <WelcomeAudio screenKey="portrait" />
-      <HomeButton />
+      <QuickLinksBar />
     </SafeAreaView>
     </ErrorBoundary>
   );
@@ -2172,7 +2172,7 @@ const st = StyleSheet.create({
   },
   contentContainer: {
     padding: Spacing.lg,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
   },
 
   // ── Hero ──

@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
   },
   introContent: {
     padding: Spacing.lg,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
     alignItems: 'center',
   },
   iconCircle: {
@@ -379,7 +379,7 @@ const styles = StyleSheet.create({
   timerContent: {
     alignItems: 'center',
     paddingTop: Spacing.xl,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
     paddingHorizontal: Spacing.lg,
   },
   clockArea: {

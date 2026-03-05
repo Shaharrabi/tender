@@ -8,6 +8,7 @@
  */
 
 import { supabase } from './supabase';
+import { TWELVE_STEPS } from '@/utils/steps/twelve-steps';
 
 // ─── Types ──────────────────────────────────────────────
 
@@ -20,7 +21,8 @@ export type JournalEntryType =
   | 'xp'
   | 'minigame'
   | 'step_milestone'
-  | 'card_game';
+  | 'card_game'
+  | 'reflection';
 
 export interface JournalEntry {
   id: string;
@@ -107,6 +109,7 @@ export async function getJournalEntriesForDate(
     minigameResult,
     stepProgressResult,
     cardGameResult,
+    stepReflectionsResult,
   ] = await Promise.allSettled([
     // 1. Daily check-ins (uses DATE type — exact match)
     supabase
@@ -187,6 +190,16 @@ export async function getJournalEntriesForDate(
       .gte('completed_at', dayStart)
       .lt('completed_at', dayEnd)
       .order('completed_at', { ascending: true }),
+
+    // 10. Step reflections from reflection_notes JSONB (TIMESTAMPTZ — range on updated_at)
+    supabase
+      .from('step_progress')
+      .select('*')
+      .eq('user_id', userId)
+      .not('reflection_notes', 'is', null)
+      .gte('updated_at', dayStart)
+      .lt('updated_at', dayEnd)
+      .order('updated_at', { ascending: true }),
   ]);
 
   // Process check-ins
@@ -376,6 +389,44 @@ export async function getJournalEntriesForDate(
     }
   }
 
+  // Process step reflections (from reflection_notes JSONB)
+  if (stepReflectionsResult.status === 'fulfilled' && stepReflectionsResult.value.data) {
+    for (const row of stepReflectionsResult.value.data) {
+      const notes = row.reflection_notes as Record<string, any> | null;
+      if (!notes) continue;
+
+      const reflections = notes.reflections as Record<string, string> | undefined;
+      const partnerResponse = notes.partnerRoundResponse as string | undefined;
+
+      // Only create entry if there's actual written content
+      const hasReflections = reflections && Object.values(reflections).some((v) => v && v.trim());
+      const hasPartnerResponse = partnerResponse && partnerResponse.trim();
+
+      if (!hasReflections && !hasPartnerResponse) continue;
+
+      // Look up step definition for prompts
+      const step = TWELVE_STEPS.find((s) => s.stepNumber === row.step_number);
+
+      entries.push({
+        id: `reflection-${row.id}`,
+        type: 'reflection',
+        timestamp: row.updated_at,
+        title: `Step ${row.step_number} Reflection`,
+        subtitle: step?.title ?? 'Healing Journey',
+        data: {
+          stepNumber: row.step_number,
+          stepTitle: step?.title,
+          reflections: reflections ?? {},
+          prompts: step?.reflectionPrompts ?? [],
+          partnerRoundResponse: partnerResponse ?? null,
+          partnerRoundPrompt: step?.partnerRoundPrompt ?? null,
+          completedCriteria: notes.completedCriteria ?? [],
+          totalCriteria: step?.completionCriteria?.length ?? 0,
+        },
+      });
+    }
+  }
+
   // Sort by timestamp
   entries.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
@@ -414,6 +465,7 @@ export async function getJournalCalendarData(
     minigameCalResult,
     stepProgressCalResult,
     cardGameCalResult,
+    stepReflectionsCalResult,
   ] = await Promise.allSettled([
     supabase
       .from('daily_check_ins')
@@ -471,6 +523,14 @@ export async function getJournalCalendarData(
       .eq('user_id', userId)
       .gte('completed_at', startISO)
       .lt('completed_at', endISO),
+
+    supabase
+      .from('step_progress')
+      .select('updated_at, reflection_notes')
+      .eq('user_id', userId)
+      .not('reflection_notes', 'is', null)
+      .gte('updated_at', startISO)
+      .lt('updated_at', endISO),
   ]);
 
   // Map check-ins (DATE type)
@@ -526,6 +586,22 @@ export async function getJournalCalendarData(
   if (cardGameCalResult.status === 'fulfilled' && cardGameCalResult.value.data) {
     for (const row of cardGameCalResult.value.data) {
       addDay(dateFromTimestamp(row.completed_at), 'card_game');
+    }
+  }
+
+  // Map step reflections
+  if (stepReflectionsCalResult.status === 'fulfilled' && stepReflectionsCalResult.value.data) {
+    for (const row of stepReflectionsCalResult.value.data) {
+      const notes = row.reflection_notes as Record<string, any> | null;
+      if (!notes) continue;
+      const reflections = notes.reflections as Record<string, string> | undefined;
+      const partnerResponse = notes.partnerRoundResponse as string | undefined;
+      const hasContent =
+        (reflections && Object.values(reflections).some((v) => v && v.trim())) ||
+        (partnerResponse && partnerResponse.trim());
+      if (hasContent) {
+        addDay(dateFromTimestamp(row.updated_at), 'reflection');
+      }
     }
   }
 

@@ -6,7 +6,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import HomeButton from '@/components/HomeButton';
+import QuickLinksBar from '@/components/QuickLinksBar';
 import SupportGroupsCard from '@/components/support-groups/SupportGroupsCard';
 import { getRecommendedGroup } from '@/services/support-groups';
 import type { GroupRecommendation } from '@/types/support-groups';
@@ -438,7 +438,7 @@ export default function FindTherapistScreen() {
 
         <View style={{ height: Spacing.xxl }} />
       </ScrollView>
-      <HomeButton />
+      <QuickLinksBar />
     </SafeAreaView>
   );
 }
@@ -448,7 +448,7 @@ export default function FindTherapistScreen() {
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  scrollContent: { padding: Spacing.xl, paddingBottom: Spacing.xxxl },
+  scrollContent: { padding: Spacing.xl, paddingBottom: Spacing.scrollPadBottom },
 
   header: { marginBottom: Spacing.lg },
   backText: {

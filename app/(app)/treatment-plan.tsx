@@ -11,7 +11,7 @@
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import HomeButton from '@/components/HomeButton';
+import QuickLinksBar from '@/components/QuickLinksBar';
 import {
   View,
   Text,
@@ -719,7 +719,7 @@ export default function TreatmentPlanScreen() {
         {/* Bottom spacer */}
         <View style={{ height: Spacing.xxl }} />
       </ScrollView>
-      <HomeButton />
+      <QuickLinksBar />
     </SafeAreaView>
   );
 }
@@ -836,7 +836,7 @@ const styles = StyleSheet.create({
 
   // Scroll
   scrollContent: {
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
   },
 
   // ─── Hero ───────────────────────────────────────────

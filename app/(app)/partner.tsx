@@ -43,7 +43,7 @@ import {
   BorderRadius,
   Shadows,
 } from '@/constants/theme';
-import HomeButton from '@/components/HomeButton';
+import QuickLinksBar from '@/components/QuickLinksBar';
 import { ShieldIcon, SparkleIcon } from '@/assets/graphics/icons';
 import type { Couple, CoupleInvite, UserProfile } from '@/types/couples';
 
@@ -415,7 +415,7 @@ export default function PartnerScreen() {
             </View>
           )}
         </ScrollView>
-        <HomeButton />
+        <QuickLinksBar />
       </SafeAreaView>
     );
   }
@@ -555,7 +555,7 @@ export default function PartnerScreen() {
           </Text>
         </View>
       </ScrollView>
-      <HomeButton />
+      <QuickLinksBar />
     </SafeAreaView>
   );
 }

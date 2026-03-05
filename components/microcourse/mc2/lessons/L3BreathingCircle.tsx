@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
   },
   introContent: {
     padding: Spacing.lg,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
     alignItems: 'center',
     justifyContent: 'center',
     flexGrow: 1,
@@ -421,7 +421,7 @@ const styles = StyleSheet.create({
   // ─── Done ───────────────────────────
   doneContent: {
     padding: Spacing.lg,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
     alignItems: 'center',
     justifyContent: 'center',
     flexGrow: 1,

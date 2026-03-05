@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   content: { flex: 1 },
   scroll: { flex: 1 },
-  scrollContent: { padding: Spacing.lg, paddingBottom: Spacing.xxxl },
+  scrollContent: { padding: Spacing.lg, paddingBottom: Spacing.scrollPadBottom },
   reflectionContainer: { flex: 1 },
   reflectionCard: { backgroundColor: Colors.surfaceElevated, borderRadius: BorderRadius.lg, padding: Spacing.lg, borderWidth: 1, borderColor: Colors.borderLight, ...Shadows.subtle, gap: Spacing.md },
   reflectionHeader: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },

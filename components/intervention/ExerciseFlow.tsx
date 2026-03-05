@@ -1483,7 +1483,7 @@ const styles = StyleSheet.create({
   },
   stepContent: {
     padding: Spacing.lg,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
   },
 
   // ─── Navigation ────────────────────────────
@@ -1530,7 +1530,7 @@ const styles = StyleSheet.create({
   completionScroll: {
     paddingHorizontal: Spacing.xl,
     paddingTop: Spacing.xxl,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
     alignItems: 'center',
   },
   checkCircle: {

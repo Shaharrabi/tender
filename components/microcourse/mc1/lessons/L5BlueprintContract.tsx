@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
   },
   recapContent: {
     padding: Spacing.lg,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
     alignItems: 'center',
   },
   iconCircle: {
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
   // ─── Contract ────────────────────────
   contractContent: {
     padding: Spacing.lg,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
     alignItems: 'center',
   },
   contractPaper: {

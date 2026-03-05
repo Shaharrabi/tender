@@ -21,7 +21,7 @@ import { useGamification } from '@/context/GamificationContext';
 import { getExerciseById } from '@/utils/interventions/registry';
 import { saveCompletion } from '@/services/intervention';
 import { incrementPracticeCount, addInsight, upsertGrowthEdge } from '@/services/growth';
-import HomeButton from '@/components/HomeButton';
+import QuickLinksBar from '@/components/QuickLinksBar';
 import ExerciseFlow from '@/components/intervention/ExerciseFlow';
 import type { StepResponse } from '@/components/intervention/ExerciseFlow';
 
@@ -123,7 +123,7 @@ export default function ExerciseScreen() {
         onComplete={handleComplete}
         onExit={handleExit}
       />
-      <HomeButton />
+      <QuickLinksBar />
     </SafeAreaView>
   );
 }

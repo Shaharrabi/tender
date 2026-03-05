@@ -24,7 +24,7 @@ import MessageFlow from '@/components/chat/MessageFlow';
 import UserInput from '@/components/chat/UserInput';
 import SafetyBanner from '@/components/chat/SafetyBanner';
 import SessionList from '@/components/chat/SessionList';
-import HomeButton from '@/components/HomeButton';
+import QuickLinksBar from '@/components/QuickLinksBar';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { COACH } from '@/constants/coach';
 import { Colors, Spacing, FontSizes, FontFamilies, BorderRadius } from '@/constants/theme';
@@ -214,7 +214,7 @@ function ChatScreenInner({ topic }: { topic?: string }) {
         </KeyboardAvoidingView>
       )}
 
-      <HomeButton />
+      <QuickLinksBar currentScreen="nuance" />
 
       {/* Session history modal */}
       <Modal

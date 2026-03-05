@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   scrollContent: {
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
   },
   loader: {
     marginTop: Spacing.xxl,

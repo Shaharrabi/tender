@@ -14,7 +14,7 @@
  */
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import HomeButton from '@/components/HomeButton';
+import QuickLinksBar from '@/components/QuickLinksBar';
 import {
   View,
   Text,
@@ -527,7 +527,7 @@ export default function CommunityScreen() {
         <View style={{ height: Spacing.xxl }} />
       </ScrollView>
 
-      <HomeButton />
+      <QuickLinksBar />
 
       {/* FAB (stories only) */}
       <FAB
@@ -587,7 +587,7 @@ const st = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.sm,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
   },
   loader: {
     marginTop: Spacing.xxl,

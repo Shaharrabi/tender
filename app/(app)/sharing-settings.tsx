@@ -7,7 +7,7 @@
  */
 
 import React, { useEffect, useState, useCallback } from 'react';
-import HomeButton from '@/components/HomeButton';
+import QuickLinksBar from '@/components/QuickLinksBar';
 import {
   View,
   Text,
@@ -371,7 +371,7 @@ export default function SharingSettingsScreen() {
 
         <View style={{ height: Spacing.xxl }} />
       </ScrollView>
-      <HomeButton />
+      <QuickLinksBar />
     </SafeAreaView>
   );
 }
@@ -385,7 +385,7 @@ const s = StyleSheet.create({
   },
   scrollContent: {
     padding: Spacing.xl,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
   },
 
   // Loading

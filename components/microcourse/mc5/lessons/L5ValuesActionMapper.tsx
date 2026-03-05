@@ -289,7 +289,7 @@ const s = StyleSheet.create({
   darkBtnText: { color: '#FFF', fontSize: FontSizes.body, fontWeight: '600', letterSpacing: 2 },
 
   // Mapping layout
-  mapContent: { paddingHorizontal: Spacing.md, paddingTop: Spacing.lg, paddingBottom: Spacing.xxxl },
+  mapContent: { paddingHorizontal: Spacing.md, paddingTop: Spacing.lg, paddingBottom: Spacing.scrollPadBottom },
   columnsRow: { flexDirection: 'row', gap: Spacing.sm },
   column: { flex: 1 },
   columnLabel: {
@@ -333,7 +333,7 @@ const s = StyleSheet.create({
 
   // Commitment
   commitContent: {
-    paddingHorizontal: Spacing.lg, paddingTop: Spacing.xl, paddingBottom: Spacing.xxxl,
+    paddingHorizontal: Spacing.lg, paddingTop: Spacing.xl, paddingBottom: Spacing.scrollPadBottom,
     alignItems: 'center',
   },
   commitTitle: {

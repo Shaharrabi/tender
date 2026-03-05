@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   readerScroll: {
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
   },
   readerHero: {
     alignItems: 'center',

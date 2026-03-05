@@ -273,6 +273,9 @@ export const Spacing = {
   xl: 32,
   xxl: 48,
   xxxl: 64,
+  /** Extra bottom padding for ScrollView contentContainerStyle.
+   *  Accounts for QuickLinksBar + nav bars + device safe-area on native. */
+  scrollPadBottom: 140,
 };
 
 // ─── Sizes ───────────────────────────────────────────────

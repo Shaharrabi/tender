@@ -41,6 +41,7 @@ const TYPE_COLORS: Record<JournalEntryType, string> = {
   minigame: Colors.accentGold,      // Concierge Gold
   step_milestone: Colors.success,   // Step completion green
   card_game: Colors.accent,         // Terracotta (Building Bridges)
+  reflection: Colors.primary,       // Dusty Rose (Step reflections)
 };
 
 // Ordered for consistent dot layout

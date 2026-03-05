@@ -6,7 +6,7 @@
  */
 
 import React, { useState } from 'react';
-import HomeButton from '@/components/HomeButton';
+import QuickLinksBar from '@/components/QuickLinksBar';
 import {
   View,
   Text,
@@ -284,7 +284,7 @@ export default function PrivacyScreen() {
 
         <View style={{ height: Spacing.xxl }} />
       </ScrollView>
-      <HomeButton />
+      <QuickLinksBar />
     </SafeAreaView>
   );
 }
@@ -293,7 +293,7 @@ export default function PrivacyScreen() {
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
-  scrollContent: { padding: Spacing.xl, paddingBottom: Spacing.xxxl },
+  scrollContent: { padding: Spacing.xl, paddingBottom: Spacing.scrollPadBottom },
 
   header: { marginBottom: Spacing.lg },
   backText: {

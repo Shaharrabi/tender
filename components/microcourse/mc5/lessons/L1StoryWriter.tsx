@@ -256,7 +256,7 @@ const s = StyleSheet.create({
 
   // ─── Write ───────────────────────────────
   writeContent: {
-    paddingHorizontal: Spacing.lg, paddingTop: Spacing.xl, paddingBottom: Spacing.xxxl,
+    paddingHorizontal: Spacing.lg, paddingTop: Spacing.xl, paddingBottom: Spacing.scrollPadBottom,
   },
   writePrompt: {
     fontSize: FontSizes.body, color: MC5_PALETTE.deepLavender, textAlign: 'center',
@@ -283,7 +283,7 @@ const s = StyleSheet.create({
   // ─── Frame & Shrink ──────────────────────
   frameContent: {
     paddingHorizontal: Spacing.lg, paddingTop: Spacing.xl,
-    paddingBottom: Spacing.xxxl, alignItems: 'center',
+    paddingBottom: Spacing.scrollPadBottom, alignItems: 'center',
   },
   frameInstruction: {
     fontSize: FontSizes.bodySmall, color: Colors.textMuted, textAlign: 'center',

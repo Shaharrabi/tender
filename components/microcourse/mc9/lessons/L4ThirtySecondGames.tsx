@@ -1324,7 +1324,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.xl,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
   },
 
   // ── Phase Container ────────────────────────────────────────

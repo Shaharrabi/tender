@@ -15,7 +15,7 @@ import { getAssessmentConfig, isDyadicAssessment } from '@/utils/assessments/reg
 import { saveDyadicAssessment } from '@/services/couples';
 import { supabase } from '@/services/supabase';
 import { Colors, Spacing, FontSizes, ButtonSizes, FontFamilies, BorderRadius } from '@/constants/theme';
-import HomeButton from '@/components/HomeButton';
+import QuickLinksBar from '@/components/QuickLinksBar';
 import TenderButton from '@/components/ui/TenderButton';
 import SectionBreak from '@/components/assessment/SectionBreak';
 import QuestionRenderer from '@/components/assessment/QuestionRenderer';
@@ -370,7 +370,7 @@ export default function AssessmentScreen() {
           )}
         </View>
       </View>
-      <HomeButton />
+      <QuickLinksBar />
     </SafeAreaView>
   );
 }

@@ -22,7 +22,7 @@ import {
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
-import HomeButton from '@/components/HomeButton';
+import QuickLinksBar from '@/components/QuickLinksBar';
 import {
   Colors,
   Spacing,
@@ -386,7 +386,7 @@ export default function SupportGroupsScreen() {
           </Animated.View>
         )}
       </View>
-      <HomeButton />
+      <QuickLinksBar />
     </SafeAreaView>
   );
 }

@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
   },
   centeredContent: {
     padding: Spacing.lg,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
     alignItems: 'center',
     justifyContent: 'center',
     flexGrow: 1,

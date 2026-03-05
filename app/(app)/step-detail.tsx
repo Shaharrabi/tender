@@ -7,7 +7,7 @@
  * Route: /(app)/step-detail?step=5
  */
 
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -16,11 +16,13 @@ import {
   StyleSheet,
   SafeAreaView,
   ActivityIndicator,
+  TextInput,
 } from 'react-native';
 import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '@/context/AuthContext';
+import { useGamification } from '@/context/GamificationContext';
 import {
   Colors,
   Spacing,
@@ -32,6 +34,8 @@ import {
 } from '@/constants/theme';
 import StepAudioPlayer from '@/components/growth/StepAudioPlayer';
 import StepMiniGame from '@/components/growth/StepMiniGame';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
+import QuickLinksBar from '@/components/QuickLinksBar';
 import CheckmarkIcon from '@/assets/graphics/icons/CheckmarkIcon';
 import {
   TWELVE_STEPS,
@@ -40,20 +44,33 @@ import {
   getTaglineForStep,
   getPracticesForStep,
 } from '@/utils/steps/twelve-steps';
+import { getExerciseById } from '@/utils/interventions/registry';
+import { getCourseById } from '@/utils/microcourses/course-registry';
 import { getMiniGameOutput } from '@/services/minigames';
 import {
   getPracticeCompletions,
   ensureStepProgress,
   toggleStepCriteria,
   completeStep,
+  saveReflection,
+  savePartnerRoundResponse,
+  getPartnerStepResponse,
+  savePartnerExchangeFollowUp,
 } from '@/services/steps';
+import { getMyCouple, isSelfCouple } from '@/services/couples';
+import { getPortrait } from '@/services/portrait';
 import { useSoundHaptics } from '@/services/SoundHapticsService';
+import { getStepTeaching } from '@/utils/steps/step-teachings';
+import { getStepBridge } from '@/utils/steps/step-bridges';
+import { getPartnerExchange, getExchangePhase } from '@/utils/steps/partner-exchanges';
+import type { IndividualPortrait } from '@/types/portrait';
 import type { MiniGameOutput, StepProgress } from '@/types/growth';
 
-export default function StepDetailScreen() {
+function StepDetailScreenInner() {
   const { user } = useAuth();
   const router = useRouter();
   const haptics = useSoundHaptics();
+  const { awardXP } = useGamification();
   const params = useLocalSearchParams<{ step: string }>();
   const stepNumber = parseInt(params.step ?? '1', 10);
 
@@ -65,11 +82,42 @@ export default function StepDetailScreen() {
   const [stepProgress, setStepProgress] = useState<StepProgress[]>([]);
   const [currentStepNumber, setCurrentStepNumber] = useState(1);
 
+  // Sprint B — Couple state
+  const [isCoupled, setIsCoupled] = useState(false);
+  const [partnerUserId, setPartnerUserId] = useState<string | null>(null);
+  const [coupleId, setCoupleId] = useState<string | null>(null);
+
+  // Sprint B — Reflection state
+  const [reflectionTexts, setReflectionTexts] = useState<Record<number, string>>({});
+  const reflectionSavedRef = useRef<Set<number>>(new Set());
+
+  // Sprint B — Partner Round state
+  const [partnerResponse, setPartnerResponse] = useState('');
+  const [partnerRoundSaved, setPartnerRoundSaved] = useState(false);
+  const [partnerStepResponse, setPartnerStepResponse] = useState<string | null>(null);
+
+  // Sprint B2 — Portrait + Exchange state
+  const [portrait, setPortrait] = useState<IndividualPortrait | null>(null);
+  const [exchangeFollowUp, setExchangeFollowUp] = useState('');
+  const [exchangeFollowUpSaved, setExchangeFollowUpSaved] = useState(false);
+
   const step = TWELVE_STEPS.find((s) => s.stepNumber === stepNumber);
   const phase = getPhaseForStep(stepNumber);
   const tagline = getTaglineForStep(stepNumber);
   const audioSource = STEP_AUDIO_MAP[stepNumber];
   const nextStep = TWELVE_STEPS.find((s) => s.stepNumber === stepNumber + 1);
+
+  // Sprint B2 — Derived content
+  const teaching = getStepTeaching(stepNumber);
+  const bridge = getStepBridge(stepNumber, portrait);
+  const exchangeConfig = getPartnerExchange(stepNumber);
+  const exchangePhase = exchangeConfig
+    ? getExchangePhase(
+        partnerRoundSaved ? partnerResponse : null,
+        partnerStepResponse,
+        exchangeFollowUpSaved ? exchangeFollowUp : null
+      )
+    : null;
 
   // Determine if this step's checklist is interactive
   const thisStepProgress = stepProgress.find((sp) => sp.stepNumber === stepNumber);
@@ -80,23 +128,57 @@ export default function StepDetailScreen() {
   const loadData = useCallback(async () => {
     if (!user) return;
     try {
-      const [mgOutput, completions, spData] = await Promise.all([
+      const [mgOutput, completions, spData, couple, userPortrait] = await Promise.all([
         getMiniGameOutput(user.id, stepNumber),
         getPracticeCompletions(user.id, stepNumber, 100),
         ensureStepProgress(user.id),
+        getMyCouple(user.id),
+        getPortrait(user.id).catch(() => null),
       ]);
       setMiniGameOutput(mgOutput);
       setPracticeCount(completions.length);
       setStepProgress(spData);
+      setPortrait(userPortrait);
 
       // Find current active step
       const activeStep = spData.find((sp) => sp.status === 'active');
       setCurrentStepNumber(activeStep?.stepNumber ?? 1);
 
-      // Extract checked criteria for THIS step from reflectionNotes
+      // Extract checked criteria + reflections from reflectionNotes
       const thisStep = spData.find((sp) => sp.stepNumber === stepNumber);
       const notes = thisStep?.reflectionNotes as Record<string, any> | undefined;
       setCheckedCriteria(notes?.completedCriteria ?? []);
+      setReflectionTexts(notes?.reflections ?? {});
+      setPartnerResponse(notes?.partnerRoundResponse ?? '');
+      setPartnerRoundSaved(!!notes?.partnerRoundResponse);
+      setExchangeFollowUp(notes?.partnerExchangeFollowUp ?? '');
+      setExchangeFollowUpSaved(!!notes?.partnerExchangeFollowUp);
+      if (notes?.reflections) {
+        reflectionSavedRef.current = new Set(
+          Object.keys(notes.reflections)
+            .filter((k) => notes.reflections[k]?.trim())
+            .map(Number)
+        );
+      }
+
+      // Couple detection
+      const coupled = couple && !isSelfCouple(couple);
+      setIsCoupled(!!coupled);
+      if (coupled && couple) {
+        const pid = couple.partner_a_id === user.id
+          ? couple.partner_b_id
+          : couple.partner_a_id;
+        setPartnerUserId(pid);
+        setCoupleId(couple.id);
+        // Load partner's response for this step
+        try {
+          const pResponse = await getPartnerStepResponse(couple.id, pid, stepNumber);
+          setPartnerStepResponse(pResponse);
+        } catch {
+          // RLS may block — partner response just won't show
+          setPartnerStepResponse(null);
+        }
+      }
     } catch (err) {
       console.warn('[StepDetail] Load error:', err);
     } finally {
@@ -167,6 +249,62 @@ export default function StepDetailScreen() {
       });
     }
   };
+
+  // Sprint B — Reflection auto-save on blur
+  const handleReflectionBlur = useCallback(
+    async (promptIndex: number, text: string) => {
+      if (!user || !text.trim()) return;
+      try {
+        await saveReflection(user.id, stepNumber, promptIndex, text.trim());
+        // Award XP only on first save of each prompt
+        if (!reflectionSavedRef.current.has(promptIndex)) {
+          reflectionSavedRef.current.add(promptIndex);
+          awardXP('reflection', `step-${stepNumber}-reflection-${promptIndex}`, 'Step reflection');
+        }
+      } catch (err) {
+        console.warn('[StepDetail] Failed to save reflection:', err);
+      }
+    },
+    [user, stepNumber, awardXP]
+  );
+
+  // Sprint B — Partner Round save
+  const handleSavePartnerResponse = useCallback(async () => {
+    if (!user || !partnerResponse.trim()) return;
+    try {
+      await savePartnerRoundResponse(user.id, stepNumber, partnerResponse.trim());
+      setPartnerRoundSaved(true);
+      awardXP('partner_exercise', `step-${stepNumber}-partner-round`, 'Partner round response');
+      haptics.success();
+    } catch (err) {
+      console.warn('[StepDetail] Failed to save partner response:', err);
+    }
+  }, [user, stepNumber, partnerResponse, awardXP, haptics]);
+
+  // Sprint B2 — Partner Exchange follow-up save
+  const handleSaveFollowUp = useCallback(async () => {
+    if (!user || !exchangeFollowUp.trim()) return;
+    try {
+      await savePartnerExchangeFollowUp(user.id, stepNumber, exchangeFollowUp.trim());
+      setExchangeFollowUpSaved(true);
+      awardXP('reflection', `step-${stepNumber}-exchange-followup`, 'Partner exchange reflection');
+      haptics.success();
+    } catch (err) {
+      console.warn('[StepDetail] Failed to save exchange follow-up:', err);
+    }
+  }, [user, stepNumber, exchangeFollowUp, awardXP, haptics]);
+
+  // Sprint B — Course navigation
+  const handleCoursePress = useCallback(
+    (courseId: string) => {
+      haptics.tap();
+      router.push({
+        pathname: '/(app)/microcourse' as any,
+        params: { courseId },
+      });
+    },
+    [haptics, router]
+  );
 
   const handleBackToJourney = () => {
     haptics.tap();
@@ -253,6 +391,40 @@ export default function StepDetailScreen() {
           </Animated.View>
         )}
 
+        {/* Step Teaching — Original therapeutic content */}
+        {teaching && (
+          <Animated.View entering={FadeIn.delay(450).duration(600)} style={styles.teachingSection}>
+            {teaching.teaching.map((paragraph, i) => (
+              <Text key={i} style={styles.teachingParagraph}>{paragraph}</Text>
+            ))}
+            {teaching.whyAfterPrevious && (
+              <View style={[styles.teachingConnectionCard, { borderLeftColor: phase.color }]}>
+                <Text style={styles.teachingConnectionLabel}>WHY THIS STEP COMES NOW</Text>
+                <Text style={styles.teachingConnectionText}>{teaching.whyAfterPrevious}</Text>
+              </View>
+            )}
+            {teaching.courseConnection && (
+              <View style={[styles.teachingConnectionCard, { borderLeftColor: Colors.secondary }]}>
+                <Text style={styles.teachingConnectionLabel}>HOW THE COURSE DEEPENS THIS</Text>
+                <Text style={styles.teachingConnectionText}>{teaching.courseConnection}</Text>
+              </View>
+            )}
+          </Animated.View>
+        )}
+
+        {/* Portrait Bridge — Personalized "What This Means For You" */}
+        {bridge && (
+          <Animated.View entering={FadeIn.delay(470).duration(600)}>
+            <View style={[styles.bridgeCard, { borderLeftColor: phase.color }]}>
+              <Text style={styles.bridgeLabel}>WHAT THIS MEANS FOR YOU</Text>
+              <Text style={styles.bridgeText}>{bridge.text}</Text>
+              {bridge.insightLabel && (
+                <Text style={styles.bridgeInsight}>{bridge.insightLabel}</Text>
+              )}
+            </View>
+          </Animated.View>
+        )}
+
         {/* Tagline */}
         <Animated.View entering={FadeIn.delay(500).duration(500)} style={styles.taglineCard}>
           <Text style={styles.taglineText}>{tagline}</Text>
@@ -322,6 +494,39 @@ export default function StepDetailScreen() {
           </Text>
         </Animated.View>
 
+        {/* Course Gateway — moved up from below */}
+        {step.courseGatewayIds && step.courseGatewayIds.length > 0 && stepNumber !== 12 && (
+          <Animated.View entering={FadeIn.delay(750).duration(500)} style={styles.courseGatewaySection}>
+            <Text style={styles.sectionTitle}>Deepen Your Understanding</Text>
+            {step.courseGatewayIds.map((courseId) => {
+              const course = getCourseById(courseId);
+              if (!course) return null;
+              return (
+                <TouchableOpacity
+                  key={courseId}
+                  style={styles.courseGatewayCard}
+                  onPress={() => handleCoursePress(courseId)}
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                >
+                  <View style={[styles.courseAccent, { backgroundColor: phase.color }]} />
+                  <View style={styles.courseCardContent}>
+                    <Text style={styles.courseGatewayLabel}>MICRO-COURSE</Text>
+                    <Text style={styles.courseGatewayTitle}>{course.title}</Text>
+                    <Text style={styles.courseGatewaySubtitle}>{course.subtitle}</Text>
+                    <Text style={styles.courseGatewayMeta}>
+                      {course.totalLessons} lessons · ~{course.estimatedMinutes} min
+                    </Text>
+                  </View>
+                  <Text style={[styles.practiceArrow, { color: phase.color }]}>
+                    {'\u203A'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </Animated.View>
+        )}
+
         {/* Completion Criteria — Interactive Checklist */}
         <Animated.View entering={FadeIn.delay(800).duration(500)} style={styles.goalsCard}>
           <Text style={styles.goalsTitle}>Step {step.stepNumber} Goals</Text>
@@ -380,13 +585,16 @@ export default function StepDetailScreen() {
           )}
         </Animated.View>
 
-        {/* Practices */}
+        {/* Practices — Enhanced with registry metadata */}
         <Animated.View entering={FadeIn.delay(900).duration(500)} style={styles.practicesSection}>
-          <Text style={styles.practicesTitle}>Practices</Text>
+          <Text style={styles.practicesTitle}>Solo Practices</Text>
           {step.practices.map((practiceId) => {
-            const label = practiceId
+            const exercise = getExerciseById(practiceId);
+            const label = exercise?.title ?? practiceId
               .replace(/-/g, ' ')
-              .replace(/\b\w/g, (c) => c.toUpperCase());
+              .replace(/\b\w/g, (c: string) => c.toUpperCase());
+            const duration = exercise?.duration;
+            const mode = exercise?.mode;
             return (
               <TouchableOpacity
                 key={practiceId}
@@ -397,9 +605,18 @@ export default function StepDetailScreen() {
               >
                 <View style={styles.practiceInfo}>
                   <Text style={styles.practiceLabel}>{label}</Text>
-                  <Text style={styles.practiceStep}>
-                    Step {step.stepNumber} Practice
-                  </Text>
+                  <View style={styles.practiceMetaRow}>
+                    {duration != null && (
+                      <Text style={styles.practiceDuration}>{duration} min</Text>
+                    )}
+                    {mode && (
+                      <View style={[styles.practiceModeBadge, { backgroundColor: phase.color + '18' }]}>
+                        <Text style={[styles.practiceModeBadgeText, { color: phase.color }]}>
+                          {mode === 'together' ? 'Couple' : mode === 'solo' ? 'Solo' : 'Either'}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
                 </View>
                 <Text style={[styles.practiceArrow, { color: phase.color }]}>
                   {'\u203A'}
@@ -408,6 +625,272 @@ export default function StepDetailScreen() {
             );
           })}
         </Animated.View>
+
+        {/* Reflection Prompts */}
+        {step.reflectionPrompts && step.reflectionPrompts.length > 0 && (
+          <Animated.View entering={FadeIn.delay(1000).duration(500)} style={styles.reflectionSection}>
+            <Text style={styles.sectionTitle}>Reflection</Text>
+            <Text style={styles.sectionHint}>
+              Take a moment to write what comes up. Your words are saved automatically.
+            </Text>
+            {step.reflectionPrompts.map((prompt, i) => (
+              <View key={i} style={styles.reflectionCard}>
+                <Text style={styles.reflectionPromptText}>{prompt}</Text>
+                <TextInput
+                  style={styles.reflectionInput}
+                  multiline
+                  placeholder="Write your reflection..."
+                  placeholderTextColor={Colors.textMuted}
+                  value={reflectionTexts[i] ?? ''}
+                  onChangeText={(text) =>
+                    setReflectionTexts((prev) => ({ ...prev, [i]: text }))
+                  }
+                  onBlur={() => handleReflectionBlur(i, reflectionTexts[i] ?? '')}
+                  textAlignVertical="top"
+                />
+              </View>
+            ))}
+          </Animated.View>
+        )}
+
+        {/* Partner Exchange — Enhanced couple dialogue (Steps 1-10) */}
+        {isCoupled && exchangeConfig && exchangePhase && (
+          <Animated.View entering={FadeIn.delay(1100).duration(500)} style={styles.partnerRoundSection}>
+            <Text style={styles.sectionTitle}>Partner Exchange</Text>
+            <Text style={styles.sectionHint}>
+              A genuine dialogue — you write, they write, then you see each other's answers.
+            </Text>
+            <View style={styles.partnerRoundCard}>
+              {/* Phase: PROMPT — haven't written yet */}
+              {exchangePhase === 'prompt' && (
+                <>
+                  <Text style={styles.partnerRoundPromptText}>
+                    {exchangeConfig.prompt}
+                  </Text>
+                  <TextInput
+                    style={styles.partnerResponseInput}
+                    multiline
+                    placeholder={exchangeConfig.reflectionHint}
+                    placeholderTextColor={Colors.textMuted}
+                    value={partnerResponse}
+                    onChangeText={setPartnerResponse}
+                    textAlignVertical="top"
+                  />
+                  <TouchableOpacity
+                    style={[
+                      styles.partnerSaveButton,
+                      { backgroundColor: phase.color },
+                      !partnerResponse.trim() && styles.partnerSaveButtonDisabled,
+                    ]}
+                    onPress={handleSavePartnerResponse}
+                    disabled={!partnerResponse.trim()}
+                    activeOpacity={0.7}
+                    accessibilityRole="button"
+                  >
+                    <Text style={styles.partnerSaveButtonText}>Share</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+
+              {/* Phase: WAITING — wrote mine, partner hasn't */}
+              {exchangePhase === 'waiting' && (
+                <>
+                  <View style={styles.partnerResponseSaved}>
+                    <Text style={styles.partnerResponseSavedLabel}>YOUR RESPONSE</Text>
+                    <Text style={styles.partnerResponseSavedText}>{partnerResponse}</Text>
+                  </View>
+                  <Text style={styles.partnerWaitingText}>
+                    Your partner hasn't shared yet — you'll see their response once they do.
+                  </Text>
+                </>
+              )}
+
+              {/* Phase: REVEAL — both submitted, follow-up not answered */}
+              {exchangePhase === 'reveal' && (
+                <>
+                  <View style={styles.exchangeRevealRow}>
+                    <View style={styles.exchangeRevealCard}>
+                      <Text style={styles.partnerResponseSavedLabel}>YOU SHARED</Text>
+                      <Text style={styles.partnerResponseSavedText}>{partnerResponse}</Text>
+                    </View>
+                    <View style={[styles.exchangeRevealCard, { borderColor: phase.color + '40' }]}>
+                      <Text style={[styles.partnerRevealedLabel]}>YOUR PARTNER SHARED</Text>
+                      <Text style={styles.partnerRevealedText}>{partnerStepResponse}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.exchangeFollowUpSection}>
+                    <Text style={styles.exchangeFollowUpPrompt}>{exchangeConfig.followUp}</Text>
+                    <TextInput
+                      style={styles.partnerResponseInput}
+                      multiline
+                      placeholder={exchangeConfig.reflectionHint}
+                      placeholderTextColor={Colors.textMuted}
+                      value={exchangeFollowUp}
+                      onChangeText={setExchangeFollowUp}
+                      textAlignVertical="top"
+                    />
+                    <TouchableOpacity
+                      style={[
+                        styles.partnerSaveButton,
+                        { backgroundColor: phase.color },
+                        !exchangeFollowUp.trim() && styles.partnerSaveButtonDisabled,
+                      ]}
+                      onPress={handleSaveFollowUp}
+                      disabled={!exchangeFollowUp.trim()}
+                      activeOpacity={0.7}
+                      accessibilityRole="button"
+                    >
+                      <Text style={styles.partnerSaveButtonText}>Save Reflection</Text>
+                    </TouchableOpacity>
+                  </View>
+                </>
+              )}
+
+              {/* Phase: COMPLETE — full exchange summary */}
+              {exchangePhase === 'complete' && (
+                <>
+                  <View style={styles.exchangeRevealRow}>
+                    <View style={styles.exchangeRevealCard}>
+                      <Text style={styles.partnerResponseSavedLabel}>YOU SHARED</Text>
+                      <Text style={styles.partnerResponseSavedText}>{partnerResponse}</Text>
+                    </View>
+                    <View style={[styles.exchangeRevealCard, { borderColor: phase.color + '40' }]}>
+                      <Text style={styles.partnerRevealedLabel}>YOUR PARTNER SHARED</Text>
+                      <Text style={styles.partnerRevealedText}>{partnerStepResponse}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.exchangeFollowUpComplete}>
+                    <Text style={styles.exchangeFollowUpLabel}>YOUR REFLECTION</Text>
+                    <Text style={styles.partnerResponseSavedText}>{exchangeFollowUp}</Text>
+                  </View>
+                </>
+              )}
+            </View>
+          </Animated.View>
+        )}
+
+        {/* Partner Round — fallback for steps 11-12 (couple-only) */}
+        {isCoupled && !exchangeConfig && step.partnerRoundPrompt && (
+          <Animated.View entering={FadeIn.delay(1100).duration(500)} style={styles.partnerRoundSection}>
+            <Text style={styles.sectionTitle}>Partner Round</Text>
+            <Text style={styles.sectionHint}>
+              An async exchange — you write first, then see your partner's response.
+            </Text>
+            <View style={styles.partnerRoundCard}>
+              <Text style={styles.partnerRoundPromptText}>
+                {step.partnerRoundPrompt}
+              </Text>
+              {partnerRoundSaved ? (
+                <View style={styles.partnerResponseSaved}>
+                  <Text style={styles.partnerResponseSavedLabel}>YOUR RESPONSE</Text>
+                  <Text style={styles.partnerResponseSavedText}>{partnerResponse}</Text>
+                </View>
+              ) : (
+                <>
+                  <TextInput
+                    style={styles.partnerResponseInput}
+                    multiline
+                    placeholder="Share your response..."
+                    placeholderTextColor={Colors.textMuted}
+                    value={partnerResponse}
+                    onChangeText={setPartnerResponse}
+                    textAlignVertical="top"
+                  />
+                  <TouchableOpacity
+                    style={[
+                      styles.partnerSaveButton,
+                      { backgroundColor: phase.color },
+                      !partnerResponse.trim() && styles.partnerSaveButtonDisabled,
+                    ]}
+                    onPress={handleSavePartnerResponse}
+                    disabled={!partnerResponse.trim()}
+                    activeOpacity={0.7}
+                    accessibilityRole="button"
+                  >
+                    <Text style={styles.partnerSaveButtonText}>Save Response</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+              {partnerRoundSaved && partnerStepResponse && (
+                <View style={[styles.partnerResponseRevealed, { borderColor: phase.color + '40' }]}>
+                  <Text style={styles.partnerRevealedLabel}>YOUR PARTNER SHARED</Text>
+                  <Text style={styles.partnerRevealedText}>{partnerStepResponse}</Text>
+                </View>
+              )}
+              {partnerRoundSaved && !partnerStepResponse && (
+                <Text style={styles.partnerWaitingText}>
+                  Your partner hasn't shared yet — you'll see their response once they do.
+                </Text>
+              )}
+            </View>
+          </Animated.View>
+        )}
+
+        {/* Together Practices — couple-only */}
+        {isCoupled && step.togetherPractices && step.togetherPractices.length > 0 && (
+          <Animated.View entering={FadeIn.delay(1200).duration(500)} style={styles.practicesSection}>
+            <Text style={styles.sectionTitle}>Together Practices</Text>
+            <Text style={styles.sectionHint}>
+              Practices designed to do with your partner.
+            </Text>
+            {step.togetherPractices.map((practiceId) => {
+              const exercise = getExerciseById(practiceId);
+              const label = exercise?.title ?? practiceId
+                .replace(/-/g, ' ')
+                .replace(/\b\w/g, (c: string) => c.toUpperCase());
+              const duration = exercise?.duration;
+              return (
+                <TouchableOpacity
+                  key={practiceId}
+                  style={styles.practiceCard}
+                  onPress={() => handlePracticePress(practiceId)}
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                >
+                  <View style={styles.practiceInfo}>
+                    <Text style={styles.practiceLabel}>{label}</Text>
+                    <View style={styles.practiceMetaRow}>
+                      {duration != null && (
+                        <Text style={styles.practiceDuration}>{duration} min</Text>
+                      )}
+                      <View style={[styles.practiceModeBadge, { backgroundColor: Colors.secondary + '18' }]}>
+                        <Text style={[styles.practiceModeBadgeText, { color: Colors.secondary }]}>
+                          Together
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                  <Text style={[styles.practiceArrow, { color: phase.color }]}>
+                    {'\u203A'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </Animated.View>
+        )}
+
+        {/* Step 12 — All courses available */}
+        {stepNumber === 12 && (
+          <Animated.View entering={FadeIn.delay(1300).duration(500)} style={styles.courseGatewaySection}>
+            <Text style={styles.sectionTitle}>All Courses Available</Text>
+            <Text style={styles.sectionHint}>
+              Every micro-course is now open to you. Revisit, deepen, explore.
+            </Text>
+            <TouchableOpacity
+              style={[styles.allCoursesButton, { borderColor: phase.color }]}
+              onPress={() => {
+                haptics.tap();
+                router.push('/(app)/courses' as any);
+              }}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+            >
+              <Text style={[styles.allCoursesButtonText, { color: phase.color }]}>
+                Browse All 14 Courses
+              </Text>
+            </TouchableOpacity>
+          </Animated.View>
+        )}
 
         {/* Coming Next — tappable only when the next step is unlocked */}
         {nextStep && (
@@ -465,7 +948,18 @@ export default function StepDetailScreen() {
           </Text>
         </TouchableOpacity>
       </ScrollView>
+
+      <QuickLinksBar />
     </SafeAreaView>
+  );
+}
+
+/** Wrapped export with ErrorBoundary */
+export default function StepDetailScreen() {
+  return (
+    <ErrorBoundary fallbackMessage="Something went wrong loading this step.">
+      <StepDetailScreenInner />
+    </ErrorBoundary>
   );
 }
 
@@ -512,7 +1006,7 @@ const styles = StyleSheet.create({
   // Scroll content
   scrollContent: {
     padding: Spacing.xl,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
     gap: Spacing.lg,
   },
 
@@ -725,6 +1219,19 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
 
+  // Shared section styles
+  sectionTitle: {
+    ...Typography.headingS,
+    color: Colors.text,
+    marginBottom: 2,
+  },
+  sectionHint: {
+    ...Typography.caption,
+    color: Colors.textMuted,
+    fontStyle: 'italic',
+    marginBottom: Spacing.sm,
+  },
+
   // Practices
   practicesSection: {
     gap: Spacing.sm,
@@ -749,6 +1256,27 @@ const styles = StyleSheet.create({
   practiceLabel: {
     ...Typography.bodyMedium,
     color: Colors.text,
+  },
+  practiceMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginTop: 2,
+  },
+  practiceDuration: {
+    ...Typography.caption,
+    color: Colors.textMuted,
+  },
+  practiceModeBadge: {
+    borderRadius: BorderRadius.pill,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 1,
+  },
+  practiceModeBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase' as const,
   },
   practiceStep: {
     ...Typography.caption,
@@ -811,5 +1339,265 @@ const styles = StyleSheet.create({
   // Closing
   closingSection: {
     marginTop: Spacing.md,
+  },
+
+  // Reflection section
+  reflectionSection: {
+    gap: Spacing.sm,
+  },
+  reflectionCard: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
+    gap: Spacing.sm,
+    ...Shadows.subtle,
+  },
+  reflectionPromptText: {
+    ...Typography.bodySmall,
+    color: Colors.text,
+    fontStyle: 'italic',
+    lineHeight: 22,
+  },
+  reflectionInput: {
+    ...Typography.body,
+    color: Colors.text,
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    minHeight: 80,
+    textAlignVertical: 'top' as const,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+  },
+
+  // Partner Round section
+  partnerRoundSection: {
+    gap: Spacing.sm,
+  },
+  partnerRoundCard: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    gap: Spacing.md,
+    ...Shadows.subtle,
+  },
+  partnerRoundPromptText: {
+    ...Typography.bodyMedium,
+    color: Colors.text,
+    fontStyle: 'italic',
+    lineHeight: 24,
+  },
+  partnerResponseInput: {
+    ...Typography.body,
+    color: Colors.text,
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    minHeight: 100,
+    textAlignVertical: 'top' as const,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+  },
+  partnerSaveButton: {
+    borderRadius: BorderRadius.lg,
+    paddingVertical: Spacing.sm + 2,
+    alignItems: 'center',
+  },
+  partnerSaveButtonDisabled: {
+    opacity: 0.4,
+  },
+  partnerSaveButtonText: {
+    ...Typography.button,
+    color: Colors.white,
+  },
+  partnerResponseSaved: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    gap: 4,
+  },
+  partnerResponseSavedLabel: {
+    ...Typography.label,
+    color: Colors.textMuted,
+    letterSpacing: 1,
+    fontSize: 10,
+  },
+  partnerResponseSavedText: {
+    ...Typography.bodySmall,
+    color: Colors.text,
+    lineHeight: 22,
+  },
+  partnerResponseRevealed: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    gap: 4,
+    borderWidth: 1,
+    marginTop: Spacing.xs,
+  },
+  partnerRevealedLabel: {
+    ...Typography.label,
+    color: Colors.secondary,
+    letterSpacing: 1,
+    fontSize: 10,
+  },
+  partnerRevealedText: {
+    ...Typography.bodySmall,
+    color: Colors.text,
+    lineHeight: 22,
+    fontStyle: 'italic',
+  },
+  partnerWaitingText: {
+    ...Typography.caption,
+    color: Colors.textMuted,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    marginTop: Spacing.xs,
+  },
+
+  // Teaching section
+  teachingSection: {
+    gap: Spacing.md,
+  },
+  teachingParagraph: {
+    ...Typography.body,
+    color: Colors.text,
+    lineHeight: 28,
+  },
+  teachingConnectionCard: {
+    borderLeftWidth: 3,
+    paddingLeft: Spacing.md,
+    paddingVertical: Spacing.sm,
+    marginTop: Spacing.xs,
+  },
+  teachingConnectionLabel: {
+    ...Typography.label,
+    color: Colors.textMuted,
+    letterSpacing: 1.5,
+    fontSize: 9,
+    marginBottom: 4,
+  },
+  teachingConnectionText: {
+    ...Typography.bodySmall,
+    color: Colors.textSecondary,
+    lineHeight: 22,
+    fontStyle: 'italic',
+  },
+
+  // Portrait Bridge
+  bridgeCard: {
+    borderLeftWidth: 4,
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    gap: Spacing.sm,
+    ...Shadows.subtle,
+  },
+  bridgeLabel: {
+    ...Typography.label,
+    color: Colors.textMuted,
+    letterSpacing: 2,
+    fontSize: 9,
+  },
+  bridgeText: {
+    ...Typography.body,
+    color: Colors.text,
+    lineHeight: 26,
+  },
+  bridgeInsight: {
+    ...Typography.caption,
+    color: Colors.secondary,
+    fontStyle: 'italic',
+    marginTop: Spacing.xs,
+  },
+
+  // Exchange enhanced styles
+  exchangeRevealRow: {
+    gap: Spacing.sm,
+  },
+  exchangeRevealCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    gap: 4,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+  },
+  exchangeFollowUpSection: {
+    gap: Spacing.sm,
+    marginTop: Spacing.sm,
+    paddingTop: Spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderLight,
+  },
+  exchangeFollowUpPrompt: {
+    ...Typography.bodyMedium,
+    color: Colors.text,
+    fontStyle: 'italic',
+    lineHeight: 24,
+  },
+  exchangeFollowUpComplete: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    gap: 4,
+  },
+  exchangeFollowUpLabel: {
+    ...Typography.label,
+    color: Colors.textMuted,
+    letterSpacing: 1,
+    fontSize: 10,
+  },
+
+  // Course Gateway section
+  courseGatewaySection: {
+    gap: Spacing.sm,
+  },
+  courseGatewayCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
+    overflow: 'hidden',
+    ...Shadows.card,
+  },
+  courseAccent: {
+    width: 4,
+    alignSelf: 'stretch',
+  },
+  courseCardContent: {
+    flex: 1,
+    padding: Spacing.md,
+    gap: 2,
+  },
+  courseGatewayLabel: {
+    ...Typography.label,
+    color: Colors.textMuted,
+    letterSpacing: 1.5,
+    fontSize: 9,
+  },
+  courseGatewayTitle: {
+    ...Typography.bodyMedium,
+    color: Colors.text,
+  },
+  courseGatewaySubtitle: {
+    ...Typography.caption,
+    color: Colors.textSecondary,
+    lineHeight: 18,
+  },
+  courseGatewayMeta: {
+    ...Typography.caption,
+    color: Colors.textMuted,
+    marginTop: 2,
+  },
+  allCoursesButton: {
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1.5,
+    paddingVertical: Spacing.md,
+    alignItems: 'center',
+  },
+  allCoursesButtonText: {
+    ...Typography.button,
+    letterSpacing: 0.5,
   },
 });

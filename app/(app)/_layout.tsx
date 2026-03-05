@@ -106,6 +106,7 @@ export default function AppLayout() {
         <Stack.Screen name="building-bridges" options={{ animation: 'fade_from_bottom' }} />
         <Stack.Screen name="support-groups" options={{ animation: 'slide_from_bottom' }} />
         <Stack.Screen name="notification-feed" options={{ animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="more" options={{ animation: 'slide_from_right' }} />
       </Stack>
 
       {/* Guest restriction modal */}

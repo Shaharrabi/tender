@@ -8,7 +8,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import HomeButton from '@/components/HomeButton';
+import QuickLinksBar from '@/components/QuickLinksBar';
 import {
   View,
   Text,
@@ -336,7 +336,7 @@ export default function NotificationSettingsScreen() {
           </Text>
         </View>
       </ScrollView>
-      <HomeButton />
+      <QuickLinksBar />
     </SafeAreaView>
   );
 }
@@ -413,7 +413,7 @@ const styles = StyleSheet.create({
   // Content
   scrollContent: {
     padding: Spacing.lg,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
     gap: Spacing.sm,
   },
 

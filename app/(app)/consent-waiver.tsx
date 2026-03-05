@@ -10,7 +10,7 @@
  */
 
 import React, { useState, useMemo } from 'react';
-import HomeButton from '@/components/HomeButton';
+import QuickLinksBar from '@/components/QuickLinksBar';
 import {
   View,
   Text,
@@ -345,7 +345,7 @@ export default function ConsentWaiverScreen() {
             </TouchableOpacity>
           </View>
         </ScrollView>
-        <HomeButton />
+        <QuickLinksBar />
       </SafeAreaView>
     );
   }
@@ -494,7 +494,7 @@ export default function ConsentWaiverScreen() {
         {/* Bottom spacing */}
         <View style={{ height: Spacing.xxxl }} />
       </ScrollView>
-      <HomeButton />
+      <QuickLinksBar />
     </SafeAreaView>
   );
 }
@@ -508,7 +508,7 @@ const s = StyleSheet.create({
   },
   scrollContent: {
     padding: Spacing.xl,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
   },
 
   // ── Header ──────────────────────────

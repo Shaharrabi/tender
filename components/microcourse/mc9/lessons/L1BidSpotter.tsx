@@ -810,7 +810,7 @@ const styles = StyleSheet.create({
   revealScrollContent: {
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.xl,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
   },
   revealHeader: {
     flexDirection: 'row',

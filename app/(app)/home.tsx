@@ -5,16 +5,16 @@
  * Answers: "What should I do RIGHT NOW?" — not a menu, a recommendation.
  *
  * Layout (top to bottom):
- * 1. Greeting + Journey Context — name, step, progress dots
- * 2. Today's Focus — ONE clear action (practice or Nuance)
- * 3. Daily Check-In — collapsed habit tracker
- * 4. Your Journey — progress bar + next assessment integrated
- * 5. Streak — small, celebratory, not guilt-inducing
- * 6. Inspiration — rotating quote or nudge carousel
- * 7. Explore — feature grid (Portrait, Nuance, Growth, etc.)
- * 8. Results — completed assessment scores
- * 9. Individual Assessments — collapsible list
- * 10. Logout
+ * 1. Greeting + Journey Context — name, step, progress dots, gear icon
+ * 2. Daily Rhythm — check-in, today's practice, journal prompt
+ * 3. Portrait summary (when generated)
+ * 4. WEARE summary (when available)
+ * 5. Micro-course card (when active)
+ * 6. Streak — small, celebratory, not guilt-inducing
+ * 7. Inspiration — rotating quote or nudge carousel
+ * 8. Gateway Cards — Journey, Portrait, Relationship, More
+ * 9. Quick Links — Nuance, Courses, Practices, Journal
+ * 10. Individual Assessments — collapsible list
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -27,7 +27,6 @@ import {
   ScrollView,
   ActivityIndicator,
   Animated,
-  Platform,
   Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -40,10 +39,6 @@ import {
   getUnlockState,
   getNextAssessment,
   getProgressMessage,
-  FEATURE_CARDS,
-  ASSESSMENT_DISPLAY_NAMES,
-  FEATURE_KEY_TO_ASSESSMENT_TYPE,
-  type FeatureCard,
   type UnlockState,
 } from '@/utils/unlockLogic';
 import {
@@ -72,6 +67,7 @@ import StreakBanner from '@/components/StreakBanner';
 import { useFirstTime } from '@/context/FirstTimeContext';
 import AdminPanel from '@/components/admin/AdminPanel';
 import TenderButton from '@/components/ui/TenderButton';
+import QuickLinksBar from '@/components/QuickLinksBar';
 import LockedPortraitPreview from '@/components/portrait/LockedPortraitPreview';
 import { HighlightWrapper } from '@/components/ui/HighlightWrapper';
 import { TooltipManager } from '@/components/ftue/TooltipManager';
@@ -82,7 +78,7 @@ import { HOME_TOUR } from '@/constants/ftue/tourSteps';
 import { RefRegistry } from '@/utils/ftue/refRegistry';
 import JourneyUnlockOverlay, { hasSeenJourneyUnlock } from '@/components/growth/JourneyUnlockOverlay';
 import { getCurrentStepNumber } from '@/services/steps';
-import { getTaglineForStep, getPracticesForStep, getStep } from '@/utils/steps/twelve-steps';
+import { getTaglineForStep, getPracticesForStep, getStep, getJournalPromptForStep } from '@/utils/steps/twelve-steps';
 import { MICRO_COURSES, calculateCourseProgress, type CourseProgress } from '@/utils/microcourses/course-registry';
 import { getCompletions as getMicroCourseCompletions } from '@/services/intervention';
 import MicroCourseCard from '@/components/microcourse/MicroCourseCard';
@@ -106,27 +102,21 @@ import {
   BookOpenIcon,
   LockIcon,
   HeartDoubleIcon,
-  FireIcon,
   ChatBubbleIcon,
   TargetIcon,
-  ClipboardIcon,
-  HandshakeIcon,
   CoupleIcon,
-  BrainIcon,
-  MasksIcon,
-  ScaleIcon,
-  CompassIcon,
   ShieldIcon,
+  SettingsIcon,
+  PenIcon,
+  MenuIcon,
 } from '@/assets/graphics/icons';
-import type { ComponentType } from 'react';
-import type { IconProps } from '@/assets/graphics/icons';
 import type { AssessmentConfig, AllAssessmentScores, AssessmentType } from '@/types';
 import type { IndividualPortrait } from '@/types/portrait';
 import type { WEAREProfile } from '@/types/weare';
 import type { DailyCheckIn } from '@/types/growth';
 import type { Couple } from '@/types/couples';
 import { getLatestWEAREProfile } from '@/services/weare';
-import { getRelationshipModeLabel, DEMO_PARTNERS, type DemoPartnerId } from '@/constants/demoPartners';
+import { DEMO_PARTNERS, type DemoPartnerId } from '@/constants/demoPartners';
 
 // ─── Types ──────────────────────────────────────────────
 
@@ -154,11 +144,6 @@ function TimeGreetingIcon({ iconName, size = 22 }: { iconName: 'sun' | 'sunAfter
   }
 }
 
-/** Renders a FeatureCard icon — now directly a ComponentType<IconProps> from FEATURE_CARDS */
-function FeatureIcon({ Icon, size = 22, color = Colors.text }: { Icon: ComponentType<IconProps>; size?: number; color?: string }) {
-  return <Icon size={size} color={color} />;
-}
-
 const DAILY_GREETINGS = [
   "How are you and your partner doing today?",
   "Every small step strengthens your bond.",
@@ -179,8 +164,8 @@ const DAILY_GREETINGS = [
 // ─── Component ──────────────────────────────────────────
 
 export default function HomeScreen() {
-  const { user, signOut } = useAuth();
-  const { isGuest, clearGuestData } = useGuest();
+  const { user } = useAuth();
+  const { isGuest } = useGuest();
   const { awardXP: awardGamificationXP } = useGamification();
   const { state: ftueState, loading: ftueLoading, markTourCompleted, markFirstLaunchComplete, markAllTooltipsSeen } = useFirstTime();
   const router = useRouter();
@@ -192,7 +177,6 @@ export default function HomeScreen() {
   const [statuses, setStatuses] = useState<Record<string, CardStatus>>({});
   const [completedTypes, setCompletedTypes] = useState<AssessmentType[]>([]);
   const [assessmentScores, setAssessmentScores] = useState<Record<string, any>>({});
-  const [assessmentsExpanded, setAssessmentsExpanded] = useState(false);
 
   // Tender Assessment unified flow state
   const [tenderStatus, setTenderStatus] = useState<{
@@ -243,7 +227,6 @@ export default function HomeScreen() {
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [relationshipMode, setRelationshipMode] = useState<string>('solo');
   const [demoPartnerId, setDemoPartnerId] = useState<string | null>(null);
-  const [onboardedAsPartner, setOnboardedAsPartner] = useState(false);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
 
   // Admin mode
@@ -257,7 +240,6 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
 
   // Locked card hint
-  const [lockedHintKey, setLockedHintKey] = useState<string | null>(null);
 
   // Progress bar animation
   const progressAnim = useRef(new Animated.Value(0)).current;
@@ -294,10 +276,6 @@ export default function HomeScreen() {
         }
         if (profile?.demo_partner_id) {
           setDemoPartnerId(profile.demo_partner_id);
-        }
-        // Users who onboarded as "in-relationship" can never access Dating Well
-        if (profile?.relationship_status === 'in-relationship') {
-          setOnboardedAsPartner(true);
         }
         if (profile?.display_name) {
           setDisplayName(profile.display_name);
@@ -618,10 +596,6 @@ export default function HomeScreen() {
         individualConfigs.every(
           (c) => newStatuses[c.type]?.state === 'completed'
         );
-      if (individualDone) {
-        setAssessmentsExpanded(false);
-      }
-
       // 5. Load today's check-in
       try {
         const ci = await getTodaysCheckIn(user.id);
@@ -767,25 +741,7 @@ export default function HomeScreen() {
     markFirstLaunchComplete();
   }, [markTourCompleted, markFirstLaunchComplete]);
 
-  // Result cards — only show completed ones
-  const resultCards = FEATURE_CARDS.filter(
-    (card) =>
-      card.category === 'result' && unlockState?.[card.key] === true
-  );
-
-  // Feature cards for the grid — ordered so tooltip targets (courses, community)
-  // appear right after the fixed cards (journal, nuance) for natural top-to-bottom flow.
-  const gridCardOrder = ['healingJourney', 'courses', 'community', 'practices', 'findTherapist', 'couplesPortal', 'datingWell', 'buildingBridges'];
-  const gridCards = gridCardOrder
-    .map((key) => FEATURE_CARDS.find((c) => c.key === key && (c.category === 'feature' || c.category === 'couple')))
-    .filter((c): c is NonNullable<typeof c> => c != null)
-    .filter((c) => {
-      // Users who onboarded as partnered can NEVER see Dating Well, even if they
-      // later change relationship mode. Single users see it when mode is 'solo'.
-      if (c.key === 'datingWell' && (onboardedAsPartner || relationshipMode !== 'solo')) return false;
-      if (c.key === 'couplesPortal' && relationshipMode === 'solo') return false;
-      return true;
-    });
+  // Result cards + grid cards removed — results moved to portrait, grid replaced by gateway cards
 
   // Recommended exercise — prioritize exercises from current Step
   const allExercises = getAllExercises();
@@ -883,42 +839,6 @@ export default function HomeScreen() {
     }
   };
 
-  const handleLogout = async () => {
-    const configs = getAllAssessments();
-    for (const config of configs) {
-      // Clear both user-scoped and legacy un-scoped progress keys
-      await AsyncStorage.removeItem(config.progressKey).catch(() => {});
-      if (user) {
-        await AsyncStorage.removeItem(`${config.progressKey}_${user.id}`).catch(() => {});
-      }
-    }
-    // Clear tender assessment orchestrator progress (user-scoped + legacy key)
-    if (user) {
-      await AsyncStorage.removeItem(`tender_assessment_progress_${user.id}`).catch(() => {});
-    }
-    await AsyncStorage.removeItem('tender_assessment_progress').catch(() => {});
-    // Clear demo mode flag
-    await AsyncStorage.removeItem('demo_mode').catch(() => {});
-    // Clear guest mode data so it doesn't persist across sessions
-    await clearGuestData();
-    await signOut();
-    router.replace('/(auth)/login');
-  };
-
-  const handleLockedCardTap = (card: FeatureCard) => {
-    setLockedHintKey(card.key);
-    setTimeout(() => setLockedHintKey(null), 2500);
-  };
-
-  const handleFeatureCardPress = (card: FeatureCard) => {
-    const isUnlocked = unlockState?.[card.key] === true;
-    if (isUnlocked) {
-      router.push(card.route as any);
-    } else {
-      handleLockedCardTap(card);
-    }
-  };
-
   // ─── Admin Mode ────────────────────────────────────────
 
   const handleTaglineTripleTap = () => {
@@ -987,12 +907,23 @@ export default function HomeScreen() {
               const capitalName = displayName || capitalFallback;
               return (
                 <>
-                  <Text style={styles.heroTagline}>
-                    {greeting}, {capitalName}{' '}
-                    <View style={styles.inlineIconWrapper}>
-                      <TimeGreetingIcon iconName={icon} size={22} />
-                    </View>
-                  </Text>
+                  <View style={styles.heroTopRow}>
+                    <Text style={styles.heroTagline}>
+                      {greeting}, {capitalName}{' '}
+                      <View style={styles.inlineIconWrapper}>
+                        <TimeGreetingIcon iconName={icon} size={22} />
+                      </View>
+                    </Text>
+                    <TouchableOpacity
+                      style={styles.gearButton}
+                      onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/more' as any); }}
+                      activeOpacity={0.7}
+                      accessibilityRole="button"
+                      accessibilityLabel="Settings and more"
+                    >
+                      <SettingsIcon size={22} color={Colors.textSecondary} />
+                    </TouchableOpacity>
+                  </View>
                   {hasPortrait ? (
                     <Text style={styles.heroSubtitle}>
                       Step {currentStepNum}: {getStep(currentStepNum)?.title ?? ''}
@@ -1147,30 +1078,177 @@ export default function HomeScreen() {
             <Text style={styles.realPartnerPromptArrow}>{'\u2192'}</Text>
           </TouchableOpacity>
         )}
-        {/* Couple portal ready nudge */}
-        {couple && dyadicAllDone && consentGiven && (
+
+        {/* ═══ YOUR PORTRAIT SUMMARY (if portrait exists) ══════ */}
+        {hasPortrait && portrait && (() => {
+          const cs = portrait.compositeScores;
+          const scores = [cs.regulationScore, cs.windowWidth, cs.accessibility, cs.responsiveness, cs.engagement, cs.selfLeadership, cs.valuesCongruence];
+          const overallScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+
+          // Find top strength
+          const scoreLabels: Record<string, string> = {
+            regulationScore: 'Regulation',
+            windowWidth: 'Window of Tolerance',
+            accessibility: 'Accessibility',
+            responsiveness: 'Responsiveness',
+            engagement: 'Engagement',
+            selfLeadership: 'Self-Leadership',
+            valuesCongruence: 'Values Alignment',
+          };
+          const topKey = (Object.keys(scoreLabels) as Array<keyof typeof cs>)
+            .reduce((best, key) => ((cs[key] ?? 0) > (cs[best] ?? 0) ? key : best));
+          const topStrength = scoreLabels[topKey];
+
+          const cyclePosition = portrait.negativeCycle?.position
+            ? portrait.negativeCycle.position.charAt(0).toUpperCase() + portrait.negativeCycle.position.slice(1)
+            : null;
+          const growthEdge = portrait.growthEdges?.[0]?.title;
+          const coreValues = portrait.fourLens?.values?.coreValues?.slice(0, 3).join(', ');
+
+          return (
+            <TouchableOpacity
+              style={styles.portraitSummaryCard}
+              onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/portrait' as any); }}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="YOUR PORTRAIT"
+            >
+              <View style={styles.portraitSummaryHeader}>
+                <Text style={styles.portraitSummaryEyebrow}>YOUR PORTRAIT</Text>
+                <View style={styles.portraitScoreBadge}>
+                  <Text style={styles.portraitScoreBadgeText}>{overallScore}</Text>
+                </View>
+              </View>
+
+              <View style={styles.portraitStatsRow}>
+                {cyclePosition && (
+                  <View style={styles.portraitStatItem}>
+                    <Text style={styles.portraitStatLabel}>Cycle Position</Text>
+                    <Text style={styles.portraitStatValue}>{cyclePosition}</Text>
+                  </View>
+                )}
+                <View style={styles.portraitStatItem}>
+                  <Text style={styles.portraitStatLabel}>Top Strength</Text>
+                  <Text style={styles.portraitStatValue}>{topStrength}</Text>
+                </View>
+                {growthEdge && (
+                  <View style={styles.portraitStatItem}>
+                    <Text style={styles.portraitStatLabel}>Growth Edge</Text>
+                    <Text style={styles.portraitStatValue} numberOfLines={1}>{growthEdge}</Text>
+                  </View>
+                )}
+              </View>
+
+              {coreValues ? (
+                <Text style={styles.portraitValues}>
+                  Core Values: {coreValues}
+                </Text>
+              ) : null}
+
+              <View style={styles.portraitActionsRow}>
+                <Text style={styles.portraitCta}>
+                  See Full Portrait {'\u2192'}
+                </Text>
+              </View>
+
+              {/* Retake / View Results links */}
+              <View style={styles.portraitQuickLinks}>
+                <TouchableOpacity
+                  style={styles.portraitQuickLink}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    SoundHaptics.tapSoft();
+                    router.push('/(app)/tender-assessment' as any);
+                  }}
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel="Retake Assessment"
+                >
+                  <Text style={styles.portraitQuickLinkText}>Retake Assessment</Text>
+                </TouchableOpacity>
+                <View style={styles.portraitQuickLinkDivider} />
+                <TouchableOpacity
+                  style={styles.portraitQuickLink}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    SoundHaptics.tapSoft();
+                    router.push('/(app)/portrait' as any);
+                  }}
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel="View Results"
+                >
+                  <Text style={styles.portraitQuickLinkText}>View Results</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          );
+        })()}
+
+        {/* ═══ WEARE SUMMARY (The Space Between You) ═══════ */}
+        {weareProfile && couple && (
           <TouchableOpacity
-            style={styles.couplePortalReadyBanner}
-            onPress={() => router.push('/(app)/couple-portal' as any)}
-            activeOpacity={0.7}
+            style={styles.weareSummaryCard}
+            onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/couple-portal' as any); }}
+            activeOpacity={0.8}
             accessibilityRole="button"
           >
-            <SparkleIcon size={18} color={Colors.secondary} />
-            <Text style={styles.couplePortalReadyText}>
-              Your couple portrait is ready — enter the portal
-            </Text>
-            <Text style={styles.realPartnerPromptArrow}>{'\u2192'}</Text>
-          </TouchableOpacity>
-        )}
+            <View style={styles.weareSummaryHeader}>
+              <Text style={styles.weareSummaryTitle}>
+                The Space Between You
+              </Text>
+              {weareProfile.dataMode !== 'full' && (
+                <View style={styles.weareModeBadge}>
+                  <Text style={styles.weareModeBadgeText}>
+                    {weareProfile.dataMode === 'single-partner' ? 'Partial' : 'Preview'}
+                  </Text>
+                </View>
+              )}
+            </View>
 
-        {/* ═══ 3. DAILY CHECK-IN (Collapsed by default) ═══════ */}
-        {hasPortrait && (
-          <View style={styles.section}>
-            <CheckInCard
-              todaysCheckIn={todaysCheckIn}
-              onSubmit={handleCheckInSubmit}
-            />
-          </View>
+            <View style={styles.weareSummaryBody}>
+              {/* Resonance Pulse Circle */}
+              <View style={[
+                styles.wearePulseCircle,
+                weareProfile.layers.resonancePulse >= 60
+                  ? { borderColor: Colors.primary }
+                  : weareProfile.layers.resonancePulse >= 40
+                    ? { borderColor: Colors.secondary }
+                    : { borderColor: Colors.textMuted },
+              ]}>
+                {weareProfile.warmSummary === 'Deeply alive'
+                  ? <SparkleIcon size={20} color={Colors.primary} />
+                  : weareProfile.warmSummary === 'Growing stronger'
+                    ? <SeedlingIcon size={20} color={Colors.primary} />
+                    : weareProfile.warmSummary === 'Finding its way'
+                      ? <SearchIcon size={20} color={Colors.textSecondary} />
+                      : <LeafIcon size={20} color={Colors.textSecondary} />}
+              </View>
+
+              <View style={styles.weareSummaryContent}>
+                <Text style={styles.weareSummaryPhrase}>
+                  {weareProfile.warmSummary}
+                </Text>
+
+                {/* Direction indicator */}
+                <Text style={styles.weareSummaryDirection}>
+                  {weareProfile.layers.emergenceDirection > 1 ? 'Growing'
+                    : weareProfile.layers.emergenceDirection < -1 ? 'Contracting'
+                    : 'Steady'}
+                  {weareProfile.trend ? ` \u00B7 ${weareProfile.trend.periodLabel}` : ''}
+                </Text>
+
+                {/* Bottleneck nudge */}
+                <Text style={styles.weareSummaryNudge}>
+                  Where the invitation is: {weareProfile.bottleneck.label}
+                </Text>
+              </View>
+            </View>
+
+            <Text style={styles.weareSummaryArrow}>
+              See full picture {'\u2192'}
+            </Text>
+          </TouchableOpacity>
         )}
 
         {/* ═══ JOURNEY VALUE MAP (first-time users) ═══════════ */}
@@ -1359,174 +1437,7 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* ═══ 4B. YOUR PORTRAIT SUMMARY (if portrait exists) ══════ */}
-        {hasPortrait && portrait && (() => {
-          const cs = portrait.compositeScores;
-          const scores = [cs.regulationScore, cs.windowWidth, cs.accessibility, cs.responsiveness, cs.engagement, cs.selfLeadership, cs.valuesCongruence];
-          const overallScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
-
-          // Find top strength
-          const scoreLabels: Record<string, string> = {
-            regulationScore: 'Regulation',
-            windowWidth: 'Window of Tolerance',
-            accessibility: 'Accessibility',
-            responsiveness: 'Responsiveness',
-            engagement: 'Engagement',
-            selfLeadership: 'Self-Leadership',
-            valuesCongruence: 'Values Alignment',
-          };
-          const topKey = (Object.keys(scoreLabels) as Array<keyof typeof cs>)
-            .reduce((best, key) => ((cs[key] ?? 0) > (cs[best] ?? 0) ? key : best));
-          const topStrength = scoreLabels[topKey];
-
-          const cyclePosition = portrait.negativeCycle?.position
-            ? portrait.negativeCycle.position.charAt(0).toUpperCase() + portrait.negativeCycle.position.slice(1)
-            : null;
-          const growthEdge = portrait.growthEdges?.[0]?.title;
-          const coreValues = portrait.fourLens?.values?.coreValues?.slice(0, 3).join(', ');
-
-          return (
-            <TouchableOpacity
-              style={styles.portraitSummaryCard}
-              onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/portrait' as any); }}
-              activeOpacity={0.8}
-              accessibilityRole="button"
-              accessibilityLabel="YOUR PORTRAIT"
-            >
-              <View style={styles.portraitSummaryHeader}>
-                <Text style={styles.portraitSummaryEyebrow}>YOUR PORTRAIT</Text>
-                <View style={styles.portraitScoreBadge}>
-                  <Text style={styles.portraitScoreBadgeText}>{overallScore}</Text>
-                </View>
-              </View>
-
-              <View style={styles.portraitStatsRow}>
-                {cyclePosition && (
-                  <View style={styles.portraitStatItem}>
-                    <Text style={styles.portraitStatLabel}>Cycle Position</Text>
-                    <Text style={styles.portraitStatValue}>{cyclePosition}</Text>
-                  </View>
-                )}
-                <View style={styles.portraitStatItem}>
-                  <Text style={styles.portraitStatLabel}>Top Strength</Text>
-                  <Text style={styles.portraitStatValue}>{topStrength}</Text>
-                </View>
-                {growthEdge && (
-                  <View style={styles.portraitStatItem}>
-                    <Text style={styles.portraitStatLabel}>Growth Edge</Text>
-                    <Text style={styles.portraitStatValue} numberOfLines={1}>{growthEdge}</Text>
-                  </View>
-                )}
-              </View>
-
-              {coreValues ? (
-                <Text style={styles.portraitValues}>
-                  Core Values: {coreValues}
-                </Text>
-              ) : null}
-
-              <Text style={styles.portraitCta}>
-                See Full Portrait {'\u2192'}
-              </Text>
-            </TouchableOpacity>
-          );
-        })()}
-
-        {/* ═══ 4b. WEARE SUMMARY (The Space Between You) ═══════ */}
-        {weareProfile && couple && (
-          <TouchableOpacity
-            style={styles.weareSummaryCard}
-            onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/couple-portal' as any); }}
-            activeOpacity={0.8}
-            accessibilityRole="button"
-          >
-            <View style={styles.weareSummaryHeader}>
-              <Text style={styles.weareSummaryTitle}>
-                The Space Between You
-              </Text>
-              {weareProfile.dataMode !== 'full' && (
-                <View style={styles.weareModeBadge}>
-                  <Text style={styles.weareModeBadgeText}>
-                    {weareProfile.dataMode === 'single-partner' ? 'Partial' : 'Preview'}
-                  </Text>
-                </View>
-              )}
-            </View>
-
-            <View style={styles.weareSummaryBody}>
-              {/* Resonance Pulse Circle */}
-              <View style={[
-                styles.wearePulseCircle,
-                weareProfile.layers.resonancePulse >= 60
-                  ? { borderColor: Colors.primary }
-                  : weareProfile.layers.resonancePulse >= 40
-                    ? { borderColor: Colors.secondary }
-                    : { borderColor: Colors.textMuted },
-              ]}>
-                {weareProfile.warmSummary === 'Deeply alive'
-                  ? <SparkleIcon size={20} color={Colors.primary} />
-                  : weareProfile.warmSummary === 'Growing stronger'
-                    ? <SeedlingIcon size={20} color={Colors.primary} />
-                    : weareProfile.warmSummary === 'Finding its way'
-                      ? <SearchIcon size={20} color={Colors.textSecondary} />
-                      : <LeafIcon size={20} color={Colors.textSecondary} />}
-              </View>
-
-              <View style={styles.weareSummaryContent}>
-                <Text style={styles.weareSummaryPhrase}>
-                  {weareProfile.warmSummary}
-                </Text>
-
-                {/* Direction indicator */}
-                <Text style={styles.weareSummaryDirection}>
-                  {weareProfile.layers.emergenceDirection > 1 ? 'Growing'
-                    : weareProfile.layers.emergenceDirection < -1 ? 'Contracting'
-                    : 'Steady'}
-                  {weareProfile.trend ? ` \u00B7 ${weareProfile.trend.periodLabel}` : ''}
-                </Text>
-
-                {/* Bottleneck nudge */}
-                <Text style={styles.weareSummaryNudge}>
-                  Where the invitation is: {weareProfile.bottleneck.label}
-                </Text>
-              </View>
-            </View>
-
-            <Text style={styles.weareSummaryArrow}>
-              See full picture {'\u2192'}
-            </Text>
-          </TouchableOpacity>
-        )}
-
-        {/* ═══ 5. STREAK (Small, celebratory) ═════════════════ */}
-        {streakData && streakData.currentStreak > 0 && (
-          <View style={styles.streakMiniSection}>
-            <View style={styles.streakMiniRow}>
-              <LeafIcon size={16} color={Colors.primary} />
-              <Text style={styles.streakMiniText}>
-                Day {streakData.currentStreak} {'\u00B7'} Keep going!
-              </Text>
-            </View>
-          </View>
-        )}
-
-        {/* ═══ 6. INSPIRATION (Rotating nudge) ════════════════ */}
-        {stepTagline && hasPortrait && (
-          <View style={styles.inspirationSection}>
-            <Text style={styles.inspirationText}>
-              {'\u201C'}{stepTagline}{'\u201D'}
-            </Text>
-          </View>
-        )}
-        {!hasPortrait && completedCount > 0 && (
-          <LockedPortraitPreview
-            completedCount={completedCount}
-            completedTypes={completedTypes}
-          />
-        )}
-        {!hasPortrait && <NudgeCarousel insights={nudges} />}
-
-        {/* ═══ 6b. MICRO-COURSE (Continue Course card) ═══════ */}
+        {/* ═══ MICRO-COURSE (Continue Course card) ═══════════ */}
         {activeCourse && (() => {
           const course = MICRO_COURSES.find((c) => c.id === activeCourse.courseId);
           if (!course) return null;
@@ -1552,308 +1463,169 @@ export default function HomeScreen() {
           );
         })()}
 
-        {/* ═══ 7. EXPLORE (Bottom section) ════════════════════ */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Explore</Text>
-          <View style={styles.featureGrid}>
-            {/* View Portrait — always show if exists */}
-            {hasPortrait && (
-              <TouchableOpacity
-                ref={(r) => RefRegistry.register('home_portraitCard', r)}
-                style={styles.featureCard}
-                onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/portrait' as any); }}
-                activeOpacity={0.8}
-                accessibilityRole="button"
-                accessibilityLabel="View Portrait"
-              >
-                <View style={styles.featureCardHeader}>
-                  <SparkleIcon size={22} color={Colors.text} />
-                </View>
-                <Text style={styles.featureCardTitle}>View Portrait</Text>
-                <Text style={styles.featureCardSubtitle} numberOfLines={2}>
-                  Your relational portrait
-                </Text>
-              </TouchableOpacity>
-            )}
-
-            {/* Explore Matrix — gated on ECR-R completion */}
-            {completedTypes.includes('ecr-r') && (
-              <TouchableOpacity
-                style={styles.featureCard}
-                onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/assessment-matrix' as any); }}
-                activeOpacity={0.8}
-                accessibilityRole="button"
-                accessibilityLabel="Explore Matrix"
-              >
-                <View style={styles.featureCardHeader}>
-                  <CompassIcon size={22} color={Colors.text} />
-                </View>
-                <Text style={styles.featureCardTitle}>Explore Matrix</Text>
-                <Text style={styles.featureCardSubtitle} numberOfLines={2}>
-                  Interactive assessment map
-                </Text>
-              </TouchableOpacity>
-            )}
-
-            {/* Journal — always unlocked */}
-            <HighlightWrapper highlightId="home_journal_card">
-            <TouchableOpacity
-              ref={(r) => RefRegistry.register('home_journalCard', r)}
-              style={styles.featureCard}
-              onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/journal' as any); }}
-              activeOpacity={0.8}
-              accessibilityRole="button"
-              accessibilityLabel="Journal"
-            >
-              <View style={styles.featureCardHeader}>
-                <BookOpenIcon size={22} color={Colors.text} />
-              </View>
-              <Text style={styles.featureCardTitle}>Journal</Text>
-              <Text style={styles.featureCardSubtitle} numberOfLines={2}>
-                Your relationship timeline
+        {/* ═══ STREAK (Small, celebratory) ═════════════════ */}
+        {streakData && streakData.currentStreak > 0 && (
+          <View style={styles.streakMiniSection}>
+            <View style={styles.streakMiniRow}>
+              <LeafIcon size={16} color={Colors.primary} />
+              <Text style={styles.streakMiniText}>
+                Day {streakData.currentStreak} {'\u00B7'} Keep going!
               </Text>
-            </TouchableOpacity>
-            </HighlightWrapper>
-
-            {/* Nuance AI */}
-            <TouchableOpacity
-              ref={(r: any) => RefRegistry.register('home_nuanceCard', r)}
-              style={[
-                styles.featureCard,
-                completedCount === 0 && styles.featureCardLocked,
-              ]}
-              onPress={() => {
-                if (completedCount > 0) {
-                  router.push('/(app)/chat' as any);
-                } else {
-                  setLockedHintKey('nuance');
-                  setTimeout(() => setLockedHintKey(null), 2500);
-                }
-              }}
-              activeOpacity={0.8}
-              accessibilityRole="button"
-              accessibilityLabel="Nuance AI"
-            >
-              <View style={styles.featureCardHeader}>
-                <ChatBubbleIcon size={22} color={Colors.text} />
-                {completedCount === 0 && (
-                  <LockIcon size={14} color={Colors.textMuted} />
-                )}
-              </View>
-              <Text style={styles.featureCardTitle}>Nuance AI</Text>
-              <Text style={styles.featureCardSubtitle} numberOfLines={2}>
-                Your relationship guide
-              </Text>
-              {lockedHintKey === 'nuance' && completedCount === 0 && (
-                <Text style={styles.featureCardHint}>
-                  Complete 1 assessment to start
-                </Text>
-              )}
-            </TouchableOpacity>
-
-            {/* Other feature cards */}
-            {gridCards.map((card) => {
-              const isUnlocked = unlockState?.[card.key] === true;
-              // Register refs for FTUE tooltips (courses, community)
-              const refKey = card.key === 'courses' ? 'home_coursesCard'
-                : card.key === 'community' ? 'home_communityCard'
-                : null;
-              // Highlight IDs for post-tour gold pulse
-              const highlightId = card.key === 'courses' ? 'home_courses_card'
-                : card.key === 'community' ? 'home_community_card'
-                : null;
-              const cardContent = (
-                <TouchableOpacity
-                  key={card.key}
-                  ref={refKey ? (r: any) => RefRegistry.register(refKey, r) : undefined}
-                  style={[
-                    styles.featureCard,
-                    !isUnlocked && styles.featureCardLocked,
-                  ]}
-                  onPress={() => handleFeatureCardPress(card)}
-                  activeOpacity={isUnlocked ? 0.8 : 0.6}
-                  accessibilityRole="button"
-                >
-                  <View style={styles.featureCardHeader}>
-                    <FeatureIcon Icon={card.icon} size={22} color={Colors.text} />
-                    {!isUnlocked && (
-                      <LockIcon size={14} color={Colors.textMuted} />
-                    )}
-                  </View>
-                  <Text style={styles.featureCardTitle}>{card.title}</Text>
-                  <Text style={styles.featureCardSubtitle} numberOfLines={2}>
-                    {card.subtitle}
-                  </Text>
-                  {lockedHintKey === card.key && !isUnlocked && (
-                    <Text style={styles.featureCardHint}>
-                      {card.unlockHint}
-                    </Text>
-                  )}
-                </TouchableOpacity>
-              );
-              return highlightId ? (
-                <HighlightWrapper key={card.key} highlightId={highlightId}>
-                  {cardContent}
-                </HighlightWrapper>
-              ) : (
-                <React.Fragment key={card.key}>{cardContent}</React.Fragment>
-              );
-            })}
-          </View>
-        </View>
-
-        {/* ═══ Unlocked Results ════════════════════════════════ */}
-        {resultCards.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Your Results</Text>
-            <View style={styles.resultsGrid}>
-              {resultCards.map((card) => {
-                const assessmentType = FEATURE_KEY_TO_ASSESSMENT_TYPE[card.key];
-                const scores = assessmentType ? assessmentScores[assessmentType] : undefined;
-                return (
-                <TouchableOpacity
-                  key={card.key}
-                  style={styles.resultCard}
-                  onPress={() => router.push({
-                    pathname: '/(app)/results',
-                    params: {
-                      type: assessmentType,
-                      scores: JSON.stringify(scores),
-                    },
-                  } as any)}
-                  activeOpacity={0.8}
-                  accessibilityRole="button"
-                >
-                  <View
-                    style={[
-                      styles.resultIconCircle,
-                      { backgroundColor: card.color + '20' },
-                    ]}
-                  >
-                    <FeatureIcon Icon={card.icon} size={20} color={card.color} />
-                  </View>
-                  <Text style={styles.resultTitle} numberOfLines={1}>
-                    {card.title}
-                  </Text>
-                  <Text style={styles.resultSubtitle} numberOfLines={2}>
-                    {card.subtitle}
-                  </Text>
-                  <TouchableOpacity
-                    style={styles.askNuanceButton}
-                    onPress={() => {
-                      SoundHaptics.tapSoft();
-                      router.push({ pathname: '/(app)/chat', params: { topic: card.title } } as any);
-                    }}
-                    activeOpacity={0.7}
-                    accessibilityRole="button"
-                  >
-                    <View style={styles.askNuanceContent}>
-                      <ChatBubbleIcon size={11} color={Colors.primary} />
-                      <Text style={styles.askNuanceText}>
-                        Ask Nuance
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                </TouchableOpacity>
-                );
-              })}
             </View>
           </View>
         )}
 
-        {/* Revisit chapters (collapsed, shown when any section is complete) */}
-        {tenderStatus.completedTypes.length > 0 && (
-          <View style={styles.section}>
-            <TouchableOpacity
-              style={styles.sectionTitleRow}
-              onPress={() => setAssessmentsExpanded(!assessmentsExpanded)}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel="Revisit a Chapter"
-            >
-              <Text style={styles.retakeSectionLabel}>Revisit a Chapter</Text>
-              <Text style={styles.expandArrow}>
-                {assessmentsExpanded ? '\u25B4' : '\u25BE'}
-              </Text>
-            </TouchableOpacity>
-
-            {assessmentsExpanded && (
-              <View style={styles.assessmentCards}>
-                <Text style={styles.retakeIntroText}>
-                  Re-explore any chapter. Your patterns evolve {'\u2014'} so can your answers.
-                </Text>
-                {TENDER_SECTIONS.map((section) => {
-                  const isDone = tenderStatus.completedTypes.includes(section.assessmentType);
-                  const sectionIdx = TENDER_SECTIONS.findIndex((s) => s.assessmentType === section.assessmentType);
-                  return (
-                    <TouchableOpacity
-                      key={section.assessmentType}
-                      style={[styles.retakeRow, !isDone && styles.retakeRowDisabled]}
-                      onPress={() => {
-                        router.push({
-                          pathname: '/(app)/tender-assessment',
-                          params: { startSection: String(sectionIdx) },
-                        } as any);
-                      }}
-                      activeOpacity={0.7}
-                      disabled={!isDone}
-                      accessibilityRole="button"
-                      accessibilityState={{ disabled: !isDone }}
-                    >
-                      <View style={styles.retakeRowLeft}>
-                        <Text style={[styles.retakeRowNumber, !isDone && styles.retakeRowNumberDisabled]}>
-                          {section.sectionNumber}
-                        </Text>
-                        <Text style={[styles.retakeRowName, !isDone && styles.retakeRowNameDisabled]}>
-                          {section.fieldName}
-                        </Text>
-                      </View>
-                      <Text style={[styles.retakeRowAction, !isDone && styles.retakeRowActionDisabled]}>
-                        {isDone ? 'Revisit' : 'Not yet'}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            )}
+        {/* ═══ INSPIRATION (Rotating nudge) ════════════════ */}
+        {stepTagline && hasPortrait && (
+          <View style={styles.inspirationSection}>
+            <Text style={styles.inspirationText}>
+              {'\u201C'}{stepTagline}{'\u201D'}
+            </Text>
           </View>
         )}
-
-        {/* ═══ Relationship Mode ════════════════════════════════ */}
-        <View style={styles.modeSection}>
-          <Text style={styles.modeSectionTitle}>Relationship Mode</Text>
-          <View style={styles.modeCard}>
-            <View style={styles.modeCardContent}>
-              <Text style={styles.modeLabel}>{getRelationshipModeLabel(relationshipMode as any)}</Text>
-              {relationshipMode === 'demo_partner' && demoPartnerId && DEMO_PARTNERS[demoPartnerId as DemoPartnerId] && (
-                <Text style={styles.modePartnerName}>
-                  Practicing with {DEMO_PARTNERS[demoPartnerId as DemoPartnerId].name}
-                </Text>
-              )}
-            </View>
-            <TouchableOpacity
-              style={styles.modeChangeButton}
-              onPress={() => router.push('/(app)/relationship-mode' as any)}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel="Change"
-            >
-              <Text style={styles.modeChangeText}>Change</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* ═══ Logout ═════════════════════════════════════════ */}
-        <View style={{ marginHorizontal: Spacing.xl, marginTop: Spacing.sm }}>
-          <TenderButton
-            title="Logout"
-            onPress={handleLogout}
-            variant="outline"
-            size="md"
-            fullWidth
-            accessibilityLabel="Logout"
+        {!hasPortrait && completedCount > 0 && (
+          <LockedPortraitPreview
+            completedCount={completedCount}
+            completedTypes={completedTypes}
           />
+        )}
+        {!hasPortrait && <NudgeCarousel insights={nudges} />}
+
+        {/* ═══ EXPLORE — 4 Gateway Cards ══════════════════ */}
+        <View style={styles.gatewaySection}>
+          <Text style={styles.gatewaySectionLabel}>EXPLORE</Text>
+
+          {/* YOUR JOURNEY */}
+          <TouchableOpacity
+            style={styles.gatewayCard}
+            onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/growth' as any); }}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Your Journey"
+          >
+            <View style={styles.gatewayCardIconWrap}>
+              <SeedlingIcon size={22} color={Colors.primary} />
+            </View>
+            <View style={styles.gatewayCardContent}>
+              <Text style={styles.gatewayCardTitle}>Your Journey</Text>
+              <Text style={styles.gatewayCardSubtitle} numberOfLines={1}>
+                {hasPortrait
+                  ? `Step ${currentStepNum} of 12 \u00B7 ${getStep(currentStepNum)?.phase ?? ''}`
+                  : 'Twelve steps to relational health'}
+              </Text>
+            </View>
+            <Text style={styles.gatewayCardArrow}>{'\u2192'}</Text>
+          </TouchableOpacity>
+
+          {/* YOUR PORTRAIT */}
+          <TouchableOpacity
+            ref={(r) => RefRegistry.register('home_portraitCard', r)}
+            style={styles.gatewayCard}
+            onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/portrait' as any); }}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Your Portrait"
+          >
+            <View style={styles.gatewayCardIconWrap}>
+              <SparkleIcon size={22} color={Colors.secondary} />
+            </View>
+            <View style={styles.gatewayCardContent}>
+              <Text style={styles.gatewayCardTitle}>Your Portrait</Text>
+              <Text style={styles.gatewayCardSubtitle} numberOfLines={1}>
+                {hasPortrait && portrait
+                  ? `${portrait.negativeCycle?.position ? portrait.negativeCycle.position.charAt(0).toUpperCase() + portrait.negativeCycle.position.slice(1) : 'Your'} \u00B7 ${portrait.growthEdges?.[0]?.title ?? 'Growth insights'}`
+                  : 'Complete assessments to unlock'}
+              </Text>
+            </View>
+            <Text style={styles.gatewayCardArrow}>{'\u2192'}</Text>
+          </TouchableOpacity>
+
+          {/* YOUR RELATIONSHIP (only when coupled) */}
+          {hasCoupleLinked && (
+            <TouchableOpacity
+              style={styles.gatewayCard}
+              onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/couple-portal' as any); }}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Your Relationship"
+            >
+              <View style={styles.gatewayCardIconWrap}>
+                <HeartDoubleIcon size={22} color={Colors.accent} />
+              </View>
+              <View style={styles.gatewayCardContent}>
+                <Text style={styles.gatewayCardTitle}>Your Relationship</Text>
+                <Text style={styles.gatewayCardSubtitle} numberOfLines={1}>
+                  {weareProfile
+                    ? `${weareProfile.warmSummary} \u00B7 ${weareProfile.bottleneck?.label ?? ''}`
+                    : 'Couple portrait and shared growth'}
+                </Text>
+              </View>
+              <Text style={styles.gatewayCardArrow}>{'\u2192'}</Text>
+            </TouchableOpacity>
+          )}
+
+          {/* MORE */}
+          <TouchableOpacity
+            style={styles.gatewayCard}
+            onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/more' as any); }}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="More"
+          >
+            <View style={styles.gatewayCardIconWrap}>
+              <MenuIcon size={22} color={Colors.textMuted} />
+            </View>
+            <View style={styles.gatewayCardContent}>
+              <Text style={styles.gatewayCardTitle}>More</Text>
+              <Text style={styles.gatewayCardSubtitle} numberOfLines={1}>
+                Community, support, settings
+              </Text>
+            </View>
+            <Text style={styles.gatewayCardArrow}>{'\u2192'}</Text>
+          </TouchableOpacity>
         </View>
+
+        {/* ═══ DAILY RHYTHM (check-in + journal) ════════════ */}
+        {hasPortrait && (
+          <>
+            <View style={styles.dailyRhythmHeader}>
+              <Text style={styles.dailyRhythmLabel}>YOUR DAILY RHYTHM</Text>
+            </View>
+
+            {/* Check-in card */}
+            <View style={styles.section}>
+              <CheckInCard
+                todaysCheckIn={todaysCheckIn}
+                onSubmit={handleCheckInSubmit}
+              />
+            </View>
+
+            {/* Journal prompt card */}
+            <View style={styles.section}>
+              <TouchableOpacity
+                style={styles.journalPromptCard}
+                onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/journal' as any); }}
+                activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel="Open journal"
+              >
+                <View style={styles.journalPromptHeader}>
+                  <PenIcon size={16} color={Colors.primary} />
+                  <Text style={styles.journalPromptEyebrow}>JOURNAL</Text>
+                </View>
+                <Text style={styles.journalPromptText}>
+                  {'\u201C'}{getJournalPromptForStep(currentStepNum, relationshipMode === 'solo')}{'\u201D'}
+                </Text>
+                <Text style={styles.journalPromptCta}>
+                  Open Journal {'\u2192'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
+
+        {/* ═══ QUICK LINKS (bottom row) ════════════════════════ */}
+        <QuickLinksBar showHome={false} currentScreen="home" />
       </ScrollView>
 
       {/* ═══ FTUE Overlays ═══════════════════════════════════ */}
@@ -1894,7 +1666,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   scrollContent: {
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
   },
   loadingContainer: {
     flex: 1,
@@ -2771,6 +2543,32 @@ const styles = StyleSheet.create({
     textAlign: 'center' as const,
     paddingTop: Spacing.xs,
   },
+  portraitActionsRow: {
+    alignItems: 'center' as const,
+  },
+  portraitQuickLinks: {
+    flexDirection: 'row' as const,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    paddingTop: Spacing.sm,
+    marginTop: Spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderLight,
+  },
+  portraitQuickLink: {
+    paddingVertical: Spacing.xs,
+    paddingHorizontal: Spacing.md,
+  },
+  portraitQuickLinkText: {
+    fontFamily: 'JosefinSans_400Regular',
+    fontSize: FontSizes.caption,
+    color: Colors.textMuted,
+  },
+  portraitQuickLinkDivider: {
+    width: 1,
+    height: 14,
+    backgroundColor: Colors.borderLight,
+  },
   movementsRow: {
     flexDirection: 'row' as const,
     justifyContent: 'space-around' as const,
@@ -3184,26 +2982,6 @@ const styles = StyleSheet.create({
     color: Colors.secondary,
   },
 
-  // ── Couple Portal Ready Banner ──
-  couplePortalReadyBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-    marginHorizontal: Spacing.lg,
-    marginBottom: Spacing.md,
-    backgroundColor: Colors.secondary + '12',
-    borderRadius: BorderRadius.md,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    borderWidth: 1,
-    borderColor: Colors.secondary + '30',
-  },
-  couplePortalReadyText: {
-    flex: 1,
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '600',
-    color: Colors.secondary,
-  },
   consentBanner: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -3351,5 +3129,174 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.caption,
     color: Colors.textSecondary,
     lineHeight: FontSizes.caption * 1.5,
+  },
+
+  // ── Hero Top Row (greeting + gear) ──
+  heroTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  gearButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+  },
+
+  // ── Daily Rhythm ──
+  dailyRhythmHeader: {
+    paddingHorizontal: Spacing.xl,
+    marginBottom: Spacing.xs,
+  },
+  dailyRhythmLabel: {
+    fontSize: FontSizes.caption,
+    fontWeight: '700',
+    color: Colors.primary,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+  },
+
+  // ── Today's Practice (Daily Rhythm) ──
+  dailyPracticeCard: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    borderLeftWidth: 4,
+    borderLeftColor: Colors.secondary,
+    gap: Spacing.xs,
+    ...Shadows.subtle,
+  },
+  dailyPracticeHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  dailyPracticeEyebrow: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.secondary,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  dailyPracticeFromStep: {
+    fontSize: 11,
+    color: Colors.textMuted,
+    marginLeft: 'auto',
+  },
+  dailyPracticeTitle: {
+    fontSize: FontSizes.body,
+    fontWeight: '700',
+    fontFamily: FontFamilies.heading,
+    color: Colors.text,
+    marginTop: 2,
+  },
+  dailyPracticeDesc: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    lineHeight: 20,
+  },
+  dailyPracticeMeta: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  dailyPracticeMetaText: {
+    fontSize: FontSizes.caption,
+    color: Colors.textMuted,
+    textTransform: 'capitalize',
+  },
+  dailyPracticeArrow: {
+    fontSize: FontSizes.body,
+    fontWeight: '600',
+    color: Colors.secondary,
+  },
+
+  // ── Journal Prompt (Daily Rhythm) ──
+  journalPromptCard: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    borderLeftWidth: 4,
+    borderLeftColor: Colors.primary,
+    gap: Spacing.sm,
+    ...Shadows.subtle,
+  },
+  journalPromptHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  journalPromptEyebrow: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.primary,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  },
+  journalPromptText: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.text,
+    fontStyle: 'italic',
+    lineHeight: 22,
+  },
+  journalPromptCta: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '600',
+    color: Colors.primary,
+  },
+
+  // ── Gateway Cards ──
+  gatewaySection: {
+    paddingHorizontal: Spacing.xl,
+    marginBottom: Spacing.md,
+    gap: Spacing.sm,
+  },
+  gatewaySectionLabel: {
+    fontSize: FontSizes.caption,
+    fontWeight: '700',
+    color: Colors.primary,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    marginBottom: Spacing.xs,
+  },
+  gatewayCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    gap: Spacing.md,
+    ...Shadows.card,
+  },
+  gatewayCardIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.sm,
+    backgroundColor: Colors.backgroundAlt,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  gatewayCardContent: {
+    flex: 1,
+    gap: 2,
+  },
+  gatewayCardTitle: {
+    fontSize: FontSizes.body,
+    fontWeight: '700',
+    fontFamily: FontFamilies.heading,
+    color: Colors.text,
+  },
+  gatewayCardSubtitle: {
+    fontSize: FontSizes.caption,
+    color: Colors.textSecondary,
+  },
+  gatewayCardArrow: {
+    fontSize: FontSizes.body,
+    fontWeight: '600',
+    color: Colors.textMuted,
   },
 });

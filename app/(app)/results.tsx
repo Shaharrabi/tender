@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
-import HomeButton from '@/components/HomeButton';
+import QuickLinksBar from '@/components/QuickLinksBar';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Colors, Spacing, FontSizes, FontFamilies, Typography, ButtonSizes, BorderRadius, Shadows } from '@/constants/theme';
 import ECRRResults from '@/components/results/ECRRResults';
@@ -36,7 +36,7 @@ export default function ResultsScreen() {
             <Text style={styles.buttonText}>Back to Home</Text>
           </TouchableOpacity>
         </View>
-        <HomeButton />
+        <QuickLinksBar />
       </SafeAreaView>
     );
   }
@@ -78,7 +78,7 @@ export default function ResultsScreen() {
               <Text style={styles.buttonText}>Back to Home</Text>
             </TouchableOpacity>
           </View>
-          <HomeButton />
+          <QuickLinksBar />
         </SafeAreaView>
       );
   }

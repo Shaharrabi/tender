@@ -210,7 +210,7 @@ const s = StyleSheet.create({
   beginButtonText: { color: '#FFF', fontSize: FontSizes.body, fontWeight: '600', letterSpacing: 2 },
 
   // Planning
-  planContent: { paddingHorizontal: Spacing.md, paddingTop: Spacing.lg, paddingBottom: Spacing.xxxl },
+  planContent: { paddingHorizontal: Spacing.md, paddingTop: Spacing.lg, paddingBottom: Spacing.scrollPadBottom },
   dayRow: { flexDirection: 'row', gap: 10, paddingBottom: Spacing.md, justifyContent: 'center' },
   dayCol: { alignItems: 'center' },
   dayCircle: {
@@ -260,7 +260,7 @@ const s = StyleSheet.create({
   // Review
   reviewContent: {
     paddingHorizontal: Spacing.lg, paddingTop: Spacing.xl,
-    paddingBottom: Spacing.xxxl, alignItems: 'center',
+    paddingBottom: Spacing.scrollPadBottom, alignItems: 'center',
   },
   reviewTitle: {
     fontSize: FontSizes.headingM, fontFamily: FontFamilies.heading, fontWeight: '800',

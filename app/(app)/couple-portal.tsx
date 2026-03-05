@@ -59,7 +59,7 @@ import {
   CompassIcon,
   LeafIcon,
 } from '@/assets/graphics/icons';
-import HomeButton from '@/components/HomeButton';
+import QuickLinksBar from '@/components/QuickLinksBar';
 import TenderText from '@/components/ui/TenderText';
 import type { Couple, UserProfile, RelationshipPortrait, DeepCouplePortrait } from '@/types/couples';
 import type { IndividualPortrait } from '@/types/portrait';
@@ -1428,7 +1428,7 @@ function CouplePortalScreen() {
 
         <View style={{ height: 100 }} />
       </ScrollView>
-      <HomeButton />
+      <QuickLinksBar />
     </SafeAreaView>
   );
 }

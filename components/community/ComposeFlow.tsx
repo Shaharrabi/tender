@@ -396,7 +396,7 @@ const st = StyleSheet.create({
   },
   scrollContent: {
     padding: Spacing.lg,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
   },
   stepContainer: {
     gap: Spacing.md,

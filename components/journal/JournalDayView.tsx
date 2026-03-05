@@ -25,6 +25,7 @@ import {
   ChatBubbleIcon,
   BookOpenIcon,
   RainbowIcon,
+  NotepadIcon,
 } from '@/assets/graphics/icons';
 import type { IconProps } from '@/assets/graphics/icons';
 
@@ -95,6 +96,12 @@ const TYPE_CONFIG: Record<JournalEntryType, {
     bg: Colors.accentLight,
     label: 'Card Game',
     Icon: RainbowIcon,
+  },
+  reflection: {
+    color: Colors.primary,
+    bg: Colors.primaryFaded,
+    label: 'Reflection',
+    Icon: NotepadIcon,
   },
 };
 
@@ -483,6 +490,77 @@ function CardGameCard({ entry }: { entry: JournalEntry }) {
   );
 }
 
+function StepReflectionCard({ entry }: { entry: JournalEntry }) {
+  const {
+    stepNumber,
+    reflections,
+    prompts,
+    partnerRoundResponse,
+    partnerRoundPrompt,
+    completedCriteria,
+    totalCriteria,
+  } = entry.data;
+
+  const reflectionEntries = reflections
+    ? Object.entries(reflections as Record<string, string>).filter(
+        ([, v]) => v && v.trim()
+      )
+    : [];
+
+  return (
+    <View style={cardStyles.cardBody}>
+      {/* Criteria progress */}
+      {completedCriteria && totalCriteria > 0 && (
+        <View style={cardStyles.inlineRow}>
+          <Text style={cardStyles.inlineLabel}>Criteria met:</Text>
+          <Text
+            style={[
+              cardStyles.inlineValue,
+              {
+                color:
+                  completedCriteria.length >= totalCriteria
+                    ? Colors.success
+                    : Colors.textMuted,
+              },
+            ]}
+          >
+            {completedCriteria.length}/{totalCriteria}
+          </Text>
+        </View>
+      )}
+
+      {/* Reflection prompt/answer pairs */}
+      {reflectionEntries.length > 0 && (
+        <View style={cardStyles.stepResponsesContainer}>
+          {reflectionEntries.map(([idx, text]) => {
+            const promptText =
+              prompts && prompts[Number(idx)]
+                ? prompts[Number(idx)]
+                : `Reflection ${Number(idx) + 1}`;
+            return (
+              <View key={idx} style={cardStyles.stepResponseBlock}>
+                <Text style={cardStyles.stepPrompt}>{promptText}</Text>
+                <Text style={cardStyles.stepResponse}>{text}</Text>
+              </View>
+            );
+          })}
+        </View>
+      )}
+
+      {/* Partner round response */}
+      {partnerRoundResponse && partnerRoundResponse.trim() ? (
+        <View style={cardStyles.reflectionBlock}>
+          <Text style={cardStyles.reflectionLabel}>Partner Round</Text>
+          {partnerRoundPrompt ? (
+            <Text style={cardStyles.stepPrompt}>{partnerRoundPrompt}</Text>
+          ) : null}
+          <Text style={cardStyles.noteFullText}>{partnerRoundResponse}</Text>
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
 // ─── Entry Card Router ──────────────────────────────────
 
 function EntryCardContent({ entry }: { entry: JournalEntry }) {
@@ -502,6 +580,8 @@ function EntryCardContent({ entry }: { entry: JournalEntry }) {
       return <MiniGameCard entry={entry} />;
     case 'card_game':
       return <CardGameCard entry={entry} />;
+    case 'reflection':
+      return <StepReflectionCard entry={entry} />;
     default:
       return null;
   }

@@ -199,7 +199,7 @@ const s = StyleSheet.create({
   // Spectrum
   spectrumContent: {
     paddingHorizontal: Spacing.lg, paddingTop: Spacing.xl,
-    paddingBottom: Spacing.xxxl, alignItems: 'center',
+    paddingBottom: Spacing.scrollPadBottom, alignItems: 'center',
   },
   sectionTitle: {
     fontSize: FontSizes.headingM, fontFamily: FontFamilies.heading, fontWeight: '800',

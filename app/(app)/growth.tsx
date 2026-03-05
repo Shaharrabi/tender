@@ -1,9 +1,16 @@
 /**
- * Your Healing Journey Screen
+ * Your Healing Journey Screen — Sprint C Enhancement
  *
- * Redesigned to show the Twelve Steps progress, current phase,
- * daily check-in, growth edges, and treatment plan link.
- * The Steps are the transformational arc; everything else serves them.
+ * Reorganized layout:
+ * 1. CurrentStepFocus — Hero card showing where you are
+ * 2. Daily Check-In — Daily touchpoint (moved up)
+ * 3. WeeklyPracticeSchedule — What to do this week
+ * 4. WindowOfTolerance — Nervous system check
+ * 5. StepJourney — Full 12-step map (enriched with courses, criteria)
+ * 6. Weekly Check-In — Couple-only weekly reflection
+ * 7. Growth Edges — Portrait-derived edges
+ * 8. Recent Check-Ins — Last 5 entries
+ * 9. Treatment Plan link
  */
 
 import React, { useCallback, useState, useEffect } from 'react';
@@ -18,6 +25,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
+import QuickLinksBar from '@/components/QuickLinksBar';
 import { useAuth } from '@/context/AuthContext';
 import {
   Colors,
@@ -27,6 +35,7 @@ import {
   BorderRadius,
   Shadows,
 } from '@/constants/theme';
+import CurrentStepFocus from '@/components/growth/CurrentStepFocus';
 import StepJourney from '@/components/growth/StepJourney';
 import GrowthTimeline from '@/components/growth/GrowthTimeline';
 import CheckInCard from '@/components/growth/CheckInCard';
@@ -40,7 +49,7 @@ import {
   saveDailyCheckIn,
 } from '@/services/growth';
 import { ensureStepProgress } from '@/services/steps';
-import { getMyCouple } from '@/services/couples';
+import { getMyCouple, isSelfCouple } from '@/services/couples';
 import { getThisWeeksCheckIn, saveWeeklyCheckIn } from '@/services/weare';
 import WeeklyCheckInCard from '@/components/weare/WeeklyCheckInCard';
 import { getPracticesForStep } from '@/utils/steps/twelve-steps';
@@ -134,22 +143,30 @@ export default function GrowthScreen() {
     router.push('/(app)/treatment-plan' as any);
   };
 
-  const handlePracticeFromWoT = (practiceId: string) => {
+  const handleSelectPractice = (practiceId: string) => {
     router.push({
       pathname: '/(app)/exercise' as any,
       params: { id: practiceId },
     });
   };
 
+  const handleNavigateToStep = (stepNumber: number) => {
+    router.push({
+      pathname: '/(app)/step-detail' as any,
+      params: { step: stepNumber.toString() },
+    });
+  };
+
+  const handleNavigateToCourse = (courseId: string) => {
+    router.push({
+      pathname: '/(app)/microcourse' as any,
+      params: { courseId },
+    });
+  };
+
   const handleStepPress = (stepNumber: number) => {
-    // Only allow navigation to active or completed steps
-    const progress = stepProgress.find((sp) => sp.stepNumber === stepNumber);
-    if (progress?.status === 'active' || progress?.status === 'completed') {
-      router.push({
-        pathname: '/(app)/step-detail' as any,
-        params: { step: stepNumber.toString() },
-      });
-    }
+    // Tapping a step in the journey just expands/collapses it —
+    // navigation happens via the "Continue This Step" button inside.
   };
 
   if (loading) {
@@ -172,7 +189,7 @@ export default function GrowthScreen() {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Your Healing Journey">
+        <TouchableOpacity onPress={handleBack} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Go back">
           <Text style={styles.backText}>{'\u2039'} Back</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Your Healing Journey</Text>
@@ -183,27 +200,14 @@ export default function GrowthScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Twelve Steps Journey */}
-        <StepJourney
+        {/* 1. Current Step Focus — Hero card */}
+        <CurrentStepFocus
           stepProgress={stepProgress}
           currentStepNumber={currentStepNumber}
-          onStepPress={handleStepPress}
+          onContinue={handleNavigateToStep}
         />
 
-        {/* Weekly Practice Schedule */}
-        <View style={styles.section}>
-          <WeeklyPracticeSchedule
-            currentStepNumber={currentStepNumber}
-            onSelectPractice={handlePracticeFromWoT}
-          />
-        </View>
-
-        {/* Window of Tolerance Interactive */}
-        <View style={styles.section}>
-          <WindowOfTolerance onSelectPractice={handlePracticeFromWoT} />
-        </View>
-
-        {/* Daily Check-In */}
+        {/* 2. Daily Check-In — Daily touchpoint */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Daily Check-In</Text>
           <CheckInCard
@@ -212,10 +216,37 @@ export default function GrowthScreen() {
           />
         </View>
 
-        {/* Weekly Check-In */}
+        {/* 3. Weekly Practice Schedule */}
+        <View style={styles.section}>
+          <WeeklyPracticeSchedule
+            currentStepNumber={currentStepNumber}
+            onSelectPractice={handleSelectPractice}
+          />
+        </View>
+
+        {/* 4. Window of Tolerance Interactive */}
+        <View style={styles.section}>
+          <WindowOfTolerance onSelectPractice={handleSelectPractice} />
+        </View>
+
+        {/* 5. Full Step Journey Map — enriched */}
+        <StepJourney
+          stepProgress={stepProgress}
+          currentStepNumber={currentStepNumber}
+          onStepPress={handleStepPress}
+          onSelectPractice={handleSelectPractice}
+          onNavigateToStep={handleNavigateToStep}
+          onNavigateToCourse={handleNavigateToCourse}
+          isCoupled={!!(couple && !isSelfCouple(couple))}
+        />
+
+        {/* 6. Weekly Check-In — couple only */}
         {couple && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Weekly Check-In</Text>
+            <Text style={styles.sectionSubtitle}>
+              Reflect on the space between you this week
+            </Text>
             <WeeklyCheckInCard
               existingCheckIn={weeklyCheckIn}
               onSubmit={async (stress, support, satisfaction, highlight) => {
@@ -229,7 +260,7 @@ export default function GrowthScreen() {
           </View>
         )}
 
-        {/* Growth Timeline */}
+        {/* 7. Growth Timeline */}
         {edges.length > 0 ? (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Your Growth Edges</Text>
@@ -246,7 +277,7 @@ export default function GrowthScreen() {
           </View>
         )}
 
-        {/* Recent Check-Ins Summary */}
+        {/* 8. Recent Check-Ins Summary */}
         {recentCheckIns.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Recent Check-Ins</Text>
@@ -258,13 +289,13 @@ export default function GrowthScreen() {
                   </Text>
                   <View style={styles.recentStats}>
                     <View style={styles.recentStatPill}>
-                      <Text style={styles.recentStatLabel}>Mood</Text>
+                      <Text style={styles.recentStatLabel}>Inner</Text>
                       <Text style={styles.recentStatValue}>
                         {checkIn.moodRating}
                       </Text>
                     </View>
                     <View style={styles.recentStatPill}>
-                      <Text style={styles.recentStatLabel}>Rel.</Text>
+                      <Text style={styles.recentStatLabel}>Connection</Text>
                       <Text style={styles.recentStatValue}>
                         {checkIn.relationshipRating}
                       </Text>
@@ -281,7 +312,7 @@ export default function GrowthScreen() {
           </View>
         )}
 
-        {/* Treatment Plan Link */}
+        {/* 9. Treatment Plan Link */}
         <TouchableOpacity
           style={styles.treatmentPlanLink}
           onPress={handleViewTreatmentPlan}
@@ -298,6 +329,7 @@ export default function GrowthScreen() {
           </View>
           <Text style={styles.treatmentPlanArrow}>{'\u203A'}</Text>
         </TouchableOpacity>
+        <QuickLinksBar />
       </ScrollView>
     </SafeAreaView>
     </ErrorBoundary>
@@ -360,7 +392,7 @@ const styles = StyleSheet.create({
   // Scroll content
   scrollContent: {
     padding: Spacing.xl,
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
     gap: Spacing.xl,
   },
 
@@ -373,6 +405,13 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.headingM,
     fontWeight: '700',
     color: Colors.text,
+  },
+  sectionSubtitle: {
+    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    color: Colors.textSecondary,
+    marginTop: -Spacing.sm,
+    lineHeight: 20,
   },
 
   // Recent check-ins

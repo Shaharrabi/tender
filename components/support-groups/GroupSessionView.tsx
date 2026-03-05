@@ -453,7 +453,7 @@ const styles = StyleSheet.create({
   },
 
   scrollContent: {
-    paddingBottom: Spacing.xxxl,
+    paddingBottom: Spacing.scrollPadBottom,
   },
 
   groupName: {
