@@ -133,6 +133,8 @@ const styles = StyleSheet.create({
   headerTitle: {
     ...Typography.headingS,
     color: Colors.text,
+    fontSize: 15,
+    letterSpacing: 0.3,
   },
   headerSubtitle: {
     ...Typography.caption,

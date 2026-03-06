@@ -527,7 +527,7 @@ export default function CommunityScreen() {
         <View style={{ height: Spacing.xxl }} />
       </ScrollView>
 
-      <QuickLinksBar />
+      <QuickLinksBar currentScreen="community" />
 
       {/* FAB (stories only) */}
       <FAB

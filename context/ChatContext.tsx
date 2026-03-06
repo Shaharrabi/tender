@@ -226,19 +226,22 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
     setError(null);
 
     try {
-      // Get auth token — try getSession first, then refreshSession as fallback
+      // Get auth token — refreshSession FIRST for a guaranteed-fresh JWT,
+      // then fall back to getSession (cached) if refresh fails.
       let token: string | undefined;
-      const { data: authData, error: sessionError } = await supabase.auth.getSession();
-      token = authData.session?.access_token;
 
-      console.log('[Chat] getSession result:', !!authData.session, sessionError?.message || 'no error');
+      // Try refreshSession first — this gives us a guaranteed-fresh JWT
+      const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+      token = refreshData.session?.access_token;
 
-      // If no token, attempt a session refresh (handles expired JWTs)
+      if (__DEV__) console.log('[Chat] refreshSession result:', !!refreshData.session, refreshError?.message || 'no error');
+
+      // Fallback: if refresh fails, use getSession which returns the cached token
       if (!token) {
-        console.log('[Chat] No token from getSession, attempting refresh...');
-        const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-        token = refreshData.session?.access_token;
-        console.log('[Chat] refreshSession result:', !!refreshData.session, refreshError?.message || 'no error');
+        if (__DEV__) console.log('[Chat] No token from refresh, trying cached session...');
+        const { data: authData, error: sessionError } = await supabase.auth.getSession();
+        token = authData.session?.access_token;
+        if (__DEV__) console.log('[Chat] getSession fallback:', !!authData.session, sessionError?.message || 'no error');
       }
 
       // If still no token after refresh, the user isn't authenticated
@@ -246,10 +249,12 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
         throw new Error('Your session has expired. Please sign in again to chat with Nuance.');
       }
 
-      console.log('[Chat] Sending message to edge function...');
-      console.log('[Chat] URL:', CHAT_FUNCTION_URL);
-      console.log('[Chat] Session ID:', session.id);
-      console.log('[Chat] Has auth token:', !!token, 'Token length:', token?.length);
+      if (__DEV__) {
+        console.log('[Chat] Sending message to edge function...');
+        console.log('[Chat] URL:', CHAT_FUNCTION_URL);
+        console.log('[Chat] Session ID:', session.id);
+        console.log('[Chat] Has auth token:', !!token, 'Token length:', token?.length);
+      }
 
       // Detect streaming support — only request SSE if ReadableStream is available
       const supportsStreaming = typeof ReadableStream !== 'undefined' && typeof TextDecoder !== 'undefined';

@@ -9,6 +9,7 @@
 
 import { supabase } from './supabase';
 import { TWELVE_STEPS } from '@/utils/steps/twelve-steps';
+import { getCourseById } from '@/utils/microcourses/course-registry';
 
 // ─── Types ──────────────────────────────────────────────
 
@@ -22,7 +23,9 @@ export type JournalEntryType =
   | 'minigame'
   | 'step_milestone'
   | 'card_game'
-  | 'reflection';
+  | 'reflection'
+  | 'weare_checkin'
+  | 'course_lesson';
 
 export interface JournalEntry {
   id: string;
@@ -110,6 +113,7 @@ export async function getJournalEntriesForDate(
     stepProgressResult,
     cardGameResult,
     stepReflectionsResult,
+    weareCheckInsResult,
   ] = await Promise.allSettled([
     // 1. Daily check-ins (uses DATE type — exact match)
     supabase
@@ -200,6 +204,14 @@ export async function getJournalEntriesForDate(
       .gte('updated_at', dayStart)
       .lt('updated_at', dayEnd)
       .order('updated_at', { ascending: true }),
+
+    // 11. WEARE weekly check-ins (TIMESTAMPTZ — range)
+    supabase
+      .from('weekly_check_ins')
+      .select('*')
+      .eq('user_id', userId)
+      .gte('created_at', dayStart)
+      .lt('created_at', dayEnd),
   ]);
 
   // Process check-ins
@@ -221,41 +233,78 @@ export async function getJournalEntriesForDate(
     }
   }
 
-  // Process exercises
+  // Process exercises (+ detect micro-course lessons)
   if (exercisesResult.status === 'fulfilled' && exercisesResult.value.data) {
     for (const row of exercisesResult.value.data) {
-      const name = row.exercise_name || row.exercise_id?.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'Exercise';
-      entries.push({
-        id: row.id,
-        type: 'exercise',
-        timestamp: row.completed_at,
-        title: name,
-        subtitle: undefined, // Full data shown in the card body
-        data: {
-          exerciseId: row.exercise_id,
-          exerciseName: row.exercise_name,
-          reflection: row.reflection,
-          rating: row.rating,
-          stepResponses: row.step_responses,
-        },
-      });
+      const exerciseId: string = row.exercise_id ?? '';
+      const isCourseLesson = exerciseId.startsWith('mc-') && exerciseId.includes('-lesson-');
+
+      if (isCourseLesson) {
+        // Extract course ID and lesson number from pattern: mc-{courseName}-lesson-{N}
+        const courseMatch = exerciseId.match(/^(mc-[^-]+-[^-]+)-lesson-(\d+)/);
+        const courseId = courseMatch?.[1] ?? exerciseId.split('-lesson-')[0];
+        const lessonNum = courseMatch?.[2] ?? '?';
+        const course = getCourseById(courseId);
+        const courseTitle = course?.title ?? courseId.replace(/-/g, ' ');
+
+        entries.push({
+          id: row.id,
+          type: 'course_lesson',
+          timestamp: row.completed_at,
+          title: row.exercise_name || `Lesson ${lessonNum}`,
+          subtitle: `${courseTitle} — Lesson ${lessonNum}`,
+          data: {
+            exerciseId,
+            exerciseName: row.exercise_name,
+            courseId,
+            courseTitle,
+            lessonNumber: lessonNum,
+            reflection: row.reflection,
+            rating: row.rating,
+            stepResponses: row.step_responses,
+          },
+        });
+      } else {
+        const name = row.exercise_name || exerciseId.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'Exercise';
+        entries.push({
+          id: row.id,
+          type: 'exercise',
+          timestamp: row.completed_at,
+          title: name,
+          subtitle: undefined, // Full data shown in the card body
+          data: {
+            exerciseId,
+            exerciseName: row.exercise_name,
+            reflection: row.reflection,
+            rating: row.rating,
+            stepResponses: row.step_responses,
+          },
+        });
+      }
     }
   }
 
-  // Process practices
+  // Process practices (with couple context from Fix 2 dual-write)
   if (practicesResult.status === 'fulfilled' && practicesResult.value.data) {
     for (const row of practicesResult.value.data) {
       const practiceLabel = row.practice_id?.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'Practice';
+      const isTogether = row.completed_by === 'together';
+      const stepPart = row.step_number ? `Step ${row.step_number}` : undefined;
+      const subtitle = isTogether
+        ? (stepPart ? `${stepPart} · Together` : 'Together')
+        : stepPart;
       entries.push({
         id: row.id,
         type: 'practice',
         timestamp: row.completed_at,
         title: practiceLabel,
-        subtitle: row.step_number ? `Step ${row.step_number}` : undefined,
+        subtitle,
         data: {
           practiceId: row.practice_id,
           stepNumber: row.step_number,
           completionData: row.completion_data,
+          completedBy: row.completed_by ?? null,
+          coupleId: row.couple_id ?? null,
         },
       });
     }
@@ -427,6 +476,36 @@ export async function getJournalEntriesForDate(
     }
   }
 
+  // Process WEARE weekly check-ins
+  if (weareCheckInsResult.status === 'fulfilled' && weareCheckInsResult.value.data) {
+    for (const row of weareCheckInsResult.value.data) {
+      const practiceHighlight = row.practice_highlight;
+      const satisfaction = row.satisfaction_rating;
+      const subtitle = practiceHighlight
+        ? practiceHighlight
+        : satisfaction != null
+          ? `Relationship satisfaction: ${satisfaction}/10`
+          : 'Weekly reflection completed';
+      entries.push({
+        id: row.id,
+        type: 'weare_checkin',
+        timestamp: row.created_at,
+        title: 'Weekly Relationship Check-In',
+        subtitle,
+        data: {
+          satisfactionRating: row.satisfaction_rating,
+          communicationRating: row.communication_rating,
+          intimacyRating: row.intimacy_rating,
+          conflictRating: row.conflict_rating,
+          growthRating: row.growth_rating,
+          practiceHighlight: row.practice_highlight,
+          challengeNote: row.challenge_note,
+          weekNumber: row.week_number,
+        },
+      });
+    }
+  }
+
   // Sort by timestamp
   entries.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
@@ -466,6 +545,7 @@ export async function getJournalCalendarData(
     stepProgressCalResult,
     cardGameCalResult,
     stepReflectionsCalResult,
+    weareCalResult,
   ] = await Promise.allSettled([
     supabase
       .from('daily_check_ins')
@@ -531,6 +611,14 @@ export async function getJournalCalendarData(
       .not('reflection_notes', 'is', null)
       .gte('updated_at', startISO)
       .lt('updated_at', endISO),
+
+    // 10. WEARE weekly check-ins
+    supabase
+      .from('weekly_check_ins')
+      .select('created_at')
+      .eq('user_id', userId)
+      .gte('created_at', startISO)
+      .lt('created_at', endISO),
   ]);
 
   // Map check-ins (DATE type)
@@ -602,6 +690,13 @@ export async function getJournalCalendarData(
       if (hasContent) {
         addDay(dateFromTimestamp(row.updated_at), 'reflection');
       }
+    }
+  }
+
+  // Map WEARE weekly check-ins
+  if (weareCalResult.status === 'fulfilled' && weareCalResult.value.data) {
+    for (const row of weareCalResult.value.data) {
+      addDay(dateFromTimestamp(row.created_at), 'weare_checkin');
     }
   }
 

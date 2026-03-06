@@ -61,6 +61,7 @@ import {
 } from '@/assets/graphics/icons';
 import QuickLinksBar from '@/components/QuickLinksBar';
 import TenderText from '@/components/ui/TenderText';
+import type { IconComponent } from '@/constants/icons';
 import type { Couple, UserProfile, RelationshipPortrait, DeepCouplePortrait } from '@/types/couples';
 import type { IndividualPortrait } from '@/types/portrait';
 import type { WEAREProfile, WeeklyCheckIn } from '@/types/weare';
@@ -88,14 +89,21 @@ import CouplePortalErrorBoundary from '@/components/CouplePortalErrorBoundary';
 
 type TabKey = 'overview' | 'dance' | 'together' | 'assessments' | 'insights' | 'growth' | 'anchors';
 
-const TABS: { key: TabKey; label: string }[] = [
-  { key: 'overview', label: 'Overview' },
-  { key: 'dance', label: 'Your Dance' },
-  { key: 'together', label: 'Together' },
-  { key: 'assessments', label: 'Assessments' },
-  { key: 'insights', label: 'Insights' },
-  { key: 'growth', label: 'Growth' },
-  { key: 'anchors', label: 'Anchors' },
+interface CoupleTabDef {
+  key: TabKey;
+  label: string;
+  Icon: IconComponent;
+  color: string;
+}
+
+const TABS: CoupleTabDef[] = [
+  { key: 'overview',    label: 'Overview',    Icon: HeartPulseIcon, color: Colors.primary },
+  { key: 'dance',       label: 'Your Dance',  Icon: LightningIcon,  color: Colors.secondary },
+  { key: 'together',    label: 'Together',    Icon: LinkIcon,        color: Colors.calm },
+  { key: 'assessments', label: 'Assessments', Icon: CompassIcon,     color: Colors.depth },
+  { key: 'insights',    label: 'Insights',    Icon: SparkleIcon,     color: Colors.accent },
+  { key: 'growth',      label: 'Growth',      Icon: SeedlingIcon,    color: Colors.warning },
+  { key: 'anchors',     label: 'Anchors',     Icon: LeafIcon,        color: Colors.calm },
 ];
 
 export default function CouplePortalScreenWithBoundary() {
@@ -1401,27 +1409,41 @@ function CouplePortalScreen() {
           </View>
         )}
 
-        {/* Tab Bar — scrollable horizontal */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.tabBarScroll}
-          contentContainerStyle={styles.tabBar}
-        >
-          {TABS.map((tab) => (
-            <TouchableOpacity
-              key={tab.key}
-              style={[styles.tab, activeTab === tab.key && styles.tabActive]}
-              onPress={() => setActiveTab(tab.key)}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-            >
-              <TenderText variant="buttonSmall" color={activeTab === tab.key ? Colors.white : Colors.textSecondary}>
-                {tab.label}
-              </TenderText>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+        {/* Tab Bar — portrait-style icon pills */}
+        <View style={styles.tabBarWrapper}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.tabBarContent}
+          >
+            {TABS.map((tab) => {
+              const isActive = activeTab === tab.key;
+              return (
+                <TouchableOpacity
+                  key={tab.key}
+                  style={[
+                    styles.tabItem,
+                    isActive && { backgroundColor: tab.color + '15', borderColor: tab.color },
+                  ]}
+                  onPress={() => setActiveTab(tab.key)}
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                >
+                  <View style={styles.tabIcon}>
+                    <tab.Icon size={14} color={isActive ? tab.color : Colors.textMuted} />
+                  </View>
+                  <TenderText
+                    variant="caption"
+                    color={isActive ? tab.color : Colors.textSecondary}
+                    style={isActive ? { fontWeight: '700' } : { fontWeight: '500' }}
+                  >
+                    {tab.label}
+                  </TenderText>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
 
         {/* Tab Content */}
         {renderTabContent()}
@@ -1472,25 +1494,32 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
   },
 
-  // Tab Bar
-  tabBarScroll: {
+  // Tab Bar — portrait-style icon pills
+  tabBarWrapper: {
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.borderLight,
+    backgroundColor: Colors.surfaceElevated,
     marginBottom: Spacing.md,
-  },
-  tabBar: {
-    flexDirection: 'row',
-    backgroundColor: Colors.surface,
     borderRadius: BorderRadius.lg,
-    padding: 3,
-    gap: 2,
-    ...Shadows.subtle,
   },
-  tab: {
+  tabBarContent: {
+    paddingHorizontal: Spacing.sm,
     paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.md,
+    gap: Spacing.xs,
   },
-  tabActive: {
-    backgroundColor: Colors.primary,
+  tabItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: BorderRadius.pill,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+  },
+  tabIcon: {
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
   },
   // Tab Content
   tabContent: {

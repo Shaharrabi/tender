@@ -26,6 +26,7 @@ import {
   BookOpenIcon,
   RainbowIcon,
   NotepadIcon,
+  CommunityIcon,
 } from '@/assets/graphics/icons';
 import type { IconProps } from '@/assets/graphics/icons';
 
@@ -102,6 +103,18 @@ const TYPE_CONFIG: Record<JournalEntryType, {
     bg: Colors.primaryFaded,
     label: 'Reflection',
     Icon: NotepadIcon,
+  },
+  weare_checkin: {
+    color: Colors.calm,
+    bg: Colors.calmLight,
+    label: 'Weekly Check-In',
+    Icon: CommunityIcon,
+  },
+  course_lesson: {
+    color: Colors.secondary,
+    bg: Colors.secondaryLight,
+    label: 'Course Lesson',
+    Icon: BookOpenIcon,
   },
 };
 
