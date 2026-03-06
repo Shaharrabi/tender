@@ -21,6 +21,7 @@ import { useGamification } from '@/context/GamificationContext';
 import { getExerciseById } from '@/utils/interventions/registry';
 import { saveCompletion } from '@/services/intervention';
 import { incrementPracticeCount, addInsight, upsertGrowthEdge } from '@/services/growth';
+import { recordPracticeCompletion } from '@/services/steps';
 import QuickLinksBar from '@/components/QuickLinksBar';
 import ExerciseFlow from '@/components/intervention/ExerciseFlow';
 import type { StepResponse } from '@/components/intervention/ExerciseFlow';
@@ -40,7 +41,11 @@ const CATEGORY_TO_EDGE: Record<string, string[]> = {
 
 export default function ExerciseScreen() {
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, stepNumber, coupleId } = useLocalSearchParams<{
+    id: string;
+    stepNumber?: string;
+    coupleId?: string;
+  }>();
   const { user } = useAuth();
   const { awardXP } = useGamification();
 
@@ -61,6 +66,21 @@ export default function ExerciseScreen() {
 
         // 1b. Award XP for exercise completion (non-blocking)
         awardXP('lesson_complete', exercise.id, `Completed: ${exercise.title}`).catch(() => {});
+
+        // 1c. Also record in practice_completions for step context + couple attribution
+        if (stepNumber) {
+          const parsedStep = parseInt(stepNumber, 10);
+          const completedBy = (exercise.mode === 'together' && coupleId) ? 'together' as const : 'individual' as const;
+          recordPracticeCompletion(
+            user.id,
+            exercise.id,
+            parsedStep,
+            completedBy,
+            coupleId || undefined
+          ).catch((err) => {
+            console.warn('[Exercise] practice_completions write failed:', err);
+          });
+        }
 
         // 2. Update growth tracking for matching edges
         const edgeIds = CATEGORY_TO_EDGE[exercise.category] ?? [];

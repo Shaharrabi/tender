@@ -19,6 +19,12 @@ export interface WelcomeAudioConfig {
 }
 
 export const WELCOME_AUDIO_CONFIGS: Record<string, WelcomeAudioConfig> = {
+  home: {
+    screenKey: 'home',
+    title: 'Welcome to Tender',
+    subtitle: 'A quick introduction',
+    source: require('@/assets/audio/welcome.mp3'),
+  },
   assessment: {
     screenKey: 'assessment',
     title: 'About the Assessment',

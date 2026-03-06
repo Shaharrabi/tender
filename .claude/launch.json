@@ -24,6 +24,18 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["expo", "start", "--android", "--port", "8082"],
       "port": 8082
+    },
+    {
+      "name": "supabase-functions",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["supabase", "functions", "serve"],
+      "port": 54321
+    },
+    {
+      "name": "supabase-local",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["supabase", "start"],
+      "port": 54323
     }
   ]
 }

@@ -79,7 +79,7 @@ import { HOME_TOUR } from '@/constants/ftue/tourSteps';
 import { RefRegistry } from '@/utils/ftue/refRegistry';
 import JourneyUnlockOverlay, { hasSeenJourneyUnlock } from '@/components/growth/JourneyUnlockOverlay';
 import { getCurrentStepNumber } from '@/services/steps';
-import { getTaglineForStep, getPracticesForStep, getStep, getJournalPromptForStep } from '@/utils/steps/twelve-steps';
+import { getTaglineForStep, getPracticesForStep, getStep, getJournalPromptForStep, getPhaseForStep } from '@/utils/steps/twelve-steps';
 import { MICRO_COURSES, calculateCourseProgress, type CourseProgress } from '@/utils/microcourses/course-registry';
 import { getCompletions as getMicroCourseCompletions } from '@/services/intervention';
 import MicroCourseCard from '@/components/microcourse/MicroCourseCard';
@@ -1124,6 +1124,7 @@ export default function HomeScreen() {
 
           return (
             <TouchableOpacity
+              ref={(r) => RefRegistry.register('home_portraitSummary', r)}
               style={styles.portraitSummaryCard}
               onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/portrait' as any); }}
               activeOpacity={0.8}
@@ -1268,157 +1269,275 @@ export default function HomeScreen() {
           </TouchableOpacity>
         )}
 
-        {/* ═══ JOURNEY VALUE MAP (first-time users) ═══════════ */}
-        {completedCount === 0 && !hasPortrait && (
-          <View style={styles.journeyMapCard}>
-            <Text style={styles.journeyMapTitle}>Your Journey Ahead</Text>
-            <View style={styles.journeyStepsColumn}>
-              {[
-                { num: '1', name: 'Discover', desc: '6 sections exploring how you connect, feel, and fight' },
-                { num: '2', name: 'Portrait', desc: 'A complete relational profile synthesizing all your results' },
-                { num: '3', name: 'Growth Plan', desc: 'Personalized pathways based on your unique patterns' },
-                { num: '4', name: 'Practice', desc: 'Guided exercises, micro-courses, and AI coaching' },
-                { num: '5', name: 'Progress', desc: 'Track your growth with milestones and insights' },
-              ].map((step) => (
-                <View key={step.num} style={styles.journeyStepRow}>
-                  <View style={styles.journeyStepNumber}>
-                    <Text style={styles.journeyStepNumberText}>{step.num}</Text>
+        {/* ═══ JOURNEY MILESTONE MAP (pre-portrait — progressive) ═══ */}
+        {!hasPortrait && (() => {
+          const discoverDone = tenderStatus.state === 'completed';
+          const milestones = [
+            {
+              name: 'Discover',
+              desc: '7 assessment sections about how you connect, feel, and fight',
+              done: discoverDone,
+              inProgress: tenderStatus.state === 'in_progress',
+              progressDetail: tenderStatus.state === 'in_progress'
+                ? `${tenderStatus.completedSections} of ${TENDER_SECTIONS.length}`
+                : undefined,
+            },
+            {
+              name: 'Portrait',
+              desc: 'A complete relational profile from your results',
+              done: false,
+              inProgress: discoverDone,
+            },
+            {
+              name: 'Journey',
+              desc: '12 steps with practices, courses, and growth pathways',
+              done: false,
+              inProgress: false,
+            },
+            {
+              name: 'Practice',
+              desc: 'Exercises, micro-courses, and AI coaching',
+              done: false,
+              inProgress: false,
+            },
+            {
+              name: 'Progress',
+              desc: 'Track milestones and personal growth',
+              done: false,
+              inProgress: false,
+            },
+          ];
+
+          return (
+            <View style={styles.journeyMapCard}>
+              <Text style={styles.journeyMapTitle}>Your Journey Ahead</Text>
+              <View style={styles.journeyStepsColumn}>
+                {milestones.map((m, index) => (
+                  <View key={m.name} style={styles.journeyStepRow}>
+                    <View style={[
+                      styles.journeyStepNumber,
+                      m.done && styles.journeyStepNumberDone,
+                      m.inProgress && styles.journeyStepNumberActive,
+                    ]}>
+                      {m.done ? (
+                        <CheckmarkIcon size={12} color={Colors.successDark} />
+                      ) : (
+                        <Text style={[
+                          styles.journeyStepNumberText,
+                          m.inProgress && styles.journeyStepNumberTextActive,
+                        ]}>{index + 1}</Text>
+                      )}
+                    </View>
+                    <View style={styles.journeyStepContent}>
+                      <Text style={[
+                        styles.journeyStepName,
+                        m.done && styles.journeyStepNameDone,
+                      ]}>
+                        {m.name}
+                        {m.progressDetail ? ` (${m.progressDetail})` : ''}
+                      </Text>
+                      {!m.done && (
+                        <Text style={styles.journeyStepDesc}>{m.desc}</Text>
+                      )}
+                    </View>
                   </View>
-                  <View style={styles.journeyStepContent}>
-                    <Text style={styles.journeyStepName}>{step.name}</Text>
-                    <Text style={styles.journeyStepDesc}>{step.desc}</Text>
-                  </View>
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {/* ═══ 4. YOUR JOURNEY — The Tender Assessment ════════ */}
-        <View style={styles.progressSection}>
-          <View style={styles.progressHeader}>
-            <Text style={styles.progressLabel}>YOUR JOURNEY</Text>
-            <Text style={styles.progressCount}>
-              {tenderStatus.completedSections} of {TENDER_SECTIONS.length} sections complete
-            </Text>
-          </View>
-
-          {/* Section progress segments */}
-          <View style={styles.tenderSegmentBar}>
-            {TENDER_SECTIONS.map((sec) => (
-              <View
-                key={sec.assessmentType}
-                style={[
-                  styles.tenderSegment,
-                  tenderStatus.completedTypes.includes(sec.assessmentType) && styles.tenderSegmentDone,
-                ]}
-              />
-            ))}
-          </View>
-
-          {/* Tender Assessment card */}
-          {tenderStatus.state !== 'completed' && (
-            <HighlightWrapper highlightId="home_assessment_cta">
-            <View
-              ref={(r) => RefRegistry.register('home_assessmentCta', r)}
-              style={styles.tenderCard}
-            >
-              {tenderStatus.state === 'not_started' && (
-                <>
-                  <Text style={styles.tenderCardTitle}>The Tender Assessment</Text>
-                  <Text style={styles.tenderCardDescription}>
-                    6 sections covering how you connect, feel, fight, and what matters to you.
-                    Take breaks between sections and come back anytime.
-                  </Text>
-                  <Text style={styles.tenderCardMeta}>
-                    {TOTAL_QUESTIONS} questions {'\u00B7'} ~{TOTAL_ESTIMATED_MINUTES} min {'\u00B7'} Save & exit anytime
-                  </Text>
-                  <TenderButton
-                    title="Start Assessment"
-                    onPress={() => { SoundHaptics.tap(); router.push('/(app)/tender-assessment' as any); }}
-                    variant="primary"
-                    size="md"
-                    fullWidth
-                    style={{ marginTop: Spacing.xs }}
-                    accessibilityLabel="Start Assessment"
-                  />
-                </>
-              )}
-
-              {tenderStatus.state === 'in_progress' && (
-                <>
-                  <Text style={styles.tenderCardTitle}>The Tender Assessment</Text>
-                  {tenderStatus.currentSectionName && (
-                    <Text style={styles.tenderCurrentSection}>
-                      Next: {tenderStatus.currentSectionName}
-                    </Text>
-                  )}
-                  <TenderButton
-                    title="Continue"
-                    onPress={() => { SoundHaptics.tap(); router.push('/(app)/tender-assessment' as any); }}
-                    variant="primary"
-                    size="md"
-                    fullWidth
-                    style={{ marginTop: Spacing.xs }}
-                    accessibilityLabel="Continue Assessment"
-                  />
-                </>
-              )}
-            </View>
-            </HighlightWrapper>
-          )}
-
-          {/* Assessment complete achievement */}
-          {tenderStatus.state === 'completed' && (
-            <View style={styles.assessmentCompleteCard}>
-              <View style={styles.assessmentCompleteHeader}>
-                <CheckmarkIcon size={16} color={Colors.calm} />
-                <Text style={styles.assessmentCompleteTitle}>
-                  All {TENDER_SECTIONS.length} Sections Complete
-                </Text>
+                ))}
               </View>
-              <Text style={styles.assessmentCompleteDesc}>
-                Your portrait captures how you connect, feel, fight, and what matters to you.
-              </Text>
+            </View>
+          );
+        })()}
+
+        {/* ═══ 4. STEP JOURNEY (portrait) or ASSESSMENT (pre-portrait) ═══ */}
+        {hasPortrait ? (
+          /* ── Step Journey Card — the heart of the home page ── */
+          (() => {
+            const step = getStep(currentStepNum);
+            const phase = getPhaseForStep(currentStepNum);
+            if (!step || !phase) return null;
+            const PhaseIcon = phase.icon;
+            return (
               <TouchableOpacity
+                ref={(r) => RefRegistry.register('home_journeyCard', r)}
+                style={[styles.stepJourneyCard, { borderColor: phase.color + '25' }]}
                 onPress={() => {
                   SoundHaptics.tapSoft();
-                  router.push('/(app)/tender-assessment' as any);
+                  router.push(`/(app)/step-detail?step=${currentStepNum}` as any);
                 }}
-                style={styles.retakeLink}
-                accessibilityLabel="Retake any section"
+                activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel={`Step ${currentStepNum}: ${step.title}`}
               >
-                <RefreshIcon size={14} color={Colors.primary} />
-                <Text style={styles.retakeLinkText}>
-                  Retake any section to see how you've grown
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
+                <View style={styles.stepJourneyHeader}>
+                  <Text style={styles.stepJourneyLabel}>YOUR JOURNEY</Text>
+                  <Text style={styles.stepJourneyProgress}>
+                    Step {currentStepNum} of 12
+                  </Text>
+                </View>
 
-          {/* Portrait generation prompt — part of journey */}
-          {individualCompleted && !hasPortrait && (
-            <View style={styles.portraitGenerateCard}>
-              <Text style={styles.portraitGenerateTitle}>
-                Your Portrait is Ready
-              </Text>
-              <Text style={styles.portraitGenerateSubtitle}>
-                All assessments complete — generate your relational portrait
-              </Text>
-              <TenderButton
-                title="Generate Portrait"
-                onPress={handleGeneratePortrait}
-                variant="secondary"
-                size="lg"
-                fullWidth
-                loading={generating}
-                disabled={generating}
-                style={{ marginTop: Spacing.sm }}
-                accessibilityLabel="Generate your relational portrait"
-              />
-            </View>
-          )}
-        </View>
+                <View style={styles.stepJourneyBody}>
+                  <View style={[styles.stepJourneyPhaseIndicator, { backgroundColor: phase.color + '20' }]}>
+                    <PhaseIcon size={22} color={phase.color} />
+                  </View>
+                  <View style={styles.stepJourneyContent}>
+                    <Text style={styles.stepJourneyStepTitle}>
+                      Step {currentStepNum}: {step.title}
+                    </Text>
+                    <View style={styles.stepJourneyPhaseRow}>
+                      <View style={[styles.stepJourneyPhaseDot, { backgroundColor: phase.color }]} />
+                      <Text style={styles.stepJourneyPhaseName}>{phase.name}</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.stepJourneyArrow}>{'\u2192'}</Text>
+                </View>
+
+                {/* 12-segment mini progress bar */}
+                <View style={styles.stepJourneySegmentBar}>
+                  {Array.from({ length: 12 }, (_, i) => (
+                    <View
+                      key={i}
+                      style={[
+                        styles.stepJourneySegment,
+                        i + 1 < currentStepNum && styles.stepJourneySegmentDone,
+                        i + 1 === currentStepNum && [styles.stepJourneySegmentActive, { backgroundColor: phase.color }],
+                      ]}
+                    />
+                  ))}
+                </View>
+              </TouchableOpacity>
+            );
+          })()
+        ) : (
+          /* ── Consolidated Assessment Section (pre-portrait) ── */
+          <View style={styles.assessmentSection}>
+            {/* Tender Assessment card with embedded progress */}
+            {tenderStatus.state !== 'completed' && (
+              <HighlightWrapper highlightId="home_assessment_cta">
+                <View
+                  ref={(r) => RefRegistry.register('home_assessmentCta', r)}
+                  style={styles.tenderCard}
+                >
+                  {tenderStatus.state === 'not_started' && (
+                    <>
+                      <Text style={styles.tenderCardTitle}>The Tender Assessment</Text>
+                      <Text style={styles.tenderCardDescription}>
+                        7 sections covering how you connect, feel, fight, and what matters to you.
+                        Take breaks between sections and come back anytime.
+                      </Text>
+                      <View style={styles.tenderSegmentBar}>
+                        {TENDER_SECTIONS.map((sec) => (
+                          <View
+                            key={sec.assessmentType}
+                            style={[
+                              styles.tenderSegment,
+                              tenderStatus.completedTypes.includes(sec.assessmentType) && styles.tenderSegmentDone,
+                            ]}
+                          />
+                        ))}
+                      </View>
+                      <Text style={styles.tenderCardMeta}>
+                        {TOTAL_QUESTIONS} questions {'\u00B7'} ~{TOTAL_ESTIMATED_MINUTES} min {'\u00B7'} Save & exit anytime
+                      </Text>
+                      <TenderButton
+                        title="Start Assessment"
+                        onPress={() => { SoundHaptics.tap(); router.push('/(app)/tender-assessment' as any); }}
+                        variant="primary"
+                        size="md"
+                        fullWidth
+                        style={{ marginTop: Spacing.xs }}
+                        accessibilityLabel="Start Assessment"
+                      />
+                    </>
+                  )}
+
+                  {tenderStatus.state === 'in_progress' && (
+                    <>
+                      <Text style={styles.tenderCardTitle}>The Tender Assessment</Text>
+                      <View style={styles.tenderSegmentBar}>
+                        {TENDER_SECTIONS.map((sec) => (
+                          <View
+                            key={sec.assessmentType}
+                            style={[
+                              styles.tenderSegment,
+                              tenderStatus.completedTypes.includes(sec.assessmentType) && styles.tenderSegmentDone,
+                            ]}
+                          />
+                        ))}
+                      </View>
+                      <Text style={styles.tenderCardMeta}>
+                        {tenderStatus.completedSections} of {TENDER_SECTIONS.length} sections complete
+                      </Text>
+                      {tenderStatus.currentSectionName && (
+                        <Text style={styles.tenderCurrentSection}>
+                          Next: {tenderStatus.currentSectionName}
+                        </Text>
+                      )}
+                      <TenderButton
+                        title="Continue"
+                        onPress={() => { SoundHaptics.tap(); router.push('/(app)/tender-assessment' as any); }}
+                        variant="primary"
+                        size="md"
+                        fullWidth
+                        style={{ marginTop: Spacing.xs }}
+                        accessibilityLabel="Continue Assessment"
+                      />
+                    </>
+                  )}
+                </View>
+              </HighlightWrapper>
+            )}
+
+            {/* Assessment complete achievement */}
+            {tenderStatus.state === 'completed' && (
+              <View style={styles.assessmentCompleteCard}>
+                <View style={styles.assessmentCompleteHeader}>
+                  <CheckmarkIcon size={16} color={Colors.calm} />
+                  <Text style={styles.assessmentCompleteTitle}>
+                    All {TENDER_SECTIONS.length} Sections Complete
+                  </Text>
+                </View>
+                <Text style={styles.assessmentCompleteDesc}>
+                  Your portrait captures how you connect, feel, fight, and what matters to you.
+                </Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    SoundHaptics.tapSoft();
+                    router.push('/(app)/tender-assessment' as any);
+                  }}
+                  style={styles.retakeLink}
+                  accessibilityLabel="Retake any section"
+                >
+                  <RefreshIcon size={14} color={Colors.primary} />
+                  <Text style={styles.retakeLinkText}>
+                    Retake any section to see how you've grown
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* Portrait generation prompt */}
+            {individualCompleted && !hasPortrait && (
+              <View style={[styles.portraitGenerateCard, { marginHorizontal: 0 }]}>
+                <Text style={styles.portraitGenerateTitle}>
+                  Your Portrait is Ready
+                </Text>
+                <Text style={styles.portraitGenerateSubtitle}>
+                  All assessments complete — generate your relational portrait
+                </Text>
+                <TenderButton
+                  title="Generate Portrait"
+                  onPress={handleGeneratePortrait}
+                  variant="secondary"
+                  size="lg"
+                  fullWidth
+                  loading={generating}
+                  disabled={generating}
+                  style={{ marginTop: Spacing.sm }}
+                  accessibilityLabel="Generate your relational portrait"
+                />
+              </View>
+            )}
+          </View>
+        )}
 
         {/* ═══ 4A2. YOUR HEALING JOURNEY (after first assessment, before portrait) */}
         {completedCount >= 1 && !hasPortrait && (
@@ -1538,7 +1657,7 @@ export default function HomeScreen() {
 
         {/* ═══ DAILY RHYTHM (collapsible section) ═════════ */}
         {hasCompletedOnboarding && (
-          <View style={styles.section}>
+          <View ref={(r) => RefRegistry.register('home_dailyRhythm', r)} style={styles.section}>
             <DailyRhythmSection
               todaysCheckIn={todaysCheckIn}
               onCheckInSubmit={handleCheckInSubmit}
@@ -1552,7 +1671,7 @@ export default function HomeScreen() {
         )}
 
         {/* ═══ EXPLORE — 4 Gateway Cards ══════════════════ */}
-        <View style={styles.gatewaySection}>
+        <View ref={(r) => RefRegistry.register('home_exploreSection', r)} style={styles.gatewaySection}>
           <Text style={styles.gatewaySectionLabel}>EXPLORE</Text>
 
           {/* YOUR JOURNEY */}
@@ -1648,7 +1767,9 @@ export default function HomeScreen() {
         {/* Old Daily Rhythm moved above gateway cards as collapsible DailyRhythmSection */}
 
         {/* ═══ QUICK LINKS (bottom row) ════════════════════════ */}
-        <QuickLinksBar showHome={false} currentScreen="home" />
+        <View ref={(r) => RefRegistry.register('home_quickLinks', r)}>
+          <QuickLinksBar showHome={false} currentScreen="home" />
+        </View>
       </ScrollView>
 
       {/* ═══ FTUE Overlays ═══════════════════════════════════ */}
@@ -3007,6 +3128,112 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: Colors.textSecondary,
     marginTop: 1,
+  },
+  journeyStepNumberDone: {
+    backgroundColor: Colors.successLight,
+  },
+  journeyStepNumberActive: {
+    backgroundColor: Colors.primary + '25',
+    borderWidth: 1.5,
+    borderColor: Colors.primary,
+  },
+  journeyStepNumberTextActive: {
+    color: Colors.primary,
+  },
+  journeyStepNameDone: {
+    color: Colors.textMuted,
+    textDecorationLine: 'line-through' as const,
+  },
+
+  // ── Assessment Section (pre-portrait consolidated) ──
+  assessmentSection: {
+    paddingHorizontal: Spacing.lg,
+    gap: Spacing.md,
+  },
+
+  // ── Step Journey Card (portrait users) ──
+  stepJourneyCard: {
+    marginHorizontal: Spacing.lg,
+    marginBottom: Spacing.md,
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    borderWidth: 1,
+    ...Shadows.card,
+  },
+  stepJourneyHeader: {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    alignItems: 'center' as const,
+    marginBottom: Spacing.sm,
+  },
+  stepJourneyLabel: {
+    fontSize: FontSizes.caption,
+    fontWeight: '700' as const,
+    color: Colors.primary,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase' as const,
+  },
+  stepJourneyProgress: {
+    fontSize: FontSizes.caption,
+    color: Colors.textSecondary,
+  },
+  stepJourneyBody: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: Spacing.sm,
+    marginBottom: Spacing.md,
+  },
+  stepJourneyPhaseIndicator: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  stepJourneyContent: {
+    flex: 1,
+  },
+  stepJourneyStepTitle: {
+    fontSize: FontSizes.body,
+    fontWeight: '700' as const,
+    fontFamily: FontFamilies.heading,
+    color: Colors.text,
+  },
+  stepJourneyPhaseRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 6,
+    marginTop: 2,
+  },
+  stepJourneyPhaseDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  stepJourneyPhaseName: {
+    fontSize: FontSizes.caption,
+    color: Colors.textSecondary,
+  },
+  stepJourneyArrow: {
+    fontSize: 20,
+    color: Colors.textMuted,
+  },
+  stepJourneySegmentBar: {
+    flexDirection: 'row' as const,
+    gap: 3,
+  },
+  stepJourneySegment: {
+    flex: 1,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: Colors.border,
+  },
+  stepJourneySegmentDone: {
+    backgroundColor: Colors.primary + '60',
+  },
+  stepJourneySegmentActive: {
+    backgroundColor: Colors.primary,
   },
 
   // ── Real Partner Connect Prompt ──

@@ -42,6 +42,8 @@ const TYPE_COLORS: Record<JournalEntryType, string> = {
   step_milestone: Colors.success,   // Step completion green
   card_game: Colors.accent,         // Terracotta (Building Bridges)
   reflection: Colors.primary,       // Dusty Rose (Step reflections)
+  weare_checkin: Colors.calm,       // Soft Teal (WEARE weekly)
+  course_lesson: Colors.secondary,  // Lobby Blue (Micro-course lessons)
 };
 
 // Ordered for consistent dot layout

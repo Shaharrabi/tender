@@ -6,7 +6,7 @@
  * 2. Tagline: "Tending the field between you — in 12 steps"
  * 3. CurrentStepFocus — simplified hero card
  * 4. StepJourney — 12-step map grouped by phases
- * 5. Treatment Plan link (bottom)
+ * 5. Growth Plan status card (bottom)
  *
  * Daily content (check-in, practices, nervous system) lives on home.
  */
@@ -39,6 +39,7 @@ import StepJourney from '@/components/growth/StepJourney';
 import FoundationOverlay, { hasHeardFoundation } from '@/components/growth/FoundationOverlay';
 import { ensureStepProgress } from '@/services/steps';
 import { getMyCouple, isSelfCouple } from '@/services/couples';
+import { getPortrait } from '@/services/portrait';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import type { StepProgress } from '@/types/growth';
 import type { Couple } from '@/types/couples';
@@ -51,6 +52,7 @@ export default function GrowthScreen() {
   const [stepProgress, setStepProgress] = useState<StepProgress[]>([]);
   const [currentStepNumber, setCurrentStepNumber] = useState(1);
   const [couple, setCouple] = useState<Couple | null>(null);
+  const [hasPortrait, setHasPortrait] = useState(false);
   const [showFoundation, setShowFoundation] = useState(false);
 
   // Check if Foundation audio should auto-play on first visit
@@ -79,6 +81,14 @@ export default function GrowthScreen() {
       } catch {
         setCouple(null);
       }
+
+      // Check portrait existence (non-blocking)
+      try {
+        const p = await getPortrait(user.id);
+        setHasPortrait(!!p);
+      } catch {
+        setHasPortrait(false);
+      }
     } catch (err) {
       console.error('Failed to load growth data:', err);
     } finally {
@@ -101,10 +111,6 @@ export default function GrowthScreen() {
       pathname: '/(app)/step-detail' as any,
       params: { step: stepNumber.toString() },
     });
-  };
-
-  const handleViewTreatmentPlan = () => {
-    router.push('/(app)/treatment-plan' as any);
   };
 
   if (loading) {
@@ -172,23 +178,23 @@ export default function GrowthScreen() {
           isCoupled={!!(couple && !isSelfCouple(couple))}
         />
 
-        {/* Treatment Plan Link */}
-        <TouchableOpacity
-          style={styles.treatmentPlanLink}
-          onPress={handleViewTreatmentPlan}
-          activeOpacity={0.7}
-          accessibilityRole="button"
-        >
-          <View style={styles.treatmentPlanContent}>
-            <Text style={styles.treatmentPlanTitle}>
-              View Treatment Plan
+        {/* Growth Plan Status */}
+        <View style={styles.growthPlanStatus}>
+          <Text style={styles.growthPlanStatusLabel}>YOUR GROWTH PLAN</Text>
+          {hasPortrait && currentStepNumber >= 9 ? (
+            <Text style={styles.growthPlanStatusText}>
+              Your personalized growth plan is woven into Steps 9–12. Continue your journey to explore your pathway, phases, and practices.
             </Text>
-            <Text style={styles.treatmentPlanSubtitle}>
-              Your personalized pathways, goals, and exercises
+          ) : hasPortrait ? (
+            <Text style={styles.growthPlanStatusText}>
+              Your growth plan is taking shape. It will appear in Step 9 as you continue your journey.
             </Text>
-          </View>
-          <Text style={styles.treatmentPlanArrow}>{'\u203A'}</Text>
-        </TouchableOpacity>
+          ) : (
+            <Text style={styles.growthPlanStatusText}>
+              Complete your personal assessments to unlock your personalized growth plan within the steps.
+            </Text>
+          )}
+        </View>
         <QuickLinksBar />
       </ScrollView>
     </SafeAreaView>
@@ -260,35 +266,24 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
 
-  // Treatment plan link
-  treatmentPlanLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  // Growth plan status card
+  growthPlanStatus: {
     backgroundColor: Colors.surface,
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
     borderWidth: 1,
-    borderColor: Colors.primary,
-    ...Shadows.subtle,
+    borderColor: Colors.borderLight,
+    gap: Spacing.xs,
   },
-  treatmentPlanContent: {
-    flex: 1,
-    gap: 2,
+  growthPlanStatusLabel: {
+    ...Typography.caption,
+    fontWeight: '700',
+    color: Colors.textMuted,
+    letterSpacing: 1,
   },
-  treatmentPlanTitle: {
-    fontSize: FontSizes.body,
-    fontWeight: '600',
-    fontFamily: FontFamilies.heading,
-    color: Colors.primary,
-  },
-  treatmentPlanSubtitle: {
-    fontSize: FontSizes.caption,
+  growthPlanStatusText: {
+    fontSize: FontSizes.bodySmall,
     color: Colors.textSecondary,
-  },
-  treatmentPlanArrow: {
-    fontSize: FontSizes.headingL,
-    color: Colors.primary,
-    fontWeight: '300',
-    marginLeft: Spacing.sm,
+    lineHeight: 20,
   },
 });

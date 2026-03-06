@@ -226,9 +226,8 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
     setError(null);
 
     try {
-      // Get auth token — always refresh to ensure a non-expired JWT.
-      // getSession() returns a cached token that may be expired, causing
-      // the Supabase gateway to reject the request before our function runs.
+      // Get auth token — refreshSession FIRST for a guaranteed-fresh JWT,
+      // then fall back to getSession (cached) if refresh fails.
       let token: string | undefined;
 
       // Try refreshSession first — this gives us a guaranteed-fresh JWT
@@ -237,9 +236,9 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
 
       if (__DEV__) console.log('[Chat] refreshSession result:', !!refreshData.session, refreshError?.message || 'no error');
 
-      // Fallback: if refresh fails (e.g. user just logged in, token is still fresh)
-      // use getSession which returns the cached token
+      // Fallback: if refresh fails, use getSession which returns the cached token
       if (!token) {
+        if (__DEV__) console.log('[Chat] No token from refresh, trying cached session...');
         const { data: authData, error: sessionError } = await supabase.auth.getSession();
         token = authData.session?.access_token;
         if (__DEV__) console.log('[Chat] getSession fallback:', !!authData.session, sessionError?.message || 'no error');
@@ -250,10 +249,12 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
         throw new Error('Your session has expired. Please sign in again to chat with Nuance.');
       }
 
-      console.log('[Chat] Sending message to edge function...');
-      console.log('[Chat] URL:', CHAT_FUNCTION_URL);
-      console.log('[Chat] Session ID:', session.id);
-      console.log('[Chat] Has auth token:', !!token, 'Token length:', token?.length);
+      if (__DEV__) {
+        console.log('[Chat] Sending message to edge function...');
+        console.log('[Chat] URL:', CHAT_FUNCTION_URL);
+        console.log('[Chat] Session ID:', session.id);
+        console.log('[Chat] Has auth token:', !!token, 'Token length:', token?.length);
+      }
 
       // Detect streaming support — only request SSE if ReadableStream is available
       const supportsStreaming = typeof ReadableStream !== 'undefined' && typeof TextDecoder !== 'undefined';

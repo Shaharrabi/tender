@@ -67,7 +67,8 @@ import {
   savePartnerExchangeFollowUp,
 } from '@/services/steps';
 import { getMyCouple, isSelfCouple } from '@/services/couples';
-import { getPortrait } from '@/services/portrait';
+import { getPortrait, savePortrait, extractSupplementScores } from '@/services/portrait';
+import { generatePortrait, isPortraitStale } from '@/utils/portrait/portrait-generator';
 import { supabase } from '@/services/supabase';
 import { useSoundHaptics } from '@/services/SoundHapticsService';
 import { getStepTeaching } from '@/utils/steps/step-teachings';
@@ -80,11 +81,13 @@ import { getGrowthPulse } from '@/utils/steps/growth-pulse';
 import { loadStepContext, getEnhancedCallback } from '@/utils/steps/step-context';
 import type { StepContext } from '@/utils/steps/step-context';
 import AssessmentNudgeCard from '@/components/growth/AssessmentNudgeCard';
+import CommunityNudgeCard from '@/components/growth/CommunityNudgeCard';
 import StepAssessmentInsight from '@/components/growth/StepAssessmentInsight';
 import GrowthPulseCard from '@/components/growth/GrowthPulseCard';
 import CouplePlayCard from '@/components/growth/CouplePlayCard';
+import GrowthPlanContent from '@/components/growth/GrowthPlanContent';
 import { fetchAllScores } from '@/services/portrait';
-import type { IndividualPortrait } from '@/types/portrait';
+import type { IndividualPortrait, AllAssessmentScores } from '@/types/portrait';
 import type { MiniGameOutput, StepProgress } from '@/types/growth';
 
 // Enable LayoutAnimation on Android
@@ -93,7 +96,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 }
 
 /** Section IDs for collapsible accordion */
-type SectionId = 'course' | 'goals' | 'practices' | 'reflection' | 'partnerExchange' | 'partnerRound' | 'togetherPractices' | 'allCourses' | 'couplePlay';
+type SectionId = 'course' | 'goals' | 'practices' | 'reflection' | 'partnerExchange' | 'partnerRound' | 'togetherPractices' | 'allCourses' | 'couplePlay' | 'growthPlan';
 
 function StepDetailScreenInner() {
   const { user } = useAuth();
@@ -142,8 +145,11 @@ function StepDetailScreenInner() {
   const [couplePlayPartnerResponse, setCouplePlayPartnerResponse] = useState<string | null>(null);
   const [couplePlayFollowUp, setCouplePlayFollowUp] = useState<string | null>(null);
 
-  // Collapsible sections — all collapsed by default (teaching is not collapsible)
-  const [expandedSections, setExpandedSections] = useState<Set<SectionId>>(new Set());
+  // Collapsible sections — all OPEN by default so the step feels like a room, not a filing cabinet
+  const [expandedSections, setExpandedSections] = useState<Set<SectionId>>(
+    new Set(['course', 'goals', 'practices', 'reflection', 'partnerExchange',
+             'partnerRound', 'togetherPractices', 'allCourses', 'couplePlay', 'growthPlan'])
+  );
 
   const toggleSection = useCallback((sectionId: SectionId) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -211,7 +217,40 @@ function StepDetailScreenInner() {
       setPracticeCount(completions.length);
       setStepProgress(spData);
       setPortrait(userPortrait);
-      setCompletedAssessmentIds([...new Set(assessmentRows.map((r: any) => r.type))]);
+      const uniqueAssessmentTypes = [...new Set(assessmentRows.map((r: any) => r.type))];
+      setCompletedAssessmentIds(uniqueAssessmentTypes);
+
+      // Auto-regenerate portrait if assessments changed or code version is newer
+      if (userPortrait && uniqueAssessmentTypes.length >= 6) {
+        try {
+          const latestScoresMap = await fetchAllScores(user.id);
+          const currentIds = new Set(Object.values(latestScoresMap).map((r) => r.id));
+          const portraitIds = new Set(userPortrait.assessmentIds || []);
+          const idsChanged = [...currentIds].some((id) => !portraitIds.has(id));
+          const versionStale = isPortraitStale(userPortrait.version);
+
+          if (idsChanged || versionStale) {
+            console.log(`[StepDetail] Portrait stale — regenerating (ids=${idsChanged}, version=${versionStale})`);
+            const scores: AllAssessmentScores = {
+              ecrr: latestScoresMap['ecr-r'].scores,
+              dutch: latestScoresMap['dutch'].scores,
+              sseit: latestScoresMap['sseit'].scores,
+              dsir: latestScoresMap['dsi-r'].scores,
+              ipip: latestScoresMap['ipip-neo-120'].scores,
+              values: latestScoresMap['values'].scores,
+            };
+            const supplements = extractSupplementScores(latestScoresMap);
+            const ids = Object.values(latestScoresMap).map((r) => r.id);
+            const freshPortrait = generatePortrait(user.id, ids, scores, supplements);
+            const saved = await savePortrait(freshPortrait);
+            setPortrait(saved);
+            console.log('[StepDetail] Portrait auto-regenerated successfully');
+          }
+        } catch (regenErr) {
+          console.warn('[StepDetail] Portrait regen failed, keeping existing:', regenErr);
+          // Keep old portrait — don't block step loading
+        }
+      }
 
       // Load step context (previous answers feeding forward)
       try {
@@ -300,7 +339,11 @@ function StepDetailScreenInner() {
     haptics.tap();
     router.push({
       pathname: '/(app)/exercise' as any,
-      params: { id: practiceId },
+      params: {
+        id: practiceId,
+        stepNumber: String(stepNumber),
+        ...(coupleId ? { coupleId } : {}),
+      },
     });
   };
 
@@ -530,12 +573,7 @@ function StepDetailScreenInner() {
           </Animated.View>
         )}
 
-        {/* Intro Text */}
-        {step.introText && (
-          <Animated.View entering={FadeIn.delay(400).duration(600)} style={styles.introTextCard}>
-            <Text style={styles.introText}>{step.introText}</Text>
-          </Animated.View>
-        )}
+        {/* ═══ 2 — TEACHING ═══ */}
 
         {/* Step Teaching — Original therapeutic content */}
         {teaching && (
@@ -543,18 +581,6 @@ function StepDetailScreenInner() {
             {teaching.teaching.map((paragraph, i) => (
               <Text key={i} style={styles.teachingParagraph}>{paragraph}</Text>
             ))}
-            {teaching.whyAfterPrevious && (
-              <View style={[styles.teachingConnectionCard, { borderLeftColor: phase.color }]}>
-                <Text style={styles.teachingConnectionLabel}>WHY THIS STEP COMES NOW</Text>
-                <Text style={styles.teachingConnectionText}>{teaching.whyAfterPrevious}</Text>
-              </View>
-            )}
-            {teaching.courseConnection && (
-              <View style={[styles.teachingConnectionCard, { borderLeftColor: Colors.secondary }]}>
-                <Text style={styles.teachingConnectionLabel}>HOW THE COURSE DEEPENS THIS</Text>
-                <Text style={styles.teachingConnectionText}>{teaching.courseConnection}</Text>
-              </View>
-            )}
           </Animated.View>
         )}
 
@@ -567,12 +593,24 @@ function StepDetailScreenInner() {
           </Animated.View>
         )}
 
-        {/* Story So Far — Step 12 synthesis of the user's journey */}
-        {stepNumber === 12 && stepContext?.storySoFar && (
+        {/* ═══ 3 — CONTEXT ═══ */}
+
+        {/* Why This Step Comes Now */}
+        {teaching?.whyAfterPrevious && (
+          <Animated.View entering={FadeIn.delay(462).duration(600)}>
+            <View style={[styles.teachingConnectionCard, { borderLeftColor: phase.color }]}>
+              <Text style={styles.teachingConnectionLabel}>WHY THIS STEP COMES NOW</Text>
+              <Text style={styles.teachingConnectionText}>{teaching.whyAfterPrevious}</Text>
+            </View>
+          </Animated.View>
+        )}
+
+        {/* How The Course Deepens This */}
+        {teaching?.courseConnection && (
           <Animated.View entering={FadeIn.delay(465).duration(600)}>
-            <View style={[styles.bridgeCard, { borderLeftColor: phase.color }]}>
-              <Text style={styles.bridgeLabel}>YOUR STORY</Text>
-              <Text style={styles.bridgeText}>{stepContext.storySoFar}</Text>
+            <View style={[styles.teachingConnectionCard, { borderLeftColor: Colors.secondary }]}>
+              <Text style={styles.teachingConnectionLabel}>HOW THE COURSE DEEPENS THIS</Text>
+              <Text style={styles.teachingConnectionText}>{teaching.courseConnection}</Text>
             </View>
           </Animated.View>
         )}
@@ -609,6 +647,13 @@ function StepDetailScreenInner() {
           </Animated.View>
         )}
 
+        {/* Community Nudge — Step 9: repair deepens when witnessed */}
+        {stepNumber === 9 && (
+          <Animated.View entering={FadeIn.delay(bridge ? 590 : 530).duration(600)}>
+            <CommunityNudgeCard phaseColor={phase.color} />
+          </Animated.View>
+        )}
+
         {/* Growth Pulse — Visible portrait evolution at milestone steps */}
         {growthPulse && (
           <GrowthPulseCard
@@ -618,9 +663,114 @@ function StepDetailScreenInner() {
           />
         )}
 
-        {/* Transition: after teaching/bridge → tagline */}
+        {/* Portrait Link — connects step to personal portrait (Steps 4+) */}
+        {portrait && stepNumber >= 4 && (
+          <Animated.View entering={FadeIn.delay(550).duration(500)}>
+            <TouchableOpacity
+              style={[styles.portraitLinkCard, { borderLeftColor: phase.color }]}
+              onPress={() => router.push('/(app)/portrait' as any)}
+              activeOpacity={0.7}
+              accessibilityRole="link"
+            >
+              <Text style={styles.bridgeLabel}>YOUR PERSONAL PORTRAIT</Text>
+              <Text style={styles.bridgeText}>
+                Your portrait reflects everything you have shared. Visit it to see how your patterns connect to this step.
+              </Text>
+              <Text style={[styles.portraitLinkCta, { color: phase.color }]}>
+                Open Portrait {'\u203A'}
+              </Text>
+            </TouchableOpacity>
+          </Animated.View>
+        )}
+
+        {/* Completion Criteria — Collapsible Interactive Checklist */}
+        <Animated.View entering={FadeIn.delay(600).duration(500)} style={styles.goalsCard}>
+          <CollapsibleHeader
+            title={`Step ${step.stepNumber} Goals`}
+            subtitle={`${checkedCriteria.length} of ${step.completionCriteria.length} completed`}
+            isExpanded={expandedSections.has('goals')}
+            onToggle={() => toggleSection('goals')}
+            phaseColor={phase.color}
+          />
+          {expandedSections.has('goals') && (
+            <>
+              <Text style={styles.goalsSubtitle}>
+                {checkedCriteria.length} of {step.completionCriteria.length} goals completed
+                {' \u00B7 '}
+                {practiceCount} practice{practiceCount !== 1 ? 's' : ''} done
+              </Text>
+              {step.completionCriteria.map((criteria, i) => {
+                const isChecked = checkedCriteria.includes(i);
+                return (
+                  <TouchableOpacity
+                    key={i}
+                    style={styles.goalRow}
+                    activeOpacity={canToggleCriteria ? 0.6 : 1}
+                    disabled={!canToggleCriteria}
+                    onPress={() => handleCriteriaToggle(i, !isChecked)}
+                    accessibilityRole="button"
+                    accessibilityState={{ disabled: !canToggleCriteria }}
+                  >
+                    <View style={styles.criteriaCheckbox}>
+                      <View
+                        style={[
+                          styles.criteriaSquare,
+                          { borderColor: phase.color },
+                          isChecked && [styles.criteriaSquareChecked, { backgroundColor: phase.color, borderColor: phase.color }],
+                        ]}
+                      >
+                        {isChecked && (
+                          <CheckmarkIcon size={10} color={Colors.white} />
+                        )}
+                      </View>
+                    </View>
+                    <Text
+                      style={[
+                        styles.goalText,
+                        isChecked && styles.goalTextChecked,
+                      ]}
+                    >
+                      {criteria}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+              {!canToggleCriteria && (
+                <Text style={styles.criteriaHint}>
+                  These goals become active when you reach this step
+                </Text>
+              )}
+              {isCompletedStep && (
+                <View style={[styles.completedBadge, { backgroundColor: phase.color + '18' }]}>
+                  <Text style={[styles.completedBadgeText, { color: phase.color }]}>
+                    Step Complete
+                  </Text>
+                </View>
+              )}
+            </>
+          )}
+        </Animated.View>
+
+        {/* ── Divider: context → learning guide ── */}
+        <View style={styles.sectionDivider} />
+
+        {/* Transition: after teaching/context → learning guide */}
         {transitions?.afterTeaching && (
           <Text style={styles.transitionText}>{transitions.afterTeaching}</Text>
+        )}
+
+        {/* ═══ 4 — STEP LEARNING GUIDE ═══ */}
+        <View style={styles.sectionHeaderRow}>
+          <View style={[styles.sectionHeaderLine, { backgroundColor: phase.color }]} />
+          <Text style={styles.sectionHeaderLabel}>STEP LEARNING GUIDE</Text>
+          <View style={[styles.sectionHeaderLine, { backgroundColor: phase.color }]} />
+        </View>
+
+        {/* Intro Text — moved here from before teaching */}
+        {step.introText && (
+          <Animated.View entering={FadeIn.delay(620).duration(600)} style={styles.introTextCard}>
+            <Text style={styles.introText}>{step.introText}</Text>
+          </Animated.View>
         )}
 
         {/* Tagline */}
@@ -736,74 +886,6 @@ function StepDetailScreenInner() {
           <Text style={styles.transitionText}>{transitions.afterCourse}</Text>
         )}
 
-        {/* Completion Criteria — Collapsible Interactive Checklist */}
-        <Animated.View entering={FadeIn.delay(800).duration(500)} style={styles.goalsCard}>
-          <CollapsibleHeader
-            title={`Step ${step.stepNumber} Goals`}
-            subtitle={`${checkedCriteria.length} of ${step.completionCriteria.length} completed`}
-            isExpanded={expandedSections.has('goals')}
-            onToggle={() => toggleSection('goals')}
-            phaseColor={phase.color}
-          />
-          {expandedSections.has('goals') && (
-            <>
-              <Text style={styles.goalsSubtitle}>
-                {checkedCriteria.length} of {step.completionCriteria.length} goals completed
-                {' \u00B7 '}
-                {practiceCount} practice{practiceCount !== 1 ? 's' : ''} done
-              </Text>
-              {step.completionCriteria.map((criteria, i) => {
-                const isChecked = checkedCriteria.includes(i);
-                return (
-                  <TouchableOpacity
-                    key={i}
-                    style={styles.goalRow}
-                    activeOpacity={canToggleCriteria ? 0.6 : 1}
-                    disabled={!canToggleCriteria}
-                    onPress={() => handleCriteriaToggle(i, !isChecked)}
-                    accessibilityRole="button"
-                    accessibilityState={{ disabled: !canToggleCriteria }}
-                  >
-                    <View style={styles.criteriaCheckbox}>
-                      <View
-                        style={[
-                          styles.criteriaSquare,
-                          { borderColor: phase.color },
-                          isChecked && [styles.criteriaSquareChecked, { backgroundColor: phase.color, borderColor: phase.color }],
-                        ]}
-                      >
-                        {isChecked && (
-                          <CheckmarkIcon size={10} color={Colors.white} />
-                        )}
-                      </View>
-                    </View>
-                    <Text
-                      style={[
-                        styles.goalText,
-                        isChecked && styles.goalTextChecked,
-                      ]}
-                    >
-                      {criteria}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-              {!canToggleCriteria && (
-                <Text style={styles.criteriaHint}>
-                  These goals become active when you reach this step
-                </Text>
-              )}
-              {isCompletedStep && (
-                <View style={[styles.completedBadge, { backgroundColor: phase.color + '18' }]}>
-                  <Text style={[styles.completedBadgeText, { color: phase.color }]}>
-                    Step Complete
-                  </Text>
-                </View>
-              )}
-            </>
-          )}
-        </Animated.View>
-
         {/* Practices — Collapsible */}
         <Animated.View entering={FadeIn.delay(900).duration(500)} style={styles.practicesSection}>
           <CollapsibleHeader
@@ -851,47 +933,88 @@ function StepDetailScreenInner() {
           })}
         </Animated.View>
 
-        {/* Transition: after practices → reflection/exchange */}
+        {/* Together Practices — Collapsible, couple-only */}
+        {isCoupled && step.togetherPractices && step.togetherPractices.length > 0 && (
+          <Animated.View entering={FadeIn.delay(950).duration(500)} style={styles.practicesSection}>
+            <CollapsibleHeader
+              title="Together Practices"
+              subtitle={`${step.togetherPractices.length} practice${step.togetherPractices.length > 1 ? 's' : ''} with your partner`}
+              isExpanded={expandedSections.has('togetherPractices')}
+              onToggle={() => toggleSection('togetherPractices')}
+              phaseColor={phase.color}
+            />
+            {expandedSections.has('togetherPractices') && <>
+            <Text style={styles.sectionHint}>
+              Practices designed to do with your partner.
+            </Text>
+            {step.togetherPractices.map((practiceId) => {
+              const exercise = getExerciseById(practiceId);
+              const label = exercise?.title ?? practiceId
+                .replace(/-/g, ' ')
+                .replace(/\b\w/g, (c: string) => c.toUpperCase());
+              const duration = exercise?.duration;
+              return (
+                <TouchableOpacity
+                  key={practiceId}
+                  style={styles.practiceCard}
+                  onPress={() => handlePracticePress(practiceId)}
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                >
+                  <View style={styles.practiceInfo}>
+                    <Text style={styles.practiceLabel}>{label}</Text>
+                    <View style={styles.practiceMetaRow}>
+                      {duration != null && (
+                        <Text style={styles.practiceDuration}>{duration} min</Text>
+                      )}
+                      <View style={[styles.practiceModeBadge, { backgroundColor: Colors.secondary + '18' }]}>
+                        <Text style={[styles.practiceModeBadgeText, { color: Colors.secondary }]}>
+                          Together
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                  <Text style={[styles.practiceArrow, { color: phase.color }]}>
+                    {'\u203A'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+            </>}
+          </Animated.View>
+        )}
+
+        {/* Couple Play — Interactive step-specific micro-activity (couple-only) */}
+        {isCoupled && couplePlayActivity && (
+          <Animated.View entering={FadeIn.delay(1000).duration(500)} style={styles.couplePlaySection}>
+            <CouplePlayCard
+              activity={couplePlayActivity}
+              phaseColor={phase.color}
+              isExpanded={expandedSections.has('couplePlay')}
+              onToggle={() => toggleSection('couplePlay')}
+              savedResponse={couplePlayResponse}
+              partnerResponse={couplePlayPartnerResponse}
+              savedFollowUp={couplePlayFollowUp}
+              onSaveResponse={handleCouplePlayResponse}
+              onSaveFollowUp={handleCouplePlayFollowUp}
+            />
+          </Animated.View>
+        )}
+
+        {/* ── Divider: learning guide → reflect & share ── */}
+        <View style={styles.sectionDivider} />
+
+        {/* Transition: after practices → reflect & share */}
         {transitions?.afterPractices && (
           <Text style={styles.transitionText}>{transitions.afterPractices}</Text>
         )}
 
-        {/* Reflection Prompts — Collapsible */}
-        {step.reflectionPrompts && step.reflectionPrompts.length > 0 && (
-          <Animated.View entering={FadeIn.delay(1000).duration(500)} style={styles.reflectionSection}>
-            <CollapsibleHeader
-              title="Reflection"
-              subtitle={`${step.reflectionPrompts.length} prompt${step.reflectionPrompts.length > 1 ? 's' : ''}`}
-              isExpanded={expandedSections.has('reflection')}
-              onToggle={() => toggleSection('reflection')}
-              phaseColor={phase.color}
-            />
-            {expandedSections.has('reflection') && (
-              <>
-                <Text style={styles.sectionHint}>
-                  Take a moment to write what comes up. Your words are saved automatically.
-                </Text>
-                {step.reflectionPrompts.map((prompt, i) => (
-                  <View key={i} style={styles.reflectionCard}>
-                    <Text style={styles.reflectionPromptText}>{prompt}</Text>
-                    <TextInput
-                      style={styles.reflectionInput}
-                      multiline
-                      placeholder="Write your reflection..."
-                      placeholderTextColor={Colors.textMuted}
-                      value={reflectionTexts[i] ?? ''}
-                      onChangeText={(text) =>
-                        setReflectionTexts((prev) => ({ ...prev, [i]: text }))
-                      }
-                      onBlur={() => handleReflectionBlur(i, reflectionTexts[i] ?? '')}
-                      textAlignVertical="top"
-                    />
-                  </View>
-                ))}
-              </>
-            )}
-          </Animated.View>
-        )}
+        {/* ═══ 5 — REFLECT & SHARE ═══ */}
+        <View style={styles.sectionHeaderRow}>
+          <View style={[styles.sectionHeaderLine, { backgroundColor: phase.color }]} />
+          <Text style={styles.sectionHeaderLabel}>REFLECT & SHARE</Text>
+          <View style={[styles.sectionHeaderLine, { backgroundColor: phase.color }]} />
+        </View>
 
         {/* Partner Exchange — Collapsible enhanced couple dialogue (Steps 1-10) */}
         {isCoupled && exchangeConfig && exchangePhase && (
@@ -1082,76 +1205,78 @@ function StepDetailScreenInner() {
           </Animated.View>
         )}
 
+        {/* Reflection Prompts — Collapsible (after exchange) */}
+        {step.reflectionPrompts && step.reflectionPrompts.length > 0 && (
+          <Animated.View entering={FadeIn.delay(1150).duration(500)} style={styles.reflectionSection}>
+            <CollapsibleHeader
+              title="Reflection"
+              subtitle={`${step.reflectionPrompts.length} prompt${step.reflectionPrompts.length > 1 ? 's' : ''}`}
+              isExpanded={expandedSections.has('reflection')}
+              onToggle={() => toggleSection('reflection')}
+              phaseColor={phase.color}
+            />
+            {expandedSections.has('reflection') && (
+              <>
+                <Text style={styles.sectionHint}>
+                  Take a moment to write what comes up. Your words are saved automatically.
+                </Text>
+                {step.reflectionPrompts.map((prompt, i) => (
+                  <View key={i} style={styles.reflectionCard}>
+                    <Text style={styles.reflectionPromptText}>{prompt}</Text>
+                    <TextInput
+                      style={styles.reflectionInput}
+                      multiline
+                      placeholder="Write your reflection..."
+                      placeholderTextColor={Colors.textMuted}
+                      value={reflectionTexts[i] ?? ''}
+                      onChangeText={(text) =>
+                        setReflectionTexts((prev) => ({ ...prev, [i]: text }))
+                      }
+                      onBlur={() => handleReflectionBlur(i, reflectionTexts[i] ?? '')}
+                      textAlignVertical="top"
+                    />
+                  </View>
+                ))}
+              </>
+            )}
+          </Animated.View>
+        )}
+
+        {/* Story So Far — Step 12 synthesis of the user's journey */}
+        {stepNumber === 12 && stepContext?.storySoFar && (
+          <Animated.View entering={FadeIn.delay(1175).duration(600)}>
+            <View style={[styles.bridgeCard, { borderLeftColor: phase.color }]}>
+              <Text style={styles.bridgeLabel}>YOUR STORY</Text>
+              <Text style={styles.bridgeText}>{stepContext.storySoFar}</Text>
+            </View>
+          </Animated.View>
+        )}
+
+        {/* ── Divider: reflect & share → closing ── */}
+        <View style={styles.sectionDivider} />
+
         {/* Transition: after exchange */}
         {transitions?.afterExchange && isCoupled && (exchangeConfig || step.partnerRoundPrompt) && (
           <Text style={styles.transitionText}>{transitions.afterExchange}</Text>
         )}
 
-        {/* Couple Play — Interactive step-specific micro-activity (couple-only) */}
-        {isCoupled && couplePlayActivity && (
-          <Animated.View entering={FadeIn.delay(1150).duration(500)} style={styles.couplePlaySection}>
-            <CouplePlayCard
-              activity={couplePlayActivity}
-              phaseColor={phase.color}
-              isExpanded={expandedSections.has('couplePlay')}
-              onToggle={() => toggleSection('couplePlay')}
-              savedResponse={couplePlayResponse}
-              partnerResponse={couplePlayPartnerResponse}
-              savedFollowUp={couplePlayFollowUp}
-              onSaveResponse={handleCouplePlayResponse}
-              onSaveFollowUp={handleCouplePlayFollowUp}
-            />
-          </Animated.View>
-        )}
+        {/* ═══ 6 — NEXT STEP + CLOSE ═══ */}
 
-        {/* Together Practices — Collapsible, couple-only */}
-        {isCoupled && step.togetherPractices && step.togetherPractices.length > 0 && (
-          <Animated.View entering={FadeIn.delay(1200).duration(500)} style={styles.practicesSection}>
+        {/* Growth Plan — Personalized protocol from portrait (Steps 9+) */}
+        {portrait && stepNumber >= 9 && (
+          <Animated.View entering={FadeIn.delay(1250).duration(500)} style={styles.growthPlanSection}>
             <CollapsibleHeader
-              title="Together Practices"
-              subtitle={`${step.togetherPractices.length} practice${step.togetherPractices.length > 1 ? 's' : ''} with your partner`}
-              isExpanded={expandedSections.has('togetherPractices')}
-              onToggle={() => toggleSection('togetherPractices')}
+              title="Your Growth Plan"
+              subtitle="Personalized pathway from your portrait"
+              isExpanded={expandedSections.has('growthPlan')}
+              onToggle={() => toggleSection('growthPlan')}
               phaseColor={phase.color}
             />
-            {expandedSections.has('togetherPractices') && <>
-            <Text style={styles.sectionHint}>
-              Practices designed to do with your partner.
-            </Text>
-            {step.togetherPractices.map((practiceId) => {
-              const exercise = getExerciseById(practiceId);
-              const label = exercise?.title ?? practiceId
-                .replace(/-/g, ' ')
-                .replace(/\b\w/g, (c: string) => c.toUpperCase());
-              const duration = exercise?.duration;
-              return (
-                <TouchableOpacity
-                  key={practiceId}
-                  style={styles.practiceCard}
-                  onPress={() => handlePracticePress(practiceId)}
-                  activeOpacity={0.7}
-                  accessibilityRole="button"
-                >
-                  <View style={styles.practiceInfo}>
-                    <Text style={styles.practiceLabel}>{label}</Text>
-                    <View style={styles.practiceMetaRow}>
-                      {duration != null && (
-                        <Text style={styles.practiceDuration}>{duration} min</Text>
-                      )}
-                      <View style={[styles.practiceModeBadge, { backgroundColor: Colors.secondary + '18' }]}>
-                        <Text style={[styles.practiceModeBadgeText, { color: Colors.secondary }]}>
-                          Together
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-                  <Text style={[styles.practiceArrow, { color: phase.color }]}>
-                    {'\u203A'}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-            </>}
+            {expandedSections.has('growthPlan') && (
+              <View style={{ paddingTop: Spacing.sm }}>
+                <GrowthPlanContent portrait={portrait} router={router} />
+              </View>
+            )}
           </Animated.View>
         )}
 
@@ -1189,36 +1314,36 @@ function StepDetailScreenInner() {
         )}
 
         {/* Coming Next — tappable only when the next step is unlocked */}
-        {nextStep && (
-          <TouchableOpacity
-            style={[styles.nextSection, !canNavigateNext && styles.nextSectionLocked]}
-            onPress={handleNextStep}
-            activeOpacity={canNavigateNext ? 0.7 : 1}
-            disabled={!canNavigateNext}
-            accessibilityRole="button"
-            accessibilityState={{ disabled: !canNavigateNext }}
-          >
-            <Text style={styles.nextLabel}>
-              {canNavigateNext
-                ? 'NEXT STEP'
-                : 'COMING NEXT'}
-              : Step {nextStep.stepNumber}
-            </Text>
-            <Text style={styles.nextTitle}>
-              &ldquo;{nextStep.title}&rdquo;
-            </Text>
-            <Text style={styles.nextHint}>
-              {canNavigateNext
-                ? 'Tap to explore this step'
-                : `Complete all Step ${step.stepNumber} goals to unlock`}
-            </Text>
-            {canNavigateNext && (
-              <Text style={[styles.nextArrow, { color: phase.color }]}>
-                {'\u203A'}
+        {nextStep && (() => {
+          const nextPhase = getPhaseForStep(nextStep.stepNumber) ?? phase;
+          return (
+            <TouchableOpacity
+              style={[styles.nextSection, { borderColor: nextPhase.color + '40' }, !canNavigateNext && styles.nextSectionLocked]}
+              onPress={handleNextStep}
+              activeOpacity={canNavigateNext ? 0.7 : 1}
+              disabled={!canNavigateNext}
+              accessibilityRole="button"
+              accessibilityState={{ disabled: !canNavigateNext }}
+            >
+              <Text style={[styles.nextLabel, { color: nextPhase.color }]}>
+                {canNavigateNext ? 'NEXT STEP' : 'COMING NEXT'}
               </Text>
-            )}
-          </TouchableOpacity>
-        )}
+              <Text style={styles.nextTitle}>
+                Step {nextStep.stepNumber}: {nextStep.title}
+              </Text>
+              <Text style={styles.nextHint}>
+                {canNavigateNext
+                  ? 'Tap to explore this step'
+                  : `Complete all Step ${step.stepNumber} goals to unlock`}
+              </Text>
+              {canNavigateNext && (
+                <Text style={[styles.nextArrow, { color: nextPhase.color }]}>
+                  {'\u203A'}
+                </Text>
+              )}
+            </TouchableOpacity>
+          );
+        })()}
 
         {/* Closing track available after step 12 */}
         {stepNumber === 12 && STEP_AUDIO_MAP[13] && (
@@ -1303,7 +1428,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: Spacing.xl,
     paddingBottom: Spacing.scrollPadBottom,
-    gap: Spacing.lg,
+    gap: Spacing.md,
   },
 
   // Phase accent
@@ -1605,7 +1730,6 @@ const styles = StyleSheet.create({
   nextTitle: {
     ...Typography.headingS,
     color: Colors.text,
-    fontStyle: 'italic',
     paddingRight: Spacing.xl,
   },
   nextHint: {
@@ -1751,14 +1875,14 @@ const styles = StyleSheet.create({
     marginTop: Spacing.xs,
   },
 
-  // Teaching section
+  // Teaching section — open text on the warm background, no card
   teachingSection: {
-    gap: Spacing.md,
+    gap: Spacing.lg,
   },
   teachingParagraph: {
     ...Typography.body,
     color: Colors.text,
-    lineHeight: 28,
+    lineHeight: 32,
   },
   teachingConnectionCard: {
     borderLeftWidth: 3,
@@ -1820,15 +1944,25 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
 
-  // Section transition text
+  // Visual breathing divider between major sections
+  sectionDivider: {
+    height: 1,
+    backgroundColor: Colors.borderLight,
+    marginVertical: Spacing.lg,
+    marginHorizontal: Spacing.xxl,
+    opacity: 0.5,
+  },
+
+  // Section transition text — pullquote style
   transitionText: {
-    ...Typography.caption,
-    color: Colors.textMuted,
-    fontStyle: 'italic',
+    fontFamily: 'PlayfairDisplay_400Regular_Italic',
+    fontSize: 17,
+    color: Colors.textSecondary,
+    fontStyle: 'italic' as const,
     textAlign: 'center' as const,
-    paddingVertical: Spacing.xs,
-    fontSize: 12,
-    lineHeight: 18,
+    lineHeight: 26,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
   },
 
   // Couple Play section
@@ -1924,5 +2058,43 @@ const styles = StyleSheet.create({
   allCoursesButtonText: {
     ...Typography.button,
     letterSpacing: 0.5,
+  },
+
+  // Portrait link card (Steps 4+)
+  portraitLinkCard: {
+    borderLeftWidth: 4,
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    gap: Spacing.sm,
+    ...Shadows.subtle,
+  },
+  portraitLinkCta: {
+    ...Typography.caption,
+    fontWeight: '600',
+  },
+
+  // Growth Plan collapsible section (Steps 9+)
+  growthPlanSection: {
+    gap: Spacing.sm,
+  },
+
+  // Section headers with horizontal accent lines
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+    paddingVertical: Spacing.xs,
+  },
+  sectionHeaderLine: {
+    flex: 1,
+    height: 1,
+    opacity: 0.3,
+  },
+  sectionHeaderLabel: {
+    ...Typography.label,
+    letterSpacing: 3,
+    fontSize: 10,
+    color: Colors.textMuted,
   },
 });

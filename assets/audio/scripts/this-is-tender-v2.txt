@@ -1,0 +1,49 @@
+THIS IS TENDER — Welcome Audio Script (V2)
+============================================
+Duration: ~60 seconds
+Voice: Warm, unhurried. WEARE voice — not salesy, not clinical.
+Speaks to the user as someone who already matters.
+
+---
+
+[BEGIN SCRIPT]
+
+Welcome to Tender.
+
+This is your home — a living space that grows with you.
+
+At the top, you'll find your portrait.
+It's built from your assessments — a reflection of how you connect,
+what you protect, and where you're growing.
+It deepens every time you return.
+
+Below that is your journey —
+twelve steps of relational growth, personalized to your pattern.
+Each one holds teachings, practices, and reflections designed for you.
+
+Your daily rhythm lives here too —
+a quick check-in, a journal prompt, a moment to notice
+what's moving inside you.
+Small moments, repeated, change everything.
+
+And when you need someone to think with,
+Nuance is here — your AI companion.
+It knows your portrait and your journey.
+It won't judge. It won't rush you.
+
+Take your time.
+Start with your first assessment — about ten minutes —
+and everything else opens from there.
+
+There's no wrong way to begin.
+You're already here. That matters.
+
+[END SCRIPT]
+
+---
+
+Notes:
+- Paced for 60 seconds at natural speaking tempo (~130 wpm)
+- Matches the 7-stop guided tour sequence: Welcome → Portrait → Journey → Daily Rhythm → Nuance → Explore → Ready
+- Language rules honored: no "fix", no "score", no raw numbers
+- Closing echoes the tour's final step ("You're Ready")

@@ -1,7 +1,7 @@
 /**
  * QuickLinksBar — Shared bottom navigation row for all screens.
  *
- * Shows 4 quick links (Nuance, Courses, Practices, Journal) and
+ * Shows 5 quick links (Nuance, Courses, Practices, Journal, Community) and
  * optionally a Home link below. Used at the bottom of every screen
  * to give fast access to core features.
  *
@@ -17,12 +17,13 @@ import {
   ChatBubbleIcon,
   BookOpenIcon,
   TargetIcon,
+  CommunityIcon,
   HomeIcon,
 } from '@/assets/graphics/icons';
 import { Colors, Spacing, FontSizes, FontFamilies } from '@/constants/theme';
 import { SoundHaptics } from '@/services/SoundHapticsService';
 
-type ScreenKey = 'nuance' | 'courses' | 'practices' | 'journal' | 'home';
+type ScreenKey = 'nuance' | 'courses' | 'practices' | 'journal' | 'community' | 'home';
 
 interface QuickLinksBarProps {
   showHome?: boolean;
@@ -86,6 +87,19 @@ export default function QuickLinksBar({ showHome = true, currentScreen }: QuickL
             <Text style={styles.linkLabel}>Journal</Text>
           </TouchableOpacity>
         )}
+
+        {currentScreen !== 'community' && (
+          <TouchableOpacity
+            style={styles.linkButton}
+            onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/community' as any); }}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Community"
+          >
+            <CommunityIcon size={20} color={Colors.secondary} />
+            <Text style={styles.linkLabel}>Community</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {showHome && currentScreen !== 'home' && (
@@ -108,7 +122,7 @@ const styles = StyleSheet.create({
   wrapper: {
     alignItems: 'center',
     paddingTop: Spacing.md,
-    paddingBottom: Spacing.md,
+    paddingBottom: Spacing.lg,
   },
   row: {
     flexDirection: 'row',
@@ -134,7 +148,7 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: Spacing.xs,
     paddingHorizontal: Spacing.md,
-    marginTop: Spacing.xs,
+    marginTop: Spacing.md,
   },
   homeLabel: {
     fontFamily: FontFamilies.body,

@@ -20,7 +20,12 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 const ALLOWED_ORIGINS = [
   'https://couples-app-demo.netlify.app', // Production
   'http://localhost:8081',           // Expo dev
+  'http://localhost:8082',           // Expo dev (alt port)
+  'http://127.0.0.1:8081',          // Expo dev (IP variant)
+  'http://127.0.0.1:8082',          // Expo dev (IP variant, alt port)
   'http://localhost:19006',          // Expo web dev
+  'http://localhost:19000',          // Expo web dev (alt port)
+  'http://127.0.0.1:19006',         // Expo web dev (IP variant)
 ];
 
 function getCorsHeaders(req: Request) {
