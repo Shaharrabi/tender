@@ -19,6 +19,7 @@ import {
   ScrollView,
   Alert,
   Platform,
+  Animated,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -34,6 +35,10 @@ import QuestionRenderer from '@/components/assessment/QuestionRenderer';
 import SectionBreak from '@/components/assessment/SectionBreak';
 import { Colors, Spacing, FontSizes, FontFamilies, ButtonSizes, BorderRadius, Shadows } from '@/constants/theme';
 import { SparkleIcon, BookOpenIcon, RefreshIcon, HeartIcon } from '@/assets/graphics/icons';
+import CelebrationDots from '@/components/ui/CelebrationDots';
+import RetakeDeltaComponent, { computeRetakeDelta } from '@/components/assessment/RetakeDelta';
+import type { RetakeDeltaData } from '@/components/assessment/RetakeDelta';
+import { useSoundHaptics } from '@/services/SoundHapticsService';
 import type { AssessmentConfig, GenericQuestion, AssessmentSection } from '@/types';
 
 // ─── Types ───────────────────────────────────────────────
@@ -117,6 +122,7 @@ export default function TenderAssessmentScreen() {
   const { user } = useAuth();
   const { awardXP } = useGamification();
   const router = useRouter();
+  const haptics = useSoundHaptics();
   const params = useLocalSearchParams<{ startSection?: string }>();
 
   const [showingIntro, setShowingIntro] = useState(true);
@@ -130,6 +136,11 @@ export default function TenderAssessmentScreen() {
   const [showingCompletion, setShowingCompletion] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
+  // Retake delta state — captured before retake, shown after
+  const [retakeDelta, setRetakeDelta] = useState<RetakeDeltaData | null>(null);
+  const [showingRetakeDelta, setShowingRetakeDelta] = useState(false);
+  const previousScoresRef = useRef<any>(null);
+
   // When navigated with startSection param (e.g. retake from home), run as
   // a single-section flow and return to home after submission.
   const retakeMode = useRef(params.startSection != null);
@@ -137,6 +148,34 @@ export default function TenderAssessmentScreen() {
 
   // Ref for debounced save
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Celebration animation for completion screen
+  const celebrationScale = useRef(new Animated.Value(0.3)).current;
+  const celebrationOpacity = useRef(new Animated.Value(0)).current;
+
+  // Fire haptics + sparkle animation when completion screen shows
+  useEffect(() => {
+    if (showingCompletion && !showingIntro) {
+      haptics.success();
+      Animated.parallel([
+        Animated.spring(celebrationScale, {
+          toValue: 1,
+          speed: 8,
+          bounciness: 10,
+          useNativeDriver: true,
+        }),
+        Animated.timing(celebrationOpacity, {
+          toValue: 1,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      // Reset for next time
+      celebrationScale.setValue(0.3);
+      celebrationOpacity.setValue(0);
+    }
+  }, [showingCompletion, showingIntro]);
 
   // ── Load saved progress on mount ──
   useEffect(() => {
@@ -208,6 +247,25 @@ export default function TenderAssessmentScreen() {
 
       // Direct-start via route param (retake from home screen)
       if (startSectionIdx != null && startSectionIdx >= 0 && startSectionIdx < TENDER_SECTIONS.length) {
+        // Capture previous scores for retake delta
+        if (user) {
+          try {
+            const assessmentType = TENDER_SECTIONS[startSectionIdx].assessmentType;
+            const { data: prevData } = await supabase
+              .from('assessments')
+              .select('scores')
+              .eq('user_id', user.id)
+              .eq('type', assessmentType)
+              .order('completed_at', { ascending: false })
+              .limit(1);
+            if (prevData && prevData.length > 0) {
+              previousScoresRef.current = prevData[0].scores;
+            }
+          } catch {
+            previousScoresRef.current = null;
+          }
+        }
+
         // Reset this section's responses for a fresh retake
         setSectionStates((prev) => {
           const updated = [...prev];
@@ -469,7 +527,21 @@ export default function TenderAssessmentScreen() {
 
       // What's next?
       if (retakeMode.current) {
-        // Single-section retake from home — return to home
+        // Single-section retake — compute delta and show it (or go home)
+        if (previousScoresRef.current) {
+          const delta = computeRetakeDelta(
+            currentConfig.type,
+            previousScoresRef.current,
+            scores,
+            currentSection.fieldName,
+          );
+          if (delta && delta.dimensions.length > 0) {
+            setRetakeDelta(delta);
+            setShowingRetakeDelta(true);
+            previousScoresRef.current = null;
+            return;
+          }
+        }
         router.replace('/(app)/home');
         return;
       }
@@ -545,9 +617,29 @@ export default function TenderAssessmentScreen() {
     return 'not_started';
   };
 
-  /** Reset a section's state and start it fresh. */
-  const startChapterFresh = (idx: number) => {
-    const config = getAssessmentConfig(TENDER_SECTIONS[idx].assessmentType);
+  /** Reset a section's state and start it fresh. Captures previous scores for delta. */
+  const startChapterFresh = async (idx: number) => {
+    const assessmentType = TENDER_SECTIONS[idx].assessmentType;
+
+    // Capture previous scores before clearing (for retake delta)
+    if (user) {
+      try {
+        const { data } = await supabase
+          .from('assessments')
+          .select('scores')
+          .eq('user_id', user.id)
+          .eq('type', assessmentType)
+          .order('completed_at', { ascending: false })
+          .limit(1);
+        if (data && data.length > 0) {
+          previousScoresRef.current = data[0].scores;
+        }
+      } catch {
+        previousScoresRef.current = null;
+      }
+    }
+
+    const config = getAssessmentConfig(assessmentType);
     const supplement = TENDER_SECTIONS[idx].supplementGroup
       ? getSupplementDef(TENDER_SECTIONS[idx].supplementGroup!)
       : undefined;
@@ -562,7 +654,7 @@ export default function TenderAssessmentScreen() {
       };
       return updated;
     });
-    setCompletedSections((prev) => prev.filter((t) => t !== TENDER_SECTIONS[idx].assessmentType));
+    setCompletedSections((prev) => prev.filter((t) => t !== assessmentType));
     setShowingCompletion(false);
     setCurrentSectionIndex(idx);
     setShowingIntro(false);
@@ -628,27 +720,51 @@ export default function TenderAssessmentScreen() {
     );
   }
 
+  // ── Render: Retake Delta (shown after completing a single-section retake) ──
+  if (showingRetakeDelta && retakeDelta) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.centerContent}>
+          <RetakeDeltaComponent
+            delta={retakeDelta}
+            onContinue={() => {
+              setShowingRetakeDelta(false);
+              setRetakeDelta(null);
+              router.replace('/(app)/home');
+            }}
+          />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   // ── Render: Completion (only after finishing last section in-flow) ──
   // If the welcome screen is still showing, skip this — the welcome screen
   // has its own "all complete" variant with retake options.
   if (showingCompletion && !showingIntro) {
     return (
       <SafeAreaView style={styles.container}>
+        <CelebrationDots active />
         <View style={styles.centerContent}>
-          <View style={{ marginBottom: Spacing.sm }}>
+          <Animated.View style={{
+            marginBottom: Spacing.sm,
+            transform: [{ scale: celebrationScale }],
+            opacity: celebrationOpacity,
+          }}>
             <SparkleIcon size={64} color={Colors.secondary} />
-          </View>
-          <Text style={styles.completionTitle}>Assessment Complete</Text>
+          </Animated.View>
+          <Text style={styles.completionTitle}>You Did Something Brave</Text>
           <Text style={styles.completionSubtitle}>
-            You have completed all 7 sections of The Tender Assessment.
-            Your relational portrait is ready to be explored.
+            All 7 sections are complete. You've built a full picture of how you
+            connect, feel, fight, and what matters to you. Your relational
+            portrait is ready.
           </Text>
           <TenderButton
-            title="View Your Results"
+            title="Explore Your Portrait"
             onPress={() => router.replace('/(app)/home')}
             variant="primary"
             size="lg"
-            accessibilityLabel="View Your Results"
+            accessibilityLabel="Explore Your Portrait"
             style={{ marginTop: Spacing.md }}
           />
         </View>

@@ -1153,3 +1153,132 @@ export function getJournalPromptForStep(stepNumber: number, isSolo?: boolean): s
   const prompt = prompts[dayOfYear % prompts.length];
   return (isSolo && prompt.solo) ? prompt.solo : prompt.question;
 }
+
+// ─── Step-Assessment Nudge Mapping ──────────────────────
+// Maps specific steps to relevant assessments that deepen the
+// step's work. These are gentle invitations, NEVER gates.
+// The step journey is always the priority; assessments serve it.
+
+export interface StepAssessmentNudge {
+  /** Assessment IDs relevant to this step */
+  assessmentIds: string[];
+  /** Whether these are couple-only assessments (hidden for solo users) */
+  coupleOnly?: boolean;
+  /** Whether this is a retake invitation (step 11/12) */
+  isRetake?: boolean;
+  /** Warm invitation text — NEVER "you need to take this" */
+  nudgeText: string;
+  /** Short CTA label for the button */
+  ctaLabel: string;
+}
+
+/**
+ * STEP_ASSESSMENT_NUDGES — Which assessments deepen which steps.
+ *
+ * These appear as gentle invitation cards on the step-detail screen
+ * when the relevant assessments haven't been completed (or when
+ * it's a retake step like 11 or 12).
+ *
+ * Rules:
+ *   - Never blocks step progression
+ *   - Never says "you need to" or "you should"
+ *   - Retake nudges always show (even if done before)
+ *   - Couple assessments hidden for solo users
+ */
+export const STEP_ASSESSMENT_NUDGES: Record<number, StepAssessmentNudge> = {
+  1: {
+    assessmentIds: ['ecr-r'],
+    nudgeText:
+      'This step comes alive when you understand your attachment pattern. ' +
+      'Knowing how you reach for connection \u2014 or pull away \u2014 illuminates the dance.',
+    ctaLabel: 'Explore Your Pattern',
+  },
+  2: {
+    assessmentIds: ['dsi-r'],
+    nudgeText:
+      'Understanding your boundaries illuminates how you hold space for trust. ' +
+      'Your differentiation pattern shapes what safety looks like for you.',
+    ctaLabel: 'Explore Your Boundaries',
+  },
+  3: {
+    assessmentIds: ['ipip-neo-120'],
+    nudgeText:
+      'Your personality patterns reveal how you hold on \u2014 and how you might let go. ' +
+      'Seeing these tendencies makes releasing certainty feel less like loss.',
+    ctaLabel: 'See Your Patterns',
+  },
+  4: {
+    assessmentIds: ['sseit', 'ipip-neo-120'],
+    nudgeText:
+      'Your emotional intelligence and personality shape how you show up in this step. ' +
+      'Understanding what drives your protective moves deepens the work here.',
+    ctaLabel: 'Deepen Your Self-Knowledge',
+  },
+  5: {
+    assessmentIds: ['rdas', 'dci', 'csi-16'],
+    coupleOnly: true,
+    nudgeText:
+      'This is a milestone step \u2014 seeing the relationship together. ' +
+      'Taking these assessments as a couple reveals how you each experience the space between you.',
+    ctaLabel: 'See the Relationship Together',
+  },
+  6: {
+    assessmentIds: ['dutch'],
+    nudgeText:
+      'Seeing your conflict patterns can help dissolve the enemy story. ' +
+      'When you understand how you fight, you stop fighting each other and start seeing the dance.',
+    ctaLabel: 'See Your Conflict Style',
+  },
+  7: {
+    assessmentIds: ['sseit'],
+    nudgeText:
+      'Your emotional awareness shapes how you extend the invitation. ' +
+      'Knowing what you feel \u2014 and how you express it \u2014 makes reaching more genuine.',
+    ctaLabel: 'Deepen Your Awareness',
+  },
+  8: {
+    assessmentIds: ['values'],
+    nudgeText:
+      'Your values compass guides the new patterns you\u2019re building. ' +
+      'Knowing what matters most helps you design responses that feel like you.',
+    ctaLabel: 'Find Your Values Compass',
+  },
+  9: {
+    assessmentIds: ['dutch', 'dsi-r'],
+    nudgeText:
+      'Conflict and boundary patterns are the raw material of repair. ' +
+      'Understanding how you navigate disagreement makes repair more skillful.',
+    ctaLabel: 'Map Your Repair Landscape',
+  },
+  10: {
+    assessmentIds: ['values'],
+    nudgeText:
+      'Your values compass points toward the rituals that will last. ' +
+      'When daily practices align with what matters most, they become self-sustaining.',
+    ctaLabel: 'Ground Your Rituals',
+  },
+  11: {
+    assessmentIds: ['ecr-r'],
+    isRetake: true,
+    nudgeText:
+      'Curious how your attachment pattern has shifted? ' +
+      'Retaking this assessment reveals growth you can\u2019t see from inside the journey.',
+    ctaLabel: 'See How You\u2019ve Shifted',
+  },
+  12: {
+    assessmentIds: ['ecr-r', 'sseit', 'ipip-neo-120', 'dutch', 'dsi-r', 'values'],
+    isRetake: true,
+    nudgeText:
+      'The journey spirals. Retaking your assessments now shows how far you\u2019ve come \u2014 ' +
+      'the delta between then and now is your evidence of growth.',
+    ctaLabel: 'Measure Your Growth',
+  },
+};
+
+/**
+ * Get the assessment nudge for a specific step, if one exists.
+ * Returns null for steps without nudges (most steps).
+ */
+export function getStepAssessmentNudge(stepNumber: number): StepAssessmentNudge | null {
+  return STEP_ASSESSMENT_NUDGES[stepNumber] ?? null;
+}

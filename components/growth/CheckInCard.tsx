@@ -393,9 +393,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sliderDot: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
     backgroundColor: Colors.borderLight,
     borderWidth: 1,
     borderColor: Colors.border,

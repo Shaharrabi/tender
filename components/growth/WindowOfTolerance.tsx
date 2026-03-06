@@ -151,7 +151,7 @@ export default function WindowOfTolerance({ onSelectPractice }: Props) {
               accessibilityRole="button"
               accessibilityLabel={`${zone.label} zone, ${zone.bodySignals}${isSelected ? ', selected' : ''}`}
             >
-              <zone.Icon size={24} color={zone.color} />
+              <zone.Icon size={18} color={zone.color} />
               <View style={styles.zoneTextContainer}>
                 <Text
                   style={[
@@ -232,29 +232,29 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
   },
   title: {
-    fontSize: FontSizes.headingM,
+    fontSize: FontSizes.body,
     fontWeight: '700',
     fontFamily: FontFamilies.heading,
     color: Colors.text,
   },
   subtitle: {
-    fontSize: FontSizes.bodySmall,
+    fontSize: FontSizes.caption,
     color: Colors.textSecondary,
-    lineHeight: 20,
+    lineHeight: 18,
     marginTop: -Spacing.xs,
   },
 
   // Zone selector
   zonesColumn: {
-    gap: Spacing.sm,
+    gap: Spacing.xs,
   },
   zoneBar: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.surfaceElevated,
     borderRadius: BorderRadius.md,
-    padding: Spacing.md,
-    gap: Spacing.md,
+    padding: Spacing.sm,
+    gap: Spacing.sm,
     borderWidth: 1.5,
     ...Shadows.subtle,
   },
@@ -265,14 +265,14 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   zoneLabel: {
-    fontSize: FontSizes.body,
+    fontSize: FontSizes.bodySmall,
     fontWeight: '600',
     color: Colors.text,
   },
   zoneSignals: {
-    fontSize: FontSizes.caption,
+    fontSize: FontSizes.caption - 1,
     color: Colors.textMuted,
-    lineHeight: 16,
+    lineHeight: 15,
   },
   zoneIndicator: {
     width: 8,

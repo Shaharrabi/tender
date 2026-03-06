@@ -50,12 +50,13 @@ import {
 import { supabase } from '@/services/supabase';
 import { getPortrait, savePortrait, fetchAllScores, extractSupplementScores } from '@/services/portrait';
 import { generatePortrait, isPortraitStale } from '@/utils/portrait/portrait-generator';
-import { getTodaysCheckIn, saveDailyCheckIn } from '@/services/growth';
+import { getTodaysCheckIn, saveDailyCheckIn, getRecentCheckIns } from '@/services/growth';
 import { getMyCouple, checkDyadicCompletion, isSelfCouple } from '@/services/couples';
 import { getAllExercises, getExerciseById } from '@/utils/interventions/registry';
 import { getCompletions } from '@/services/intervention';
 import { calculateGrowthProgress } from '@/utils/steps/intervention-protocols';
 import CheckInCard from '@/components/growth/CheckInCard';
+import DailyRhythmSection from '@/components/home/DailyRhythmSection';
 import NudgeCarousel from '@/components/NudgeCarousel';
 import HomeNotificationLayer from '@/components/notifications/HomeNotificationLayer';
 import { getNudges } from '@/utils/nudges';
@@ -109,6 +110,8 @@ import {
   SettingsIcon,
   PenIcon,
   MenuIcon,
+  CheckmarkIcon,
+  RefreshIcon,
 } from '@/assets/graphics/icons';
 import type { AssessmentConfig, AllAssessmentScores, AssessmentType } from '@/types';
 import type { IndividualPortrait } from '@/types/portrait';
@@ -196,6 +199,7 @@ export default function HomeScreen() {
 
   // Check-in state
   const [todaysCheckIn, setTodaysCheckIn] = useState<DailyCheckIn | null>(null);
+  const [weekDots, setWeekDots] = useState<boolean[]>([false, false, false, false, false, false, false]);
 
   // Couple state
   const [couple, setCouple] = useState<Couple | null>(null);
@@ -596,10 +600,23 @@ export default function HomeScreen() {
         individualConfigs.every(
           (c) => newStatuses[c.type]?.state === 'completed'
         );
-      // 5. Load today's check-in
+      // 5. Load today's check-in + weekly rhythm dots
       try {
         const ci = await getTodaysCheckIn(user.id);
         setTodaysCheckIn(ci);
+
+        // Compute 7-day rhythm dots (index 0 = 6 days ago, index 6 = today)
+        const recentCheckins = await getRecentCheckIns(user.id, 7);
+        const checkinDates = new Set(recentCheckins.map((c) => c.checkinDate));
+        const dots: boolean[] = [];
+        const today = new Date();
+        for (let i = 6; i >= 0; i--) {
+          const d = new Date(today);
+          d.setDate(d.getDate() - i);
+          const dateStr = d.toISOString().split('T')[0];
+          dots.push(checkinDates.has(dateStr));
+        }
+        setWeekDots(dots);
       } catch {
         setTodaysCheckIn(null);
       }
@@ -1351,6 +1368,34 @@ export default function HomeScreen() {
             </HighlightWrapper>
           )}
 
+          {/* Assessment complete achievement */}
+          {tenderStatus.state === 'completed' && (
+            <View style={styles.assessmentCompleteCard}>
+              <View style={styles.assessmentCompleteHeader}>
+                <CheckmarkIcon size={16} color={Colors.calm} />
+                <Text style={styles.assessmentCompleteTitle}>
+                  All {TENDER_SECTIONS.length} Sections Complete
+                </Text>
+              </View>
+              <Text style={styles.assessmentCompleteDesc}>
+                Your portrait captures how you connect, feel, fight, and what matters to you.
+              </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  SoundHaptics.tapSoft();
+                  router.push('/(app)/tender-assessment' as any);
+                }}
+                style={styles.retakeLink}
+                accessibilityLabel="Retake any section"
+              >
+                <RefreshIcon size={14} color={Colors.primary} />
+                <Text style={styles.retakeLinkText}>
+                  Retake any section to see how you've grown
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
           {/* Portrait generation prompt — part of journey */}
           {individualCompleted && !hasPortrait && (
             <View style={styles.portraitGenerateCard}>
@@ -1491,6 +1536,21 @@ export default function HomeScreen() {
         )}
         {!hasPortrait && <NudgeCarousel insights={nudges} />}
 
+        {/* ═══ DAILY RHYTHM (collapsible section) ═════════ */}
+        {hasCompletedOnboarding && (
+          <View style={styles.section}>
+            <DailyRhythmSection
+              todaysCheckIn={todaysCheckIn}
+              onCheckInSubmit={handleCheckInSubmit}
+              hasPortrait={hasPortrait}
+              currentStepNum={currentStepNum}
+              isSolo={relationshipMode === 'solo'}
+              weekDots={weekDots}
+              journalPrompt={getJournalPromptForStep(currentStepNum, relationshipMode === 'solo')}
+            />
+          </View>
+        )}
+
         {/* ═══ EXPLORE — 4 Gateway Cards ══════════════════ */}
         <View style={styles.gatewaySection}>
           <Text style={styles.gatewaySectionLabel}>EXPLORE</Text>
@@ -1585,44 +1645,7 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* ═══ DAILY RHYTHM (check-in + journal) ════════════ */}
-        {hasPortrait && (
-          <>
-            <View style={styles.dailyRhythmHeader}>
-              <Text style={styles.dailyRhythmLabel}>YOUR DAILY RHYTHM</Text>
-            </View>
-
-            {/* Check-in card */}
-            <View style={styles.section}>
-              <CheckInCard
-                todaysCheckIn={todaysCheckIn}
-                onSubmit={handleCheckInSubmit}
-              />
-            </View>
-
-            {/* Journal prompt card */}
-            <View style={styles.section}>
-              <TouchableOpacity
-                style={styles.journalPromptCard}
-                onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/journal' as any); }}
-                activeOpacity={0.8}
-                accessibilityRole="button"
-                accessibilityLabel="Open journal"
-              >
-                <View style={styles.journalPromptHeader}>
-                  <PenIcon size={16} color={Colors.primary} />
-                  <Text style={styles.journalPromptEyebrow}>JOURNAL</Text>
-                </View>
-                <Text style={styles.journalPromptText}>
-                  {'\u201C'}{getJournalPromptForStep(currentStepNum, relationshipMode === 'solo')}{'\u201D'}
-                </Text>
-                <Text style={styles.journalPromptCta}>
-                  Open Journal {'\u2192'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </>
-        )}
+        {/* Old Daily Rhythm moved above gateway cards as collapsible DailyRhythmSection */}
 
         {/* ═══ QUICK LINKS (bottom row) ════════════════════════ */}
         <QuickLinksBar showHome={false} currentScreen="home" />
@@ -2372,6 +2395,42 @@ const styles = StyleSheet.create({
   retakeRowActionDisabled: {
     color: Colors.textMuted,
     fontWeight: '400',
+  },
+
+  // ── Assessment Complete Achievement ──
+  assessmentCompleteCard: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    gap: Spacing.sm,
+    ...Shadows.subtle,
+  },
+  assessmentCompleteHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  assessmentCompleteTitle: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '700',
+    color: Colors.calm,
+    fontFamily: FontFamilies.heading,
+  },
+  assessmentCompleteDesc: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    lineHeight: 20,
+  },
+  retakeLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    marginTop: Spacing.xs,
+  },
+  retakeLinkText: {
+    fontSize: FontSizes.caption,
+    color: Colors.primary,
+    fontWeight: '600',
   },
 
   // ── Badges ──
@@ -3144,109 +3203,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 2,
-  },
-
-  // ── Daily Rhythm ──
-  dailyRhythmHeader: {
-    paddingHorizontal: Spacing.xl,
-    marginBottom: Spacing.xs,
-  },
-  dailyRhythmLabel: {
-    fontSize: FontSizes.caption,
-    fontWeight: '700',
-    color: Colors.primary,
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-  },
-
-  // ── Today's Practice (Daily Rhythm) ──
-  dailyPracticeCard: {
-    backgroundColor: Colors.surfaceElevated,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
-    borderLeftWidth: 4,
-    borderLeftColor: Colors.secondary,
-    gap: Spacing.xs,
-    ...Shadows.subtle,
-  },
-  dailyPracticeHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  dailyPracticeEyebrow: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: Colors.secondary,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-  },
-  dailyPracticeFromStep: {
-    fontSize: 11,
-    color: Colors.textMuted,
-    marginLeft: 'auto',
-  },
-  dailyPracticeTitle: {
-    fontSize: FontSizes.body,
-    fontWeight: '700',
-    fontFamily: FontFamilies.heading,
-    color: Colors.text,
-    marginTop: 2,
-  },
-  dailyPracticeDesc: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.textSecondary,
-    lineHeight: 20,
-  },
-  dailyPracticeMeta: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 2,
-  },
-  dailyPracticeMetaText: {
-    fontSize: FontSizes.caption,
-    color: Colors.textMuted,
-    textTransform: 'capitalize',
-  },
-  dailyPracticeArrow: {
-    fontSize: FontSizes.body,
-    fontWeight: '600',
-    color: Colors.secondary,
-  },
-
-  // ── Journal Prompt (Daily Rhythm) ──
-  journalPromptCard: {
-    backgroundColor: Colors.surfaceElevated,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
-    borderLeftWidth: 4,
-    borderLeftColor: Colors.primary,
-    gap: Spacing.sm,
-    ...Shadows.subtle,
-  },
-  journalPromptHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  journalPromptEyebrow: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: Colors.primary,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-  },
-  journalPromptText: {
-    fontSize: FontSizes.bodySmall,
-    color: Colors.text,
-    fontStyle: 'italic',
-    lineHeight: 22,
-  },
-  journalPromptCta: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '600',
-    color: Colors.primary,
   },
 
   // ── Gateway Cards ──

@@ -42,6 +42,7 @@ import {
 import StepAudioPlayer from '@/components/growth/StepAudioPlayer';
 import StepMiniGame from '@/components/growth/StepMiniGame';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
+import { CollapsibleHeader } from '@/components/ui/CollapsibleSection';
 import QuickLinksBar from '@/components/QuickLinksBar';
 import CheckmarkIcon from '@/assets/graphics/icons/CheckmarkIcon';
 import {
@@ -50,6 +51,7 @@ import {
   getPhaseForStep,
   getTaglineForStep,
   getPracticesForStep,
+  getStepAssessmentNudge,
 } from '@/utils/steps/twelve-steps';
 import { getExerciseById } from '@/utils/interventions/registry';
 import { getCourseById } from '@/utils/microcourses/course-registry';
@@ -66,10 +68,15 @@ import {
 } from '@/services/steps';
 import { getMyCouple, isSelfCouple } from '@/services/couples';
 import { getPortrait } from '@/services/portrait';
+import { supabase } from '@/services/supabase';
 import { useSoundHaptics } from '@/services/SoundHapticsService';
 import { getStepTeaching } from '@/utils/steps/step-teachings';
 import { getStepBridge } from '@/utils/steps/step-bridges';
+import { getEarlyInsight } from '@/utils/steps/early-insights';
 import { getPartnerExchange, getExchangePhase } from '@/utils/steps/partner-exchanges';
+import AssessmentNudgeCard from '@/components/growth/AssessmentNudgeCard';
+import StepAssessmentInsight from '@/components/growth/StepAssessmentInsight';
+import { fetchAllScores } from '@/services/portrait';
 import type { IndividualPortrait } from '@/types/portrait';
 import type { MiniGameOutput, StepProgress } from '@/types/growth';
 
@@ -80,42 +87,6 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 
 /** Section IDs for collapsible accordion */
 type SectionId = 'course' | 'goals' | 'practices' | 'reflection' | 'partnerExchange' | 'partnerRound' | 'togetherPractices' | 'allCourses';
-
-/** Collapsible section header — tap to expand/collapse */
-function CollapsibleHeader({
-  title,
-  subtitle,
-  isExpanded,
-  onToggle,
-  phaseColor,
-}: {
-  title: string;
-  subtitle?: string;
-  isExpanded: boolean;
-  onToggle: () => void;
-  phaseColor: string;
-}) {
-  return (
-    <TouchableOpacity
-      style={styles.collapsibleHeader}
-      onPress={onToggle}
-      activeOpacity={0.7}
-      accessibilityRole="button"
-      accessibilityState={{ expanded: isExpanded }}
-      accessibilityLabel={`${title}, ${isExpanded ? 'expanded' : 'collapsed'}`}
-    >
-      <View style={styles.collapsibleHeaderLeft}>
-        <Text style={styles.collapsibleHeaderTitle}>{title}</Text>
-        {subtitle && !isExpanded && (
-          <Text style={styles.collapsibleHeaderSubtitle}>{subtitle}</Text>
-        )}
-      </View>
-      <Text style={[styles.collapsibleChevron, { color: phaseColor }]}>
-        {isExpanded ? '\u2303' : '\u2304'}
-      </Text>
-    </TouchableOpacity>
-  );
-}
 
 function StepDetailScreenInner() {
   const { user } = useAuth();
@@ -152,6 +123,10 @@ function StepDetailScreenInner() {
   const [exchangeFollowUp, setExchangeFollowUp] = useState('');
   const [exchangeFollowUpSaved, setExchangeFollowUpSaved] = useState(false);
 
+  // Assessment nudge + early insight state
+  const [completedAssessmentIds, setCompletedAssessmentIds] = useState<string[]>([]);
+  const [assessmentScores, setAssessmentScores] = useState<Record<string, { id: string; scores: any }> | null>(null);
+
   // Collapsible sections — all collapsed by default (teaching is not collapsible)
   const [expandedSections, setExpandedSections] = useState<Set<SectionId>>(new Set());
 
@@ -177,6 +152,8 @@ function StepDetailScreenInner() {
   // Sprint B2 — Derived content
   const teaching = getStepTeaching(stepNumber);
   const bridge = getStepBridge(stepNumber, portrait);
+  const assessmentNudge = getStepAssessmentNudge(stepNumber);
+  const earlyInsight = !bridge ? getEarlyInsight(stepNumber, assessmentScores) : null;
   const exchangeConfig = getPartnerExchange(stepNumber);
   const exchangePhase = exchangeConfig
     ? getExchangePhase(
@@ -195,17 +172,35 @@ function StepDetailScreenInner() {
   const loadData = useCallback(async () => {
     if (!user) return;
     try {
-      const [mgOutput, completions, spData, couple, userPortrait] = await Promise.all([
+      const [mgOutput, completions, spData, couple, userPortrait, assessmentRows] = await Promise.all([
         getMiniGameOutput(user.id, stepNumber),
         getPracticeCompletions(user.id, stepNumber, 100),
         ensureStepProgress(user.id),
         getMyCouple(user.id),
         getPortrait(user.id).catch(() => null),
+        supabase
+          .from('assessments')
+          .select('type')
+          .eq('user_id', user.id)
+          .then((res) => res.data ?? []),
       ]);
       setMiniGameOutput(mgOutput);
       setPracticeCount(completions.length);
       setStepProgress(spData);
       setPortrait(userPortrait);
+      setCompletedAssessmentIds([...new Set(assessmentRows.map((r: any) => r.type))]);
+
+      // Fetch raw scores for early insights (only when no portrait)
+      if (!userPortrait && assessmentRows.length > 0) {
+        try {
+          const scores = await fetchAllScores(user.id);
+          setAssessmentScores(scores);
+        } catch {
+          setAssessmentScores(null);
+        }
+      } else {
+        setAssessmentScores(null);
+      }
 
       // Find current active step
       const activeStep = spData.find((sp) => sp.status === 'active');
@@ -479,7 +474,7 @@ function StepDetailScreenInner() {
           </Animated.View>
         )}
 
-        {/* Portrait Bridge — Personalized "What This Means For You" */}
+        {/* Portrait Bridge — Personalized "What This Means For You" (full portrait) */}
         {bridge && (
           <Animated.View entering={FadeIn.delay(470).duration(600)}>
             <View style={[styles.bridgeCard, { borderLeftColor: phase.color }]}>
@@ -489,6 +484,25 @@ function StepDetailScreenInner() {
                 <Text style={styles.bridgeInsight}>{bridge.insightLabel}</Text>
               )}
             </View>
+          </Animated.View>
+        )}
+
+        {/* Early Insight — personalized from assessment scores, no full portrait yet */}
+        {!bridge && earlyInsight && (
+          <Animated.View entering={FadeIn.delay(470).duration(600)}>
+            <StepAssessmentInsight insight={earlyInsight} phaseColor={phase.color} />
+          </Animated.View>
+        )}
+
+        {/* Assessment Nudge — invitation to deepen this step (assessment not done) */}
+        {assessmentNudge && !earlyInsight && (
+          <Animated.View entering={FadeIn.delay(bridge ? 530 : 470).duration(600)}>
+            <AssessmentNudgeCard
+              nudge={assessmentNudge}
+              phaseColor={phase.color}
+              completedAssessmentIds={completedAssessmentIds}
+              isSolo={!isCoupled}
+            />
           </Animated.View>
         )}
 
@@ -1111,32 +1125,6 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: FontSizes.body,
     color: Colors.textMuted,
-  },
-
-  // Collapsible section header
-  collapsibleHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: 2,
-  },
-  collapsibleHeaderLeft: {
-    flex: 1,
-    gap: 2,
-  },
-  collapsibleHeaderTitle: {
-    ...Typography.headingS,
-    color: Colors.text,
-  },
-  collapsibleHeaderSubtitle: {
-    ...Typography.caption,
-    color: Colors.textMuted,
-  },
-  collapsibleChevron: {
-    fontSize: 20,
-    fontWeight: '300',
-    marginLeft: Spacing.sm,
   },
 
   // Header
