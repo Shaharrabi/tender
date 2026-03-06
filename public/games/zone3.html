@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>THE FIELD — Zone III: The Story Field</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;600&family=Josefin+Sans:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+
+:root {
+  --parchment:#FDF6F0;--terracotta:#D8A499;--deep-rose:#8B3A4A;
+  --ink:#2D2226;--warm-gray:#6B5B5E;--rose:#C4616E;
+  --sage:#6B9080;--gold:#D4A843;--amber:#C4944A;
+}
+
+html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;touch-action:manipulation;background:transparent;}
+
+.phone{width:100%;height:100%;background:var(--ink);border-radius:0;overflow:hidden;position:relative;display:flex;flex-direction:column;}
+
+#sky{flex:1;min-height:0;position:relative;overflow:hidden;transition:background 2s ease;background:linear-gradient(180deg,#3A2418 0%,#6B4028 40%,#C4844A 75%,#D4A870 100%);}
+
+#avatar{position:absolute;bottom:18%;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;transition:bottom .8s cubic-bezier(.34,1.2,.64,1);z-index:5;}
+.av-h{width:18px;height:18px;border-radius:50%;background:var(--rose);}
+.av-b{width:18px;height:14px;margin-top:-2px;background:var(--deep-rose);}
+.av-s{width:12px;height:4px;border-radius:50%;background:rgba(0,0,0,.2);margin-top:2px;}
+@keyframes bob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-3px)}}
+#avatar{animation:bob 3s ease-in-out infinite;}
+
+#ground-strip{position:absolute;bottom:0;left:0;right:0;height:22%;background:linear-gradient(180deg,#6A5040,#4A3828);transition:background 2s ease;}
+#ground-strip::after{content:'';position:absolute;top:0;left:0;right:0;height:8px;background:linear-gradient(180deg,rgba(255,200,100,.15),transparent);}
+
+#path{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:32px;height:100%;background:rgba(200,160,100,.18);}
+
+.star{position:absolute;width:2px;height:2px;border-radius:50%;background:rgba(255,240,200,.7);animation:twinkle var(--d,3s) ease-in-out infinite;}
+@keyframes twinkle{0%,100%{opacity:.2}50%{opacity:1}}
+
+.zone-label{position:absolute;top:14px;left:14px;z-index:5;}
+.zone-num{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.35);}
+.zone-name{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(10px,2.5vw,13px);letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.55);}
+
+#weight-counter{position:absolute;top:14px;right:14px;z-index:5;background:rgba(10,6,8,.7);border:1px solid rgba(212,168,67,.2);border-radius:8px;padding:8px 12px;text-align:center;}
+.wc-num{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(18px,5vw,24px);color:var(--parchment);line-height:1;}
+.wc-lbl{font-family:'Josefin Sans',sans-serif;font-size:7px;letter-spacing:2px;text-transform:uppercase;color:rgba(212,168,67,.4);margin-top:2px;}
+
+#panel{background:var(--parchment);border-top:1px solid rgba(216,164,153,.35);flex-shrink:0;z-index:10;display:flex;flex-direction:column;}
+
+#dialogue{padding:clamp(10px,2vh,16px) clamp(14px,4vw,22px) clamp(6px,1.5vh,10px);flex-shrink:0;}
+.dlg-row{display:flex;gap:10px;align-items:flex-start;}
+.dlg-sym{font-family:'Josefin Sans',sans-serif;font-size:clamp(10px,2.5vw,12px);color:var(--terracotta);flex-shrink:0;margin-top:2px;width:14px;}
+.dlg-text{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(12px,3vw,15px);line-height:1.65;color:var(--ink);white-space:pre-wrap;transition:opacity .25s;}
+.dlg-cue{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:2px;text-transform:uppercase;color:rgba(107,91,94,.4);text-align:right;margin-top:4px;animation:blink 2.4s ease-in-out infinite;}
+.dlg-cue.hide{visibility:hidden;}
+@keyframes blink{0%,100%{opacity:.3}55%{opacity:1}}
+
+#stone-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(6px,2vw,10px);padding:clamp(6px,1.5vh,10px) clamp(12px,3vw,18px) clamp(10px,2vh,14px);flex-shrink:0;}
+
+.stone-card{background:linear-gradient(135deg,#7A6A58,#5A4A3A);border-radius:12px;padding:clamp(10px,2.5vw,14px) clamp(8px,2vw,12px);cursor:pointer;position:relative;box-shadow:0 5px 0 rgba(0,0,0,.4),0 2px 10px rgba(0,0,0,.3);transition:transform .15s,box-shadow .15s,background .4s,opacity .5s;-webkit-tap-highlight-color:transparent;user-select:none;border:1px solid rgba(255,255,255,.08);}
+.stone-card:active{transform:translateY(2px);box-shadow:0 3px 0 rgba(0,0,0,.4);}
+.stone-card.gone{opacity:0;transform:scale(.85) translateY(8px);pointer-events:none;}
+.stone-card.wide{grid-column:1/-1;}
+.sc-icon{font-size:clamp(14px,4vw,18px);margin-bottom:4px;display:block;}
+.sc-text{font-family:'Josefin Sans',sans-serif;font-weight:600;font-size:clamp(8px,2.2vw,11px);letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.8);line-height:1.4;}
+.sc-weight{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(8px,2vw,10px);color:rgba(255,255,255,.35);margin-top:3px;display:block;}
+.stone-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);border-radius:12px 12px 0 0;}
+.stone-card .sc-check{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--sage);color:white;font-size:10px;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s;box-shadow:0 2px 6px rgba(0,0,0,.3);}
+
+#practice-btn-wrap{display:none;padding:clamp(8px,2vh,12px) clamp(12px,3vw,18px) clamp(12px,2.5vh,18px);flex-direction:column;gap:6px;}
+#practice-btn{width:100%;height:clamp(46px,11vw,54px);border:none;border-radius:27px;background:linear-gradient(135deg,var(--sage),#4A8A68);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(9px,2.2vw,11px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;box-shadow:0 4px 20px rgba(107,144,128,.4);animation:gpulse 2.2s ease-in-out infinite;}
+@keyframes gpulse{0%,100%{box-shadow:0 4px 20px rgba(107,144,128,.4);}50%{box-shadow:0 4px 30px rgba(107,144,128,.65);}}
+.practice-note{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(10px,2.5vw,12px);color:rgba(107,91,94,.45);text-align:center;}
+
+#modal{position:absolute;inset:0;z-index:60;background:rgba(20,10,6,.88);display:flex;align-items:flex-end;opacity:0;pointer-events:none;transition:opacity .3s ease;}
+#modal.on{opacity:1;pointer-events:all;}
+#modal-sheet{background:var(--parchment);width:100%;border-radius:20px 20px 0 0;padding:clamp(20px,5vw,28px) clamp(18px,5vw,26px) clamp(24px,6vw,36px);transform:translateY(100%);transition:transform .35s cubic-bezier(.34,1.1,.64,1);max-height:85%;overflow-y:auto;}
+#modal.on #modal-sheet{transform:translateY(0);}
+.ms-handle{width:36px;height:4px;border-radius:2px;background:rgba(107,91,94,.2);margin:0 auto clamp(14px,3.5vh,20px);}
+.ms-tag{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:3px;text-transform:uppercase;color:var(--terracotta);margin-bottom:clamp(8px,2vh,12px);}
+.ms-story{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(15px,4vw,18px);line-height:1.6;color:var(--ink);padding:clamp(10px,2.5vw,14px);background:rgba(139,58,74,.06);border-radius:10px;margin-bottom:clamp(10px,2.5vh,14px);}
+.ms-arrow{text-align:center;font-size:clamp(16px,4vw,20px);color:var(--sage);margin-bottom:clamp(6px,1.5vh,10px);}
+.ms-defuse-lbl{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:2px;text-transform:uppercase;color:var(--warm-gray);margin-bottom:6px;}
+.ms-defuse{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(13px,3.5vw,16px);line-height:1.6;color:var(--sage);padding:clamp(10px,2.5vw,14px);background:rgba(107,144,128,.08);border-radius:10px;margin-bottom:clamp(12px,3vh,18px);}
+.ms-q{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(11px,2.8vw,13px);line-height:1.7;color:var(--warm-gray);margin-bottom:clamp(16px,4vh,24px);text-align:center;}
+.ms-drop-btn{width:100%;height:clamp(44px,11vw,52px);border:none;border-radius:26px;background:linear-gradient(135deg,var(--sage),#4A8A68);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(9px,2.2vw,11px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;margin-bottom:clamp(8px,2vh,12px);}
+.ms-keep{width:100%;height:clamp(38px,9vw,44px);border:1.5px solid rgba(107,91,94,.2);border-radius:22px;background:transparent;font-family:'Jost',sans-serif;font-size:clamp(8px,2vw,10px);letter-spacing:2px;text-transform:uppercase;color:var(--warm-gray);cursor:pointer;}
+
+#practice-overlay{position:absolute;inset:0;z-index:70;background:rgba(10,6,8,.95);opacity:0;pointer-events:none;transition:opacity .4s;display:flex;align-items:center;justify-content:center;}
+#practice-overlay.on{opacity:1;pointer-events:all;}
+.ps-inner{width:min(340px,90vw);background:var(--parchment);border-radius:20px;overflow:hidden;position:relative;max-height:85vh;overflow-y:auto;}
+.ps-bar{height:4px;background:rgba(107,91,94,.12);}
+.ps-fill{height:100%;width:0;background:var(--sage);transition:width .4s;}
+.ps-x{position:absolute;top:12px;right:14px;width:28px;height:28px;border-radius:14px;border:none;background:rgba(107,91,94,.08);font-size:14px;color:var(--warm-gray);cursor:pointer;z-index:2;}
+.ps-step{display:none;padding:clamp(28px,6vw,40px) clamp(18px,5vw,26px) clamp(20px,4vh,28px);flex-direction:column;text-align:center;}
+.ps-step.active{display:flex;animation:fadeUp .4s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.ps-eyebrow{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:3px;text-transform:uppercase;color:var(--terracotta);margin-bottom:clamp(10px,2.5vh,16px);}
+.ps-h{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(20px,5.5vw,26px);letter-spacing:2px;text-transform:uppercase;color:var(--ink);line-height:1.15;margin-bottom:clamp(14px,3.5vh,22px);}
+.ps-body{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(12px,3vw,14px);line-height:1.85;color:rgba(45,34,38,.65);margin-bottom:clamp(18px,4.5vh,28px);}
+.ps-btn{width:100%;height:clamp(44px,11vw,52px);border:none;border-radius:26px;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(9px,2.2vw,11px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;}
+.ps-box{background:rgba(107,91,94,.04);border-radius:12px;padding:clamp(12px,3vw,18px);margin-bottom:clamp(14px,3.5vh,22px);text-align:left;}
+.ps-lbl{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:2px;text-transform:uppercase;color:var(--warm-gray);margin-bottom:8px;}
+.ps-ta{width:100%;border:none;background:transparent;font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(13px,3.2vw,15px);color:var(--ink);line-height:1.6;resize:none;outline:none;}
+.ps-ta::placeholder{color:rgba(107,91,94,.35);}
+.ps-defuse-out{background:rgba(107,144,128,.08);border-radius:10px;padding:clamp(10px,2.5vw,14px);margin-bottom:clamp(14px,3.5vh,20px);font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(12px,3vw,14px);line-height:1.6;color:var(--sage);text-align:left;}
+.ps-carry{background:rgba(107,144,128,.08);border-radius:12px;padding:clamp(12px,3vw,18px);margin-bottom:clamp(18px,4.5vh,26px);font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(11px,2.8vw,13px);line-height:1.75;color:var(--sage);text-align:left;}
+.ps-carry em{color:var(--deep-rose);font-style:normal;font-weight:600;}
+
+#o-done{position:absolute;inset:0;z-index:80;background:rgba(10,6,8,.97);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(28px,6vw,48px);opacity:0;pointer-events:none;transition:opacity .8s;}
+#o-done.on{opacity:1;pointer-events:all;}
+.done-g{font-size:clamp(36px,10vw,48px);margin-bottom:clamp(12px,3vh,20px);}
+.done-ey{font-family:'Josefin Sans',sans-serif;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:rgba(212,168,67,.5);margin-bottom:clamp(6px,1.5vh,10px);}
+.done-ti{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(26px,8vw,36px);letter-spacing:4px;text-transform:uppercase;color:var(--parchment);line-height:1.1;margin-bottom:clamp(14px,3.5vh,24px);}
+.done-bo{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(12px,3vw,14px);line-height:1.9;color:rgba(253,246,240,.45);margin-bottom:clamp(24px,6vh,40px);max-width:280px;}
+.done-btn{width:clamp(200px,60vw,240px);height:clamp(46px,11vw,54px);border-radius:27px;border:none;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;}
+
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(28px,6vw,48px);z-index:90;transition:opacity .7s;}
+#o-intro{background:linear-gradient(180deg,#2A1A10,#3A2818);}
+.oi-b{font-family:'Josefin Sans',sans-serif;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:rgba(196,148,74,.55);margin-bottom:clamp(12px,3vh,18px);}
+.oi-ic{font-size:clamp(28px,8vw,38px);margin-bottom:clamp(10px,2.5vh,16px);}
+.oi-big{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(32px,9vw,48px);letter-spacing:5px;text-transform:uppercase;color:var(--parchment);line-height:1;margin-bottom:6px;}
+.oi-sub{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(12px,3.2vw,15px);color:rgba(196,148,74,.6);margin-bottom:clamp(18px,4vh,30px);}
+.oi-desc{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(12px,3vw,13px);line-height:1.85;color:rgba(253,246,240,.32);margin-bottom:clamp(26px,6vh,42px);max-width:270px;}
+.oi-btn{width:clamp(150px,45vw,180px);height:clamp(42px,10vw,48px);border-radius:24px;border:1.5px solid rgba(196,148,74,.5);background:transparent;font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(9px,2.2vw,11px);letter-spacing:3px;text-transform:uppercase;color:rgba(196,148,74,.8);cursor:pointer;transition:all .3s;}
+.oi-btn:active{background:rgba(196,148,74,.15);border-color:rgba(196,148,74,.8);}
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <div id="sky">
+    <div class="star" style="left:15%;top:12%;--d:2.8s"></div>
+    <div class="star" style="left:45%;top:8%;--d:3.5s"></div>
+    <div class="star" style="left:72%;top:18%;--d:4.2s"></div>
+    <div class="star" style="left:88%;top:6%;--d:2.5s"></div>
+    <div class="star" style="left:28%;top:22%;--d:3.8s"></div>
+    <div id="path"></div>
+    <div id="ground-strip"></div>
+    <div id="avatar"><div class="av-h"></div><div class="av-b"></div><div class="av-s"></div></div>
+    <div class="zone-label"><div class="zone-num">Zone III · Step 3</div><div class="zone-name">The Story Field</div></div>
+    <div id="weight-counter"><div class="wc-num" id="wc-num">5</div><div class="wc-lbl">STONES LEFT</div></div>
+  </div>
+
+  <div id="panel">
+    <div id="dialogue">
+      <div class="dlg-row">
+        <div class="dlg-sym" id="dlg-sym">—</div>
+        <div class="dlg-text" id="dlg-text">You have been carrying these for a long time.</div>
+      </div>
+      <div class="dlg-cue hide" id="dlg-cue">TAP A STONE TO PUT IT DOWN ›</div>
+    </div>
+
+    <div id="stone-grid">
+      <div class="stone-card" id="sc0"><span class="sc-icon">🪨</span><div class="sc-text">They never<br>listen</div><span class="sc-weight">carries 8 lbs</span><div class="sc-check">✓</div></div>
+      <div class="stone-card" id="sc1"><span class="sc-icon">🪨</span><div class="sc-text">They always<br>shut down</div><span class="sc-weight">carries 6 lbs</span><div class="sc-check">✓</div></div>
+      <div class="stone-card" id="sc2"><span class="sc-icon">🪨</span><div class="sc-text">They do not<br>really care</div><span class="sc-weight">carries 10 lbs</span><div class="sc-check">✓</div></div>
+      <div class="stone-card" id="sc3"><span class="sc-icon">🪨</span><div class="sc-text">It is always<br>my fault</div><span class="sc-weight">carries 4 lbs</span><div class="sc-check">✓</div></div>
+      <div class="stone-card wide" id="sc4"><span class="sc-icon">🪨</span><div class="sc-text">This will never change</div><span class="sc-weight">carries 12 lbs</span><div class="sc-check">✓</div></div>
+    </div>
+
+    <div id="practice-btn-wrap">
+      <button id="practice-btn">🌿 YOUR PRACTICE IS READY</button>
+      <div class="practice-note">Unhooking from the Story</div>
+    </div>
+  </div>
+
+  <div id="modal">
+    <div id="modal-sheet">
+      <div class="ms-handle"></div>
+      <div class="ms-tag" id="ms-tag">Stone 1 of 5</div>
+      <div class="ms-story" id="ms-story"></div>
+      <div class="ms-arrow">↓</div>
+      <div class="ms-defuse-lbl">Defused version</div>
+      <div class="ms-defuse" id="ms-defuse"></div>
+      <div class="ms-q" id="ms-q"></div>
+      <button class="ms-drop-btn" id="drop-btn">PUT IT DOWN ↓</button>
+      <button class="ms-keep" id="keep-btn">CARRY IT A LITTLE LONGER</button>
+    </div>
+  </div>
+
+  <div id="practice-overlay">
+    <div class="ps-inner">
+      <div class="ps-bar"><div class="ps-fill" id="ps-fill"></div></div>
+      <button class="ps-x" id="ps-close">✕</button>
+      <div class="ps-step active" id="ps-0">
+        <div class="ps-eyebrow">✦ Practice · Unhooking from the Story</div>
+        <div class="ps-h">Thoughts as Thoughts</div>
+        <div class="ps-body">Your mind has been collecting evidence for its story. Every confirmation noted. Every contradiction explained away.<br><br>This is not a flaw. This is how minds work. But the story is not the whole truth.</div>
+        <button class="ps-btn" id="ps-next-0">CONTINUE</button>
+      </div>
+      <div class="ps-step" id="ps-1">
+        <div class="ps-eyebrow">Your Story</div>
+        <div class="ps-h">Write It Down</div>
+        <div class="ps-body">What is the story your mind tells you most often about your partner?</div>
+        <div class="ps-box">
+          <div class="ps-lbl">THE STORY I CARRY IS...</div>
+          <textarea class="ps-ta" id="ps-raw" placeholder="They always... They never... They do not..." rows="3"></textarea>
+        </div>
+        <button class="ps-btn" id="ps-defuse-btn">DEFUSE IT</button>
+      </div>
+      <div class="ps-step" id="ps-2">
+        <div class="ps-eyebrow">Defused</div>
+        <div class="ps-h">See It as a Thought</div>
+        <div class="ps-defuse-out" id="ps-defuse-out"></div>
+        <div class="ps-body">Notice the difference. The story is not gone. But now you can see it as a story your mind is telling — not as the truth.</div>
+        <button class="ps-btn" id="ps-next-2">CONTINUE</button>
+      </div>
+      <div class="ps-step" id="ps-3">
+        <div class="ps-eyebrow">Underneath</div>
+        <div class="ps-h">What is the Need?</div>
+        <div class="ps-body">The story protects something — a fear, a need, a wound that has not been spoken.</div>
+        <div class="ps-box">
+          <div class="ps-lbl">WHAT I ACTUALLY NEED IS...</div>
+          <textarea class="ps-ta" placeholder="To feel heard. To know they are not leaving. To believe we can get better..." rows="3"></textarea>
+        </div>
+        <button class="ps-btn" id="ps-next-3">NEXT</button>
+      </div>
+      <div class="ps-step" id="ps-4">
+        <div class="ps-eyebrow">Integration</div>
+        <div class="ps-h">Presence Over Prediction</div>
+        <div class="ps-body">The practice is not to stop having the story.<br>It is to notice when the story is running — and ask:</div>
+        <div class="ps-carry"><em>Is this happening right now? Or is this the past?</em><br><br>Next time the story starts: pause. Say to yourself: "My mind is doing the story thing. What is actually here, right now?"</div>
+        <button class="ps-btn" id="ps-plant">PLANT THIS SEED ✦</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="o-done">
+    <div class="done-g">🌿</div>
+    <div class="done-ey">Zone III Complete</div>
+    <div class="done-ti">The Story Field</div>
+    <div class="done-bo">You put some things down.<br>The path is lighter now.<br>Your partner is still there —<br>seen a little more clearly.</div>
+    <button class="done-btn" id="done-btn">CONTINUE THE JOURNEY</button>
+  </div>
+
+  <div class="overlay" id="o-intro">
+    <div class="oi-b">✦ Zone III · Step 3 ✦</div>
+    <div class="oi-ic">🪨</div>
+    <div class="oi-big">The Story<br>Field</div>
+    <div class="oi-sub">Release certainty</div>
+    <div class="oi-desc">You are carrying stories about your partner. Heavy ones. They have been keeping you company for a long time.<br><br>The path forward is lighter. Tap each stone to put it down.</div>
+    <button class="oi-btn" id="intro-btn">ENTER THE FIELD</button>
+  </div>
+
+</div>
+
+<script>
+const STONES = [
+  { story:"They never listen to me.", defuse:"My mind is telling me the story that they never listen to me.", q:"When did this story begin? Is it about right now — or about further back?" },
+  { story:"They always shut down when I need them.", defuse:"I am having the thought that they always shut down when I need them.", q:"What would you see if you watched their shutdown with curiosity instead of certainty?" },
+  { story:"They do not really care about me.", defuse:"My mind is generating the thought that they do not really care.", q:"What evidence does your mind skip over to keep this story intact?" },
+  { story:"It is always my fault when things go wrong.", defuse:"I notice my mind telling me it is always my fault.", q:"Is this your responsibility — or your old pattern taking the blame?" },
+  { story:"This will never get better.", defuse:"My mind is telling me the story that this will never change.", q:"What would need to be true for 'never' to be wrong — even a little?" },
+];
+
+let current = null;
+let dropped = new Set();
+let P = { step:0 };
+
+// Wire up all event listeners
+document.getElementById('intro-btn').addEventListener('click', begin);
+document.getElementById('drop-btn').addEventListener('click', dropStone);
+document.getElementById('keep-btn').addEventListener('click', closeModal);
+document.getElementById('practice-btn').addEventListener('click', openPractice);
+document.getElementById('ps-close').addEventListener('click', closePractice);
+document.getElementById('ps-next-0').addEventListener('click', () => psGo(1));
+document.getElementById('ps-defuse-btn').addEventListener('click', psDefuse);
+document.getElementById('ps-next-2').addEventListener('click', () => psGo(3));
+document.getElementById('ps-next-3').addEventListener('click', () => psGo(4));
+document.getElementById('ps-plant').addEventListener('click', psPlant);
+document.getElementById('done-btn').addEventListener('click', finish);
+
+// Wire up stone cards
+document.querySelectorAll('.stone-card').forEach((card, idx) => {
+  card.addEventListener('click', () => openStone(idx));
+});
+
+function begin() {
+  const el = document.getElementById('o-intro');
+  el.style.opacity = '0';
+  el.style.pointerEvents = 'none';
+  setTimeout(() => el.style.display = 'none', 700);
+  fadeD('—', "Each of these stones is a thought.\n\nTap one to examine it.", 'TAP A STONE TO PUT IT DOWN ›');
+}
+
+function openStone(idx) {
+  if (dropped.has(idx)) return;
+  current = idx;
+  const d = STONES[idx];
+  document.getElementById('ms-tag').textContent = 'Stone ' + (idx+1) + ' of ' + STONES.length + ' · The Story You Carry';
+  document.getElementById('ms-story').textContent = d.story;
+  document.getElementById('ms-defuse').textContent = d.defuse;
+  document.getElementById('ms-q').textContent = d.q;
+  document.getElementById('modal').classList.add('on');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('on');
+  current = null;
+}
+
+function dropStone() {
+  if (current === null) return;
+  const idx = current;
+  closeModal();
+
+  const card = document.getElementById('sc' + idx);
+  card.classList.add('gone');
+  card.querySelector('.sc-check').style.opacity = '1';
+  dropped.add(idx);
+
+  const left = STONES.length - dropped.size;
+  document.getElementById('wc-num').textContent = left;
+
+  const progress = dropped.size / STONES.length;
+  updateWorld(progress);
+
+  const msgs = [
+    ['—', 'One stone down.\n\nNotice anything?'],
+    ['—', 'Getting lighter.'],
+    ['✦', 'Halfway there.\n\nThe sky is changing.'],
+    ['—', 'Almost free.'],
+  ];
+  if (dropped.size <= msgs.length) {
+    const m = msgs[dropped.size - 1];
+    fadeD(m[0], m[1], dropped.size < STONES.length ? 'TAP A STONE TO PUT IT DOWN ›' : null);
+  }
+
+  if (dropped.size >= STONES.length) {
+    document.getElementById('stone-grid').style.display = 'none';
+    document.getElementById('practice-btn-wrap').style.display = 'flex';
+    document.getElementById('wc-num').textContent = '0';
+    setTimeout(() => fadeD('✦', "You put them all down.\n\nSee how much lighter this feels?", null), 600);
+  }
+}
+
+function updateWorld(p) {
+  const sky = document.getElementById('sky');
+  const h1 = Math.round(20 + p * 185);
+  const h2 = Math.round(25 + p * 175);
+  const h3 = Math.round(35 + p * 120);
+  const h4 = Math.round(40 + p * 110);
+  sky.style.background = `linear-gradient(180deg,
+    hsl(${h1}deg ${Math.round(50-p*20)}% ${Math.round(10+p*35)}%) 0%,
+    hsl(${h2}deg ${Math.round(55-p*15)}% ${Math.round(20+p*30)}%) 40%,
+    hsl(${h3}deg ${Math.round(60-p*10)}% ${Math.round(45+p*20)}%) 75%,
+    hsl(${h4}deg ${Math.round(60-p*5)}% ${Math.round(60+p*15)}%) 100%)`;
+
+  document.getElementById('ground-strip').style.background =
+    `linear-gradient(180deg, hsl(${130*p + 20*(1-p)}deg 40% ${25+p*20}%), hsl(${120*p + 15*(1-p)}deg 45% ${18+p*15}%))`;
+
+  document.getElementById('avatar').style.bottom = (18 + p * 30) + '%';
+}
+
+function fadeD(sym, text, cue) {
+  const el = document.getElementById('dlg-text');
+  const cueEl = document.getElementById('dlg-cue');
+  el.style.opacity = '0';
+  setTimeout(() => {
+    document.getElementById('dlg-sym').textContent = sym;
+    el.textContent = text;
+    el.style.opacity = '1';
+    if (cue) { cueEl.textContent = cue; cueEl.classList.remove('hide'); }
+    else { cueEl.classList.add('hide'); }
+  }, 220);
+}
+
+function openPractice() {
+  P.step = 0;
+  psShow(0);
+  document.getElementById('ps-fill').style.width = '0%';
+  document.getElementById('practice-overlay').classList.add('on');
+}
+
+function closePractice() {
+  document.getElementById('practice-overlay').classList.remove('on');
+}
+
+function psGo(n) {
+  psShow(n);
+  document.getElementById('ps-fill').style.width = (n / 4 * 100) + '%';
+}
+
+function psDefuse() {
+  const raw = document.getElementById('ps-raw').value.trim() || 'they always... they never...';
+  let c = raw.replace(/^(i think|i feel|i believe)\s+/i, '');
+  c = c.charAt(0).toLowerCase() + c.slice(1).replace(/\.\s*$/, '');
+  document.getElementById('ps-defuse-out').textContent = 'My mind is telling me the story that ' + c + '.';
+  psGo(2);
+}
+
+function psShow(n) {
+  document.querySelectorAll('.ps-step').forEach(el => el.classList.remove('active'));
+  document.getElementById('ps-' + n).classList.add('active');
+  P.step = n;
+}
+
+function psPlant() {
+  document.getElementById('ps-fill').style.width = '100%';
+  setTimeout(() => {
+    document.getElementById('practice-overlay').classList.remove('on');
+    notifyApp('gameComplete', { zone: 3 });
+    setTimeout(() => document.getElementById('o-done').classList.add('on'), 600);
+  }, 400);
+}
+
+function finish() {
+  notifyApp('close', { zone: 3 });
+  document.getElementById('o-done').classList.remove('on');
+  fadeD('✦', "The story will come back. It always does.\n\nBut now you know what it is.", null);
+}
+
+// REACT NATIVE BRIDGE
+function notifyApp(event, data) {
+  try {
+    if (window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(JSON.stringify({ event: event, data: data || {} }));
+    } else if (window.parent !== window) {
+      window.parent.postMessage(JSON.stringify({ event: event, data: data || {} }), '*');
+    }
+  } catch(e) {}
+}
+</script>
+</body>
+</html>

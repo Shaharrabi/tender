@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>THE FIELD — Zone II: The Window</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;600&family=Josefin+Sans:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+
+:root {
+  --parchment:#FDF6F0;--terracotta:#D8A499;--deep-rose:#8B3A4A;
+  --ink:#2D2226;--warm-gray:#6B5B5E;--rose:#C4616E;
+  --sage:#6B9080;--gold:#D4A843;
+  --hyper:#E85D4C;--hypo:#5C7FA3;--window:#6B9080;
+}
+
+html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;touch-action:manipulation;background:transparent;}
+
+.phone{width:100%;height:100%;background:var(--ink);border-radius:0;overflow:hidden;position:relative;display:flex;flex-direction:column;}
+
+#terrain{flex:1;min-height:0;position:relative;overflow:hidden;background:linear-gradient(180deg,#E85D4C 0%,#D47A6A 15%,#C9A080 30%,#B8C4A0 42%,#8BB888 50%,#A0B8C8 58%,#7A98B4 70%,#5C7FA3 85%,#4A6890 100%);-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;}
+
+.zone-line{position:absolute;left:0;right:0;height:2px;background:rgba(255,255,255,.15);pointer-events:none;}
+.zone-line.top{top:30%;}
+.zone-line.bottom{top:70%;}
+
+.zone-marker{position:absolute;right:12px;font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:2px;text-transform:uppercase;pointer-events:none;}
+.zone-marker.hyper{top:12%;color:rgba(232,93,76,.6);}
+.zone-marker.window{top:48%;color:rgba(107,144,128,.7);}
+.zone-marker.hypo{top:82%;color:rgba(92,127,163,.6);}
+
+#avatar{position:absolute;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;transition:top .5s cubic-bezier(.4,0,.2,1);z-index:10;}
+.av-h{width:22px;height:22px;border-radius:50%;background:var(--parchment);transition:background .4s;}
+.av-b{width:22px;height:18px;margin-top:-3px;background:#E8DDD0;border-radius:0 0 8px 8px;transition:background .4s;}
+.av-s{width:14px;height:4px;border-radius:50%;background:rgba(0,0,0,.2);margin-top:3px;}
+
+#avatar.hyper .av-h{background:#FFD4CC;}
+#avatar.hyper .av-b{background:#FFB8AA;}
+#avatar.window .av-h{background:#C8E0C4;}
+#avatar.window .av-b{background:#A8D0A0;}
+#avatar.hypo .av-h{background:#C4D8E8;}
+#avatar.hypo .av-b{background:#A0C0D8;}
+
+@keyframes breathe{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.1)}}
+#avatar.breathing{animation:breathe 4s ease-in-out infinite;}
+
+.particle{position:absolute;width:4px;height:4px;border-radius:50%;pointer-events:none;opacity:.6;}
+@keyframes rise{from{transform:translateY(0);opacity:.6}to{transform:translateY(-80px);opacity:0}}
+@keyframes fall{from{transform:translateY(0);opacity:.6}to{transform:translateY(80px);opacity:0}}
+.particle.up{background:var(--hyper);animation:rise 3s ease-out infinite;}
+.particle.down{background:var(--hypo);animation:fall 3s ease-out infinite;}
+
+.zone-label{position:absolute;top:14px;left:14px;z-index:20;}
+.zone-num{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.35);}
+.zone-name{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(10px,2.5vw,13px);letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.55);}
+
+#panel{background:var(--parchment);border-top:1px solid rgba(216,164,153,.35);flex-shrink:0;z-index:25;display:flex;flex-direction:column;}
+
+#dialogue{padding:clamp(10px,2vh,16px) clamp(14px,4vw,22px) clamp(6px,1.5vh,10px);flex-shrink:0;}
+.dlg-row{display:flex;gap:10px;align-items:flex-start;}
+.dlg-sym{font-family:'Josefin Sans',sans-serif;font-size:clamp(10px,2.5vw,12px);color:var(--terracotta);flex-shrink:0;margin-top:2px;width:14px;}
+.dlg-text{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(12px,3vw,15px);line-height:1.65;color:var(--ink);white-space:pre-wrap;transition:opacity .25s;}
+.dlg-cue{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:2px;text-transform:uppercase;color:rgba(107,91,94,.4);text-align:right;margin-top:4px;animation:blink 2.4s ease-in-out infinite;}
+.dlg-cue.hide{visibility:hidden;}
+@keyframes blink{0%,100%{opacity:.3}55%{opacity:1}}
+
+#controls{display:none;flex-direction:column;padding:clamp(6px,1.5vh,10px) clamp(14px,4vw,22px) clamp(12px,2.5vh,18px);gap:clamp(8px,2vw,12px);}
+.ctrl-row{display:flex;gap:clamp(8px,2vw,12px);}
+.ctrl-btn{flex:1;height:clamp(52px,14vw,64px);border:none;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:2px;text-transform:uppercase;transition:all .2s;-webkit-tap-highlight-color:transparent;}
+.ctrl-btn:active{transform:scale(.96);}
+.ctrl-btn.up{background:linear-gradient(180deg,rgba(232,93,76,.15),rgba(232,93,76,.08));border:1.5px solid rgba(232,93,76,.3);color:var(--hyper);}
+.ctrl-btn.up:active{background:rgba(232,93,76,.25);}
+.ctrl-btn.down{background:linear-gradient(180deg,rgba(92,127,163,.08),rgba(92,127,163,.15));border:1.5px solid rgba(92,127,163,.3);color:var(--hypo);}
+.ctrl-btn.down:active{background:rgba(92,127,163,.25);}
+.ctrl-btn.center{background:linear-gradient(135deg,var(--sage),#4A8A6E);border:none;color:white;}
+.ctrl-btn.center:active{background:var(--sage);}
+.ctrl-icon{font-size:clamp(16px,4.5vw,22px);line-height:1;}
+
+#state-meter{display:none;padding:0 clamp(14px,4vw,22px) clamp(10px,2vh,14px);}
+.meter-wrap{background:linear-gradient(90deg,var(--hypo),var(--window) 40%,var(--window) 60%,var(--hyper));border-radius:20px;height:clamp(8px,2vw,12px);position:relative;overflow:hidden;}
+.meter-indicator{position:absolute;width:clamp(14px,3.5vw,18px);height:clamp(14px,3.5vw,18px);background:white;border-radius:50%;top:50%;transform:translate(-50%,-50%);box-shadow:0 2px 8px rgba(0,0,0,.3);transition:left .3s ease;}
+.meter-labels{display:flex;justify-content:space-between;margin-top:6px;}
+.meter-lbl{font-family:'Josefin Sans',sans-serif;font-size:clamp(6px,1.5vw,8px);letter-spacing:1.5px;text-transform:uppercase;color:var(--warm-gray);}
+
+#seed-btn{display:none;flex-direction:column;align-items:center;padding:clamp(8px,2vh,12px) clamp(22px,6vw,32px) clamp(14px,3vh,20px);gap:8px;}
+#seed-btn button{width:100%;height:clamp(52px,14vw,62px);border:none;border-radius:31px;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(11px,2.8vw,13px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 24px rgba(107,144,128,.45);animation:seedpulse 2.2s ease-in-out infinite;}
+@keyframes seedpulse{0%,100%{box-shadow:0 6px 24px rgba(107,144,128,.4);}50%{box-shadow:0 6px 36px rgba(107,144,128,.7);}}
+.seed-note{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(10px,2.5vw,12px);color:rgba(107,91,94,.45);text-align:center;}
+
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(28px,6vw,48px);opacity:0;pointer-events:none;transition:opacity .7s ease;z-index:50;}
+.overlay.on{opacity:1;pointer-events:all;}
+
+#o-intro{background:linear-gradient(180deg,#3A2A1A,#2A1A10);z-index:60;}
+.oi-b{font-family:'Josefin Sans',sans-serif;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:rgba(212,168,67,.55);margin-bottom:clamp(12px,3vh,18px);}
+.oi-ic{font-size:clamp(36px,10vw,48px);margin-bottom:clamp(10px,2.5vh,16px);}
+.oi-big{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(32px,9vw,44px);letter-spacing:4px;text-transform:uppercase;color:var(--parchment);line-height:1;margin-bottom:6px;}
+.oi-sub{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(12px,3.2vw,15px);color:rgba(212,168,67,.6);margin-bottom:clamp(18px,4vh,28px);}
+.oi-desc{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(11px,2.8vw,13px);line-height:1.85;color:rgba(253,246,240,.35);margin-bottom:clamp(26px,6vh,40px);max-width:280px;}
+.oi-btn{width:clamp(160px,48vw,190px);height:clamp(44px,11vw,52px);border-radius:26px;border:1.5px solid rgba(107,144,128,.5);background:transparent;font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(9px,2.2vw,11px);letter-spacing:3px;text-transform:uppercase;color:rgba(107,144,128,.85);cursor:pointer;transition:all .3s;}
+.oi-btn:active{background:rgba(107,144,128,.15);border-color:var(--sage);}
+
+#practice-overlay{background:rgba(45,34,38,.96);z-index:55;}
+.ps-inner{width:100%;max-width:340px;background:var(--parchment);border-radius:20px;overflow:hidden;position:relative;}
+.ps-bar{height:4px;background:rgba(107,91,94,.12);}
+.ps-fill{height:100%;width:0;background:var(--sage);transition:width .4s;}
+.ps-x{position:absolute;top:12px;right:14px;width:28px;height:28px;border-radius:14px;border:none;background:rgba(107,91,94,.08);font-size:14px;color:var(--warm-gray);cursor:pointer;}
+.ps-step{display:none;padding:clamp(22px,5vw,32px) clamp(18px,5vw,28px);flex-direction:column;text-align:center;}
+.ps-step.active{display:flex;animation:fadeUp .4s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.ps-eyebrow{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:3px;text-transform:uppercase;color:var(--terracotta);margin-bottom:clamp(10px,2.5vh,16px);}
+.ps-h{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(20px,5.5vw,26px);letter-spacing:2px;text-transform:uppercase;color:var(--ink);line-height:1.15;margin-bottom:clamp(14px,3.5vh,22px);}
+.ps-body{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(12px,3vw,14px);line-height:1.85;color:rgba(45,34,38,.65);margin-bottom:clamp(18px,4.5vh,28px);}
+.ps-btn{width:100%;height:clamp(44px,11vw,52px);border:none;border-radius:26px;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(9px,2.2vw,11px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;}
+.ps-box{background:rgba(107,91,94,.04);border-radius:12px;padding:clamp(12px,3vw,18px);margin-bottom:clamp(14px,3.5vh,22px);text-align:left;}
+.ps-lbl{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:2px;text-transform:uppercase;color:var(--warm-gray);margin-bottom:8px;}
+.ps-ta{width:100%;border:none;background:transparent;font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(13px,3.2vw,15px);color:var(--ink);line-height:1.6;resize:none;outline:none;}
+.ps-ta::placeholder{color:rgba(107,91,94,.35);}
+.ps-carry{background:rgba(107,144,128,.08);border-radius:12px;padding:clamp(12px,3vw,18px);margin-bottom:clamp(18px,4.5vh,26px);font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(11px,2.8vw,13px);line-height:1.75;color:var(--sage);text-align:left;}
+.ps-carry em{color:var(--deep-rose);font-style:normal;font-weight:600;}
+
+#o-done{background:var(--ink);z-index:58;}
+.done-g{font-size:clamp(36px,10vw,48px);margin-bottom:clamp(12px,3vh,20px);}
+.done-ey{font-family:'Josefin Sans',sans-serif;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:rgba(212,168,67,.5);margin-bottom:clamp(6px,1.5vh,10px);}
+.done-ti{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(26px,8vw,36px);letter-spacing:4px;text-transform:uppercase;color:var(--parchment);line-height:1.1;margin-bottom:clamp(14px,3.5vh,24px);}
+.done-bo{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(12px,3vw,14px);line-height:1.9;color:rgba(253,246,240,.45);margin-bottom:clamp(24px,6vh,40px);max-width:280px;}
+.done-btn{width:clamp(200px,60vw,240px);height:clamp(46px,11vw,54px);border-radius:27px;border:none;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div id="terrain">
+    <div class="zone-line top"></div>
+    <div class="zone-line bottom"></div>
+    <div class="zone-marker hyper">↑ HYPERAROUSAL</div>
+    <div class="zone-marker window">— WINDOW —</div>
+    <div class="zone-marker hypo">↓ HYPOAROUSAL</div>
+    <div id="avatar" style="top:50%">
+      <div class="av-h"></div>
+      <div class="av-b"></div>
+      <div class="av-s"></div>
+    </div>
+    <div class="zone-label">
+      <div class="zone-num">Zone II · Step 2</div>
+      <div class="zone-name">The Window</div>
+    </div>
+  </div>
+  <div id="panel">
+    <div id="dialogue">
+      <div class="dlg-row">
+        <div class="dlg-sym" id="dlg-sym">—</div>
+        <div class="dlg-text" id="dlg-text">This is your nervous system terrain.</div>
+      </div>
+      <div class="dlg-cue hide" id="dlg-cue">TAP TO CONTINUE ›</div>
+    </div>
+    <div id="state-meter">
+      <div class="meter-wrap">
+        <div class="meter-indicator" id="meter-dot" style="left:50%"></div>
+      </div>
+      <div class="meter-labels">
+        <span class="meter-lbl">Shutdown</span>
+        <span class="meter-lbl">Window</span>
+        <span class="meter-lbl">Overwhelm</span>
+      </div>
+    </div>
+    <div id="controls">
+      <div class="ctrl-row">
+        <button class="ctrl-btn up" onclick="moveUp()"><span class="ctrl-icon">🔥</span>ACTIVATE</button>
+        <button class="ctrl-btn down" onclick="moveDown()"><span class="ctrl-icon">🌊</span>CALM</button>
+      </div>
+      <button class="ctrl-btn center" onclick="findCenter()"><span class="ctrl-icon">🌿</span>FIND YOUR CENTER · BREATHE</button>
+    </div>
+    <div id="seed-btn">
+      <button onclick="openPractice()"><span>🌱</span> PICK UP THE SEED</button>
+      <div class="seed-note">A practice for your window</div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay on" id="o-intro">
+  <div class="oi-b">✦ Zone II · Step 2 ✦</div>
+  <div class="oi-ic">🪟</div>
+  <div class="oi-big">The Window</div>
+  <div class="oi-sub">Trust the relational field</div>
+  <div class="oi-desc">Your nervous system has a window — a range where you can stay present, connected, and responsive.<br><br>Outside that window, everything becomes harder. Learn to find your way back.</div>
+  <button class="oi-btn" onclick="begin()">ENTER THE FIELD</button>
+</div>
+
+<div class="overlay" id="practice-overlay">
+  <div class="ps-inner">
+    <div class="ps-bar"><div class="ps-fill" id="ps-fill"></div></div>
+    <button class="ps-x" onclick="closePractice()">✕</button>
+    <div class="ps-step active" id="ps-0">
+      <div class="ps-eyebrow">✦ Practice · Window Awareness</div>
+      <div class="ps-h">Know Your<br>Window</div>
+      <div class="ps-body">The window of tolerance is where you can think clearly, feel your feelings, and stay connected to others.<br><br>Outside it, you are either too activated (fight/flight) or too shut down (freeze).</div>
+      <button class="ps-btn" onclick="psGo(1)">CONTINUE</button>
+    </div>
+    <div class="ps-step" id="ps-1">
+      <div class="ps-eyebrow">Signals</div>
+      <div class="ps-h">Above the Window</div>
+      <div class="ps-body">When you are above your window — hyperaroused — you might feel:<br><br>Racing heart. Racing thoughts. Anger. Anxiety. Urgency. The need to <em>do something</em>.</div>
+      <div class="ps-box">
+        <div class="ps-lbl">WHEN I AM ABOVE MY WINDOW, I NOTICE...</div>
+        <textarea class="ps-ta" placeholder="my chest gets tight... I talk faster... I want to fix everything..." rows="2"></textarea>
+      </div>
+      <button class="ps-btn" onclick="psGo(2)">NEXT</button>
+    </div>
+    <div class="ps-step" id="ps-2">
+      <div class="ps-eyebrow">Signals</div>
+      <div class="ps-h">Below the Window</div>
+      <div class="ps-body">When you are below your window — hypoaroused — you might feel:<br><br>Foggy. Numb. Disconnected. Empty. The urge to withdraw or disappear.</div>
+      <div class="ps-box">
+        <div class="ps-lbl">WHEN I AM BELOW MY WINDOW, I NOTICE...</div>
+        <textarea class="ps-ta" placeholder="I go quiet... I feel far away... nothing seems to matter..." rows="2"></textarea>
+      </div>
+      <button class="ps-btn" onclick="psGo(3)">NEXT</button>
+    </div>
+    <div class="ps-step" id="ps-3">
+      <div class="ps-eyebrow">Return</div>
+      <div class="ps-h">Finding Center</div>
+      <div class="ps-body">The breath is your doorway back. Not just any breath — but conscious, slow breath that tells your nervous system: <em>you are safe.</em></div>
+      <div class="ps-carry"><strong>The 4-7-8 breath:</strong><br><br>Inhale for <em>4</em> counts.<br>Hold for <em>7</em> counts.<br>Exhale for <em>8</em> counts.<br><br>The long exhale activates your rest system.</div>
+      <button class="ps-btn" onclick="psGo(4)">NEXT</button>
+    </div>
+    <div class="ps-step" id="ps-4">
+      <div class="ps-eyebrow">Integration</div>
+      <div class="ps-h">Carry This</div>
+      <div class="ps-carry">When you feel yourself leaving your window — pause.<br><br>Ask: <em>"Am I above or below?"</em><br><br>Then: one slow breath. That is the return.</div>
+      <button class="ps-btn" onclick="psPlant()">PLANT THIS SEED ✦</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="o-done">
+  <div class="done-g">🌿</div>
+  <div class="done-ey">Zone II Complete</div>
+  <div class="done-ti">The Window</div>
+  <div class="done-bo">You found your window.<br>You learned to return.<br>This is the ground you stand on.</div>
+  <button class="done-btn" onclick="finish()">CONTINUE THE JOURNEY</button>
+</div>
+
+<script>
+let S = {running:false,phase:'intro',line:-1,position:50,inWindow:true,windowVisits:0,breathCount:0};
+
+const LINES = [
+  {sym:'—',text:'This is your nervous system terrain.',cue:true},
+  {sym:'—',text:'The green zone in the center is your window of tolerance.\n\nWhen you are inside it, you can think clearly. Feel clearly. Connect.',cue:true},
+  {sym:'—',text:'Above it: hyperarousal.\nAnxiety. Urgency. Racing thoughts.',cue:true},
+  {sym:'—',text:'Below it: hypoarousal.\nShutdown. Numbness. Disconnection.',cue:true},
+  {sym:'✦',text:'Your job is simple:\nFind your way back to the window.',cue:true,startGame:true},
+];
+
+function begin() {
+  const el = document.getElementById('o-intro');
+  el.style.opacity = '0';
+  el.style.pointerEvents = 'none';
+  setTimeout(() => el.style.display = 'none', 700);
+  S.running = true;
+  S.phase = 'dialogue';
+  addParticles();
+  setTimeout(() => showLine(0), 500);
+}
+
+function addParticles() {
+  const terrain = document.getElementById('terrain');
+  for (let i = 0; i < 6; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle up';
+    p.style.left = (10 + Math.random() * 80) + '%';
+    p.style.top = (5 + Math.random() * 20) + '%';
+    p.style.animationDelay = (Math.random() * 3) + 's';
+    terrain.appendChild(p);
+  }
+  for (let i = 0; i < 6; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle down';
+    p.style.left = (10 + Math.random() * 80) + '%';
+    p.style.top = (75 + Math.random() * 15) + '%';
+    p.style.animationDelay = (Math.random() * 3) + 's';
+    terrain.appendChild(p);
+  }
+}
+
+document.getElementById('terrain').addEventListener('click', () => {
+  if (!S.running || S.phase !== 'dialogue') return;
+  const next = S.line + 1;
+  if (next < LINES.length) showLine(next);
+});
+
+function showLine(i) {
+  S.line = i;
+  const d = LINES[i];
+  fadeD(d.sym, d.text, d.cue ? 'TAP TO CONTINUE ›' : null);
+  if (d.startGame) setTimeout(startGame, 1500);
+}
+
+function fadeD(sym, text, cue) {
+  const el = document.getElementById('dlg-text');
+  const cueEl = document.getElementById('dlg-cue');
+  el.style.opacity = '0';
+  setTimeout(() => {
+    document.getElementById('dlg-sym').textContent = sym;
+    el.textContent = text;
+    el.style.opacity = '1';
+    if (cue) { cueEl.textContent = cue; cueEl.classList.remove('hide'); }
+    else { cueEl.classList.add('hide'); }
+  }, 220);
+}
+
+function startGame() {
+  S.phase = 'game';
+  document.getElementById('controls').style.display = 'flex';
+  document.getElementById('state-meter').style.display = 'block';
+  S.position = 15;
+  updateAvatar();
+  fadeD('—', 'You are above your window now.\n\nUse the buttons to find your way back.', null);
+}
+
+function moveUp() {
+  if (S.phase !== 'game') return;
+  S.position = Math.max(5, S.position - 12);
+  updateAvatar();
+  checkZone();
+}
+
+function moveDown() {
+  if (S.phase !== 'game') return;
+  S.position = Math.min(95, S.position + 12);
+  updateAvatar();
+  checkZone();
+}
+
+function findCenter() {
+  if (S.phase !== 'game') return;
+  const avatar = document.getElementById('avatar');
+  avatar.classList.add('breathing');
+  S.breathCount++;
+  const diff = 50 - S.position;
+  S.position += diff * 0.4;
+  updateAvatar();
+  setTimeout(() => {
+    avatar.classList.remove('breathing');
+    checkZone();
+  }, 2000);
+  fadeD('✦', 'Breathe... The center is where you can stay present.', null);
+}
+
+function updateAvatar() {
+  const avatar = document.getElementById('avatar');
+  const meter = document.getElementById('meter-dot');
+  avatar.style.top = S.position + '%';
+  meter.style.left = (100 - S.position) + '%';
+  avatar.classList.remove('hyper', 'window', 'hypo');
+  if (S.position < 30) {
+    avatar.classList.add('hyper');
+    S.inWindow = false;
+  } else if (S.position > 70) {
+    avatar.classList.add('hypo');
+    S.inWindow = false;
+  } else {
+    avatar.classList.add('window');
+    if (!S.inWindow) S.windowVisits++;
+    S.inWindow = true;
+  }
+}
+
+function checkZone() {
+  if (S.position >= 35 && S.position <= 65 && S.breathCount >= 2) {
+    setTimeout(completeGame, 1200);
+  } else if (S.position < 25) {
+    fadeD('↑', 'Too high. Your system is activated.\nCalm, or find your center.', null);
+  } else if (S.position > 75) {
+    fadeD('↓', 'Too low. Your system is shutting down.\nActivate, or find your center.', null);
+  } else if (S.inWindow && S.breathCount < 2) {
+    fadeD('—', 'Good. You are in the window.\nNow: breathe. Let yourself settle here.', null);
+  }
+}
+
+function completeGame() {
+  notifyApp('gameComplete', { zone: 2 });
+  S.phase = 'done';
+  document.getElementById('controls').style.display = 'none';
+  document.getElementById('state-meter').style.display = 'none';
+  document.getElementById('seed-btn').style.display = 'flex';
+  fadeD('✦', 'You found it.\n\nThis is your window of tolerance.\nRemember what it feels like.', null);
+}
+
+let P = { step: 0 };
+function openPractice() {
+  P.step = 0;
+  psShow(0);
+  document.getElementById('ps-fill').style.width = '0%';
+  document.getElementById('practice-overlay').classList.add('on');
+}
+function closePractice() { document.getElementById('practice-overlay').classList.remove('on'); }
+function psGo(n) { psShow(n); document.getElementById('ps-fill').style.width = (n / 4 * 100) + '%'; }
+function psShow(n) {
+  document.querySelectorAll('.ps-step').forEach(el => el.classList.remove('active'));
+  document.getElementById('ps-' + n).classList.add('active');
+  P.step = n;
+}
+function psPlant() {
+  document.getElementById('ps-fill').style.width = '100%';
+  setTimeout(() => {
+    document.getElementById('practice-overlay').classList.remove('on');
+    const sb = document.getElementById('seed-btn');
+    sb.innerHTML = '<div style="font-family:Playfair Display,serif;font-style:italic;font-size:14px;color:var(--sage);text-align:center;padding:12px 0">🌱 Seed planted. You know your window.</div>';
+    setTimeout(() => document.getElementById('o-done').classList.add('on'), 800);
+  }, 400);
+}
+function finish() {
+  notifyApp('close', { zone: 2 });
+  document.getElementById('o-done').classList.remove('on');
+  fadeD('✦', 'The window will always be here.\nNow you know how to find it.', null);
+}
+
+// REACT NATIVE BRIDGE
+function notifyApp(event, data) {
+  try {
+    if (window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(JSON.stringify({ event: event, data: data || {} }));
+    } else if (window.parent !== window) {
+      window.parent.postMessage(JSON.stringify({ event: event, data: data || {} }), '*');
+    }
+  } catch(e) {}
+}
+</script>
+</body>
+</html>

@@ -41,6 +41,8 @@ import {
 } from '@/constants/theme';
 import StepAudioPlayer from '@/components/growth/StepAudioPlayer';
 import StepMiniGame from '@/components/growth/StepMiniGame';
+import ZoneGame from '@/components/growth/ZoneGame';
+import { getZoneGame } from '@/utils/steps/zone-games';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { CollapsibleHeader } from '@/components/ui/CollapsibleSection';
 import QuickLinksBar from '@/components/QuickLinksBar';
@@ -144,6 +146,10 @@ function StepDetailScreenInner() {
   const [couplePlayResponse, setCouplePlayResponse] = useState<string | null>(null);
   const [couplePlayPartnerResponse, setCouplePlayPartnerResponse] = useState<string | null>(null);
   const [couplePlayFollowUp, setCouplePlayFollowUp] = useState<string | null>(null);
+
+  // Zone game state
+  const [showZoneGame, setShowZoneGame] = useState(false);
+  const [zoneGameCompleted, setZoneGameCompleted] = useState(false);
 
   // Collapsible sections — all OPEN by default so the step feels like a room, not a filing cabinet
   const [expandedSections, setExpandedSections] = useState<Set<SectionId>>(
@@ -886,6 +892,44 @@ function StepDetailScreenInner() {
           <Text style={styles.transitionText}>{transitions.afterCourse}</Text>
         )}
 
+        {/* Zone Game — The Field */}
+        {(() => {
+          const zoneGame = getZoneGame(stepNumber);
+          if (!zoneGame) return null;
+          return (
+            <Animated.View entering={FadeIn.delay(850).duration(500)}>
+              <TouchableOpacity
+                style={[styles.zoneGameCard, { borderColor: phase.color + '30' }]}
+                onPress={() => {
+                  haptics.tap();
+                  setShowZoneGame(true);
+                }}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+              >
+                <View style={styles.zoneGameHeader}>
+                  <Text style={styles.zoneGameZone}>{zoneGame.zoneName}</Text>
+                  {zoneGameCompleted && (
+                    <View style={[styles.zoneGameDone, { backgroundColor: phase.color + '20' }]}>
+                      <Text style={[styles.zoneGameDoneText, { color: phase.color }]}>Explored</Text>
+                    </View>
+                  )}
+                </View>
+                <Text style={styles.zoneGameTitle}>{zoneGame.title}</Text>
+                <Text style={styles.zoneGameSubtitle}>{zoneGame.subtitle}</Text>
+                <View style={styles.zoneGameFooter}>
+                  <Text style={styles.zoneGameDuration}>~{zoneGame.durationMinutes} min</Text>
+                  <View style={[styles.zoneGamePlayBtn, { backgroundColor: phase.color }]}>
+                    <Text style={styles.zoneGamePlayText}>
+                      {zoneGameCompleted ? 'PLAY AGAIN' : 'ENTER THE FIELD'}
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            </Animated.View>
+          );
+        })()}
+
         {/* Practices — Collapsible */}
         <Animated.View entering={FadeIn.delay(900).duration(500)} style={styles.practicesSection}>
           <CollapsibleHeader
@@ -1371,6 +1415,14 @@ function StepDetailScreenInner() {
       </ScrollView>
 
       <QuickLinksBar />
+
+      {/* Zone Game Modal */}
+      <ZoneGame
+        zoneNumber={stepNumber}
+        visible={showZoneGame}
+        onComplete={() => setZoneGameCompleted(true)}
+        onClose={() => setShowZoneGame(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -2096,5 +2148,70 @@ const styles = StyleSheet.create({
     letterSpacing: 3,
     fontSize: 10,
     color: Colors.textMuted,
+  },
+
+  // Zone Game card
+  zoneGameCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    padding: Spacing.lg,
+    marginBottom: Spacing.sm,
+    ...Shadows.sm,
+  },
+  zoneGameHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.xs,
+  },
+  zoneGameZone: {
+    ...Typography.label,
+    letterSpacing: 3,
+    color: Colors.textMuted,
+    fontSize: 10,
+  },
+  zoneGameDone: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  zoneGameDoneText: {
+    fontSize: 10,
+    fontWeight: '600',
+    letterSpacing: 1,
+  },
+  zoneGameTitle: {
+    fontFamily: FontFamilies?.heading ?? undefined,
+    fontSize: FontSizes.headingM,
+    color: Colors.text,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  zoneGameSubtitle: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    fontStyle: 'italic',
+    marginBottom: Spacing.md,
+  },
+  zoneGameFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  zoneGameDuration: {
+    fontSize: FontSizes.caption,
+    color: Colors.textMuted,
+  },
+  zoneGamePlayBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: BorderRadius.pill,
+  },
+  zoneGamePlayText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1.5,
   },
 });
