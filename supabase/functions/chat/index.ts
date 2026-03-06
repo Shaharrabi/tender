@@ -169,16 +169,32 @@ serve(async (req: Request) => {
     // portraitRow may be null if user hasn't completed assessments yet — that's OK
     const hasPortrait = !portraitError && portraitRow;
 
-    // 1b. Fetch user's current step progress
+    // 1b. Fetch user's current step progress (includes started_at for days-in-step)
     const { data: stepRows } = await supabase
       .from('step_progress')
-      .select('step_number, status')
+      .select('step_number, status, started_at')
       .eq('user_id', userId)
       .order('step_number', { ascending: true });
 
     const activeStepRow = (stepRows ?? []).find((r: any) => r.status === 'active');
     const currentStepNumber = activeStepRow?.step_number ?? 1;
     const completedSteps = (stepRows ?? []).filter((r: any) => r.status === 'completed').length;
+
+    // Calculate days in current step
+    let daysInStep = 0;
+    if (activeStepRow?.started_at) {
+      const started = new Date(activeStepRow.started_at);
+      daysInStep = Math.max(1, Math.ceil((Date.now() - started.getTime()) / (1000 * 60 * 60 * 24)));
+    }
+
+    // 1b2. Count practices completed for current step
+    const { count: practicesCompletedForStep } = await supabase
+      .from('practice_completions')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('step_number', currentStepNumber);
+
+    const stepPracticeCount = practicesCompletedForStep ?? 0;
 
     // ─── NEW: Fetch rich user data for context-aware coaching ──────
 

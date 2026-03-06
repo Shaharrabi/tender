@@ -14,6 +14,17 @@
 
 // ─── Types ──────────────────────────────────────────────
 
+export interface StepTransitions {
+  /** Shown between teaching/bridge and the course section */
+  afterTeaching: string;
+  /** Shown between the course section and practices */
+  afterCourse: string;
+  /** Shown between practices and the exchange / reflection */
+  afterPractices: string;
+  /** Shown between partner exchange and reflection / together practices */
+  afterExchange: string;
+}
+
 export interface StepTeaching {
   stepNumber: number;
   /** The Teaching — 3-5 paragraphs of original therapeutic content */
@@ -22,6 +33,8 @@ export interface StepTeaching {
   whyAfterPrevious: string | null;
   /** How This Connects to the Course — links to micro-course gateway */
   courseConnection: string | null;
+  /** Connector phrases between sections — makes the flow cohesive */
+  transitions: StepTransitions;
 }
 
 // ─── Teaching Content ───────────────────────────────────
@@ -39,6 +52,12 @@ const STEP_TEACHINGS: Record<number, StepTeaching> = {
     ],
     whyAfterPrevious: null,
     courseConnection: '\u201CUnderstanding Your Attachment Pattern\u201D will show you WHERE your pattern came from. But first, this step asks you to feel where it LIVES \u2014 in the tension between you and your partner right now.',
+    transitions: {
+      afterTeaching: 'Now that you\u2019ve named what\u2019s here, here\u2019s a tool to understand it.',
+      afterCourse: 'The course gives you knowledge. These practices help you feel it.',
+      afterPractices: 'After practicing, share what you noticed with your partner.',
+      afterExchange: 'Let what emerged between you settle into reflection.',
+    },
   },
 
   // ── Step 2: Trust the Relational Field ──────────────
@@ -52,6 +71,12 @@ const STEP_TEACHINGS: Record<number, StepTeaching> = {
     ],
     whyAfterPrevious: 'You named the strain. Now you\u2019re learning that the strain isn\u2019t in either of you \u2014 it\u2019s in the field between you. This reframe is the foundation of everything that follows.',
     courseConnection: '\u201CBids for Connection\u201D teaches you the micro-moments that build or break the field. Every time your partner reaches for you \u2014 a look, a question, a touch \u2014 that\u2019s a bid. This step teaches you to notice them.',
+    transitions: {
+      afterTeaching: 'Now that you can sense the field, here\u2019s how to tend it.',
+      afterCourse: 'Understanding bids is the start. Practicing noticing is the next step.',
+      afterPractices: 'You\u2019ve been paying attention. Share what you noticed.',
+      afterExchange: 'What you shared with each other is its own kind of tending.',
+    },
   },
 
   // ── Step 3: Release Certainty ───────────────────────
@@ -65,6 +90,12 @@ const STEP_TEACHINGS: Record<number, StepTeaching> = {
     ],
     whyAfterPrevious: 'You\u2019ve sensed the field between you. Now you\u2019re learning that your certainty about what\u2019s wrong might be part of what\u2019s keeping the field contracted. The story you tell maintains the pattern.',
     courseConnection: '\u201CUnhooking from the Story\u201D is pure ACT (Acceptance and Commitment Therapy). It teaches cognitive defusion \u2014 the skill of seeing your thoughts as thoughts rather than truths. The practices in this step help you apply that to your relationship stories specifically.',
+    transitions: {
+      afterTeaching: 'Seeing the story is the first shift. This course shows you how to loosen its grip.',
+      afterCourse: 'You have the concept. These practices help you live it.',
+      afterPractices: 'After practicing, share the story you noticed with your partner.',
+      afterExchange: 'Hearing each other\u2019s stories changes both of them.',
+    },
   },
 
   // ── Step 4: Examine Our Part ────────────────────────
@@ -79,6 +110,12 @@ const STEP_TEACHINGS: Record<number, StepTeaching> = {
     ],
     whyAfterPrevious: 'You loosened your grip on the story about your partner. Now you can look at yourself without the defensive shield of \u201Cbut THEY...\u201D The self-examination here would have been impossible at Step 1 \u2014 you would have collapsed into self-blame or deflected entirely.',
     courseConnection: '\u201CYour Nervous System in Love\u201D will show you exactly what happens in your body during the dance. Why your heart races, why your jaw clenches, why you go blank. Understanding the neuroscience makes it easier to observe without judgment.',
+    transitions: {
+      afterTeaching: 'Understanding your part is the insight. This course shows you what drives it.',
+      afterCourse: 'Now that you see the neuroscience, these practices help you work with it.',
+      afterPractices: 'You\u2019ve examined your moves. Share what you found.',
+      afterExchange: 'Seeing your dance together is different from seeing it alone.',
+    },
   },
 
   // ── Step 5: Share Our Truths ────────────────────────
@@ -93,6 +130,12 @@ const STEP_TEACHINGS: Record<number, StepTeaching> = {
     ],
     whyAfterPrevious: 'You examined your part in the dance. You saw your protective moves. Now you\u2019re being asked to show what those moves are protecting. This sequence matters \u2014 if you tried vulnerability at Step 1, you wouldn\u2019t have had the self-awareness to know WHAT to share. Now you do.',
     courseConnection: null,
+    transitions: {
+      afterTeaching: 'Vulnerability is the teaching. These practices help you build the courage.',
+      afterCourse: 'Knowledge supports the leap. These practices are the leap itself.',
+      afterPractices: 'You\u2019ve been building the muscle. Now share your truth with your partner.',
+      afterExchange: 'What was shared between you is sacred. Let it settle.',
+    },
   },
 
   // ── Step 6: Release the Enemy Story ─────────────────
@@ -107,6 +150,12 @@ const STEP_TEACHINGS: Record<number, StepTeaching> = {
     ],
     whyAfterPrevious: 'You shared your truth. Maybe your partner heard it. Maybe they didn\u2019t. Either way, you now have firsthand experience of how hard it is to be vulnerable \u2014 which makes it easier to understand why your PARTNER struggles too. Empathy for your own difficulty creates empathy for theirs.',
     courseConnection: '\u201CFrom Rupture to Repair\u201D teaches that conflict itself isn\u2019t the adversary \u2014 failed repair is. This reframe is the intellectual foundation. The practices in this step help you live it.',
+    transitions: {
+      afterTeaching: 'Now that you can see the enemy story, here\u2019s the tool to work with it.',
+      afterCourse: 'The course gives you the knowledge. These practices help you live it.',
+      afterPractices: 'After practicing, share what you noticed with your partner.',
+      afterExchange: 'Let what emerged between you settle into reflection.',
+    },
   },
 
   // ── Step 7: Invite Your Partner In ──────────────────
@@ -120,6 +169,12 @@ const STEP_TEACHINGS: Record<number, StepTeaching> = {
     ],
     whyAfterPrevious: 'You released the enemy story. For the first time in possibly a long time, you can look at your partner without the filter of blame. That makes genuine invitation possible \u2014 not manipulation disguised as kindness, but real reaching.',
     courseConnection: null,
+    transitions: {
+      afterTeaching: 'Invitation starts with remembering what drew you together.',
+      afterCourse: 'Now take what you remembered and put it into practice.',
+      afterPractices: 'You\u2019ve been inviting. Share what happened.',
+      afterExchange: 'The invitation has been extended. Let it breathe.',
+    },
   },
 
   // ── Step 8: Create New Patterns ─────────────────────
@@ -135,6 +190,12 @@ const STEP_TEACHINGS: Record<number, StepTeaching> = {
     ],
     whyAfterPrevious: 'You invited your partner in. They said yes (or you\u2019re building that capacity solo). Now you have the relational permission to try new things together. Without that foundation of goodwill from Step 7, new patterns feel like demands. With it, they feel like adventures.',
     courseConnection: 'Boundaries That Connect and Boundaries Deep teach what a boundary FEELS like in the body before you speak it. New patterns require clear boundaries \u2014 not walls, but information that serves love.',
+    transitions: {
+      afterTeaching: 'New patterns require clear boundaries. This course teaches what they feel like.',
+      afterCourse: 'Knowing the boundary is step one. Practicing the new move is step two.',
+      afterPractices: 'You\u2019ve been trying new moves. Share what worked and what didn\u2019t.',
+      afterExchange: 'The awkwardness you felt is evidence of growth. Let it settle.',
+    },
   },
 
   // ── Step 9: Practice Repair ─────────────────────────
@@ -149,6 +210,12 @@ const STEP_TEACHINGS: Record<number, StepTeaching> = {
     ],
     whyAfterPrevious: 'You tried new patterns in Step 8. Some of them worked. Some didn\u2019t. The ones that didn\u2019t created new ruptures \u2014 and THAT\u2019S the material for this step. You have fresh, real, recent moments where things went sideways despite your best efforts. Now you learn to repair them.',
     courseConnection: 'Trust Repair \u2014 After Betrayal for those who need deeper work, plus The Lightness Lab \u2014 Play as Medicine, because repair doesn\u2019t always have to be heavy. Sometimes humor and play are the best repair tools.',
+    transitions: {
+      afterTeaching: 'Repair is the skill. These courses give you the tools.',
+      afterCourse: 'Now take those tools and practice them in real moments.',
+      afterPractices: 'You\u2019ve practiced repair. Share what you learned with your partner.',
+      afterExchange: 'Repair happened. That\u2019s the strongest thing a couple can do.',
+    },
   },
 
   // ── Step 10: Build Rituals ──────────────────────────
@@ -163,6 +230,12 @@ const STEP_TEACHINGS: Record<number, StepTeaching> = {
     ],
     whyAfterPrevious: 'You can repair now. Rituals will sometimes get disrupted (life happens). Without repair skills, a missed ritual becomes evidence of failure. With repair skills, a missed ritual becomes a moment of reconnection: \u2018We missed our check-in this week. Let\u2019s do it now.\u2019',
     courseConnection: 'What Matters Most (Together) \u2014 values, shared compass, building a life that reflects what matters. Your rituals should flow from your values.',
+    transitions: {
+      afterTeaching: 'Rituals flow from values. This course helps you find yours.',
+      afterCourse: 'You know what matters. These practices help you build structures around it.',
+      afterPractices: 'You\u2019ve been building rituals. Share what you chose with your partner.',
+      afterExchange: 'The rituals you design together are the ones that last.',
+    },
   },
 
   // ── Step 11: Sustain the Patterns ───────────────────
@@ -177,6 +250,12 @@ const STEP_TEACHINGS: Record<number, StepTeaching> = {
     ],
     whyAfterPrevious: 'Rituals give you the structure for sustaining. Without daily and weekly rituals, sustainability depends on willpower \u2014 and willpower is a depleting resource. With rituals, it depends on structure \u2014 and structure endures.',
     courseConnection: 'The Text Between Us \u2014 because sustaining means tending ALL channels of connection, including the digital one where most daily communication happens.',
+    transitions: {
+      afterTeaching: 'Sustaining requires tending every channel. This course focuses on the digital one.',
+      afterCourse: 'Knowledge becomes practice. These exercises help you stay consistent.',
+      afterPractices: 'You\u2019ve been practicing consistency. Share what you noticed.',
+      afterExchange: 'Consistency is built in moments like this one.',
+    },
   },
 
   // ── Step 12: Become a Refuge ────────────────────────
@@ -192,6 +271,12 @@ const STEP_TEACHINGS: Record<number, StepTeaching> = {
     ],
     whyAfterPrevious: 'Everything before this was preparation. Seeing, feeling, shifting, integrating. Now you live it. The 12 steps don\u2019t end \u2014 they become your rhythm. Daily practice, weekly ritual, monthly reflection, quarterly reassessment. The field between you stays alive because you tend it.',
     courseConnection: 'All 14 courses are now available for review and deepening. The Journey becomes a library you return to.',
+    transitions: {
+      afterTeaching: 'You\u2019ve arrived. These courses are your library now.',
+      afterCourse: 'Every practice you\u2019ve done is still here. Return to any of them.',
+      afterPractices: 'The journey doesn\u2019t end here. It continues in how you live.',
+      afterExchange: 'What you\u2019ve built together is real. Keep tending it.',
+    },
   },
 };
 

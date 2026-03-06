@@ -74,8 +74,15 @@ import { getStepTeaching } from '@/utils/steps/step-teachings';
 import { getStepBridge } from '@/utils/steps/step-bridges';
 import { getEarlyInsight } from '@/utils/steps/early-insights';
 import { getPartnerExchange, getExchangePhase } from '@/utils/steps/partner-exchanges';
+import { getStepCallback } from '@/utils/steps/step-callbacks';
+import { getCouplePlay } from '@/utils/steps/couple-play';
+import { getGrowthPulse } from '@/utils/steps/growth-pulse';
+import { loadStepContext, getEnhancedCallback } from '@/utils/steps/step-context';
+import type { StepContext } from '@/utils/steps/step-context';
 import AssessmentNudgeCard from '@/components/growth/AssessmentNudgeCard';
 import StepAssessmentInsight from '@/components/growth/StepAssessmentInsight';
+import GrowthPulseCard from '@/components/growth/GrowthPulseCard';
+import CouplePlayCard from '@/components/growth/CouplePlayCard';
 import { fetchAllScores } from '@/services/portrait';
 import type { IndividualPortrait } from '@/types/portrait';
 import type { MiniGameOutput, StepProgress } from '@/types/growth';
@@ -86,7 +93,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 }
 
 /** Section IDs for collapsible accordion */
-type SectionId = 'course' | 'goals' | 'practices' | 'reflection' | 'partnerExchange' | 'partnerRound' | 'togetherPractices' | 'allCourses';
+type SectionId = 'course' | 'goals' | 'practices' | 'reflection' | 'partnerExchange' | 'partnerRound' | 'togetherPractices' | 'allCourses' | 'couplePlay';
 
 function StepDetailScreenInner() {
   const { user } = useAuth();
@@ -127,6 +134,14 @@ function StepDetailScreenInner() {
   const [completedAssessmentIds, setCompletedAssessmentIds] = useState<string[]>([]);
   const [assessmentScores, setAssessmentScores] = useState<Record<string, { id: string; scores: any }> | null>(null);
 
+  // Step context — previous answers feeding forward
+  const [stepContext, setStepContext] = useState<StepContext | null>(null);
+
+  // Couple play state
+  const [couplePlayResponse, setCouplePlayResponse] = useState<string | null>(null);
+  const [couplePlayPartnerResponse, setCouplePlayPartnerResponse] = useState<string | null>(null);
+  const [couplePlayFollowUp, setCouplePlayFollowUp] = useState<string | null>(null);
+
   // Collapsible sections — all collapsed by default (teaching is not collapsible)
   const [expandedSections, setExpandedSections] = useState<Set<SectionId>>(new Set());
 
@@ -163,6 +178,14 @@ function StepDetailScreenInner() {
       )
     : null;
 
+  // Thickening: callback, couple play, growth pulse, transitions
+  const genericCallback = getStepCallback(stepNumber);
+  const enhancedCallback = stepContext ? getEnhancedCallback(stepNumber, stepContext) : null;
+  const callbackText = enhancedCallback ?? genericCallback;
+  const couplePlayActivity = getCouplePlay(stepNumber);
+  const growthPulse = getGrowthPulse(stepNumber, portrait, practiceCount);
+  const transitions = teaching?.transitions ?? null;
+
   // Determine if this step's checklist is interactive
   const thisStepProgress = stepProgress.find((sp) => sp.stepNumber === stepNumber);
   const isCurrentStep = stepNumber === currentStepNumber;
@@ -189,6 +212,14 @@ function StepDetailScreenInner() {
       setStepProgress(spData);
       setPortrait(userPortrait);
       setCompletedAssessmentIds([...new Set(assessmentRows.map((r: any) => r.type))]);
+
+      // Load step context (previous answers feeding forward)
+      try {
+        const ctx = await loadStepContext(user.id, stepNumber);
+        setStepContext(ctx);
+      } catch {
+        setStepContext(null);
+      }
 
       // Fetch raw scores for early insights (only when no portrait)
       if (!userPortrait && assessmentRows.length > 0) {
@@ -240,6 +271,11 @@ function StepDetailScreenInner() {
           // RLS may block — partner response just won't show
           setPartnerStepResponse(null);
         }
+        // Load couple play state from reflection_notes
+        const cpNotes = notes as Record<string, any> | undefined;
+        setCouplePlayResponse(cpNotes?.couplePlayResponse ?? null);
+        setCouplePlayFollowUp(cpNotes?.couplePlayFollowUp ?? null);
+        setCouplePlayPartnerResponse(null); // TODO: load from partner's step_progress
       }
     } catch (err) {
       console.warn('[StepDetail] Load error:', err);
@@ -355,6 +391,54 @@ function StepDetailScreenInner() {
       console.warn('[StepDetail] Failed to save exchange follow-up:', err);
     }
   }, [user, stepNumber, exchangeFollowUp, awardXP, haptics]);
+
+  // Couple Play save handlers
+  const handleCouplePlayResponse = useCallback(async (text: string) => {
+    if (!user) return;
+    try {
+      // Save to reflection_notes under couplePlayResponse key
+      const { data: current } = await supabase
+        .from('step_progress')
+        .select('reflection_notes')
+        .eq('user_id', user.id)
+        .eq('step_number', stepNumber)
+        .single();
+      const notes = (current?.reflection_notes as Record<string, any>) ?? {};
+      notes.couplePlayResponse = text;
+      await supabase
+        .from('step_progress')
+        .update({ reflection_notes: notes })
+        .eq('user_id', user.id)
+        .eq('step_number', stepNumber);
+      setCouplePlayResponse(text);
+      haptics.success();
+    } catch (err) {
+      console.warn('[StepDetail] Failed to save couple play response:', err);
+    }
+  }, [user, stepNumber, haptics]);
+
+  const handleCouplePlayFollowUp = useCallback(async (text: string) => {
+    if (!user) return;
+    try {
+      const { data: current } = await supabase
+        .from('step_progress')
+        .select('reflection_notes')
+        .eq('user_id', user.id)
+        .eq('step_number', stepNumber)
+        .single();
+      const notes = (current?.reflection_notes as Record<string, any>) ?? {};
+      notes.couplePlayFollowUp = text;
+      await supabase
+        .from('step_progress')
+        .update({ reflection_notes: notes })
+        .eq('user_id', user.id)
+        .eq('step_number', stepNumber);
+      setCouplePlayFollowUp(text);
+      haptics.success();
+    } catch (err) {
+      console.warn('[StepDetail] Failed to save couple play follow-up:', err);
+    }
+  }, [user, stepNumber, haptics]);
 
   // Sprint B — Course navigation
   const handleCoursePress = useCallback(
@@ -474,6 +558,25 @@ function StepDetailScreenInner() {
           </Animated.View>
         )}
 
+        {/* Step Callback — Reference to previous step's work (Steps 2-12) */}
+        {callbackText && stepNumber >= 2 && (
+          <Animated.View entering={FadeIn.delay(460).duration(600)}>
+            <View style={[styles.callbackCard, { borderLeftColor: phase.color }]}>
+              <Text style={styles.callbackText}>{callbackText}</Text>
+            </View>
+          </Animated.View>
+        )}
+
+        {/* Story So Far — Step 12 synthesis of the user's journey */}
+        {stepNumber === 12 && stepContext?.storySoFar && (
+          <Animated.View entering={FadeIn.delay(465).duration(600)}>
+            <View style={[styles.bridgeCard, { borderLeftColor: phase.color }]}>
+              <Text style={styles.bridgeLabel}>YOUR STORY</Text>
+              <Text style={styles.bridgeText}>{stepContext.storySoFar}</Text>
+            </View>
+          </Animated.View>
+        )}
+
         {/* Portrait Bridge — Personalized "What This Means For You" (full portrait) */}
         {bridge && (
           <Animated.View entering={FadeIn.delay(470).duration(600)}>
@@ -504,6 +607,20 @@ function StepDetailScreenInner() {
               isSolo={!isCoupled}
             />
           </Animated.View>
+        )}
+
+        {/* Growth Pulse — Visible portrait evolution at milestone steps */}
+        {growthPulse && (
+          <GrowthPulseCard
+            pulse={growthPulse}
+            phaseColor={phase.color}
+            hasPortrait={!!portrait}
+          />
+        )}
+
+        {/* Transition: after teaching/bridge → tagline */}
+        {transitions?.afterTeaching && (
+          <Text style={styles.transitionText}>{transitions.afterTeaching}</Text>
         )}
 
         {/* Tagline */}
@@ -612,6 +729,11 @@ function StepDetailScreenInner() {
               );
             })}
           </Animated.View>
+        )}
+
+        {/* Transition: after course → practices */}
+        {transitions?.afterCourse && (
+          <Text style={styles.transitionText}>{transitions.afterCourse}</Text>
         )}
 
         {/* Completion Criteria — Collapsible Interactive Checklist */}
@@ -728,6 +850,11 @@ function StepDetailScreenInner() {
             );
           })}
         </Animated.View>
+
+        {/* Transition: after practices → reflection/exchange */}
+        {transitions?.afterPractices && (
+          <Text style={styles.transitionText}>{transitions.afterPractices}</Text>
+        )}
 
         {/* Reflection Prompts — Collapsible */}
         {step.reflectionPrompts && step.reflectionPrompts.length > 0 && (
@@ -952,6 +1079,28 @@ function StepDetailScreenInner() {
               )}
             </View>
             </>}
+          </Animated.View>
+        )}
+
+        {/* Transition: after exchange */}
+        {transitions?.afterExchange && isCoupled && (exchangeConfig || step.partnerRoundPrompt) && (
+          <Text style={styles.transitionText}>{transitions.afterExchange}</Text>
+        )}
+
+        {/* Couple Play — Interactive step-specific micro-activity (couple-only) */}
+        {isCoupled && couplePlayActivity && (
+          <Animated.View entering={FadeIn.delay(1150).duration(500)} style={styles.couplePlaySection}>
+            <CouplePlayCard
+              activity={couplePlayActivity}
+              phaseColor={phase.color}
+              isExpanded={expandedSections.has('couplePlay')}
+              onToggle={() => toggleSection('couplePlay')}
+              savedResponse={couplePlayResponse}
+              partnerResponse={couplePlayPartnerResponse}
+              savedFollowUp={couplePlayFollowUp}
+              onSaveResponse={handleCouplePlayResponse}
+              onSaveFollowUp={handleCouplePlayFollowUp}
+            />
           </Animated.View>
         )}
 
@@ -1656,6 +1805,35 @@ const styles = StyleSheet.create({
     color: Colors.secondary,
     fontStyle: 'italic',
     marginTop: Spacing.xs,
+  },
+
+  // Step Callback card (between teaching and bridge)
+  callbackCard: {
+    borderLeftWidth: 3,
+    paddingLeft: Spacing.md,
+    paddingVertical: Spacing.sm,
+  },
+  callbackText: {
+    ...Typography.bodySmall,
+    color: Colors.textSecondary,
+    lineHeight: 22,
+    fontStyle: 'italic',
+  },
+
+  // Section transition text
+  transitionText: {
+    ...Typography.caption,
+    color: Colors.textMuted,
+    fontStyle: 'italic',
+    textAlign: 'center' as const,
+    paddingVertical: Spacing.xs,
+    fontSize: 12,
+    lineHeight: 18,
+  },
+
+  // Couple Play section
+  couplePlaySection: {
+    gap: Spacing.sm,
   },
 
   // Exchange enhanced styles
