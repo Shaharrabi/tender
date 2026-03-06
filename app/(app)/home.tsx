@@ -1124,6 +1124,7 @@ export default function HomeScreen() {
 
           return (
             <TouchableOpacity
+              ref={(r) => RefRegistry.register('home_portraitSummary', r)}
               style={styles.portraitSummaryCard}
               onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/portrait' as any); }}
               activeOpacity={0.8}
@@ -1356,6 +1357,7 @@ export default function HomeScreen() {
             const PhaseIcon = phase.icon;
             return (
               <TouchableOpacity
+                ref={(r) => RefRegistry.register('home_journeyCard', r)}
                 style={[styles.stepJourneyCard, { borderColor: phase.color + '25' }]}
                 onPress={() => {
                   SoundHaptics.tapSoft();
@@ -1655,7 +1657,7 @@ export default function HomeScreen() {
 
         {/* ═══ DAILY RHYTHM (collapsible section) ═════════ */}
         {hasCompletedOnboarding && (
-          <View style={styles.section}>
+          <View ref={(r) => RefRegistry.register('home_dailyRhythm', r)} style={styles.section}>
             <DailyRhythmSection
               todaysCheckIn={todaysCheckIn}
               onCheckInSubmit={handleCheckInSubmit}
@@ -1669,7 +1671,7 @@ export default function HomeScreen() {
         )}
 
         {/* ═══ EXPLORE — 4 Gateway Cards ══════════════════ */}
-        <View style={styles.gatewaySection}>
+        <View ref={(r) => RefRegistry.register('home_exploreSection', r)} style={styles.gatewaySection}>
           <Text style={styles.gatewaySectionLabel}>EXPLORE</Text>
 
           {/* YOUR JOURNEY */}
@@ -1765,7 +1767,9 @@ export default function HomeScreen() {
         {/* Old Daily Rhythm moved above gateway cards as collapsible DailyRhythmSection */}
 
         {/* ═══ QUICK LINKS (bottom row) ════════════════════════ */}
-        <QuickLinksBar showHome={false} currentScreen="home" />
+        <View ref={(r) => RefRegistry.register('home_quickLinks', r)}>
+          <QuickLinksBar showHome={false} currentScreen="home" />
+        </View>
       </ScrollView>
 
       {/* ═══ FTUE Overlays ═══════════════════════════════════ */}

@@ -23,6 +23,7 @@ import {
   View,
   ScrollView,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { RefRegistry, TargetMeasurement } from '@/utils/ftue/refRegistry';
 import { Tour, TourStep } from '@/constants/ftue/tourSteps';
 import {
@@ -52,6 +53,7 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({
   onComplete,
   scrollRef,
 }) => {
+  const router = useRouter();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [targetLayout, setTargetLayout] = useState<TargetMeasurement | null>(
     null
@@ -63,6 +65,7 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({
   const isLastStep = currentStepIndex === tour.steps.length - 1;
   const isFirstStep = currentStepIndex === 0;
   const isCenterStep = currentStep.targetRef === 'none';
+  const hasCta = !!currentStep.ctaLabel;
 
   const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -105,10 +108,14 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({
   const handleNext = useCallback(() => {
     if (isLastStep) {
       onComplete();
+      // Navigate to CTA route if provided
+      if (currentStep.ctaRoute) {
+        router.push(currentStep.ctaRoute as any);
+      }
     } else {
       setCurrentStepIndex((prev) => prev + 1);
     }
-  }, [isLastStep, onComplete]);
+  }, [isLastStep, onComplete, currentStep.ctaRoute, router]);
 
   const handleSkip = useCallback(() => {
     onComplete();
@@ -221,13 +228,13 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({
           ) : null}
 
           <Pressable
-            style={styles.nextButton}
+            style={[styles.nextButton, hasCta && styles.ctaButton]}
             onPress={handleNext}
-            accessibilityLabel={isLastStep ? 'Get started' : 'Next step'}
+            accessibilityLabel={hasCta ? currentStep.ctaLabel : isLastStep ? 'Get started' : 'Next step'}
             accessibilityRole="button"
           >
-            <Text style={styles.nextText}>
-              {isLastStep ? 'Get started' : 'Next'}
+            <Text style={[styles.nextText, hasCta && styles.ctaText]}>
+              {hasCta ? currentStep.ctaLabel : isLastStep ? 'Get started' : 'Next'}
             </Text>
           </Pressable>
         </View>
@@ -317,6 +324,16 @@ const styles = StyleSheet.create({
     ...Typography.button,
     color: FTUEColors.ctaText,
     fontSize: 15,
+  },
+  ctaButton: {
+    paddingVertical: 16,
+    paddingHorizontal: 28,
+    flex: 1,
+    alignItems: 'center' as const,
+  },
+  ctaText: {
+    fontSize: 16,
+    fontWeight: '600' as const,
   },
   stepCounter: {
     ...Typography.caption,
