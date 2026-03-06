@@ -226,22 +226,26 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
     setError(null);
 
     try {
-      // Get auth token — try getSession first, then refreshSession as fallback
+      // Get auth token — always refresh to ensure a non-expired JWT.
+      // getSession() returns a cached token that may be expired, causing
+      // the Supabase gateway to reject the request before our function runs.
       let token: string | undefined;
-      const { data: authData, error: sessionError } = await supabase.auth.getSession();
-      token = authData.session?.access_token;
 
-      console.log('[Chat] getSession result:', !!authData.session, sessionError?.message || 'no error');
+      // Try refreshSession first — this gives us a guaranteed-fresh JWT
+      const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+      token = refreshData.session?.access_token;
 
-      // If no token, attempt a session refresh (handles expired JWTs)
+      if (__DEV__) console.log('[Chat] refreshSession result:', !!refreshData.session, refreshError?.message || 'no error');
+
+      // Fallback: if refresh fails (e.g. user just logged in, token is still fresh)
+      // use getSession which returns the cached token
       if (!token) {
-        console.log('[Chat] No token from getSession, attempting refresh...');
-        const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-        token = refreshData.session?.access_token;
-        console.log('[Chat] refreshSession result:', !!refreshData.session, refreshError?.message || 'no error');
+        const { data: authData, error: sessionError } = await supabase.auth.getSession();
+        token = authData.session?.access_token;
+        if (__DEV__) console.log('[Chat] getSession fallback:', !!authData.session, sessionError?.message || 'no error');
       }
 
-      // If still no token after refresh, the user isn't authenticated
+      // If still no token, the user truly isn't authenticated
       if (!token) {
         throw new Error('Your session has expired. Please sign in again to chat with Nuance.');
       }

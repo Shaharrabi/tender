@@ -1,0 +1,5 @@
+# Disable Supabase gateway-level JWT verification.
+# Our function handles auth itself (getUser() call) which gives better
+# error messages and allows the function to handle expired tokens gracefully.
+[edge_function]
+verify_jwt = false

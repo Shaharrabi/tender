@@ -74,13 +74,15 @@ serve(async (req: Request) => {
 
     const jwt = authHeader.replace('Bearer ', '');
 
-    // Create a user-context client to verify the token
+    // Create a user-context client to verify the token.
+    // We use the ANON KEY here (not service role) so the client acts with user-level permissions.
     const supabaseAuth = createClient(SUPABASE_URL!, Deno.env.get('SUPABASE_ANON_KEY') || SUPABASE_SERVICE_ROLE_KEY!, {
       global: { headers: { Authorization: `Bearer ${jwt}` } },
     });
 
     const { data: { user: authUser }, error: authError } = await supabaseAuth.auth.getUser();
     if (authError || !authUser) {
+      console.error('[chat] Auth failed:', authError?.message || 'no user returned');
       return new Response(
         JSON.stringify({ error: 'Invalid or expired session. Please sign in again.' }),
         { status: 401, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
