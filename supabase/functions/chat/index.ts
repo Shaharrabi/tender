@@ -287,7 +287,7 @@ serve(async (req: Request) => {
 
     if (!hasPortrait) {
       // No portrait yet — use generic prompt so Nuance is still usable
-      stablePrompt = buildGenericSystemPrompt(safetyResult, currentStepNumber);
+      stablePrompt = buildGenericSystemPrompt(safetyResult, currentStepNumber, completedSteps, daysInStep, stepPracticeCount);
     } else if (coupleMode && coupleId) {
       // Couple coaching mode: fetch partner portrait + relationship portrait
       const { data: coupleRow } = await supabase
@@ -329,10 +329,10 @@ serve(async (req: Request) => {
         );
       } else {
         // Fall back to individual mode if couple data incomplete
-        stablePrompt = buildSystemPromptFromRow(portraitRow, safetyResult);
+        stablePrompt = buildSystemPromptFromRow(portraitRow, safetyResult, currentStepNumber, completedSteps, daysInStep, stepPracticeCount);
       }
     } else {
-      stablePrompt = buildSystemPromptFromRow(portraitRow, safetyResult, currentStepNumber, completedSteps);
+      stablePrompt = buildSystemPromptFromRow(portraitRow, safetyResult, currentStepNumber, completedSteps, daysInStep, stepPracticeCount);
     }
 
     // 4a-bis. Append protocol-specific coaching context (individual mode only)
@@ -711,7 +711,7 @@ Rule 7: SPIRAL, NOT LINE. Revisiting themes is deepening, not regression.
 - "What old story is running right now? Whose voice is that?" (good for fixed narratives)
 `;
 
-function buildSystemPromptFromRow(row: any, safety: { safe: boolean; category?: string }, currentStep = 1, completedSteps = 0): string {
+function buildSystemPromptFromRow(row: any, safety: { safe: boolean; category?: string }, currentStep = 1, completedSteps = 0, daysInCurrentStep = 0, practicesInCurrentStep = 0): string {
   const cs = row.composite_scores;
   const fl = row.four_lens;
   const nc = row.negative_cycle;
@@ -767,19 +767,35 @@ A.R.E.: Accessible ${cs.accessibility}, Responsive ${cs.responsiveness}, Engaged
 Self-Leadership: ${cs.selfLeadership}/100
 Values Alignment: ${cs.valuesCongruence}/100`;
 
-  // Add Step context
+  // Add Step context with phase awareness
   const stepCtx = getStepContext(currentStep);
+  const phase = getPhaseNameForStep(currentStep);
+  const daysText = daysInCurrentStep > 0
+    ? `They have been in this step for ${daysInCurrentStep} day${daysInCurrentStep !== 1 ? 's' : ''}.`
+    : '';
+  const practicesText = practicesInCurrentStep > 0
+    ? `They have completed ${practicesInCurrentStep} practice${practicesInCurrentStep !== 1 ? 's' : ''} in this step.`
+    : '';
+  const paceInsight = daysInCurrentStep >= 14
+    ? 'They have been in this step for a while. This might be a natural pace, or they might be stuck. Be curious, not pushy.'
+    : daysInCurrentStep >= 7
+    ? 'They have spent about a week here. If they seem ready, gentle nudges toward the next step are appropriate.'
+    : '';
+
   prompt += `\n\n## Current Step in Healing Journey
 
-This person is on Step ${currentStep} of 12: "${stepCtx.name}" — ${stepCtx.subtitle}
+**Phase:** ${phase.name} — ${phase.subtitle}
+**Step:** ${currentStep} of 12: "${stepCtx.name}" — ${stepCtx.subtitle}
 ${completedSteps > 0 ? `They have completed ${completedSteps} step${completedSteps > 1 ? 's' : ''} so far.` : 'They are at the beginning of their journey.'}
+${daysText}${practicesText ? ' ' + practicesText : ''}
+${paceInsight}
 
 **Step Focus:** ${stepCtx.focus}
 **Your Tone:** ${stepCtx.tone}
 **Four Movements Emphasis:** ${stepCtx.fourMovement}
 **Avoid:** ${stepCtx.avoids}
 
-Attune your responses to where this person is in their journey. If they are in an early step (1-4), focus on awareness and acknowledgment. If mid-journey (5-9), support vulnerability and action. If later (10-12), reinforce integration and celebrate growth.`;
+Attune your responses to where this person is in their journey. The phase name tells you the broader arc: Seeing (awareness), Feeling (going deeper), Shifting (action), Integrating (making it stick), Sustaining (living it). Use the phase to guide your energy and language. If they are in an early step (1-4), focus on awareness and acknowledgment. If mid-journey (5-9), support vulnerability and action. If later (10-12), reinforce integration and celebrate growth.`;
 
   if (!safety.safe) {
     prompt += `\n\n## SAFETY ALERT\nThe user's message may contain ${safety.category} content. Follow safety protocols. Provide warmth AND resources. Do not deeply process crisis content.`;
@@ -806,7 +822,16 @@ Prioritize exercises that align with the user's current Step. Only suggest one e
   return prompt;
 }
 
-function buildGenericSystemPrompt(safety: { safe: boolean; category?: string }, currentStep = 1): string {
+function buildGenericSystemPrompt(safety: { safe: boolean; category?: string }, currentStep = 1, completedSteps = 0, daysInCurrentStep = 0, practicesInCurrentStep = 0): string {
+  const stepCtx = getStepContext(currentStep);
+  const phase = getPhaseNameForStep(currentStep);
+  const daysText = daysInCurrentStep > 0
+    ? `They have been in this step for ${daysInCurrentStep} day${daysInCurrentStep !== 1 ? 's' : ''}.`
+    : '';
+  const practicesText = practicesInCurrentStep > 0
+    ? `They have completed ${practicesInCurrentStep} practice${practicesInCurrentStep !== 1 ? 's' : ''} in this step.`
+    : '';
+
   let prompt = `# Your Role
 
 You are Nuance — the warm, grounded relational guide within Tender: The Science of Relationships. You help people explore their relationship patterns, emotional dynamics, and growth areas. You draw on attachment theory, emotion-focused therapy, internal family systems, and relational dynamics. You are NOT a therapist. You are a knowledgeable companion who brings genuine curiosity and care to every conversation.
@@ -829,7 +854,19 @@ If you detect substance abuse → SAMHSA (1-800-662-4357)
 
 This person hasn't completed their relational assessments yet, so you don't have their personal portrait. That's completely fine — you can still be a thoughtful, present guide. Help them explore what's coming up for them in their relationships, ask curious questions about their patterns, and offer general relational insights grounded in attachment science and emotional awareness.
 
-Once they complete the assessments, you'll have a much richer and more personalized picture of their attachment style, protective strategies, regulation patterns, and growth edges. You can gently mention this if it feels natural — but never make them feel like they need to complete assessments before they can get value from talking with you. Meet them right where they are.`;
+Once they complete the assessments, you'll have a much richer and more personalized picture of their attachment style, protective strategies, regulation patterns, and growth edges. You can gently mention this if it feels natural — but never make them feel like they need to complete assessments before they can get value from talking with you. Meet them right where they are.
+
+## Current Step in Healing Journey
+
+**Phase:** ${phase.name} — ${phase.subtitle}
+**Step:** ${currentStep} of 12: "${stepCtx.name}" — ${stepCtx.subtitle}
+${completedSteps > 0 ? `They have completed ${completedSteps} step${completedSteps > 1 ? 's' : ''} so far.` : 'They are at the beginning of their journey.'}
+${daysText}${practicesText ? ' ' + practicesText : ''}
+
+**Step Focus:** ${stepCtx.focus}
+**Your Tone:** ${stepCtx.tone}
+
+Even without a portrait, attune to where this person is in their journey. The phase name tells you the broader arc: Seeing (awareness), Feeling (going deeper), Shifting (action), Integrating (making it stick), Sustaining (living it).`;
 
   if (!safety.safe) {
     prompt += `\n\n## SAFETY ALERT\nThe user's message may contain ${safety.category} content. Follow safety protocols. Provide warmth AND resources. Do not deeply process crisis content.`;
@@ -1133,6 +1170,16 @@ Suggest only one per response, naturally integrated into your prose.`;
   prompt += COACHING_RULES;
 
   return prompt;
+}
+
+// ─── Phase Mapping (ported from utils/steps/twelve-steps.ts) ──
+
+function getPhaseNameForStep(stepNumber: number): { id: string; name: string; subtitle: string } {
+  if (stepNumber <= 2) return { id: 'seeing', name: 'Seeing', subtitle: 'Understanding what is here' };
+  if (stepNumber <= 4) return { id: 'feeling', name: 'Feeling', subtitle: 'Making contact with what is underneath' };
+  if (stepNumber <= 7) return { id: 'shifting', name: 'Shifting', subtitle: 'Trying new moves' };
+  if (stepNumber <= 10) return { id: 'integrating', name: 'Integrating', subtitle: 'Making it stick' };
+  return { id: 'sustaining', name: 'Sustaining', subtitle: 'Living it' };
 }
 
 // ─── Step Context ───────────────────────────────────────
