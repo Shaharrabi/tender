@@ -41,6 +41,7 @@ html, body {
 #world {
   flex: 1; min-height: 0;
   position: relative; overflow: hidden;
+  margin: 0 6px; border-radius: 12px;
   background: linear-gradient(180deg,
     #857C78 0%, #A09690 18%,
     #BCACA4 42%, #D4C8BF 65%,
@@ -152,11 +153,14 @@ html, body {
 .hbu { width:9px; height:4px; border-radius:1px; }
 .hbu.on { background:var(--gold); } .hbu.off { background:rgba(255,255,255,.1); }
 .hnote {
-  font-family:'Playfair Display',serif; font-style:italic;
+  font-family:'Playfair Display',serif; 
   font-size:7px; color:rgba(212,168,67,.38); text-align:center;
   margin-top:5px; padding-top:4px; border-top:1px solid rgba(212,168,67,.12);
   white-space:nowrap;
 }
+
+.exit-x{position:absolute;top:10px;right:10px;z-index:70;width:28px;height:28px;border-radius:14px;border:none;background:rgba(0,0,0,.25);color:rgba(255,255,255,.7);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
+.exit-x:active{background:rgba(0,0,0,.4);}
 
 /* PANEL */
 #panel {
@@ -181,7 +185,7 @@ html, body {
   flex-shrink:0; margin-top:2px; width:14px; text-align:center;
 }
 .dlg-text {
-  font-family:'Playfair Display',serif; font-style:italic;
+  font-family:'Playfair Display',serif; 
   font-size: clamp(13px, 3.2vw, 16px);
   line-height: 1.72; color:var(--ink);
   white-space: pre-wrap;
@@ -286,7 +290,7 @@ html, body {
 }
 .seed-glyph { font-size: 20px; line-height:1; }
 .seed-note {
-  font-family: 'Playfair Display', serif; font-style: italic;
+  font-family: 'Playfair Display', serif; 
   font-size: clamp(10px,2.5vw,12px); color: rgba(107,91,94,.45); text-align: center;
 }
 
@@ -315,7 +319,7 @@ html, body {
   color:var(--parchment); line-height:1; margin-bottom: clamp(4px,1vh,8px);
 }
 .oi-ital {
-  font-family:'Playfair Display',serif; font-style:italic;
+  font-family:'Playfair Display',serif; 
   font-size: clamp(12px, 3vw, 14px);
   color:rgba(241,187,123,.6); margin-bottom: clamp(18px,4vh,32px);
 }
@@ -327,6 +331,7 @@ html, body {
   font-size: clamp(8px, 2vw, 10px); letter-spacing:2.5px; text-transform:uppercase;
   color:rgba(212,168,67,.4); margin-bottom: clamp(20px,5vh,36px);
 }
+.oi-note{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.6vw,9px);letter-spacing:2px;text-transform:uppercase;color:rgba(253,246,240,.25);margin-bottom:clamp(14px,3vh,20px);}
 .oi-btn {
   width: clamp(160px, 50vw, 200px); height: clamp(46px, 11vw, 54px);
   border-radius: 27px; border: 1.5px solid rgba(196,97,110,.5);
@@ -352,7 +357,7 @@ html, body {
   color:var(--parchment); line-height:1.1; margin-bottom: clamp(14px,3.5vh,24px);
 }
 .done-body {
-  font-family:'Playfair Display',serif; font-style:italic;
+  font-family:'Playfair Display',serif; 
   font-size: clamp(12px, 3vw, 14px); line-height:1.9;
   color:rgba(253,246,240,.45); margin-bottom: clamp(24px,6vh,40px);
   max-width: 280px;
@@ -403,7 +408,7 @@ html, body {
   color: var(--ink); line-height:1.15; margin-bottom: clamp(14px,3.5vh,22px);
 }
 .pr-body {
-  font-family:'Playfair Display',serif; font-style:italic;
+  font-family:'Playfair Display',serif; 
   font-size: clamp(12px,3vw,14px); line-height:1.85;
   color: rgba(45,34,38,.65); margin-bottom: clamp(18px,4.5vh,28px);
 }
@@ -412,7 +417,7 @@ html, body {
   width: 100%; padding: 14px 18px;
   border: 1.5px solid rgba(107,91,94,.18); border-radius: 12px;
   background: transparent; text-align: left; cursor: pointer;
-  font-family:'Playfair Display',serif; font-style:italic;
+  font-family:'Playfair Display',serif; 
   font-size: clamp(11px,2.8vw,13px); color: var(--ink);
   transition: all .2s;
 }
@@ -439,7 +444,7 @@ html, body {
 }
 .pr-input {
   width: 100%; border: none; background: transparent;
-  font-family:'Playfair Display',serif; font-style:italic;
+  font-family:'Playfair Display',serif; 
   font-size: clamp(13px,3.2vw,15px); color: var(--ink);
   line-height: 1.6; resize: none; outline: none;
 }
@@ -455,14 +460,14 @@ html, body {
   color: var(--deep-rose); margin-bottom: 6px;
 }
 .pr-pattern-note {
-  font-family:'Playfair Display',serif; font-style:italic;
+  font-family:'Playfair Display',serif; 
   font-size: clamp(11px,2.8vw,13px); color: rgba(139,58,74,.55);
 }
 
 .pr-carry {
   background: rgba(107,144,128,.08); border-radius: 12px;
   padding: clamp(12px,3vw,18px); margin-bottom: clamp(18px,4.5vh,26px);
-  font-family:'Playfair Display',serif; font-style:italic;
+  font-family:'Playfair Display',serif; 
   font-size: clamp(11px,2.8vw,13px); line-height:1.75; color: var(--sage);
   text-align: left;
 }
@@ -471,6 +476,7 @@ html, body {
 </head>
 <body>
 <div class="phone">
+<button class="exit-x" onclick="notifyApp('close',{zone:1})" aria-label="Exit game">&#x2715;</button>
 
   <!-- WORLD -->
   <div id="world" onclick="worldTap()">
@@ -598,7 +604,8 @@ html, body {
   <div class="oi-ital">A journey through the space between you</div>
   <div class="divider"><div class="div-line"></div><div class="div-sym">✦</div><div class="div-line"></div></div>
   <div class="oi-zone">Zone I · Step 1</div>
-  <button class="oi-btn" onclick="startGame(event)">ENTER THE FIELD</button>
+  <div class="oi-note">Best experienced in the Tender app</div>
+<button class="oi-btn" onclick="startGame(event)">ENTER THE FIELD</button>
 </div>
 
 <!-- PRACTICE MODAL -->
@@ -1074,7 +1081,7 @@ function plantSeed(e) {
     document.getElementById('o-seed').classList.remove('on');
 
     const sb = document.getElementById('seed-btn');
-    sb.innerHTML = '<div style="font-family:Playfair Display,serif;font-style:italic;font-size:14px;color:var(--sage);text-align:center;padding:12px 0">🌱 Seed planted. The work begins.</div>';
+    sb.innerHTML = '<div style="font-family:Playfair Display,serif;font-size:14px;color:var(--sage);text-align:center;padding:12px 0">🌱 Seed planted. The work begins.</div>';
 
     // Update HUD
     document.querySelectorAll('.hbu').forEach((el, i) => { if (i < 6) el.classList.add('on'); });
