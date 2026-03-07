@@ -22,14 +22,14 @@ export default function PortraitGrowthEdge({ edge, index }: Props) {
       <TenderText
         variant="bodySmall"
         color={Colors.textSecondary}
-        style={{ fontStyle: 'italic', lineHeight: 20 }}
+        style={{ lineHeight: 20 }}
       >
         {edge.rationale}
       </TenderText>
 
       {edge.practices.length > 0 && (
         <View style={styles.practicesBlock}>
-          <TenderText variant="bodySmall" style={{ fontWeight: '700' }}>
+          <TenderText variant="bodyMedium">
             Practices
           </TenderText>
           {edge.practices.map((p, i) => (

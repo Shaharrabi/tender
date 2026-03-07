@@ -233,7 +233,7 @@ function AnimatedScoreBar({
     <Animated.View style={[st.barContainer, { opacity: opacityAnim }]}>
       <View style={st.barLabelRow}>
         <TenderText variant="bodySmall">{label}</TenderText>
-        <TenderText variant="bodySmall" color={tier.color} style={{ fontWeight: '700' }}>{value}</TenderText>
+        <TenderText variant="bodyMedium" color={tier.color}>{value}</TenderText>
       </View>
       <View style={st.barTrack}>
         <Animated.View
@@ -705,10 +705,10 @@ export default function PortraitScreen() {
           accessibilityRole="button"
           accessibilityLabel="Your Portrait"
         >
-          <TenderText variant="bodySmall" color={Colors.primary} style={{ fontWeight: '600' }}>{'<'} Back</TenderText>
+          <TenderText variant="bodySmall" color={Colors.primary}>{'<'} Back</TenderText>
         </TouchableOpacity>
         <View style={st.headerCenter}>
-          <TenderText variant="headingS" style={{ fontWeight: '700' }}>Your Portrait</TenderText>
+          <TenderText variant="headingS">Your Portrait</TenderText>
           <TenderText variant="caption" color={Colors.textMuted} style={{ marginTop: 1 }}>
             {dateStr}
           </TenderText>
@@ -730,7 +730,7 @@ export default function PortraitScreen() {
           accessibilityRole="button"
           accessibilityLabel="Export PDF"
         >
-          <TenderText variant="bodySmall" color={Colors.primary} style={{ fontWeight: '600' }}>Export PDF</TenderText>
+          <TenderText variant="bodySmall" color={Colors.primary}>Export PDF</TenderText>
         </TouchableOpacity>
       </View>
 
@@ -790,7 +790,7 @@ export default function PortraitScreen() {
           nativeID="portrait-export-root"
         >
           <View style={st.exportSectionHeader}>
-            <TenderText variant="headingXL" style={{ fontWeight: '700' }}>Your Portrait — Full Report</TenderText>
+            <TenderText variant="headingXL">Your Portrait — Full Report</TenderText>
             <TenderText variant="body" color={Colors.textSecondary} style={{ marginTop: 4 }}>{dateStr}</TenderText>
           </View>
 
@@ -865,7 +865,7 @@ export default function PortraitScreen() {
                 <TenderText variant="bodySmall" style={{ fontWeight: '600', letterSpacing: 1.5, textTransform: 'uppercase' as any, fontSize: 10 }} color={Colors.textMuted}>
                   EXPLORE
                 </TenderText>
-                <TenderText variant="body" style={{ fontWeight: '600', marginTop: 2 }}>
+                <TenderText variant="bodyMedium" style={{ marginTop: 2 }}>
                   Attachment Matrix
                 </TenderText>
               </View>
@@ -1106,7 +1106,7 @@ function OverviewTab({
               <tab.Icon size={16} color={Colors.white} />
             </View>
             <TenderText variant="bodyMedium" style={st.navCardLabel}>{tab.label}</TenderText>
-            <TenderText variant="headingM" color={Colors.textMuted} style={{ fontWeight: '300' }}>{'>'}</TenderText>
+            <TenderText variant="body" color={Colors.textMuted}>{'>'}</TenderText>
           </TouchableOpacity>
         ))}
       </View>
@@ -1436,7 +1436,7 @@ function PartsMapInfographic({
       {/* Self-Leadership Circle */}
       <View style={st.partsMapCenter}>
         <View style={[st.partsMapSelfCircle, { borderColor: selfTier.color }]}>
-          <TenderText variant="headingM" color={selfTier.color} style={{ fontWeight: '700' }}>{selfScore}</TenderText>
+          <TenderText variant="headingM" color={selfTier.color}>{selfScore}</TenderText>
           <TenderText variant="caption" color={Colors.textMuted} align="center">Self{'\n'}Leadership</TenderText>
         </View>
       </View>

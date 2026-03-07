@@ -34,7 +34,7 @@ function ListBlock({ label, items }: { label: string; items: string[] }) {
   if (items.length === 0) return null;
   return (
     <View style={styles.listBlock}>
-      <TenderText variant="bodySmall" style={{ fontWeight: '700' }}>
+      <TenderText variant="bodyMedium">
         {label}
       </TenderText>
       {items.map((item, i) => (

@@ -87,7 +87,7 @@ function ConfidenceBadge({
   return (
     <View style={[styles.confidenceBadge, { borderColor: color + '30' }]}>
       <View style={[styles.confidenceDot, { backgroundColor: color }]} />
-      <TenderText variant="caption" color={color} style={{ fontWeight: '500' }}>{label}</TenderText>
+      <TenderText variant="caption" color={color}>{label}</TenderText>
     </View>
   );
 }
@@ -229,10 +229,10 @@ function ThreeLayerCard({
               <TenderText variant="headingS" style={{ marginBottom: Spacing.sm }}>Reflection Questions</TenderText>
               {reflectionQuestions.map((q, i) => (
                 <View key={i} style={styles.reflectionItem}>
-                  <TenderText variant="bodySmall" color={Colors.primary} style={{ fontWeight: '600', width: 18 }}>
+                  <TenderText variant="bodySmall" color={Colors.primary} style={{ width: 18 }}>
                     {i + 1}
                   </TenderText>
-                  <TenderText variant="body" style={{ flex: 1, lineHeight: 22, fontStyle: 'italic' }}>
+                  <TenderText variant="body" style={{ flex: 1, lineHeight: 22 }}>
                     {q}
                   </TenderText>
                 </View>

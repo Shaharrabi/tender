@@ -30,7 +30,7 @@ export default function PortraitLens({ title, lens, type }: Props) {
         accessibilityLabel={`${title}, ${expanded ? 'collapse' : 'expand'} details`}
       >
         <TenderText variant="headingM">{title}</TenderText>
-        <TenderText variant="bodySmall" color={Colors.primary} style={{ fontWeight: '600' }}>
+        <TenderText variant="bodySmall" color={Colors.primary}>
           {expanded ? 'Less' : 'More'}
         </TenderText>
       </TouchableOpacity>
@@ -68,7 +68,7 @@ function AttachmentDetails({ lens }: { lens: AttachmentLens }) {
 
       {lens.triggers.length > 0 && (
         <View>
-          <TenderText variant="bodySmall" style={{ fontWeight: '700', marginBottom: 4 }}>
+          <TenderText variant="bodyMedium" style={{ marginBottom: 4 }}>
             Triggers
           </TenderText>
           {lens.triggers.map((t, i) => (
@@ -84,7 +84,7 @@ function AttachmentDetails({ lens }: { lens: AttachmentLens }) {
       )}
 
       <View>
-        <TenderText variant="bodySmall" style={{ fontWeight: '700', marginBottom: 4 }}>
+        <TenderText variant="bodyMedium" style={{ marginBottom: 4 }}>
           A.R.E. Profile
         </TenderText>
         <AREBar label="Accessible" value={lens.areProfile.accessible} />
@@ -130,7 +130,7 @@ function PartsDetails({ lens }: { lens: PartsLens }) {
         <BulletSection label="Inner Polarities" items={lens.polarities} />
       )}
 
-      <TenderText variant="caption" color={Colors.textSecondary} style={{ fontWeight: '600' }}>
+      <TenderText variant="caption" color={Colors.textSecondary}>
         Self-Leadership Score: {lens.selfLeadershipScore}/100
       </TenderText>
     </View>
@@ -142,7 +142,7 @@ function PartsDetails({ lens }: { lens: PartsLens }) {
 function RegulationDetails({ lens }: { lens: RegulationLens }) {
   return (
     <View style={styles.details}>
-      <TenderText variant="caption" color={Colors.textSecondary} style={{ fontWeight: '600' }}>
+      <TenderText variant="caption" color={Colors.textSecondary}>
         Window Width: {lens.windowWidth}/100
       </TenderText>
 
@@ -168,7 +168,7 @@ function ValuesDetails({ lens }: { lens: ValuesLens }) {
     <View style={styles.details}>
       {lens.coreValues.length > 0 && (
         <View>
-          <TenderText variant="bodySmall" style={{ fontWeight: '700', marginBottom: 4 }}>
+          <TenderText variant="bodyMedium" style={{ marginBottom: 4 }}>
             Core Values
           </TenderText>
           {lens.coreValues.map((v, i) => (
@@ -185,7 +185,7 @@ function ValuesDetails({ lens }: { lens: ValuesLens }) {
 
       {lens.significantGaps.length > 0 && (
         <View>
-          <TenderText variant="bodySmall" style={{ fontWeight: '700', marginBottom: 4 }}>
+          <TenderText variant="bodyMedium" style={{ marginBottom: 4 }}>
             Growth Areas
           </TenderText>
           {lens.significantGaps.map((g, i) => (
@@ -213,7 +213,7 @@ function ValuesDetails({ lens }: { lens: ValuesLens }) {
 function DetailBlock({ label, text }: { label: string; text: string }) {
   return (
     <View>
-      <TenderText variant="bodySmall" style={{ fontWeight: '700', marginBottom: 4 }}>
+      <TenderText variant="bodyMedium" style={{ marginBottom: 4 }}>
         {label}
       </TenderText>
       <TenderText variant="bodySmall" style={{ lineHeight: 20 }}>
@@ -226,7 +226,7 @@ function DetailBlock({ label, text }: { label: string; text: string }) {
 function BulletSection({ label, items }: { label: string; items: string[] }) {
   return (
     <View>
-      <TenderText variant="bodySmall" style={{ fontWeight: '700', marginBottom: 4 }}>
+      <TenderText variant="bodyMedium" style={{ marginBottom: 4 }}>
         {label}
       </TenderText>
       {items.map((item, i) => (

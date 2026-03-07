@@ -149,7 +149,7 @@ function Legend() {
       {TIERS.map((tier) => (
         <View key={tier.label} style={styles.legendItem}>
           <View style={[styles.legendDot, { backgroundColor: tier.color }]} />
-          <TenderText variant="caption" style={{ fontWeight: '500' }}>
+          <TenderText variant="caption">
             {tier.label}
           </TenderText>
           <TenderText variant="caption" color={Colors.textMuted}>
@@ -176,7 +176,7 @@ function ScoreBar({
     <View style={styles.scoreBarContainer}>
       {/* Label row */}
       <View style={styles.scoreBarLabelRow}>
-        <TenderText variant="bodySmall" style={{ fontWeight: '500' }}>
+        <TenderText variant="bodySmall">
           {meta.label}
         </TenderText>
         {!showInside && (
