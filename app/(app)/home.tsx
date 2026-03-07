@@ -80,6 +80,7 @@ import { TOOLTIP_CONFIGS } from '@/constants/ftue/tooltips';
 import { HOME_TOUR } from '@/constants/ftue/tourSteps';
 import { RefRegistry } from '@/utils/ftue/refRegistry';
 import JourneyUnlockOverlay, { hasSeenJourneyUnlock } from '@/components/growth/JourneyUnlockOverlay';
+import JourneySpiral from '@/components/growth/JourneySpiral';
 import { getCurrentStepNumber } from '@/services/steps';
 import { getTaglineForStep, getPracticesForStep, getStep, getJournalPromptForStep, getPhaseForStep } from '@/utils/steps/twelve-steps';
 import { MICRO_COURSES, calculateCourseProgress, type CourseProgress } from '@/utils/microcourses/course-registry';
@@ -982,24 +983,7 @@ export default function HomeScreen() {
             })()}
           </View>
 
-          {/* Step progress dots — 12 dots showing journey progress */}
-          {hasPortrait && (
-            <View style={styles.stepDotsRow}>
-              {Array.from({ length: 12 }, (_, i) => (
-                <View
-                  key={i}
-                  style={[
-                    styles.stepDot,
-                    i < currentStepNum
-                      ? styles.stepDotCompleted
-                      : i === currentStepNum
-                        ? styles.stepDotActive
-                        : styles.stepDotPending,
-                  ]}
-                />
-              ))}
-            </View>
-          )}
+          {/* Step progress dots removed — JourneySpiral replaces them */}
 
           {/* Demo mode removed — no longer needed */}
         </View>
@@ -1031,7 +1015,8 @@ export default function HomeScreen() {
 
         {/* ═══ 2. TODAY'S FOCUS — removed to reduce home screen clutter ═══ */}
 
-        {/* ═══ DEMO PARTNER CARD (shown when mode is demo_partner) ═══ */}
+        {/* ═══ PARTNER SECTION — demo partner, connect prompt, or solo nudge ═══ */}
+        <View ref={(r) => RefRegistry.register('home_partnerSection', r)}>
         {relationshipMode === 'demo_partner' && demoPartnerId && DEMO_PARTNERS[demoPartnerId as DemoPartnerId] && (
           <View style={styles.demoPartnerSection}>
             <TouchableOpacity
@@ -1112,6 +1097,7 @@ export default function HomeScreen() {
             <Text style={styles.realPartnerPromptArrow}>{'\u2192'}</Text>
           </TouchableOpacity>
         )}
+        </View>
 
         {/* ═══ YOUR PORTRAIT SUMMARY (if portrait exists) ══════ */}
         {hasPortrait && portrait && (() => {
@@ -1388,63 +1374,16 @@ export default function HomeScreen() {
 
         {/* ═══ 4. STEP JOURNEY (portrait) or ASSESSMENT (pre-portrait) ═══ */}
         {hasPortrait ? (
-          /* ── Step Journey Card — the heart of the home page ── */
-          (() => {
-            const step = getStep(currentStepNum);
-            const phase = getPhaseForStep(currentStepNum);
-            if (!step || !phase) return null;
-            const PhaseIcon = phase.icon;
-            return (
-              <TouchableOpacity
-                ref={(r) => RefRegistry.register('home_journeyCard', r)}
-                style={[styles.stepJourneyCard, { borderColor: phase.color + '25' }]}
-                onPress={() => {
-                  SoundHaptics.tapSoft();
-                  router.push(`/(app)/step-detail?step=${currentStepNum}` as any);
-                }}
-                activeOpacity={0.8}
-                accessibilityRole="button"
-                accessibilityLabel={`Step ${currentStepNum}: ${step.title}`}
-              >
-                <View style={styles.stepJourneyHeader}>
-                  <Text style={styles.stepJourneyLabel}>YOUR JOURNEY</Text>
-                  <Text style={styles.stepJourneyProgress}>
-                    Step {currentStepNum} of 12
-                  </Text>
-                </View>
-
-                <View style={styles.stepJourneyBody}>
-                  <View style={[styles.stepJourneyPhaseIndicator, { backgroundColor: phase.color + '20' }]}>
-                    <PhaseIcon size={22} color={phase.color} />
-                  </View>
-                  <View style={styles.stepJourneyContent}>
-                    <Text style={styles.stepJourneyStepTitle}>
-                      Step {currentStepNum}: {step.title}
-                    </Text>
-                    <View style={styles.stepJourneyPhaseRow}>
-                      <View style={[styles.stepJourneyPhaseDot, { backgroundColor: phase.color }]} />
-                      <Text style={styles.stepJourneyPhaseName}>{phase.name}</Text>
-                    </View>
-                  </View>
-                  <Text style={styles.stepJourneyArrow}>{'\u2192'}</Text>
-                </View>
-
-                {/* 12-segment mini progress bar */}
-                <View style={styles.stepJourneySegmentBar}>
-                  {Array.from({ length: 12 }, (_, i) => (
-                    <View
-                      key={i}
-                      style={[
-                        styles.stepJourneySegment,
-                        i + 1 < currentStepNum && styles.stepJourneySegmentDone,
-                        i + 1 === currentStepNum && [styles.stepJourneySegmentActive, { backgroundColor: phase.color }],
-                      ]}
-                    />
-                  ))}
-                </View>
-              </TouchableOpacity>
-            );
-          })()
+          /* ── Journey Spiral — circular 12-step visualization ── */
+          <View ref={(r) => RefRegistry.register('home_journeyCard', r)}>
+            <JourneySpiral
+              currentStep={currentStepNum}
+              onStepPress={(stepNum) => {
+                SoundHaptics.tapSoft();
+                router.push(`/(app)/step-detail?step=${stepNum}` as any);
+              }}
+            />
+          </View>
         ) : (
           /* ── Consolidated Assessment Section (pre-portrait) ── */
           <View style={styles.assessmentSection}>
@@ -1796,7 +1735,6 @@ export default function HomeScreen() {
         <GuidedTour tour={HOME_TOUR} onComplete={handleTourComplete} />
       )}
       <TooltipManager screen="home" scrollRef={scrollRef} scrollOffset={scrollOffset} />
-      <WelcomeAudio screenKey="home" />
     </SafeAreaView>
   );
 }
