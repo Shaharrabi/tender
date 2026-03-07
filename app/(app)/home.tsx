@@ -1198,6 +1198,20 @@ export default function HomeScreen() {
                 >
                   <Text style={styles.portraitQuickLinkText}>View Results</Text>
                 </TouchableOpacity>
+                <View style={styles.portraitQuickLinkDivider} />
+                <TouchableOpacity
+                  style={styles.portraitQuickLink}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    SoundHaptics.tapSoft();
+                    router.push('/(app)/assessment-matrix' as any);
+                  }}
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel="Matrix"
+                >
+                  <Text style={styles.portraitQuickLinkText}>Matrix</Text>
+                </TouchableOpacity>
               </View>
             </TouchableOpacity>
           );

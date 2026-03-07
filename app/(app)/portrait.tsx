@@ -805,21 +805,14 @@ export default function PortraitScreen() {
         >
           {activeTab === 'overview' && (
             <>
-            <OverviewTab
-              portrait={portrait}
-              userName={userName}
-              overallScore={overallScore}
-              onNavigate={handleTabChange}
-              rawScores={rawScores}
-            />
-            {/* Matrix link */}
+            {/* Matrix link — top of overview for easy access */}
             <TouchableOpacity
               onPress={() => router.push('/(app)/assessment-matrix' as any)}
               activeOpacity={0.7}
               style={{
                 marginHorizontal: Spacing.lg,
                 marginTop: Spacing.md,
-                marginBottom: Spacing.xl,
+                marginBottom: Spacing.sm,
                 paddingVertical: Spacing.md,
                 paddingHorizontal: Spacing.lg,
                 borderRadius: BorderRadius.lg,
@@ -841,6 +834,13 @@ export default function PortraitScreen() {
               </View>
               <TenderText variant="body" color={Colors.textMuted}>→</TenderText>
             </TouchableOpacity>
+            <OverviewTab
+              portrait={portrait}
+              userName={userName}
+              overallScore={overallScore}
+              onNavigate={handleTabChange}
+              rawScores={rawScores}
+            />
             </>
           )}
           {activeTab === 'scores' && (
