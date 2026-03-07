@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
-import { Colors, Spacing, FontSizes } from '@/constants/theme';
+import { Colors, Spacing, FontSizes, BorderRadius, Shadows } from '@/constants/theme';
 import TenderText from '@/components/ui/TenderText';
 import type {
   AttachmentLens,
@@ -246,10 +246,13 @@ function BulletSection({ label, items }: { label: string; items: string[] }) {
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: Spacing.xl,
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
+    marginHorizontal: Spacing.md,
+    marginBottom: Spacing.md,
+    paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.surface,
+    ...Shadows.subtle,
   },
   header: {
     flexDirection: 'row',
