@@ -1801,7 +1801,6 @@ const styles = StyleSheet.create({
   heroAppTagline: {
     fontSize: FontSizes.caption,
     color: Colors.textMuted,
-    fontStyle: 'italic',
     marginTop: Spacing.sm,
     letterSpacing: 0.5,
   },
@@ -1819,7 +1818,6 @@ const styles = StyleSheet.create({
   stepTaglineText: {
     fontSize: FontSizes.bodySmall,
     color: Colors.text,
-    fontStyle: 'italic',
     lineHeight: 22,
   },
   stepTaglineStep: {
@@ -2434,7 +2432,6 @@ const styles = StyleSheet.create({
   retakeIntroText: {
     fontSize: FontSizes.caption,
     color: Colors.textSecondary,
-    fontStyle: 'italic',
     lineHeight: 18,
     marginBottom: Spacing.xs,
   },
@@ -2851,7 +2848,6 @@ const styles = StyleSheet.create({
   weareSummaryNudge: {
     fontSize: FontSizes.caption,
     color: Colors.secondary,
-    fontStyle: 'italic' as const,
   },
   weareSummaryArrow: {
     fontSize: FontSizes.bodySmall,
@@ -2880,7 +2876,6 @@ const styles = StyleSheet.create({
   inspirationText: {
     fontSize: FontSizes.bodySmall,
     color: Colors.textSecondary,
-    fontStyle: 'italic',
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -2922,7 +2917,6 @@ const styles = StyleSheet.create({
   modePartnerName: {
     fontSize: FontSizes.caption,
     fontFamily: FontFamilies.accent,
-    fontStyle: 'italic',
     color: Colors.textSecondary,
   },
   modeChangeButton: {

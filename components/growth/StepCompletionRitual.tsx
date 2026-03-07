@@ -433,7 +433,6 @@ const styles = StyleSheet.create({
   question: {
     fontSize: 18,
     lineHeight: 26,
-    fontStyle: 'italic',
     paddingHorizontal: Spacing.sm,
   },
   affirmation: {

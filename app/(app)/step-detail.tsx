@@ -720,74 +720,6 @@ function StepDetailScreenInner() {
           </Animated.View>
         )}
 
-        {/* Completion Criteria — Collapsible Interactive Checklist */}
-        <Animated.View entering={FadeIn.delay(600).duration(500)} style={styles.goalsCard}>
-          <CollapsibleHeader
-            title={`Step ${step.stepNumber} Goals`}
-            subtitle={`${checkedCriteria.length} of ${step.completionCriteria.length} completed`}
-            isExpanded={expandedSections.has('goals')}
-            onToggle={() => toggleSection('goals')}
-            phaseColor={phase.color}
-          />
-          {expandedSections.has('goals') && (
-            <>
-              <Text style={styles.goalsSubtitle}>
-                {checkedCriteria.length} of {step.completionCriteria.length} goals completed
-                {' \u00B7 '}
-                {practiceCount} practice{practiceCount !== 1 ? 's' : ''} done
-              </Text>
-              {step.completionCriteria.map((criteria, i) => {
-                const isChecked = checkedCriteria.includes(i);
-                return (
-                  <TouchableOpacity
-                    key={i}
-                    style={styles.goalRow}
-                    activeOpacity={canToggleCriteria ? 0.6 : 1}
-                    disabled={!canToggleCriteria}
-                    onPress={() => handleCriteriaToggle(i, !isChecked)}
-                    accessibilityRole="button"
-                    accessibilityState={{ disabled: !canToggleCriteria }}
-                  >
-                    <View style={styles.criteriaCheckbox}>
-                      <View
-                        style={[
-                          styles.criteriaSquare,
-                          { borderColor: phase.color },
-                          isChecked && [styles.criteriaSquareChecked, { backgroundColor: phase.color, borderColor: phase.color }],
-                        ]}
-                      >
-                        {isChecked && (
-                          <CheckmarkIcon size={10} color={Colors.white} />
-                        )}
-                      </View>
-                    </View>
-                    <Text
-                      style={[
-                        styles.goalText,
-                        isChecked && styles.goalTextChecked,
-                      ]}
-                    >
-                      {criteria}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-              {!canToggleCriteria && (
-                <Text style={styles.criteriaHint}>
-                  These goals become active when you reach this step
-                </Text>
-              )}
-              {isCompletedStep && (
-                <View style={[styles.completedBadge, { backgroundColor: phase.color + '18' }]}>
-                  <Text style={[styles.completedBadgeText, { color: phase.color }]}>
-                    Step Complete
-                  </Text>
-                </View>
-              )}
-            </>
-          )}
-        </Animated.View>
-
         {/* ── Divider: context → learning guide ── */}
         <View style={styles.sectionDivider} />
 
@@ -1287,6 +1219,74 @@ function StepDetailScreenInner() {
           </Animated.View>
         )}
 
+        {/* Completion Criteria — Collapsible Interactive Checklist (before reflection) */}
+        <Animated.View entering={FadeIn.delay(1100).duration(500)} style={styles.goalsCard}>
+          <CollapsibleHeader
+            title={`Step ${step.stepNumber} Goals`}
+            subtitle={`${checkedCriteria.length} of ${step.completionCriteria.length} completed`}
+            isExpanded={expandedSections.has('goals')}
+            onToggle={() => toggleSection('goals')}
+            phaseColor={phase.color}
+          />
+          {expandedSections.has('goals') && (
+            <>
+              <Text style={styles.goalsSubtitle}>
+                {checkedCriteria.length} of {step.completionCriteria.length} goals completed
+                {' \u00B7 '}
+                {practiceCount} practice{practiceCount !== 1 ? 's' : ''} done
+              </Text>
+              {step.completionCriteria.map((criteria, i) => {
+                const isChecked = checkedCriteria.includes(i);
+                return (
+                  <TouchableOpacity
+                    key={i}
+                    style={styles.goalRow}
+                    activeOpacity={canToggleCriteria ? 0.6 : 1}
+                    disabled={!canToggleCriteria}
+                    onPress={() => handleCriteriaToggle(i, !isChecked)}
+                    accessibilityRole="button"
+                    accessibilityState={{ disabled: !canToggleCriteria }}
+                  >
+                    <View style={styles.criteriaCheckbox}>
+                      <View
+                        style={[
+                          styles.criteriaSquare,
+                          { borderColor: phase.color },
+                          isChecked && [styles.criteriaSquareChecked, { backgroundColor: phase.color, borderColor: phase.color }],
+                        ]}
+                      >
+                        {isChecked && (
+                          <CheckmarkIcon size={10} color={Colors.white} />
+                        )}
+                      </View>
+                    </View>
+                    <Text
+                      style={[
+                        styles.goalText,
+                        isChecked && styles.goalTextChecked,
+                      ]}
+                    >
+                      {criteria}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+              {!canToggleCriteria && (
+                <Text style={styles.criteriaHint}>
+                  These goals become active when you reach this step
+                </Text>
+              )}
+              {isCompletedStep && (
+                <View style={[styles.completedBadge, { backgroundColor: phase.color + '18' }]}>
+                  <Text style={[styles.completedBadgeText, { color: phase.color }]}>
+                    Step Complete
+                  </Text>
+                </View>
+              )}
+            </>
+          )}
+        </Animated.View>
+
         {/* Reflection Prompts — Collapsible (after exchange) */}
         {step.reflectionPrompts && step.reflectionPrompts.length > 0 && (
           <Animated.View entering={FadeIn.delay(1150).duration(500)} style={styles.reflectionSection}>
@@ -1550,7 +1550,6 @@ const styles = StyleSheet.create({
   stepSubtitle: {
     ...Typography.bodySmall,
     color: Colors.textSecondary,
-    fontStyle: 'italic',
     marginTop: 4,
     lineHeight: 22,
   },
@@ -1605,7 +1604,6 @@ const styles = StyleSheet.create({
   miniGamePromptHint: {
     ...Typography.caption,
     color: Colors.textSecondary,
-    fontStyle: 'italic',
   },
   miniGameStartButton: {
     paddingHorizontal: Spacing.xl,
@@ -1722,7 +1720,6 @@ const styles = StyleSheet.create({
   criteriaHint: {
     ...Typography.caption,
     color: Colors.textMuted,
-    fontStyle: 'italic',
     marginTop: Spacing.xs,
   },
   completedBadge: {
@@ -1747,7 +1744,6 @@ const styles = StyleSheet.create({
   sectionHint: {
     ...Typography.caption,
     color: Colors.textMuted,
-    fontStyle: 'italic',
     marginBottom: Spacing.sm,
   },
 
@@ -1873,7 +1869,6 @@ const styles = StyleSheet.create({
   reflectionPromptText: {
     ...Typography.bodySmall,
     color: Colors.text,
-    fontStyle: 'italic',
     lineHeight: 22,
   },
   reflectionInput: {
@@ -1902,7 +1897,6 @@ const styles = StyleSheet.create({
   partnerRoundPromptText: {
     ...Typography.bodyMedium,
     color: Colors.text,
-    fontStyle: 'italic',
     lineHeight: 24,
   },
   partnerResponseInput: {
@@ -1963,12 +1957,10 @@ const styles = StyleSheet.create({
     ...Typography.bodySmall,
     color: Colors.text,
     lineHeight: 22,
-    fontStyle: 'italic',
   },
   partnerWaitingText: {
     ...Typography.caption,
     color: Colors.textMuted,
-    fontStyle: 'italic',
     textAlign: 'center',
     marginTop: Spacing.xs,
   },
@@ -1999,7 +1991,6 @@ const styles = StyleSheet.create({
     ...Typography.bodySmall,
     color: Colors.textSecondary,
     lineHeight: 22,
-    fontStyle: 'italic',
   },
 
   // Portrait Bridge
@@ -2025,7 +2016,6 @@ const styles = StyleSheet.create({
   bridgeInsight: {
     ...Typography.caption,
     color: Colors.secondary,
-    fontStyle: 'italic',
     marginTop: Spacing.xs,
   },
 
@@ -2039,7 +2029,6 @@ const styles = StyleSheet.create({
     ...Typography.bodySmall,
     color: Colors.textSecondary,
     lineHeight: 22,
-    fontStyle: 'italic',
   },
 
   // Visual breathing divider between major sections
@@ -2090,7 +2079,6 @@ const styles = StyleSheet.create({
   exchangeFollowUpPrompt: {
     ...Typography.bodyMedium,
     color: Colors.text,
-    fontStyle: 'italic',
     lineHeight: 24,
   },
   exchangeFollowUpComplete: {
@@ -2237,7 +2225,6 @@ const styles = StyleSheet.create({
   zoneGameSubtitle: {
     fontSize: FontSizes.bodySmall,
     color: Colors.textSecondary,
-    fontStyle: 'italic',
     marginBottom: Spacing.md,
   },
   zoneGameFooter: {
