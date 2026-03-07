@@ -89,6 +89,7 @@ import GrowthPulseCard from '@/components/growth/GrowthPulseCard';
 import CouplePlayCard from '@/components/growth/CouplePlayCard';
 import GrowthPlanContent from '@/components/growth/GrowthPlanContent';
 import StepEdgeProgress from '@/components/growth/StepEdgeProgress';
+import StepCompletionRitual from '@/components/growth/StepCompletionRitual';
 import { fetchAllScores } from '@/services/portrait';
 import { getGrowthEdgeProgress } from '@/services/growth';
 import type { IndividualPortrait, AllAssessmentScores } from '@/types/portrait';
@@ -155,6 +156,9 @@ function StepDetailScreenInner() {
   // Zone game state
   const [showZoneGame, setShowZoneGame] = useState(false);
   const [zoneGameCompleted, setZoneGameCompleted] = useState(false);
+
+  // Step completion ritual
+  const [showCompletionRitual, setShowCompletionRitual] = useState(false);
 
   // Collapsible sections — all OPEN by default so the step feels like a room, not a filing cabinet
   const [expandedSections, setExpandedSections] = useState<Set<SectionId>>(
@@ -388,9 +392,8 @@ function StepDetailScreenInner() {
       if (step && updatedCriteria.length >= step.completionCriteria.length) {
         // All criteria checked — complete this step and unlock next
         await completeStep(user.id, stepNumber);
-        haptics.success();
-        // Reload data to reflect new step states
-        await loadData();
+        // Show completion ritual instead of immediately reloading
+        setShowCompletionRitual(true);
       }
     } catch (err) {
       console.error('[StepDetail] Failed to toggle criteria:', err);
@@ -431,6 +434,17 @@ function StepDetailScreenInner() {
     },
     [user, stepNumber, awardXP]
   );
+
+  // Completion ritual handlers
+  const handleRitualDismiss = async () => {
+    setShowCompletionRitual(false);
+    await loadData();
+  };
+
+  const handleRitualNextStep = () => {
+    setShowCompletionRitual(false);
+    handleNextStep();
+  };
 
   // Sprint B — Partner Round save
   const handleSavePartnerResponse = useCallback(async () => {
@@ -1446,6 +1460,14 @@ function StepDetailScreenInner() {
         visible={showZoneGame}
         onComplete={() => setZoneGameCompleted(true)}
         onClose={() => setShowZoneGame(false)}
+      />
+
+      {/* Step Completion Ritual — animated overlay */}
+      <StepCompletionRitual
+        visible={showCompletionRitual}
+        stepNumber={stepNumber}
+        onDismiss={handleRitualDismiss}
+        onNextStep={handleRitualNextStep}
       />
     </SafeAreaView>
   );
