@@ -48,6 +48,8 @@ import {
   getAssessmentConfig,
 } from '@/utils/assessments/registry';
 import { supabase } from '@/services/supabase';
+import { fetchGrowthBoostData } from '@/services/growth-boost';
+import { getGrowthBoostedScore, type GrowthBoostedResult } from '@/utils/portrait/growth-boost';
 import { getPortrait, savePortrait, fetchAllScores, extractSupplementScores } from '@/services/portrait';
 import { generatePortrait, isPortraitStale } from '@/utils/portrait/portrait-generator';
 import { getTodaysCheckIn, saveDailyCheckIn, getRecentCheckIns } from '@/services/growth';
@@ -193,6 +195,7 @@ export default function HomeScreen() {
   // Portrait state
   const [portrait, setPortrait] = useState<IndividualPortrait | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [growthBoostResult, setGrowthBoostResult] = useState<GrowthBoostedResult | null>(null);
 
   // Exercise completion tracking for growth plan
   const [exerciseCompletionMap, setExerciseCompletionMap] = useState<Record<string, number>>({});
@@ -533,6 +536,20 @@ export default function HomeScreen() {
         }
 
         setPortrait(loadedPortrait);
+
+        // Fetch growth boost data to apply to portrait score
+        if (loadedPortrait) {
+          try {
+            const boostData = await fetchGrowthBoostData(user.id);
+            const cs = loadedPortrait.compositeScores;
+            const scores = [cs.regulationScore, cs.windowWidth, cs.accessibility, cs.responsiveness, cs.engagement, cs.selfLeadership, cs.valuesCongruence];
+            const baseline = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+            const result = getGrowthBoostedScore(baseline, boostData);
+            setGrowthBoostResult(result);
+          } catch (e) {
+            console.warn('[Home] Growth boost data failed:', e);
+          }
+        }
       } catch (portraitErr: any) {
         console.error('[Home] Portrait loading failed:', portraitErr);
         console.error(`[Home] Portrait LOAD: ${portraitErr?.message || String(portraitErr)}`);
@@ -1100,7 +1117,8 @@ export default function HomeScreen() {
         {hasPortrait && portrait && (() => {
           const cs = portrait.compositeScores;
           const scores = [cs.regulationScore, cs.windowWidth, cs.accessibility, cs.responsiveness, cs.engagement, cs.selfLeadership, cs.valuesCongruence];
-          const overallScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+          const rawScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+          const overallScore = growthBoostResult?.boostedScore ?? rawScore;
 
           // Find top strength
           const scoreLabels: Record<string, string> = {
@@ -1133,8 +1151,15 @@ export default function HomeScreen() {
             >
               <View style={styles.portraitSummaryHeader}>
                 <Text style={styles.portraitSummaryEyebrow}>YOUR PORTRAIT</Text>
-                <View style={styles.portraitScoreBadge}>
-                  <Text style={styles.portraitScoreBadgeText}>{overallScore}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <View style={styles.portraitScoreBadge}>
+                    <Text style={styles.portraitScoreBadgeText}>{overallScore}</Text>
+                  </View>
+                  {growthBoostResult && growthBoostResult.growthBoost > 0 && (
+                    <Text style={{ fontSize: 11, color: Colors.success, fontWeight: '600' }}>
+                      +{growthBoostResult.growthBoost} growth
+                    </Text>
+                  )}
                 </View>
               </View>
 

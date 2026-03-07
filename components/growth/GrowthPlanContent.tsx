@@ -198,104 +198,14 @@ export default function GrowthPlanContent({ portrait, router }: GrowthPlanConten
             </View>
           )}
 
-          {/* Protocol Phases with Exercises */}
+          {/* Your Path — Integrated into the 12-step journey */}
           <View style={s.phasesContainer}>
             <Text style={s.movementsSectionTitle}>Your Path</Text>
-            {protocol.phases.map((phase: any, i: number) => {
-              // Resolve phase exercise IDs to real exercises
-              const phaseExercises = (phase.practices || [])
-                .map((id: string) => getExerciseById(id))
-                .filter(Boolean)
-                .slice(0, 4);
-              // Phase completion stats
-              const phaseCompletedCount = phaseExercises.filter(
-                (ex: any) => (completionMap[ex.id] ?? 0) > 0
-              ).length;
-              const phaseTotal = phaseExercises.length;
-              const phaseIsComplete = phaseTotal > 0 && phaseCompletedCount >= phaseTotal;
-              const nextPhase = protocol.phases[i + 1];
-              return (
-                <View key={i} style={s.phaseCard}>
-                  <View style={s.phaseHeader}>
-                    <View style={[
-                      s.phaseIndicator,
-                      phaseIsComplete
-                        ? { backgroundColor: Colors.successDark }
-                        : i === 0 && { backgroundColor: Colors.secondary },
-                    ]} />
-                    <View style={{ flex: 1 }}>
-                      <Text style={s.phaseName}>
-                        {phaseIsComplete ? '\u2713 ' : ''}{phase.name}
-                      </Text>
-                      <Text style={s.phaseWeeks}>{phase.weekRange}</Text>
-                    </View>
-                  </View>
-                  <Text style={s.phaseFocus}>{phase.focus}</Text>
-
-                  {/* Phase exercises — tappable rows with done state */}
-                  {phaseExercises.length > 0 && (
-                    <View style={s.phaseExercises}>
-                      <Text style={s.phaseExercisesLabel}>Recommended Exercises</Text>
-                      {phaseExercises.map((ex: any) => {
-                        const isDone = (completionMap[ex.id] ?? 0) > 0;
-                        const accentColor = isDone
-                          ? Colors.successDark
-                          : CATEGORY_ACCENT_COLORS[ex.category as keyof typeof CATEGORY_ACCENT_COLORS] || Colors.primary;
-                        return (
-                          <TouchableOpacity
-                            key={ex.id}
-                            style={[s.exerciseRow, isDone && s.exerciseRowDone]}
-                            activeOpacity={0.7}
-                            onPress={() => router.push({ pathname: '/(app)/exercise', params: { id: ex.id } } as any)}
-                            accessibilityRole="link"
-                            accessibilityLabel={`${ex.title}, ${isDone ? 'completed' : `${ex.duration} minutes`}`}
-                          >
-                            {isDone ? (
-                              <View style={s.exerciseCheckmark}>
-                                <Text style={s.exerciseCheckmarkText}>{'\u2713'}</Text>
-                              </View>
-                            ) : (
-                              <View style={[s.exerciseDot, { backgroundColor: accentColor }]} />
-                            )}
-                            <Text
-                              style={[s.exerciseRowTitle, isDone && s.exerciseRowTitleDone]}
-                              numberOfLines={1}
-                            >
-                              {ex.title}
-                            </Text>
-                            <Text style={s.exerciseRowMeta}>
-                              {isDone ? 'Done' : `${ex.duration} min`}
-                            </Text>
-                            <Text style={s.exerciseRowArrow}>{'\u203A'}</Text>
-                          </TouchableOpacity>
-                        );
-                      })}
-
-                      {/* Phase progress counter */}
-                      {phaseTotal > 0 && (
-                        <Text style={s.phaseProgressText}>
-                          {phaseCompletedCount} of {phaseTotal} complete
-                        </Text>
-                      )}
-                    </View>
-                  )}
-
-                  {/* Phase completion summary card */}
-                  {phaseIsComplete && (
-                    <View style={s.phaseCompleteSummary}>
-                      <View style={s.phaseCompleteIcon}><SparkleIcon size={20} color={Colors.secondary} /></View>
-                      <Text style={s.phaseCompleteTitle}>
-                        {phase.name} — Complete
-                      </Text>
-                      <Text style={s.phaseCompleteText}>
-                        You practiced {phaseExercises.map((ex: any) => ex.title).join(', ')}.{' '}
-                        {phase.focus}{nextPhase ? ` Next: ${nextPhase.name} \u2192` : ' Great work!'}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-              );
-            })}
+            <View style={s.pathIntegratedCard}>
+              <Text style={s.pathIntegratedText}>
+                Your 12-step journey is your path. Each step integrates the practices your protocol recommends — completing steps and exercises grows your edges and moves your portrait score.
+              </Text>
+            </View>
           </View>
 
           {/* Contraindications as gentle guidance */}
@@ -500,6 +410,19 @@ const s = StyleSheet.create({
   // Phases
   phasesContainer: {
     marginBottom: Spacing.lg,
+  },
+  pathIntegratedCard: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+  },
+  pathIntegratedText: {
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.sm,
+    color: Colors.textSecondary,
+    lineHeight: 20,
   },
   phaseCard: {
     backgroundColor: Colors.white,

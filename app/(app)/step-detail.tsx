@@ -88,9 +88,11 @@ import StepAssessmentInsight from '@/components/growth/StepAssessmentInsight';
 import GrowthPulseCard from '@/components/growth/GrowthPulseCard';
 import CouplePlayCard from '@/components/growth/CouplePlayCard';
 import GrowthPlanContent from '@/components/growth/GrowthPlanContent';
+import StepEdgeProgress from '@/components/growth/StepEdgeProgress';
 import { fetchAllScores } from '@/services/portrait';
+import { getGrowthEdgeProgress } from '@/services/growth';
 import type { IndividualPortrait, AllAssessmentScores } from '@/types/portrait';
-import type { MiniGameOutput, StepProgress } from '@/types/growth';
+import type { MiniGameOutput, StepProgress, GrowthEdgeProgress } from '@/types/growth';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -134,6 +136,9 @@ function StepDetailScreenInner() {
   const [portrait, setPortrait] = useState<IndividualPortrait | null>(null);
   const [exchangeFollowUp, setExchangeFollowUp] = useState('');
   const [exchangeFollowUpSaved, setExchangeFollowUpSaved] = useState(false);
+
+  // Growth edge progress for this step
+  const [edgeProgressMap, setEdgeProgressMap] = useState<Record<string, GrowthEdgeProgress>>({});
 
   // Assessment nudge + early insight state
   const [completedAssessmentIds, setCompletedAssessmentIds] = useState<string[]>([]);
@@ -321,6 +326,18 @@ function StepDetailScreenInner() {
         setCouplePlayResponse(cpNotes?.couplePlayResponse ?? null);
         setCouplePlayFollowUp(cpNotes?.couplePlayFollowUp ?? null);
         setCouplePlayPartnerResponse(null); // TODO: load from partner's step_progress
+      }
+
+      // Load growth edge progress for StepEdgeProgress component
+      if (userPortrait?.growthEdges?.length) {
+        try {
+          const edgeData = await getGrowthEdgeProgress(user.id);
+          const map: Record<string, GrowthEdgeProgress> = {};
+          for (const ep of edgeData) map[ep.edgeId] = ep;
+          setEdgeProgressMap(map);
+        } catch {
+          setEdgeProgressMap({});
+        }
       }
     } catch (err) {
       console.warn('[StepDetail] Load error:', err);
@@ -939,6 +956,13 @@ function StepDetailScreenInner() {
             onToggle={() => toggleSection('practices')}
             phaseColor={phase.color}
           />
+          {expandedSections.has('practices') && portrait && portrait.growthEdges?.length > 0 && (
+            <StepEdgeProgress
+              stepPracticeIds={step.practices}
+              portrait={portrait}
+              edgeProgressMap={edgeProgressMap}
+            />
+          )}
           {expandedSections.has('practices') && step.practices.map((practiceId) => {
             const exercise = getExerciseById(practiceId);
             const label = exercise?.title ?? practiceId

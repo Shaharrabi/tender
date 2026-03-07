@@ -30,6 +30,9 @@ import { TooltipManager } from '@/components/ftue/TooltipManager';
 import { WelcomeAudio } from '@/components/ftue/WelcomeAudio';
 import QuickLinksBar from '@/components/QuickLinksBar';
 import { getPortrait, savePortrait, extractSupplementScores, fetchPreviousScores } from '@/services/portrait';
+import { fetchGrowthBoostData } from '@/services/growth-boost';
+import { getGrowthBoostedScore, type GrowthBoostedResult } from '@/utils/portrait/growth-boost';
+import type { GrowthEdgeProgress } from '@/types/growth';
 import { getUserConsent, eraseUserData } from '@/services/consent';
 import {
   Colors,
@@ -254,7 +257,7 @@ function AnimatedScoreBar({
 
 // ─── Animated Score Circle ─────────────────────────────
 
-function AnimatedScoreCircle({ score }: { score: number }) {
+function AnimatedScoreCircle({ score, growthBoost }: { score: number; growthBoost?: number }) {
   const scaleAnim = useRef(new Animated.Value(0.5)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const countAnim = useRef(new Animated.Value(0)).current;
@@ -303,6 +306,11 @@ function AnimatedScoreCircle({ score }: { score: number }) {
         <TenderText variant="caption" color={Colors.textMuted} style={st.scoreCircleLabel}>overall</TenderText>
       </View>
       <TenderText variant="bodySmall" color={tier.color} style={st.scoreCircleTier}>{tier.label}</TenderText>
+      {growthBoost != null && growthBoost > 0 && (
+        <TenderText variant="caption" color={Colors.success} style={{ marginTop: 2, fontWeight: '600' }}>
+          +{growthBoost} from growth
+        </TenderText>
+      )}
     </Animated.View>
   );
 }
@@ -447,6 +455,14 @@ export default function PortraitScreen() {
   const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
   const [exportMode, setExportMode] = useState(false);
   const [isViewAndErase, setIsViewAndErase] = useState(false);
+  const [growthBoostResult, setGrowthBoostResult] = useState<GrowthBoostedResult | null>(null);
+  const [journeyData, setJourneyData] = useState<{
+    stepsCompleted: number;
+    totalSteps: number;
+    edgeProgress: GrowthEdgeProgress[];
+    totalPractices: number;
+    currentStreak: number;
+  } | null>(null);
   const viewAndEraseRef = useRef(false); // stable ref for cleanup
   const tabScrollRef = useRef<ScrollView>(null);
   const contentScrollRef = useRef<ScrollView>(null);
@@ -533,6 +549,25 @@ export default function PortraitScreen() {
           }
         } catch (e) {
           console.warn('[Portrait] Failed to load previous scores:', e);
+        }
+      }
+
+      // Fetch growth boost data for integrated score display
+      if (finalPortrait) {
+        try {
+          const boostData = await fetchGrowthBoostData(user.id);
+          const baseline = getOverallScore(finalPortrait.compositeScores);
+          const result = getGrowthBoostedScore(baseline, boostData);
+          setGrowthBoostResult(result);
+          setJourneyData({
+            stepsCompleted: boostData.stepsCompleted,
+            totalSteps: 12,
+            edgeProgress: boostData.edgeProgress,
+            totalPractices: boostData.totalPracticeCompletions,
+            currentStreak: boostData.currentStreak,
+          });
+        } catch (e) {
+          console.warn('[Portrait] Failed to load growth boost data:', e);
         }
       }
 
@@ -656,7 +691,7 @@ export default function PortraitScreen() {
     day: 'numeric',
     year: 'numeric',
   });
-  const overallScore = getOverallScore(portrait.compositeScores);
+  const overallScore = growthBoostResult?.boostedScore ?? getOverallScore(portrait.compositeScores);
 
   return (
     <ErrorBoundary>
@@ -767,6 +802,8 @@ export default function PortraitScreen() {
               overallScore={overallScore}
               onNavigate={() => {}}
               rawScores={rawScores}
+              growthBoostResult={growthBoostResult}
+              journeyData={journeyData}
             />
           </View>
 
@@ -840,6 +877,8 @@ export default function PortraitScreen() {
               overallScore={overallScore}
               onNavigate={handleTabChange}
               rawScores={rawScores}
+              growthBoostResult={growthBoostResult}
+              journeyData={journeyData}
             />
             </>
           )}
@@ -884,12 +923,22 @@ function OverviewTab({
   overallScore,
   onNavigate,
   rawScores,
+  growthBoostResult: gbr,
+  journeyData: jd,
 }: {
   portrait: IndividualPortrait;
   userName: string;
   overallScore: number;
   onNavigate: (tab: TabKey) => void;
   rawScores: AllAssessmentScores | null;
+  growthBoostResult?: GrowthBoostedResult | null;
+  journeyData?: {
+    stepsCompleted: number;
+    totalSteps: number;
+    edgeProgress: GrowthEdgeProgress[];
+    totalPractices: number;
+    currentStreak: number;
+  } | null;
 }) {
   const narrative = generateLandingNarrative(portrait);
   const synthesis = synthesizeAssessments(portrait, portrait.supplementData);
@@ -944,6 +993,70 @@ function OverviewTab({
           <AREScoreRing label="Engaged" value={cs.engagement} color={Colors.secondary} delay={600} />
         </View>
       </View>
+
+      {/* Your Journey Progress */}
+      {jd && (
+        <View style={st.areRingsCard}>
+          <TenderText variant="label" color={Colors.secondary} style={{ letterSpacing: 1.2 }}>
+            YOUR JOURNEY
+          </TenderText>
+          <View style={st.scoreGroupDivider} />
+
+          {/* Steps progress */}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+            <TenderText variant="bodySmall" style={{ flex: 1 }}>Steps Completed</TenderText>
+            <TenderText variant="bodyMedium" color={Colors.secondary}>{jd.stepsCompleted}/{jd.totalSteps}</TenderText>
+          </View>
+          <View style={{ height: 6, backgroundColor: Colors.progressTrack, borderRadius: 3, overflow: 'hidden', marginBottom: Spacing.md }}>
+            <View style={{ height: 6, borderRadius: 3, backgroundColor: Colors.primary, width: `${(jd.stepsCompleted / jd.totalSteps) * 100}%` }} />
+          </View>
+
+          {/* Growth edge pills */}
+          {jd.edgeProgress.length > 0 && (
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: Spacing.md }}>
+              {jd.edgeProgress.map((ep) => {
+                const edgeDef = portrait.growthEdges.find((e: any) => e.id === ep.edgeId);
+                const stage = ep.stage ?? 'emerging';
+                const stageColor = stage === 'integrated' ? Colors.success
+                  : stage === 'integrating' ? Colors.primary
+                  : stage === 'practicing' ? Colors.calm
+                  : Colors.warning;
+                return (
+                  <View key={ep.edgeId} style={{
+                    paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999,
+                    backgroundColor: stageColor + '15', borderWidth: 1, borderColor: stageColor + '40',
+                  }}>
+                    <TenderText variant="caption" color={stageColor} style={{ fontWeight: '600', fontSize: 10 }}>
+                      {edgeDef?.title?.split(' ').slice(0, 3).join(' ') ?? ep.edgeId}
+                    </TenderText>
+                    <TenderText variant="caption" color={stageColor} style={{ fontWeight: '700', fontSize: 9 }}>
+                      {stage.charAt(0).toUpperCase() + stage.slice(1)}
+                    </TenderText>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+
+          {/* Stats row */}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+            <View style={{ alignItems: 'center' }}>
+              <TenderText variant="headingM" color={Colors.primary}>{jd.totalPractices}</TenderText>
+              <TenderText variant="caption" color={Colors.textMuted}>Practices</TenderText>
+            </View>
+            <View style={{ alignItems: 'center' }}>
+              <TenderText variant="headingM" color={Colors.primary}>{jd.currentStreak}</TenderText>
+              <TenderText variant="caption" color={Colors.textMuted}>Day Streak</TenderText>
+            </View>
+            {gbr && gbr.growthBoost > 0 && (
+              <View style={{ alignItems: 'center' }}>
+                <TenderText variant="headingM" color={Colors.success}>+{gbr.growthBoost}</TenderText>
+                <TenderText variant="caption" color={Colors.textMuted}>Growth Boost</TenderText>
+              </View>
+            )}
+          </View>
+        </View>
+      )}
 
       {/* Quick Stats Grid */}
       <TenderText variant="label" color={Colors.textMuted} style={st.sectionLabel}>AT A GLANCE</TenderText>
