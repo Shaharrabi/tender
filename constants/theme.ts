@@ -114,7 +114,7 @@ export const Colors = {
 
 export const FontFamilies = {
   heading: 'Jost_500Medium',              // Futura-inspired geometric — display & headings
-  body: 'JosefinSans_400Regular',         // Geometric elegance — body & UI text
+  body: 'JosefinSans_300Light',            // Soft geometric — body & UI text
   accent: 'PlayfairDisplay_600SemiBold',  // Sophisticated serif — scores, quotes, special moments
 };
 
@@ -186,7 +186,7 @@ export const Typography = {
     lineHeight: 26,
   },
   body: {
-    fontFamily: 'JosefinSans_400Regular',
+    fontFamily: 'JosefinSans_300Light',
     fontSize: 16,
     letterSpacing: 0.2,
     lineHeight: 24,
@@ -225,9 +225,9 @@ export const Typography = {
   },
   caption: {
     fontFamily: 'JosefinSans_300Light',
-    fontSize: 12,
+    fontSize: 13,
     letterSpacing: 0.3,
-    lineHeight: 16,
+    lineHeight: 18,
   },
   inputText: {
     fontFamily: 'JosefinSans_400Regular',

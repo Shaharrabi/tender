@@ -165,12 +165,12 @@ const styles = StyleSheet.create({
     color: Colors.textMuted,
   },
   dynamicType: {
-    ...Typography.headingL,
+    ...Typography.headingM,
     color: Colors.text,
     marginTop: Spacing.xs,
   },
   interlockText: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.textSecondary,
     lineHeight: 20,
     marginBottom: Spacing.lg,
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   fieldState: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.textMuted,
     marginTop: Spacing.xs,
   },
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
   },
   actionText: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.text,
     marginBottom: Spacing.xs,
   },
@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
   },
   strengthText: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.textSecondary,
     lineHeight: 20,
   },

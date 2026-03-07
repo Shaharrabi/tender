@@ -315,6 +315,7 @@ export default function GrowthPlanContent({ portrait, router }: GrowthPlanConten
 const s = StyleSheet.create({
   // Tab Intro
   tabIntro: {
+    fontFamily: FontFamilies.body,
     fontSize: FontSizes.body,
     color: Colors.textSecondary,
     lineHeight: 24,
@@ -326,20 +327,21 @@ const s = StyleSheet.create({
     marginBottom: Spacing.xl,
   },
   protocolEyebrow: {
-    fontSize: FontSizes.caption,
-    fontWeight: '700' as const,
-    color: Colors.secondary,
+    fontFamily: FontFamilies.body,
+    fontSize: 11,
+    color: Colors.textSecondary,
     textTransform: 'uppercase' as const,
     letterSpacing: 1.5,
     marginBottom: Spacing.xs,
   },
   protocolName: {
+    fontFamily: FontFamilies.heading,
     fontSize: FontSizes.headingM,
-    fontWeight: '700' as const,
     color: Colors.text,
     marginBottom: Spacing.sm,
   },
   protocolDescription: {
+    fontFamily: FontFamilies.body,
     fontSize: FontSizes.body,
     color: Colors.textSecondary,
     lineHeight: 24,
@@ -351,13 +353,14 @@ const s = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   movementsSectionTitle: {
-    fontSize: FontSizes.body,
-    fontWeight: '700' as const,
+    fontFamily: FontFamilies.heading,
+    fontSize: FontSizes.headingS,
     color: Colors.text,
     marginBottom: Spacing.xs,
   },
   movementsSubtitle: {
-    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.body,
     color: Colors.textSecondary,
     marginBottom: Spacing.md,
   },
@@ -375,19 +378,19 @@ const s = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   movementName: {
+    fontFamily: FontFamilies.heading,
     fontSize: FontSizes.body,
-    fontWeight: '600' as const,
     color: Colors.text,
   },
   movementQuestion: {
-    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.body,
     color: Colors.textSecondary,
-    fontStyle: 'italic' as const,
   },
   movementScore: {
+    fontFamily: FontFamilies.body,
     fontSize: FontSizes.body,
-    fontWeight: '700' as const,
-    color: Colors.secondary,
+    color: Colors.textSecondary,
   },
   movementProgressTrack: {
     height: 6,
@@ -402,9 +405,10 @@ const s = StyleSheet.create({
     borderRadius: 3,
   },
   movementDescription: {
-    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.body,
     color: Colors.textSecondary,
-    lineHeight: 20,
+    lineHeight: 24,
   },
 
   // Phases
@@ -445,18 +449,20 @@ const s = StyleSheet.create({
     marginRight: Spacing.sm,
   },
   phaseName: {
+    fontFamily: FontFamilies.heading,
     fontSize: FontSizes.body,
-    fontWeight: '600' as const,
     color: Colors.text,
   },
   phaseWeeks: {
-    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.body,
     color: Colors.textSecondary,
   },
   phaseFocus: {
-    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.body,
     color: Colors.textSecondary,
-    lineHeight: 20,
+    lineHeight: 24,
     paddingLeft: Spacing.md + Spacing.sm,
   },
   phaseExercises: {
@@ -464,8 +470,8 @@ const s = StyleSheet.create({
     paddingLeft: Spacing.md + Spacing.sm,
   },
   phaseExercisesLabel: {
+    fontFamily: FontFamilies.body,
     fontSize: 11,
-    fontWeight: '700' as const,
     color: Colors.textMuted,
     textTransform: 'uppercase' as const,
     letterSpacing: 0.8,
@@ -490,8 +496,8 @@ const s = StyleSheet.create({
   },
   exerciseRowTitle: {
     flex: 1,
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '600' as const,
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.body,
     color: Colors.text,
   },
   exerciseRowMeta: {
@@ -502,7 +508,6 @@ const s = StyleSheet.create({
   exerciseRowArrow: {
     fontSize: 18,
     color: Colors.textMuted,
-    fontWeight: '300' as const,
   },
   exerciseRowDone: {
     backgroundColor: Colors.successLight,
@@ -520,7 +525,6 @@ const s = StyleSheet.create({
   exerciseCheckmarkText: {
     fontSize: 11,
     color: Colors.white,
-    fontWeight: '700' as const,
   },
   exerciseRowTitleDone: {
     color: Colors.successDark,
@@ -534,15 +538,16 @@ const s = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   guidanceTitle: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '600' as const,
+    fontFamily: FontFamilies.heading,
+    fontSize: FontSizes.headingS,
     color: Colors.text,
     marginBottom: Spacing.sm,
   },
   guidanceItem: {
-    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.body,
     color: Colors.textSecondary,
-    lineHeight: 20,
+    lineHeight: 24,
     marginBottom: Spacing.xs,
   },
 
@@ -562,14 +567,14 @@ const s = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   growthProgressLabel: {
+    fontFamily: FontFamilies.heading,
     fontSize: FontSizes.body,
-    fontWeight: '700' as const,
     color: Colors.text,
   },
   growthProgressPct: {
+    fontFamily: FontFamilies.heading,
     fontSize: FontSizes.headingM,
-    fontWeight: '700' as const,
-    color: Colors.secondary,
+    color: Colors.textSecondary,
   },
   growthProgressTrack: {
     height: 10,
@@ -602,14 +607,14 @@ const s = StyleSheet.create({
     borderRadius: 2,
   },
   phaseProgressMiniLabel: {
+    fontFamily: FontFamilies.body,
     fontSize: 9,
     color: Colors.textMuted,
-    fontWeight: '600' as const,
   },
   phaseProgressText: {
+    fontFamily: FontFamilies.body,
     fontSize: 11,
     color: Colors.textMuted,
-    fontWeight: '600' as const,
     marginTop: 4,
     textAlign: 'right' as const,
   },
@@ -628,15 +633,16 @@ const s = StyleSheet.create({
     marginBottom: 4,
   },
   phaseCompleteTitle: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '700' as const,
+    fontFamily: FontFamilies.heading,
+    fontSize: FontSizes.body,
     color: Colors.successDark,
     marginBottom: 4,
   },
   phaseCompleteText: {
-    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.body,
     color: Colors.successMuted,
-    lineHeight: 20,
+    lineHeight: 24,
   },
 
   // Growth Edges
@@ -662,8 +668,8 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   growthEdgeNumberText: {
+    fontFamily: FontFamilies.heading,
     fontSize: FontSizes.body,
-    fontWeight: '700',
     color: Colors.white,
   },
   growthEdgeHeaderText: {
@@ -671,21 +677,22 @@ const s = StyleSheet.create({
     gap: 2,
   },
   growthEdgeLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: Colors.warning,
+    fontFamily: FontFamilies.body,
+    fontSize: 11,
+    color: Colors.textSecondary,
     letterSpacing: 1,
+    textTransform: 'uppercase' as const,
   },
   growthEdgeTitle: {
-    fontSize: FontSizes.headingM,
-    fontWeight: '600',
     fontFamily: FontFamilies.heading,
+    fontSize: FontSizes.headingM,
     color: Colors.text,
   },
   growthEdgeDescription: {
-    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.body,
     color: Colors.text,
-    lineHeight: 22,
+    lineHeight: 24,
   },
   growthEdgeRationaleBox: {
     backgroundColor: Colors.surface,
@@ -695,18 +702,18 @@ const s = StyleSheet.create({
     borderLeftColor: Colors.warning,
   },
   growthEdgeRationale: {
-    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.body,
     color: Colors.textSecondary,
-    lineHeight: 20,
-    fontStyle: 'italic',
+    lineHeight: 24,
   },
   practicesSection: {
     marginTop: Spacing.xs,
     gap: Spacing.xs,
   },
   practicesTitle: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '700',
+    fontFamily: FontFamilies.heading,
+    fontSize: FontSizes.headingS,
     color: Colors.text,
     marginBottom: Spacing.xs,
   },
@@ -731,8 +738,9 @@ const s = StyleSheet.create({
   },
   practiceText: {
     flex: 1,
-    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.body,
     color: Colors.text,
-    lineHeight: 22,
+    lineHeight: 24,
   },
 });

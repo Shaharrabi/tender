@@ -163,7 +163,7 @@ function ResonancePulse({ score }: { score: number }) {
         <TenderText variant="headingS" color={orbColors.outer} align="center" style={{ marginBottom: 4 }}>
           {status.status}
         </TenderText>
-        <TenderText variant="bodySmall" color={Colors.textSecondary} align="center">
+        <TenderText variant="body" color={Colors.textSecondary} align="center">
           {status.subtitle}
         </TenderText>
       </View>
@@ -205,7 +205,7 @@ function EmergenceDirection({ score }: { score: number }) {
         <TenderText variant="label" color={Colors.success} style={{ marginBottom: 2 }}>
           Emergence Direction
         </TenderText>
-        <TenderText variant="bodySmall">{direction.description}</TenderText>
+        <TenderText variant="body">{direction.description}</TenderText>
       </View>
     </View>
   );
@@ -269,7 +269,7 @@ function RelationalVitality({
             color={b.label === band.label ? band.color : Colors.textMuted}
             style={[
               { fontSize: 10, letterSpacing: 0.3 },
-              b.label === band.label && { fontWeight: '600' },
+              b.label === band.label && {},
             ]}
           >
             {b.label}
@@ -279,7 +279,7 @@ function RelationalVitality({
 
       {/* Current band result */}
       <View style={styles.vitalityResult}>
-        <TenderText variant="serifBody" color={band.color} style={{ fontWeight: '600' }}>
+        <TenderText variant="body" color={band.color}>
           {band.label}
         </TenderText>
         <TenderText variant="caption" color={Colors.textSecondary} align="center" style={{ marginTop: 4 }}>

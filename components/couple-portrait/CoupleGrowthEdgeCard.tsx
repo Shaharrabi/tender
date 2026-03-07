@@ -33,7 +33,7 @@ export default function CoupleGrowthEdgeCard({
   partnerBName,
   index,
 }: CoupleGrowthEdgeCardProps) {
-  const [expanded, setExpanded] = useState(index === 0);
+  const [expanded, setExpanded] = useState(true);
 
   const confColor = CONFIDENCE_COLORS[edge.confidenceLevel] || Colors.textMuted;
 
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   sectionText: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.textSecondary,
     lineHeight: 20,
   },
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   invitationText: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.text,
     lineHeight: 20,
   },
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   partnerPartText: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.textSecondary,
     lineHeight: 20,
   },
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   practiceText: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.textSecondary,
     lineHeight: 20,
   },

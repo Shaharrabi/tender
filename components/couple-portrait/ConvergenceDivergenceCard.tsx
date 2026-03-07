@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.md,
   },
   narrativeText: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.textSecondary,
     lineHeight: 20,
   },
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   practiceText: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.textSecondary,
     lineHeight: 20,
   },
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   warningText: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.textSecondary,
     lineHeight: 20,
   },
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   underneathText: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.textSecondary,
     lineHeight: 20,
   },

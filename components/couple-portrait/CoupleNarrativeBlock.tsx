@@ -24,7 +24,7 @@ interface NarrativeSectionProps {
 }
 
 function NarrativeSection({ title, text, accentColor = Colors.textMuted, isFirst }: NarrativeSectionProps) {
-  const [expanded, setExpanded] = useState(!!isFirst);
+  const [expanded, setExpanded] = useState(true);
 
   return (
     <TouchableOpacity
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sectionText: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.textSecondary,
     lineHeight: 22,
     marginTop: Spacing.sm,
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
     borderLeftColor: Colors.couplePartnerA,
   },
   closingText: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.text,
     lineHeight: 22,
   },

@@ -96,7 +96,7 @@ const st = StyleSheet.create({
   scroll: {
     flexGrow: 0,
     flexShrink: 0,
-    marginBottom: Spacing.sm,
+    marginBottom: Spacing.xs,
     backgroundColor: Colors.background,
   },
   container: {

@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize',
   },
   bothText: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.text,
     marginTop: 4,
     lineHeight: 20,
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   partnerText: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.textSecondary,
     lineHeight: 20,
   },

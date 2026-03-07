@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
   },
   description: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.textSecondary,
     marginTop: 4,
     lineHeight: 20,
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   meaningText: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.textSecondary,
     lineHeight: 20,
   },
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   questionText: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.text,
     lineHeight: 20,
   },

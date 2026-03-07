@@ -508,7 +508,7 @@ function CouplePortalScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.center}>
           <ActivityIndicator size="large" color={Colors.primary} accessibilityLabel="Loading" />
-          <TenderText variant="bodySmall" color={Colors.textSecondary} align="center" style={styles.loadingText}>
+          <TenderText variant="body" color={Colors.textSecondary} align="center" style={styles.loadingText}>
             {generating ? 'Weaving your shared portrait...' : 'Loading the space between you...'}
           </TenderText>
         </View>
@@ -565,7 +565,7 @@ function CouplePortalScreen() {
       {!dp && (
         <View style={styles.synthesisCard}>
           <TenderText variant="headingS" style={styles.synthesisTitle}>Your deep portrait needs more data</TenderText>
-          <TenderText variant="bodySmall" color={Colors.textSecondary}>
+          <TenderText variant="body" color={Colors.textSecondary}>
             {!myPortrait && !partnerPortrait
               ? 'Both individual portraits are missing. Each partner needs to complete all 6 individual assessments (ECR-R, DUTCH, SSEIT, DSI-R, IPIP-NEO, Values) and generate their portrait from the Home screen.'
               : !myPortrait
@@ -597,7 +597,7 @@ function CouplePortalScreen() {
       {/* Literary Narrative Snapshot */}
       {dp && (
         <View style={styles.narrativeCard}>
-          <TenderText variant="bodySmall" color={Colors.textSecondary} style={styles.narrativeSummary}>
+          <TenderText variant="body" color={Colors.textSecondary} style={styles.narrativeSummary}>
             {(() => { try { return generateOverviewSnapshot(dp); } catch { return 'Your couple portrait is being prepared...'; } })()}
           </TenderText>
         </View>
@@ -610,7 +610,7 @@ function CouplePortalScreen() {
             <>
               <TenderText variant="headingS" style={styles.insightsHeading}>Your Relational Pattern</TenderText>
               <View style={styles.narrativeCard}>
-                <TenderText variant="bodySmall" color={Colors.textSecondary} style={styles.narrativeSummary}>
+                <TenderText variant="body" color={Colors.textSecondary} style={styles.narrativeSummary}>
                   {portrait.combined_cycle.cycleDescription}
                 </TenderText>
               </View>
@@ -618,7 +618,7 @@ function CouplePortalScreen() {
                 <View style={styles.overviewInsightRow}>
                   <View style={{ flex: 1 }}>
                     <TenderText variant="label" style={styles.overviewInsightLabel}>Common Triggers</TenderText>
-                    <TenderText variant="bodySmall" color={Colors.textSecondary}>
+                    <TenderText variant="body" color={Colors.textSecondary}>
                       {portrait.combined_cycle.triggers.slice(0, 3).join(' • ')}
                     </TenderText>
                   </View>
@@ -628,7 +628,7 @@ function CouplePortalScreen() {
                 <View style={styles.overviewInsightRow}>
                   <View style={{ flex: 1 }}>
                     <TenderText variant="label" style={styles.overviewInsightLabel}>Steps Toward Each Other</TenderText>
-                    <TenderText variant="bodySmall" color={Colors.textSecondary}>
+                    <TenderText variant="body" color={Colors.textSecondary}>
                       {portrait.combined_cycle.deEscalationSteps.slice(0, 3).join(' • ')}
                     </TenderText>
                   </View>
@@ -644,7 +644,7 @@ function CouplePortalScreen() {
                 <View key={i} style={styles.overviewInsightRow}>
                   <View style={{ flex: 1 }}>
                     <TenderText variant="label" style={styles.overviewInsightLabel}>{edge.title || edge.area}</TenderText>
-                    <TenderText variant="bodySmall" color={Colors.textSecondary}>{edge.description}</TenderText>
+                    <TenderText variant="body" color={Colors.textSecondary}>{edge.description}</TenderText>
                   </View>
                 </View>
               ))}
@@ -657,12 +657,12 @@ function CouplePortalScreen() {
       {portrait.dyadic_scores?.csi16 && (
         <View style={styles.quickStatsRow}>
           <View style={styles.quickStat}>
-            <TenderText variant="serifHeading" color={Colors.secondary} style={styles.quickStatValue}>{portrait.dyadic_scores.csi16.total}</TenderText>
+            <TenderText variant="headingS" color={Colors.secondary} style={styles.quickStatValue}>{portrait.dyadic_scores.csi16.total}</TenderText>
             <TenderText variant="caption" color={Colors.textSecondary} style={styles.quickStatLabel}>Satisfaction</TenderText>
           </View>
           {portrait.dyadic_scores?.rdas && (
             <View style={styles.quickStat}>
-              <TenderText variant="serifHeading" color={Colors.secondary} style={styles.quickStatValue}>{portrait.dyadic_scores.rdas.total}</TenderText>
+              <TenderText variant="headingS" color={Colors.secondary} style={styles.quickStatValue}>{portrait.dyadic_scores.rdas.total}</TenderText>
               <TenderText variant="caption" color={Colors.textSecondary} style={styles.quickStatLabel}>Adjustment</TenderText>
             </View>
           )}
@@ -689,7 +689,7 @@ function CouplePortalScreen() {
             </View>
             <View style={{ flex: 1 }}>
               <TenderText variant="label" style={styles.overviewInsightLabel}>Your Dance</TenderText>
-              <TenderText variant="bodySmall" color={Colors.textSecondary}>
+              <TenderText variant="body" color={Colors.textSecondary}>
                 {dp.patternInterlock.combinedCycle.dynamic.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())} — {dp.partnerAName} tends to {dp.patternInterlock.combinedCycle.partnerAPosition}, {dp.partnerBName} tends to {dp.patternInterlock.combinedCycle.partnerBPosition}
               </TenderText>
             </View>
@@ -723,7 +723,7 @@ function CouplePortalScreen() {
               </View>
               <View style={{ flex: 1 }}>
                 <TenderText variant="label" style={styles.overviewInsightLabel}>Shared Strengths</TenderText>
-                <TenderText variant="bodySmall" color={Colors.textSecondary}>
+                <TenderText variant="body" color={Colors.textSecondary}>
                   {dp.convergenceDivergence.sharedStrengths.slice(0, 3).map(s => s.dimensionLabel).join(', ')}
                 </TenderText>
               </View>
@@ -738,7 +738,7 @@ function CouplePortalScreen() {
               </View>
               <View style={{ flex: 1 }}>
                 <TenderText variant="label" style={styles.overviewInsightLabel}>Friction Zones</TenderText>
-                <TenderText variant="bodySmall" color={Colors.textSecondary}>
+                <TenderText variant="body" color={Colors.textSecondary}>
                   {dp.convergenceDivergence.frictionZones.slice(0, 3).map(z => z.area).join(', ')}
                 </TenderText>
               </View>
@@ -753,7 +753,7 @@ function CouplePortalScreen() {
               </View>
               <View style={{ flex: 1 }}>
                 <TenderText variant="label" style={styles.overviewInsightLabel}>Growth Edge</TenderText>
-                <TenderText variant="bodySmall" color={Colors.textSecondary}>
+                <TenderText variant="body" color={Colors.textSecondary}>
                   {dp.coupleGrowthEdges[0].title}
                 </TenderText>
               </View>
@@ -768,7 +768,7 @@ function CouplePortalScreen() {
               </View>
               <View style={{ flex: 1 }}>
                 <TenderText variant="label" style={styles.overviewInsightLabel}>Field Vitality</TenderText>
-                <TenderText variant="bodySmall" color={Colors.textSecondary}>
+                <TenderText variant="body" color={Colors.textSecondary}>
                   {dp.relationalField.qualitativeLabel || `${Math.round(dp.relationalField.vitality)}%`}
                 </TenderText>
               </View>
@@ -806,12 +806,12 @@ function CouplePortalScreen() {
           <ChatBubbleIcon size={20} color={Colors.depth} />
           <TenderText variant="headingS" color={Colors.depth} style={styles.coachTitle}>Talk to Your Couple Coach</TenderText>
         </View>
-        <TenderText variant="bodySmall" color={Colors.textSecondary} style={styles.coachDesc}>
+        <TenderText variant="body" color={Colors.textSecondary} style={styles.coachDesc}>
           Your AI guide now understands both of your portraits and your relationship
           patterns.
         </TenderText>
         <View style={styles.ctaRow}>
-          <TenderText variant="bodyMedium" color={Colors.depth}>Start Conversation</TenderText>
+          <TenderText variant="body" color={Colors.depth}>Start Conversation</TenderText>
           <ArrowRightIcon size={14} color={Colors.depth} />
         </View>
       </TouchableOpacity>
@@ -819,7 +819,7 @@ function CouplePortalScreen() {
   );
 
   const renderDance = () => {
-    if (!dp) return <TenderText variant="bodySmall" color={Colors.textMuted} align="center" style={styles.noDataText}>Deep portrait data is being generated...</TenderText>;
+    if (!dp) return <TenderText variant="body" color={Colors.textMuted} align="center" style={styles.noDataText}>Deep portrait data is being generated...</TenderText>;
 
     return (
       <View style={styles.tabContent}>
@@ -832,7 +832,7 @@ function CouplePortalScreen() {
 
         {/* Exit Points */}
         <TenderText variant="headingM" style={styles.sectionTitle}>Exit Points</TenderText>
-        <TenderText variant="bodySmall" color={Colors.textSecondary} style={styles.sectionDesc}>
+        <TenderText variant="body" color={Colors.textSecondary} style={styles.sectionDesc}>
           Four moments where you can interrupt the cycle and choose differently.
         </TenderText>
         {dp.patternInterlock.combinedCycle.exitPoints.map((ep) => (
@@ -851,7 +851,7 @@ function CouplePortalScreen() {
             <View style={styles.repairStepNumber}>
               <TenderText variant="caption" color={Colors.white} style={styles.repairStepNumberText}>{step.step}</TenderText>
             </View>
-            <TenderText variant="bodySmall" color={Colors.textSecondary} style={styles.repairStepText}>{step.action}</TenderText>
+            <TenderText variant="body" color={Colors.textSecondary} style={styles.repairStepText}>{step.action}</TenderText>
           </View>
         ))}
       </View>
@@ -859,7 +859,7 @@ function CouplePortalScreen() {
   };
 
   const renderTogether = () => {
-    if (!dp) return <TenderText variant="bodySmall" color={Colors.textMuted} align="center" style={styles.noDataText}>Deep portrait data is being generated...</TenderText>;
+    if (!dp) return <TenderText variant="body" color={Colors.textMuted} align="center" style={styles.noDataText}>Deep portrait data is being generated...</TenderText>;
 
     return (
       <View style={styles.tabContent}>
@@ -878,7 +878,7 @@ function CouplePortalScreen() {
           partnerAName={dp.partnerAName}
           partnerBName={dp.partnerBName}
         />
-        <TenderText variant="bodySmall" color={Colors.textSecondary} style={styles.narrativeSmall}>
+        <TenderText variant="body" color={Colors.textSecondary} style={styles.narrativeSmall}>
           {dp.patternInterlock.attachmentDynamic.narrative}
         </TenderText>
 
@@ -943,7 +943,7 @@ function CouplePortalScreen() {
     if (!dyadicScores) {
       return (
         <View style={styles.tabContent}>
-          <TenderText variant="bodySmall" color={Colors.textMuted} align="center" style={styles.noDataText}>
+          <TenderText variant="body" color={Colors.textMuted} align="center" style={styles.noDataText}>
             Couple assessments haven't been completed yet.{'\n'}
             Go to the Assessment screen and choose a couple assessment to get started.
           </TenderText>
@@ -966,7 +966,7 @@ function CouplePortalScreen() {
       label: string; valueA: number | null; valueB: number | null; max: number; color: string;
     }) => (
       <View style={assessStyles.compareRow}>
-        <TenderText variant="bodySmall" style={assessStyles.compareLabel}>{label}</TenderText>
+        <TenderText variant="body" style={assessStyles.compareLabel}>{label}</TenderText>
         <View style={assessStyles.compareValues}>
           <View style={assessStyles.partnerCol}>
             <TenderText variant="headingS" style={assessStyles.partnerScore}>{valueA != null ? valueA.toFixed(0) : '—'}</TenderText>
@@ -985,7 +985,7 @@ function CouplePortalScreen() {
       title: string; subtitle: string; accentColor: string; children: React.ReactNode;
     }) => (
       <View style={[assessStyles.assessCard, { borderLeftColor: accentColor, borderLeftWidth: 3 }]}>
-        <TenderText variant="serifBody" style={assessStyles.assessTitle}>{title}</TenderText>
+        <TenderText variant="body" style={assessStyles.assessTitle}>{title}</TenderText>
         <TenderText variant="caption" color={Colors.textMuted} style={assessStyles.assessSubtitle}>{subtitle}</TenderText>
         {/* Partner name headers */}
         <View style={assessStyles.partnerHeaders}>
@@ -1048,7 +1048,7 @@ function CouplePortalScreen() {
     if (!hasAnything) {
       return (
         <View style={styles.tabContent}>
-          <TenderText variant="bodySmall" color={Colors.textMuted} align="center" style={styles.noDataText}>
+          <TenderText variant="body" color={Colors.textMuted} align="center" style={styles.noDataText}>
             No couple assessment results yet.{'\n'}
             Complete a couple assessment together to see your results here.
           </TenderText>
@@ -1059,7 +1059,7 @@ function CouplePortalScreen() {
     return (
       <View style={styles.tabContent}>
         <TenderText variant="headingM" style={styles.sectionTitle}>Your Couple Assessments</TenderText>
-        <TenderText variant="bodySmall" color={Colors.textSecondary} style={styles.sectionDesc}>
+        <TenderText variant="body" color={Colors.textSecondary} style={styles.sectionDesc}>
           How you each experience the relationship — side by side. These aren't grades; they're
           a shared map of where you align and where attention is needed.
         </TenderText>
@@ -1099,7 +1099,7 @@ function CouplePortalScreen() {
             {(csi16.partnerA?.satisfactionLevel || csi16.partnerB?.satisfactionLevel) && (
               <View style={assessStyles.interpretCard}>
                 <TenderText variant="label" style={assessStyles.interpretTitle}>What This Means</TenderText>
-                <TenderText variant="bodySmall" color={Colors.textSecondary}>
+                <TenderText variant="body" color={Colors.textSecondary}>
                   The CSI-16 measures overall relationship happiness on a 0–81 scale.
                   Scores above 51.5 are considered non-distressed.
                   {csi16.partnerA?.satisfactionLevel && `\n\n${nameA}: ${csiInterpretation(csi16.partnerA.satisfactionLevel).text}`}
@@ -1141,11 +1141,11 @@ function CouplePortalScreen() {
             {/* Interpretation */}
             <View style={assessStyles.interpretCard}>
               <TenderText variant="label" style={assessStyles.interpretTitle}>Understanding Your Scores</TenderText>
-              <TenderText variant="bodySmall" color={Colors.textSecondary}>
+              <TenderText variant="body" color={Colors.textSecondary}>
                 The RDAS measures relationship adjustment across three areas:{'\n\n'}
-                • <TenderText variant="bodySmall" style={{ fontWeight: '600' }}>Consensus</TenderText> (0–30): How much you agree on important matters — finances, values, decisions{'\n'}
-                • <TenderText variant="bodySmall" style={{ fontWeight: '600' }}>Satisfaction</TenderText> (0–20): Day-to-day happiness and contentment in the relationship{'\n'}
-                • <TenderText variant="bodySmall" style={{ fontWeight: '600' }}>Cohesion</TenderText> (0–20): How much you share activities, ideas, and quality time{'\n\n'}
+                • <TenderText variant="body">Consensus</TenderText> (0–30): How much you agree on important matters — finances, values, decisions{'\n'}
+                • <TenderText variant="body">Satisfaction</TenderText> (0–20): Day-to-day happiness and contentment in the relationship{'\n'}
+                • <TenderText variant="body">Cohesion</TenderText> (0–20): How much you share activities, ideas, and quality time{'\n\n'}
                 Scores above 48 on the total generally indicate a non-distressed relationship.
                 {rdas.partnerA?.distressLevel && `\n\n${nameA}: ${rdasInterpretation(rdas.partnerA.distressLevel).text}`}
                 {rdas.partnerB?.distressLevel && `\n\n${nameB}: ${rdasInterpretation(rdas.partnerB.distressLevel).text}`}
@@ -1187,13 +1187,13 @@ function CouplePortalScreen() {
             {/* Interpretation */}
             <View style={assessStyles.interpretCard}>
               <TenderText variant="label" style={assessStyles.interpretTitle}>Understanding Your Scores</TenderText>
-              <TenderText variant="bodySmall" color={Colors.textSecondary}>
+              <TenderText variant="body" color={Colors.textSecondary}>
                 The DCI measures how partners cope with stress together:{'\n\n'}
-                • <TenderText variant="bodySmall" style={{ fontWeight: '600' }}>Stress Communication</TenderText>: How clearly you signal stress to each other{'\n'}
-                • <TenderText variant="bodySmall" style={{ fontWeight: '600' }}>Supportive Coping</TenderText>: Emotional and practical support offered to your partner{'\n'}
-                • <TenderText variant="bodySmall" style={{ fontWeight: '600' }}>Delegated Coping</TenderText>: Taking on tasks when your partner is overwhelmed{'\n'}
-                • <TenderText variant="bodySmall" style={{ fontWeight: '600' }}>Common Coping</TenderText>: Facing challenges as a team, co-regulating together{'\n'}
-                • <TenderText variant="bodySmall" style={{ fontWeight: '600' }}>Negative Coping</TenderText>: Dismissive or hostile responses to partner's stress (lower is better)
+                • <TenderText variant="body">Stress Communication</TenderText>: How clearly you signal stress to each other{'\n'}
+                • <TenderText variant="body">Supportive Coping</TenderText>: Emotional and practical support offered to your partner{'\n'}
+                • <TenderText variant="body">Delegated Coping</TenderText>: Taking on tasks when your partner is overwhelmed{'\n'}
+                • <TenderText variant="body">Common Coping</TenderText>: Facing challenges as a team, co-regulating together{'\n'}
+                • <TenderText variant="body">Negative Coping</TenderText>: Dismissive or hostile responses to partner's stress (lower is better)
                 {dci.partnerA?.copingQuality && `\n\n${nameA}: ${dciInterpretation(dci.partnerA.copingQuality).text}`}
                 {dci.partnerB?.copingQuality && `\n\n${nameB}: ${dciInterpretation(dci.partnerB.copingQuality).text}`}
               </TenderText>
@@ -1205,7 +1205,7 @@ function CouplePortalScreen() {
   };
 
   const renderInsights = () => {
-    if (!dp) return <TenderText variant="bodySmall" color={Colors.textMuted} align="center" style={styles.noDataText}>Deep portrait data is being generated...</TenderText>;
+    if (!dp) return <TenderText variant="body" color={Colors.textMuted} align="center" style={styles.noDataText}>Deep portrait data is being generated...</TenderText>;
 
     return (
       <View style={styles.tabContent}>
@@ -1222,19 +1222,19 @@ function CouplePortalScreen() {
         {dp.dyadicInsights.satisfaction && (
           <View style={[styles.synthesisCard, { marginTop: Spacing.lg }]}>
             <TenderText variant="headingS" style={styles.synthesisTitle}>Relationship Adjustment</TenderText>
-            <TenderText variant="bodySmall" color={Colors.textSecondary}>{dp.dyadicInsights.satisfaction.narrative}</TenderText>
+            <TenderText variant="body" color={Colors.textSecondary}>{dp.dyadicInsights.satisfaction.narrative}</TenderText>
           </View>
         )}
         {dp.dyadicInsights.closeness && (
           <View style={styles.synthesisCard}>
             <TenderText variant="headingS" style={styles.synthesisTitle}>Couple Satisfaction</TenderText>
-            <TenderText variant="bodySmall" color={Colors.textSecondary}>{dp.dyadicInsights.closeness.narrative}</TenderText>
+            <TenderText variant="body" color={Colors.textSecondary}>{dp.dyadicInsights.closeness.narrative}</TenderText>
           </View>
         )}
         {dp.dyadicInsights.coping && (
           <View style={styles.synthesisCard}>
             <TenderText variant="headingS" style={styles.synthesisTitle}>Dyadic Coping</TenderText>
-            <TenderText variant="bodySmall" color={Colors.textSecondary}>{dp.dyadicInsights.coping.narrative}</TenderText>
+            <TenderText variant="body" color={Colors.textSecondary}>{dp.dyadicInsights.coping.narrative}</TenderText>
           </View>
         )}
 
@@ -1242,7 +1242,7 @@ function CouplePortalScreen() {
         {dp.dyadicInsights.discrepancies.length > 0 && (
           <>
             <TenderText variant="headingM" style={[styles.sectionTitle, { marginTop: Spacing.lg }]}>Where Data Diverges</TenderText>
-            <TenderText variant="bodySmall" color={Colors.textSecondary} style={styles.sectionDesc}>
+            <TenderText variant="body" color={Colors.textSecondary} style={styles.sectionDesc}>
               Places where your individual profiles tell a different story than your dyadic assessments.
             </TenderText>
             {dp.dyadicInsights.discrepancies.map((d, i) => (
@@ -1255,12 +1255,12 @@ function CouplePortalScreen() {
   };
 
   const renderGrowth = () => {
-    if (!dp) return <TenderText variant="bodySmall" color={Colors.textMuted} align="center" style={styles.noDataText}>Deep portrait data is being generated...</TenderText>;
+    if (!dp) return <TenderText variant="body" color={Colors.textMuted} align="center" style={styles.noDataText}>Deep portrait data is being generated...</TenderText>;
 
     return (
       <View style={styles.tabContent}>
         <TenderText variant="headingM" style={styles.sectionTitle}>Your Growth Edges</TenderText>
-        <TenderText variant="bodySmall" color={Colors.textSecondary} style={styles.sectionDesc}>
+        <TenderText variant="body" color={Colors.textSecondary} style={styles.sectionDesc}>
           Prioritized areas where your relationship is asking to evolve. Each edge names
           the protection, the cost, and the invitation.
         </TenderText>
@@ -1287,12 +1287,12 @@ function CouplePortalScreen() {
             <SeedlingIcon size={22} color={Colors.primary} />
             <TenderText variant="headingS" color={Colors.primary}>Continue Your Relational Journey</TenderText>
           </View>
-          <TenderText variant="bodySmall" color={Colors.textSecondary} style={styles.journeyDesc}>
+          <TenderText variant="body" color={Colors.textSecondary} style={styles.journeyDesc}>
             Twelve steps of relational growth — practices, reflections, and milestones
             designed around your unique patterns.
           </TenderText>
           <View style={styles.ctaRow}>
-            <TenderText variant="bodyMedium" color={Colors.primary}>View Journey</TenderText>
+            <TenderText variant="body" color={Colors.primary}>View Journey</TenderText>
             <ArrowRightIcon size={14} color={Colors.primary} />
           </View>
         </TouchableOpacity>
@@ -1301,12 +1301,12 @@ function CouplePortalScreen() {
   };
 
   const renderAnchors = () => {
-    if (!dp) return <TenderText variant="bodySmall" color={Colors.textMuted} align="center" style={styles.noDataText}>Deep portrait data is being generated...</TenderText>;
+    if (!dp) return <TenderText variant="body" color={Colors.textMuted} align="center" style={styles.noDataText}>Deep portrait data is being generated...</TenderText>;
 
     return (
       <View style={styles.tabContent}>
         <TenderText variant="headingM" style={styles.sectionTitle}>Couple Anchors</TenderText>
-        <TenderText variant="bodySmall" color={Colors.textSecondary} style={styles.sectionDesc}>
+        <TenderText variant="body" color={Colors.textSecondary} style={styles.sectionDesc}>
           Phrases to hold onto in difficult moments — personalized to your patterns, your cycle,
           and your attachment dynamics.
         </TenderText>
@@ -1337,7 +1337,7 @@ function CouplePortalScreen() {
         <View style={styles.tabContent}>
           <View style={styles.synthesisCard}>
             <TenderText variant="headingS" style={styles.synthesisTitle}>Something went wrong</TenderText>
-            <TenderText variant="bodySmall" color={Colors.textSecondary}>
+            <TenderText variant="body" color={Colors.textSecondary}>
               This section couldn't render. Try switching tabs or refreshing.
               {__DEV__ ? `\n\nError: ${e?.message}` : ''}
             </TenderText>
@@ -1390,7 +1390,7 @@ function CouplePortalScreen() {
             accessibilityLabel="Export PDF"
             accessibilityState={{ disabled: !dp }}
           >
-            <TenderText variant="bodySmall" color={Colors.primary} style={[styles.exportBtnText, !dp && { opacity: 0.4 }]}>Export PDF</TenderText>
+            <TenderText variant="body" color={Colors.primary} style={[styles.exportBtnText, !dp && { opacity: 0.4 }]}>Export PDF</TenderText>
           </TouchableOpacity>
         </View>
 
@@ -1403,7 +1403,7 @@ function CouplePortalScreen() {
         {partnerSharedAssessments.length > 0 && (
           <View style={styles.sharingCard}>
             <TenderText variant="label" color={Colors.calm} style={styles.sharingLabel}>SHARED WITH YOU</TenderText>
-            <TenderText variant="bodySmall" color={Colors.textSecondary}>
+            <TenderText variant="body" color={Colors.textSecondary}>
               {partnerName} is sharing {Math.min(partnerSharedAssessments.length, INDIVIDUAL_ASSESSMENT_TYPES.length)} of {INDIVIDUAL_ASSESSMENT_TYPES.length} individual assessments with you.
             </TenderText>
           </View>
@@ -1435,7 +1435,6 @@ function CouplePortalScreen() {
                   <TenderText
                     variant="caption"
                     color={isActive ? tab.color : Colors.textSecondary}
-                    style={isActive ? { fontWeight: '700' } : { fontWeight: '500' }}
                   >
                     {tab.label}
                   </TenderText>
@@ -1724,7 +1723,6 @@ const assessStyles = StyleSheet.create({
     marginBottom: Spacing.xs,
   },
   partnerName: {
-    fontWeight: '600' as const,
   },
   compareRow: {
     flexDirection: 'row',
@@ -1733,7 +1731,6 @@ const assessStyles = StyleSheet.create({
   },
   compareLabel: {
     flex: 1,
-    fontWeight: '500' as const,
   },
   compareValues: {
     flexDirection: 'row',
@@ -1748,7 +1745,6 @@ const assessStyles = StyleSheet.create({
   partnerScore: {
     fontFamily: FontFamilies.heading,
     fontSize: 16,
-    fontWeight: '600' as const,
   },
   barBg: {
     height: 6,
@@ -1774,7 +1770,6 @@ const assessStyles = StyleSheet.create({
     borderWidth: 1,
   },
   levelBadgeText: {
-    fontWeight: '600' as const,
     letterSpacing: 0.5,
   },
   interpretCard: {

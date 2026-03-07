@@ -56,7 +56,7 @@ export function CategoryPills({ activeCategory, onCategoryChange, categories }: 
 
 const st = StyleSheet.create({
   scroll: {
-    marginBottom: Spacing.md,
+    marginBottom: Spacing.sm,
   },
   row: {
     paddingHorizontal: Spacing.lg,

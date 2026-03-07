@@ -1666,26 +1666,6 @@ export default function HomeScreen() {
           );
         })()}
 
-        {/* ═══ STREAK (Small, celebratory) ═════════════════ */}
-        {streakData && streakData.currentStreak > 0 && (
-          <View style={styles.streakMiniSection}>
-            <View style={styles.streakMiniRow}>
-              <LeafIcon size={16} color={Colors.primary} />
-              <Text style={styles.streakMiniText}>
-                Day {streakData.currentStreak} {'\u00B7'} Keep going!
-              </Text>
-            </View>
-          </View>
-        )}
-
-        {/* ═══ INSPIRATION (Rotating nudge) ════════════════ */}
-        {stepTagline && hasPortrait && (
-          <View style={styles.inspirationSection}>
-            <Text style={styles.inspirationText}>
-              {'\u201C'}{stepTagline}{'\u201D'}
-            </Text>
-          </View>
-        )}
         {!hasPortrait && completedCount > 0 && (
           <LockedPortraitPreview
             completedCount={completedCount}

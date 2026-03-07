@@ -232,8 +232,8 @@ function AnimatedScoreBar({
   return (
     <Animated.View style={[st.barContainer, { opacity: opacityAnim }]}>
       <View style={st.barLabelRow}>
-        <TenderText variant="bodySmall">{label}</TenderText>
-        <TenderText variant="bodyMedium" color={tier.color}>{value}</TenderText>
+        <TenderText variant="body">{label}</TenderText>
+        <TenderText variant="body" color={tier.color}>{value}</TenderText>
       </View>
       <View style={st.barTrack}>
         <Animated.View
@@ -305,9 +305,9 @@ function AnimatedScoreCircle({ score, growthBoost }: { score: number; growthBoos
         <TenderText variant="headingXL" color={tier.color}>{displayCount}</TenderText>
         <TenderText variant="caption" color={Colors.textMuted} style={st.scoreCircleLabel}>overall</TenderText>
       </View>
-      <TenderText variant="bodySmall" color={tier.color} style={st.scoreCircleTier}>{tier.label}</TenderText>
+      <TenderText variant="body" color={tier.color} style={st.scoreCircleTier}>{tier.label}</TenderText>
       {growthBoost != null && growthBoost > 0 && (
-        <TenderText variant="caption" color={Colors.success} style={{ marginTop: 2, fontWeight: '600' }}>
+        <TenderText variant="caption" color={Colors.success} style={{ marginTop: 2 }}>
           +{growthBoost} from growth
         </TenderText>
       )}
@@ -365,7 +365,7 @@ function StatCard({
         <IconComp size={16} color={Colors.white} />
       </View>
       <TenderText variant="caption" color={Colors.textMuted} style={st.statLabel}>{label}</TenderText>
-      <TenderText variant="bodySmall" style={st.statValue} numberOfLines={2}>{value}</TenderText>
+      <TenderText variant="body" style={st.statValue} numberOfLines={2}>{value}</TenderText>
     </Animated.View>
   );
 }
@@ -705,7 +705,7 @@ export default function PortraitScreen() {
           accessibilityRole="button"
           accessibilityLabel="Your Portrait"
         >
-          <TenderText variant="bodySmall" color={Colors.primary}>{'<'} Back</TenderText>
+          <TenderText variant="body" color={Colors.primary}>{'<'} Back</TenderText>
         </TouchableOpacity>
         <View style={st.headerCenter}>
           <TenderText variant="headingS">Your Portrait</TenderText>
@@ -730,14 +730,14 @@ export default function PortraitScreen() {
           accessibilityRole="button"
           accessibilityLabel="Export PDF"
         >
-          <TenderText variant="bodySmall" color={Colors.primary}>Export PDF</TenderText>
+          <TenderText variant="body" color={Colors.primary}>Export PDF</TenderText>
         </TouchableOpacity>
       </View>
 
       {/* ── View-and-Erase Warning ─────────────── */}
       {isViewAndErase && (
         <View style={st.viewAndEraseBanner}>
-          <TenderText variant="bodySmall" color={Colors.warning} align="center" style={{ fontWeight: '600' }}>
+          <TenderText variant="body" color={Colors.warning} align="center">
             One-time view — your data will be erased when you leave this screen
           </TenderText>
         </View>
@@ -770,7 +770,7 @@ export default function PortraitScreen() {
                 <TenderText
                   variant="caption"
                   color={isActive ? tab.color : Colors.textSecondary}
-                  style={isActive ? { fontWeight: '700' } : { fontWeight: '500' }}
+                  style={{}}
                 >
                   {tab.label}
                 </TenderText>
@@ -795,7 +795,7 @@ export default function PortraitScreen() {
           </View>
 
           <View style={st.exportSection}>
-            <TenderText variant="headingL" color={Colors.primary} style={st.exportSectionLabel}>Overview</TenderText>
+            <TenderText variant="headingM" color={Colors.primary} style={st.exportSectionLabel}>Overview</TenderText>
             <OverviewTab
               portrait={portrait}
               userName={userName}
@@ -808,27 +808,27 @@ export default function PortraitScreen() {
           </View>
 
           <View style={st.exportSection}>
-            <TenderText variant="headingL" color={Colors.primary} style={st.exportSectionLabel}>Scores</TenderText>
+            <TenderText variant="headingM" color={Colors.primary} style={st.exportSectionLabel}>Scores</TenderText>
             <ScoresTab portrait={portrait} overallScore={overallScore} rawScores={rawScores} />
           </View>
 
           <View style={st.exportSection}>
-            <TenderText variant="headingL" color={Colors.primary} style={st.exportSectionLabel}>Lenses</TenderText>
+            <TenderText variant="headingM" color={Colors.primary} style={st.exportSectionLabel}>Lenses</TenderText>
             <LensesTab portrait={portrait} rawScores={rawScores} />
           </View>
 
           <View style={st.exportSection}>
-            <TenderText variant="headingL" color={Colors.primary} style={st.exportSectionLabel}>Cycle</TenderText>
+            <TenderText variant="headingM" color={Colors.primary} style={st.exportSectionLabel}>Cycle</TenderText>
             <CycleTab portrait={portrait} rawScores={rawScores} />
           </View>
 
           <View style={st.exportSection}>
-            <TenderText variant="headingL" color={Colors.primary} style={st.exportSectionLabel}>Growth</TenderText>
+            <TenderText variant="headingM" color={Colors.primary} style={st.exportSectionLabel}>Growth</TenderText>
             <GrowthTab portrait={portrait} router={router} />
           </View>
 
           <View style={st.exportSection}>
-            <TenderText variant="headingL" color={Colors.primary} style={st.exportSectionLabel}>Anchors & Partner Guide</TenderText>
+            <TenderText variant="headingM" color={Colors.primary} style={st.exportSectionLabel}>Anchors & Partner Guide</TenderText>
             <AnchorsTab portrait={portrait} router={router} />
           </View>
         </ScrollView>
@@ -862,10 +862,10 @@ export default function PortraitScreen() {
               }}
             >
               <View>
-                <TenderText variant="bodySmall" style={{ fontWeight: '600', letterSpacing: 1.5, textTransform: 'uppercase' as any, fontSize: 10 }} color={Colors.textMuted}>
+                <TenderText variant="label" color={Colors.textMuted}>
                   EXPLORE
                 </TenderText>
-                <TenderText variant="bodyMedium" style={{ marginTop: 2 }}>
+                <TenderText variant="body" style={{ marginTop: 2 }}>
                   Attachment Matrix
                 </TenderText>
               </View>
@@ -1004,8 +1004,8 @@ function OverviewTab({
 
           {/* Steps progress */}
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-            <TenderText variant="bodySmall" style={{ flex: 1 }}>Steps Completed</TenderText>
-            <TenderText variant="bodyMedium" color={Colors.secondary}>{jd.stepsCompleted}/{jd.totalSteps}</TenderText>
+            <TenderText variant="body" style={{ flex: 1 }}>Steps Completed</TenderText>
+            <TenderText variant="body" color={Colors.secondary}>{jd.stepsCompleted}/{jd.totalSteps}</TenderText>
           </View>
           <View style={{ height: 6, backgroundColor: Colors.progressTrack, borderRadius: 3, overflow: 'hidden', marginBottom: Spacing.md }}>
             <View style={{ height: 6, borderRadius: 3, backgroundColor: Colors.primary, width: `${(jd.stepsCompleted / jd.totalSteps) * 100}%` }} />
@@ -1026,10 +1026,10 @@ function OverviewTab({
                     paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999,
                     backgroundColor: stageColor + '15', borderWidth: 1, borderColor: stageColor + '40',
                   }}>
-                    <TenderText variant="caption" color={stageColor} style={{ fontWeight: '600', fontSize: 10 }}>
+                    <TenderText variant="caption" color={stageColor} style={{ fontSize: 10 }}>
                       {edgeDef?.title?.split(' ').slice(0, 3).join(' ') ?? ep.edgeId}
                     </TenderText>
-                    <TenderText variant="caption" color={stageColor} style={{ fontWeight: '700', fontSize: 9 }}>
+                    <TenderText variant="caption" color={stageColor} style={{ fontSize: 9 }}>
                       {stage.charAt(0).toUpperCase() + stage.slice(1)}
                     </TenderText>
                   </View>
@@ -1105,7 +1105,7 @@ function OverviewTab({
             <View style={[st.navCardIcon, { backgroundColor: tab.color }]}>
               <tab.Icon size={16} color={Colors.white} />
             </View>
-            <TenderText variant="bodyMedium" style={st.navCardLabel}>{tab.label}</TenderText>
+            <TenderText variant="body" style={st.navCardLabel}>{tab.label}</TenderText>
             <TenderText variant="body" color={Colors.textMuted}>{'>'}</TenderText>
           </TouchableOpacity>
         ))}
@@ -1135,7 +1135,7 @@ function FieldAwarenessCard({ fieldAwareness }: { fieldAwareness: FieldAwareness
       <View style={st.scoreGroupDivider} />
 
       {/* Narrative */}
-      <TenderText variant="bodySmall" color={Colors.textSecondary} style={{ lineHeight: 22 }}>{fieldAwareness.narrative}</TenderText>
+      <TenderText variant="body" color={Colors.textSecondary} style={{ lineHeight: 22 }}>{fieldAwareness.narrative}</TenderText>
 
       {/* Score bars */}
       <View style={st.fieldScoresRow}>
@@ -1148,7 +1148,7 @@ function FieldAwarenessCard({ fieldAwareness }: { fieldAwareness: FieldAwareness
       {fieldAwareness.metacognitiveCapacity && (
         <View style={st.fieldBadgeRow}>
           <View style={st.fieldMetaBadge}>
-            <TenderText variant="caption" color={Colors.depth} style={{ fontWeight: '600' }}>Metacognitive Capacity</TenderText>
+            <TenderText variant="caption" color={Colors.depth}>Metacognitive Capacity</TenderText>
           </View>
           <TenderText variant="caption" color={Colors.textSecondary} style={{ flex: 1 }}>You can observe your patterns while they unfold</TenderText>
         </View>
@@ -1166,7 +1166,7 @@ function FieldAwarenessCard({ fieldAwareness }: { fieldAwareness: FieldAwareness
             activeOpacity={0.7}
             accessibilityRole="button"
           >
-            <TenderText variant="bodySmall" color={Colors.primary} style={{ fontWeight: '600' }}>
+            <TenderText variant="headingS" color={Colors.primary}>
               Cross-Pattern Insights ({fieldAwareness.crossPatterns.length})
             </TenderText>
             <TenderText variant="caption" color={Colors.textSecondary}>{expanded ? '▲' : '▼'}</TenderText>
@@ -1174,7 +1174,7 @@ function FieldAwarenessCard({ fieldAwareness }: { fieldAwareness: FieldAwareness
           {expanded && fieldAwareness.crossPatterns.map((insight, i) => (
             <View key={i} style={st.synthesisListItem}>
               <View style={[st.synthesisListDot, { backgroundColor: Colors.depth }]} />
-              <TenderText variant="bodySmall" color={Colors.textSecondary} style={{ flex: 1, lineHeight: 20 }}>{insight}</TenderText>
+              <TenderText variant="body" color={Colors.textSecondary} style={{ flex: 1, lineHeight: 20 }}>{insight}</TenderText>
             </View>
           ))}
         </View>
@@ -1241,20 +1241,20 @@ function SynthesisCard({ synthesis }: { synthesis: AssessmentSynthesis }) {
       {/* Primary Dynamic */}
       <View style={st.synthesisPatternBox}>
         <TenderText variant="label" color={Colors.depth}>Primary Dynamic</TenderText>
-        <TenderText variant="bodyMedium" style={{ lineHeight: 24 }}>{synthesis.primaryPattern}</TenderText>
+        <TenderText variant="body" style={{ lineHeight: 24 }}>{synthesis.primaryPattern}</TenderText>
       </View>
 
       {/* Core Narrative */}
-      <TenderText variant="bodySmall" color={Colors.textSecondary} style={{ lineHeight: 22 }}>{synthesis.coreNarrative}</TenderText>
+      <TenderText variant="body" color={Colors.textSecondary} style={{ lineHeight: 22 }}>{synthesis.coreNarrative}</TenderText>
 
       {/* Reinforcing Factors */}
       {synthesis.reinforcingFactors.length > 0 && (
         <View style={st.synthesisSection}>
-          <TenderText variant="bodySmall" style={st.synthesisSectionTitle}>Converging Patterns</TenderText>
+          <TenderText variant="headingS" style={st.synthesisSectionTitle}>Converging Patterns</TenderText>
           {synthesis.reinforcingFactors.map((f, i) => (
             <View key={i} style={st.synthesisListItem}>
               <View style={[st.synthesisListDot, { backgroundColor: Colors.secondary }]} />
-              <TenderText variant="bodySmall" color={Colors.textSecondary} style={{ flex: 1, lineHeight: 20 }}>{f}</TenderText>
+              <TenderText variant="body" color={Colors.textSecondary} style={{ flex: 1, lineHeight: 20 }}>{f}</TenderText>
             </View>
           ))}
         </View>
@@ -1263,11 +1263,11 @@ function SynthesisCard({ synthesis }: { synthesis: AssessmentSynthesis }) {
       {/* Contradictions — surfaced prominently */}
       {synthesis.contradictions.length > 0 && (
         <View style={st.synthesisSection}>
-          <TenderText variant="bodySmall" style={st.synthesisSectionTitle}>Interesting Tensions</TenderText>
+          <TenderText variant="headingS" style={st.synthesisSectionTitle}>Interesting Tensions</TenderText>
           {synthesis.contradictions.map((c, i) => (
             <View key={i} style={st.synthesisListItem}>
               <View style={[st.synthesisListDot, { backgroundColor: Colors.depth }]} />
-              <TenderText variant="bodySmall" color={Colors.textSecondary} style={{ flex: 1, lineHeight: 20 }}>{c}</TenderText>
+              <TenderText variant="body" color={Colors.textSecondary} style={{ flex: 1, lineHeight: 20 }}>{c}</TenderText>
             </View>
           ))}
         </View>
@@ -1276,11 +1276,11 @@ function SynthesisCard({ synthesis }: { synthesis: AssessmentSynthesis }) {
       {/* Protective Factors */}
       {synthesis.protectiveFactors.length > 0 && (
         <View style={st.synthesisSection}>
-          <TenderText variant="bodySmall" style={st.synthesisSectionTitle}>Your Strengths</TenderText>
+          <TenderText variant="headingS" style={st.synthesisSectionTitle}>Your Strengths</TenderText>
           {synthesis.protectiveFactors.map((f, i) => (
             <View key={i} style={st.synthesisListItem}>
               <View style={[st.synthesisListDot, { backgroundColor: Colors.success }]} />
-              <TenderText variant="bodySmall" color={Colors.textSecondary} style={{ flex: 1, lineHeight: 20 }}>{f}</TenderText>
+              <TenderText variant="body" color={Colors.textSecondary} style={{ flex: 1, lineHeight: 20 }}>{f}</TenderText>
             </View>
           ))}
         </View>
@@ -1289,11 +1289,11 @@ function SynthesisCard({ synthesis }: { synthesis: AssessmentSynthesis }) {
       {/* Growth Edges */}
       {synthesis.growthEdges.length > 0 && (
         <View style={st.synthesisSection}>
-          <TenderText variant="bodySmall" style={st.synthesisSectionTitle}>Growth Edges</TenderText>
+          <TenderText variant="headingS" style={st.synthesisSectionTitle}>Growth Edges</TenderText>
           {synthesis.growthEdges.map((e, i) => (
             <View key={i} style={st.synthesisListItem}>
               <View style={[st.synthesisListDot, { backgroundColor: Colors.warning }]} />
-              <TenderText variant="bodySmall" color={Colors.textSecondary} style={{ flex: 1, lineHeight: 20 }}>{e}</TenderText>
+              <TenderText variant="body" color={Colors.textSecondary} style={{ flex: 1, lineHeight: 20 }}>{e}</TenderText>
             </View>
           ))}
         </View>
@@ -1302,11 +1302,11 @@ function SynthesisCard({ synthesis }: { synthesis: AssessmentSynthesis }) {
       {/* Recommended Step */}
       <View style={st.synthesisStepBox}>
         <TenderText variant="label" color={Colors.primary} style={{ fontSize: 10, letterSpacing: 1.5 }}>RECOMMENDED STARTING POINT</TenderText>
-        <TenderText variant="headingM" style={{ fontWeight: '700' }}>
+        <TenderText variant="headingM">
           Step {synthesis.recommendedStep}
           {stepInfo ? `: ${stepInfo.title}` : ''}
         </TenderText>
-        <TenderText variant="bodySmall" color={Colors.textSecondary} style={{ lineHeight: 20 }}>
+        <TenderText variant="body" color={Colors.textSecondary} style={{ lineHeight: 20 }}>
           {synthesis.recommendedStepRationale}
         </TenderText>
       </View>
@@ -1370,7 +1370,7 @@ function ValuesCompassInfographic({
               ]}
             >
               <View style={[st.valuesCompassDot, { width: dotSize, height: dotSize, borderRadius: dotSize / 2, backgroundColor: dotColor }]}>
-                <TenderText variant="caption" color={Colors.white} style={{ fontWeight: '700', fontSize: 13 }}>{v.charAt(0)}</TenderText>
+                <TenderText variant="caption" color={Colors.white} style={{ fontSize: 13 }}>{v.charAt(0)}</TenderText>
               </View>
               <TenderText variant="caption" style={st.valuesCompassLabel} numberOfLines={1}>{v}</TenderText>
             </View>
@@ -1445,7 +1445,7 @@ function PartsMapInfographic({
       <View style={st.partsMapSection}>
         <View style={[st.partsMapSectionHeader, { backgroundColor: Colors.warning + '15' }]}>
           <View style={st.partsMapSectionIcon}><ShieldIcon size={16} color={Colors.warning} /></View>
-          <TenderText variant="bodySmall" style={{ fontWeight: '700' }}>Manager Parts</TenderText>
+          <TenderText variant="headingS">Manager Parts</TenderText>
           <TenderText variant="caption" color={Colors.textMuted} style={st.partsMapSectionHint}>Try to prevent pain</TenderText>
         </View>
         <View style={st.partsMapCards}>
@@ -1453,7 +1453,7 @@ function PartsMapInfographic({
             const [title, desc] = p.includes(' — ') ? p.split(' — ') : [p, ''];
             return (
               <View key={p} style={[st.partsMapCard, { borderLeftColor: Colors.warning }]}>
-                <TenderText variant="bodySmall" color={Colors.warning} style={st.partsMapCardTitle}>{title}</TenderText>
+                <TenderText variant="body" color={Colors.warning} style={st.partsMapCardTitle}>{title}</TenderText>
                 {desc ? <TenderText variant="caption" color={Colors.textSecondary}>{desc}</TenderText> : null}
               </View>
             );
@@ -1465,7 +1465,7 @@ function PartsMapInfographic({
       <View style={st.partsMapSection}>
         <View style={[st.partsMapSectionHeader, { backgroundColor: Colors.error + '12' }]}>
           <View style={st.partsMapSectionIcon}><FireIcon size={16} color={Colors.error} /></View>
-          <TenderText variant="bodySmall" style={{ fontWeight: '700' }}>Firefighter Parts</TenderText>
+          <TenderText variant="headingS">Firefighter Parts</TenderText>
           <TenderText variant="caption" color={Colors.textMuted} style={st.partsMapSectionHint}>React when pain breaks through</TenderText>
         </View>
         <View style={st.partsMapCards}>
@@ -1473,7 +1473,7 @@ function PartsMapInfographic({
             const [title, desc] = p.includes(' — ') ? p.split(' — ') : [p, ''];
             return (
               <View key={p} style={[st.partsMapCard, { borderLeftColor: Colors.error }]}>
-                <TenderText variant="bodySmall" color={Colors.error} style={st.partsMapCardTitle}>{title}</TenderText>
+                <TenderText variant="body" color={Colors.error} style={st.partsMapCardTitle}>{title}</TenderText>
                 {desc ? <TenderText variant="caption" color={Colors.textSecondary}>{desc}</TenderText> : null}
               </View>
             );
@@ -1486,7 +1486,7 @@ function PartsMapInfographic({
         <View style={st.partsMapSection}>
           <View style={[st.partsMapSectionHeader, { backgroundColor: Colors.depth + '10' }]}>
             <View style={st.partsMapSectionIcon}><ScaleIcon size={16} color={Colors.depth} /></View>
-            <TenderText variant="bodySmall" style={{ fontWeight: '700' }}>Inner Tensions</TenderText>
+            <TenderText variant="headingS">Inner Tensions</TenderText>
           </View>
           {parts.polarities.map((p, i) => (
             <View key={i} style={st.partsMapPolarity}>
@@ -1581,7 +1581,7 @@ function CycleDiagramInfographic({
 
       {/* Key insight */}
       <View style={st.cycleDiagramInsight}>
-        <TenderText variant="bodySmall">
+        <TenderText variant="body">
           {isPursuer
             ? 'The more you pursue, the more they withdraw. The more they withdraw, the more you pursue.'
             : 'The more you withdraw, the more they pursue. The more they pursue, the more you withdraw.'}
@@ -1651,7 +1651,7 @@ function ScoresTab({
         {TIERS.map((t) => (
           <View key={t.label} style={st.legendItem}>
             <View style={[st.legendDot, { backgroundColor: t.color }]} />
-            <TenderText variant="caption" style={{ fontWeight: '500' }}>{t.label}</TenderText>
+            <TenderText variant="caption">{t.label}</TenderText>
             <TenderText variant="caption" color={Colors.textMuted}>{t.range}</TenderText>
           </View>
         ))}
@@ -1660,7 +1660,7 @@ function ScoresTab({
       {/* A.R.E. Group */}
       <View style={st.scoreGroupCard}>
         <TenderText variant="label" color={Colors.primary} style={{ letterSpacing: 1.2 }}>A.R.E. — ATTACHMENT QUALITY</TenderText>
-        <TenderText variant="caption" color={Colors.textSecondary} style={st.scoreGroupDescription}>
+        <TenderText variant="body" color={Colors.textSecondary} style={st.scoreGroupDescription}>
           Based on Emotionally Focused Therapy: Are you emotionally reachable, do you tune in to your partner's needs, and are you invested in the connection?
         </TenderText>
         <View style={st.scoreGroupDivider} />
@@ -1672,7 +1672,7 @@ function ScoresTab({
       {/* Capacity Group */}
       <View style={st.scoreGroupCard}>
         <TenderText variant="label" color={Colors.primary} style={{ letterSpacing: 1.2 }}>CAPACITY — INNER RESOURCES</TenderText>
-        <TenderText variant="caption" color={Colors.textSecondary} style={st.scoreGroupDescription}>
+        <TenderText variant="body" color={Colors.textSecondary} style={st.scoreGroupDescription}>
           Your internal toolkit for staying grounded. Regulation measures how well you recover from emotional activation, window width shows how much stress you can hold, and self-leadership reflects your ability to observe your own patterns.
         </TenderText>
         <View style={st.scoreGroupDivider} />
@@ -1684,7 +1684,7 @@ function ScoresTab({
       {/* Values Group */}
       <View style={st.scoreGroupCard}>
         <TenderText variant="label" color={Colors.primary} style={{ letterSpacing: 1.2 }}>VALUES — ALIGNMENT</TenderText>
-        <TenderText variant="caption" color={Colors.textSecondary} style={st.scoreGroupDescription}>
+        <TenderText variant="body" color={Colors.textSecondary} style={st.scoreGroupDescription}>
           How closely your daily actions match what you say matters most to you. A high score means you're living in line with your values; a lower score points to protective patterns overriding your intentions.
         </TenderText>
         <View style={st.scoreGroupDivider} />
@@ -1789,7 +1789,7 @@ function LensesTab({ portrait, rawScores }: { portrait: IndividualPortrait; rawS
               {portrait.fourLens.fieldAwareness.crossPatterns.map((cp, i) => (
                 <View key={i} style={st.listItem}>
                   <TenderText variant="body" color={Colors.textMuted} style={{ lineHeight: 24 }}>{'•'}</TenderText>
-                  <TenderText variant="bodySmall" style={st.listText}>{cp}</TenderText>
+                  <TenderText variant="body" style={st.listText}>{cp}</TenderText>
                 </View>
               ))}
             </View>
@@ -1898,7 +1898,7 @@ function CycleTab({ portrait, rawScores }: { portrait: IndividualPortrait; rawSc
         {nc.primaryTriggers.map((t, i) => (
           <View key={i} style={st.listItem}>
             <TenderText variant="body" color={Colors.textMuted} style={{ lineHeight: 24 }}>{'•'}</TenderText>
-            <TenderText variant="bodySmall" style={st.listText}>{t}</TenderText>
+            <TenderText variant="body" style={st.listText}>{t}</TenderText>
           </View>
         ))}
       </View>
@@ -1912,7 +1912,7 @@ function CycleTab({ portrait, rawScores }: { portrait: IndividualPortrait; rawSc
         {nc.typicalMoves.map((m, i) => (
           <View key={i} style={st.listItem}>
             <TenderText variant="body" color={Colors.textMuted} style={{ lineHeight: 24 }}>{'•'}</TenderText>
-            <TenderText variant="bodySmall" style={st.listText}>{m}</TenderText>
+            <TenderText variant="body" style={st.listText}>{m}</TenderText>
           </View>
         ))}
       </View>
@@ -1926,7 +1926,7 @@ function CycleTab({ portrait, rawScores }: { portrait: IndividualPortrait; rawSc
         {nc.deEscalators.map((d, i) => (
           <View key={i} style={st.listItem}>
             <TenderText variant="body" color={Colors.textMuted} style={{ lineHeight: 24 }}>{'•'}</TenderText>
-            <TenderText variant="bodySmall" style={st.listText}>{d}</TenderText>
+            <TenderText variant="body" style={st.listText}>{d}</TenderText>
           </View>
         ))}
       </View>
@@ -1949,8 +1949,8 @@ function CycleTab({ portrait, rawScores }: { portrait: IndividualPortrait; rawSc
                   {pattern.category.replace(/-/g, ' ')}
                 </TenderText>
               </View>
-              <TenderText variant="bodySmall" style={{ lineHeight: 22 }}>{pattern.description}</TenderText>
-              <TenderText variant="bodySmall" color={Colors.textSecondary} style={{ lineHeight: 20 }}>{pattern.interpretation}</TenderText>
+              <TenderText variant="body" style={{ lineHeight: 22 }}>{pattern.description}</TenderText>
+              <TenderText variant="body" color={Colors.textSecondary} style={{ lineHeight: 20 }}>{pattern.interpretation}</TenderText>
             </View>
           ))}
         </>
@@ -2017,15 +2017,15 @@ function AnchorsTab({
               <>
                 <TenderText variant="label" color={Colors.textSecondary} style={st.anchorSubhead}>Remember</TenderText>
                 {((anchor as any).whatToRemember ?? []).map((item: string, i: number) => (
-                  <TenderText key={`r${i}`} variant="bodySmall" style={st.anchorListItem}>{'•'} {item}</TenderText>
+                  <TenderText key={`r${i}`} variant="body" style={st.anchorListItem}>{'•'} {item}</TenderText>
                 ))}
                 <TenderText variant="label" color={Colors.textSecondary} style={st.anchorSubhead}>Do</TenderText>
                 {((anchor as any).whatToDo ?? []).map((item: string, i: number) => (
-                  <TenderText key={`d${i}`} variant="bodySmall" style={st.anchorListItem}>{'•'} {item}</TenderText>
+                  <TenderText key={`d${i}`} variant="body" style={st.anchorListItem}>{'•'} {item}</TenderText>
                 ))}
                 <TenderText variant="label" color={Colors.textSecondary} style={st.anchorSubhead}>Don't</TenderText>
                 {((anchor as any).whatNotToDo ?? []).map((item: string, i: number) => (
-                  <TenderText key={`n${i}`} variant="bodySmall" style={st.anchorListItem}>{'•'} {item}</TenderText>
+                  <TenderText key={`n${i}`} variant="body" style={st.anchorListItem}>{'•'} {item}</TenderText>
                 ))}
               </>
             )}
@@ -2070,7 +2070,7 @@ function AnchorsTab({
               <>
                 <TenderText variant="label" color={Colors.textSecondary} style={st.anchorSubhead}>Signs you're ready</TenderText>
                 {((rep as any).signsYoureReady ?? []).map((item: string, i: number) => (
-                  <TenderText key={`s${i}`} variant="bodySmall" style={st.anchorListItem}>{'•'} {item}</TenderText>
+                  <TenderText key={`s${i}`} variant="body" style={st.anchorListItem}>{'•'} {item}</TenderText>
                 ))}
                 <TenderText variant="label" color={Colors.textSecondary} style={st.anchorSubhead}>Try saying</TenderText>
                 {((rep as any).repairStarters ?? []).map((item: string, i: number) => (
@@ -2099,11 +2099,11 @@ function AnchorsTab({
             {isRich ? (
               <>
                 {((sc as any).reminders ?? []).map((item: string, i: number) => (
-                  <TenderText key={`r${i}`} variant="bodySmall" style={st.anchorListItem}>{'•'} {item}</TenderText>
+                  <TenderText key={`r${i}`} variant="body" style={st.anchorListItem}>{'•'} {item}</TenderText>
                 ))}
                 {(sc as any).personalizedMessage && (
                   <View style={[st.insightBox, { marginTop: 8 }]}>
-                    <TenderText variant="bodySmall">{(sc as any).personalizedMessage}</TenderText>
+                    <TenderText variant="body">{(sc as any).personalizedMessage}</TenderText>
                   </View>
                 )}
               </>
@@ -2135,7 +2135,7 @@ function AnchorsTab({
         {portrait.partnerGuide.whenStrugglingINeed.map((item, i) => (
           <View key={i} style={st.listItem}>
             <TenderText variant="body" color={Colors.textMuted} style={{ lineHeight: 24 }}>{'•'}</TenderText>
-            <TenderText variant="bodySmall" style={st.listText}>{item}</TenderText>
+            <TenderText variant="body" style={st.listText}>{item}</TenderText>
           </View>
         ))}
       </View>
@@ -2146,7 +2146,7 @@ function AnchorsTab({
           <TenderText variant="headingM" color={Colors.error}>When I'm activated (fight/flight)</TenderText>
           <TenderText variant="label" color={Colors.textSecondary} style={st.anchorSubhead}>What helps</TenderText>
           {portrait.partnerGuide.whenActivated.whatHelps.map((item, i) => (
-            <TenderText key={`ah${i}`} variant="bodySmall" style={st.anchorListItem}>{'•'} {item}</TenderText>
+            <TenderText key={`ah${i}`} variant="body" style={st.anchorListItem}>{'•'} {item}</TenderText>
           ))}
           <TenderText variant="label" color={Colors.textSecondary} style={st.anchorSubhead}>What to say</TenderText>
           {portrait.partnerGuide.whenActivated.whatToSay.map((item, i) => (
@@ -2160,7 +2160,7 @@ function AnchorsTab({
           <TenderText variant="headingM" color={Colors.depth}>When I've shut down (freeze)</TenderText>
           <TenderText variant="label" color={Colors.textSecondary} style={st.anchorSubhead}>What helps</TenderText>
           {portrait.partnerGuide.whenShutdown.whatHelps.map((item, i) => (
-            <TenderText key={`sh${i}`} variant="bodySmall" style={st.anchorListItem}>{'•'} {item}</TenderText>
+            <TenderText key={`sh${i}`} variant="body" style={st.anchorListItem}>{'•'} {item}</TenderText>
           ))}
           <TenderText variant="label" color={Colors.textSecondary} style={st.anchorSubhead}>What to say</TenderText>
           {portrait.partnerGuide.whenShutdown.whatToSay.map((item, i) => (
@@ -2392,10 +2392,8 @@ const st = StyleSheet.create({
   },
   // areRingValue — text props moved to TenderText
   areRingLabel: {
-    fontWeight: '600',
   },
   areRingTier: {
-    fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -2457,7 +2455,6 @@ const st = StyleSheet.create({
     letterSpacing: 0.5,
   },
   statValue: {
-    fontWeight: '600',
   },
 
   // ── Navigation Cards ──
@@ -2972,9 +2969,9 @@ const st = StyleSheet.create({
     paddingVertical: Spacing.sm,
   },
   partsMapSelfCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 96,
+    height: 96,
+    borderRadius: 48,
     borderWidth: 4,
     alignItems: 'center',
     justifyContent: 'center',
@@ -3050,26 +3047,26 @@ const st = StyleSheet.create({
     ...Shadows.card,
   },
   cycleDiagramVisual: {
-    height: 110,
+    height: 130,
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
   },
   cycleDiagramArrowRing: {
     position: 'absolute',
-    width: 80,
-    height: 80,
+    width: 100,
+    height: 100,
     alignItems: 'center',
     justifyContent: 'center',
   },
   // cycleDiagramArrow — pure text, moved to TenderText
   cycleDiagramYouBadge: {
     position: 'absolute',
-    left: 16,
+    left: 24,
     top: '50%',
-    marginTop: -18,
-    width: 54,
-    height: 36,
+    marginTop: -24,
+    width: 68,
+    height: 48,
     borderRadius: BorderRadius.md,
     alignItems: 'center',
     justifyContent: 'center',
@@ -3081,11 +3078,11 @@ const st = StyleSheet.create({
   // cycleDiagramYouRole — pure text, moved to TenderText
   cycleDiagramPartnerBadge: {
     position: 'absolute',
-    right: 16,
+    right: 24,
     top: '50%',
-    marginTop: -18,
-    width: 54,
-    height: 36,
+    marginTop: -24,
+    width: 68,
+    height: 48,
     borderRadius: BorderRadius.md,
     alignItems: 'center',
     justifyContent: 'center',

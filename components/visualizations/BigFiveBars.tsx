@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
   },
   title: {
-    fontFamily: 'PlayfairDisplay_400Regular',
+    fontFamily: 'Jost_500Medium',
     fontSize: 20,
     color: Colors.text,
     marginBottom: 2,

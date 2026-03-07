@@ -16,11 +16,11 @@ export default function PortraitGrowthEdge({ edge, index }: Props) {
         GROWTH EDGE {index}
       </TenderText>
       <TenderText variant="headingM">{edge.title}</TenderText>
-      <TenderText variant="bodySmall" style={{ lineHeight: 22 }}>
+      <TenderText variant="body" style={{ lineHeight: 22 }}>
         {edge.description}
       </TenderText>
       <TenderText
-        variant="bodySmall"
+        variant="body"
         color={Colors.textSecondary}
         style={{ lineHeight: 20 }}
       >
@@ -29,13 +29,13 @@ export default function PortraitGrowthEdge({ edge, index }: Props) {
 
       {edge.practices.length > 0 && (
         <View style={styles.practicesBlock}>
-          <TenderText variant="bodyMedium">
+          <TenderText variant="headingS">
             Practices
           </TenderText>
           {edge.practices.map((p, i) => (
             <TenderText
               key={i}
-              variant="bodySmall"
+              variant="body"
               style={{ lineHeight: 22, paddingLeft: Spacing.sm }}
             >
               {i + 1}. {p}

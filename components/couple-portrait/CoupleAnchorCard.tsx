@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     marginTop: 7,
   },
   anchorText: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.text,
     lineHeight: 20,
   },
@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
     borderLeftColor: Colors.success,
   },
   repairQuote: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.text,
     lineHeight: 20,
   },

@@ -186,11 +186,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   fieldNarrative: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.textSecondary,
     textAlign: 'center',
     marginTop: Spacing.sm,
     paddingHorizontal: Spacing.lg,
-    lineHeight: 20,
+    lineHeight: 24,
   },
 });

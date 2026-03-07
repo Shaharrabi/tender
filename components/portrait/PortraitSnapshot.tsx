@@ -116,7 +116,7 @@ function OverallScoreCircle({ score }: { score: number }) {
           <TenderText
             variant="headingL"
             color={tier.color}
-            style={{ fontWeight: '700', lineHeight: 28 }}
+            style={{ lineHeight: 28 }}
           >
             {score}
           </TenderText>
@@ -130,7 +130,7 @@ function OverallScoreCircle({ score }: { score: number }) {
         </View>
       </View>
       <TenderText
-        variant="bodyMedium"
+        variant="body"
         color={tier.color}
         style={{ marginTop: Spacing.sm }}
       >
@@ -176,11 +176,11 @@ function ScoreBar({
     <View style={styles.scoreBarContainer}>
       {/* Label row */}
       <View style={styles.scoreBarLabelRow}>
-        <TenderText variant="bodySmall">
+        <TenderText variant="body">
           {meta.label}
         </TenderText>
         {!showInside && (
-          <TenderText variant="caption" color={tier.color} style={{ fontWeight: '700' }}>
+          <TenderText variant="caption" color={tier.color}>
             {value}
           </TenderText>
         )}
@@ -201,7 +201,7 @@ function ScoreBar({
             <TenderText
               variant="caption"
               color={Colors.white}
-              style={{ fontSize: 10, fontWeight: '700' }}
+              style={{ fontSize: 10 }}
             >
               {value}
             </TenderText>
@@ -210,7 +210,7 @@ function ScoreBar({
       </View>
 
       {/* Interpretation */}
-      <TenderText variant="caption" color={tier.color} style={{ fontStyle: 'italic' }}>
+      <TenderText variant="caption" color={tier.color}>
         {interpretation}
       </TenderText>
     </View>
@@ -247,9 +247,9 @@ export default function PortraitSnapshot({ compositeScores }: Props) {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <TenderText variant="headingL">Snapshot</TenderText>
+      <TenderText variant="headingM">Snapshot</TenderText>
       <TenderText
-        variant="bodySmall"
+        variant="body"
         color={Colors.textSecondary}
         style={{ marginBottom: Spacing.sm }}
       >
