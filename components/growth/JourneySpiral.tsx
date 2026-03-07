@@ -68,37 +68,122 @@ interface JourneySpiralProps {
 // ─── Component ───────────────────────────────────────────
 
 export default function JourneySpiral({ currentStep, onStepPress }: JourneySpiralProps) {
-  // Breathing animation for center orb
-  const breatheAnim = useRef(new Animated.Value(0.85)).current;
-  const glowAnim = useRef(new Animated.Value(0.2)).current;
-  // Pulse for active step node
+  // ── Breathing animations ──
+  // Center orb scale — slow, organic breathing
+  const breatheScale = useRef(new Animated.Value(0.92)).current;
+  // Center orb glow opacity
+  const glowOpacity = useRef(new Animated.Value(0.15)).current;
+  // Ring guide opacity — subtle pulse
+  const ringPulse = useRef(new Animated.Value(0.3)).current;
+  // Active step node pulse
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  // Center text fade-breathe
+  const textBreathe = useRef(new Animated.Value(0.7)).current;
 
   useEffect(() => {
-    // Center breathing
+    // Center orb — slow inhale/exhale (4s cycle like real breathing)
     const breathe = Animated.loop(
       Animated.sequence([
-        Animated.timing(breatheAnim, { toValue: 1.05, duration: 3000, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-        Animated.timing(breatheAnim, { toValue: 0.85, duration: 3000, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(breatheScale, {
+          toValue: 1.12,
+          duration: 4000,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+        Animated.timing(breatheScale, {
+          toValue: 0.92,
+          duration: 4000,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
       ])
     );
+
+    // Glow opacity — breathes with the orb but slightly offset
     const glow = Animated.loop(
       Animated.sequence([
-        Animated.timing(glowAnim, { toValue: 0.45, duration: 3000, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-        Animated.timing(glowAnim, { toValue: 0.2, duration: 3000, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(glowOpacity, {
+          toValue: 0.4,
+          duration: 4000,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+        Animated.timing(glowOpacity, {
+          toValue: 0.15,
+          duration: 4000,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
       ])
     );
-    // Active node pulse
+
+    // Ring guide — very subtle opacity pulse (slower, 6s)
+    const ring = Animated.loop(
+      Animated.sequence([
+        Animated.timing(ringPulse, {
+          toValue: 0.55,
+          duration: 6000,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+        Animated.timing(ringPulse, {
+          toValue: 0.3,
+          duration: 6000,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+
+    // Active node — gentle pulse (2.5s)
     const pulse = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulseAnim, { toValue: 1.25, duration: 1800, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-        Animated.timing(pulseAnim, { toValue: 1, duration: 1800, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(pulseAnim, {
+          toValue: 1.3,
+          duration: 2500,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 2500,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
       ])
     );
+
+    // Center text — subtle opacity breathe synced with orb
+    const textBreath = Animated.loop(
+      Animated.sequence([
+        Animated.timing(textBreathe, {
+          toValue: 1,
+          duration: 4000,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+        Animated.timing(textBreathe, {
+          toValue: 0.7,
+          duration: 4000,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+
     breathe.start();
     glow.start();
+    ring.start();
     pulse.start();
-    return () => { breathe.stop(); glow.stop(); pulse.stop(); };
+    textBreath.start();
+
+    return () => {
+      breathe.stop();
+      glow.stop();
+      ring.stop();
+      pulse.stop();
+      textBreath.stop();
+    };
   }, []);
 
   const currentStepData = getStep(currentStep);
@@ -137,37 +222,66 @@ export default function JourneySpiral({ currentStep, onStepPress }: JourneySpira
           />
         </Svg>
 
+        {/* Breathing ring overlay — animates with the orb */}
+        <Animated.View
+          style={[
+            styles.ringOverlay,
+            { opacity: ringPulse },
+          ]}
+        />
+
         {/* Center breathing orb — absolute positioned over SVG */}
         <Animated.View
           style={[
             styles.centerOrb,
-            { transform: [{ scale: breatheAnim }], opacity: glowAnim },
+            {
+              transform: [{ scale: breatheScale }],
+              opacity: glowOpacity,
+            },
           ]}
         />
-        <View style={styles.centerContent}>
-          <TenderText variant="label" color={Colors.textMuted} align="center">
+
+        {/* Second glow layer — larger, more diffuse */}
+        <Animated.View
+          style={[
+            styles.centerOrbOuter,
+            {
+              transform: [{ scale: breatheScale }],
+              opacity: Animated.multiply(glowOpacity, 0.4),
+            },
+          ]}
+        />
+
+        {/* Center text — breathes with the orb */}
+        <Animated.View style={[styles.centerContent, { opacity: textBreathe }]}>
+          <TenderText
+            variant="label"
+            color={Colors.textMuted}
+            align="center"
+            style={styles.centerLabel}
+          >
             YOUR JOURNEY
           </TenderText>
           {currentPhase && (
             <TenderText
-              variant="caption"
+              variant="label"
               color={currentPhase.color}
               align="center"
-              style={{ marginTop: 2 }}
+              style={styles.centerPhase}
             >
               {currentPhase.name}
             </TenderText>
           )}
           <TenderText
-            variant="body"
+            variant="caption"
             color={Colors.text}
             align="center"
-            style={{ marginTop: 2 }}
-            numberOfLines={2}
+            style={styles.centerStep}
+            numberOfLines={1}
           >
             Step {currentStep}
           </TenderText>
-        </View>
+        </Animated.View>
 
         {/* Step nodes — absolute positioned */}
         {Array.from({ length: 12 }, (_, i) => {
@@ -279,23 +393,57 @@ const styles = StyleSheet.create({
     height: SIZE,
     position: 'relative',
   },
-  // Center orb (breathing glow)
+  // Breathing ring overlay
+  ringOverlay: {
+    position: 'absolute',
+    left: CENTER - RING_RADIUS - 2,
+    top: CENTER - RING_RADIUS - 2,
+    width: (RING_RADIUS + 2) * 2,
+    height: (RING_RADIUS + 2) * 2,
+    borderRadius: RING_RADIUS + 2,
+    borderWidth: 1,
+    borderColor: Colors.primaryFaded,
+  },
+  // Center orb (breathing glow) — inner
   centerOrb: {
     position: 'absolute',
-    left: CENTER - 42,
-    top: CENTER - 42,
-    width: 84,
-    height: 84,
-    borderRadius: 42,
+    left: CENTER - 38,
+    top: CENTER - 38,
+    width: 76,
+    height: 76,
+    borderRadius: 38,
     backgroundColor: Colors.primaryFaded,
   },
+  // Center orb — outer diffuse glow
+  centerOrbOuter: {
+    position: 'absolute',
+    left: CENTER - 52,
+    top: CENTER - 52,
+    width: 104,
+    height: 104,
+    borderRadius: 52,
+    backgroundColor: Colors.primaryFaded,
+  },
+  // Center text — smaller, tighter
   centerContent: {
     position: 'absolute',
-    left: CENTER - 50,
-    top: CENTER - 30,
-    width: 100,
+    left: CENTER - 42,
+    top: CENTER - 22,
+    width: 84,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  centerLabel: {
+    fontSize: 9,
+    letterSpacing: 1.5,
+  },
+  centerPhase: {
+    fontSize: 10,
+    marginTop: 1,
+  },
+  centerStep: {
+    fontSize: 11,
+    marginTop: 1,
   },
   // Node positioning base
   nodeBase: {
