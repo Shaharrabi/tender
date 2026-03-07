@@ -78,12 +78,12 @@ export default function CoupleAnchorCard({
       <AnchorSection
         title={`For ${partnerAName}`}
         anchors={anchors.forPartnerA}
-        accentColor={Colors.primary}
+        accentColor={Colors.couplePartnerA}
       />
       <AnchorSection
         title={`For ${partnerBName}`}
         anchors={anchors.forPartnerB}
-        accentColor={Colors.secondary}
+        accentColor={Colors.couplePartnerB}
       />
       <AnchorSection
         title="Shared Truths"

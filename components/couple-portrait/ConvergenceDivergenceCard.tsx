@@ -36,10 +36,10 @@ export function SharedStrengthCard({ item }: { item: ConvergencePoint }) {
         </View>
         <Text style={styles.cardTitle}>{item.dimensionLabel}</Text>
         <View style={styles.scoreRow}>
-          <Text style={[styles.scoreBadge, { backgroundColor: Colors.primaryFaded, color: Colors.primary }]}>
+          <Text style={[styles.scoreBadge, { backgroundColor: Colors.couplePartnerALight, color: Colors.couplePartnerA }]}>
             {Math.round(item.scoreA)}
           </Text>
-          <Text style={[styles.scoreBadge, { backgroundColor: Colors.secondaryLight, color: Colors.secondaryDark }]}>
+          <Text style={[styles.scoreBadge, { backgroundColor: Colors.couplePartnerBLight, color: Colors.couplePartnerB }]}>
             {Math.round(item.scoreB)}
           </Text>
         </View>

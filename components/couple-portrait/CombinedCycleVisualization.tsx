@@ -85,7 +85,7 @@ function CascadeStep({
         <View style={styles.partnerRow}>
           {/* Partner A */}
           <View style={[styles.partnerColumn, styles.partnerAColumn]}>
-            <Text style={[styles.partnerName, { color: Colors.primary }]}>{partnerAName}</Text>
+            <Text style={[styles.partnerName, { color: Colors.couplePartnerA }]}>{partnerAName}</Text>
             <Text style={styles.actionText}>{step.partnerA.action}</Text>
             <Text style={styles.internalText}>{step.partnerA.internal}</Text>
             <Text style={styles.sourceText}>{step.partnerA.dataSource}</Text>
@@ -96,7 +96,7 @@ function CascadeStep({
 
           {/* Partner B */}
           <View style={[styles.partnerColumn, styles.partnerBColumn]}>
-            <Text style={[styles.partnerName, { color: Colors.secondary }]}>{partnerBName}</Text>
+            <Text style={[styles.partnerName, { color: Colors.couplePartnerB }]}>{partnerBName}</Text>
             <Text style={styles.actionText}>{step.partnerB.action}</Text>
             <Text style={styles.internalText}>{step.partnerB.internal}</Text>
             <Text style={styles.sourceText}>{step.partnerB.dataSource}</Text>
@@ -209,12 +209,12 @@ const styles = StyleSheet.create({
   },
   partnerAColumn: {
     borderLeftWidth: 2,
-    borderLeftColor: Colors.primary,
+    borderLeftColor: Colors.couplePartnerA,
     paddingLeft: Spacing.sm,
   },
   partnerBColumn: {
     borderLeftWidth: 2,
-    borderLeftColor: Colors.secondary,
+    borderLeftColor: Colors.couplePartnerB,
     paddingLeft: Spacing.sm,
   },
   divider: {
