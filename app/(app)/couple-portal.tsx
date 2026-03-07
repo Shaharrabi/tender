@@ -97,8 +97,8 @@ interface CoupleTabDef {
 }
 
 const TABS: CoupleTabDef[] = [
-  { key: 'overview',    label: 'Overview',    Icon: HeartPulseIcon, color: Colors.primary },
-  { key: 'dance',       label: 'Your Dance',  Icon: LightningIcon,  color: Colors.secondary },
+  { key: 'overview',    label: 'Overview',    Icon: HeartPulseIcon, color: Colors.couplePartnerA },
+  { key: 'dance',       label: 'Your Dance',  Icon: LightningIcon,  color: Colors.couplePartnerB },
   { key: 'together',    label: 'Together',    Icon: LinkIcon,        color: Colors.calm },
   { key: 'assessments', label: 'Assessments', Icon: CompassIcon,     color: Colors.depth },
   { key: 'insights',    label: 'Insights',    Icon: SparkleIcon,     color: Colors.accent },
@@ -685,7 +685,7 @@ function CouplePortalScreen() {
           {/* Your Dance */}
           <View style={styles.overviewInsightRow}>
             <View style={styles.insightIconBadge}>
-              <HeartPulseIcon size={14} color={Colors.primary} />
+              <HeartPulseIcon size={14} color={Colors.couplePartnerA} />
             </View>
             <View style={{ flex: 1 }}>
               <TenderText variant="label" style={styles.overviewInsightLabel}>Your Dance</TenderText>
@@ -698,7 +698,7 @@ function CouplePortalScreen() {
           {/* Attachment — mini matrix plot */}
           <View style={styles.overviewInsightRow}>
             <View style={styles.insightIconBadge}>
-              <LinkIcon size={14} color={Colors.secondary} />
+              <LinkIcon size={14} color={Colors.couplePartnerB} />
             </View>
             <View style={{ flex: 1 }}>
               <TenderText variant="label" style={styles.overviewInsightLabel}>Attachment Landscape</TenderText>
@@ -992,10 +992,10 @@ function CouplePortalScreen() {
           <View style={{ flex: 1 }} />
           <View style={assessStyles.compareValues}>
             <View style={assessStyles.partnerCol}>
-              <TenderText variant="caption" color={Colors.textSecondary} align="center" style={assessStyles.partnerName}>{nameA}</TenderText>
+              <TenderText variant="caption" color={Colors.couplePartnerA} align="center" style={assessStyles.partnerName}>{nameA}</TenderText>
             </View>
             <View style={assessStyles.partnerCol}>
-              <TenderText variant="caption" color={Colors.textSecondary} align="center" style={assessStyles.partnerName}>{nameB}</TenderText>
+              <TenderText variant="caption" color={Colors.couplePartnerB} align="center" style={assessStyles.partnerName}>{nameB}</TenderText>
             </View>
           </View>
         </View>
@@ -1527,7 +1527,6 @@ const styles = StyleSheet.create({
   },
   noDataText: {
     marginTop: Spacing.xl,
-    fontStyle: 'italic' as const,
   },
 
   // Section headers

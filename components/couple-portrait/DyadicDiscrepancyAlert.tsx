@@ -21,7 +21,7 @@ const TYPE_CONFIG: Record<DiscrepancyType, { label: string; color: string; Icon:
 };
 
 export default function DyadicDiscrepancyAlert({ discrepancy }: DyadicDiscrepancyAlertProps) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
   const config = TYPE_CONFIG[discrepancy.type];
 
   return (
@@ -170,7 +170,6 @@ const styles = StyleSheet.create({
   questionText: {
     ...Typography.bodySmall,
     color: Colors.text,
-    fontStyle: 'italic' as const,
     lineHeight: 20,
   },
 });

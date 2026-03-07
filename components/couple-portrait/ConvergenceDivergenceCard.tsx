@@ -19,7 +19,7 @@ import type {
 // ─── Shared Strength Card ────────────────────────────────
 
 export function SharedStrengthCard({ item }: { item: ConvergencePoint }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   return (
     <TouchableOpacity
@@ -68,7 +68,7 @@ export function ComplementaryGiftCard({
   partnerAName: string;
   partnerBName: string;
 }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
   const strongerName = item.strongerPartner === 'A' ? partnerAName : partnerBName;
 
   return (
@@ -114,7 +114,7 @@ export function FrictionZoneCard({
   partnerAName: string;
   partnerBName: string;
 }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   return (
     <TouchableOpacity
@@ -135,12 +135,12 @@ export function FrictionZoneCard({
         <View style={styles.expandedContent}>
           {/* Partner pulls */}
           <View style={styles.pullRow}>
-            <View style={[styles.pullColumn, { borderLeftColor: Colors.primary }]}>
-              <Text style={[styles.pullLabel, { color: Colors.primary }]}>{partnerAName}</Text>
+            <View style={[styles.pullColumn, { borderLeftColor: Colors.couplePartnerA }]}>
+              <Text style={[styles.pullLabel, { color: Colors.couplePartnerA }]}>{partnerAName}</Text>
               <Text style={styles.pullText}>{item.partnerAPull}</Text>
             </View>
-            <View style={[styles.pullColumn, { borderLeftColor: Colors.secondary }]}>
-              <Text style={[styles.pullLabel, { color: Colors.secondary }]}>{partnerBName}</Text>
+            <View style={[styles.pullColumn, { borderLeftColor: Colors.couplePartnerB }]}>
+              <Text style={[styles.pullLabel, { color: Colors.couplePartnerB }]}>{partnerBName}</Text>
               <Text style={styles.pullText}>{item.partnerBPull}</Text>
             </View>
           </View>
@@ -165,7 +165,7 @@ export function FrictionZoneCard({
 // ─── Values Tension Card ─────────────────────────────────
 
 export function ValuesTensionCard({ item }: { item: ValuesTension }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   return (
     <TouchableOpacity
@@ -312,7 +312,6 @@ const styles = StyleSheet.create({
   underneathText: {
     ...Typography.bodySmall,
     color: Colors.textSecondary,
-    fontStyle: 'italic',
     lineHeight: 20,
   },
   pullRow: {

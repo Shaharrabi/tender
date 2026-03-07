@@ -14,7 +14,7 @@ interface ExitPointCardProps {
 }
 
 export default function ExitPointCard({ exitPoint, partnerAName, partnerBName }: ExitPointCardProps) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   return (
     <TouchableOpacity
@@ -37,12 +37,12 @@ export default function ExitPointCard({ exitPoint, partnerAName, partnerBName }:
 
       {expanded && (
         <View style={styles.expandedContent}>
-          <View style={[styles.partnerBox, { borderLeftColor: Colors.primary }]}>
-            <Text style={[styles.partnerLabel, { color: Colors.primary }]}>{partnerAName}</Text>
+          <View style={[styles.partnerBox, { borderLeftColor: Colors.couplePartnerA }]}>
+            <Text style={[styles.partnerLabel, { color: Colors.couplePartnerA }]}>{partnerAName}</Text>
             <Text style={styles.partnerText}>{exitPoint.forPartnerA}</Text>
           </View>
-          <View style={[styles.partnerBox, { borderLeftColor: Colors.secondary }]}>
-            <Text style={[styles.partnerLabel, { color: Colors.secondary }]}>{partnerBName}</Text>
+          <View style={[styles.partnerBox, { borderLeftColor: Colors.couplePartnerB }]}>
+            <Text style={[styles.partnerLabel, { color: Colors.couplePartnerB }]}>{partnerBName}</Text>
             <Text style={styles.partnerText}>{exitPoint.forPartnerB}</Text>
           </View>
           <Text style={styles.modalityText}>{exitPoint.modality}</Text>
@@ -106,7 +106,6 @@ const styles = StyleSheet.create({
   partnerText: {
     ...Typography.bodySmall,
     color: Colors.textSecondary,
-    fontStyle: 'italic',
     lineHeight: 20,
   },
   modalityText: {

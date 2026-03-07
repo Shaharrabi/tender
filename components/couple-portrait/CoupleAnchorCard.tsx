@@ -126,7 +126,6 @@ const styles = StyleSheet.create({
   contextText: {
     ...Typography.caption,
     color: Colors.textMuted,
-    fontStyle: 'italic',
     marginTop: 2,
   },
   repairCard: {
@@ -139,7 +138,6 @@ const styles = StyleSheet.create({
   repairQuote: {
     ...Typography.bodySmall,
     color: Colors.text,
-    fontStyle: 'italic' as const,
     lineHeight: 20,
   },
 });

@@ -84,6 +84,12 @@ export const Colors = {
   overlapPurple: '#9B7BA7',   // Lavender Blend — couple overlap, convergence
   overlapPurpleLight: '#F0E6FF', // Pale Lavender — overlap badge backgrounds
 
+  // Couple partner differentiation (warm vs cool for clear visual identity)
+  couplePartnerA: '#C4616E',     // Dusty Rose — you / user (warm)
+  couplePartnerALight: '#F4D5D0', // Pale Rose — user backgrounds
+  couplePartnerB: '#4A6FA8',     // Lobby Blue — partner (cool)
+  couplePartnerBLight: '#C6CDF7', // Lavender Haze — partner backgrounds
+
   // Attachment style quadrants
   attachmentSecure: '#6B9080',   // Muted Sage — calm, grounded
   attachmentAnxious: '#A84D59',  // Dusty Rose — conflicted, tender (matches primary)

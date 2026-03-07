@@ -108,7 +108,7 @@ function ThreeLayerCard({
   clinicalRows,
   onExportForTherapist,
 }: ThreeLayerCardProps) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
   const [deepExpanded, setDeepExpanded] = useState(false);
   const hasLayer2 = !!(narrativeParagraphs?.length || visualization);
   const hasLayer3 = !!(reflectionQuestions?.length || clinicalRows?.length);

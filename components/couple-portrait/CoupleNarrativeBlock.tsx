@@ -74,7 +74,7 @@ export default function CoupleNarrativeBlock({
       <NarrativeSection
         title="Your Dance"
         text={narrative.theDance}
-        accentColor={Colors.primary}
+        accentColor={Colors.couplePartnerA}
       />
       <NarrativeSection
         title="What You Bring"
@@ -94,7 +94,7 @@ export default function CoupleNarrativeBlock({
       <NarrativeSection
         title="The Growth Edge"
         text={narrative.theEdge}
-        accentColor={Colors.secondary}
+        accentColor={Colors.couplePartnerB}
       />
 
       {/* Closing — always fully visible */}
@@ -152,12 +152,11 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     marginTop: Spacing.sm,
     borderLeftWidth: 3,
-    borderLeftColor: Colors.primary,
+    borderLeftColor: Colors.couplePartnerA,
   },
   closingText: {
     ...Typography.bodySmall,
     color: Colors.text,
-    fontStyle: 'italic' as const,
     lineHeight: 22,
   },
 });

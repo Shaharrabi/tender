@@ -18,7 +18,7 @@ interface Props {
 }
 
 export default function PortraitLens({ title, lens, type }: Props) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   return (
     <View style={styles.container}>

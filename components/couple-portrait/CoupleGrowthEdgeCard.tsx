@@ -102,14 +102,14 @@ export default function CoupleGrowthEdgeCard({
 
           {/* Partner Parts */}
           <View style={styles.partnerPartsRow}>
-            <View style={[styles.partnerPart, { borderLeftColor: Colors.primary }]}>
-              <Text style={[styles.partnerPartLabel, { color: Colors.primary }]}>
+            <View style={[styles.partnerPart, { borderLeftColor: Colors.couplePartnerA }]}>
+              <Text style={[styles.partnerPartLabel, { color: Colors.couplePartnerA }]}>
                 {partnerAName}'s Part
               </Text>
               <Text style={styles.partnerPartText}>{edge.partnerAPart}</Text>
             </View>
-            <View style={[styles.partnerPart, { borderLeftColor: Colors.secondary }]}>
-              <Text style={[styles.partnerPartLabel, { color: Colors.secondary }]}>
+            <View style={[styles.partnerPart, { borderLeftColor: Colors.couplePartnerB }]}>
+              <Text style={[styles.partnerPartLabel, { color: Colors.couplePartnerB }]}>
                 {partnerBName}'s Part
               </Text>
               <Text style={styles.partnerPartText}>{edge.partnerBPart}</Text>

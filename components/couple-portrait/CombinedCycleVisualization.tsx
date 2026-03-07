@@ -197,7 +197,6 @@ const styles = StyleSheet.create({
   fieldState: {
     ...Typography.bodySmall,
     color: Colors.textMuted,
-    fontStyle: 'italic',
     marginTop: Spacing.xs,
   },
   partnerRow: {
@@ -234,7 +233,6 @@ const styles = StyleSheet.create({
   internalText: {
     ...Typography.caption,
     color: Colors.textSecondary,
-    fontStyle: 'italic',
     marginBottom: Spacing.xs,
   },
   sourceText: {

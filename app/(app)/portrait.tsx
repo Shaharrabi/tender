@@ -247,7 +247,7 @@ function AnimatedScoreBar({
         />
       </View>
       {interpretation && (
-        <TenderText variant="caption" color={tier.color} style={{ fontStyle: 'italic' }}>
+        <TenderText variant="caption" color={tier.color}>
           {interpretation}
         </TenderText>
       )}
@@ -1117,7 +1117,7 @@ function OverviewTab({
 // ─── FIELD AWARENESS CARD (Phase 3) ────────────────
 
 function FieldAwarenessCard({ fieldAwareness }: { fieldAwareness: FieldAwarenessLens }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -1813,7 +1813,7 @@ function LensesTab({ portrait, rawScores }: { portrait: IndividualPortrait; rawS
 // ─── BIG FIVE REFRAMES SECTION (Phase 3) ───────────
 
 function BigFiveReframesSection({ reframes }: { reframes: string[] }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   return (
     <View style={st.card}>
@@ -1950,7 +1950,7 @@ function CycleTab({ portrait, rawScores }: { portrait: IndividualPortrait; rawSc
                 </TenderText>
               </View>
               <TenderText variant="bodySmall" style={{ lineHeight: 22 }}>{pattern.description}</TenderText>
-              <TenderText variant="bodySmall" color={Colors.textSecondary} style={{ lineHeight: 20, fontStyle: 'italic' }}>{pattern.interpretation}</TenderText>
+              <TenderText variant="bodySmall" color={Colors.textSecondary} style={{ lineHeight: 20 }}>{pattern.interpretation}</TenderText>
             </View>
           ))}
         </>
@@ -2124,7 +2124,7 @@ function AnchorsTab({
       {portrait.partnerGuide.deepestLonging && (
         <View style={[st.card, { borderLeftWidth: 3, borderLeftColor: Colors.primary }]}>
           <TenderText variant="headingM">What I really need you to understand</TenderText>
-          <TenderText variant="body" style={{ lineHeight: 26, fontStyle: 'italic' }}>
+          <TenderText variant="body" style={{ lineHeight: 26 }}>
             "{portrait.partnerGuide.deepestLonging}"
           </TenderText>
         </View>
@@ -2150,7 +2150,7 @@ function AnchorsTab({
           ))}
           <TenderText variant="label" color={Colors.textSecondary} style={st.anchorSubhead}>What to say</TenderText>
           {portrait.partnerGuide.whenActivated.whatToSay.map((item, i) => (
-            <TenderText key={`as${i}`} variant="body" style={[st.anchorText, { fontStyle: 'italic' }]}>"{item}"</TenderText>
+            <TenderText key={`as${i}`} variant="body" style={st.anchorText}>"{item}"</TenderText>
           ))}
         </View>
       )}
@@ -2164,7 +2164,7 @@ function AnchorsTab({
           ))}
           <TenderText variant="label" color={Colors.textSecondary} style={st.anchorSubhead}>What to say</TenderText>
           {portrait.partnerGuide.whenShutdown.whatToSay.map((item, i) => (
-            <TenderText key={`ss${i}`} variant="body" style={[st.anchorText, { fontStyle: 'italic' }]}>"{item}"</TenderText>
+            <TenderText key={`ss${i}`} variant="body" style={st.anchorText}>"{item}"</TenderText>
           ))}
         </View>
       )}
