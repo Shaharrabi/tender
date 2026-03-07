@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>THE FIELD — Zone III: The Story Field</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;600&family=Josefin+Sans:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
@@ -43,7 +43,7 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;touch-action
 .wc-num{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(18px,5vw,24px);color:var(--parchment);line-height:1;}
 .wc-lbl{font-family:'Josefin Sans',sans-serif;font-size:7px;letter-spacing:2px;text-transform:uppercase;color:rgba(212,168,67,.4);margin-top:2px;}
 
-#panel{background:var(--parchment);border-top:1px solid rgba(216,164,153,.35);flex-shrink:0;z-index:10;display:flex;flex-direction:column;}
+#panel{background:var(--parchment);border-top:1px solid rgba(216,164,153,.35);flex-shrink:0;z-index:10;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,8px);}
 
 #dialogue{padding:clamp(10px,2vh,16px) clamp(14px,4vw,22px) clamp(6px,1.5vh,10px);flex-shrink:0;}
 .dlg-row{display:flex;gap:10px;align-items:flex-start;}
@@ -114,7 +114,7 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;touch-action
 .done-btn{width:clamp(200px,60vw,240px);height:clamp(46px,11vw,54px);border-radius:27px;border:none;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;}
 
 .overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(28px,6vw,48px);z-index:90;transition:opacity .7s;}
-#o-intro{background:linear-gradient(180deg,#2A1A10,#3A2818);}
+#o-intro{background:linear-gradient(180deg,#4A3E30,#5A4E3E);z-index:60;}
 .oi-b{font-family:'Josefin Sans',sans-serif;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:rgba(196,148,74,.55);margin-bottom:clamp(12px,3vh,18px);}
 .oi-ic{font-size:clamp(28px,8vw,38px);margin-bottom:clamp(10px,2.5vh,16px);}
 .oi-big{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(32px,9vw,48px);letter-spacing:5px;text-transform:uppercase;color:var(--parchment);line-height:1;margin-bottom:6px;}

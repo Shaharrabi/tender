@@ -543,7 +543,7 @@ function StepDetailScreenInner() {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Go back">
+        <TouchableOpacity onPress={() => { if (typeof window !== 'undefined' && window.history.length > 1) router.back(); else router.push('/(app)/home' as any); }} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Go back">
           <Text style={styles.backText}>{'\u2039'} Back</Text>
         </TouchableOpacity>
         <Text style={[styles.headerPhase, { color: phase.color }]}>

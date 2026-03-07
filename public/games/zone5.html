@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>THE FIELD — Zone V: The Cave of Echoes</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;600&family=Josefin+Sans:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
@@ -45,7 +45,7 @@ canvas{position:absolute;inset:0;}
 .truth-text{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(11px,2.8vw,13px);color:var(--parchment);line-height:1.5;}
 .truth-from{font-family:'Josefin Sans',sans-serif;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(154,122,204,.5);margin-top:6px;}
 
-#panel{background:var(--parchment);border-top:1px solid rgba(216,164,153,.35);flex-shrink:0;z-index:25;display:flex;flex-direction:column;}
+#panel{background:var(--parchment);border-top:1px solid rgba(216,164,153,.35);flex-shrink:0;z-index:25;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,8px);}
 
 #dialogue{padding:clamp(10px,2vh,16px) clamp(14px,4vw,22px) clamp(6px,1.5vh,10px);flex-shrink:0;}
 .dlg-row{display:flex;gap:10px;align-items:flex-start;}
@@ -68,7 +68,7 @@ canvas{position:absolute;inset:0;}
 .overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(28px,6vw,48px);opacity:0;pointer-events:none;transition:opacity .7s ease;z-index:50;}
 .overlay.on{opacity:1;pointer-events:all;}
 
-#o-intro{background:linear-gradient(180deg,#1A1520,#2A2035);z-index:60;}
+#o-intro{background:linear-gradient(180deg,#3A3540,#4A404E);z-index:60;}
 .oi-b{font-family:'Josefin Sans',sans-serif;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:rgba(154,122,204,.5);margin-bottom:clamp(12px,3vh,18px);}
 .oi-ic{font-size:clamp(36px,10vw,48px);margin-bottom:clamp(10px,2.5vh,16px);}
 .oi-big{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(26px,7.5vw,38px);letter-spacing:4px;text-transform:uppercase;color:var(--parchment);line-height:1.1;margin-bottom:8px;}
