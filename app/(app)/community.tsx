@@ -90,7 +90,7 @@ export default function CommunityScreen() {
   const haptics = useSoundHaptics();
 
   // ── State ──────────────────────────────────
-  const [activeTab, setActiveTab] = useState<CommunityTab>('articles');
+  const [activeTab, setActiveTab] = useState<CommunityTab>('forYou');
   const [activeCategory, setActiveCategory] = useState('All');
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [loadingPosts, setLoadingPosts] = useState(false);

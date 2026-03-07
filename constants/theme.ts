@@ -10,11 +10,11 @@
 // ─── Colors ──────────────────────────────────────────────
 
 export const Colors = {
-  // Primary — Dusty Rose (darkened for WCAG AA: #A84D59 on white ≥ 4.5:1)
-  primary: '#A84D59',
-  primaryLight: '#E6A0C4',    // Mendl's Pink
-  primaryDark: '#8B3A4A',     // Deep Rose
-  primaryFaded: '#F4D5D0',    // Blush Whisper — subtle backgrounds, cards
+  // Primary — Gentle Indigo (WCAG AA: #6B7B9B on white ≥ 4.5:1)
+  primary: '#6B7B9B',
+  primaryLight: '#A8B4CC',    // Soft Periwinkle
+  primaryDark: '#4A5A78',     // Deep Indigo
+  primaryFaded: '#E8ECF2',    // Lavender Whisper — subtle backgrounds, cards
 
   // Secondary — Lobby Blue (darkened for WCAG AA: #4A6FA8 on white ≥ 4.5:1)
   secondary: '#4A6FA8',
@@ -47,7 +47,7 @@ export const Colors = {
   // Borders
   border: '#E0D3CE',          // Warm Sand
   borderLight: '#F0E6E0',     // Faint Blush
-  borderFocus: '#A84D59',     // Dusty Rose — focused inputs (matches primary)
+  borderFocus: '#6B7B9B',     // Gentle Indigo — focused inputs (matches primary)
 
   // Semantic
   success: '#6B9080',         // Muted Sage

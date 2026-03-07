@@ -804,6 +804,7 @@ export default function PortraitScreen() {
           showsVerticalScrollIndicator={false}
         >
           {activeTab === 'overview' && (
+            <>
             <OverviewTab
               portrait={portrait}
               userName={userName}
@@ -811,6 +812,36 @@ export default function PortraitScreen() {
               onNavigate={handleTabChange}
               rawScores={rawScores}
             />
+            {/* Matrix link */}
+            <TouchableOpacity
+              onPress={() => router.push('/(app)/assessment-matrix' as any)}
+              activeOpacity={0.7}
+              style={{
+                marginHorizontal: Spacing.lg,
+                marginTop: Spacing.md,
+                marginBottom: Spacing.xl,
+                paddingVertical: Spacing.md,
+                paddingHorizontal: Spacing.lg,
+                borderRadius: BorderRadius.lg,
+                borderWidth: 1,
+                borderColor: Colors.border,
+                backgroundColor: Colors.surfaceElevated,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <View>
+                <TenderText variant="bodySmall" style={{ fontWeight: '600', letterSpacing: 1.5, textTransform: 'uppercase' as any, fontSize: 10 }} color={Colors.textMuted}>
+                  EXPLORE
+                </TenderText>
+                <TenderText variant="body" style={{ fontWeight: '600', marginTop: 2 }}>
+                  Attachment Matrix
+                </TenderText>
+              </View>
+              <TenderText variant="body" color={Colors.textMuted}>→</TenderText>
+            </TouchableOpacity>
+            </>
           )}
           {activeTab === 'scores' && (
             <>
