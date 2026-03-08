@@ -87,6 +87,7 @@ import { getTaglineForStep, getPracticesForStep, getStep, getJournalPromptForSte
 import { MICRO_COURSES, calculateCourseProgress, type CourseProgress } from '@/utils/microcourses/course-registry';
 import { getCompletions as getMicroCourseCompletions } from '@/services/intervention';
 import MicroCourseCard from '@/components/microcourse/MicroCourseCard';
+import TenderText from '@/components/ui/TenderText';
 import { TENDER_SECTIONS, TOTAL_QUESTIONS, TOTAL_ESTIMATED_MINUTES } from '@/utils/assessments/tender-sections';
 import {
   Colors,
@@ -117,6 +118,7 @@ import {
   MenuIcon,
   CheckmarkIcon,
   RefreshIcon,
+  RainbowIcon,
 } from '@/assets/graphics/icons';
 import type { AssessmentConfig, AllAssessmentScores, AssessmentType } from '@/types';
 import type { IndividualPortrait } from '@/types/portrait';
@@ -1420,7 +1422,7 @@ export default function HomeScreen() {
               >
                 <View style={styles.couplePreviewHeader}>
                   <HeartPulseIcon size={18} color={Colors.secondary} />
-                  <Text style={styles.couplePreviewTitle}>The Space Between You</Text>
+                  <TenderText variant="headingS" color={Colors.text}>The Space Between You</TenderText>
                 </View>
 
                 {weareProfile ? (
@@ -1444,10 +1446,10 @@ export default function HomeScreen() {
                             : <LeafIcon size={16} color={Colors.textSecondary} />}
                     </View>
                     <View style={styles.couplePreviewContent}>
-                      <Text style={styles.couplePreviewWarm}>
+                      <TenderText variant="bodyMedium" color={Colors.text}>
                         {weareProfile.warmSummary}
-                      </Text>
-                      <Text style={styles.couplePreviewDirection}>
+                      </TenderText>
+                      <TenderText variant="body" color={Colors.textSecondary} style={{ marginTop: 2 }}>
                         {weareProfile.layers.emergenceDirection > 1
                           ? 'Growing'
                           : weareProfile.layers.emergenceDirection < -1
@@ -1456,24 +1458,24 @@ export default function HomeScreen() {
                         {weareProfile.bottleneck
                           ? ` \u00B7 ${weareProfile.bottleneck.label}`
                           : ''}
-                      </Text>
+                      </TenderText>
                     </View>
                   </View>
                 ) : (
-                  <Text style={styles.couplePreviewPlaceholder}>
+                  <TenderText variant="body" color={Colors.textSecondary}>
                     Your shared relational portrait awaits
-                  </Text>
+                  </TenderText>
                 )}
 
                 {coupleNarrativeSnapshot && (
-                  <Text style={styles.couplePreviewNarrative} numberOfLines={3}>
+                  <TenderText variant="body" color={Colors.textSecondary} style={{ lineHeight: 22 }} numberOfLines={3}>
                     {coupleNarrativeSnapshot}
-                  </Text>
+                  </TenderText>
                 )}
 
-                <Text style={styles.couplePreviewCta}>
+                <TenderText variant="bodyMedium" color={Colors.primary} style={{ marginTop: 2 }}>
                   View Couple Portal {'\u2192'}
-                </Text>
+                </TenderText>
               </TouchableOpacity>
             )}
           </View>
@@ -1788,6 +1790,28 @@ export default function HomeScreen() {
                   {weareProfile
                     ? `${weareProfile.warmSummary} \u00B7 ${weareProfile.bottleneck?.label ?? ''}`
                     : 'Couple portrait and shared growth'}
+                </Text>
+              </View>
+              <Text style={styles.gatewayCardArrow}>{'\u2192'}</Text>
+            </TouchableOpacity>
+          )}
+
+          {/* BUILDING BRIDGES */}
+          {hasCoupleLinked && (
+            <TouchableOpacity
+              style={styles.gatewayCard}
+              onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/building-bridges' as any); }}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Building Bridges"
+            >
+              <View style={styles.gatewayCardIconWrap}>
+                <RainbowIcon size={22} color={Colors.accent} />
+              </View>
+              <View style={styles.gatewayCardContent}>
+                <Text style={styles.gatewayCardTitle}>Building Bridges</Text>
+                <Text style={styles.gatewayCardSubtitle} numberOfLines={1}>
+                  Card game for deeper connection
                 </Text>
               </View>
               <Text style={styles.gatewayCardArrow}>{'\u2192'}</Text>
@@ -3229,12 +3253,6 @@ const styles = StyleSheet.create({
     alignItems: 'center' as const,
     gap: Spacing.sm,
   },
-  couplePreviewTitle: {
-    fontSize: FontSizes.body,
-    fontWeight: '600' as const,
-    fontFamily: FontFamilies.heading,
-    color: Colors.text,
-  },
   couplePreviewBody: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
@@ -3251,31 +3269,6 @@ const styles = StyleSheet.create({
   },
   couplePreviewContent: {
     flex: 1,
-  },
-  couplePreviewWarm: {
-    fontSize: FontSizes.body,
-    fontWeight: '600' as const,
-    color: Colors.text,
-  },
-  couplePreviewDirection: {
-    fontSize: FontSizes.body,
-    color: Colors.textSecondary,
-    marginTop: 2,
-  },
-  couplePreviewPlaceholder: {
-    fontSize: FontSizes.body,
-    color: Colors.textSecondary,
-  },
-  couplePreviewNarrative: {
-    fontSize: FontSizes.body,
-    color: Colors.textSecondary,
-    lineHeight: 22,
-  },
-  couplePreviewCta: {
-    fontSize: FontSizes.body,
-    fontWeight: '600' as const,
-    color: Colors.primary,
-    marginTop: 2,
   },
 
   // ── Step Journey Card (portrait users) ──
