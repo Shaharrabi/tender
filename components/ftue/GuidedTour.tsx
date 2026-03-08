@@ -135,56 +135,57 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({
     return layout;
   }, [scrollRef, scrollOffset, screenHeight]);
 
-  // Measure target and animate in
+  // Measure target and animate in.
+  // IMPORTANT: Do NOT wrap Animated.start() callbacks in Promises — with
+  // useNativeDriver the callback can silently fail to fire on native,
+  // causing the Promise to hang forever and freezing the tour.
+  // Instead, use a callback-chain pattern.
   useEffect(() => {
     let cancelled = false;
 
-    const measureAndShow = async () => {
-      // Fade out card first
-      await new Promise<void>((resolve) => {
-        Animated.timing(cardFadeAnim, {
-          toValue: 0,
-          duration: 100,
-          useNativeDriver: true,
-        }).start(() => resolve());
-      });
-
+    // Step 1: Fade out the card
+    Animated.timing(cardFadeAnim, {
+      toValue: 0,
+      duration: 100,
+      useNativeDriver: true,
+    }).start(() => {
       if (cancelled) return;
 
-      // Measure target (scrolling into view if needed)
-      try {
-        if (!isCenterStep) {
-          const layout = await scrollToAndMeasure(currentStep.targetRef);
-          if (!cancelled) setTargetLayout(layout);
-        } else {
+      // Step 2: Measure target (scrolling into view if needed)
+      const doMeasure = async () => {
+        try {
+          if (!isCenterStep) {
+            const layout = await scrollToAndMeasure(currentStep.targetRef);
+            if (!cancelled) setTargetLayout(layout);
+          } else {
+            if (!cancelled) setTargetLayout(null);
+          }
+        } catch {
           if (!cancelled) setTargetLayout(null);
         }
-      } catch {
-        // Measurement failed — show card centered as fallback
-        if (!cancelled) setTargetLayout(null);
-      }
 
-      if (cancelled) return;
+        if (cancelled) return;
 
-      // Always fade in — even if measurement failed
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: FTUETiming.tourTransition,
-          useNativeDriver: true,
-        }),
-        Animated.timing(cardFadeAnim, {
-          toValue: 1,
-          duration: FTUETiming.tourTransition,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    };
+        // Step 3: Fade in — always runs even if measurement failed
+        Animated.parallel([
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: FTUETiming.tourTransition,
+            useNativeDriver: true,
+          }),
+          Animated.timing(cardFadeAnim, {
+            toValue: 1,
+            duration: FTUETiming.tourTransition,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      };
 
-    measureAndShow();
+      doMeasure();
+    });
 
     return () => { cancelled = true; };
-  }, [currentStepIndex]);
+  }, [currentStepIndex, isCenterStep, currentStep.targetRef, scrollToAndMeasure]);
 
   /** Animate out the modal, then call onComplete and navigate if needed. */
   const dismissTour = useCallback((ctaRoute?: string) => {
