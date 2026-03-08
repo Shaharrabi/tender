@@ -18,12 +18,13 @@ import {
   BookOpenIcon,
   TargetIcon,
   CommunityIcon,
+  RainbowIcon,
   HomeIcon,
 } from '@/assets/graphics/icons';
 import { Colors, Spacing, FontSizes, FontFamilies } from '@/constants/theme';
 import { SoundHaptics } from '@/services/SoundHapticsService';
 
-type ScreenKey = 'nuance' | 'courses' | 'practices' | 'journal' | 'community' | 'home';
+type ScreenKey = 'nuance' | 'courses' | 'practices' | 'journal' | 'community' | 'bridges' | 'home';
 
 interface QuickLinksBarProps {
   showHome?: boolean;
@@ -98,6 +99,19 @@ export default function QuickLinksBar({ showHome = true, currentScreen }: QuickL
           >
             <CommunityIcon size={20} color={Colors.secondary} />
             <Text style={styles.linkLabel}>Community</Text>
+          </TouchableOpacity>
+        )}
+
+        {currentScreen !== 'bridges' && (
+          <TouchableOpacity
+            style={styles.linkButton}
+            onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/building-bridges' as any); }}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Building Bridges"
+          >
+            <RainbowIcon size={20} color={Colors.accent} />
+            <Text style={styles.linkLabel}>Bridges</Text>
           </TouchableOpacity>
         )}
       </View>
