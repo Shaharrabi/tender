@@ -4,11 +4,14 @@
  * Shows a dark overlay with a spotlight cutout on the current target,
  * a card with title/body, progress dots, and next/skip/done actions.
  * Uses RefRegistry for target measurement.
+ * Scrolls to off-screen targets before measuring them.
  *
  * Usage (in home screen):
  *   <GuidedTour
  *     tour={HOME_TOUR}
  *     onComplete={() => markFirstLaunchComplete()}
+ *     scrollRef={scrollRef}
+ *     scrollOffset={scrollOffset}
  *   />
  */
 
@@ -45,21 +48,26 @@ interface GuidedTourProps {
   /** Called when tour is completed or skipped */
   onComplete: () => void;
   /** Optional scroll view ref for scrolling to off-screen targets */
-  scrollRef?: React.RefObject<ScrollView>;
+  scrollRef?: React.RefObject<ScrollView | null>;
+  /** Current scroll offset ref */
+  scrollOffset?: React.RefObject<number>;
 }
 
 export const GuidedTour: React.FC<GuidedTourProps> = ({
   tour,
   onComplete,
   scrollRef,
+  scrollOffset,
 }) => {
   const router = useRouter();
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [targetLayout, setTargetLayout] = useState<TargetMeasurement | null>(
     null
   );
+  const [visible, setVisible] = useState(true);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const cardFadeAnim = useRef(new Animated.Value(0)).current;
+  const pendingRouteRef = useRef<string | null>(null);
 
   const currentStep = tour.steps[currentStepIndex];
   const isLastStep = currentStepIndex === tour.steps.length - 1;
@@ -69,57 +77,158 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({
 
   const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
+  /**
+   * Scroll the target element into view, wait for scroll to settle,
+   * then re-measure in window coordinates.
+   *
+   * Uses the same approach as TooltipManager:
+   * 1. Try measureInWindow — works if element is on-screen
+   * 2. If on-screen but poorly positioned, scroll to better position
+   * 3. If off-screen, use measureLayout + scrollOffset to find content position
+   */
+  const scrollToAndMeasure = useCallback(async (targetRef: string): Promise<TargetMeasurement | null> => {
+    const currentOffset = scrollOffset?.current ?? 0;
+    const desiredScreenY = screenHeight * 0.25; // Place element at ~25% from top
+
+    // First try measureInWindow — works for on-screen elements
+    let layout = await RefRegistry.measure(targetRef);
+
+    if (layout) {
+      const targetBottom = layout.y + layout.height;
+      const comfortTop = screenHeight * 0.08;
+      const comfortBottom = screenHeight * 0.50;
+
+      if (layout.y >= comfortTop && targetBottom <= comfortBottom) {
+        // Already visible and well-positioned
+        return layout;
+      }
+
+      // On-screen but poorly positioned — scroll to better spot
+      if (scrollRef?.current) {
+        const scrollDelta = layout.y - desiredScreenY;
+        const newOffset = Math.max(0, currentOffset + scrollDelta);
+        scrollRef.current.scrollTo({ y: newOffset, animated: true });
+        await new Promise((resolve) => setTimeout(resolve, 450));
+        layout = await RefRegistry.measure(targetRef);
+        return layout;
+      }
+
+      return layout;
+    }
+
+    // Element is off-screen (measureInWindow returned null).
+    // Use measureLayout which works for off-screen elements in ScrollViews.
+    if (scrollRef?.current) {
+      const absLayout = await RefRegistry.measureLayout(targetRef);
+      if (absLayout) {
+        // ref.measure() pageY = contentY - scrollOffset
+        // So contentY = pageY + scrollOffset
+        const contentY = absLayout.y + currentOffset;
+        const newOffset = Math.max(0, contentY - desiredScreenY);
+        scrollRef.current.scrollTo({ y: newOffset, animated: true });
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        // Re-measure now that it's scrolled into view
+        layout = await RefRegistry.measure(targetRef);
+      }
+    }
+
+    return layout;
+  }, [scrollRef, scrollOffset, screenHeight]);
+
   // Measure target and animate in
   useEffect(() => {
-    const measureAndShow = async () => {
-      // Fade out card
-      Animated.timing(cardFadeAnim, {
-        toValue: 0,
-        duration: 100,
-        useNativeDriver: true,
-      }).start(async () => {
-        // Measure target
-        if (!isCenterStep) {
-          const layout = await RefRegistry.measure(currentStep.targetRef);
-          setTargetLayout(layout);
-        } else {
-          setTargetLayout(null);
-        }
+    let cancelled = false;
 
-        // Fade in everything
-        Animated.parallel([
-          Animated.timing(fadeAnim, {
-            toValue: 1,
-            duration: FTUETiming.tourTransition,
-            useNativeDriver: true,
-          }),
-          Animated.timing(cardFadeAnim, {
-            toValue: 1,
-            duration: FTUETiming.tourTransition,
-            useNativeDriver: true,
-          }),
-        ]).start();
+    const measureAndShow = async () => {
+      // Fade out card first
+      await new Promise<void>((resolve) => {
+        Animated.timing(cardFadeAnim, {
+          toValue: 0,
+          duration: 100,
+          useNativeDriver: true,
+        }).start(() => resolve());
       });
+
+      if (cancelled) return;
+
+      // Measure target (scrolling into view if needed)
+      try {
+        if (!isCenterStep) {
+          const layout = await scrollToAndMeasure(currentStep.targetRef);
+          if (!cancelled) setTargetLayout(layout);
+        } else {
+          if (!cancelled) setTargetLayout(null);
+        }
+      } catch {
+        // Measurement failed — show card centered as fallback
+        if (!cancelled) setTargetLayout(null);
+      }
+
+      if (cancelled) return;
+
+      // Always fade in — even if measurement failed
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: FTUETiming.tourTransition,
+          useNativeDriver: true,
+        }),
+        Animated.timing(cardFadeAnim, {
+          toValue: 1,
+          duration: FTUETiming.tourTransition,
+          useNativeDriver: true,
+        }),
+      ]).start();
     };
 
     measureAndShow();
+
+    return () => { cancelled = true; };
   }, [currentStepIndex]);
+
+  /** Animate out the modal, then call onComplete and navigate if needed. */
+  const dismissTour = useCallback((ctaRoute?: string) => {
+    if (ctaRoute) {
+      pendingRouteRef.current = ctaRoute;
+    }
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(cardFadeAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setVisible(false);
+    });
+  }, [fadeAnim, cardFadeAnim]);
+
+  /** Called when Modal's visible transitions to false — safe to clean up. */
+  const handleModalDismiss = useCallback(() => {
+    onComplete();
+    if (pendingRouteRef.current) {
+      const route = pendingRouteRef.current;
+      pendingRouteRef.current = null;
+      // Small delay to let Modal fully close before navigating
+      setTimeout(() => router.push(route as any), 100);
+    }
+  }, [onComplete, router]);
 
   const handleNext = useCallback(() => {
     if (isLastStep) {
-      onComplete();
-      // Navigate to CTA route if provided
-      if (currentStep.ctaRoute) {
-        router.push(currentStep.ctaRoute as any);
-      }
+      dismissTour(currentStep.ctaRoute);
     } else {
       setCurrentStepIndex((prev) => prev + 1);
     }
-  }, [isLastStep, onComplete, currentStep.ctaRoute, router]);
+  }, [isLastStep, dismissTour, currentStep.ctaRoute]);
 
   const handleSkip = useCallback(() => {
-    onComplete();
-  }, [onComplete]);
+    dismissTour();
+  }, [dismissTour]);
 
   // Calculate card position
   const getCardStyle = () => {
@@ -153,7 +262,13 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({
   };
 
   return (
-    <Modal transparent visible animationType="none">
+    <Modal
+      transparent
+      visible={visible}
+      animationType="none"
+      onDismiss={handleModalDismiss}
+      onRequestClose={handleSkip}
+    >
       {/* Backdrop */}
       <Animated.View style={[styles.backdrop, { opacity: fadeAnim }]}>
         {/* Spotlight cutout around target */}
@@ -254,8 +369,6 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.lg,
     borderWidth: 3,
     borderColor: FTUEColors.spotlightBorder,
-    // The spotlight creates a visible border around the target
-    // For a true cutout effect, use react-native-hole-view or SVG mask
   },
   tourCard: {
     position: 'absolute',

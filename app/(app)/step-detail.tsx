@@ -1429,17 +1429,16 @@ function StepDetailScreenInner() {
           {/* Previous step */}
           {stepNumber > 1 ? (() => {
             const prevStep = TWELVE_STEPS.find((s) => s.stepNumber === stepNumber - 1);
-            const prevPhase = getPhaseForStep(stepNumber - 1);
             return (
               <TouchableOpacity
-                style={[styles.stepCircleSmall, { borderColor: prevPhase?.color || Colors.borderLight }]}
+                style={[styles.stepCircleSmall, { backgroundColor: Colors.primary + '15', borderColor: Colors.primary + '30' }]}
                 onPress={() => {
                   haptics.tap();
                   router.replace({ pathname: '/(app)/step-detail' as any, params: { step: String(stepNumber - 1) } });
                 }}
                 accessibilityLabel={`Go to step ${stepNumber - 1}`}
               >
-                <Text style={[styles.stepCircleSmallNum, { color: prevPhase?.color || Colors.textMuted }]}>
+                <Text style={[styles.stepCircleSmallNum, { color: Colors.primary }]}>
                   {stepNumber - 1}
                 </Text>
                 <Text style={styles.stepCircleSmallLabel} numberOfLines={1}>
@@ -1451,12 +1450,12 @@ function StepDetailScreenInner() {
 
           {/* Center — current step circle (tap to go to 12-step home) */}
           <TouchableOpacity
-            style={[styles.stepCircleCenter, { borderColor: phase.color, shadowColor: phase.color }]}
+            style={[styles.stepCircleCenter, { backgroundColor: Colors.primary + '20', borderColor: Colors.primary, shadowColor: Colors.primary }]}
             onPress={handleBackToJourney}
             activeOpacity={0.7}
             accessibilityLabel="Back to your 12-step journey"
           >
-            <Text style={[styles.stepCircleCenterNum, { color: phase.color }]}>
+            <Text style={[styles.stepCircleCenterNum, { color: Colors.primary }]}>
               {stepNumber}
             </Text>
             <Text style={styles.stepCircleCenterLabel}>ALL STEPS</Text>
@@ -1464,12 +1463,11 @@ function StepDetailScreenInner() {
 
           {/* Next step */}
           {nextStep ? (() => {
-            const nextPhase = getPhaseForStep(nextStep.stepNumber) ?? phase;
             return (
               <TouchableOpacity
                 style={[
                   styles.stepCircleSmall,
-                  { borderColor: canNavigateNext ? nextPhase.color : Colors.borderLight },
+                  { backgroundColor: canNavigateNext ? Colors.primary + '15' : Colors.primary + '08', borderColor: canNavigateNext ? Colors.primary + '30' : Colors.borderLight },
                   !canNavigateNext && styles.stepCircleSmallLocked,
                 ]}
                 onPress={handleNextStep}
@@ -1478,7 +1476,7 @@ function StepDetailScreenInner() {
               >
                 <Text style={[
                   styles.stepCircleSmallNum,
-                  { color: canNavigateNext ? nextPhase.color : Colors.textMuted },
+                  { color: canNavigateNext ? Colors.primary : Colors.textMuted },
                 ]}>
                   {nextStep.stepNumber}
                 </Text>

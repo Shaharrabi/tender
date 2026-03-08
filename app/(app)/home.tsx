@@ -1736,7 +1736,7 @@ export default function HomeScreen() {
 
       {/* ═══ FTUE Overlays ═══════════════════════════════════ */}
       {showTour && (
-        <GuidedTour tour={HOME_TOUR} onComplete={handleTourComplete} />
+        <GuidedTour tour={HOME_TOUR} onComplete={handleTourComplete} scrollRef={scrollRef} scrollOffset={scrollOffset} />
       )}
       <TooltipManager screen="home" scrollRef={scrollRef} scrollOffset={scrollOffset} />
     </SafeAreaView>
