@@ -11,7 +11,7 @@
  * Route: /(app)/step-detail?step=5
  */
 
-import React, { useCallback, useState, useRef } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -161,6 +161,9 @@ function StepDetailScreenInner() {
   // Step completion ritual
   const [showCompletionRitual, setShowCompletionRitual] = useState(false);
 
+  // Step strip scroll ref — auto-centers on current step
+  const stepStripScrollRef = useRef<ScrollView>(null);
+
   // Collapsible sections — all OPEN by default so the step feels like a room, not a filing cabinet
   const [expandedSections, setExpandedSections] = useState<Set<SectionId>>(
     new Set(['course', 'goals', 'practices', 'reflection', 'partnerExchange',
@@ -179,6 +182,17 @@ function StepDetailScreenInner() {
       return next;
     });
   }, []);
+
+  // Auto-scroll the 12-step strip to center on current step
+  useEffect(() => {
+    if (stepStripScrollRef.current && stepNumber > 3) {
+      const ITEM_WIDTH = 48; // circle (36-44px) + gap (8px) average
+      const scrollX = (stepNumber - 1) * ITEM_WIDTH - 120;
+      setTimeout(() => {
+        stepStripScrollRef.current?.scrollTo({ x: Math.max(0, scrollX), animated: false });
+      }, 200);
+    }
+  }, [stepNumber]);
 
   const step = TWELVE_STEPS.find((s) => s.stepNumber === stepNumber);
   const phase = getPhaseForStep(stepNumber);
@@ -444,7 +458,17 @@ function StepDetailScreenInner() {
 
   const handleRitualNextStep = () => {
     setShowCompletionRitual(false);
-    handleNextStep();
+    // Navigate directly — bypass canNavigateNext which uses stale stepProgress.
+    // completeStep() already unlocked the next step in the DB.
+    if (stepNumber < 12) {
+      haptics.tap();
+      router.replace({
+        pathname: '/(app)/step-detail' as any,
+        params: { step: String(stepNumber + 1) },
+      });
+    } else {
+      router.push('/(app)/growth' as any);
+    }
   };
 
   // Sprint B — Partner Round save
@@ -1424,68 +1448,69 @@ function StepDetailScreenInner() {
           </View>
         )}
 
-        {/* ── Step Circle Navigator ── */}
-        <View style={styles.stepCircleNav}>
-          {/* Previous step */}
-          {stepNumber > 1 ? (() => {
-            const prevStep = TWELVE_STEPS.find((s) => s.stepNumber === stepNumber - 1);
-            return (
-              <TouchableOpacity
-                style={[styles.stepCircleSmall, { backgroundColor: Colors.primary + '15', borderColor: Colors.primary + '30' }]}
-                onPress={() => {
-                  haptics.tap();
-                  router.replace({ pathname: '/(app)/step-detail' as any, params: { step: String(stepNumber - 1) } });
-                }}
-                accessibilityLabel={`Go to step ${stepNumber - 1}`}
-              >
-                <Text style={[styles.stepCircleSmallNum, { color: Colors.primary }]}>
-                  {stepNumber - 1}
-                </Text>
-                <Text style={styles.stepCircleSmallLabel} numberOfLines={1}>
-                  {prevStep?.title || ''}
-                </Text>
-              </TouchableOpacity>
-            );
-          })() : <View style={styles.stepCircleSpacer} />}
+        {/* ── Full 12-Step Circle Strip ── */}
+        <View style={styles.stepStripContainer}>
+          <ScrollView
+            ref={stepStripScrollRef}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.stepStripScroll}
+          >
+            {TWELVE_STEPS.map((s) => {
+              const sp = stepProgress.find((p) => p.stepNumber === s.stepNumber);
+              const isCurrent = s.stepNumber === stepNumber;
+              const isCompleted = sp?.status === 'completed';
+              const isActive = sp?.status === 'active';
+              const isLocked = !isCompleted && !isActive;
+              const phaseColor = getPhaseForStep(s.stepNumber)?.color ?? Colors.textMuted;
 
-          {/* Center — current step circle (tap to go to 12-step home) */}
+              return (
+                <TouchableOpacity
+                  key={s.stepNumber}
+                  style={[
+                    styles.stepStripCircle,
+                    isCurrent && styles.stepStripCircleCurrent,
+                    isCompleted && { backgroundColor: phaseColor + '20', borderColor: phaseColor },
+                    isActive && !isCurrent && { borderColor: Colors.primary + '50', backgroundColor: Colors.primary + '08' },
+                    isCurrent && { borderColor: phaseColor, backgroundColor: phaseColor + '15' },
+                    isLocked && styles.stepStripCircleLocked,
+                  ]}
+                  onPress={() => {
+                    if (!isLocked && !isCurrent) {
+                      haptics.tap();
+                      router.replace({ pathname: '/(app)/step-detail' as any, params: { step: String(s.stepNumber) } });
+                    }
+                  }}
+                  disabled={isLocked || isCurrent}
+                  accessibilityLabel={`Step ${s.stepNumber}: ${s.title}${isLocked ? ' (locked)' : ''}`}
+                >
+                  {isCompleted ? (
+                    <CheckmarkIcon size={isCurrent ? 18 : 14} color={phaseColor} />
+                  ) : (
+                    <Text style={[
+                      styles.stepStripNum,
+                      isCurrent && styles.stepStripNumCurrent,
+                      isLocked && { color: Colors.textMuted },
+                      !isLocked && !isCurrent && { color: Colors.primary },
+                      isCurrent && { color: phaseColor },
+                    ]}>
+                      {s.stepNumber}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+
+          {/* View All Steps button */}
           <TouchableOpacity
-            style={[styles.stepCircleCenter, { backgroundColor: Colors.primary + '20', borderColor: Colors.primary, shadowColor: Colors.primary }]}
+            style={styles.stepStripAllButton}
             onPress={handleBackToJourney}
             activeOpacity={0.7}
-            accessibilityLabel="Back to your 12-step journey"
+            accessibilityLabel="View all 12 steps"
           >
-            <Text style={[styles.stepCircleCenterNum, { color: Colors.primary }]}>
-              {stepNumber}
-            </Text>
-            <Text style={styles.stepCircleCenterLabel}>ALL STEPS</Text>
+            <Text style={styles.stepStripAllText}>View All 12 Steps</Text>
           </TouchableOpacity>
-
-          {/* Next step */}
-          {nextStep ? (() => {
-            return (
-              <TouchableOpacity
-                style={[
-                  styles.stepCircleSmall,
-                  { backgroundColor: canNavigateNext ? Colors.primary + '15' : Colors.primary + '08', borderColor: canNavigateNext ? Colors.primary + '30' : Colors.borderLight },
-                  !canNavigateNext && styles.stepCircleSmallLocked,
-                ]}
-                onPress={handleNextStep}
-                disabled={!canNavigateNext}
-                accessibilityLabel={`Go to step ${nextStep.stepNumber}`}
-              >
-                <Text style={[
-                  styles.stepCircleSmallNum,
-                  { color: canNavigateNext ? Colors.primary : Colors.textMuted },
-                ]}>
-                  {nextStep.stepNumber}
-                </Text>
-                <Text style={[styles.stepCircleSmallLabel, !canNavigateNext && { color: Colors.textMuted }]} numberOfLines={1}>
-                  {canNavigateNext ? nextStep.title : 'Locked'}
-                </Text>
-              </TouchableOpacity>
-            );
-          })() : <View style={styles.stepCircleSpacer} />}
         </View>
       </ScrollView>
 
@@ -1855,69 +1880,59 @@ const styles = StyleSheet.create({
     marginLeft: Spacing.sm,
   },
 
-  // Step Circle Navigator
-  stepCircleNav: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: Spacing.lg,
+  // Full 12-Step Circle Strip
+  stepStripContainer: {
+    paddingTop: Spacing.lg,
+    paddingBottom: Spacing.md,
     marginTop: Spacing.md,
-    gap: Spacing.lg,
-  },
-  stepCircleCenter: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 2.5,
-    backgroundColor: Colors.surfaceElevated,
     alignItems: 'center',
-    justifyContent: 'center',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
   },
-  stepCircleCenterNum: {
-    fontFamily: 'PlayfairDisplay_600SemiBold',
-    fontSize: 26,
-    fontWeight: '700',
+  stepStripScroll: {
+    paddingHorizontal: Spacing.lg,
+    gap: 8,
+    alignItems: 'center',
   },
-  stepCircleCenterLabel: {
-    fontFamily: 'JosefinSans_400Regular',
-    fontSize: 8,
-    letterSpacing: 1.5,
-    color: Colors.textMuted,
-    textTransform: 'uppercase',
-    marginTop: 1,
-  },
-  stepCircleSmall: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+  stepStripCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     borderWidth: 1.5,
+    borderColor: Colors.borderLight,
     backgroundColor: Colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  stepCircleSmallLocked: {
-    opacity: 0.45,
-    borderStyle: 'dashed',
+  stepStripCircleCurrent: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 2.5,
+    ...Shadows.card,
   },
-  stepCircleSmallNum: {
+  stepStripCircleLocked: {
+    opacity: 0.35,
+    borderStyle: 'dashed' as const,
+  },
+  stepStripNum: {
     fontFamily: 'PlayfairDisplay_600SemiBold',
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: '600',
+    color: Colors.primary,
   },
-  stepCircleSmallLabel: {
+  stepStripNumCurrent: {
+    fontSize: 17,
+    fontWeight: '700',
+  },
+  stepStripAllButton: {
+    marginTop: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    paddingHorizontal: Spacing.md,
+  },
+  stepStripAllText: {
     fontFamily: 'JosefinSans_400Regular',
-    fontSize: 7,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    marginTop: 1,
-    maxWidth: 48,
-  },
-  stepCircleSpacer: {
-    width: 52,
+    fontSize: FontSizes.caption,
+    color: Colors.primary,
+    letterSpacing: 0.5,
   },
 
   // Closing

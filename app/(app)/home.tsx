@@ -53,7 +53,8 @@ import { getGrowthBoostedScore, type GrowthBoostedResult } from '@/utils/portrai
 import { getPortrait, savePortrait, fetchAllScores, extractSupplementScores } from '@/services/portrait';
 import { generatePortrait, isPortraitStale } from '@/utils/portrait/portrait-generator';
 import { getTodaysCheckIn, saveDailyCheckIn, getRecentCheckIns } from '@/services/growth';
-import { getMyCouple, checkDyadicCompletion, isSelfCouple } from '@/services/couples';
+import { getMyCouple, checkDyadicCompletion, isSelfCouple, getDeepCouplePortrait } from '@/services/couples';
+import { generateOverviewSnapshot } from '@/utils/portrait/overview-snapshot';
 import { getAllExercises, getExerciseById } from '@/utils/interventions/registry';
 import { getCompletions } from '@/services/intervention';
 import { calculateGrowthProgress } from '@/utils/steps/intervention-protocols';
@@ -106,6 +107,7 @@ import {
   BookOpenIcon,
   LockIcon,
   HeartDoubleIcon,
+  HeartPulseIcon,
   ChatBubbleIcon,
   TargetIcon,
   CoupleIcon,
@@ -214,6 +216,9 @@ export default function HomeScreen() {
 
   // WEARE profile state (Phase 4)
   const [weareProfile, setWeareProfile] = useState<WEAREProfile | null>(null);
+
+  // Couple portal preview — cached narrative snapshot
+  const [coupleNarrativeSnapshot, setCoupleNarrativeSnapshot] = useState<string | null>(null);
 
   // Unlock state
   const [unlockState, setUnlockState] = useState<UnlockState | null>(null);
@@ -664,6 +669,19 @@ export default function HomeScreen() {
           setWeareProfile(wp);
         } catch {
           setWeareProfile(null);
+        }
+
+        // 8b. Load cached deep couple portrait for home preview
+        try {
+          const dp = await getDeepCouplePortrait(loadedCouple.id);
+          if (dp) {
+            const snapshot = generateOverviewSnapshot(dp);
+            setCoupleNarrativeSnapshot(snapshot);
+          } else {
+            setCoupleNarrativeSnapshot(null);
+          }
+        } catch {
+          setCoupleNarrativeSnapshot(null);
         }
       }
 
@@ -1387,6 +1405,77 @@ export default function HomeScreen() {
                 router.push(`/(app)/step-detail?step=${stepNum}` as any);
               }}
             />
+
+            {/* ═══ COUPLE PORTAL PREVIEW ═══════════════════════ */}
+            {hasCoupleLinked && (
+              <TouchableOpacity
+                style={styles.couplePreviewCard}
+                onPress={() => {
+                  SoundHaptics.tapSoft();
+                  router.push('/(app)/couple-portal' as any);
+                }}
+                activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel="View Couple Portal"
+              >
+                <View style={styles.couplePreviewHeader}>
+                  <HeartPulseIcon size={18} color={Colors.secondary} />
+                  <Text style={styles.couplePreviewTitle}>The Space Between You</Text>
+                </View>
+
+                {weareProfile ? (
+                  <View style={styles.couplePreviewBody}>
+                    <View style={[
+                      styles.couplePreviewPulse,
+                      {
+                        borderColor: weareProfile.layers.resonancePulse >= 60
+                          ? Colors.primary
+                          : weareProfile.layers.resonancePulse >= 40
+                            ? Colors.secondary
+                            : Colors.textMuted,
+                      },
+                    ]}>
+                      {weareProfile.warmSummary === 'Deeply alive'
+                        ? <SparkleIcon size={16} color={Colors.primary} />
+                        : weareProfile.warmSummary === 'Growing stronger'
+                          ? <SeedlingIcon size={16} color={Colors.primary} />
+                          : weareProfile.warmSummary === 'Finding its way'
+                            ? <SearchIcon size={16} color={Colors.textSecondary} />
+                            : <LeafIcon size={16} color={Colors.textSecondary} />}
+                    </View>
+                    <View style={styles.couplePreviewContent}>
+                      <Text style={styles.couplePreviewWarm}>
+                        {weareProfile.warmSummary}
+                      </Text>
+                      <Text style={styles.couplePreviewDirection}>
+                        {weareProfile.layers.emergenceDirection > 1
+                          ? 'Growing'
+                          : weareProfile.layers.emergenceDirection < -1
+                            ? 'Contracting'
+                            : 'Steady'}
+                        {weareProfile.bottleneck
+                          ? ` \u00B7 ${weareProfile.bottleneck.label}`
+                          : ''}
+                      </Text>
+                    </View>
+                  </View>
+                ) : (
+                  <Text style={styles.couplePreviewPlaceholder}>
+                    Your shared relational portrait awaits
+                  </Text>
+                )}
+
+                {coupleNarrativeSnapshot && (
+                  <Text style={styles.couplePreviewNarrative} numberOfLines={3}>
+                    {coupleNarrativeSnapshot}
+                  </Text>
+                )}
+
+                <Text style={styles.couplePreviewCta}>
+                  View Couple Portal {'\u2192'}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
         ) : (
           /* ── Consolidated Assessment Section (pre-portrait) ── */
@@ -3122,6 +3211,72 @@ const styles = StyleSheet.create({
   fieldSubtitle: {
     fontSize: FontSizes.caption,
     color: Colors.textSecondary,
+    marginTop: 2,
+  },
+
+  // ── Couple Portal Preview Card ──
+  couplePreviewCard: {
+    marginHorizontal: Spacing.lg,
+    marginTop: Spacing.md,
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    gap: Spacing.sm,
+    ...Shadows.card,
+  },
+  couplePreviewHeader: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: Spacing.sm,
+  },
+  couplePreviewTitle: {
+    fontSize: FontSizes.body,
+    fontWeight: '600' as const,
+    fontFamily: FontFamilies.heading,
+    color: Colors.text,
+  },
+  couplePreviewBody: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: Spacing.md,
+  },
+  couplePreviewPulse: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 2.5,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    backgroundColor: Colors.surfaceElevated,
+  },
+  couplePreviewContent: {
+    flex: 1,
+  },
+  couplePreviewWarm: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '600' as const,
+    color: Colors.text,
+  },
+  couplePreviewDirection: {
+    fontSize: FontSizes.caption,
+    color: Colors.textSecondary,
+    marginTop: 2,
+  },
+  couplePreviewPlaceholder: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    fontStyle: 'italic' as const,
+  },
+  couplePreviewNarrative: {
+    fontSize: FontSizes.caption,
+    color: Colors.textSecondary,
+    lineHeight: 20,
+    fontStyle: 'italic' as const,
+  },
+  couplePreviewCta: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '600' as const,
+    color: Colors.primary,
     marginTop: 2,
   },
 
