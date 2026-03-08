@@ -24,6 +24,7 @@ import {
   Shadows,
 } from '@/constants/theme';
 import CheckmarkIcon from '@/assets/graphics/icons/CheckmarkIcon';
+import { StepSticker } from '@/components/growth/stickers';
 import type { StepProgress } from '@/types/growth';
 import {
   TWELVE_STEPS,
@@ -127,33 +128,19 @@ export default function StepJourney({
                     isLocked && styles.stepRowLocked,
                   ]}
                 >
-                  {/* Status indicator */}
-                  <View
-                    style={[
-                      styles.stepDot,
-                      isCompleted && [
-                        styles.stepDotCompleted,
-                        { backgroundColor: phaseColor },
-                      ],
-                      isCurrent && [
-                        styles.stepDotCurrent,
-                        { borderColor: phaseColor },
-                      ],
-                      isLocked && styles.stepDotLocked,
-                    ]}
-                  >
-                    {isCompleted && (
-                      <CheckmarkIcon size={10} color={Colors.white} />
-                    )}
-                    {isCurrent && (
-                      <View
-                        style={[
-                          styles.stepDotInner,
-                          { backgroundColor: phaseColor },
-                        ]}
-                      />
-                    )}
-                  </View>
+                  {/* Status indicator — sticker for active/completed, dot for locked */}
+                  {isLocked ? (
+                    <View style={[styles.stepDot, styles.stepDotLocked]} />
+                  ) : (
+                    <View style={[styles.stepStickerWrap, isCompleted && { opacity: 0.6 }]}>
+                      <StepSticker stepNumber={step.stepNumber} size={36} showLabel={false} animated={false} />
+                      {isCompleted && (
+                        <View style={[styles.stepStickerCheck, { backgroundColor: phaseColor }]}>
+                          <CheckmarkIcon size={8} color={Colors.white} />
+                        </View>
+                      )}
+                    </View>
+                  )}
 
                   {/* Step title + hint */}
                   <View style={styles.stepTitleContainer}>
@@ -267,7 +254,26 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
 
-  // Step Dot
+  // Step sticker (replaces dot for active/completed)
+  stepStickerWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 6,
+    overflow: 'hidden' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  stepStickerCheck: {
+    position: 'absolute' as const,
+    bottom: 0,
+    right: 0,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  // Step Dot (locked only)
   stepDot: {
     width: 20,
     height: 20,

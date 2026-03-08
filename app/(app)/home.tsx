@@ -81,6 +81,7 @@ import { HOME_TOUR } from '@/constants/ftue/tourSteps';
 import { RefRegistry } from '@/utils/ftue/refRegistry';
 import JourneyUnlockOverlay, { hasSeenJourneyUnlock } from '@/components/growth/JourneyUnlockOverlay';
 import JourneySpiral from '@/components/growth/JourneySpiral';
+import { UISticker, StepSticker } from '@/components/growth/stickers';
 import { getCurrentStepNumber } from '@/services/steps';
 import { getTaglineForStep, getPracticesForStep, getStep, getJournalPromptForStep, getPhaseForStep } from '@/utils/steps/twelve-steps';
 import { MICRO_COURSES, calculateCourseProgress, type CourseProgress } from '@/utils/microcourses/course-registry';
@@ -1376,6 +1377,10 @@ export default function HomeScreen() {
         {hasPortrait ? (
           /* ── Journey Spiral — circular 12-step visualization ── */
           <View ref={(r) => RefRegistry.register('home_journeyCard', r)}>
+            <View style={styles.fieldHeader}>
+              <Text style={styles.fieldTitle}>THE FIELD</Text>
+              <Text style={styles.fieldSubtitle}>Your 12-step healing journey</Text>
+            </View>
             <JourneySpiral
               currentStep={currentStepNum}
               onStepPress={(stepNum) => {
@@ -1640,8 +1645,8 @@ export default function HomeScreen() {
             accessibilityRole="button"
             accessibilityLabel="Your Journey"
           >
-            <View style={styles.gatewayCardIconWrap}>
-              <SeedlingIcon size={22} color={Colors.primary} />
+            <View style={styles.gatewayCardStickerWrap}>
+              <StepSticker stepNumber={currentStepNum} size={44} showLabel={false} animated={false} />
             </View>
             <View style={styles.gatewayCardContent}>
               <Text style={styles.gatewayCardTitle}>Your Journey</Text>
@@ -1663,8 +1668,8 @@ export default function HomeScreen() {
             accessibilityRole="button"
             accessibilityLabel="Your Portrait"
           >
-            <View style={styles.gatewayCardIconWrap}>
-              <SparkleIcon size={22} color={Colors.secondary} />
+            <View style={styles.gatewayCardStickerWrap}>
+              <UISticker type="portal" size={44} showLabel={false} />
             </View>
             <View style={styles.gatewayCardContent}>
               <Text style={styles.gatewayCardTitle}>Your Portrait</Text>
@@ -1686,8 +1691,8 @@ export default function HomeScreen() {
               accessibilityRole="button"
               accessibilityLabel="Your Relationship"
             >
-              <View style={styles.gatewayCardIconWrap}>
-                <HeartDoubleIcon size={22} color={Colors.accent} />
+              <View style={styles.gatewayCardStickerWrap}>
+                <UISticker type="partner-invite" size={44} showLabel={false} />
               </View>
               <View style={styles.gatewayCardContent}>
                 <Text style={styles.gatewayCardTitle}>Your Relationship</Text>
@@ -1709,8 +1714,8 @@ export default function HomeScreen() {
             accessibilityRole="button"
             accessibilityLabel="More"
           >
-            <View style={styles.gatewayCardIconWrap}>
-              <MenuIcon size={22} color={Colors.textMuted} />
+            <View style={styles.gatewayCardStickerWrap}>
+              <UISticker type="course" size={44} showLabel={false} />
             </View>
             <View style={styles.gatewayCardContent}>
               <Text style={styles.gatewayCardTitle}>More</Text>
@@ -3102,6 +3107,25 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
   },
 
+  // ── The Field header ──
+  fieldHeader: {
+    alignItems: 'center' as const,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.xs,
+  },
+  fieldTitle: {
+    fontSize: FontSizes.caption,
+    fontWeight: '700' as const,
+    color: Colors.primary,
+    letterSpacing: 2.5,
+    textTransform: 'uppercase' as const,
+  },
+  fieldSubtitle: {
+    fontSize: FontSizes.caption,
+    color: Colors.textSecondary,
+    marginTop: 2,
+  },
+
   // ── Step Journey Card (portrait users) ──
   stepJourneyCard: {
     marginHorizontal: Spacing.lg,
@@ -3411,6 +3435,14 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: BorderRadius.sm,
     backgroundColor: Colors.backgroundAlt,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  gatewayCardStickerWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.sm,
+    overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
   },

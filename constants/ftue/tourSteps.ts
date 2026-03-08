@@ -1,8 +1,8 @@
 /**
- * Tour Steps — 7-stop guided walkthrough for first launch.
+ * Tour Steps — 8-stop guided walkthrough for first launch.
  *
- * Walks first-time users through the new home page structure:
- * Welcome → Journey → Partner → Assessment → Daily Rhythm → Explore → Ready
+ * Walks first-time users through the home page structure:
+ * Welcome → The Field → Journey → Partner → Assessment → Daily Rhythm → Explore → Ready
  *
  * Uses RefRegistry to spotlight target elements on-screen.
  * The final step includes a CTA button to begin the first assessment.
@@ -46,10 +46,17 @@ export const HOME_TOUR: Tour = {
       position: 'center',
     },
     {
+      id: 'tour_the_field',
+      targetRef: 'home_journeyCard',
+      title: 'The Field',
+      body: 'This is The Field \u2014 your healing map. Each glowing dot is one of 12 steps in your relational growth journey. As you complete steps, the field comes alive.',
+      position: 'bottom',
+    },
+    {
       id: 'tour_journey',
       targetRef: 'home_journeyCard',
-      title: 'Your Journey Ahead',
-      body: 'Twelve steps of growth, personalized to your pattern. Each step has teachings, practices, and reflections designed just for you.',
+      title: 'Tap to Explore',
+      body: 'Tap any step on The Field to dive in. Each step has teachings, practices, reflections, and a mini-game designed to help you grow.',
       position: 'bottom',
     },
     {
@@ -63,7 +70,7 @@ export const HOME_TOUR: Tour = {
       id: 'tour_assessment',
       targetRef: 'home_assessmentCta',
       title: 'The Tender Assessment',
-      body: 'Seven sections covering how you connect, feel, fight, and what matters to you. Take breaks between sections and come back anytime.',
+      body: 'Seven sections covering how you connect, feel, fight, and what matters to you. Your answers create your unique Portrait \u2014 a map of your relational self.',
       position: 'bottom',
     },
     {
