@@ -48,51 +48,45 @@ export default function StepSticker({ stepNumber, size = 120, animated = true, s
   const phase = getPhaseForStep(stepNumber);
   const phaseColor = phase?.color ?? Colors.textMuted;
 
-  // ── Breathing animation ──
+  // ── Breathing animation — drives pulsing opacity on the whole sticker ──
   const breathe = useRef(new Animated.Value(0)).current;
-  const drift = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (!animated) return;
 
     const breatheLoop = Animated.loop(
       Animated.sequence([
-        Animated.timing(breathe, { toValue: 1, duration: 3000, easing: Easing.inOut(Easing.sin), useNativeDriver: false }),
-        Animated.timing(breathe, { toValue: 0, duration: 3000, easing: Easing.inOut(Easing.sin), useNativeDriver: false }),
-      ])
-    );
-
-    const driftLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(drift, { toValue: 1, duration: 4000, easing: Easing.inOut(Easing.sin), useNativeDriver: false }),
-        Animated.timing(drift, { toValue: 0, duration: 4000, easing: Easing.inOut(Easing.sin), useNativeDriver: false }),
+        Animated.timing(breathe, { toValue: 1, duration: 3000, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(breathe, { toValue: 0, duration: 3000, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
       ])
     );
 
     breatheLoop.start();
-    driftLoop.start();
-    return () => { breatheLoop.stop(); driftLoop.stop(); };
+    return () => { breatheLoop.stop(); };
   }, [animated]);
 
+  // Interpolate breathing → subtle scale pulse
+  const breathScale = animated
+    ? breathe.interpolate({ inputRange: [0, 1], outputRange: [1, 1.04] })
+    : 1;
+
   const vb = '0 0 100 100';
-  const labelY = showLabel ? 85 : 100;
 
   return (
     <View style={[styles.container, { width: size, height: size }]}>
-      <Svg width={size} height={size} viewBox={vb}>
-        {/* Background card */}
-        <Rect x="5" y="5" width="90" height="90" rx="8" fill={STICKER.cream} stroke={STICKER.ink} strokeWidth={0.8} />
+      <Animated.View style={{ transform: [{ scale: breathScale }] }}>
+        <Svg width={size} height={size} viewBox={vb}>
+          {/* Circular frame */}
+          <Circle cx="50" cy="50" r="46" fill={STICKER.cream} stroke={phaseColor} strokeWidth={1} opacity={0.6} />
 
-        {/* Step-specific artwork */}
-        {renderStepArt(stepNumber, phaseColor)}
+          {/* Step-specific artwork */}
+          {renderStepArt(stepNumber, phaseColor)}
 
-        {/* Bottom line + label */}
-        {showLabel && (
-          <>
-            <Line x1="30" y1="78" x2="70" y2="78" stroke={STICKER.ink} strokeWidth={0.4} />
+          {/* Bottom label */}
+          {showLabel && (
             <SvgText
               x="50"
-              y={labelY}
+              y="90"
               textAnchor="middle"
               fontFamily="serif"
               fontSize="4.5"
@@ -100,9 +94,9 @@ export default function StepSticker({ stepNumber, size = 120, animated = true, s
             >
               STEP {STEP_LABELS[stepNumber] ?? stepNumber}
             </SvgText>
-          </>
-        )}
-      </Svg>
+          )}
+        </Svg>
+      </Animated.View>
     </View>
   );
 }

@@ -81,7 +81,6 @@ import { HOME_TOUR } from '@/constants/ftue/tourSteps';
 import { RefRegistry } from '@/utils/ftue/refRegistry';
 import JourneyUnlockOverlay, { hasSeenJourneyUnlock } from '@/components/growth/JourneyUnlockOverlay';
 import JourneySpiral from '@/components/growth/JourneySpiral';
-import { UISticker, StepSticker } from '@/components/growth/stickers';
 import { getCurrentStepNumber } from '@/services/steps';
 import { getTaglineForStep, getPracticesForStep, getStep, getJournalPromptForStep, getPhaseForStep } from '@/utils/steps/twelve-steps';
 import { MICRO_COURSES, calculateCourseProgress, type CourseProgress } from '@/utils/microcourses/course-registry';
@@ -1645,8 +1644,8 @@ export default function HomeScreen() {
             accessibilityRole="button"
             accessibilityLabel="Your Journey"
           >
-            <View style={styles.gatewayCardStickerWrap}>
-              <StepSticker stepNumber={currentStepNum} size={44} showLabel={false} animated={false} />
+            <View style={styles.gatewayCardIconWrap}>
+              <SeedlingIcon size={22} color={Colors.primary} />
             </View>
             <View style={styles.gatewayCardContent}>
               <Text style={styles.gatewayCardTitle}>Your Journey</Text>
@@ -1668,8 +1667,8 @@ export default function HomeScreen() {
             accessibilityRole="button"
             accessibilityLabel="Your Portrait"
           >
-            <View style={styles.gatewayCardStickerWrap}>
-              <UISticker type="portal" size={44} showLabel={false} />
+            <View style={styles.gatewayCardIconWrap}>
+              <SparkleIcon size={22} color={Colors.primary} />
             </View>
             <View style={styles.gatewayCardContent}>
               <Text style={styles.gatewayCardTitle}>Your Portrait</Text>
@@ -1691,8 +1690,8 @@ export default function HomeScreen() {
               accessibilityRole="button"
               accessibilityLabel="Your Relationship"
             >
-              <View style={styles.gatewayCardStickerWrap}>
-                <UISticker type="partner-invite" size={44} showLabel={false} />
+              <View style={styles.gatewayCardIconWrap}>
+                <HeartDoubleIcon size={22} color={Colors.primary} />
               </View>
               <View style={styles.gatewayCardContent}>
                 <Text style={styles.gatewayCardTitle}>Your Relationship</Text>
@@ -1714,8 +1713,8 @@ export default function HomeScreen() {
             accessibilityRole="button"
             accessibilityLabel="More"
           >
-            <View style={styles.gatewayCardStickerWrap}>
-              <UISticker type="course" size={44} showLabel={false} />
+            <View style={styles.gatewayCardIconWrap}>
+              <MenuIcon size={22} color={Colors.primary} />
             </View>
             <View style={styles.gatewayCardContent}>
               <Text style={styles.gatewayCardTitle}>More</Text>

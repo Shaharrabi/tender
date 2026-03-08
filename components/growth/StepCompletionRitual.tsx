@@ -19,6 +19,9 @@ import {
   Animated,
   Easing,
   Dimensions,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import TenderText from '@/components/ui/TenderText';
 import CelebrationDots from '@/components/ui/CelebrationDots';
@@ -32,6 +35,8 @@ import {
   JOURNEY_COMPLETE_MESSAGE,
 } from '@/constants/steps/completion-content';
 import { useSoundHaptics } from '@/services/SoundHapticsService';
+import { saveReflection } from '@/services/steps';
+import { useAuth } from '@/context/AuthContext';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -53,6 +58,11 @@ export default function StepCompletionRitual({
   onNextStep,
 }: StepCompletionRitualProps) {
   const haptics = useSoundHaptics();
+  const { user } = useAuth();
+
+  // Journal reflection state
+  const [reflectionText, setReflectionText] = useState('');
+  const [reflectionSaved, setReflectionSaved] = useState(false);
 
   // Content
   const content = getStepCompletionContent(stepNumber);
@@ -74,7 +84,21 @@ export default function StepCompletionRitual({
   const affirmationOpacity = useRef(new Animated.Value(0)).current;
   const buttonOpacity = useRef(new Animated.Value(0)).current;
 
+  const inputOpacity = useRef(new Animated.Value(0)).current;
+  const skipOpacity = useRef(new Animated.Value(0)).current;
   const [dotsActive, setDotsActive] = useState(false);
+
+  // Save reflection to journal
+  const handleSaveReflection = async () => {
+    if (!user || !reflectionText.trim()) return;
+    try {
+      await saveReflection(user.id, stepNumber, 99, reflectionText.trim()); // promptIndex 99 = completion reflection
+      setReflectionSaved(true);
+      haptics.playBadgeUnlock();
+    } catch (err) {
+      console.warn('[CompletionRitual] Failed to save reflection:', err);
+    }
+  };
 
   useEffect(() => {
     if (!visible) {
@@ -89,7 +113,11 @@ export default function StepCompletionRitual({
       questionTranslateY.setValue(15);
       affirmationOpacity.setValue(0);
       buttonOpacity.setValue(0);
+      inputOpacity.setValue(0);
+      skipOpacity.setValue(0);
       setDotsActive(false);
+      setReflectionText('');
+      setReflectionSaved(false);
       return;
     }
 
@@ -198,14 +226,32 @@ export default function StepCompletionRitual({
       }).start();
     }, 1400);
 
-    // 8. Continue button (1900ms delay)
+    // 8. Reflection input (1200ms delay — appears soon after question)
+    setTimeout(() => {
+      Animated.timing(inputOpacity, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }).start();
+    }, 1200);
+
+    // 9. Skip button (600ms — always visible early, no pressure)
+    setTimeout(() => {
+      Animated.timing(skipOpacity, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }, 600);
+
+    // 10. Continue button (2200ms delay)
     setTimeout(() => {
       Animated.timing(buttonOpacity, {
         toValue: 1,
         duration: 400,
         useNativeDriver: true,
       }).start();
-    }, 1900);
+    }, 2200);
   }, [visible]);
 
   if (!visible) return null;
@@ -225,6 +271,10 @@ export default function StepCompletionRitual({
 
   return (
     <Modal transparent visible={visible} animationType="none" statusBarTranslucent>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
       <Animated.View style={[styles.overlay, { opacity: overlayOpacity }]}>
         {/* Glow circle — breathing in phase color */}
         <Animated.View
@@ -326,6 +376,42 @@ export default function StepCompletionRitual({
             </TenderText>
           </Animated.View>
 
+          {/* Journal reflection input — optional, no pressure */}
+          <Animated.View style={{ opacity: inputOpacity, marginTop: Spacing.md, width: '100%' }}>
+            {reflectionSaved ? (
+              <View style={styles.reflectionSavedBadge}>
+                <TenderText variant="caption" color={phaseColor} align="center">
+                  ✦ Saved to your journal
+                </TenderText>
+              </View>
+            ) : (
+              <View style={styles.reflectionInputWrap}>
+                <TextInput
+                  style={styles.reflectionInput}
+                  placeholder="What shifted for you? (optional)"
+                  placeholderTextColor="rgba(255,255,255,0.3)"
+                  value={reflectionText}
+                  onChangeText={setReflectionText}
+                  multiline
+                  maxLength={500}
+                  returnKeyType="done"
+                  blurOnSubmit
+                />
+                {reflectionText.trim().length > 0 && (
+                  <TouchableOpacity
+                    style={[styles.saveReflectionButton, { backgroundColor: phaseColor + '40' }]}
+                    onPress={handleSaveReflection}
+                    activeOpacity={0.7}
+                  >
+                    <TenderText variant="caption" color={Colors.white} align="center">
+                      Save to journal
+                    </TenderText>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </Animated.View>
+
           {/* Affirmation */}
           <Animated.View style={{ opacity: affirmationOpacity, marginTop: Spacing.lg }}>
             <TenderText
@@ -338,11 +424,29 @@ export default function StepCompletionRitual({
             </TenderText>
           </Animated.View>
 
-          {/* Continue button */}
-          <Animated.View style={{ opacity: buttonOpacity, marginTop: Spacing.xxl }}>
+          {/* Skip / Continue buttons */}
+          <Animated.View style={{ opacity: skipOpacity, marginTop: Spacing.sm }}>
+            <TouchableOpacity
+              style={styles.skipButton}
+              onPress={handleContinue}
+              activeOpacity={0.7}
+            >
+              <TenderText variant="caption" color="rgba(255,255,255,0.45)" align="center">
+                Skip →
+              </TenderText>
+            </TouchableOpacity>
+          </Animated.View>
+
+          <Animated.View style={{ opacity: buttonOpacity, marginTop: Spacing.md }}>
             <TouchableOpacity
               style={[styles.continueButton, { backgroundColor: phaseColor }]}
-              onPress={handleContinue}
+              onPress={() => {
+                // Auto-save any unsaved reflection before continuing
+                if (reflectionText.trim() && !reflectionSaved) {
+                  handleSaveReflection();
+                }
+                handleContinue();
+              }}
               activeOpacity={0.8}
             >
               <TenderText variant="label" color={Colors.white} align="center">
@@ -369,6 +473,7 @@ export default function StepCompletionRitual({
           </Animated.View>
         </View>
       </Animated.View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -439,6 +544,36 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
     paddingHorizontal: Spacing.md,
+  },
+  reflectionInputWrap: {
+    width: '100%',
+    gap: Spacing.xs,
+  },
+  reflectionInput: {
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.12)',
+    color: Colors.white,
+    fontSize: 15,
+    lineHeight: 22,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm + 2,
+    minHeight: 60,
+    maxHeight: 100,
+    textAlignVertical: 'top',
+  },
+  saveReflectionButton: {
+    alignSelf: 'flex-end',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 6,
+    borderRadius: BorderRadius.pill,
+  },
+  reflectionSavedBadge: {
+    paddingVertical: Spacing.sm,
+  },
+  skipButton: {
+    padding: Spacing.xs,
   },
   continueButton: {
     paddingHorizontal: Spacing.xl,

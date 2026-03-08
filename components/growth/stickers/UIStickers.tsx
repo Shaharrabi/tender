@@ -52,20 +52,38 @@ const UI_LABELS: Record<UIStickerType, string> = {
 };
 
 export default function UISticker({ type, size = 120, showLabel = true, animated = true }: UIStickerProps) {
+  const breathe = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!animated) return;
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(breathe, { toValue: 1, duration: 3500, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(breathe, { toValue: 0, duration: 3500, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [animated]);
+
+  const breathScale = animated
+    ? breathe.interpolate({ inputRange: [0, 1], outputRange: [1, 1.04] })
+    : 1;
+
   return (
     <View style={[styles.container, { width: size, height: size }]}>
-      <Svg width={size} height={size} viewBox="0 0 100 100">
-        <Rect x="5" y="5" width="90" height="90" rx="8" fill={S.cream} stroke={S.ink} strokeWidth={0.8} />
-        {renderUI(type)}
-        {showLabel && (
-          <>
-            <Line x1="20" y1="80" x2="80" y2="80" stroke={S.ink} strokeWidth={0.4} />
-            <SvgText x="50" y="88" textAnchor="middle" fontFamily="serif" fontSize="3.8" fill={S.softInk}>
+      <Animated.View style={{ transform: [{ scale: breathScale }] }}>
+        <Svg width={size} height={size} viewBox="0 0 100 100">
+          {/* Circular frame */}
+          <Circle cx="50" cy="50" r="46" fill={S.cream} stroke={S.dustyBlue} strokeWidth={0.8} opacity={0.5} />
+          {renderUI(type)}
+          {showLabel && (
+            <SvgText x="50" y="92" textAnchor="middle" fontFamily="serif" fontSize="3.8" fill={S.softInk}>
               {UI_LABELS[type]}
             </SvgText>
-          </>
-        )}
-      </Svg>
+          )}
+        </Svg>
+      </Animated.View>
     </View>
   );
 }

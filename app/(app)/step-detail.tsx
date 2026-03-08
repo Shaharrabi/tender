@@ -742,9 +742,16 @@ function StepDetailScreenInner() {
         {/* ═══ 4 — STEP LEARNING GUIDE ═══ */}
         <View style={styles.sectionHeaderRow}>
           <View style={[styles.sectionHeaderLine, { backgroundColor: phase.color }]} />
-          <Text style={styles.sectionHeaderLabel}>STEP LEARNING GUIDE</Text>
+          <Text style={styles.sectionHeaderLabel}>STEP {stepNumber} COURSE</Text>
           <View style={[styles.sectionHeaderLine, { backgroundColor: phase.color }]} />
         </View>
+
+        {/* Course progress hint */}
+        <Animated.View entering={FadeIn.delay(580).duration(400)} style={styles.courseProgressHint}>
+          <Text style={styles.courseProgressHintText}>
+            Module {stepNumber} of 12  ·  {phase.name}
+          </Text>
+        </Animated.View>
 
         {/* Intro Text — moved here from before teaching */}
         {step.introText && (
@@ -826,8 +833,8 @@ function StepDetailScreenInner() {
         {step.courseGatewayIds && step.courseGatewayIds.length > 0 && stepNumber !== 12 && (
           <Animated.View entering={FadeIn.delay(750).duration(500)} style={styles.courseGatewaySection}>
             <CollapsibleHeader
-              title="Deepen Your Understanding"
-              subtitle={`${step.courseGatewayIds.length} micro-course${step.courseGatewayIds.length > 1 ? 's' : ''}`}
+              title="Deep-Dive Lessons"
+              subtitle={`${step.courseGatewayIds.length} lesson module${step.courseGatewayIds.length > 1 ? 's' : ''} available`}
               isExpanded={expandedSections.has('course')}
               onToggle={() => toggleSection('course')}
               phaseColor={phase.color}
@@ -2213,6 +2220,15 @@ const styles = StyleSheet.create({
     letterSpacing: 3,
     fontSize: 10,
     color: Colors.textMuted,
+  },
+  courseProgressHint: {
+    alignItems: 'center',
+    paddingBottom: Spacing.xs,
+  },
+  courseProgressHintText: {
+    fontSize: 11,
+    color: Colors.textSecondary,
+    letterSpacing: 0.5,
   },
 
   // Zone Game card
