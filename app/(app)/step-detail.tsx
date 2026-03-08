@@ -47,6 +47,7 @@ import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { CollapsibleHeader } from '@/components/ui/CollapsibleSection';
 import QuickLinksBar from '@/components/QuickLinksBar';
 import CheckmarkIcon from '@/assets/graphics/icons/CheckmarkIcon';
+import { StepSticker, StepConceptBadge } from '@/components/growth/stickers';
 import {
   TWELVE_STEPS,
   STEP_AUDIO_MAP,
@@ -590,13 +591,20 @@ function StepDetailScreenInner() {
         {/* Phase color accent line */}
         <View style={[styles.phaseAccent, { backgroundColor: phase.color }]} />
 
-        {/* Step Title */}
+        {/* Step Title + Sticker */}
         <Animated.View entering={FadeInDown.delay(100).duration(500)}>
-          <Text style={styles.stepLabel}>STEP {step.stepNumber}</Text>
-          <Text style={styles.stepTitle}>{step.title}</Text>
-          {step.subtitle && (
-            <Text style={styles.stepSubtitle}>{step.subtitle}</Text>
-          )}
+          <View style={styles.stepTitleRow}>
+            <View style={styles.stepTitleText}>
+              <Text style={styles.stepLabel}>STEP {step.stepNumber}</Text>
+              <Text style={styles.stepTitle}>{step.title}</Text>
+              {step.subtitle && (
+                <Text style={styles.stepSubtitle}>{step.subtitle}</Text>
+              )}
+            </View>
+            <View style={styles.stepStickerContainer}>
+              <StepSticker stepNumber={stepNumber} size={88} showLabel={false} />
+            </View>
+          </View>
         </Animated.View>
 
         {/* Audio Player */}
@@ -656,7 +664,10 @@ function StepDetailScreenInner() {
         {bridge && (
           <Animated.View entering={FadeIn.delay(470).duration(600)}>
             <View style={[styles.bridgeCard, { borderLeftColor: phase.color }]}>
-              <Text style={styles.bridgeLabel}>WHAT THIS MEANS FOR YOU</Text>
+              <View style={styles.bridgeHeaderRow}>
+                <Text style={[styles.bridgeLabel, { flex: 1 }]}>WHAT THIS MEANS FOR YOU</Text>
+                <StepConceptBadge stepNumber={stepNumber} size={48} />
+              </View>
               <Text style={styles.bridgeText}>{bridge.text}</Text>
               {bridge.insightLabel && (
                 <Text style={styles.bridgeInsight}>{bridge.insightLabel}</Text>
@@ -1536,6 +1547,21 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
   },
 
+  // Step title row — text + sticker side by side
+  stepTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
+  stepTitleText: {
+    flex: 1,
+    marginRight: Spacing.sm,
+  },
+  stepStickerContainer: {
+    marginTop: -4,
+    opacity: 0.85,
+  },
+
   // Step title area
   stepLabel: {
     ...Typography.label,
@@ -2001,6 +2027,11 @@ const styles = StyleSheet.create({
     padding: Spacing.lg,
     gap: Spacing.sm,
     ...Shadows.subtle,
+  },
+  bridgeHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   bridgeLabel: {
     ...Typography.label,
