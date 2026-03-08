@@ -14,6 +14,8 @@ import { useAuth } from '@/context/AuthContext';
 import { useOnboarding } from '@/context/OnboardingContext';
 import { SoundHaptics } from '@/services/SoundHapticsService';
 import { supabase } from '@/services/supabase';
+import { setupDemoPartnerCouple } from '@/services/couples';
+import { seedDyadicAssessments } from '@/utils/demo-data';
 import {
   Colors,
   Spacing,
@@ -73,6 +75,30 @@ export default function ReadyScreen() {
         // Clean up the stashed name
         if (displayName) {
           await AsyncStorage.removeItem('pending_display_name').catch(() => {});
+        }
+
+        // Solo mode: auto-create a virtual partner so the user has
+        // someone to do the 12-step journey with. Uses "Casey" (secure
+        // explorer) as the default partner archetype.
+        const mode = onboardingData.relationshipMode || 'solo';
+        if (mode === 'solo') {
+          try {
+            // Set a default demo partner (Casey — secure, grounded)
+            await supabase
+              .from('user_profiles')
+              .update({ demo_partner_id: 'secure_explorer' })
+              .eq('user_id', user.id);
+
+            // Create the self-couple record
+            const couple = await setupDemoPartnerCouple(user.id);
+            if (couple) {
+              // Seed dyadic assessments so the relationship portal works
+              await seedDyadicAssessments(couple.id, user.id, user.id);
+              console.log('[Ready] Solo mode: virtual partner connected (Casey)');
+            }
+          } catch (soloErr) {
+            console.warn('[Ready] Solo partner setup failed (non-critical):', soloErr);
+          }
         }
       } catch (err) {
         console.error('[Ready] Failed to save onboarding data:', err);

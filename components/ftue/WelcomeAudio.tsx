@@ -56,6 +56,7 @@ export const WelcomeAudio: React.FC<WelcomeAudioProps> = ({ screenKey }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const mountedRef = useRef(true);
   const completedRef = useRef(false);
+  const loadingRef = useRef(false); // Guard against multiple loads
 
   const config = WELCOME_AUDIO_CONFIGS[screenKey];
   const alreadyHeard = state.heardAudios.includes(screenKey);
@@ -118,6 +119,9 @@ export const WelcomeAudio: React.FC<WelcomeAudioProps> = ({ screenKey }) => {
   // Load and attempt to play audio
   const loadAndPlayAudio = useCallback(async () => {
     if (!config?.source) return;
+    // Guard: only allow one load at a time
+    if (loadingRef.current || soundRef.current) return;
+    loadingRef.current = true;
 
     try {
       // Set audio mode for web + iOS compatibility
@@ -160,6 +164,8 @@ export const WelcomeAudio: React.FC<WelcomeAudioProps> = ({ screenKey }) => {
       if (mountedRef.current) {
         setIsLoaded(false);
       }
+    } finally {
+      loadingRef.current = false;
     }
   }, [config, onPlaybackStatusUpdate]);
 
@@ -185,11 +191,12 @@ export const WelcomeAudio: React.FC<WelcomeAudioProps> = ({ screenKey }) => {
   }, [shouldShow]);
 
   const togglePlayback = async () => {
-    if (!soundRef.current) {
+    if (!soundRef.current && !loadingRef.current) {
       // Sound not loaded yet — try loading and playing
       await loadAndPlayAudio();
       return;
     }
+    if (!soundRef.current) return;
 
     try {
       if (isPlaying) {

@@ -1313,38 +1313,6 @@ function StepDetailScreenInner() {
           </Animated.View>
         )}
 
-        {/* Coming Next — tappable only when the next step is unlocked */}
-        {nextStep && (() => {
-          const nextPhase = getPhaseForStep(nextStep.stepNumber) ?? phase;
-          return (
-            <TouchableOpacity
-              style={[styles.nextSection, { borderColor: nextPhase.color + '40' }, !canNavigateNext && styles.nextSectionLocked]}
-              onPress={handleNextStep}
-              activeOpacity={canNavigateNext ? 0.7 : 1}
-              disabled={!canNavigateNext}
-              accessibilityRole="button"
-              accessibilityState={{ disabled: !canNavigateNext }}
-            >
-              <Text style={[styles.nextLabel, { color: nextPhase.color }]}>
-                {canNavigateNext ? 'NEXT STEP' : 'COMING NEXT'}
-              </Text>
-              <Text style={styles.nextTitle}>
-                Step {nextStep.stepNumber}: {nextStep.title}
-              </Text>
-              <Text style={styles.nextHint}>
-                {canNavigateNext
-                  ? 'Tap to explore this step'
-                  : `Complete all Step ${step.stepNumber} goals to unlock`}
-              </Text>
-              {canNavigateNext && (
-                <Text style={[styles.nextArrow, { color: nextPhase.color }]}>
-                  {'\u203A'}
-                </Text>
-              )}
-            </TouchableOpacity>
-          );
-        })()}
-
         {/* Closing track available after step 12 */}
         {stepNumber === 12 && STEP_AUDIO_MAP[13] && (
           <View style={styles.closingSection}>
@@ -1356,18 +1324,71 @@ function StepDetailScreenInner() {
           </View>
         )}
 
-        {/* Back to Your Journey */}
-        <TouchableOpacity
-          style={styles.backToJourneyButton}
-          onPress={handleBackToJourney}
-          activeOpacity={0.7}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-        >
-          <Text style={styles.backToJourneyText}>
-            {'\u2039'} Back to Your Journey
-          </Text>
-        </TouchableOpacity>
+        {/* ── Step Circle Navigator ── */}
+        <View style={styles.stepCircleNav}>
+          {/* Previous step */}
+          {stepNumber > 1 ? (() => {
+            const prevStep = TWELVE_STEPS.find((s) => s.stepNumber === stepNumber - 1);
+            const prevPhase = getPhaseForStep(stepNumber - 1);
+            return (
+              <TouchableOpacity
+                style={[styles.stepCircleSmall, { borderColor: prevPhase?.color || Colors.borderLight }]}
+                onPress={() => {
+                  haptics.tap();
+                  router.replace({ pathname: '/(app)/step-detail' as any, params: { step: String(stepNumber - 1) } });
+                }}
+                accessibilityLabel={`Go to step ${stepNumber - 1}`}
+              >
+                <Text style={[styles.stepCircleSmallNum, { color: prevPhase?.color || Colors.textMuted }]}>
+                  {stepNumber - 1}
+                </Text>
+                <Text style={styles.stepCircleSmallLabel} numberOfLines={1}>
+                  {prevStep?.title || ''}
+                </Text>
+              </TouchableOpacity>
+            );
+          })() : <View style={styles.stepCircleSpacer} />}
+
+          {/* Center — current step circle (tap to go to 12-step home) */}
+          <TouchableOpacity
+            style={[styles.stepCircleCenter, { borderColor: phase.color, shadowColor: phase.color }]}
+            onPress={handleBackToJourney}
+            activeOpacity={0.7}
+            accessibilityLabel="Back to your 12-step journey"
+          >
+            <Text style={[styles.stepCircleCenterNum, { color: phase.color }]}>
+              {stepNumber}
+            </Text>
+            <Text style={styles.stepCircleCenterLabel}>ALL STEPS</Text>
+          </TouchableOpacity>
+
+          {/* Next step */}
+          {nextStep ? (() => {
+            const nextPhase = getPhaseForStep(nextStep.stepNumber) ?? phase;
+            return (
+              <TouchableOpacity
+                style={[
+                  styles.stepCircleSmall,
+                  { borderColor: canNavigateNext ? nextPhase.color : Colors.borderLight },
+                  !canNavigateNext && styles.stepCircleSmallLocked,
+                ]}
+                onPress={handleNextStep}
+                disabled={!canNavigateNext}
+                accessibilityLabel={`Go to step ${nextStep.stepNumber}`}
+              >
+                <Text style={[
+                  styles.stepCircleSmallNum,
+                  { color: canNavigateNext ? nextPhase.color : Colors.textMuted },
+                ]}>
+                  {nextStep.stepNumber}
+                </Text>
+                <Text style={[styles.stepCircleSmallLabel, !canNavigateNext && { color: Colors.textMuted }]} numberOfLines={1}>
+                  {canNavigateNext ? nextStep.title : 'Locked'}
+                </Text>
+              </TouchableOpacity>
+            );
+          })() : <View style={styles.stepCircleSpacer} />}
+        </View>
       </ScrollView>
 
       <QuickLinksBar />
@@ -1709,51 +1730,69 @@ const styles = StyleSheet.create({
     marginLeft: Spacing.sm,
   },
 
-  // Coming next — tappable
-  nextSection: {
-    backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
-    gap: 4,
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
-    position: 'relative',
-  },
-  nextSectionLocked: {
-    opacity: 0.55,
-  },
-  nextLabel: {
-    ...Typography.label,
-    color: Colors.textMuted,
-    letterSpacing: 1,
-  },
-  nextTitle: {
-    ...Typography.headingS,
-    color: Colors.text,
-    paddingRight: Spacing.xl,
-  },
-  nextHint: {
-    ...Typography.caption,
-    color: Colors.textSecondary,
-  },
-  nextArrow: {
-    position: 'absolute',
-    right: Spacing.md,
-    top: 20,
-    fontSize: FontSizes.headingL,
-    fontWeight: '300',
-  },
-
-  // Back to journey
-  backToJourneyButton: {
+  // Step Circle Navigator
+  stepCircleNav: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: Spacing.md,
-    marginTop: Spacing.sm,
+    justifyContent: 'center',
+    paddingVertical: Spacing.lg,
+    marginTop: Spacing.md,
+    gap: Spacing.lg,
   },
-  backToJourneyText: {
-    fontSize: FontSizes.body,
+  stepCircleCenter: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 2.5,
+    backgroundColor: Colors.surfaceElevated,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  stepCircleCenterNum: {
+    fontFamily: 'PlayfairDisplay_600SemiBold',
+    fontSize: 26,
+    fontWeight: '700',
+  },
+  stepCircleCenterLabel: {
+    fontFamily: 'JosefinSans_400Regular',
+    fontSize: 8,
+    letterSpacing: 1.5,
+    color: Colors.textMuted,
+    textTransform: 'uppercase',
+    marginTop: 1,
+  },
+  stepCircleSmall: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 1.5,
+    backgroundColor: Colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepCircleSmallLocked: {
+    opacity: 0.45,
+    borderStyle: 'dashed',
+  },
+  stepCircleSmallNum: {
+    fontFamily: 'PlayfairDisplay_600SemiBold',
+    fontSize: 16,
     fontWeight: '600',
-    color: Colors.primary,
+  },
+  stepCircleSmallLabel: {
+    fontFamily: 'JosefinSans_400Regular',
+    fontSize: 7,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginTop: 1,
+    maxWidth: 48,
+  },
+  stepCircleSpacer: {
+    width: 52,
   },
 
   // Closing

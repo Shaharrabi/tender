@@ -188,7 +188,7 @@ export default function DatingWellScreen() {
         </TouchableOpacity>
 
         <View style={styles.headerCenter}>
-          <Text style={styles.headerPre}>Tender presents</Text>
+          <Text style={styles.headerPre}>TENDER PRESENTS</Text>
           <Text style={styles.headerTitle}>Dating Well</Text>
           <Text style={styles.headerSub}>The Art of Beginning</Text>
         </View>
@@ -202,10 +202,10 @@ export default function DatingWellScreen() {
           const locked = !gameComplete && t.id !== 'game';
           const active = activeTab === t.id;
           const iconColor = locked
-            ? Colors.textMuted
+            ? '#6B5E56'
             : active
-              ? Colors.primary
-              : Colors.textSecondary;
+              ? '#D4A843'
+              : '#6B5E56';
           return (
             <TouchableOpacity
               key={t.id}
@@ -315,23 +315,25 @@ function GameCompleteView({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: '#FAF7F2',
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: '#FAF7F2',
     justifyContent: 'center',
     alignItems: 'center',
   },
 
-  // Header
+  // Header — warm parchment, editorial feel
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
+    paddingTop: Spacing.lg,
+    paddingBottom: Spacing.md,
+    borderBottomWidth: 1.5,
+    borderBottomColor: '#e8e3db',
+    backgroundColor: Colors.background,
   },
   backButton: {
     width: 40,
@@ -340,48 +342,47 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surfaceElevated,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#e8e3db',
   },
   headerCenter: {
     flex: 1,
     alignItems: 'center',
   },
   headerPre: {
-    fontFamily: 'PlayfairDisplay_600SemiBold',
-    fontWeight: '300',
-    fontSize: 11,
-    letterSpacing: 4,
+    fontFamily: 'JosefinSans_400Regular',
+    fontSize: 9,
+    letterSpacing: 3,
     textTransform: 'uppercase',
-    color: Colors.textMuted,
+    color: '#6B5E56',
     marginBottom: 2,
   },
   headerTitle: {
     fontFamily: 'PlayfairDisplay_600SemiBold',
-    fontWeight: '300',
-    fontSize: 26,
-    letterSpacing: 5,
-    textTransform: 'uppercase',
-    color: Colors.text,
+    fontSize: 24,
+    letterSpacing: 1,
+    color: '#3D3530',
   },
   headerSub: {
-    fontFamily: 'PlayfairDisplay_600SemiBold',
-    fontStyle: 'italic',
+    fontFamily: 'PlayfairDisplay_400Regular_Italic',
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: '#6B5E56',
+    marginTop: 2,
   },
   headerSpacer: {
     width: 40,
   },
 
-  // Tab Bar
+  // Tab Bar — vintage catalog tabs
   tabBar: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
-    backgroundColor: Colors.surfaceElevated,
+    borderBottomColor: '#e8e3db',
+    backgroundColor: '#FAF7F2',
   },
   tab: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 8,
     alignItems: 'center',
     borderBottomWidth: 2,
@@ -389,92 +390,102 @@ const styles = StyleSheet.create({
   },
   tabActive: {
     backgroundColor: Colors.surface,
-    borderBottomColor: Colors.primary,
+    borderBottomColor: '#D4A843',
   },
   tabIconWrap: {
-    marginBottom: 2,
+    marginBottom: 4,
   },
   tabIconLocked: {
-    opacity: 0.5,
+    opacity: 0.4,
   },
   tabLabel: {
     fontFamily: 'JosefinSans_400Regular',
-    fontSize: 12,
-    color: Colors.textSecondary,
+    fontSize: 11,
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+    color: '#6B5E56',
   },
   tabLabelActive: {
-    color: Colors.primary,
+    color: '#3D3530',
+    fontFamily: 'JosefinSans_500Medium',
   },
   tabLabelLocked: {
-    color: Colors.textMuted,
-    opacity: 0.5,
+    color: '#6B5E56',
+    opacity: 0.4,
   },
   tabLock: {
     fontFamily: 'JosefinSans_400Regular',
     fontSize: 8,
-    color: Colors.textMuted,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    color: '#C4836A',
+    marginTop: 2,
   },
 
   // Content
   scrollView: {
     flex: 1,
+    backgroundColor: '#FAF7F2',
   },
   scrollContent: {
-    padding: Spacing.md,
+    padding: Spacing.lg,
     paddingBottom: Spacing.scrollPadBottom,
     maxWidth: 560,
     alignSelf: 'center',
     width: '100%',
   },
 
-  // Game Complete
+  // Game Complete — warm, celebratory
   completeContainer: {
     alignItems: 'center',
-    paddingVertical: 40,
-    paddingHorizontal: Spacing.md,
-    gap: Spacing.sm,
+    paddingVertical: 48,
+    paddingHorizontal: Spacing.lg,
+    gap: Spacing.md,
   },
   completeTitle: {
     fontFamily: 'PlayfairDisplay_600SemiBold',
     fontSize: 22,
-    color: Colors.text,
-    fontWeight: '600',
-    marginBottom: 8,
+    color: '#3D3530',
+    textAlign: 'center',
+    marginBottom: 4,
   },
   completeDesc: {
-    ...Typography.body,
-    color: Colors.textSecondary,
-    lineHeight: 24,
+    fontFamily: 'JosefinSans_300Light',
+    fontSize: 16,
+    color: '#6B5E56',
+    lineHeight: 26,
     textAlign: 'center',
     marginBottom: Spacing.md,
   },
   completeActions: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 12,
   },
   primaryButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: BorderRadius.sm,
-    backgroundColor: Colors.primary,
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderRadius: BorderRadius.pill,
+    backgroundColor: '#E8B4B8',
   },
   primaryButtonText: {
-    fontFamily: 'JosefinSans_400Regular',
+    fontFamily: 'JosefinSans_500Medium',
     fontSize: 13,
-    fontWeight: '600',
-    color: Colors.white,
-    letterSpacing: 1,
+    color: '#3D3530',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
   },
   secondaryButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: BorderRadius.sm,
-    borderWidth: 1,
-    borderColor: Colors.secondary,
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderRadius: BorderRadius.pill,
+    borderWidth: 1.5,
+    borderColor: '#8BA4B8',
   },
   secondaryButtonText: {
-    fontFamily: 'JosefinSans_400Regular',
+    fontFamily: 'JosefinSans_500Medium',
     fontSize: 13,
-    color: Colors.secondary,
+    color: '#8BA4B8',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
   },
 });
