@@ -63,13 +63,13 @@ export default function LockedPortraitPreview({
       {/* Header */}
       <View style={styles.header}>
         <LockIcon size={16} color={Colors.primary} />
-        <TenderText variant="bodyMedium" style={{ fontWeight: '700' }}>
+        <TenderText variant="headingS">
           Your Relational Portrait
         </TenderText>
       </View>
 
       <TenderText
-        variant="bodySmall"
+        variant="body"
         color={Colors.textSecondary}
         style={{ marginBottom: Spacing.md, lineHeight: 20 }}
       >
@@ -83,7 +83,7 @@ export default function LockedPortraitPreview({
       <TenderText
         variant="caption"
         color={Colors.textMuted}
-        style={{ fontSize: 11, fontWeight: '600', marginBottom: Spacing.md }}
+        style={{ fontSize: 11, marginBottom: Spacing.md }}
       >
         {completedCount} of {totalRequired} sections complete
       </TenderText>
@@ -98,7 +98,7 @@ export default function LockedPortraitPreview({
             <TenderText
               variant="caption"
               color={Colors.textMuted}
-              style={{ fontSize: 10, fontWeight: '600', letterSpacing: 0.3 }}
+              style={{ fontSize: 10, letterSpacing: 0.3 }}
             >
               {label}
             </TenderText>
@@ -114,7 +114,7 @@ export default function LockedPortraitPreview({
         accessibilityRole="button"
         accessibilityLabel={expanded ? 'Hide details' : 'See what is remaining'}
       >
-        <TenderText variant="bodySmall" color={Colors.primary} style={{ fontWeight: '600' }}>
+        <TenderText variant="body" color={Colors.primary}>
           {expanded ? 'Hide details' : 'See what\u2019s remaining'}
         </TenderText>
       </TouchableOpacity>
@@ -133,10 +133,9 @@ export default function LockedPortraitPreview({
                   <View style={styles.checkCirclePending} />
                 )}
                 <TenderText
-                  variant="bodySmall"
+                  variant="body"
                   color={isDone ? Colors.textSecondary : Colors.text}
                   style={[
-                    { fontWeight: '500' },
                     isDone && { textDecorationLine: 'line-through' },
                   ]}
                 >

@@ -41,10 +41,13 @@ import {
 } from '@/constants/theme';
 import StepAudioPlayer from '@/components/growth/StepAudioPlayer';
 import StepMiniGame from '@/components/growth/StepMiniGame';
+import ZoneGame from '@/components/growth/ZoneGame';
+import { getZoneGame } from '@/utils/steps/zone-games';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { CollapsibleHeader } from '@/components/ui/CollapsibleSection';
 import QuickLinksBar from '@/components/QuickLinksBar';
 import CheckmarkIcon from '@/assets/graphics/icons/CheckmarkIcon';
+import { StepSticker, StepConceptBadge } from '@/components/growth/stickers';
 import {
   TWELVE_STEPS,
   STEP_AUDIO_MAP,
@@ -86,9 +89,12 @@ import StepAssessmentInsight from '@/components/growth/StepAssessmentInsight';
 import GrowthPulseCard from '@/components/growth/GrowthPulseCard';
 import CouplePlayCard from '@/components/growth/CouplePlayCard';
 import GrowthPlanContent from '@/components/growth/GrowthPlanContent';
+import StepEdgeProgress from '@/components/growth/StepEdgeProgress';
+import StepCompletionRitual from '@/components/growth/StepCompletionRitual';
 import { fetchAllScores } from '@/services/portrait';
+import { getGrowthEdgeProgress } from '@/services/growth';
 import type { IndividualPortrait, AllAssessmentScores } from '@/types/portrait';
-import type { MiniGameOutput, StepProgress } from '@/types/growth';
+import type { MiniGameOutput, StepProgress, GrowthEdgeProgress } from '@/types/growth';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -133,6 +139,9 @@ function StepDetailScreenInner() {
   const [exchangeFollowUp, setExchangeFollowUp] = useState('');
   const [exchangeFollowUpSaved, setExchangeFollowUpSaved] = useState(false);
 
+  // Growth edge progress for this step
+  const [edgeProgressMap, setEdgeProgressMap] = useState<Record<string, GrowthEdgeProgress>>({});
+
   // Assessment nudge + early insight state
   const [completedAssessmentIds, setCompletedAssessmentIds] = useState<string[]>([]);
   const [assessmentScores, setAssessmentScores] = useState<Record<string, { id: string; scores: any }> | null>(null);
@@ -144,6 +153,13 @@ function StepDetailScreenInner() {
   const [couplePlayResponse, setCouplePlayResponse] = useState<string | null>(null);
   const [couplePlayPartnerResponse, setCouplePlayPartnerResponse] = useState<string | null>(null);
   const [couplePlayFollowUp, setCouplePlayFollowUp] = useState<string | null>(null);
+
+  // Zone game state
+  const [showZoneGame, setShowZoneGame] = useState(false);
+  const [zoneGameCompleted, setZoneGameCompleted] = useState(false);
+
+  // Step completion ritual
+  const [showCompletionRitual, setShowCompletionRitual] = useState(false);
 
   // Collapsible sections — all OPEN by default so the step feels like a room, not a filing cabinet
   const [expandedSections, setExpandedSections] = useState<Set<SectionId>>(
@@ -316,6 +332,18 @@ function StepDetailScreenInner() {
         setCouplePlayFollowUp(cpNotes?.couplePlayFollowUp ?? null);
         setCouplePlayPartnerResponse(null); // TODO: load from partner's step_progress
       }
+
+      // Load growth edge progress for StepEdgeProgress component
+      if (userPortrait?.growthEdges?.length) {
+        try {
+          const edgeData = await getGrowthEdgeProgress(user.id);
+          const map: Record<string, GrowthEdgeProgress> = {};
+          for (const ep of edgeData) map[ep.edgeId] = ep;
+          setEdgeProgressMap(map);
+        } catch {
+          setEdgeProgressMap({});
+        }
+      }
     } catch (err) {
       console.warn('[StepDetail] Load error:', err);
     } finally {
@@ -365,9 +393,8 @@ function StepDetailScreenInner() {
       if (step && updatedCriteria.length >= step.completionCriteria.length) {
         // All criteria checked — complete this step and unlock next
         await completeStep(user.id, stepNumber);
-        haptics.success();
-        // Reload data to reflect new step states
-        await loadData();
+        // Show completion ritual instead of immediately reloading
+        setShowCompletionRitual(true);
       }
     } catch (err) {
       console.error('[StepDetail] Failed to toggle criteria:', err);
@@ -408,6 +435,17 @@ function StepDetailScreenInner() {
     },
     [user, stepNumber, awardXP]
   );
+
+  // Completion ritual handlers
+  const handleRitualDismiss = async () => {
+    setShowCompletionRitual(false);
+    await loadData();
+  };
+
+  const handleRitualNextStep = () => {
+    setShowCompletionRitual(false);
+    handleNextStep();
+  };
 
   // Sprint B — Partner Round save
   const handleSavePartnerResponse = useCallback(async () => {
@@ -553,13 +591,20 @@ function StepDetailScreenInner() {
         {/* Phase color accent line */}
         <View style={[styles.phaseAccent, { backgroundColor: phase.color }]} />
 
-        {/* Step Title */}
+        {/* Step Title + Sticker */}
         <Animated.View entering={FadeInDown.delay(100).duration(500)}>
-          <Text style={styles.stepLabel}>STEP {step.stepNumber}</Text>
-          <Text style={styles.stepTitle}>{step.title}</Text>
-          {step.subtitle && (
-            <Text style={styles.stepSubtitle}>{step.subtitle}</Text>
-          )}
+          <View style={styles.stepTitleRow}>
+            <View style={styles.stepTitleText}>
+              <Text style={styles.stepLabel}>STEP {step.stepNumber}</Text>
+              <Text style={styles.stepTitle}>{step.title}</Text>
+              {step.subtitle && (
+                <Text style={styles.stepSubtitle}>{step.subtitle}</Text>
+              )}
+            </View>
+            <View style={styles.stepStickerContainer}>
+              <StepSticker stepNumber={stepNumber} size={88} showLabel={false} />
+            </View>
+          </View>
         </Animated.View>
 
         {/* Audio Player */}
@@ -619,7 +664,10 @@ function StepDetailScreenInner() {
         {bridge && (
           <Animated.View entering={FadeIn.delay(470).duration(600)}>
             <View style={[styles.bridgeCard, { borderLeftColor: phase.color }]}>
-              <Text style={styles.bridgeLabel}>WHAT THIS MEANS FOR YOU</Text>
+              <View style={styles.bridgeHeaderRow}>
+                <Text style={[styles.bridgeLabel, { flex: 1 }]}>WHAT THIS MEANS FOR YOU</Text>
+                <StepConceptBadge stepNumber={stepNumber} size={48} />
+              </View>
               <Text style={styles.bridgeText}>{bridge.text}</Text>
               {bridge.insightLabel && (
                 <Text style={styles.bridgeInsight}>{bridge.insightLabel}</Text>
@@ -683,74 +731,6 @@ function StepDetailScreenInner() {
           </Animated.View>
         )}
 
-        {/* Completion Criteria — Collapsible Interactive Checklist */}
-        <Animated.View entering={FadeIn.delay(600).duration(500)} style={styles.goalsCard}>
-          <CollapsibleHeader
-            title={`Step ${step.stepNumber} Goals`}
-            subtitle={`${checkedCriteria.length} of ${step.completionCriteria.length} completed`}
-            isExpanded={expandedSections.has('goals')}
-            onToggle={() => toggleSection('goals')}
-            phaseColor={phase.color}
-          />
-          {expandedSections.has('goals') && (
-            <>
-              <Text style={styles.goalsSubtitle}>
-                {checkedCriteria.length} of {step.completionCriteria.length} goals completed
-                {' \u00B7 '}
-                {practiceCount} practice{practiceCount !== 1 ? 's' : ''} done
-              </Text>
-              {step.completionCriteria.map((criteria, i) => {
-                const isChecked = checkedCriteria.includes(i);
-                return (
-                  <TouchableOpacity
-                    key={i}
-                    style={styles.goalRow}
-                    activeOpacity={canToggleCriteria ? 0.6 : 1}
-                    disabled={!canToggleCriteria}
-                    onPress={() => handleCriteriaToggle(i, !isChecked)}
-                    accessibilityRole="button"
-                    accessibilityState={{ disabled: !canToggleCriteria }}
-                  >
-                    <View style={styles.criteriaCheckbox}>
-                      <View
-                        style={[
-                          styles.criteriaSquare,
-                          { borderColor: phase.color },
-                          isChecked && [styles.criteriaSquareChecked, { backgroundColor: phase.color, borderColor: phase.color }],
-                        ]}
-                      >
-                        {isChecked && (
-                          <CheckmarkIcon size={10} color={Colors.white} />
-                        )}
-                      </View>
-                    </View>
-                    <Text
-                      style={[
-                        styles.goalText,
-                        isChecked && styles.goalTextChecked,
-                      ]}
-                    >
-                      {criteria}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-              {!canToggleCriteria && (
-                <Text style={styles.criteriaHint}>
-                  These goals become active when you reach this step
-                </Text>
-              )}
-              {isCompletedStep && (
-                <View style={[styles.completedBadge, { backgroundColor: phase.color + '18' }]}>
-                  <Text style={[styles.completedBadgeText, { color: phase.color }]}>
-                    Step Complete
-                  </Text>
-                </View>
-              )}
-            </>
-          )}
-        </Animated.View>
-
         {/* ── Divider: context → learning guide ── */}
         <View style={styles.sectionDivider} />
 
@@ -762,9 +742,16 @@ function StepDetailScreenInner() {
         {/* ═══ 4 — STEP LEARNING GUIDE ═══ */}
         <View style={styles.sectionHeaderRow}>
           <View style={[styles.sectionHeaderLine, { backgroundColor: phase.color }]} />
-          <Text style={styles.sectionHeaderLabel}>STEP LEARNING GUIDE</Text>
+          <Text style={styles.sectionHeaderLabel}>STEP {stepNumber} COURSE</Text>
           <View style={[styles.sectionHeaderLine, { backgroundColor: phase.color }]} />
         </View>
+
+        {/* Course progress hint */}
+        <Animated.View entering={FadeIn.delay(580).duration(400)} style={styles.courseProgressHint}>
+          <Text style={styles.courseProgressHintText}>
+            Module {stepNumber} of 12  ·  {phase.name}
+          </Text>
+        </Animated.View>
 
         {/* Intro Text — moved here from before teaching */}
         {step.introText && (
@@ -846,8 +833,8 @@ function StepDetailScreenInner() {
         {step.courseGatewayIds && step.courseGatewayIds.length > 0 && stepNumber !== 12 && (
           <Animated.View entering={FadeIn.delay(750).duration(500)} style={styles.courseGatewaySection}>
             <CollapsibleHeader
-              title="Deepen Your Understanding"
-              subtitle={`${step.courseGatewayIds.length} micro-course${step.courseGatewayIds.length > 1 ? 's' : ''}`}
+              title="Deep-Dive Lessons"
+              subtitle={`${step.courseGatewayIds.length} lesson module${step.courseGatewayIds.length > 1 ? 's' : ''} available`}
               isExpanded={expandedSections.has('course')}
               onToggle={() => toggleSection('course')}
               phaseColor={phase.color}
@@ -886,6 +873,44 @@ function StepDetailScreenInner() {
           <Text style={styles.transitionText}>{transitions.afterCourse}</Text>
         )}
 
+        {/* Zone Game — The Field */}
+        {(() => {
+          const zoneGame = getZoneGame(stepNumber);
+          if (!zoneGame) return null;
+          return (
+            <Animated.View entering={FadeIn.delay(850).duration(500)}>
+              <TouchableOpacity
+                style={[styles.zoneGameCard, { borderColor: phase.color + '30' }]}
+                onPress={() => {
+                  haptics.tap();
+                  setShowZoneGame(true);
+                }}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+              >
+                <View style={styles.zoneGameHeader}>
+                  <Text style={styles.zoneGameZone}>{zoneGame.zoneName}</Text>
+                  {zoneGameCompleted && (
+                    <View style={[styles.zoneGameDone, { backgroundColor: phase.color + '20' }]}>
+                      <Text style={[styles.zoneGameDoneText, { color: phase.color }]}>Explored</Text>
+                    </View>
+                  )}
+                </View>
+                <Text style={styles.zoneGameTitle}>{zoneGame.title}</Text>
+                <Text style={styles.zoneGameSubtitle}>{zoneGame.subtitle}</Text>
+                <View style={styles.zoneGameFooter}>
+                  <Text style={styles.zoneGameDuration}>~{zoneGame.durationMinutes} min</Text>
+                  <View style={[styles.zoneGamePlayBtn, { backgroundColor: phase.color }]}>
+                    <Text style={styles.zoneGamePlayText}>
+                      {zoneGameCompleted ? 'PLAY AGAIN' : 'ENTER THE FIELD'}
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            </Animated.View>
+          );
+        })()}
+
         {/* Practices — Collapsible */}
         <Animated.View entering={FadeIn.delay(900).duration(500)} style={styles.practicesSection}>
           <CollapsibleHeader
@@ -895,6 +920,13 @@ function StepDetailScreenInner() {
             onToggle={() => toggleSection('practices')}
             phaseColor={phase.color}
           />
+          {expandedSections.has('practices') && portrait && portrait.growthEdges?.length > 0 && (
+            <StepEdgeProgress
+              stepPracticeIds={step.practices}
+              portrait={portrait}
+              edgeProgressMap={edgeProgressMap}
+            />
+          )}
           {expandedSections.has('practices') && step.practices.map((practiceId) => {
             const exercise = getExerciseById(practiceId);
             const label = exercise?.title ?? practiceId
@@ -1205,6 +1237,74 @@ function StepDetailScreenInner() {
           </Animated.View>
         )}
 
+        {/* Completion Criteria — Collapsible Interactive Checklist (before reflection) */}
+        <Animated.View entering={FadeIn.delay(1100).duration(500)} style={styles.goalsCard}>
+          <CollapsibleHeader
+            title={`Step ${step.stepNumber} Goals`}
+            subtitle={`${checkedCriteria.length} of ${step.completionCriteria.length} completed`}
+            isExpanded={expandedSections.has('goals')}
+            onToggle={() => toggleSection('goals')}
+            phaseColor={phase.color}
+          />
+          {expandedSections.has('goals') && (
+            <>
+              <Text style={styles.goalsSubtitle}>
+                {checkedCriteria.length} of {step.completionCriteria.length} goals completed
+                {' \u00B7 '}
+                {practiceCount} practice{practiceCount !== 1 ? 's' : ''} done
+              </Text>
+              {step.completionCriteria.map((criteria, i) => {
+                const isChecked = checkedCriteria.includes(i);
+                return (
+                  <TouchableOpacity
+                    key={i}
+                    style={styles.goalRow}
+                    activeOpacity={canToggleCriteria ? 0.6 : 1}
+                    disabled={!canToggleCriteria}
+                    onPress={() => handleCriteriaToggle(i, !isChecked)}
+                    accessibilityRole="button"
+                    accessibilityState={{ disabled: !canToggleCriteria }}
+                  >
+                    <View style={styles.criteriaCheckbox}>
+                      <View
+                        style={[
+                          styles.criteriaSquare,
+                          { borderColor: phase.color },
+                          isChecked && [styles.criteriaSquareChecked, { backgroundColor: phase.color, borderColor: phase.color }],
+                        ]}
+                      >
+                        {isChecked && (
+                          <CheckmarkIcon size={10} color={Colors.white} />
+                        )}
+                      </View>
+                    </View>
+                    <Text
+                      style={[
+                        styles.goalText,
+                        isChecked && styles.goalTextChecked,
+                      ]}
+                    >
+                      {criteria}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+              {!canToggleCriteria && (
+                <Text style={styles.criteriaHint}>
+                  These goals become active when you reach this step
+                </Text>
+              )}
+              {isCompletedStep && (
+                <View style={[styles.completedBadge, { backgroundColor: phase.color + '18' }]}>
+                  <Text style={[styles.completedBadgeText, { color: phase.color }]}>
+                    Step Complete
+                  </Text>
+                </View>
+              )}
+            </>
+          )}
+        </Animated.View>
+
         {/* Reflection Prompts — Collapsible (after exchange) */}
         {step.reflectionPrompts && step.reflectionPrompts.length > 0 && (
           <Animated.View entering={FadeIn.delay(1150).duration(500)} style={styles.reflectionSection}>
@@ -1392,6 +1492,22 @@ function StepDetailScreenInner() {
       </ScrollView>
 
       <QuickLinksBar />
+
+      {/* Zone Game Modal */}
+      <ZoneGame
+        zoneNumber={stepNumber}
+        visible={showZoneGame}
+        onComplete={() => setZoneGameCompleted(true)}
+        onClose={() => setShowZoneGame(false)}
+      />
+
+      {/* Step Completion Ritual — animated overlay */}
+      <StepCompletionRitual
+        visible={showCompletionRitual}
+        stepNumber={stepNumber}
+        onDismiss={handleRitualDismiss}
+        onNextStep={handleRitualNextStep}
+      />
     </SafeAreaView>
   );
 }
@@ -1459,6 +1575,21 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
   },
 
+  // Step title row — text + sticker side by side
+  stepTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
+  stepTitleText: {
+    flex: 1,
+    marginRight: Spacing.sm,
+  },
+  stepStickerContainer: {
+    marginTop: -4,
+    opacity: 0.85,
+  },
+
   // Step title area
   stepLabel: {
     ...Typography.label,
@@ -1473,7 +1604,6 @@ const styles = StyleSheet.create({
   stepSubtitle: {
     ...Typography.bodySmall,
     color: Colors.textSecondary,
-    fontStyle: 'italic',
     marginTop: 4,
     lineHeight: 22,
   },
@@ -1528,7 +1658,6 @@ const styles = StyleSheet.create({
   miniGamePromptHint: {
     ...Typography.caption,
     color: Colors.textSecondary,
-    fontStyle: 'italic',
   },
   miniGameStartButton: {
     paddingHorizontal: Spacing.xl,
@@ -1645,7 +1774,6 @@ const styles = StyleSheet.create({
   criteriaHint: {
     ...Typography.caption,
     color: Colors.textMuted,
-    fontStyle: 'italic',
     marginTop: Spacing.xs,
   },
   completedBadge: {
@@ -1670,7 +1798,6 @@ const styles = StyleSheet.create({
   sectionHint: {
     ...Typography.caption,
     color: Colors.textMuted,
-    fontStyle: 'italic',
     marginBottom: Spacing.sm,
   },
 
@@ -1814,7 +1941,6 @@ const styles = StyleSheet.create({
   reflectionPromptText: {
     ...Typography.bodySmall,
     color: Colors.text,
-    fontStyle: 'italic',
     lineHeight: 22,
   },
   reflectionInput: {
@@ -1843,7 +1969,6 @@ const styles = StyleSheet.create({
   partnerRoundPromptText: {
     ...Typography.bodyMedium,
     color: Colors.text,
-    fontStyle: 'italic',
     lineHeight: 24,
   },
   partnerResponseInput: {
@@ -1904,12 +2029,10 @@ const styles = StyleSheet.create({
     ...Typography.bodySmall,
     color: Colors.text,
     lineHeight: 22,
-    fontStyle: 'italic',
   },
   partnerWaitingText: {
     ...Typography.caption,
     color: Colors.textMuted,
-    fontStyle: 'italic',
     textAlign: 'center',
     marginTop: Spacing.xs,
   },
@@ -1940,7 +2063,6 @@ const styles = StyleSheet.create({
     ...Typography.bodySmall,
     color: Colors.textSecondary,
     lineHeight: 22,
-    fontStyle: 'italic',
   },
 
   // Portrait Bridge
@@ -1951,6 +2073,11 @@ const styles = StyleSheet.create({
     padding: Spacing.lg,
     gap: Spacing.sm,
     ...Shadows.subtle,
+  },
+  bridgeHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   bridgeLabel: {
     ...Typography.label,
@@ -1966,7 +2093,6 @@ const styles = StyleSheet.create({
   bridgeInsight: {
     ...Typography.caption,
     color: Colors.secondary,
-    fontStyle: 'italic',
     marginTop: Spacing.xs,
   },
 
@@ -1980,7 +2106,6 @@ const styles = StyleSheet.create({
     ...Typography.bodySmall,
     color: Colors.textSecondary,
     lineHeight: 22,
-    fontStyle: 'italic',
   },
 
   // Visual breathing divider between major sections
@@ -2031,7 +2156,6 @@ const styles = StyleSheet.create({
   exchangeFollowUpPrompt: {
     ...Typography.bodyMedium,
     color: Colors.text,
-    fontStyle: 'italic',
     lineHeight: 24,
   },
   exchangeFollowUpComplete: {
@@ -2135,5 +2259,78 @@ const styles = StyleSheet.create({
     letterSpacing: 3,
     fontSize: 10,
     color: Colors.textMuted,
+  },
+  courseProgressHint: {
+    alignItems: 'center',
+    paddingBottom: Spacing.xs,
+  },
+  courseProgressHintText: {
+    fontSize: 11,
+    color: Colors.textSecondary,
+    letterSpacing: 0.5,
+  },
+
+  // Zone Game card
+  zoneGameCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    padding: Spacing.lg,
+    marginBottom: Spacing.sm,
+    ...Shadows.sm,
+  },
+  zoneGameHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.xs,
+  },
+  zoneGameZone: {
+    ...Typography.label,
+    letterSpacing: 3,
+    color: Colors.textMuted,
+    fontSize: 10,
+  },
+  zoneGameDone: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  zoneGameDoneText: {
+    fontSize: 10,
+    fontWeight: '600',
+    letterSpacing: 1,
+  },
+  zoneGameTitle: {
+    fontFamily: FontFamilies?.heading ?? undefined,
+    fontSize: FontSizes.headingM,
+    color: Colors.text,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  zoneGameSubtitle: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    marginBottom: Spacing.md,
+  },
+  zoneGameFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  zoneGameDuration: {
+    fontSize: FontSizes.caption,
+    color: Colors.textMuted,
+  },
+  zoneGamePlayBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: BorderRadius.pill,
+  },
+  zoneGamePlayText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1.5,
   },
 });

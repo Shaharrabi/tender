@@ -150,11 +150,19 @@ export default function PatternSpotter({ onComplete, onSkip, phaseColor }: MiniG
       .map(([k]) => k);
 
     if (selected.length === 0) {
-      // Default to first scenario if none selected
+      // No patterns selected — return a neutral "none" result
       return {
         selectedPatterns: [] as string[],
-        primary: PATTERN_RESULTS['pursue-withdraw'],
-        patternType: 'pursue-withdraw',
+        primary: {
+          name: 'No Pattern Identified',
+          emoji: '🔍',
+          insights: [
+            'None of the common patterns felt familiar right now.',
+            'Patterns often become visible over time as you observe your interactions.',
+            'This is a great starting point — keep noticing.',
+          ],
+        },
+        patternType: 'none',
       };
     }
 

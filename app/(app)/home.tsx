@@ -48,6 +48,8 @@ import {
   getAssessmentConfig,
 } from '@/utils/assessments/registry';
 import { supabase } from '@/services/supabase';
+import { fetchGrowthBoostData } from '@/services/growth-boost';
+import { getGrowthBoostedScore, type GrowthBoostedResult } from '@/utils/portrait/growth-boost';
 import { getPortrait, savePortrait, fetchAllScores, extractSupplementScores } from '@/services/portrait';
 import { generatePortrait, isPortraitStale } from '@/utils/portrait/portrait-generator';
 import { getTodaysCheckIn, saveDailyCheckIn, getRecentCheckIns } from '@/services/growth';
@@ -78,6 +80,7 @@ import { TOOLTIP_CONFIGS } from '@/constants/ftue/tooltips';
 import { HOME_TOUR } from '@/constants/ftue/tourSteps';
 import { RefRegistry } from '@/utils/ftue/refRegistry';
 import JourneyUnlockOverlay, { hasSeenJourneyUnlock } from '@/components/growth/JourneyUnlockOverlay';
+import JourneySpiral from '@/components/growth/JourneySpiral';
 import { getCurrentStepNumber } from '@/services/steps';
 import { getTaglineForStep, getPracticesForStep, getStep, getJournalPromptForStep, getPhaseForStep } from '@/utils/steps/twelve-steps';
 import { MICRO_COURSES, calculateCourseProgress, type CourseProgress } from '@/utils/microcourses/course-registry';
@@ -193,6 +196,7 @@ export default function HomeScreen() {
   // Portrait state
   const [portrait, setPortrait] = useState<IndividualPortrait | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [growthBoostResult, setGrowthBoostResult] = useState<GrowthBoostedResult | null>(null);
 
   // Exercise completion tracking for growth plan
   const [exerciseCompletionMap, setExerciseCompletionMap] = useState<Record<string, number>>({});
@@ -533,6 +537,20 @@ export default function HomeScreen() {
         }
 
         setPortrait(loadedPortrait);
+
+        // Fetch growth boost data to apply to portrait score
+        if (loadedPortrait) {
+          try {
+            const boostData = await fetchGrowthBoostData(user.id);
+            const cs = loadedPortrait.compositeScores;
+            const scores = [cs.regulationScore, cs.windowWidth, cs.accessibility, cs.responsiveness, cs.engagement, cs.selfLeadership, cs.valuesCongruence];
+            const baseline = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+            const result = getGrowthBoostedScore(baseline, boostData);
+            setGrowthBoostResult(result);
+          } catch (e) {
+            console.warn('[Home] Growth boost data failed:', e);
+          }
+        }
       } catch (portraitErr: any) {
         console.error('[Home] Portrait loading failed:', portraitErr);
         console.error(`[Home] Portrait LOAD: ${portraitErr?.message || String(portraitErr)}`);
@@ -965,24 +983,7 @@ export default function HomeScreen() {
             })()}
           </View>
 
-          {/* Step progress dots — 12 dots showing journey progress */}
-          {hasPortrait && (
-            <View style={styles.stepDotsRow}>
-              {Array.from({ length: 12 }, (_, i) => (
-                <View
-                  key={i}
-                  style={[
-                    styles.stepDot,
-                    i < currentStepNum
-                      ? styles.stepDotCompleted
-                      : i === currentStepNum
-                        ? styles.stepDotActive
-                        : styles.stepDotPending,
-                  ]}
-                />
-              ))}
-            </View>
-          )}
+          {/* Step progress dots removed — JourneySpiral replaces them */}
 
           {/* Demo mode removed — no longer needed */}
         </View>
@@ -1014,7 +1015,8 @@ export default function HomeScreen() {
 
         {/* ═══ 2. TODAY'S FOCUS — removed to reduce home screen clutter ═══ */}
 
-        {/* ═══ DEMO PARTNER CARD (shown when mode is demo_partner) ═══ */}
+        {/* ═══ PARTNER SECTION — demo partner, connect prompt, or solo nudge ═══ */}
+        <View ref={(r) => RefRegistry.register('home_partnerSection', r)}>
         {relationshipMode === 'demo_partner' && demoPartnerId && DEMO_PARTNERS[demoPartnerId as DemoPartnerId] && (
           <View style={styles.demoPartnerSection}>
             <TouchableOpacity
@@ -1095,12 +1097,14 @@ export default function HomeScreen() {
             <Text style={styles.realPartnerPromptArrow}>{'\u2192'}</Text>
           </TouchableOpacity>
         )}
+        </View>
 
         {/* ═══ YOUR PORTRAIT SUMMARY (if portrait exists) ══════ */}
         {hasPortrait && portrait && (() => {
           const cs = portrait.compositeScores;
           const scores = [cs.regulationScore, cs.windowWidth, cs.accessibility, cs.responsiveness, cs.engagement, cs.selfLeadership, cs.valuesCongruence];
-          const overallScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+          const rawScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+          const overallScore = growthBoostResult?.boostedScore ?? rawScore;
 
           // Find top strength
           const scoreLabels: Record<string, string> = {
@@ -1133,8 +1137,15 @@ export default function HomeScreen() {
             >
               <View style={styles.portraitSummaryHeader}>
                 <Text style={styles.portraitSummaryEyebrow}>YOUR PORTRAIT</Text>
-                <View style={styles.portraitScoreBadge}>
-                  <Text style={styles.portraitScoreBadgeText}>{overallScore}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <View style={styles.portraitScoreBadge}>
+                    <Text style={styles.portraitScoreBadgeText}>{overallScore}</Text>
+                  </View>
+                  {growthBoostResult && growthBoostResult.growthBoost > 0 && (
+                    <Text style={{ fontSize: 11, color: Colors.success, fontWeight: '600' }}>
+                      +{growthBoostResult.growthBoost} growth
+                    </Text>
+                  )}
                 </View>
               </View>
 
@@ -1197,6 +1208,20 @@ export default function HomeScreen() {
                   accessibilityLabel="View Results"
                 >
                   <Text style={styles.portraitQuickLinkText}>View Results</Text>
+                </TouchableOpacity>
+                <View style={styles.portraitQuickLinkDivider} />
+                <TouchableOpacity
+                  style={styles.portraitQuickLink}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    SoundHaptics.tapSoft();
+                    router.push('/(app)/assessment-matrix' as any);
+                  }}
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel="Matrix"
+                >
+                  <Text style={styles.portraitQuickLinkText}>Matrix</Text>
                 </TouchableOpacity>
               </View>
             </TouchableOpacity>
@@ -1349,63 +1374,20 @@ export default function HomeScreen() {
 
         {/* ═══ 4. STEP JOURNEY (portrait) or ASSESSMENT (pre-portrait) ═══ */}
         {hasPortrait ? (
-          /* ── Step Journey Card — the heart of the home page ── */
-          (() => {
-            const step = getStep(currentStepNum);
-            const phase = getPhaseForStep(currentStepNum);
-            if (!step || !phase) return null;
-            const PhaseIcon = phase.icon;
-            return (
-              <TouchableOpacity
-                ref={(r) => RefRegistry.register('home_journeyCard', r)}
-                style={[styles.stepJourneyCard, { borderColor: phase.color + '25' }]}
-                onPress={() => {
-                  SoundHaptics.tapSoft();
-                  router.push(`/(app)/step-detail?step=${currentStepNum}` as any);
-                }}
-                activeOpacity={0.8}
-                accessibilityRole="button"
-                accessibilityLabel={`Step ${currentStepNum}: ${step.title}`}
-              >
-                <View style={styles.stepJourneyHeader}>
-                  <Text style={styles.stepJourneyLabel}>YOUR JOURNEY</Text>
-                  <Text style={styles.stepJourneyProgress}>
-                    Step {currentStepNum} of 12
-                  </Text>
-                </View>
-
-                <View style={styles.stepJourneyBody}>
-                  <View style={[styles.stepJourneyPhaseIndicator, { backgroundColor: phase.color + '20' }]}>
-                    <PhaseIcon size={22} color={phase.color} />
-                  </View>
-                  <View style={styles.stepJourneyContent}>
-                    <Text style={styles.stepJourneyStepTitle}>
-                      Step {currentStepNum}: {step.title}
-                    </Text>
-                    <View style={styles.stepJourneyPhaseRow}>
-                      <View style={[styles.stepJourneyPhaseDot, { backgroundColor: phase.color }]} />
-                      <Text style={styles.stepJourneyPhaseName}>{phase.name}</Text>
-                    </View>
-                  </View>
-                  <Text style={styles.stepJourneyArrow}>{'\u2192'}</Text>
-                </View>
-
-                {/* 12-segment mini progress bar */}
-                <View style={styles.stepJourneySegmentBar}>
-                  {Array.from({ length: 12 }, (_, i) => (
-                    <View
-                      key={i}
-                      style={[
-                        styles.stepJourneySegment,
-                        i + 1 < currentStepNum && styles.stepJourneySegmentDone,
-                        i + 1 === currentStepNum && [styles.stepJourneySegmentActive, { backgroundColor: phase.color }],
-                      ]}
-                    />
-                  ))}
-                </View>
-              </TouchableOpacity>
-            );
-          })()
+          /* ── Journey Spiral — circular 12-step visualization ── */
+          <View ref={(r) => RefRegistry.register('home_journeyCard', r)}>
+            <View style={styles.fieldHeader}>
+              <Text style={styles.fieldTitle}>THE FIELD</Text>
+              <Text style={styles.fieldSubtitle}>Your 12-step healing journey</Text>
+            </View>
+            <JourneySpiral
+              currentStep={currentStepNum}
+              onStepPress={(stepNum) => {
+                SoundHaptics.tapSoft();
+                router.push(`/(app)/step-detail?step=${stepNum}` as any);
+              }}
+            />
+          </View>
         ) : (
           /* ── Consolidated Assessment Section (pre-portrait) ── */
           <View style={styles.assessmentSection}>
@@ -1627,26 +1609,6 @@ export default function HomeScreen() {
           );
         })()}
 
-        {/* ═══ STREAK (Small, celebratory) ═════════════════ */}
-        {streakData && streakData.currentStreak > 0 && (
-          <View style={styles.streakMiniSection}>
-            <View style={styles.streakMiniRow}>
-              <LeafIcon size={16} color={Colors.primary} />
-              <Text style={styles.streakMiniText}>
-                Day {streakData.currentStreak} {'\u00B7'} Keep going!
-              </Text>
-            </View>
-          </View>
-        )}
-
-        {/* ═══ INSPIRATION (Rotating nudge) ════════════════ */}
-        {stepTagline && hasPortrait && (
-          <View style={styles.inspirationSection}>
-            <Text style={styles.inspirationText}>
-              {'\u201C'}{stepTagline}{'\u201D'}
-            </Text>
-          </View>
-        )}
         {!hasPortrait && completedCount > 0 && (
           <LockedPortraitPreview
             completedCount={completedCount}
@@ -1706,7 +1668,7 @@ export default function HomeScreen() {
             accessibilityLabel="Your Portrait"
           >
             <View style={styles.gatewayCardIconWrap}>
-              <SparkleIcon size={22} color={Colors.secondary} />
+              <SparkleIcon size={22} color={Colors.primary} />
             </View>
             <View style={styles.gatewayCardContent}>
               <Text style={styles.gatewayCardTitle}>Your Portrait</Text>
@@ -1729,7 +1691,7 @@ export default function HomeScreen() {
               accessibilityLabel="Your Relationship"
             >
               <View style={styles.gatewayCardIconWrap}>
-                <HeartDoubleIcon size={22} color={Colors.accent} />
+                <HeartDoubleIcon size={22} color={Colors.primary} />
               </View>
               <View style={styles.gatewayCardContent}>
                 <Text style={styles.gatewayCardTitle}>Your Relationship</Text>
@@ -1752,7 +1714,7 @@ export default function HomeScreen() {
             accessibilityLabel="More"
           >
             <View style={styles.gatewayCardIconWrap}>
-              <MenuIcon size={22} color={Colors.textMuted} />
+              <MenuIcon size={22} color={Colors.primary} />
             </View>
             <View style={styles.gatewayCardContent}>
               <Text style={styles.gatewayCardTitle}>More</Text>
@@ -1777,7 +1739,6 @@ export default function HomeScreen() {
         <GuidedTour tour={HOME_TOUR} onComplete={handleTourComplete} />
       )}
       <TooltipManager screen="home" scrollRef={scrollRef} scrollOffset={scrollOffset} />
-      <WelcomeAudio screenKey="home" />
     </SafeAreaView>
   );
 }
@@ -1844,7 +1805,6 @@ const styles = StyleSheet.create({
   heroAppTagline: {
     fontSize: FontSizes.caption,
     color: Colors.textMuted,
-    fontStyle: 'italic',
     marginTop: Spacing.sm,
     letterSpacing: 0.5,
   },
@@ -1862,7 +1822,6 @@ const styles = StyleSheet.create({
   stepTaglineText: {
     fontSize: FontSizes.bodySmall,
     color: Colors.text,
-    fontStyle: 'italic',
     lineHeight: 22,
   },
   stepTaglineStep: {
@@ -2477,7 +2436,6 @@ const styles = StyleSheet.create({
   retakeIntroText: {
     fontSize: FontSizes.caption,
     color: Colors.textSecondary,
-    fontStyle: 'italic',
     lineHeight: 18,
     marginBottom: Spacing.xs,
   },
@@ -2894,7 +2852,6 @@ const styles = StyleSheet.create({
   weareSummaryNudge: {
     fontSize: FontSizes.caption,
     color: Colors.secondary,
-    fontStyle: 'italic' as const,
   },
   weareSummaryArrow: {
     fontSize: FontSizes.bodySmall,
@@ -2923,7 +2880,6 @@ const styles = StyleSheet.create({
   inspirationText: {
     fontSize: FontSizes.bodySmall,
     color: Colors.textSecondary,
-    fontStyle: 'italic',
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -2965,7 +2921,6 @@ const styles = StyleSheet.create({
   modePartnerName: {
     fontSize: FontSizes.caption,
     fontFamily: FontFamilies.accent,
-    fontStyle: 'italic',
     color: Colors.textSecondary,
   },
   modeChangeButton: {
@@ -3149,6 +3104,25 @@ const styles = StyleSheet.create({
   assessmentSection: {
     paddingHorizontal: Spacing.lg,
     gap: Spacing.md,
+  },
+
+  // ── The Field header ──
+  fieldHeader: {
+    alignItems: 'center' as const,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.xs,
+  },
+  fieldTitle: {
+    fontSize: FontSizes.caption,
+    fontWeight: '700' as const,
+    color: Colors.primary,
+    letterSpacing: 2.5,
+    textTransform: 'uppercase' as const,
+  },
+  fieldSubtitle: {
+    fontSize: FontSizes.caption,
+    color: Colors.textSecondary,
+    marginTop: 2,
   },
 
   // ── Step Journey Card (portrait users) ──
@@ -3460,6 +3434,14 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: BorderRadius.sm,
     backgroundColor: Colors.backgroundAlt,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  gatewayCardStickerWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.sm,
+    overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
   },

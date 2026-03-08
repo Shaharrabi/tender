@@ -26,6 +26,7 @@ import {
 } from 'react-native';
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '@/context/AuthContext';
 import { useFirstTime } from '@/context/FirstTimeContext';
 import { WELCOME_AUDIO_CONFIGS } from '@/constants/ftue/welcomeAudios';
 import {
@@ -37,9 +38,15 @@ import {
   Colors,
   Spacing,
   Typography,
+  FontFamilies,
+  FontSizes,
   BorderRadius,
   Shadows,
 } from '@/constants/theme';
+
+// In-memory guard — prevents replay within the same page session
+// even if AsyncStorage fails on web.
+const _heardThisSession = new Set<string>();
 
 interface WelcomeAudioProps {
   /** Key into WELCOME_AUDIO_CONFIGS */
@@ -47,6 +54,7 @@ interface WelcomeAudioProps {
 }
 
 export const WelcomeAudio: React.FC<WelcomeAudioProps> = ({ screenKey }) => {
+  const { user } = useAuth();
   const { state, loading, markAudioHeard } = useFirstTime();
   const soundRef = useRef<Audio.Sound | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -59,10 +67,11 @@ export const WelcomeAudio: React.FC<WelcomeAudioProps> = ({ screenKey }) => {
   const loadingRef = useRef(false); // Guard against multiple loads
 
   const config = WELCOME_AUDIO_CONFIGS[screenKey];
-  const alreadyHeard = state.heardAudios.includes(screenKey);
+  const alreadyHeard = state.heardAudios.includes(screenKey) || _heardThisSession.has(screenKey);
 
-  // No config, no source, or already heard — don't render
-  const shouldShow = config && config.source && !alreadyHeard && !loading;
+  // No config, no source, already heard, or auth not resolved — don't render.
+  // Wait for `user` so we don't fire during the guest→user transition.
+  const shouldShow = config && config.source && !alreadyHeard && !loading && !!user;
 
   useEffect(() => {
     mountedRef.current = true;
@@ -86,6 +95,7 @@ export const WelcomeAudio: React.FC<WelcomeAudioProps> = ({ screenKey }) => {
     completedRef.current = true;
 
     setIsPlaying(false);
+    _heardThisSession.add(screenKey);
     markAudioHeard(screenKey);
 
     // Fade out
@@ -309,12 +319,13 @@ const styles = StyleSheet.create({
     marginLeft: Spacing.md,
   },
   title: {
-    ...Typography.bodyMedium,
-    color: FTUEColors.audioText,
+    fontFamily: FontFamilies.heading,
     fontSize: 15,
+    color: FTUEColors.audioText,
   },
   subtitle: {
-    ...Typography.caption,
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.caption,
     color: 'rgba(255, 255, 255, 0.6)',
     marginTop: 2,
   },
@@ -323,7 +334,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.md,
   },
   skipText: {
-    ...Typography.bodySmall,
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.caption,
     color: 'rgba(255, 255, 255, 0.5)',
   },
 });

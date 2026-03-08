@@ -235,6 +235,39 @@ export function getExercisesForEdge(edgeId: string): string[] {
   return [];
 }
 
+/**
+ * Reverse lookup: given an array of practice IDs (e.g. from a step),
+ * return which growth edges they support.
+ */
+export function getEdgesForPractices(
+  practiceIds: string[],
+): Array<{ edgeId: string; matchingPractices: string[] }> {
+  const results: Array<{ edgeId: string; matchingPractices: string[] }> = [];
+  const practiceSet = new Set(practiceIds);
+
+  for (const [edgeId, exerciseIds] of Object.entries(EDGE_EXERCISE_MAP)) {
+    const matching = exerciseIds.filter((id) => practiceSet.has(id));
+    if (matching.length > 0) {
+      results.push({ edgeId, matchingPractices: matching });
+    }
+  }
+
+  // Also check values exercises for any values_gap_* edges
+  const valuesExercises = [
+    'values-compass',
+    'relationship-values-compass',
+    'willingness-stance',
+    'relationship-mission-statement',
+  ];
+  const valuesMatch = valuesExercises.filter((id) => practiceSet.has(id));
+  if (valuesMatch.length > 0 && !results.some((r) => r.edgeId.startsWith('values_gap'))) {
+    // Return a generic values_gap marker — caller should cross-ref with portrait edges
+    results.push({ edgeId: 'values_gap', matchingPractices: valuesMatch });
+  }
+
+  return results;
+}
+
 const PATTERN_EDGES: Record<string, GrowthEdge> = {
   values_honesty_avoids_conflict: {
     id: 'speak_truth',

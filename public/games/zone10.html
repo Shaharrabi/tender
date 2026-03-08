@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>THE FIELD — Zone X: The Watchtower</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;600&family=Josefin+Sans:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+
+:root {
+  --parchment:#FDF6F0;--terracotta:#D8A499;--deep-rose:#8B3A4A;
+  --ink:#2D2226;--warm-gray:#6B5B5E;--rose:#C4616E;
+  --sage:#6B9080;--gold:#D4A843;
+  --sky-day:#7ABADC;--sky-dusk:#C4946A;--tower:#5A4A3A;
+}
+
+html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;touch-action:none;background:transparent;}
+
+.phone{width:100%;height:100%;background:var(--ink);border-radius:0;overflow:hidden;position:relative;display:flex;flex-direction:column;}
+
+#game-area{flex:1;min-height:0;margin:0 6px;border-radius:12px;position:relative;overflow:hidden;background:linear-gradient(180deg,#5A8AAA 0%,#7ABADC 30%,#9ACAEC 50%,#7AA87A 75%,#5A8A5A 100%);transition:background 2s;}
+
+canvas{position:absolute;inset:0;}
+
+.zone-label{position:absolute;top:14px;left:14px;z-index:5;}
+.zone-num{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.45);}
+.zone-name{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(10px,2.5vw,13px);letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.65);}
+
+#watch-counter{position:absolute;top:14px;right:14px;z-index:5;background:rgba(10,6,8,.5);border:1px solid rgba(212,168,67,.3);border-radius:8px;padding:8px 12px;text-align:center;}
+.watch-num{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(16px,4.5vw,22px);color:var(--parchment);line-height:1;}
+.watch-lbl{font-family:'Josefin Sans',sans-serif;font-size:7px;letter-spacing:2px;text-transform:uppercase;color:rgba(212,168,67,.5);margin-top:2px;}
+
+#awareness-bar{position:absolute;top:60px;right:14px;z-index:5;width:50px;height:120px;background:rgba(10,6,8,.4);border-radius:8px;padding:4px;display:flex;flex-direction:column-reverse;}
+.awareness-fill{background:linear-gradient(180deg,var(--sage),#4A8A6A);border-radius:4px;transition:height .3s;width:100%;}
+.awareness-lbl{position:absolute;bottom:-18px;left:0;right:0;font-family:'Josefin Sans',sans-serif;font-size:6px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.4);text-align:center;}
+
+.exit-x{position:absolute;top:10px;right:10px;z-index:70;width:28px;height:28px;border-radius:14px;border:none;background:rgba(0,0,0,.25);color:rgba(255,255,255,.7);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
+.exit-x:active{background:rgba(0,0,0,.4);}
+
+#panel{background:var(--parchment);border-top:1px solid rgba(216,164,153,.35);flex-shrink:0;z-index:25;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,8px);}
+
+#dialogue{padding:clamp(10px,2vh,16px) clamp(14px,4vw,22px) clamp(6px,1.5vh,10px);flex-shrink:0;}
+.dlg-row{display:flex;gap:10px;align-items:flex-start;}
+.dlg-sym{font-family:'Josefin Sans',sans-serif;font-size:clamp(10px,2.5vw,12px);color:var(--terracotta);flex-shrink:0;margin-top:2px;width:14px;}
+.dlg-text{font-family:'Playfair Display',serif;font-size:clamp(12px,3vw,15px);line-height:1.65;color:var(--ink);white-space:pre-wrap;transition:opacity .25s;}
+
+#controls{display:none;padding:clamp(8px,2vh,12px) clamp(14px,4vw,22px) clamp(12px,2.5vh,18px);}
+.ctrl-info{font-family:'Playfair Display',serif;font-size:clamp(11px,2.8vw,13px);color:var(--warm-gray);text-align:center;margin-bottom:8px;}
+
+#seed-btn{display:none;flex-direction:column;align-items:center;padding:clamp(8px,2vh,12px) clamp(22px,6vw,32px) clamp(14px,3vh,20px);gap:8px;}
+#seed-btn button{width:100%;height:clamp(52px,14vw,62px);border:none;border-radius:31px;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(11px,2.8vw,13px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 24px rgba(107,144,128,.45);animation:seedpulse 2.2s ease-in-out infinite;}
+@keyframes seedpulse{0%,100%{box-shadow:0 6px 24px rgba(107,144,128,.4);}50%{box-shadow:0 6px 36px rgba(107,144,128,.7);}}
+.seed-note{font-family:'Playfair Display',serif;font-size:clamp(10px,2.5vw,12px);color:rgba(107,91,94,.45);text-align:center;}
+
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(28px,6vw,48px);opacity:0;pointer-events:none;transition:opacity .7s ease;z-index:50;}
+.overlay.on{opacity:1;pointer-events:all;}
+
+#o-intro{background:linear-gradient(180deg,#567690,#64849E);z-index:60;}
+.oi-b{font-family:'Josefin Sans',sans-serif;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:rgba(212,168,67,.5);margin-bottom:clamp(12px,3vh,18px);}
+.oi-ic{font-size:clamp(36px,10vw,48px);margin-bottom:clamp(10px,2.5vh,16px);}
+.oi-big{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(28px,8vw,40px);letter-spacing:4px;text-transform:uppercase;color:var(--parchment);line-height:1.1;margin-bottom:8px;}
+.oi-sub{font-family:'Playfair Display',serif;font-size:clamp(12px,3.2vw,15px);color:rgba(212,168,67,.6);margin-bottom:clamp(18px,4vh,28px);}
+.oi-desc{font-family:'Playfair Display',serif;font-size:clamp(11px,2.8vw,13px);line-height:1.85;color:rgba(253,246,240,.35);margin-bottom:clamp(26px,6vh,40px);max-width:280px;}
+.oi-note{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.6vw,9px);letter-spacing:2px;text-transform:uppercase;color:rgba(253,246,240,.25);margin-bottom:clamp(14px,3vh,20px);}
+.oi-btn{width:clamp(160px,48vw,190px);height:clamp(44px,11vw,52px);border-radius:26px;border:1.5px solid rgba(212,168,67,.5);background:transparent;font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(9px,2.2vw,11px);letter-spacing:3px;text-transform:uppercase;color:rgba(212,168,67,.85);cursor:pointer;transition:all .3s;}
+.oi-btn:active{background:rgba(212,168,67,.15);}
+
+#practice-overlay{position:absolute;inset:0;z-index:70;background:rgba(58,90,122,.96);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .4s;}
+#practice-overlay.on{opacity:1;pointer-events:all;}
+.ps-inner{width:min(340px,90vw);background:var(--parchment);border-radius:20px;overflow:hidden;position:relative;max-height:85vh;overflow-y:auto;}
+.ps-bar{height:4px;background:rgba(107,91,94,.12);}
+.ps-fill{height:100%;width:0;background:var(--sage);transition:width .4s;}
+.ps-x{position:absolute;top:12px;right:14px;width:28px;height:28px;border-radius:14px;border:none;background:rgba(107,91,94,.08);font-size:14px;color:var(--warm-gray);cursor:pointer;z-index:2;}
+.ps-step{display:none;padding:clamp(28px,6vw,40px) clamp(18px,5vw,26px) clamp(20px,4vh,28px);flex-direction:column;text-align:center;}
+.ps-step.active{display:flex;animation:fadeUp .4s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.ps-eyebrow{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:3px;text-transform:uppercase;color:var(--terracotta);margin-bottom:clamp(10px,2.5vh,16px);}
+.ps-h{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(20px,5.5vw,26px);letter-spacing:2px;text-transform:uppercase;color:var(--ink);line-height:1.15;margin-bottom:clamp(14px,3.5vh,22px);}
+.ps-body{font-family:'Playfair Display',serif;font-size:clamp(12px,3vw,14px);line-height:1.85;color:rgba(45,34,38,.65);margin-bottom:clamp(18px,4.5vh,28px);}
+.ps-btn{width:100%;height:clamp(44px,11vw,52px);border:none;border-radius:26px;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(9px,2.2vw,11px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;}
+.ps-box{background:rgba(107,91,94,.04);border-radius:12px;padding:clamp(12px,3vw,18px);margin-bottom:clamp(14px,3.5vh,22px);text-align:left;}
+.ps-lbl{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:2px;text-transform:uppercase;color:var(--warm-gray);margin-bottom:8px;}
+.ps-ta{width:100%;border:none;background:transparent;font-family:'Playfair Display',serif;font-size:clamp(13px,3.2vw,15px);color:var(--ink);line-height:1.6;resize:none;outline:none;}
+.ps-ta::placeholder{color:rgba(107,91,94,.35);}
+.ps-carry{background:rgba(107,144,128,.1);border-radius:12px;padding:clamp(12px,3vw,18px);margin-bottom:clamp(18px,4.5vh,26px);font-family:'Playfair Display',serif;font-size:clamp(11px,2.8vw,13px);line-height:1.75;color:var(--sage);text-align:left;}
+.ps-carry em{color:var(--deep-rose);font-style:normal;font-weight:600;}
+
+#o-done{position:absolute;inset:0;z-index:80;background:rgba(58,90,122,.97);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(28px,6vw,48px);opacity:0;pointer-events:none;transition:opacity .8s;}
+#o-done.on{opacity:1;pointer-events:all;}
+.done-g{font-size:clamp(36px,10vw,48px);margin-bottom:clamp(12px,3vh,20px);}
+.done-ey{font-family:'Josefin Sans',sans-serif;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:rgba(212,168,67,.5);margin-bottom:clamp(6px,1.5vh,10px);}
+.done-ti{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(26px,8vw,36px);letter-spacing:4px;text-transform:uppercase;color:var(--parchment);line-height:1.1;margin-bottom:clamp(14px,3.5vh,24px);}
+.done-bo{font-family:'Playfair Display',serif;font-size:clamp(12px,3vw,14px);line-height:1.9;color:rgba(253,246,240,.5);margin-bottom:clamp(24px,6vh,40px);max-width:280px;}
+.done-btn{width:clamp(200px,60vw,240px);height:clamp(46px,11vw,54px);border-radius:27px;border:none;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;}
+</style>
+</head>
+<body>
+<div class="phone">
+<button class="exit-x" onclick="notifyApp('close',{zone:10})" aria-label="Exit game">&#x2715;</button>
+
+  <div id="game-area">
+    <canvas id="canvas"></canvas>
+    
+    <div class="zone-label"><div class="zone-num">Zone X · Step 10</div><div class="zone-name">The Watchtower</div></div>
+    <div id="watch-counter"><div class="watch-num" id="caught">0</div><div class="watch-lbl">CAUGHT</div></div>
+    <div id="awareness-bar">
+      <div class="awareness-fill" id="awareness-fill" style="height:100%"></div>
+      <div class="awareness-lbl">AWARENESS</div>
+    </div>
+  </div>
+
+  <div id="panel">
+    <div id="dialogue">
+      <div class="dlg-row">
+        <div class="dlg-sym" id="dlg-sym">—</div>
+        <div class="dlg-text" id="dlg-text">From here, you can see everything.</div>
+      </div>
+    </div>
+    
+    <div id="controls">
+      <div class="ctrl-info">Tap the shadows before they reach the center</div>
+    </div>
+    
+    <div id="seed-btn">
+      <button id="seed-tap">🌱 PICK UP THE SEED</button>
+      <div class="seed-note">A practice for staying aware</div>
+    </div>
+  </div>
+
+  <div class="overlay on" id="o-intro">
+    <div class="oi-b">✦ Zone X · Step 10 ✦</div>
+    <div class="oi-ic">🗼</div>
+    <div class="oi-big">The Watchtower</div>
+    <div class="oi-sub">Maintain awareness</div>
+    <div class="oi-desc">Old patterns do not disappear. They wait. They creep back when you stop paying attention.<br><br>From the watchtower, you can see them coming. Tap them before they take hold.</div>
+    <div class="oi-note">Best experienced in the Tender app</div>
+<button class="oi-btn" id="intro-btn">ENTER THE FIELD</button>
+  </div>
+
+  <div id="practice-overlay">
+    <div class="ps-inner">
+      <div class="ps-bar"><div class="ps-fill" id="ps-fill"></div></div>
+      <button class="ps-x" id="ps-close">✕</button>
+      <div class="ps-step active" id="ps-0">
+        <div class="ps-eyebrow">✦ Practice · Maintaining Awareness</div>
+        <div class="ps-h">The Watch<br>Never Ends</div>
+        <div class="ps-body">Patterns return. Triggers reappear. The work is not to eliminate them — it is to see them coming and choose differently.</div>
+        <button class="ps-btn" id="ps-next-0">CONTINUE</button>
+      </div>
+      <div class="ps-step" id="ps-1">
+        <div class="ps-eyebrow">Early Signs</div>
+        <div class="ps-h">Know Your Signals</div>
+        <div class="ps-body">What are the early warning signs that your old pattern is returning?</div>
+        <div class="ps-box">
+          <div class="ps-lbl">I KNOW THE PATTERN IS COMING WHEN...</div>
+          <textarea class="ps-ta" placeholder="I start getting critical... I withdraw... I feel that familiar tightness..." rows="3"></textarea>
+        </div>
+        <button class="ps-btn" id="ps-next-1">NEXT</button>
+      </div>
+      <div class="ps-step" id="ps-2">
+        <div class="ps-eyebrow">Intervention</div>
+        <div class="ps-h">What You Will Do</div>
+        <div class="ps-body">When you notice the pattern returning, what will you do differently?</div>
+        <div class="ps-box">
+          <div class="ps-lbl">WHEN I SEE IT COMING, I WILL...</div>
+          <textarea class="ps-ta" placeholder="Pause and breathe... Name what I am feeling... Ask for a timeout..." rows="3"></textarea>
+        </div>
+        <button class="ps-btn" id="ps-next-2">NEXT</button>
+      </div>
+      <div class="ps-step" id="ps-3">
+        <div class="ps-eyebrow">Integration</div>
+        <div class="ps-h">Stay Watchful</div>
+        <div class="ps-carry">
+          Awareness is not a one-time achievement. It is a practice.<br><br>
+          <em>Check in with yourself daily:</em><br>
+          "What am I feeling? What patterns are stirring? What do I need?"<br><br>
+          The watchtower is always open.
+        </div>
+        <button class="ps-btn" id="ps-plant">PLANT THIS SEED ✦</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="o-done">
+    <div class="done-g">👁️</div>
+    <div class="done-ey">Zone X Complete</div>
+    <div class="done-ti">The Watchtower</div>
+    <div class="done-bo">You learned to watch.<br>You caught what was coming.<br>Keep your eyes open.</div>
+    <button class="done-btn" id="done-btn">CONTINUE THE JOURNEY</button>
+  </div>
+
+</div>
+
+<script>
+const SHADOW_LABELS = [
+  "Criticism", "Withdrawal", "Blame", "Defensiveness",
+  "Contempt", "Stonewalling", "The old story", "Fear"
+];
+
+const TARGET_CAUGHT = 12;
+
+let S = {
+  phase: 'intro',
+  shadows: [],
+  caught: 0,
+  missed: 0,
+  awareness: 100,
+  gameLoop: null,
+  spawnTimer: 0
+};
+
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+let W, H, centerX, centerY;
+
+function initCanvas() {
+  const area = document.getElementById('game-area');
+  W = area.clientWidth;
+  H = area.clientHeight;
+  canvas.width = W;
+  canvas.height = H;
+  centerX = W / 2;
+  centerY = H * 0.45;
+}
+
+function spawnShadow() {
+  const angle = Math.random() * Math.PI * 2;
+  const dist = Math.max(W, H) * 0.6;
+  
+  S.shadows.push({
+    x: centerX + Math.cos(angle) * dist,
+    y: centerY + Math.sin(angle) * dist,
+    targetX: centerX,
+    targetY: centerY,
+    speed: 0.008 + Math.random() * 0.004,
+    size: 20 + Math.random() * 15,
+    label: SHADOW_LABELS[Math.floor(Math.random() * SHADOW_LABELS.length)],
+    alpha: 0,
+    progress: 0
+  });
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  
+  // Draw tower
+  const towerW = 60;
+  const towerH = H * 0.35;
+  const towerX = centerX - towerW / 2;
+  const towerY = centerY - 20;
+  
+  // Tower base
+  ctx.fillStyle = '#5A4A3A';
+  ctx.beginPath();
+  ctx.moveTo(towerX - 20, towerY + towerH);
+  ctx.lineTo(towerX + towerW + 20, towerY + towerH);
+  ctx.lineTo(towerX + towerW, towerY);
+  ctx.lineTo(towerX, towerY);
+  ctx.closePath();
+  ctx.fill();
+  
+  // Tower top
+  ctx.fillStyle = '#7A6A5A';
+  ctx.beginPath();
+  ctx.moveTo(towerX - 10, towerY);
+  ctx.lineTo(towerX + towerW + 10, towerY);
+  ctx.lineTo(towerX + towerW + 5, towerY - 15);
+  ctx.lineTo(towerX - 5, towerY - 15);
+  ctx.closePath();
+  ctx.fill();
+  
+  // Lookout platform
+  ctx.fillStyle = '#8A7A6A';
+  ctx.fillRect(towerX - 15, towerY - 30, towerW + 30, 15);
+  
+  // Watcher figure
+  ctx.fillStyle = '#4A3A2A';
+  ctx.beginPath();
+  ctx.arc(centerX, towerY - 45, 8, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillRect(centerX - 6, towerY - 37, 12, 15);
+  
+  // Draw shadows
+  S.shadows.forEach(shadow => {
+    const alpha = Math.min(shadow.alpha, 0.7);
+    
+    // Shadow body
+    ctx.beginPath();
+    ctx.arc(shadow.x, shadow.y, shadow.size, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(40,30,50,${alpha})`;
+    ctx.fill();
+    
+    // Inner darkness
+    ctx.beginPath();
+    ctx.arc(shadow.x, shadow.y, shadow.size * 0.6, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(20,10,30,${alpha})`;
+    ctx.fill();
+    
+    // Label
+    if (shadow.alpha > 0.3) {
+      ctx.font = '9px "Josefin Sans"';
+      ctx.fillStyle = `rgba(255,200,200,${alpha})`;
+      ctx.textAlign = 'center';
+      ctx.fillText(shadow.label.toUpperCase(), shadow.x, shadow.y + shadow.size + 14);
+    }
+  });
+  
+  // Draw awareness ring around tower
+  const ringAlpha = S.awareness / 100 * 0.3;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, 80, 0, Math.PI * 2);
+  ctx.strokeStyle = `rgba(107,144,128,${ringAlpha})`;
+  ctx.lineWidth = 3;
+  ctx.stroke();
+}
+
+function update() {
+  S.spawnTimer++;
+  if (S.spawnTimer > 90 && S.shadows.length < 5) {
+    S.spawnTimer = 0;
+    spawnShadow();
+  }
+  
+  S.shadows.forEach((shadow, i) => {
+    // Move toward center
+    const dx = shadow.targetX - shadow.x;
+    const dy = shadow.targetY - shadow.y;
+    const dist = Math.hypot(dx, dy);
+    
+    shadow.x += dx * shadow.speed;
+    shadow.y += dy * shadow.speed;
+    shadow.alpha = Math.min(shadow.alpha + 0.01, 1);
+    shadow.progress = 1 - (dist / (Math.max(W, H) * 0.6));
+    
+    // Reached center
+    if (dist < 30) {
+      S.shadows.splice(i, 1);
+      S.missed++;
+      S.awareness = Math.max(0, S.awareness - 15);
+      updateAwareness();
+      fadeD('—', `"${shadow.label}" slipped through.\n\nStay watchful.`);
+      
+      if (S.awareness <= 0) {
+        resetGame();
+      }
+    }
+  });
+  
+  // Check win
+  if (S.caught >= TARGET_CAUGHT) {
+    completeGame();
+  }
+  
+  draw();
+}
+
+function handleTap(x, y) {
+  for (let i = S.shadows.length - 1; i >= 0; i--) {
+    const shadow = S.shadows[i];
+    const dist = Math.hypot(x - shadow.x, y - shadow.y);
+    
+    if (dist < shadow.size + 15) {
+      S.shadows.splice(i, 1);
+      S.caught++;
+      document.getElementById('caught').textContent = S.caught;
+      
+      // Restore some awareness
+      S.awareness = Math.min(100, S.awareness + 5);
+      updateAwareness();
+      
+      fadeD('✦', `Caught: "${shadow.label}"\n\nYou saw it coming.`);
+      return;
+    }
+  }
+}
+
+function updateAwareness() {
+  document.getElementById('awareness-fill').style.height = S.awareness + '%';
+}
+
+function resetGame() {
+  S.shadows = [];
+  S.awareness = 100;
+  S.caught = 0;
+  S.missed = 0;
+  document.getElementById('caught').textContent = '0';
+  updateAwareness();
+  fadeD('—', 'Awareness faded. Begin again.\n\nThe watch requires vigilance.');
+}
+
+// Touch/click handler
+canvas.addEventListener('click', (e) => {
+  if (S.phase !== 'game') return;
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  handleTap(x, y);
+});
+
+canvas.addEventListener('touchstart', (e) => {
+  if (S.phase !== 'game') return;
+  e.preventDefault();
+  const rect = canvas.getBoundingClientRect();
+  const touch = e.touches[0];
+  const x = touch.clientX - rect.left;
+  const y = touch.clientY - rect.top;
+  handleTap(x, y);
+}, {passive: false});
+
+function begin() {
+  document.getElementById('o-intro').classList.remove('on');
+  S.phase = 'game';
+  
+  initCanvas();
+  document.getElementById('controls').style.display = 'block';
+  
+  S.shadows = [];
+  S.caught = 0;
+  S.missed = 0;
+  S.awareness = 100;
+  
+  draw();
+  fadeD('—', 'Shadows approach from all sides.\n\nTap them before they reach the center.');
+  
+  S.gameLoop = setInterval(update, 16);
+}
+
+function completeGame() {
+  notifyApp('gameComplete', { zone: 10 });
+  clearInterval(S.gameLoop);
+  S.phase = 'done';
+  
+  document.getElementById('controls').style.display = 'none';
+  document.getElementById('seed-btn').style.display = 'flex';
+  
+  fadeD('✦', 'You caught them all.\n\nYour awareness is strong.');
+}
+
+function fadeD(sym, text) {
+  const el = document.getElementById('dlg-text');
+  el.style.opacity = '0';
+  setTimeout(() => {
+    document.getElementById('dlg-sym').textContent = sym;
+    el.textContent = text;
+    el.style.opacity = '1';
+  }, 200);
+}
+
+// Practice
+let P = {step: 0};
+
+function openPractice() {
+  P.step = 0;
+  psShow(0);
+  document.getElementById('ps-fill').style.width = '0%';
+  document.getElementById('practice-overlay').classList.add('on');
+}
+
+function closePractice() {
+  document.getElementById('practice-overlay').classList.remove('on');
+}
+
+function psGo(n) {
+  psShow(n);
+  document.getElementById('ps-fill').style.width = (n / 3 * 100) + '%';
+}
+
+function psShow(n) {
+  document.querySelectorAll('.ps-step').forEach(el => el.classList.remove('active'));
+  document.getElementById('ps-' + n).classList.add('active');
+  P.step = n;
+}
+
+function psPlant() {
+  document.getElementById('ps-fill').style.width = '100%';
+  setTimeout(() => {
+    document.getElementById('practice-overlay').classList.remove('on');
+    const sb = document.getElementById('seed-btn');
+    sb.innerHTML = '<div style="font-family:Playfair Display,serif;font-size:14px;color:var(--sage);text-align:center;padding:12px 0">🌱 Seed planted. Stay watchful.</div>';
+    setTimeout(() => document.getElementById('o-done').classList.add('on'), 800);
+  }, 400);
+}
+
+function finish() {
+  notifyApp('close', { zone: 10 });
+  document.getElementById('o-done').classList.remove('on');
+  fadeD('✦', 'The watch never ends.\nBut now you know how to keep it.');
+}
+
+// Event listeners
+document.getElementById('intro-btn').addEventListener('click', begin);
+document.getElementById('seed-tap').addEventListener('click', openPractice);
+document.getElementById('ps-close').addEventListener('click', closePractice);
+document.getElementById('ps-next-0').addEventListener('click', () => psGo(1));
+document.getElementById('ps-next-1').addEventListener('click', () => psGo(2));
+document.getElementById('ps-next-2').addEventListener('click', () => psGo(3));
+document.getElementById('ps-plant').addEventListener('click', psPlant);
+document.getElementById('done-btn').addEventListener('click', finish);
+
+window.addEventListener('resize', () => {
+  if (S.phase === 'game') {
+    initCanvas();
+    draw();
+  }
+});
+
+// REACT NATIVE BRIDGE
+function notifyApp(event, data) {
+  try {
+    if (window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(JSON.stringify({ event: event, data: data || {} }));
+    } else if (window.parent !== window) {
+      window.parent.postMessage(JSON.stringify({ event: event, data: data || {} }), '*');
+    }
+  } catch(e) {}
+}
+</script>
+</body>
+</html>

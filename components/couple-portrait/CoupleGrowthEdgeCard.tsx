@@ -33,7 +33,7 @@ export default function CoupleGrowthEdgeCard({
   partnerBName,
   index,
 }: CoupleGrowthEdgeCardProps) {
-  const [expanded, setExpanded] = useState(index === 0);
+  const [expanded, setExpanded] = useState(true);
 
   const confColor = CONFIDENCE_COLORS[edge.confidenceLevel] || Colors.textMuted;
 
@@ -102,14 +102,14 @@ export default function CoupleGrowthEdgeCard({
 
           {/* Partner Parts */}
           <View style={styles.partnerPartsRow}>
-            <View style={[styles.partnerPart, { borderLeftColor: Colors.primary }]}>
-              <Text style={[styles.partnerPartLabel, { color: Colors.primary }]}>
+            <View style={[styles.partnerPart, { borderLeftColor: Colors.couplePartnerA }]}>
+              <Text style={[styles.partnerPartLabel, { color: Colors.couplePartnerA }]}>
                 {partnerAName}'s Part
               </Text>
               <Text style={styles.partnerPartText}>{edge.partnerAPart}</Text>
             </View>
-            <View style={[styles.partnerPart, { borderLeftColor: Colors.secondary }]}>
-              <Text style={[styles.partnerPartLabel, { color: Colors.secondary }]}>
+            <View style={[styles.partnerPart, { borderLeftColor: Colors.couplePartnerB }]}>
+              <Text style={[styles.partnerPartLabel, { color: Colors.couplePartnerB }]}>
                 {partnerBName}'s Part
               </Text>
               <Text style={styles.partnerPartText}>{edge.partnerBPart}</Text>
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   sectionText: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.textSecondary,
     lineHeight: 20,
   },
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   invitationText: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.text,
     lineHeight: 20,
   },
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   partnerPartText: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.textSecondary,
     lineHeight: 20,
   },
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   practiceText: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.textSecondary,
     lineHeight: 20,
   },

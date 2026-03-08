@@ -86,7 +86,7 @@ export default function AttachmentMatrixPlot({
 
         {/* Partner A dot */}
         <Circle cx={padding + posA.x} cy={padding + posA.y} r={10}
-          fill={Colors.primary} opacity={0.8} />
+          fill={Colors.couplePartnerA} opacity={0.8} />
         <SvgText x={padding + posA.x} y={padding + posA.y + 4} fontSize={10}
           fill={Colors.white} textAnchor="middle" fontWeight="bold">
           A
@@ -94,7 +94,7 @@ export default function AttachmentMatrixPlot({
 
         {/* Partner B dot */}
         <Circle cx={padding + posB.x} cy={padding + posB.y} r={10}
-          fill={Colors.secondary} opacity={0.8} />
+          fill={Colors.couplePartnerB} opacity={0.8} />
         <SvgText x={padding + posB.x} y={padding + posB.y + 4} fontSize={10}
           fill={Colors.white} textAnchor="middle" fontWeight="bold">
           B
@@ -135,13 +135,13 @@ export default function AttachmentMatrixPlot({
       {/* Legend */}
       <View style={styles.legend}>
         <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: Colors.primary }]} />
+          <View style={[styles.legendDot, { backgroundColor: Colors.couplePartnerA }]} />
           <Text style={styles.legendText}>
             {partnerAName} ({attachmentDynamic.partnerAQuadrant})
           </Text>
         </View>
         <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: Colors.secondary }]} />
+          <View style={[styles.legendDot, { backgroundColor: Colors.couplePartnerB }]} />
           <Text style={styles.legendText}>
             {partnerBName} ({attachmentDynamic.partnerBQuadrant})
           </Text>

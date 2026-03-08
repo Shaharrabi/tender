@@ -19,7 +19,7 @@ import type {
 // ─── Shared Strength Card ────────────────────────────────
 
 export function SharedStrengthCard({ item }: { item: ConvergencePoint }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   return (
     <TouchableOpacity
@@ -36,10 +36,10 @@ export function SharedStrengthCard({ item }: { item: ConvergencePoint }) {
         </View>
         <Text style={styles.cardTitle}>{item.dimensionLabel}</Text>
         <View style={styles.scoreRow}>
-          <Text style={[styles.scoreBadge, { backgroundColor: Colors.primaryFaded, color: Colors.primary }]}>
+          <Text style={[styles.scoreBadge, { backgroundColor: Colors.couplePartnerALight, color: Colors.couplePartnerA }]}>
             {Math.round(item.scoreA)}
           </Text>
-          <Text style={[styles.scoreBadge, { backgroundColor: Colors.secondaryLight, color: Colors.secondaryDark }]}>
+          <Text style={[styles.scoreBadge, { backgroundColor: Colors.couplePartnerBLight, color: Colors.couplePartnerB }]}>
             {Math.round(item.scoreB)}
           </Text>
         </View>
@@ -68,7 +68,7 @@ export function ComplementaryGiftCard({
   partnerAName: string;
   partnerBName: string;
 }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
   const strongerName = item.strongerPartner === 'A' ? partnerAName : partnerBName;
 
   return (
@@ -114,7 +114,7 @@ export function FrictionZoneCard({
   partnerAName: string;
   partnerBName: string;
 }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   return (
     <TouchableOpacity
@@ -135,12 +135,12 @@ export function FrictionZoneCard({
         <View style={styles.expandedContent}>
           {/* Partner pulls */}
           <View style={styles.pullRow}>
-            <View style={[styles.pullColumn, { borderLeftColor: Colors.primary }]}>
-              <Text style={[styles.pullLabel, { color: Colors.primary }]}>{partnerAName}</Text>
+            <View style={[styles.pullColumn, { borderLeftColor: Colors.couplePartnerA }]}>
+              <Text style={[styles.pullLabel, { color: Colors.couplePartnerA }]}>{partnerAName}</Text>
               <Text style={styles.pullText}>{item.partnerAPull}</Text>
             </View>
-            <View style={[styles.pullColumn, { borderLeftColor: Colors.secondary }]}>
-              <Text style={[styles.pullLabel, { color: Colors.secondary }]}>{partnerBName}</Text>
+            <View style={[styles.pullColumn, { borderLeftColor: Colors.couplePartnerB }]}>
+              <Text style={[styles.pullLabel, { color: Colors.couplePartnerB }]}>{partnerBName}</Text>
               <Text style={styles.pullText}>{item.partnerBPull}</Text>
             </View>
           </View>
@@ -165,7 +165,7 @@ export function FrictionZoneCard({
 // ─── Values Tension Card ─────────────────────────────────
 
 export function ValuesTensionCard({ item }: { item: ValuesTension }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   return (
     <TouchableOpacity
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.md,
   },
   narrativeText: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.textSecondary,
     lineHeight: 20,
   },
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   practiceText: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.textSecondary,
     lineHeight: 20,
   },
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   warningText: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.textSecondary,
     lineHeight: 20,
   },
@@ -310,9 +310,8 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   underneathText: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.textSecondary,
-    fontStyle: 'italic',
     lineHeight: 20,
   },
   pullRow: {

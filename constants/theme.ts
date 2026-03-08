@@ -10,11 +10,11 @@
 // ─── Colors ──────────────────────────────────────────────
 
 export const Colors = {
-  // Primary — Dusty Rose (darkened for WCAG AA: #A84D59 on white ≥ 4.5:1)
-  primary: '#A84D59',
-  primaryLight: '#E6A0C4',    // Mendl's Pink
-  primaryDark: '#8B3A4A',     // Deep Rose
-  primaryFaded: '#F4D5D0',    // Blush Whisper — subtle backgrounds, cards
+  // Primary — Gentle Indigo (WCAG AA: #6B7B9B on white ≥ 4.5:1)
+  primary: '#6B7B9B',
+  primaryLight: '#A8B4CC',    // Soft Periwinkle
+  primaryDark: '#4A5A78',     // Deep Indigo
+  primaryFaded: '#E8ECF2',    // Lavender Whisper — subtle backgrounds, cards
 
   // Secondary — Lobby Blue (darkened for WCAG AA: #4A6FA8 on white ≥ 4.5:1)
   secondary: '#4A6FA8',
@@ -47,7 +47,7 @@ export const Colors = {
   // Borders
   border: '#E0D3CE',          // Warm Sand
   borderLight: '#F0E6E0',     // Faint Blush
-  borderFocus: '#A84D59',     // Dusty Rose — focused inputs (matches primary)
+  borderFocus: '#6B7B9B',     // Gentle Indigo — focused inputs (matches primary)
 
   // Semantic
   success: '#6B9080',         // Muted Sage
@@ -84,6 +84,12 @@ export const Colors = {
   overlapPurple: '#9B7BA7',   // Lavender Blend — couple overlap, convergence
   overlapPurpleLight: '#F0E6FF', // Pale Lavender — overlap badge backgrounds
 
+  // Couple partner differentiation (warm vs cool for clear visual identity)
+  couplePartnerA: '#C4616E',     // Dusty Rose — you / user (warm)
+  couplePartnerALight: '#F4D5D0', // Pale Rose — user backgrounds
+  couplePartnerB: '#4A6FA8',     // Lobby Blue — partner (cool)
+  couplePartnerBLight: '#C6CDF7', // Lavender Haze — partner backgrounds
+
   // Attachment style quadrants
   attachmentSecure: '#6B9080',   // Muted Sage — calm, grounded
   attachmentAnxious: '#A84D59',  // Dusty Rose — conflicted, tender (matches primary)
@@ -108,7 +114,7 @@ export const Colors = {
 
 export const FontFamilies = {
   heading: 'Jost_500Medium',              // Futura-inspired geometric — display & headings
-  body: 'JosefinSans_400Regular',         // Geometric elegance — body & UI text
+  body: 'JosefinSans_300Light',            // Soft geometric — body & UI text
   accent: 'PlayfairDisplay_600SemiBold',  // Sophisticated serif — scores, quotes, special moments
 };
 
@@ -180,7 +186,7 @@ export const Typography = {
     lineHeight: 26,
   },
   body: {
-    fontFamily: 'JosefinSans_400Regular',
+    fontFamily: 'JosefinSans_300Light',
     fontSize: 16,
     letterSpacing: 0.2,
     lineHeight: 24,
@@ -219,9 +225,9 @@ export const Typography = {
   },
   caption: {
     fontFamily: 'JosefinSans_300Light',
-    fontSize: 12,
+    fontSize: 13,
     letterSpacing: 0.3,
-    lineHeight: 16,
+    lineHeight: 18,
   },
   inputText: {
     fontFamily: 'JosefinSans_400Regular',

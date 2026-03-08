@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>THE FIELD — Zone VII: The Garden</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;600&family=Josefin+Sans:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+
+:root {
+  --parchment:#FDF6F0;--terracotta:#D8A499;--deep-rose:#8B3A4A;
+  --ink:#2D2226;--warm-gray:#6B5B5E;--rose:#C4616E;
+  --sage:#6B9080;--gold:#D4A843;--sky:#7AB8D4;
+  --soil:#4A3A2A;--grass:#5A8A5A;
+}
+
+html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;touch-action:none;background:transparent;}
+
+.phone{width:100%;height:100%;background:var(--ink);border-radius:0;overflow:hidden;position:relative;display:flex;flex-direction:column;}
+
+#game-area{flex:1;min-height:0;margin:0 6px;border-radius:12px;position:relative;overflow:hidden;background:linear-gradient(180deg,#87CEEB 0%,#A8D8EA 40%,#C8E8D8 70%,#6A9A6A 85%,#4A7A4A 100%);}
+
+canvas{position:absolute;inset:0;}
+
+/* Floating clouds */
+.cloud{position:absolute;background:rgba(255,255,255,.6);border-radius:50px;animation:drift 20s linear infinite;pointer-events:none;}
+.cloud::before,.cloud::after{content:'';position:absolute;background:inherit;border-radius:50%;}
+.cloud.c1{width:60px;height:20px;top:8%;left:-60px;animation-duration:25s;}
+.cloud.c1::before{width:30px;height:30px;top:-15px;left:10px;}
+.cloud.c2{width:40px;height:15px;top:15%;left:-40px;animation-duration:30s;animation-delay:5s;}
+.cloud.c2::before{width:20px;height:20px;top:-10px;left:8px;}
+@keyframes drift{from{transform:translateX(0)}to{transform:translateX(calc(100vw + 100px))}}
+
+.zone-label{position:absolute;top:14px;left:14px;z-index:5;}
+.zone-num{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.5);}
+.zone-name{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(10px,2.5vw,13px);letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.7);}
+
+#growth-meter{position:absolute;top:14px;right:14px;z-index:5;background:rgba(10,6,8,.6);border:1px solid rgba(107,144,128,.3);border-radius:8px;padding:8px 12px;text-align:center;}
+.growth-num{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(16px,4.5vw,22px);color:var(--parchment);line-height:1;}
+.growth-lbl{font-family:'Josefin Sans',sans-serif;font-size:7px;letter-spacing:2px;text-transform:uppercase;color:rgba(107,144,128,.6);margin-top:2px;}
+
+/* Next piece preview */
+#next-piece{position:absolute;top:60px;right:14px;z-index:5;background:rgba(10,6,8,.5);border:1px solid rgba(107,144,128,.2);border-radius:8px;padding:8px;width:60px;height:60px;}
+.next-lbl{font-family:'Josefin Sans',sans-serif;font-size:6px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.4);text-align:center;margin-bottom:4px;}
+
+.exit-x{position:absolute;top:10px;right:10px;z-index:70;width:28px;height:28px;border-radius:14px;border:none;background:rgba(0,0,0,.25);color:rgba(255,255,255,.7);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
+.exit-x:active{background:rgba(0,0,0,.4);}
+
+#panel{background:var(--parchment);border-top:1px solid rgba(216,164,153,.35);flex-shrink:0;z-index:25;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,8px);}
+
+#dialogue{padding:clamp(10px,2vh,16px) clamp(14px,4vw,22px) clamp(6px,1.5vh,10px);flex-shrink:0;}
+.dlg-row{display:flex;gap:10px;align-items:flex-start;}
+.dlg-sym{font-family:'Josefin Sans',sans-serif;font-size:clamp(10px,2.5vw,12px);color:var(--terracotta);flex-shrink:0;margin-top:2px;width:14px;}
+.dlg-text{font-family:'Playfair Display',serif;font-size:clamp(12px,3vw,15px);line-height:1.65;color:var(--ink);white-space:pre-wrap;transition:opacity .25s;}
+
+#controls{display:none;padding:clamp(6px,1.5vh,10px) clamp(14px,4vw,22px) clamp(12px,2.5vh,18px);}
+.ctrl-row{display:flex;gap:clamp(8px,2vw,12px);justify-content:center;}
+.ctrl-btn{width:clamp(56px,16vw,72px);height:clamp(48px,13vw,60px);border:none;border-radius:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:clamp(18px,5vw,24px);transition:all .15s;-webkit-tap-highlight-color:transparent;}
+.ctrl-btn:active{transform:scale(.94);}
+.ctrl-btn.move{background:linear-gradient(135deg,rgba(107,144,128,.2),rgba(107,144,128,.1));border:2px solid rgba(107,144,128,.4);}
+.ctrl-btn.rotate{background:linear-gradient(135deg,rgba(212,168,67,.2),rgba(212,168,67,.1));border:2px solid rgba(212,168,67,.4);}
+.ctrl-btn.drop{background:linear-gradient(135deg,var(--sage),#4A8A6E);border:none;color:white;font-size:clamp(10px,2.5vw,12px);font-family:'Josefin Sans',sans-serif;letter-spacing:1px;}
+
+#seed-btn{display:none;flex-direction:column;align-items:center;padding:clamp(8px,2vh,12px) clamp(22px,6vw,32px) clamp(14px,3vh,20px);gap:8px;}
+#seed-btn button{width:100%;height:clamp(52px,14vw,62px);border:none;border-radius:31px;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(11px,2.8vw,13px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 24px rgba(107,144,128,.45);animation:seedpulse 2.2s ease-in-out infinite;}
+@keyframes seedpulse{0%,100%{box-shadow:0 6px 24px rgba(107,144,128,.4);}50%{box-shadow:0 6px 36px rgba(107,144,128,.7);}}
+.seed-note{font-family:'Playfair Display',serif;font-size:clamp(10px,2.5vw,12px);color:rgba(107,91,94,.45);text-align:center;}
+
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(28px,6vw,48px);opacity:0;pointer-events:none;transition:opacity .7s ease;z-index:50;}
+.overlay.on{opacity:1;pointer-events:all;}
+
+#o-intro{background:linear-gradient(180deg,#486852,#567660);z-index:60;}
+.oi-b{font-family:'Josefin Sans',sans-serif;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:rgba(107,144,128,.6);margin-bottom:clamp(12px,3vh,18px);}
+.oi-ic{font-size:clamp(36px,10vw,48px);margin-bottom:clamp(10px,2.5vh,16px);}
+.oi-big{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(32px,9vw,44px);letter-spacing:4px;text-transform:uppercase;color:var(--parchment);line-height:1.1;margin-bottom:8px;}
+.oi-sub{font-family:'Playfair Display',serif;font-size:clamp(12px,3.2vw,15px);color:rgba(107,144,128,.7);margin-bottom:clamp(18px,4vh,28px);}
+.oi-desc{font-family:'Playfair Display',serif;font-size:clamp(11px,2.8vw,13px);line-height:1.85;color:rgba(253,246,240,.35);margin-bottom:clamp(26px,6vh,40px);max-width:280px;}
+.oi-note{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.6vw,9px);letter-spacing:2px;text-transform:uppercase;color:rgba(253,246,240,.25);margin-bottom:clamp(14px,3vh,20px);}
+.oi-btn{width:clamp(160px,48vw,190px);height:clamp(44px,11vw,52px);border-radius:26px;border:1.5px solid rgba(107,144,128,.5);background:transparent;font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(9px,2.2vw,11px);letter-spacing:3px;text-transform:uppercase;color:rgba(107,144,128,.85);cursor:pointer;transition:all .3s;}
+.oi-btn:active{background:rgba(107,144,128,.15);}
+
+#practice-overlay{position:absolute;inset:0;z-index:70;background:rgba(42,74,58,.96);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .4s;}
+#practice-overlay.on{opacity:1;pointer-events:all;}
+.ps-inner{width:min(340px,90vw);background:var(--parchment);border-radius:20px;overflow:hidden;position:relative;max-height:85vh;overflow-y:auto;}
+.ps-bar{height:4px;background:rgba(107,91,94,.12);}
+.ps-fill{height:100%;width:0;background:var(--sage);transition:width .4s;}
+.ps-x{position:absolute;top:12px;right:14px;width:28px;height:28px;border-radius:14px;border:none;background:rgba(107,91,94,.08);font-size:14px;color:var(--warm-gray);cursor:pointer;z-index:2;}
+.ps-step{display:none;padding:clamp(28px,6vw,40px) clamp(18px,5vw,26px) clamp(20px,4vh,28px);flex-direction:column;text-align:center;}
+.ps-step.active{display:flex;animation:fadeUp .4s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.ps-eyebrow{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:3px;text-transform:uppercase;color:var(--terracotta);margin-bottom:clamp(10px,2.5vh,16px);}
+.ps-h{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(20px,5.5vw,26px);letter-spacing:2px;text-transform:uppercase;color:var(--ink);line-height:1.15;margin-bottom:clamp(14px,3.5vh,22px);}
+.ps-body{font-family:'Playfair Display',serif;font-size:clamp(12px,3vw,14px);line-height:1.85;color:rgba(45,34,38,.65);margin-bottom:clamp(18px,4.5vh,28px);}
+.ps-btn{width:100%;height:clamp(44px,11vw,52px);border:none;border-radius:26px;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(9px,2.2vw,11px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;}
+.ps-box{background:rgba(107,91,94,.04);border-radius:12px;padding:clamp(12px,3vw,18px);margin-bottom:clamp(14px,3.5vh,22px);text-align:left;}
+.ps-lbl{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:2px;text-transform:uppercase;color:var(--warm-gray);margin-bottom:8px;}
+.ps-ta{width:100%;border:none;background:transparent;font-family:'Playfair Display',serif;font-size:clamp(13px,3.2vw,15px);color:var(--ink);line-height:1.6;resize:none;outline:none;}
+.ps-ta::placeholder{color:rgba(107,91,94,.35);}
+.ps-carry{background:rgba(107,144,128,.1);border-radius:12px;padding:clamp(12px,3vw,18px);margin-bottom:clamp(18px,4.5vh,26px);font-family:'Playfair Display',serif;font-size:clamp(11px,2.8vw,13px);line-height:1.75;color:var(--sage);text-align:left;}
+.ps-carry em{color:var(--deep-rose);font-style:normal;font-weight:600;}
+.ps-practices{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:clamp(16px,4vh,24px);}
+.ps-practice{background:rgba(107,144,128,.12);border:1px solid rgba(107,144,128,.25);border-radius:20px;padding:6px 12px;font-family:'Josefin Sans',sans-serif;font-size:clamp(8px,2vw,10px);letter-spacing:1px;color:var(--sage);cursor:pointer;transition:all .2s;}
+.ps-practice.selected{background:var(--sage);color:white;}
+
+#o-done{position:absolute;inset:0;z-index:80;background:rgba(42,74,58,.97);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(28px,6vw,48px);opacity:0;pointer-events:none;transition:opacity .8s;}
+#o-done.on{opacity:1;pointer-events:all;}
+.done-g{font-size:clamp(36px,10vw,48px);margin-bottom:clamp(12px,3vh,20px);}
+.done-ey{font-family:'Josefin Sans',sans-serif;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:rgba(107,144,128,.6);margin-bottom:clamp(6px,1.5vh,10px);}
+.done-ti{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(26px,8vw,36px);letter-spacing:4px;text-transform:uppercase;color:var(--parchment);line-height:1.1;margin-bottom:clamp(14px,3.5vh,24px);}
+.done-bo{font-family:'Playfair Display',serif;font-size:clamp(12px,3vw,14px);line-height:1.9;color:rgba(253,246,240,.5);margin-bottom:clamp(24px,6vh,40px);max-width:280px;}
+.done-btn{width:clamp(200px,60vw,240px);height:clamp(46px,11vw,54px);border-radius:27px;border:none;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;}
+</style>
+</head>
+<body>
+<div class="phone">
+<button class="exit-x" onclick="notifyApp('close',{zone:7})" aria-label="Exit game">&#x2715;</button>
+
+  <div id="game-area">
+    <div class="cloud c1"></div>
+    <div class="cloud c2"></div>
+    <canvas id="canvas"></canvas>
+    
+    <div class="zone-label"><div class="zone-num">Zone VII · Step 7</div><div class="zone-name">The Garden</div></div>
+    <div id="growth-meter"><div class="growth-num" id="growth">0</div><div class="growth-lbl">PLANTED</div></div>
+    <div id="next-piece"><div class="next-lbl">NEXT</div><canvas id="next-canvas" width="44" height="44"></canvas></div>
+  </div>
+
+  <div id="panel">
+    <div id="dialogue">
+      <div class="dlg-row">
+        <div class="dlg-sym" id="dlg-sym">—</div>
+        <div class="dlg-text" id="dlg-text">A garden needs tending.</div>
+      </div>
+    </div>
+    
+    <div id="controls">
+      <div class="ctrl-row">
+        <button class="ctrl-btn move" id="btn-left">←</button>
+        <button class="ctrl-btn rotate" id="btn-rotate">↻</button>
+        <button class="ctrl-btn move" id="btn-right">→</button>
+        <button class="ctrl-btn drop" id="btn-drop">DROP</button>
+      </div>
+    </div>
+    
+    <div id="seed-btn">
+      <button id="seed-tap">🌱 PICK UP THE SEED</button>
+      <div class="seed-note">A practice for tending your garden</div>
+    </div>
+  </div>
+
+  <div class="overlay on" id="o-intro">
+    <div class="oi-b">✦ Zone VII · Step 7 ✦</div>
+    <div class="oi-ic">🌱</div>
+    <div class="oi-big">The Garden</div>
+    <div class="oi-sub">Commit to relational practices</div>
+    <div class="oi-desc">Relationships do not heal themselves. They need practices — rituals of connection, repair, and care.<br><br>Plant these practices carefully. A garden only grows when you tend it.</div>
+    <div class="oi-note">Best experienced in the Tender app</div>
+<button class="oi-btn" id="intro-btn">ENTER THE FIELD</button>
+  </div>
+
+  <div id="practice-overlay">
+    <div class="ps-inner">
+      <div class="ps-bar"><div class="ps-fill" id="ps-fill"></div></div>
+      <button class="ps-x" id="ps-close">✕</button>
+      <div class="ps-step active" id="ps-0">
+        <div class="ps-eyebrow">✦ Practice · Tending the Garden</div>
+        <div class="ps-h">Relational<br>Rituals</div>
+        <div class="ps-body">A practice is something you do regularly, on purpose, to nurture the relationship.<br><br>Not when you feel like it. Not when things are good. <em>Especially</em> when they are not.</div>
+        <button class="ps-btn" id="ps-next-0">CONTINUE</button>
+      </div>
+      <div class="ps-step" id="ps-1">
+        <div class="ps-eyebrow">Choose</div>
+        <div class="ps-h">Your Practices</div>
+        <div class="ps-body">Select 2-3 practices you will commit to:</div>
+        <div class="ps-practices" id="practice-list">
+          <span class="ps-practice" data-p="weekly-check-in">Weekly check-in</span>
+          <span class="ps-practice" data-p="daily-appreciation">Daily appreciation</span>
+          <span class="ps-practice" data-p="repair-ritual">Repair ritual</span>
+          <span class="ps-practice" data-p="date-night">Date night</span>
+          <span class="ps-practice" data-p="morning-connection">Morning connection</span>
+          <span class="ps-practice" data-p="evening-debrief">Evening debrief</span>
+          <span class="ps-practice" data-p="physical-affection">Physical affection</span>
+          <span class="ps-practice" data-p="dream-sharing">Dream sharing</span>
+        </div>
+        <button class="ps-btn" id="ps-next-1">NEXT</button>
+      </div>
+      <div class="ps-step" id="ps-2">
+        <div class="ps-eyebrow">Commit</div>
+        <div class="ps-h">When & How</div>
+        <div class="ps-body">For each practice, decide: when will you do it? What will it look like?</div>
+        <div class="ps-box">
+          <div class="ps-lbl">MY COMMITMENT IS...</div>
+          <textarea class="ps-ta" placeholder="Every Sunday morning we will... Before bed I will... When we argue I will..." rows="4"></textarea>
+        </div>
+        <button class="ps-btn" id="ps-next-2">NEXT</button>
+      </div>
+      <div class="ps-step" id="ps-3">
+        <div class="ps-eyebrow">Integration</div>
+        <div class="ps-h">Tend Daily</div>
+        <div class="ps-carry">
+          A garden does not grow from one watering.<br><br>
+          <em>Show up even when you do not feel like it.</em><br><br>
+          The practice is not about perfection. It is about presence. Keep tending.
+        </div>
+        <button class="ps-btn" id="ps-plant">PLANT THIS SEED ✦</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="o-done">
+    <div class="done-g">🌻</div>
+    <div class="done-ey">Zone VII Complete</div>
+    <div class="done-ti">The Garden</div>
+    <div class="done-bo">Your garden is planted.<br>Now the real work begins:<br>showing up, again and again.</div>
+    <button class="done-btn" id="done-btn">CONTINUE THE JOURNEY</button>
+  </div>
+
+</div>
+
+<script>
+// Practices as Tetris pieces
+const PIECES = [
+  { name: 'Check-in', color: '#7AB87A', shape: [[1,1],[1,1]] },
+  { name: 'Gratitude', color: '#D4A843', shape: [[1,1,1],[0,1,0]] },
+  { name: 'Repair', color: '#C4616E', shape: [[1,1,0],[0,1,1]] },
+  { name: 'Date Night', color: '#7294D4', shape: [[1,1,1,1]] },
+  { name: 'Touch', color: '#D8A499', shape: [[1,0],[1,1],[1,0]] },
+  { name: 'Listen', color: '#9A7ACC', shape: [[0,1],[1,1],[1,0]] },
+];
+
+const COLS = 8;
+const ROWS = 12;
+const TARGET = 15;
+
+let S = {
+  phase: 'intro',
+  grid: [],
+  current: null,
+  next: null,
+  x: 0,
+  y: 0,
+  planted: 0,
+  gameLoop: null,
+  dropTimer: 0
+};
+
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const nextCanvas = document.getElementById('next-canvas');
+const nextCtx = nextCanvas.getContext('2d');
+
+let CELL, GRID_X, GRID_Y;
+
+function initCanvas() {
+  const area = document.getElementById('game-area');
+  canvas.width = area.clientWidth;
+  canvas.height = area.clientHeight;
+  
+  CELL = Math.floor(Math.min(canvas.width / (COLS + 2), canvas.height * 0.6 / ROWS));
+  GRID_X = (canvas.width - COLS * CELL) / 2;
+  GRID_Y = canvas.height - ROWS * CELL - 20;
+}
+
+function newPiece() {
+  S.current = S.next || PIECES[Math.floor(Math.random() * PIECES.length)];
+  S.next = PIECES[Math.floor(Math.random() * PIECES.length)];
+  S.x = Math.floor((COLS - S.current.shape[0].length) / 2);
+  S.y = 0;
+  drawNextPiece();
+}
+
+function drawNextPiece() {
+  nextCtx.clearRect(0, 0, 44, 44);
+  const p = S.next;
+  const size = 10;
+  const ox = (44 - p.shape[0].length * size) / 2;
+  const oy = (44 - p.shape.length * size) / 2;
+  
+  p.shape.forEach((row, r) => {
+    row.forEach((cell, c) => {
+      if (cell) {
+        nextCtx.fillStyle = p.color;
+        nextCtx.beginPath();
+        nextCtx.roundRect(ox + c * size, oy + r * size, size - 1, size - 1, 2);
+        nextCtx.fill();
+      }
+    });
+  });
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  // Draw soil/grid area
+  ctx.fillStyle = 'rgba(74,58,42,0.3)';
+  ctx.fillRect(GRID_X - 2, GRID_Y - 2, COLS * CELL + 4, ROWS * CELL + 4);
+  
+  // Draw grid lines (subtle)
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+  for (let x = 0; x <= COLS; x++) {
+    ctx.beginPath();
+    ctx.moveTo(GRID_X + x * CELL, GRID_Y);
+    ctx.lineTo(GRID_X + x * CELL, GRID_Y + ROWS * CELL);
+    ctx.stroke();
+  }
+  for (let y = 0; y <= ROWS; y++) {
+    ctx.beginPath();
+    ctx.moveTo(GRID_X, GRID_Y + y * CELL);
+    ctx.lineTo(GRID_X + COLS * CELL, GRID_Y + y * CELL);
+    ctx.stroke();
+  }
+  
+  // Draw planted pieces
+  S.grid.forEach((row, r) => {
+    row.forEach((cell, c) => {
+      if (cell) {
+        ctx.fillStyle = cell;
+        ctx.beginPath();
+        ctx.roundRect(GRID_X + c * CELL + 1, GRID_Y + r * CELL + 1, CELL - 2, CELL - 2, 3);
+        ctx.fill();
+        
+        // Highlight
+        ctx.fillStyle = 'rgba(255,255,255,0.2)';
+        ctx.fillRect(GRID_X + c * CELL + 2, GRID_Y + r * CELL + 2, CELL - 6, 3);
+      }
+    });
+  });
+  
+  // Draw current piece
+  if (S.current) {
+    S.current.shape.forEach((row, r) => {
+      row.forEach((cell, c) => {
+        if (cell) {
+          const px = GRID_X + (S.x + c) * CELL;
+          const py = GRID_Y + (S.y + r) * CELL;
+          
+          ctx.fillStyle = S.current.color;
+          ctx.beginPath();
+          ctx.roundRect(px + 1, py + 1, CELL - 2, CELL - 2, 3);
+          ctx.fill();
+          
+          ctx.fillStyle = 'rgba(255,255,255,0.25)';
+          ctx.fillRect(px + 2, py + 2, CELL - 6, 3);
+        }
+      });
+    });
+  }
+  
+  // Draw flowers on completed rows (visual flair)
+  S.grid.forEach((row, r) => {
+    const filled = row.filter(c => c).length;
+    if (filled >= COLS - 1) {
+      ctx.font = '14px serif';
+      ctx.fillText('🌸', GRID_X + COLS * CELL + 5, GRID_Y + r * CELL + CELL / 2 + 5);
+    }
+  });
+}
+
+function collision(nx, ny, shape) {
+  return shape.some((row, r) => {
+    return row.some((cell, c) => {
+      if (!cell) return false;
+      const gx = nx + c;
+      const gy = ny + r;
+      if (gx < 0 || gx >= COLS || gy >= ROWS) return true;
+      if (gy >= 0 && S.grid[gy] && S.grid[gy][gx]) return true;
+      return false;
+    });
+  });
+}
+
+function rotate(shape) {
+  const rows = shape.length;
+  const cols = shape[0].length;
+  const rotated = [];
+  for (let c = 0; c < cols; c++) {
+    const newRow = [];
+    for (let r = rows - 1; r >= 0; r--) {
+      newRow.push(shape[r][c]);
+    }
+    rotated.push(newRow);
+  }
+  return rotated;
+}
+
+function plant() {
+  S.current.shape.forEach((row, r) => {
+    row.forEach((cell, c) => {
+      if (cell && S.y + r >= 0) {
+        if (!S.grid[S.y + r]) S.grid[S.y + r] = new Array(COLS).fill(null);
+        S.grid[S.y + r][S.x + c] = S.current.color;
+      }
+    });
+  });
+  
+  // Count planted cells
+  S.planted = S.grid.reduce((sum, row) => sum + row.filter(c => c).length, 0);
+  document.getElementById('growth').textContent = S.planted;
+  
+  // Clear complete rows (with bloom effect)
+  for (let r = ROWS - 1; r >= 0; r--) {
+    if (S.grid[r] && S.grid[r].every(c => c)) {
+      S.grid.splice(r, 1);
+      S.grid.unshift(new Array(COLS).fill(null));
+      S.planted += 5; // Bonus for complete row
+      document.getElementById('growth').textContent = S.planted;
+      fadeD('🌸', 'A row blooms!\n\nPractices grow stronger together.');
+    }
+  }
+  
+  if (S.planted >= TARGET) {
+    completeGame();
+  } else {
+    newPiece();
+    if (collision(S.x, S.y, S.current.shape)) {
+      // Game over - but in this version, we just clear and continue
+      S.grid = [];
+      for (let r = 0; r < ROWS; r++) S.grid.push(new Array(COLS).fill(null));
+      fadeD('—', 'The garden needs replanting.\nTry again — growth takes time.');
+    }
+  }
+}
+
+function moveLeft() {
+  if (!collision(S.x - 1, S.y, S.current.shape)) {
+    S.x--;
+    draw();
+  }
+}
+
+function moveRight() {
+  if (!collision(S.x + 1, S.y, S.current.shape)) {
+    S.x++;
+    draw();
+  }
+}
+
+function rotatePiece() {
+  const rotated = rotate(S.current.shape);
+  if (!collision(S.x, S.y, rotated)) {
+    S.current.shape = rotated;
+    draw();
+  }
+}
+
+function drop() {
+  while (!collision(S.x, S.y + 1, S.current.shape)) {
+    S.y++;
+  }
+  plant();
+  draw();
+}
+
+function update() {
+  S.dropTimer++;
+  if (S.dropTimer > 30) {
+    S.dropTimer = 0;
+    if (!collision(S.x, S.y + 1, S.current.shape)) {
+      S.y++;
+    } else {
+      plant();
+    }
+    draw();
+  }
+}
+
+// Controls
+document.getElementById('btn-left').addEventListener('click', moveLeft);
+document.getElementById('btn-right').addEventListener('click', moveRight);
+document.getElementById('btn-rotate').addEventListener('click', rotatePiece);
+document.getElementById('btn-drop').addEventListener('click', drop);
+
+document.addEventListener('keydown', (e) => {
+  if (S.phase !== 'game') return;
+  switch(e.key) {
+    case 'ArrowLeft': case 'a': moveLeft(); break;
+    case 'ArrowRight': case 'd': moveRight(); break;
+    case 'ArrowUp': case 'w': rotatePiece(); break;
+    case 'ArrowDown': case 's': case ' ': drop(); break;
+  }
+});
+
+// Game flow
+function begin() {
+  document.getElementById('o-intro').classList.remove('on');
+  S.phase = 'game';
+  
+  initCanvas();
+  S.grid = [];
+  for (let r = 0; r < ROWS; r++) S.grid.push(new Array(COLS).fill(null));
+  
+  document.getElementById('controls').style.display = 'block';
+  
+  newPiece();
+  draw();
+  
+  fadeD('—', 'Plant your practices.\n\nArrange them to build a thriving garden.');
+  
+  S.gameLoop = setInterval(update, 50);
+}
+
+function completeGame() {
+  notifyApp('gameComplete', { zone: 7 });
+  clearInterval(S.gameLoop);
+  S.phase = 'done';
+  
+  document.getElementById('controls').style.display = 'none';
+  document.getElementById('seed-btn').style.display = 'flex';
+  
+  fadeD('✦', 'Your garden is growing.\n\nNow tend it — every day.');
+}
+
+function fadeD(sym, text) {
+  const el = document.getElementById('dlg-text');
+  el.style.opacity = '0';
+  setTimeout(() => {
+    document.getElementById('dlg-sym').textContent = sym;
+    el.textContent = text;
+    el.style.opacity = '1';
+  }, 200);
+}
+
+// Practice
+let P = {step: 0, selected: []};
+
+document.querySelectorAll('.ps-practice').forEach(el => {
+  el.addEventListener('click', () => {
+    el.classList.toggle('selected');
+    const p = el.dataset.p;
+    if (P.selected.includes(p)) {
+      P.selected = P.selected.filter(x => x !== p);
+    } else if (P.selected.length < 3) {
+      P.selected.push(p);
+    } else {
+      el.classList.remove('selected');
+    }
+  });
+});
+
+function openPractice() {
+  P.step = 0;
+  P.selected = [];
+  document.querySelectorAll('.ps-practice').forEach(el => el.classList.remove('selected'));
+  psShow(0);
+  document.getElementById('ps-fill').style.width = '0%';
+  document.getElementById('practice-overlay').classList.add('on');
+}
+
+function closePractice() {
+  document.getElementById('practice-overlay').classList.remove('on');
+}
+
+function psGo(n) {
+  psShow(n);
+  document.getElementById('ps-fill').style.width = (n / 3 * 100) + '%';
+}
+
+function psShow(n) {
+  document.querySelectorAll('.ps-step').forEach(el => el.classList.remove('active'));
+  document.getElementById('ps-' + n).classList.add('active');
+  P.step = n;
+}
+
+function psPlant() {
+  document.getElementById('ps-fill').style.width = '100%';
+  setTimeout(() => {
+    document.getElementById('practice-overlay').classList.remove('on');
+    const sb = document.getElementById('seed-btn');
+    sb.innerHTML = '<div style="font-family:Playfair Display,serif;font-size:14px;color:var(--sage);text-align:center;padding:12px 0">🌱 Seed planted. Your garden awaits.</div>';
+    setTimeout(() => document.getElementById('o-done').classList.add('on'), 800);
+  }, 400);
+}
+
+function finish() {
+  notifyApp('close', { zone: 7 });
+  document.getElementById('o-done').classList.remove('on');
+  fadeD('✦', 'The garden grows with you.\nTend it well.');
+}
+
+// Event listeners
+document.getElementById('intro-btn').addEventListener('click', begin);
+document.getElementById('seed-tap').addEventListener('click', openPractice);
+document.getElementById('ps-close').addEventListener('click', closePractice);
+document.getElementById('ps-next-0').addEventListener('click', () => psGo(1));
+document.getElementById('ps-next-1').addEventListener('click', () => psGo(2));
+document.getElementById('ps-next-2').addEventListener('click', () => psGo(3));
+document.getElementById('ps-plant').addEventListener('click', psPlant);
+document.getElementById('done-btn').addEventListener('click', finish);
+
+window.addEventListener('resize', () => {
+  if (S.phase === 'game') {
+    initCanvas();
+    draw();
+  }
+});
+
+// REACT NATIVE BRIDGE
+function notifyApp(event, data) {
+  try {
+    if (window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(JSON.stringify({ event: event, data: data || {} }));
+    } else if (window.parent !== window) {
+      window.parent.postMessage(JSON.stringify({ event: event, data: data || {} }), '*');
+    }
+  } catch(e) {}
+}
+</script>
+</body>
+</html>

@@ -78,12 +78,12 @@ export default function CoupleAnchorCard({
       <AnchorSection
         title={`For ${partnerAName}`}
         anchors={anchors.forPartnerA}
-        accentColor={Colors.primary}
+        accentColor={Colors.couplePartnerA}
       />
       <AnchorSection
         title={`For ${partnerBName}`}
         anchors={anchors.forPartnerB}
-        accentColor={Colors.secondary}
+        accentColor={Colors.couplePartnerB}
       />
       <AnchorSection
         title="Shared Truths"
@@ -119,14 +119,13 @@ const styles = StyleSheet.create({
     marginTop: 7,
   },
   anchorText: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.text,
     lineHeight: 20,
   },
   contextText: {
     ...Typography.caption,
     color: Colors.textMuted,
-    fontStyle: 'italic',
     marginTop: 2,
   },
   repairCard: {
@@ -137,9 +136,8 @@ const styles = StyleSheet.create({
     borderLeftColor: Colors.success,
   },
   repairQuote: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.text,
-    fontStyle: 'italic' as const,
     lineHeight: 20,
   },
 });

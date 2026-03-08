@@ -87,7 +87,7 @@ function ConfidenceBadge({
   return (
     <View style={[styles.confidenceBadge, { borderColor: color + '30' }]}>
       <View style={[styles.confidenceDot, { backgroundColor: color }]} />
-      <TenderText variant="caption" color={color} style={{ fontWeight: '500' }}>{label}</TenderText>
+      <TenderText variant="caption" color={color}>{label}</TenderText>
     </View>
   );
 }
@@ -108,7 +108,7 @@ function ThreeLayerCard({
   clinicalRows,
   onExportForTherapist,
 }: ThreeLayerCardProps) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
   const [deepExpanded, setDeepExpanded] = useState(false);
   const hasLayer2 = !!(narrativeParagraphs?.length || visualization);
   const hasLayer3 = !!(reflectionQuestions?.length || clinicalRows?.length);
@@ -145,7 +145,7 @@ function ThreeLayerCard({
         </View>
 
         {/* Essence quote */}
-        <TenderText variant="serifItalic" color={Colors.textSecondary} style={{ fontSize: 15, lineHeight: 22, marginBottom: Spacing.md }}>
+        <TenderText variant="body" color={Colors.textSecondary} style={{ lineHeight: 22, marginBottom: Spacing.md }}>
           {`"${essence}"`}
         </TenderText>
 
@@ -156,7 +156,7 @@ function ThreeLayerCard({
               <TenderText variant="caption" color={Colors.textMuted} style={{ textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 1 }}>
                 {item.label}
               </TenderText>
-              <TenderText variant="caption" style={{ fontSize: 13, fontWeight: '500' }}>
+              <TenderText variant="caption">
                 {item.value}
               </TenderText>
             </View>
@@ -166,7 +166,7 @@ function ThreeLayerCard({
         {/* Go deeper CTA */}
         {hasLayer2 && (
           <View style={styles.goDeeper}>
-            <TenderText variant="caption" color={Colors.primary} style={{ fontSize: 13, letterSpacing: 0.3 }}>
+            <TenderText variant="caption" color={Colors.primary}>
               {expanded ? 'Show less' : 'Go deeper'}
             </TenderText>
             <ArrowRightIcon
@@ -208,7 +208,7 @@ function ThreeLayerCard({
               accessibilityRole="button"
               accessibilityLabel={deepExpanded ? 'Hide reflection and clinical detail' : 'Go even deeper, reflection and clinical detail'}
             >
-              <TenderText variant="caption" color={Colors.primary} style={{ fontSize: 13, letterSpacing: 0.3 }}>
+              <TenderText variant="caption" color={Colors.primary}>
                 {deepExpanded
                   ? 'Hide reflection & clinical detail'
                   : 'Go even deeper — reflection + clinical detail'}
@@ -229,10 +229,10 @@ function ThreeLayerCard({
               <TenderText variant="headingS" style={{ marginBottom: Spacing.sm }}>Reflection Questions</TenderText>
               {reflectionQuestions.map((q, i) => (
                 <View key={i} style={styles.reflectionItem}>
-                  <TenderText variant="bodySmall" color={Colors.primary} style={{ fontWeight: '600', width: 18 }}>
+                  <TenderText variant="body" color={Colors.primary} style={{ width: 18 }}>
                     {i + 1}
                   </TenderText>
-                  <TenderText variant="body" style={{ flex: 1, lineHeight: 22, fontStyle: 'italic' }}>
+                  <TenderText variant="body" style={{ flex: 1, lineHeight: 22 }}>
                     {q}
                   </TenderText>
                 </View>
@@ -249,7 +249,7 @@ function ThreeLayerCard({
               {clinicalRows.map((row, i) => (
                 <View key={i} style={styles.clinicalRow}>
                   <TenderText variant="caption" color={Colors.textSecondary}>{row.label}</TenderText>
-                  <TenderText variant="caption" color={Colors.text} style={{ fontWeight: '600' }}>{row.value}</TenderText>
+                  <TenderText variant="caption" color={Colors.text}>{row.value}</TenderText>
                 </View>
               ))}
             </View>

@@ -777,7 +777,7 @@ export function generateCouplePortraitHTML(
 
 @page {
   size: letter;
-  margin: 0.85in 0.85in;
+  margin: 0.95in 1in;
   @bottom-center {
     content: "Tender: The Science of Relationships";
     font-family: 'Josefin Sans', Poppins, 'Liberation Sans', sans-serif;
@@ -794,7 +794,7 @@ export function generateCouplePortraitHTML(
 }
 
 @page :first {
-  margin: 0.5in 0.85in;
+  margin: 0.5in 1in;
   @bottom-center { content: none; }
   @bottom-right { content: none; }
 }

@@ -40,9 +40,9 @@ const LABELS: Array<{ key: keyof AnchorPoints; label: string }> = [
 export default function PortraitAnchors({ anchors }: Props) {
   return (
     <View style={styles.container}>
-      <TenderText variant="headingL">Anchor Points</TenderText>
+      <TenderText variant="headingM">Anchor Points</TenderText>
       <TenderText
-        variant="bodySmall"
+        variant="body"
         color={Colors.textSecondary}
         style={{ marginBottom: Spacing.sm }}
       >
@@ -54,7 +54,7 @@ export default function PortraitAnchors({ anchors }: Props) {
           <TenderText variant="label" color={Colors.primary}>
             {label}
           </TenderText>
-          <TenderText variant="body" style={{ lineHeight: 24, fontStyle: 'italic' }}>
+          <TenderText variant="body" style={{ lineHeight: 24 }}>
             {renderAnchorValue(anchors[key])}
           </TenderText>
         </View>

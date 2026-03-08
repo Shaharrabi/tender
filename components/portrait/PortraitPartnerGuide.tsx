@@ -11,8 +11,8 @@ interface Props {
 export default function PortraitPartnerGuide({ guide }: Props) {
   return (
     <View style={styles.container}>
-      <TenderText variant="headingL">Partner Guide</TenderText>
-      <TenderText variant="bodySmall" color={Colors.textSecondary}>
+      <TenderText variant="headingM">Partner Guide</TenderText>
+      <TenderText variant="body" color={Colors.textSecondary}>
         What your partner needs to know to support you
       </TenderText>
 
@@ -34,13 +34,13 @@ function ListBlock({ label, items }: { label: string; items: string[] }) {
   if (items.length === 0) return null;
   return (
     <View style={styles.listBlock}>
-      <TenderText variant="bodySmall" style={{ fontWeight: '700' }}>
+      <TenderText variant="headingS">
         {label}
       </TenderText>
       {items.map((item, i) => (
         <TenderText
           key={i}
-          variant="bodySmall"
+          variant="body"
           style={{ lineHeight: 22, paddingLeft: Spacing.sm }}
         >
           {'\u2022'} {item}

@@ -1,8 +1,8 @@
 /**
- * Tour Steps — 7-stop guided walkthrough for first launch.
+ * Tour Steps — 8-stop guided walkthrough for first launch.
  *
- * Walks first-time users through the new home page structure:
- * Welcome → Portrait → Journey → Daily Rhythm → Nuance → Explore → Ready
+ * Walks first-time users through the home page structure:
+ * Welcome → The Field → Journey → Partner → Assessment → Daily Rhythm → Explore → Ready
  *
  * Uses RefRegistry to spotlight target elements on-screen.
  * The final step includes a CTA button to begin the first assessment.
@@ -46,52 +46,52 @@ export const HOME_TOUR: Tour = {
       position: 'center',
     },
     {
-      id: 'tour_portrait',
-      targetRef: 'home_portraitSummary',
-      title: 'Your Portrait',
-      body: "This is your relational portrait \u2014 a living picture of how you connect, what you protect, and where you\u2019re growing. After one couple completed theirs, they said: \"We finally understood why we kept having the same fight.\" It deepens with every assessment you take.",
+      id: 'tour_the_field',
+      targetRef: 'home_journeyCard',
+      title: 'The Field',
+      body: 'This is The Field \u2014 your healing map. Each glowing dot is one of 12 steps in your relational growth journey. As you complete steps, the field comes alive.',
       position: 'bottom',
     },
     {
       id: 'tour_journey',
       targetRef: 'home_journeyCard',
-      title: 'The 12 Steps',
-      body: "Twelve steps of relational growth, personalized to your pattern. Each one has teachings, reflections, and practices designed for you. People often tell us step 3 is where things click \u2014 \"I stopped reacting and started noticing.\" You\u2019ll find your own turning point.",
+      title: 'Tap to Explore',
+      body: "Tap any step on The Field to dive in. Each step has teachings, practices, reflections, and a mini-game designed to help you grow. People often tell us step 3 is where things click \u2014 \"I stopped reacting and started noticing.\"",
       position: 'bottom',
     },
     {
-      id: 'tour_journal',
-      targetRef: 'home_dailyRhythm',
-      title: 'Your Journal',
-      body: "Your journal captures reflections, check-ins, and moments of insight as you move through each step. It\u2019s private and just for you. One user shared: \"Reading back what I wrote in week 1 made me cry \u2014 I\u2019d changed so much without realizing it.\"",
-      position: 'top',
+      id: 'tour_partner',
+      targetRef: 'home_partnerSection',
+      title: 'Connect With Your Partner',
+      body: 'Tender is built for two. Invite your partner to join, or practice with an AI partner \u2014 either way, the work deepens when it is shared.',
+      position: 'bottom',
+    },
+    {
+      id: 'tour_assessment',
+      targetRef: 'home_assessmentCta',
+      title: 'The Tender Assessment',
+      body: "Seven sections covering how you connect, feel, fight, and what matters to you. Your answers create your unique Portrait \u2014 a map of your relational self. One couple said: \"We finally understood why we kept having the same fight.\"",
+      position: 'bottom',
     },
     {
       id: 'tour_daily_rhythm',
       targetRef: 'home_dailyRhythm',
-      title: 'Daily Rhythm',
-      body: "A quick check-in, a journal prompt, a nervous system scan. Small moments, repeated, change everything. \"I started doing the 2-minute check-in every morning. My partner noticed within a week.\"",
-      position: 'top',
-    },
-    {
-      id: 'tour_nuance',
-      targetRef: 'home_quickLinks',
-      title: 'Nuance',
-      body: "Nuance is your AI companion \u2014 it knows your portrait and your journey. Talk to it when you need support, guidance, or just someone to think with. It\u2019s like having a therapist in your pocket who actually remembers what you said last week.",
+      title: 'Your Daily Rhythm',
+      body: "Your daily practice lives here \u2014 a quick check-in, a journal prompt, and a nervous system scan. Small moments, repeated, change everything. \"I started doing the 2-minute check-in every morning. My partner noticed within a week.\"",
       position: 'top',
     },
     {
       id: 'tour_explore',
       targetRef: 'home_exploreSection',
       title: 'Explore',
-      body: "Go deeper \u2014 your full portrait, your relationship portal, courses, and community. There\u2019s always more to discover when you\u2019re ready.",
+      body: 'Go deeper \u2014 your full portrait, your relationship portal, courses, practices, and community. Everything connects back to your journey.',
       position: 'top',
     },
     {
       id: 'tour_ready',
       targetRef: 'none',
       title: "You're Ready",
-      body: "That\u2019s it \u2014 your space is set up. Start with a gentle 10-minute assessment. It unlocks your portrait, and everything else builds from there. As one couple put it: \"We wish we\u2019d done this years ago.\"",
+      body: "Start with your first assessment \u2014 it takes about 10 minutes per section and unlocks your portrait. Everything else builds from there. As one couple put it: \"We wish we\u2019d done this years ago.\"",
       position: 'center',
       ctaLabel: 'Begin Your First Assessment \u2192',
       ctaRoute: '/(app)/assessment',

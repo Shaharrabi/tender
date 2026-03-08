@@ -74,12 +74,12 @@ export default function TwinOrbsField({ field, partnerAName, partnerBName }: Twi
         <Svg width={260} height={160} viewBox="0 0 260 160">
           <Defs>
             <RadialGradient id="gradA" cx="50%" cy="50%" r="50%">
-              <Stop offset="0%" stopColor={Colors.primary} stopOpacity="0.6" />
-              <Stop offset="100%" stopColor={Colors.primary} stopOpacity="0" />
+              <Stop offset="0%" stopColor={Colors.couplePartnerA} stopOpacity="0.6" />
+              <Stop offset="100%" stopColor={Colors.couplePartnerA} stopOpacity="0" />
             </RadialGradient>
             <RadialGradient id="gradB" cx="50%" cy="50%" r="50%">
-              <Stop offset="0%" stopColor={Colors.secondary} stopOpacity="0.6" />
-              <Stop offset="100%" stopColor={Colors.secondary} stopOpacity="0" />
+              <Stop offset="0%" stopColor={Colors.couplePartnerB} stopOpacity="0.6" />
+              <Stop offset="100%" stopColor={Colors.couplePartnerB} stopOpacity="0" />
             </RadialGradient>
             <RadialGradient id="gradOverlap" cx="50%" cy="50%" r="50%">
               <Stop offset="0%" stopColor={OVERLAP_COLOR} stopOpacity="0.5" />
@@ -92,13 +92,13 @@ export default function TwinOrbsField({ field, partnerAName, partnerBName }: Twi
 
           {/* Partner A orb */}
           <Circle cx={95} cy={80} r={55} fill="url(#gradA)" />
-          <Circle cx={95} cy={80} r={30} fill={Colors.primary} opacity={0.25} />
-          <Circle cx={95} cy={80} r={12} fill={Colors.primary} opacity={0.6} />
+          <Circle cx={95} cy={80} r={30} fill={Colors.couplePartnerA} opacity={0.25} />
+          <Circle cx={95} cy={80} r={12} fill={Colors.couplePartnerA} opacity={0.6} />
 
           {/* Partner B orb */}
           <Circle cx={165} cy={80} r={55} fill="url(#gradB)" />
-          <Circle cx={165} cy={80} r={30} fill={Colors.secondary} opacity={0.25} />
-          <Circle cx={165} cy={80} r={12} fill={Colors.secondary} opacity={0.6} />
+          <Circle cx={165} cy={80} r={30} fill={Colors.couplePartnerB} opacity={0.25} />
+          <Circle cx={165} cy={80} r={12} fill={Colors.couplePartnerB} opacity={0.6} />
         </Svg>
 
         {/* Labels */}
@@ -186,11 +186,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   fieldNarrative: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.textSecondary,
     textAlign: 'center',
     marginTop: Spacing.sm,
     paddingHorizontal: Spacing.lg,
-    lineHeight: 20,
+    lineHeight: 24,
   },
 });

@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>THE FIELD — Zone VI: The Wall</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;600&family=Josefin+Sans:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+
+:root {
+  --parchment:#FDF6F0;--terracotta:#D8A499;--deep-rose:#8B3A4A;
+  --ink:#2D2226;--warm-gray:#6B5B5E;--rose:#C4616E;
+  --sage:#6B9080;--gold:#D4A843;
+  --you:#C4616E;--them:#7294D4;--wall:#6A5A4A;--wall-light:#8A7A6A;
+}
+
+html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;touch-action:none;background:transparent;}
+
+.phone{width:100%;height:100%;background:var(--ink);border-radius:0;overflow:hidden;position:relative;display:flex;flex-direction:column;}
+
+#game-area{flex:1;min-height:0;margin:0 6px;border-radius:12px;position:relative;overflow:hidden;background:linear-gradient(180deg,#3A4A5A 0%,#4A5A6A 30%,#5A6A7A 50%,#4A5A6A 70%,#3A4A5A 100%);}
+
+canvas{position:absolute;inset:0;}
+
+.zone-label{position:absolute;top:14px;left:14px;z-index:5;}
+.zone-num{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.35);}
+.zone-name{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(10px,2.5vw,13px);letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.55);}
+
+#bricks-counter{position:absolute;top:14px;right:14px;z-index:5;background:rgba(10,6,8,.7);border:1px solid rgba(212,168,67,.25);border-radius:8px;padding:8px 12px;text-align:center;}
+.bricks-num{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(18px,5vw,24px);color:var(--parchment);line-height:1;}
+.bricks-lbl{font-family:'Josefin Sans',sans-serif;font-size:7px;letter-spacing:2px;text-transform:uppercase;color:rgba(212,168,67,.45);margin-top:2px;}
+
+/* Label overlay when brick breaks */
+#break-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10;opacity:0;transition:opacity .3s;pointer-events:none;}
+.break-text{font-family:'Playfair Display',serif;font-size:clamp(14px,4vw,18px);color:var(--parchment);text-shadow:0 2px 10px rgba(0,0,0,.5);text-align:center;}
+
+.exit-x{position:absolute;top:10px;right:10px;z-index:70;width:28px;height:28px;border-radius:14px;border:none;background:rgba(0,0,0,.25);color:rgba(255,255,255,.7);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
+.exit-x:active{background:rgba(0,0,0,.4);}
+
+#panel{background:var(--parchment);border-top:1px solid rgba(216,164,153,.35);flex-shrink:0;z-index:25;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,8px);}
+
+#dialogue{padding:clamp(10px,2vh,16px) clamp(14px,4vw,22px) clamp(6px,1.5vh,10px);flex-shrink:0;}
+.dlg-row{display:flex;gap:10px;align-items:flex-start;}
+.dlg-sym{font-family:'Josefin Sans',sans-serif;font-size:clamp(10px,2.5vw,12px);color:var(--terracotta);flex-shrink:0;margin-top:2px;width:14px;}
+.dlg-text{font-family:'Playfair Display',serif;font-size:clamp(12px,3vw,15px);line-height:1.65;color:var(--ink);white-space:pre-wrap;transition:opacity .25s;}
+
+#controls{display:none;padding:clamp(6px,1.5vh,10px) clamp(14px,4vw,22px) clamp(12px,2.5vh,18px);}
+.ctrl-row{display:flex;gap:clamp(10px,3vw,16px);justify-content:center;}
+.ctrl-btn{width:clamp(70px,20vw,90px);height:clamp(48px,13vw,60px);border:none;border-radius:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:clamp(20px,6vw,28px);transition:all .15s;-webkit-tap-highlight-color:transparent;}
+.ctrl-btn:active{transform:scale(.94);}
+.ctrl-btn.left{background:linear-gradient(135deg,rgba(196,97,110,.2),rgba(196,97,110,.1));border:2px solid rgba(196,97,110,.4);}
+.ctrl-btn.right{background:linear-gradient(135deg,rgba(196,97,110,.2),rgba(196,97,110,.1));border:2px solid rgba(196,97,110,.4);}
+
+#seed-btn{display:none;flex-direction:column;align-items:center;padding:clamp(8px,2vh,12px) clamp(22px,6vw,32px) clamp(14px,3vh,20px);gap:8px;}
+#seed-btn button{width:100%;height:clamp(52px,14vw,62px);border:none;border-radius:31px;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(11px,2.8vw,13px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 24px rgba(107,144,128,.45);animation:seedpulse 2.2s ease-in-out infinite;}
+@keyframes seedpulse{0%,100%{box-shadow:0 6px 24px rgba(107,144,128,.4);}50%{box-shadow:0 6px 36px rgba(107,144,128,.7);}}
+.seed-note{font-family:'Playfair Display',serif;font-size:clamp(10px,2.5vw,12px);color:rgba(107,91,94,.45);text-align:center;}
+
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(28px,6vw,48px);opacity:0;pointer-events:none;transition:opacity .7s ease;z-index:50;}
+.overlay.on{opacity:1;pointer-events:all;}
+
+#o-intro{background:linear-gradient(180deg,#445868,#526878);z-index:60;}
+.oi-b{font-family:'Josefin Sans',sans-serif;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:rgba(212,168,67,.5);margin-bottom:clamp(12px,3vh,18px);}
+.oi-ic{font-size:clamp(36px,10vw,48px);margin-bottom:clamp(10px,2.5vh,16px);}
+.oi-big{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(32px,9vw,44px);letter-spacing:4px;text-transform:uppercase;color:var(--parchment);line-height:1.1;margin-bottom:8px;}
+.oi-sub{font-family:'Playfair Display',serif;font-size:clamp(12px,3.2vw,15px);color:rgba(212,168,67,.6);margin-bottom:clamp(18px,4vh,28px);}
+.oi-desc{font-family:'Playfair Display',serif;font-size:clamp(11px,2.8vw,13px);line-height:1.85;color:rgba(253,246,240,.32);margin-bottom:clamp(26px,6vh,40px);max-width:280px;}
+.oi-note{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.6vw,9px);letter-spacing:2px;text-transform:uppercase;color:rgba(253,246,240,.25);margin-bottom:clamp(14px,3vh,20px);}
+.oi-btn{width:clamp(160px,48vw,190px);height:clamp(44px,11vw,52px);border-radius:26px;border:1.5px solid rgba(212,168,67,.5);background:transparent;font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(9px,2.2vw,11px);letter-spacing:3px;text-transform:uppercase;color:rgba(212,168,67,.85);cursor:pointer;transition:all .3s;}
+.oi-btn:active{background:rgba(212,168,67,.15);}
+
+#practice-overlay{position:absolute;inset:0;z-index:70;background:rgba(42,58,74,.96);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .4s;}
+#practice-overlay.on{opacity:1;pointer-events:all;}
+.ps-inner{width:min(340px,90vw);background:var(--parchment);border-radius:20px;overflow:hidden;position:relative;max-height:85vh;overflow-y:auto;}
+.ps-bar{height:4px;background:rgba(107,91,94,.12);}
+.ps-fill{height:100%;width:0;background:var(--sage);transition:width .4s;}
+.ps-x{position:absolute;top:12px;right:14px;width:28px;height:28px;border-radius:14px;border:none;background:rgba(107,91,94,.08);font-size:14px;color:var(--warm-gray);cursor:pointer;z-index:2;}
+.ps-step{display:none;padding:clamp(28px,6vw,40px) clamp(18px,5vw,26px) clamp(20px,4vh,28px);flex-direction:column;text-align:center;}
+.ps-step.active{display:flex;animation:fadeUp .4s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.ps-eyebrow{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:3px;text-transform:uppercase;color:var(--terracotta);margin-bottom:clamp(10px,2.5vh,16px);}
+.ps-h{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(20px,5.5vw,26px);letter-spacing:2px;text-transform:uppercase;color:var(--ink);line-height:1.15;margin-bottom:clamp(14px,3.5vh,22px);}
+.ps-body{font-family:'Playfair Display',serif;font-size:clamp(12px,3vw,14px);line-height:1.85;color:rgba(45,34,38,.65);margin-bottom:clamp(18px,4.5vh,28px);}
+.ps-btn{width:100%;height:clamp(44px,11vw,52px);border:none;border-radius:26px;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(9px,2.2vw,11px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;}
+.ps-box{background:rgba(107,91,94,.04);border-radius:12px;padding:clamp(12px,3vw,18px);margin-bottom:clamp(14px,3.5vh,22px);text-align:left;}
+.ps-lbl{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:2px;text-transform:uppercase;color:var(--warm-gray);margin-bottom:8px;}
+.ps-ta{width:100%;border:none;background:transparent;font-family:'Playfair Display',serif;font-size:clamp(13px,3.2vw,15px);color:var(--ink);line-height:1.6;resize:none;outline:none;}
+.ps-ta::placeholder{color:rgba(107,91,94,.35);}
+.ps-carry{background:rgba(107,144,128,.08);border-radius:12px;padding:clamp(12px,3vw,18px);margin-bottom:clamp(18px,4.5vh,26px);font-family:'Playfair Display',serif;font-size:clamp(11px,2.8vw,13px);line-height:1.75;color:var(--sage);text-align:left;}
+.ps-carry em{color:var(--deep-rose);font-style:normal;font-weight:600;}
+
+#o-done{position:absolute;inset:0;z-index:80;background:rgba(42,58,74,.97);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(28px,6vw,48px);opacity:0;pointer-events:none;transition:opacity .8s;}
+#o-done.on{opacity:1;pointer-events:all;}
+.done-g{font-size:clamp(36px,10vw,48px);margin-bottom:clamp(12px,3vh,20px);}
+.done-ey{font-family:'Josefin Sans',sans-serif;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:rgba(212,168,67,.5);margin-bottom:clamp(6px,1.5vh,10px);}
+.done-ti{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(26px,8vw,36px);letter-spacing:4px;text-transform:uppercase;color:var(--parchment);line-height:1.1;margin-bottom:clamp(14px,3.5vh,24px);}
+.done-bo{font-family:'Playfair Display',serif;font-size:clamp(12px,3vw,14px);line-height:1.9;color:rgba(253,246,240,.45);margin-bottom:clamp(24px,6vh,40px);max-width:280px;}
+.done-btn{width:clamp(200px,60vw,240px);height:clamp(46px,11vw,54px);border-radius:27px;border:none;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;}
+
+/* See each other moment */
+#see-moment{position:absolute;inset:0;z-index:45;background:rgba(90,106,122,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 1s;}
+#see-moment.on{opacity:1;pointer-events:all;}
+.see-avatars{display:flex;gap:clamp(40px,12vw,60px);margin-bottom:clamp(20px,5vh,32px);}
+.see-av{display:flex;flex-direction:column;align-items:center;}
+.see-av-head{width:clamp(36px,10vw,48px);height:clamp(36px,10vw,48px);border-radius:50%;}
+.see-av-body{width:clamp(36px,10vw,48px);height:clamp(28px,8vw,38px);margin-top:-6px;border-radius:0 0 18px 18px;}
+.see-av.you .see-av-head{background:var(--you);}
+.see-av.you .see-av-body{background:#A84858;}
+.see-av.them .see-av-head{background:var(--them);}
+.see-av.them .see-av-body{background:#5274A4;}
+.see-text{font-family:'Playfair Display',serif;font-size:clamp(16px,4.5vw,20px);color:var(--parchment);text-align:center;line-height:1.6;max-width:260px;}
+</style>
+</head>
+<body>
+<div class="phone">
+<button class="exit-x" onclick="notifyApp('close',{zone:6})" aria-label="Exit game">&#x2715;</button>
+
+  <div id="game-area">
+    <canvas id="canvas"></canvas>
+    
+    <div id="break-label">
+      <div class="break-text" id="break-text"></div>
+    </div>
+    
+    <div class="zone-label"><div class="zone-num">Zone VI · Step 6</div><div class="zone-name">The Wall</div></div>
+    <div id="bricks-counter"><div class="bricks-num" id="bricks-left">20</div><div class="bricks-lbl">BRICKS LEFT</div></div>
+  </div>
+
+  <div id="panel">
+    <div id="dialogue">
+      <div class="dlg-row">
+        <div class="dlg-sym" id="dlg-sym">—</div>
+        <div class="dlg-text" id="dlg-text">There is a wall between you.</div>
+      </div>
+    </div>
+    
+    <div id="controls">
+      <div class="ctrl-row">
+        <button class="ctrl-btn left" id="btn-left">←</button>
+        <button class="ctrl-btn right" id="btn-right">→</button>
+      </div>
+    </div>
+    
+    <div id="seed-btn">
+      <button id="seed-tap">🌱 PICK UP THE SEED</button>
+      <div class="seed-note">A practice for seeing clearly</div>
+    </div>
+  </div>
+
+  <!-- See each other moment -->
+  <div id="see-moment">
+    <div class="see-avatars">
+      <div class="see-av you"><div class="see-av-head"></div><div class="see-av-body"></div></div>
+      <div class="see-av them"><div class="see-av-head"></div><div class="see-av-body"></div></div>
+    </div>
+    <div class="see-text">The wall is down.<br><br>You can finally see each other.</div>
+  </div>
+
+  <div class="overlay on" id="o-intro">
+    <div class="oi-b">✦ Zone VI · Step 6 ✦</div>
+    <div class="oi-ic">🧱</div>
+    <div class="oi-big">The Wall</div>
+    <div class="oi-sub">Release the enemy story</div>
+    <div class="oi-desc">You have built a wall between you — brick by brick, grievance by grievance, story by story.<br><br>Your partner is on the other side, doing the same thing. Together, you will break it down.</div>
+    <div class="oi-note">Best experienced in the Tender app</div>
+<button class="oi-btn" id="intro-btn">ENTER THE FIELD</button>
+  </div>
+
+  <div id="practice-overlay">
+    <div class="ps-inner">
+      <div class="ps-bar"><div class="ps-fill" id="ps-fill"></div></div>
+      <button class="ps-x" id="ps-close">✕</button>
+      <div class="ps-step active" id="ps-0">
+        <div class="ps-eyebrow">✦ Practice · Releasing the Enemy</div>
+        <div class="ps-h">The Story<br>You Built</div>
+        <div class="ps-body">The "enemy story" is the version of your partner that lives in your head — the one who is always wrong, always hurtful, always the problem.<br><br>This is not your partner. This is a story you built to protect yourself.</div>
+        <button class="ps-btn" id="ps-next-0">CONTINUE</button>
+      </div>
+      <div class="ps-step" id="ps-1">
+        <div class="ps-eyebrow">The Enemy</div>
+        <div class="ps-h">Who They Became</div>
+        <div class="ps-body">In your worst moments, who did your partner become in your mind?</div>
+        <div class="ps-box">
+          <div class="ps-lbl">IN MY STORY, THEY BECAME...</div>
+          <textarea class="ps-ta" placeholder="The one who never listens... The one who always criticizes... The one who does not care..." rows="3"></textarea>
+        </div>
+        <button class="ps-btn" id="ps-next-1">NEXT</button>
+      </div>
+      <div class="ps-step" id="ps-2">
+        <div class="ps-eyebrow">The Truth</div>
+        <div class="ps-h">Who They Actually Are</div>
+        <div class="ps-body">Behind the enemy story — who is actually there?</div>
+        <div class="ps-box">
+          <div class="ps-lbl">WHEN I SEE CLEARLY, THEY ARE...</div>
+          <textarea class="ps-ta" placeholder="Someone who is also hurting... Someone who is trying... Someone who loves me..." rows="3"></textarea>
+        </div>
+        <button class="ps-btn" id="ps-next-2">NEXT</button>
+      </div>
+      <div class="ps-step" id="ps-3">
+        <div class="ps-eyebrow">Integration</div>
+        <div class="ps-h">Seeing Them</div>
+        <div class="ps-carry">
+          The enemy story will return. It always does.<br><br>
+          When it does, pause and ask:<br><br>
+          <em>"Is this the story? Or is this actually them?"</em><br><br>
+          Choose to see who is really there.
+        </div>
+        <button class="ps-btn" id="ps-plant">PLANT THIS SEED ✦</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="o-done">
+    <div class="done-g">🌿</div>
+    <div class="done-ey">Zone VI Complete</div>
+    <div class="done-ti">The Wall</div>
+    <div class="done-bo">The wall is down.<br>The enemy is gone.<br>Only your partner remains.</div>
+    <button class="done-btn" id="done-btn">CONTINUE THE JOURNEY</button>
+  </div>
+
+</div>
+
+<script>
+// Brick labels (enemy story elements)
+const BRICK_LABELS = [
+  "They never...", "They always...", "They do not care",
+  "It is their fault", "They should know", "They are selfish",
+  "They do not listen", "They are cold", "They are too much",
+  "They will not change", "They hurt me", "They do not try",
+  "They are wrong", "They are the problem", "They are unfair",
+  "They ignore me", "They criticize me", "They control me",
+  "They abandon me", "They dismiss me"
+];
+
+// Game state
+let S = {
+  phase: 'intro',
+  paddleX: 0.5,
+  partnerX: 0.5,
+  balls: [],
+  bricks: [],
+  bricksLeft: 0,
+  gameLoop: null
+};
+
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+// Colors
+const COLORS = {
+  you: '#C4616E',
+  them: '#7294D4',
+  ball: '#D4A843',
+  ballGlow: 'rgba(212,168,67,0.25)',
+  brick: '#6A5A4A',
+  brickLight: '#8A7A6A',
+  brickDark: '#4A3A2A'
+};
+
+// Sizing
+let W, H, PADDLE_W, PADDLE_H, BALL_R, BRICK_W, BRICK_H;
+
+function initCanvas() {
+  const area = document.getElementById('game-area');
+  W = area.clientWidth;
+  H = area.clientHeight;
+  canvas.width = W;
+  canvas.height = H;
+  
+  PADDLE_W = W * 0.22;
+  PADDLE_H = H * 0.02;
+  BALL_R = Math.min(W, H) * 0.02;
+  BRICK_W = W / 5 - 4;
+  BRICK_H = H * 0.04;
+}
+
+function createBricks() {
+  S.bricks = [];
+  const rows = 4;
+  const cols = 5;
+  const startY = H * 0.35;
+  
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      S.bricks.push({
+        x: c * (W / cols) + 2,
+        y: startY + r * (BRICK_H + 4),
+        w: BRICK_W,
+        h: BRICK_H,
+        alive: true,
+        label: BRICK_LABELS[(r * cols + c) % BRICK_LABELS.length]
+      });
+    }
+  }
+  S.bricksLeft = S.bricks.length;
+  document.getElementById('bricks-left').textContent = S.bricksLeft;
+}
+
+function createBall(fromTop) {
+  const speed = 0.008;
+  return {
+    x: fromTop ? S.partnerX : S.paddleX,
+    y: fromTop ? 0.15 : 0.85,
+    vx: (Math.random() - 0.5) * 0.006,
+    vy: fromTop ? speed : -speed,
+    fromTop: fromTop
+  };
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  
+  // Draw bricks
+  S.bricks.forEach(b => {
+    if (!b.alive) return;
+    
+    // Brick body
+    const grad = ctx.createLinearGradient(b.x, b.y, b.x, b.y + b.h);
+    grad.addColorStop(0, COLORS.brickLight);
+    grad.addColorStop(1, COLORS.brickDark);
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.roundRect(b.x, b.y, b.w, b.h, 3);
+    ctx.fill();
+    
+    // Brick highlight
+    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(b.x + 3, b.y + 2);
+    ctx.lineTo(b.x + b.w - 3, b.y + 2);
+    ctx.stroke();
+  });
+  
+  // Partner paddle (top - blue)
+  const partnerPx = S.partnerX * W - PADDLE_W / 2;
+  ctx.fillStyle = COLORS.them;
+  ctx.beginPath();
+  ctx.roundRect(partnerPx, H * 0.06, PADDLE_W, PADDLE_H, 6);
+  ctx.fill();
+  
+  // Your paddle (bottom - rose)
+  const yourPx = S.paddleX * W - PADDLE_W / 2;
+  ctx.fillStyle = COLORS.you;
+  ctx.beginPath();
+  ctx.roundRect(yourPx, H * 0.92, PADDLE_W, PADDLE_H, 6);
+  ctx.fill();
+  
+  // Balls
+  S.balls.forEach(ball => {
+    const bx = ball.x * W;
+    const by = ball.y * H;
+    
+    // Glow
+    ctx.beginPath();
+    ctx.arc(bx, by, BALL_R * 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = COLORS.ballGlow;
+    ctx.fill();
+    
+    // Ball
+    ctx.beginPath();
+    ctx.arc(bx, by, BALL_R, 0, Math.PI * 2);
+    ctx.fillStyle = COLORS.ball;
+    ctx.fill();
+  });
+}
+
+function update() {
+  // Partner AI - aims for center of bricks or follows ball
+  let targetX = 0.5;
+  if (S.balls.length > 0) {
+    const topBall = S.balls.find(b => b.vy < 0) || S.balls[0];
+    targetX = topBall.x;
+  }
+  S.partnerX += (targetX - S.partnerX) * 0.06;
+  
+  // Update balls
+  S.balls.forEach((ball, bi) => {
+    ball.x += ball.vx;
+    ball.y += ball.vy;
+    
+    // Wall bounce
+    if (ball.x < 0.03 || ball.x > 0.97) {
+      ball.vx *= -1;
+      ball.x = Math.max(0.03, Math.min(0.97, ball.x));
+    }
+    
+    // Paddle collisions
+    const ballPx = ball.x * W;
+    const ballPy = ball.y * H;
+    
+    // Your paddle
+    if (ball.vy > 0 && ballPy > H * 0.91 && ballPy < H * 0.94) {
+      const pLeft = S.paddleX * W - PADDLE_W / 2;
+      const pRight = S.paddleX * W + PADDLE_W / 2;
+      if (ballPx > pLeft && ballPx < pRight) {
+        ball.vy *= -1;
+        ball.vx += (ball.x - S.paddleX) * 0.02;
+      }
+    }
+    
+    // Partner paddle
+    if (ball.vy < 0 && ballPy < H * 0.08 && ballPy > H * 0.05) {
+      const pLeft = S.partnerX * W - PADDLE_W / 2 - 10;
+      const pRight = S.partnerX * W + PADDLE_W / 2 + 10;
+      if (ballPx > pLeft && ballPx < pRight) {
+        ball.vy *= -1;
+        ball.vx += (ball.x - S.partnerX) * 0.02;
+      }
+    }
+    
+    // Brick collisions
+    S.bricks.forEach(brick => {
+      if (!brick.alive) return;
+      
+      if (ballPx > brick.x && ballPx < brick.x + brick.w &&
+          ballPy > brick.y - BALL_R && ballPy < brick.y + brick.h + BALL_R) {
+        brick.alive = false;
+        ball.vy *= -1;
+        S.bricksLeft--;
+        document.getElementById('bricks-left').textContent = S.bricksLeft;
+        
+        showBreakLabel(brick.label);
+        
+        if (S.bricksLeft <= 0) {
+          completeGame();
+        }
+      }
+    });
+    
+    // Ball lost
+    if (ball.y < -0.1 || ball.y > 1.1) {
+      S.balls.splice(bi, 1);
+    }
+  });
+  
+  // Spawn new balls if needed
+  if (S.balls.length < 2 && S.bricksLeft > 0) {
+    if (Math.random() < 0.02) {
+      S.balls.push(createBall(Math.random() > 0.5));
+    }
+  }
+  
+  draw();
+}
+
+function showBreakLabel(text) {
+  const el = document.getElementById('break-text');
+  const container = document.getElementById('break-label');
+  el.textContent = `"${text}"`;
+  container.style.opacity = '1';
+  setTimeout(() => {
+    container.style.opacity = '0';
+  }, 800);
+}
+
+function movePaddle(dir) {
+  S.paddleX = Math.max(0.15, Math.min(0.85, S.paddleX + dir * 0.08));
+}
+
+// Controls
+document.getElementById('btn-left').addEventListener('click', () => movePaddle(-1));
+document.getElementById('btn-right').addEventListener('click', () => movePaddle(1));
+
+document.addEventListener('keydown', (e) => {
+  if (S.phase !== 'game') return;
+  if (e.key === 'ArrowLeft' || e.key === 'a') movePaddle(-1);
+  if (e.key === 'ArrowRight' || e.key === 'd') movePaddle(1);
+});
+
+// Touch drag
+let touchActive = false;
+document.getElementById('game-area').addEventListener('touchstart', () => touchActive = true);
+document.getElementById('game-area').addEventListener('touchmove', (e) => {
+  if (!touchActive || S.phase !== 'game') return;
+  const touch = e.touches[0];
+  const rect = document.getElementById('game-area').getBoundingClientRect();
+  S.paddleX = (touch.clientX - rect.left) / rect.width;
+  S.paddleX = Math.max(0.15, Math.min(0.85, S.paddleX));
+});
+document.getElementById('game-area').addEventListener('touchend', () => touchActive = false);
+
+// Game flow
+function begin() {
+  document.getElementById('o-intro').classList.remove('on');
+  S.phase = 'game';
+  
+  initCanvas();
+  createBricks();
+  
+  document.getElementById('controls').style.display = 'block';
+  
+  // Start with two balls
+  S.balls = [createBall(false), createBall(true)];
+  
+  draw();
+  fadeD('—', 'Break down the wall together.\n\nYour partner is helping from the other side.');
+  
+  S.gameLoop = setInterval(update, 16);
+}
+
+function completeGame() {
+  notifyApp('gameComplete', { zone: 6 });
+  clearInterval(S.gameLoop);
+  S.phase = 'done';
+  
+  // Show "see each other" moment
+  document.getElementById('see-moment').classList.add('on');
+  
+  setTimeout(() => {
+    document.getElementById('see-moment').classList.remove('on');
+    document.getElementById('controls').style.display = 'none';
+    document.getElementById('seed-btn').style.display = 'flex';
+    fadeD('✦', 'The wall is gone.\n\nYou can see them now — really see them.');
+  }, 3500);
+}
+
+function fadeD(sym, text) {
+  const el = document.getElementById('dlg-text');
+  el.style.opacity = '0';
+  setTimeout(() => {
+    document.getElementById('dlg-sym').textContent = sym;
+    el.textContent = text;
+    el.style.opacity = '1';
+  }, 200);
+}
+
+// Practice
+let P = {step: 0};
+
+function openPractice() {
+  P.step = 0;
+  psShow(0);
+  document.getElementById('ps-fill').style.width = '0%';
+  document.getElementById('practice-overlay').classList.add('on');
+}
+
+function closePractice() {
+  document.getElementById('practice-overlay').classList.remove('on');
+}
+
+function psGo(n) {
+  psShow(n);
+  document.getElementById('ps-fill').style.width = (n / 3 * 100) + '%';
+}
+
+function psShow(n) {
+  document.querySelectorAll('.ps-step').forEach(el => el.classList.remove('active'));
+  document.getElementById('ps-' + n).classList.add('active');
+  P.step = n;
+}
+
+function psPlant() {
+  document.getElementById('ps-fill').style.width = '100%';
+  setTimeout(() => {
+    document.getElementById('practice-overlay').classList.remove('on');
+    const sb = document.getElementById('seed-btn');
+    sb.innerHTML = '<div style="font-family:Playfair Display,serif;font-size:14px;color:var(--sage);text-align:center;padding:12px 0">🌱 Seed planted. You see them clearly.</div>';
+    setTimeout(() => document.getElementById('o-done').classList.add('on'), 800);
+  }, 400);
+}
+
+function finish() {
+  notifyApp('close', { zone: 6 });
+  document.getElementById('o-done').classList.remove('on');
+  fadeD('✦', 'The enemy was never real.\nOnly your partner was there all along.');
+}
+
+// Event listeners
+document.getElementById('intro-btn').addEventListener('click', begin);
+document.getElementById('seed-tap').addEventListener('click', openPractice);
+document.getElementById('ps-close').addEventListener('click', closePractice);
+document.getElementById('ps-next-0').addEventListener('click', () => psGo(1));
+document.getElementById('ps-next-1').addEventListener('click', () => psGo(2));
+document.getElementById('ps-next-2').addEventListener('click', () => psGo(3));
+document.getElementById('ps-plant').addEventListener('click', psPlant);
+document.getElementById('done-btn').addEventListener('click', finish);
+
+window.addEventListener('resize', () => {
+  if (S.phase === 'game') {
+    initCanvas();
+    draw();
+  }
+});
+
+// REACT NATIVE BRIDGE
+function notifyApp(event, data) {
+  try {
+    if (window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(JSON.stringify({ event: event, data: data || {} }));
+    } else if (window.parent !== window) {
+      window.parent.postMessage(JSON.stringify({ event: event, data: data || {} }), '*');
+    }
+  } catch(e) {}
+}
+</script>
+</body>
+</html>

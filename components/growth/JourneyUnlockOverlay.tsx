@@ -43,9 +43,14 @@ import { SoundHaptics } from '@/services/SoundHapticsService';
 const { width: W } = Dimensions.get('window');
 const STORAGE_KEY = 'has_seen_journey_unlock';
 
+// In-memory guard — survives even if AsyncStorage fails on web.
+// Once shown in this session, never show again.
+let _shownThisSession = false;
+
 // ─── Helpers (exported for home screen check) ──────────
 
 export async function hasSeenJourneyUnlock(): Promise<boolean> {
+  if (_shownThisSession) return true;
   try {
     const value = await AsyncStorage.getItem(STORAGE_KEY);
     return value === 'true';
@@ -55,10 +60,11 @@ export async function hasSeenJourneyUnlock(): Promise<boolean> {
 }
 
 export async function markJourneyUnlockSeen(): Promise<void> {
+  _shownThisSession = true;
   try {
     await AsyncStorage.setItem(STORAGE_KEY, 'true');
   } catch {
-    // Safe to ignore
+    // Safe to ignore — in-memory flag still prevents re-show
   }
 }
 

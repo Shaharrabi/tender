@@ -108,18 +108,18 @@ export default function DualRadarChart({
         {/* Partner B polygon (back) */}
         <Polygon
           points={getPoints(scoresB)}
-          fill={Colors.secondary}
+          fill={Colors.couplePartnerB}
           fillOpacity={0.15}
-          stroke={Colors.secondary}
+          stroke={Colors.couplePartnerB}
           strokeWidth={2}
         />
 
         {/* Partner A polygon (front) */}
         <Polygon
           points={getPoints(scoresA)}
-          fill={Colors.primary}
+          fill={Colors.couplePartnerA}
           fillOpacity={0.15}
-          stroke={Colors.primary}
+          stroke={Colors.couplePartnerA}
           strokeWidth={2}
         />
 
@@ -133,7 +133,7 @@ export default function DualRadarChart({
               cx={cx + r * Math.cos(angle)}
               cy={cy + r * Math.sin(angle)}
               r={3}
-              fill={Colors.primary}
+              fill={Colors.couplePartnerA}
             />
           );
         })}
@@ -148,7 +148,7 @@ export default function DualRadarChart({
               cx={cx + r * Math.cos(angle)}
               cy={cy + r * Math.sin(angle)}
               r={3}
-              fill={Colors.secondary}
+              fill={Colors.couplePartnerB}
             />
           );
         })}
@@ -173,11 +173,11 @@ export default function DualRadarChart({
       {/* Legend */}
       <View style={styles.legend}>
         <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: Colors.primary }]} />
+          <View style={[styles.legendDot, { backgroundColor: Colors.couplePartnerA }]} />
           <Text style={styles.legendText}>{partnerAName}</Text>
         </View>
         <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: Colors.secondary }]} />
+          <View style={[styles.legendDot, { backgroundColor: Colors.couplePartnerB }]} />
           <Text style={styles.legendText}>{partnerBName}</Text>
         </View>
       </View>

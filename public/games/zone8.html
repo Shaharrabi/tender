@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>THE FIELD — Zone VIII: The Ruins</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;600&family=Josefin+Sans:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+
+:root {
+  --parchment:#FDF6F0;--terracotta:#D8A499;--deep-rose:#8B3A4A;
+  --ink:#2D2226;--warm-gray:#6B5B5E;--rose:#C4616E;
+  --sage:#6B9080;--gold:#D4A843;
+  --ruin:#5A4A3A;--ruin-light:#7A6A5A;--dust:#A89A8A;
+}
+
+html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;touch-action:none;background:transparent;}
+
+.phone{width:100%;height:100%;background:var(--ink);border-radius:0;overflow:hidden;position:relative;display:flex;flex-direction:column;}
+
+#game-area{flex:1;min-height:0;margin:0 6px;border-radius:12px;position:relative;overflow:hidden;background:linear-gradient(180deg,#4A4A5A 0%,#5A5A6A 30%,#6A6A7A 60%,#5A5040 80%,#4A4030 100%);}
+
+canvas{position:absolute;inset:0;}
+
+/* Dust particles */
+.dust{position:absolute;width:2px;height:2px;background:rgba(168,154,138,.4);border-radius:50%;animation:dustFloat 8s ease-in-out infinite;pointer-events:none;}
+@keyframes dustFloat{0%,100%{transform:translateY(0) translateX(0)}25%{transform:translateY(-20px) translateX(10px)}50%{transform:translateY(-10px) translateX(-5px)}75%{transform:translateY(-30px) translateX(15px)}}
+
+.zone-label{position:absolute;top:14px;left:14px;z-index:5;}
+.zone-num{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.35);}
+.zone-name{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(10px,2.5vw,13px);letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.55);}
+
+#pieces-counter{position:absolute;top:14px;right:14px;z-index:5;background:rgba(10,6,8,.6);border:1px solid rgba(212,168,67,.25);border-radius:8px;padding:8px 12px;text-align:center;}
+.pieces-num{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(16px,4.5vw,22px);color:var(--parchment);line-height:1;}
+.pieces-lbl{font-family:'Josefin Sans',sans-serif;font-size:7px;letter-spacing:2px;text-transform:uppercase;color:rgba(212,168,67,.45);margin-top:2px;}
+
+/* Warning flash */
+#warning{position:absolute;inset:0;background:rgba(196,97,110,.3);opacity:0;pointer-events:none;transition:opacity .1s;}
+#warning.flash{opacity:1;}
+
+.exit-x{position:absolute;top:10px;right:10px;z-index:70;width:28px;height:28px;border-radius:14px;border:none;background:rgba(0,0,0,.25);color:rgba(255,255,255,.7);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
+.exit-x:active{background:rgba(0,0,0,.4);}
+
+#panel{background:var(--parchment);border-top:1px solid rgba(216,164,153,.35);flex-shrink:0;z-index:25;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,8px);}
+
+#dialogue{padding:clamp(10px,2vh,16px) clamp(14px,4vw,22px) clamp(6px,1.5vh,10px);flex-shrink:0;}
+.dlg-row{display:flex;gap:10px;align-items:flex-start;}
+.dlg-sym{font-family:'Josefin Sans',sans-serif;font-size:clamp(10px,2.5vw,12px);color:var(--terracotta);flex-shrink:0;margin-top:2px;width:14px;}
+.dlg-text{font-family:'Playfair Display',serif;font-size:clamp(12px,3vw,15px);line-height:1.65;color:var(--ink);white-space:pre-wrap;transition:opacity .25s;}
+
+#controls{display:none;padding:clamp(6px,1.5vh,10px) clamp(14px,4vw,22px) clamp(12px,2.5vh,18px);}
+.ctrl-row{display:flex;gap:clamp(10px,3vw,16px);justify-content:center;align-items:center;}
+.ctrl-btn{width:clamp(60px,17vw,76px);height:clamp(48px,13vw,60px);border:none;border-radius:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:clamp(20px,6vw,28px);transition:all .15s;-webkit-tap-highlight-color:transparent;}
+.ctrl-btn:active{transform:scale(.94);}
+.ctrl-btn.move{background:linear-gradient(135deg,rgba(90,74,58,.2),rgba(90,74,58,.1));border:2px solid rgba(90,74,58,.4);}
+.ctrl-btn.jump{background:linear-gradient(135deg,rgba(212,168,67,.25),rgba(212,168,67,.15));border:2px solid rgba(212,168,67,.5);color:var(--gold);}
+.ctrl-speed{display:flex;flex-direction:column;align-items:center;gap:4px;padding:0 8px;}
+.speed-lbl{font-family:'Josefin Sans',sans-serif;font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--warm-gray);}
+.speed-bar{width:40px;height:6px;background:rgba(107,91,94,.15);border-radius:3px;overflow:hidden;}
+.speed-fill{height:100%;background:var(--gold);border-radius:3px;transition:width .1s;}
+
+#seed-btn{display:none;flex-direction:column;align-items:center;padding:clamp(8px,2vh,12px) clamp(22px,6vw,32px) clamp(14px,3vh,20px);gap:8px;}
+#seed-btn button{width:100%;height:clamp(52px,14vw,62px);border:none;border-radius:31px;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(11px,2.8vw,13px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 24px rgba(107,144,128,.45);animation:seedpulse 2.2s ease-in-out infinite;}
+@keyframes seedpulse{0%,100%{box-shadow:0 6px 24px rgba(107,144,128,.4);}50%{box-shadow:0 6px 36px rgba(107,144,128,.7);}}
+.seed-note{font-family:'Playfair Display',serif;font-size:clamp(10px,2.5vw,12px);color:rgba(107,91,94,.45);text-align:center;}
+
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(28px,6vw,48px);opacity:0;pointer-events:none;transition:opacity .7s ease;z-index:50;}
+.overlay.on{opacity:1;pointer-events:all;}
+
+#o-intro{background:linear-gradient(180deg,#525258,#606066);z-index:60;}
+.oi-b{font-family:'Josefin Sans',sans-serif;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:rgba(168,154,138,.6);margin-bottom:clamp(12px,3vh,18px);}
+.oi-ic{font-size:clamp(36px,10vw,48px);margin-bottom:clamp(10px,2.5vh,16px);}
+.oi-big{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(32px,9vw,44px);letter-spacing:4px;text-transform:uppercase;color:var(--parchment);line-height:1.1;margin-bottom:8px;}
+.oi-sub{font-family:'Playfair Display',serif;font-size:clamp(12px,3.2vw,15px);color:rgba(168,154,138,.7);margin-bottom:clamp(18px,4vh,28px);}
+.oi-desc{font-family:'Playfair Display',serif;font-size:clamp(11px,2.8vw,13px);line-height:1.85;color:rgba(253,246,240,.32);margin-bottom:clamp(26px,6vh,40px);max-width:280px;}
+.oi-note{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.6vw,9px);letter-spacing:2px;text-transform:uppercase;color:rgba(253,246,240,.25);margin-bottom:clamp(14px,3vh,20px);}
+.oi-btn{width:clamp(160px,48vw,190px);height:clamp(44px,11vw,52px);border-radius:26px;border:1.5px solid rgba(168,154,138,.5);background:transparent;font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(9px,2.2vw,11px);letter-spacing:3px;text-transform:uppercase;color:rgba(168,154,138,.85);cursor:pointer;transition:all .3s;}
+.oi-btn:active{background:rgba(168,154,138,.15);}
+
+#practice-overlay{position:absolute;inset:0;z-index:70;background:rgba(58,58,74,.96);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .4s;}
+#practice-overlay.on{opacity:1;pointer-events:all;}
+.ps-inner{width:min(340px,90vw);background:var(--parchment);border-radius:20px;overflow:hidden;position:relative;max-height:85vh;overflow-y:auto;}
+.ps-bar{height:4px;background:rgba(107,91,94,.12);}
+.ps-fill{height:100%;width:0;background:var(--sage);transition:width .4s;}
+.ps-x{position:absolute;top:12px;right:14px;width:28px;height:28px;border-radius:14px;border:none;background:rgba(107,91,94,.08);font-size:14px;color:var(--warm-gray);cursor:pointer;z-index:2;}
+.ps-step{display:none;padding:clamp(28px,6vw,40px) clamp(18px,5vw,26px) clamp(20px,4vh,28px);flex-direction:column;text-align:center;}
+.ps-step.active{display:flex;animation:fadeUp .4s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.ps-eyebrow{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:3px;text-transform:uppercase;color:var(--terracotta);margin-bottom:clamp(10px,2.5vh,16px);}
+.ps-h{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(20px,5.5vw,26px);letter-spacing:2px;text-transform:uppercase;color:var(--ink);line-height:1.15;margin-bottom:clamp(14px,3.5vh,22px);}
+.ps-body{font-family:'Playfair Display',serif;font-size:clamp(12px,3vw,14px);line-height:1.85;color:rgba(45,34,38,.65);margin-bottom:clamp(18px,4.5vh,28px);}
+.ps-btn{width:100%;height:clamp(44px,11vw,52px);border:none;border-radius:26px;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(9px,2.2vw,11px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;}
+.ps-box{background:rgba(107,91,94,.04);border-radius:12px;padding:clamp(12px,3vw,18px);margin-bottom:clamp(14px,3.5vh,22px);text-align:left;}
+.ps-lbl{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:2px;text-transform:uppercase;color:var(--warm-gray);margin-bottom:8px;}
+.ps-ta{width:100%;border:none;background:transparent;font-family:'Playfair Display',serif;font-size:clamp(13px,3.2vw,15px);color:var(--ink);line-height:1.6;resize:none;outline:none;}
+.ps-ta::placeholder{color:rgba(107,91,94,.35);}
+.ps-carry{background:rgba(168,154,138,.12);border-radius:12px;padding:clamp(12px,3vw,18px);margin-bottom:clamp(18px,4.5vh,26px);font-family:'Playfair Display',serif;font-size:clamp(11px,2.8vw,13px);line-height:1.75;color:var(--ruin);text-align:left;}
+.ps-carry em{color:var(--deep-rose);font-style:normal;font-weight:600;}
+
+#o-done{position:absolute;inset:0;z-index:80;background:rgba(58,58,74,.97);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(28px,6vw,48px);opacity:0;pointer-events:none;transition:opacity .8s;}
+#o-done.on{opacity:1;pointer-events:all;}
+.done-g{font-size:clamp(36px,10vw,48px);margin-bottom:clamp(12px,3vh,20px);}
+.done-ey{font-family:'Josefin Sans',sans-serif;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:rgba(168,154,138,.6);margin-bottom:clamp(6px,1.5vh,10px);}
+.done-ti{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(26px,8vw,36px);letter-spacing:4px;text-transform:uppercase;color:var(--parchment);line-height:1.1;margin-bottom:clamp(14px,3.5vh,24px);}
+.done-bo{font-family:'Playfair Display',serif;font-size:clamp(12px,3vw,14px);line-height:1.9;color:rgba(253,246,240,.45);margin-bottom:clamp(24px,6vh,40px);max-width:280px;}
+.done-btn{width:clamp(200px,60vw,240px);height:clamp(46px,11vw,54px);border-radius:27px;border:none;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;}
+</style>
+</head>
+<body>
+<div class="phone">
+<button class="exit-x" onclick="notifyApp('close',{zone:8})" aria-label="Exit game">&#x2715;</button>
+
+  <div id="game-area">
+    <!-- Dust particles -->
+    <div class="dust" style="left:15%;top:30%;animation-delay:0s"></div>
+    <div class="dust" style="left:45%;top:20%;animation-delay:2s"></div>
+    <div class="dust" style="left:75%;top:40%;animation-delay:4s"></div>
+    <div class="dust" style="left:25%;top:60%;animation-delay:1s"></div>
+    <div class="dust" style="left:85%;top:25%;animation-delay:3s"></div>
+    
+    <canvas id="canvas"></canvas>
+    <div id="warning"></div>
+    
+    <div class="zone-label"><div class="zone-num">Zone VIII · Step 8</div><div class="zone-name">The Ruins</div></div>
+    <div id="pieces-counter"><div class="pieces-num" id="pieces">0</div><div class="pieces-lbl">GATHERED</div></div>
+  </div>
+
+  <div id="panel">
+    <div id="dialogue">
+      <div class="dlg-row">
+        <div class="dlg-sym" id="dlg-sym">—</div>
+        <div class="dlg-text" id="dlg-text">Something was broken here.</div>
+      </div>
+    </div>
+    
+    <div id="controls">
+      <div class="ctrl-row">
+        <button class="ctrl-btn move" id="btn-left">←</button>
+        <button class="ctrl-btn jump" id="btn-jump">↑</button>
+        <button class="ctrl-btn move" id="btn-right">→</button>
+        <div class="ctrl-speed">
+          <div class="speed-lbl">CAREFUL</div>
+          <div class="speed-bar"><div class="speed-fill" id="speed-fill" style="width:30%"></div></div>
+        </div>
+      </div>
+    </div>
+    
+    <div id="seed-btn">
+      <button id="seed-tap">🌱 PICK UP THE SEED</button>
+      <div class="seed-note">A practice for preparing repair</div>
+    </div>
+  </div>
+
+  <div class="overlay on" id="o-intro">
+    <div class="oi-b">✦ Zone VIII · Step 8 ✦</div>
+    <div class="oi-ic">🏚️</div>
+    <div class="oi-big">The Ruins</div>
+    <div class="oi-sub">Prepare to repair harm</div>
+    <div class="oi-desc">Here lie the broken pieces — trust that crumbled, words that wounded, moments that fractured.<br><br>Move carefully. Collect what was lost. Rushing makes things worse.</div>
+    <div class="oi-note">Best experienced in the Tender app</div>
+<button class="oi-btn" id="intro-btn">ENTER THE FIELD</button>
+  </div>
+
+  <div id="practice-overlay">
+    <div class="ps-inner">
+      <div class="ps-bar"><div class="ps-fill" id="ps-fill"></div></div>
+      <button class="ps-x" id="ps-close">✕</button>
+      <div class="ps-step active" id="ps-0">
+        <div class="ps-eyebrow">✦ Practice · Preparing to Repair</div>
+        <div class="ps-h">Before<br>You Begin</div>
+        <div class="ps-body">Repair cannot be rushed. Before you try to fix what was broken, you must understand what you broke — and why.</div>
+        <button class="ps-btn" id="ps-next-0">CONTINUE</button>
+      </div>
+      <div class="ps-step" id="ps-1">
+        <div class="ps-eyebrow">Honesty</div>
+        <div class="ps-h">What You Did</div>
+        <div class="ps-body">Name the harm specifically. Not "I messed up" — but exactly what you did and how it affected them.</div>
+        <div class="ps-box">
+          <div class="ps-lbl">THE HARM I CAUSED WAS...</div>
+          <textarea class="ps-ta" placeholder="When I... they felt... It damaged..." rows="3"></textarea>
+        </div>
+        <button class="ps-btn" id="ps-next-1">NEXT</button>
+      </div>
+      <div class="ps-step" id="ps-2">
+        <div class="ps-eyebrow">Understanding</div>
+        <div class="ps-h">Why It Happened</div>
+        <div class="ps-body">Not an excuse — but an understanding. What was going on inside you?</div>
+        <div class="ps-box">
+          <div class="ps-lbl">I DID IT BECAUSE I WAS FEELING...</div>
+          <textarea class="ps-ta" placeholder="Scared... Overwhelmed... Defensive... Disconnected..." rows="3"></textarea>
+        </div>
+        <button class="ps-btn" id="ps-next-2">NEXT</button>
+      </div>
+      <div class="ps-step" id="ps-3">
+        <div class="ps-eyebrow">Integration</div>
+        <div class="ps-h">Ready to Repair</div>
+        <div class="ps-carry">
+          Repair is not about being forgiven.<br><br>
+          It is about <em>showing up differently</em> — taking responsibility without defensiveness, listening without explaining.<br><br>
+          You are preparing your heart, not your argument.
+        </div>
+        <button class="ps-btn" id="ps-plant">PLANT THIS SEED ✦</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="o-done">
+    <div class="done-g">🔧</div>
+    <div class="done-ey">Zone VIII Complete</div>
+    <div class="done-ti">The Ruins</div>
+    <div class="done-bo">You gathered the pieces.<br>You moved with care.<br>Now you are ready to rebuild.</div>
+    <button class="done-btn" id="done-btn">CONTINUE THE JOURNEY</button>
+  </div>
+
+</div>
+
+<script>
+const PIECE_LABELS = [
+  "Trust", "Safety", "Connection", "Honesty",
+  "Presence", "Patience", "Kindness"
+];
+
+const TARGET_PIECES = 6;
+
+let S = {
+  phase: 'intro',
+  player: {x: 50, y: 0, vx: 0, vy: 0, grounded: false},
+  platforms: [],
+  pieces: [],
+  collected: 0,
+  speed: 0,
+  moving: {left: false, right: false},
+  gameLoop: null
+};
+
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+let W, H;
+
+function initCanvas() {
+  const area = document.getElementById('game-area');
+  W = area.clientWidth;
+  H = area.clientHeight;
+  canvas.width = W;
+  canvas.height = H;
+}
+
+function createLevel() {
+  S.platforms = [];
+  S.pieces = [];
+  
+  // Ground
+  S.platforms.push({x: 0, y: H - 30, w: W, h: 30, stable: true});
+  
+  // Platforms at various heights
+  const platformData = [
+    {x: 20, y: H - 100, w: 80},
+    {x: W - 120, y: H - 100, w: 100},
+    {x: W/2 - 50, y: H - 160, w: 100, fragile: true},
+    {x: 30, y: H - 220, w: 90},
+    {x: W - 100, y: H - 280, w: 80},
+    {x: W/2 - 40, y: H - 340, w: 80, fragile: true},
+    {x: 60, y: H - 400, w: 70},
+  ];
+  
+  platformData.forEach(p => {
+    S.platforms.push({
+      x: p.x, y: p.y, w: p.w, h: 16,
+      stable: !p.fragile,
+      fragile: p.fragile,
+      crumble: 0
+    });
+  });
+  
+  // Pieces to collect (on platforms)
+  const piecePositions = [
+    {x: 50, y: H - 120},
+    {x: W - 80, y: H - 120},
+    {x: W/2, y: H - 180},
+    {x: 70, y: H - 240},
+    {x: W - 60, y: H - 300},
+    {x: W/2, y: H - 360},
+  ];
+  
+  piecePositions.forEach((p, i) => {
+    S.pieces.push({
+      x: p.x, y: p.y,
+      label: PIECE_LABELS[i % PIECE_LABELS.length],
+      collected: false
+    });
+  });
+  
+  // Player start
+  S.player = {x: 50, y: H - 60, vx: 0, vy: 0, grounded: false};
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  
+  // Draw platforms
+  S.platforms.forEach(p => {
+    if (p.crumble >= 1) return; // Fully crumbled
+    
+    const alpha = p.fragile ? (1 - p.crumble * 0.7) : 1;
+    
+    // Platform body
+    const grad = ctx.createLinearGradient(p.x, p.y, p.x, p.y + p.h);
+    grad.addColorStop(0, `rgba(122,106,90,${alpha})`);
+    grad.addColorStop(1, `rgba(90,74,58,${alpha})`);
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.roundRect(p.x, p.y, p.w, p.h, 3);
+    ctx.fill();
+    
+    // Cracks for fragile platforms
+    if (p.fragile && p.crumble > 0) {
+      ctx.strokeStyle = `rgba(40,30,20,${alpha})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(p.x + p.w * 0.3, p.y);
+      ctx.lineTo(p.x + p.w * 0.4, p.y + p.h);
+      ctx.moveTo(p.x + p.w * 0.7, p.y);
+      ctx.lineTo(p.x + p.w * 0.6, p.y + p.h);
+      ctx.stroke();
+    }
+    
+    // Highlight
+    ctx.fillStyle = `rgba(255,255,255,${0.15 * alpha})`;
+    ctx.fillRect(p.x + 2, p.y + 1, p.w - 4, 2);
+  });
+  
+  // Draw pieces
+  S.pieces.forEach(p => {
+    if (p.collected) return;
+    
+    // Glow
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 18, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(212,168,67,0.2)';
+    ctx.fill();
+    
+    // Piece
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
+    ctx.fillStyle = '#D4A843';
+    ctx.fill();
+    
+    // Label
+    ctx.font = '8px "Josefin Sans"';
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.textAlign = 'center';
+    ctx.fillText(p.label.toUpperCase(), p.x, p.y + 24);
+  });
+  
+  // Draw player
+  const px = S.player.x;
+  const py = S.player.y;
+  
+  // Shadow
+  ctx.beginPath();
+  ctx.ellipse(px, py + 18, 10, 4, 0, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  ctx.fill();
+  
+  // Body
+  ctx.fillStyle = '#C4616E';
+  ctx.beginPath();
+  ctx.roundRect(px - 8, py - 5, 16, 20, 4);
+  ctx.fill();
+  
+  // Head
+  ctx.fillStyle = '#D8A499';
+  ctx.beginPath();
+  ctx.arc(px, py - 12, 10, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function update() {
+  const p = S.player;
+  
+  // Speed tracking
+  S.speed = Math.abs(p.vx);
+  document.getElementById('speed-fill').style.width = Math.min(100, S.speed * 500) + '%';
+  
+  // Movement
+  if (S.moving.left) p.vx = Math.max(p.vx - 0.3, -3);
+  else if (S.moving.right) p.vx = Math.min(p.vx + 0.3, 3);
+  else p.vx *= 0.85;
+  
+  // Gravity
+  p.vy += 0.5;
+  if (p.vy > 10) p.vy = 10;
+  
+  // Apply velocity
+  p.x += p.vx;
+  p.y += p.vy;
+  
+  // Bounds
+  if (p.x < 10) p.x = 10;
+  if (p.x > W - 10) p.x = W - 10;
+  
+  // Platform collision
+  p.grounded = false;
+  S.platforms.forEach(plat => {
+    if (plat.crumble >= 1) return;
+    
+    if (p.x > plat.x - 8 && p.x < plat.x + plat.w + 8 &&
+        p.y + 18 > plat.y && p.y + 18 < plat.y + plat.h + p.vy + 5 &&
+        p.vy >= 0) {
+      p.y = plat.y - 18;
+      p.vy = 0;
+      p.grounded = true;
+      
+      // Fragile platforms crumble when moving too fast
+      if (plat.fragile) {
+        if (S.speed > 1.5) {
+          plat.crumble += 0.05;
+          flashWarning();
+          if (plat.crumble >= 1) {
+            fadeD('—', 'Too fast. The ground crumbles.\n\nSlow down.');
+          }
+        }
+      }
+    }
+  });
+  
+  // Fall reset
+  if (p.y > H + 50) {
+    p.x = 50;
+    p.y = H - 60;
+    p.vx = 0;
+    p.vy = 0;
+    fadeD('—', 'You fell. Begin again.\n\nPatience is part of the practice.');
+  }
+  
+  // Piece collection
+  S.pieces.forEach(piece => {
+    if (piece.collected) return;
+    const dist = Math.hypot(p.x - piece.x, p.y - piece.y);
+    if (dist < 20) {
+      piece.collected = true;
+      S.collected++;
+      document.getElementById('pieces').textContent = S.collected;
+      
+      fadeD('✦', `"${piece.label}"\n\nYou gathered a piece of what was broken.`);
+      
+      if (S.collected >= TARGET_PIECES) {
+        completeGame();
+      }
+    }
+  });
+  
+  draw();
+}
+
+function flashWarning() {
+  const w = document.getElementById('warning');
+  w.classList.add('flash');
+  setTimeout(() => w.classList.remove('flash'), 100);
+}
+
+function jump() {
+  if (S.player.grounded) {
+    S.player.vy = -10;
+    S.player.grounded = false;
+  }
+}
+
+// Controls
+document.getElementById('btn-left').addEventListener('touchstart', (e) => { e.preventDefault(); S.moving.left = true; });
+document.getElementById('btn-left').addEventListener('touchend', () => S.moving.left = false);
+document.getElementById('btn-left').addEventListener('mousedown', () => S.moving.left = true);
+document.getElementById('btn-left').addEventListener('mouseup', () => S.moving.left = false);
+document.getElementById('btn-left').addEventListener('mouseleave', () => S.moving.left = false);
+
+document.getElementById('btn-right').addEventListener('touchstart', (e) => { e.preventDefault(); S.moving.right = true; });
+document.getElementById('btn-right').addEventListener('touchend', () => S.moving.right = false);
+document.getElementById('btn-right').addEventListener('mousedown', () => S.moving.right = true);
+document.getElementById('btn-right').addEventListener('mouseup', () => S.moving.right = false);
+document.getElementById('btn-right').addEventListener('mouseleave', () => S.moving.right = false);
+
+document.getElementById('btn-jump').addEventListener('click', jump);
+
+document.addEventListener('keydown', (e) => {
+  if (S.phase !== 'game') return;
+  if (e.key === 'ArrowLeft' || e.key === 'a') S.moving.left = true;
+  if (e.key === 'ArrowRight' || e.key === 'd') S.moving.right = true;
+  if (e.key === 'ArrowUp' || e.key === 'w' || e.key === ' ') jump();
+});
+
+document.addEventListener('keyup', (e) => {
+  if (e.key === 'ArrowLeft' || e.key === 'a') S.moving.left = false;
+  if (e.key === 'ArrowRight' || e.key === 'd') S.moving.right = false;
+});
+
+// Game flow
+function begin() {
+  document.getElementById('o-intro').classList.remove('on');
+  S.phase = 'game';
+  
+  initCanvas();
+  createLevel();
+  
+  document.getElementById('controls').style.display = 'block';
+  
+  fadeD('—', 'Move carefully. Fragile platforms crumble if you rush.\n\nCollect the pieces.');
+  
+  S.gameLoop = setInterval(update, 16);
+}
+
+function completeGame() {
+  notifyApp('gameComplete', { zone: 8 });
+  clearInterval(S.gameLoop);
+  S.phase = 'done';
+  
+  document.getElementById('controls').style.display = 'none';
+  document.getElementById('seed-btn').style.display = 'flex';
+  
+  fadeD('✦', 'You gathered all the pieces.\n\nNow you are ready to repair.');
+}
+
+function fadeD(sym, text) {
+  const el = document.getElementById('dlg-text');
+  el.style.opacity = '0';
+  setTimeout(() => {
+    document.getElementById('dlg-sym').textContent = sym;
+    el.textContent = text;
+    el.style.opacity = '1';
+  }, 200);
+}
+
+// Practice
+let P = {step: 0};
+
+function openPractice() {
+  P.step = 0;
+  psShow(0);
+  document.getElementById('ps-fill').style.width = '0%';
+  document.getElementById('practice-overlay').classList.add('on');
+}
+
+function closePractice() {
+  document.getElementById('practice-overlay').classList.remove('on');
+}
+
+function psGo(n) {
+  psShow(n);
+  document.getElementById('ps-fill').style.width = (n / 3 * 100) + '%';
+}
+
+function psShow(n) {
+  document.querySelectorAll('.ps-step').forEach(el => el.classList.remove('active'));
+  document.getElementById('ps-' + n).classList.add('active');
+  P.step = n;
+}
+
+function psPlant() {
+  document.getElementById('ps-fill').style.width = '100%';
+  setTimeout(() => {
+    document.getElementById('practice-overlay').classList.remove('on');
+    const sb = document.getElementById('seed-btn');
+    sb.innerHTML = '<div style="font-family:Playfair Display,serif;font-size:14px;color:var(--sage);text-align:center;padding:12px 0">🌱 Seed planted. You are ready to repair.</div>';
+    setTimeout(() => document.getElementById('o-done').classList.add('on'), 800);
+  }, 400);
+}
+
+function finish() {
+  notifyApp('close', { zone: 8 });
+  document.getElementById('o-done').classList.remove('on');
+  fadeD('✦', 'The pieces are gathered.\nThe heart is prepared.\nNow: rebuild.');
+}
+
+// Event listeners
+document.getElementById('intro-btn').addEventListener('click', begin);
+document.getElementById('seed-tap').addEventListener('click', openPractice);
+document.getElementById('ps-close').addEventListener('click', closePractice);
+document.getElementById('ps-next-0').addEventListener('click', () => psGo(1));
+document.getElementById('ps-next-1').addEventListener('click', () => psGo(2));
+document.getElementById('ps-next-2').addEventListener('click', () => psGo(3));
+document.getElementById('ps-plant').addEventListener('click', psPlant);
+document.getElementById('done-btn').addEventListener('click', finish);
+
+window.addEventListener('resize', () => {
+  if (S.phase === 'game') {
+    initCanvas();
+    draw();
+  }
+});
+
+// REACT NATIVE BRIDGE
+function notifyApp(event, data) {
+  try {
+    if (window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(JSON.stringify({ event: event, data: data || {} }));
+    } else if (window.parent !== window) {
+      window.parent.postMessage(JSON.stringify({ event: event, data: data || {} }), '*');
+    }
+  } catch(e) {}
+}
+</script>
+</body>
+</html>

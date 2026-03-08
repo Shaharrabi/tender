@@ -198,104 +198,14 @@ export default function GrowthPlanContent({ portrait, router }: GrowthPlanConten
             </View>
           )}
 
-          {/* Protocol Phases with Exercises */}
+          {/* Your Path — Integrated into the 12-step journey */}
           <View style={s.phasesContainer}>
             <Text style={s.movementsSectionTitle}>Your Path</Text>
-            {protocol.phases.map((phase: any, i: number) => {
-              // Resolve phase exercise IDs to real exercises
-              const phaseExercises = (phase.practices || [])
-                .map((id: string) => getExerciseById(id))
-                .filter(Boolean)
-                .slice(0, 4);
-              // Phase completion stats
-              const phaseCompletedCount = phaseExercises.filter(
-                (ex: any) => (completionMap[ex.id] ?? 0) > 0
-              ).length;
-              const phaseTotal = phaseExercises.length;
-              const phaseIsComplete = phaseTotal > 0 && phaseCompletedCount >= phaseTotal;
-              const nextPhase = protocol.phases[i + 1];
-              return (
-                <View key={i} style={s.phaseCard}>
-                  <View style={s.phaseHeader}>
-                    <View style={[
-                      s.phaseIndicator,
-                      phaseIsComplete
-                        ? { backgroundColor: Colors.successDark }
-                        : i === 0 && { backgroundColor: Colors.secondary },
-                    ]} />
-                    <View style={{ flex: 1 }}>
-                      <Text style={s.phaseName}>
-                        {phaseIsComplete ? '\u2713 ' : ''}{phase.name}
-                      </Text>
-                      <Text style={s.phaseWeeks}>{phase.weekRange}</Text>
-                    </View>
-                  </View>
-                  <Text style={s.phaseFocus}>{phase.focus}</Text>
-
-                  {/* Phase exercises — tappable rows with done state */}
-                  {phaseExercises.length > 0 && (
-                    <View style={s.phaseExercises}>
-                      <Text style={s.phaseExercisesLabel}>Recommended Exercises</Text>
-                      {phaseExercises.map((ex: any) => {
-                        const isDone = (completionMap[ex.id] ?? 0) > 0;
-                        const accentColor = isDone
-                          ? Colors.successDark
-                          : CATEGORY_ACCENT_COLORS[ex.category as keyof typeof CATEGORY_ACCENT_COLORS] || Colors.primary;
-                        return (
-                          <TouchableOpacity
-                            key={ex.id}
-                            style={[s.exerciseRow, isDone && s.exerciseRowDone]}
-                            activeOpacity={0.7}
-                            onPress={() => router.push({ pathname: '/(app)/exercise', params: { id: ex.id } } as any)}
-                            accessibilityRole="link"
-                            accessibilityLabel={`${ex.title}, ${isDone ? 'completed' : `${ex.duration} minutes`}`}
-                          >
-                            {isDone ? (
-                              <View style={s.exerciseCheckmark}>
-                                <Text style={s.exerciseCheckmarkText}>{'\u2713'}</Text>
-                              </View>
-                            ) : (
-                              <View style={[s.exerciseDot, { backgroundColor: accentColor }]} />
-                            )}
-                            <Text
-                              style={[s.exerciseRowTitle, isDone && s.exerciseRowTitleDone]}
-                              numberOfLines={1}
-                            >
-                              {ex.title}
-                            </Text>
-                            <Text style={s.exerciseRowMeta}>
-                              {isDone ? 'Done' : `${ex.duration} min`}
-                            </Text>
-                            <Text style={s.exerciseRowArrow}>{'\u203A'}</Text>
-                          </TouchableOpacity>
-                        );
-                      })}
-
-                      {/* Phase progress counter */}
-                      {phaseTotal > 0 && (
-                        <Text style={s.phaseProgressText}>
-                          {phaseCompletedCount} of {phaseTotal} complete
-                        </Text>
-                      )}
-                    </View>
-                  )}
-
-                  {/* Phase completion summary card */}
-                  {phaseIsComplete && (
-                    <View style={s.phaseCompleteSummary}>
-                      <View style={s.phaseCompleteIcon}><SparkleIcon size={20} color={Colors.secondary} /></View>
-                      <Text style={s.phaseCompleteTitle}>
-                        {phase.name} — Complete
-                      </Text>
-                      <Text style={s.phaseCompleteText}>
-                        You practiced {phaseExercises.map((ex: any) => ex.title).join(', ')}.{' '}
-                        {phase.focus}{nextPhase ? ` Next: ${nextPhase.name} \u2192` : ' Great work!'}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-              );
-            })}
+            <View style={s.pathIntegratedCard}>
+              <Text style={s.pathIntegratedText}>
+                Your 12-step journey is your path. Each step integrates the practices your protocol recommends — completing steps and exercises grows your edges and moves your portrait score.
+              </Text>
+            </View>
           </View>
 
           {/* Contraindications as gentle guidance */}
@@ -405,6 +315,7 @@ export default function GrowthPlanContent({ portrait, router }: GrowthPlanConten
 const s = StyleSheet.create({
   // Tab Intro
   tabIntro: {
+    fontFamily: FontFamilies.body,
     fontSize: FontSizes.body,
     color: Colors.textSecondary,
     lineHeight: 24,
@@ -416,20 +327,21 @@ const s = StyleSheet.create({
     marginBottom: Spacing.xl,
   },
   protocolEyebrow: {
-    fontSize: FontSizes.caption,
-    fontWeight: '700' as const,
-    color: Colors.secondary,
+    fontFamily: FontFamilies.body,
+    fontSize: 11,
+    color: Colors.textSecondary,
     textTransform: 'uppercase' as const,
     letterSpacing: 1.5,
     marginBottom: Spacing.xs,
   },
   protocolName: {
+    fontFamily: FontFamilies.heading,
     fontSize: FontSizes.headingM,
-    fontWeight: '700' as const,
     color: Colors.text,
     marginBottom: Spacing.sm,
   },
   protocolDescription: {
+    fontFamily: FontFamilies.body,
     fontSize: FontSizes.body,
     color: Colors.textSecondary,
     lineHeight: 24,
@@ -441,13 +353,14 @@ const s = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   movementsSectionTitle: {
-    fontSize: FontSizes.body,
-    fontWeight: '700' as const,
+    fontFamily: FontFamilies.heading,
+    fontSize: FontSizes.headingS,
     color: Colors.text,
     marginBottom: Spacing.xs,
   },
   movementsSubtitle: {
-    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.body,
     color: Colors.textSecondary,
     marginBottom: Spacing.md,
   },
@@ -465,19 +378,19 @@ const s = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   movementName: {
+    fontFamily: FontFamilies.heading,
     fontSize: FontSizes.body,
-    fontWeight: '600' as const,
     color: Colors.text,
   },
   movementQuestion: {
-    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.body,
     color: Colors.textSecondary,
-    fontStyle: 'italic' as const,
   },
   movementScore: {
+    fontFamily: FontFamilies.body,
     fontSize: FontSizes.body,
-    fontWeight: '700' as const,
-    color: Colors.secondary,
+    color: Colors.textSecondary,
   },
   movementProgressTrack: {
     height: 6,
@@ -492,14 +405,28 @@ const s = StyleSheet.create({
     borderRadius: 3,
   },
   movementDescription: {
-    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.body,
     color: Colors.textSecondary,
-    lineHeight: 20,
+    lineHeight: 24,
   },
 
   // Phases
   phasesContainer: {
     marginBottom: Spacing.lg,
+  },
+  pathIntegratedCard: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+  },
+  pathIntegratedText: {
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.sm,
+    color: Colors.textSecondary,
+    lineHeight: 20,
   },
   phaseCard: {
     backgroundColor: Colors.white,
@@ -522,18 +449,20 @@ const s = StyleSheet.create({
     marginRight: Spacing.sm,
   },
   phaseName: {
+    fontFamily: FontFamilies.heading,
     fontSize: FontSizes.body,
-    fontWeight: '600' as const,
     color: Colors.text,
   },
   phaseWeeks: {
-    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.body,
     color: Colors.textSecondary,
   },
   phaseFocus: {
-    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.body,
     color: Colors.textSecondary,
-    lineHeight: 20,
+    lineHeight: 24,
     paddingLeft: Spacing.md + Spacing.sm,
   },
   phaseExercises: {
@@ -541,8 +470,8 @@ const s = StyleSheet.create({
     paddingLeft: Spacing.md + Spacing.sm,
   },
   phaseExercisesLabel: {
+    fontFamily: FontFamilies.body,
     fontSize: 11,
-    fontWeight: '700' as const,
     color: Colors.textMuted,
     textTransform: 'uppercase' as const,
     letterSpacing: 0.8,
@@ -567,8 +496,8 @@ const s = StyleSheet.create({
   },
   exerciseRowTitle: {
     flex: 1,
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '600' as const,
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.body,
     color: Colors.text,
   },
   exerciseRowMeta: {
@@ -579,7 +508,6 @@ const s = StyleSheet.create({
   exerciseRowArrow: {
     fontSize: 18,
     color: Colors.textMuted,
-    fontWeight: '300' as const,
   },
   exerciseRowDone: {
     backgroundColor: Colors.successLight,
@@ -597,7 +525,6 @@ const s = StyleSheet.create({
   exerciseCheckmarkText: {
     fontSize: 11,
     color: Colors.white,
-    fontWeight: '700' as const,
   },
   exerciseRowTitleDone: {
     color: Colors.successDark,
@@ -611,15 +538,16 @@ const s = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   guidanceTitle: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '600' as const,
+    fontFamily: FontFamilies.heading,
+    fontSize: FontSizes.headingS,
     color: Colors.text,
     marginBottom: Spacing.sm,
   },
   guidanceItem: {
-    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.body,
     color: Colors.textSecondary,
-    lineHeight: 20,
+    lineHeight: 24,
     marginBottom: Spacing.xs,
   },
 
@@ -639,14 +567,14 @@ const s = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   growthProgressLabel: {
+    fontFamily: FontFamilies.heading,
     fontSize: FontSizes.body,
-    fontWeight: '700' as const,
     color: Colors.text,
   },
   growthProgressPct: {
+    fontFamily: FontFamilies.heading,
     fontSize: FontSizes.headingM,
-    fontWeight: '700' as const,
-    color: Colors.secondary,
+    color: Colors.textSecondary,
   },
   growthProgressTrack: {
     height: 10,
@@ -679,14 +607,14 @@ const s = StyleSheet.create({
     borderRadius: 2,
   },
   phaseProgressMiniLabel: {
+    fontFamily: FontFamilies.body,
     fontSize: 9,
     color: Colors.textMuted,
-    fontWeight: '600' as const,
   },
   phaseProgressText: {
+    fontFamily: FontFamilies.body,
     fontSize: 11,
     color: Colors.textMuted,
-    fontWeight: '600' as const,
     marginTop: 4,
     textAlign: 'right' as const,
   },
@@ -705,15 +633,16 @@ const s = StyleSheet.create({
     marginBottom: 4,
   },
   phaseCompleteTitle: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '700' as const,
+    fontFamily: FontFamilies.heading,
+    fontSize: FontSizes.body,
     color: Colors.successDark,
     marginBottom: 4,
   },
   phaseCompleteText: {
-    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.body,
     color: Colors.successMuted,
-    lineHeight: 20,
+    lineHeight: 24,
   },
 
   // Growth Edges
@@ -739,8 +668,8 @@ const s = StyleSheet.create({
     justifyContent: 'center',
   },
   growthEdgeNumberText: {
+    fontFamily: FontFamilies.heading,
     fontSize: FontSizes.body,
-    fontWeight: '700',
     color: Colors.white,
   },
   growthEdgeHeaderText: {
@@ -748,21 +677,22 @@ const s = StyleSheet.create({
     gap: 2,
   },
   growthEdgeLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: Colors.warning,
+    fontFamily: FontFamilies.body,
+    fontSize: 11,
+    color: Colors.textSecondary,
     letterSpacing: 1,
+    textTransform: 'uppercase' as const,
   },
   growthEdgeTitle: {
-    fontSize: FontSizes.headingM,
-    fontWeight: '600',
     fontFamily: FontFamilies.heading,
+    fontSize: FontSizes.headingM,
     color: Colors.text,
   },
   growthEdgeDescription: {
-    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.body,
     color: Colors.text,
-    lineHeight: 22,
+    lineHeight: 24,
   },
   growthEdgeRationaleBox: {
     backgroundColor: Colors.surface,
@@ -772,18 +702,18 @@ const s = StyleSheet.create({
     borderLeftColor: Colors.warning,
   },
   growthEdgeRationale: {
-    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.body,
     color: Colors.textSecondary,
-    lineHeight: 20,
-    fontStyle: 'italic',
+    lineHeight: 24,
   },
   practicesSection: {
     marginTop: Spacing.xs,
     gap: Spacing.xs,
   },
   practicesTitle: {
-    fontSize: FontSizes.bodySmall,
-    fontWeight: '700',
+    fontFamily: FontFamilies.heading,
+    fontSize: FontSizes.headingS,
     color: Colors.text,
     marginBottom: Spacing.xs,
   },
@@ -808,8 +738,9 @@ const s = StyleSheet.create({
   },
   practiceText: {
     flex: 1,
-    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.body,
     color: Colors.text,
-    lineHeight: 22,
+    lineHeight: 24,
   },
 });

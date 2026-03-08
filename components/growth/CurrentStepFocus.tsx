@@ -33,6 +33,7 @@ import {
   getPhaseForStep,
 } from '@/utils/steps/twelve-steps';
 import CheckmarkIcon from '@/assets/graphics/icons/CheckmarkIcon';
+import { StepSticker } from '@/components/growth/stickers';
 import type { StepProgress } from '@/types/growth';
 
 interface CurrentStepFocusProps {
@@ -129,13 +130,18 @@ export default function CurrentStepFocus({
         </Text>
       </View>
 
-      {/* Step title */}
+      {/* Step title + sticker */}
       <View style={styles.titleSection}>
-        <Text style={styles.stepLabel}>Step {currentStepNumber}</Text>
-        <Text style={styles.stepTitle}>{step.title}</Text>
-        {step.subtitle && (
-          <Text style={styles.stepSubtitle}>{step.subtitle}</Text>
-        )}
+        <View style={styles.titleRow}>
+          <View style={styles.titleTextWrap}>
+            <Text style={styles.stepLabel}>Step {currentStepNumber}</Text>
+            <Text style={styles.stepTitle}>{step.title}</Text>
+            {step.subtitle && (
+              <Text style={styles.stepSubtitle}>{step.subtitle}</Text>
+            )}
+          </View>
+          <StepSticker stepNumber={currentStepNumber} size={64} showLabel={false} />
+        </View>
       </View>
 
       {/* Progress stats row */}
@@ -231,6 +237,15 @@ const styles = StyleSheet.create({
 
   // Title
   titleSection: {
+    gap: 3,
+  },
+  titleRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'space-between' as const,
+  },
+  titleTextWrap: {
+    flex: 1,
     gap: 3,
   },
   stepLabel: {

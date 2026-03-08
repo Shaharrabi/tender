@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>THE FIELD — Zone IX: The Bridge</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;600&family=Josefin+Sans:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+
+:root {
+  --parchment:#FDF6F0;--terracotta:#D8A499;--deep-rose:#8B3A4A;
+  --ink:#2D2226;--warm-gray:#6B5B5E;--rose:#C4616E;
+  --sage:#6B9080;--gold:#D4A843;
+  --you:#C4616E;--them:#7294D4;--wood:#8A6A4A;--wood-light:#AA8A6A;
+}
+
+html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;touch-action:none;background:transparent;}
+
+.phone{width:100%;height:100%;background:var(--ink);border-radius:0;overflow:hidden;position:relative;display:flex;flex-direction:column;}
+
+#game-area{flex:1;min-height:0;margin:0 6px;border-radius:12px;position:relative;overflow:hidden;background:linear-gradient(180deg,#6A8AAA 0%,#8AAACA 30%,#AACAEA 50%,#88AA88 75%,#668866 100%);}
+
+canvas{position:absolute;inset:0;}
+
+/* Water effect */
+.water-shimmer{position:absolute;bottom:0;left:0;right:0;height:35%;background:linear-gradient(180deg,rgba(106,138,170,.3),rgba(74,106,138,.5));pointer-events:none;}
+.water-shimmer::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 100 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 10 Q25 5 50 10 T100 10 V20 H0Z' fill='rgba(255,255,255,0.05)'/%3E%3C/svg%3E");background-size:100px 20px;animation:wave 3s linear infinite;}
+@keyframes wave{from{background-position:0 0}to{background-position:100px 0}}
+
+.zone-label{position:absolute;top:14px;left:14px;z-index:5;}
+.zone-num{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.45);}
+.zone-name{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(10px,2.5vw,13px);letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.65);}
+
+#progress-display{position:absolute;top:14px;right:14px;z-index:5;background:rgba(10,6,8,.5);border:1px solid rgba(138,106,74,.3);border-radius:8px;padding:8px 12px;text-align:center;}
+.progress-bar{width:60px;height:8px;background:rgba(255,255,255,.15);border-radius:4px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--you),var(--them));border-radius:4px;transition:width .3s;}
+.progress-lbl{font-family:'Josefin Sans',sans-serif;font-size:7px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-top:4px;}
+
+/* Action labels */
+#action-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10;opacity:0;transition:opacity .3s;pointer-events:none;}
+.action-text{font-family:'Playfair Display',serif;font-size:clamp(14px,4vw,18px);color:var(--parchment);text-shadow:0 2px 10px rgba(0,0,0,.5);text-align:center;background:rgba(0,0,0,.3);padding:8px 16px;border-radius:8px;}
+
+.exit-x{position:absolute;top:10px;right:10px;z-index:70;width:28px;height:28px;border-radius:14px;border:none;background:rgba(0,0,0,.25);color:rgba(255,255,255,.7);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
+.exit-x:active{background:rgba(0,0,0,.4);}
+
+#panel{background:var(--parchment);border-top:1px solid rgba(216,164,153,.35);flex-shrink:0;z-index:25;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,8px);}
+
+#dialogue{padding:clamp(10px,2vh,16px) clamp(14px,4vw,22px) clamp(6px,1.5vh,10px);flex-shrink:0;}
+.dlg-row{display:flex;gap:10px;align-items:flex-start;}
+.dlg-sym{font-family:'Josefin Sans',sans-serif;font-size:clamp(10px,2.5vw,12px);color:var(--terracotta);flex-shrink:0;margin-top:2px;width:14px;}
+.dlg-text{font-family:'Playfair Display',serif;font-size:clamp(12px,3vw,15px);line-height:1.65;color:var(--ink);white-space:pre-wrap;transition:opacity .25s;}
+
+#controls{display:none;padding:clamp(6px,1.5vh,10px) clamp(14px,4vw,22px) clamp(12px,2.5vh,18px);}
+.ctrl-row{display:flex;gap:clamp(10px,3vw,16px);justify-content:center;}
+.build-btn{flex:1;max-width:140px;height:clamp(52px,14vw,64px);border:none;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;font-family:'Josefin Sans',sans-serif;font-size:clamp(8px,2vw,10px);letter-spacing:1.5px;text-transform:uppercase;transition:all .15s;-webkit-tap-highlight-color:transparent;}
+.build-btn:active{transform:scale(.96);}
+.build-btn.you{background:linear-gradient(135deg,rgba(196,97,110,.2),rgba(196,97,110,.1));border:2px solid rgba(196,97,110,.4);color:var(--you);}
+.build-btn.them{background:linear-gradient(135deg,rgba(114,148,212,.2),rgba(114,148,212,.1));border:2px solid rgba(114,148,212,.4);color:var(--them);}
+.build-btn:disabled{opacity:.4;transform:none;}
+.build-icon{font-size:clamp(18px,5vw,24px);}
+
+#seed-btn{display:none;flex-direction:column;align-items:center;padding:clamp(8px,2vh,12px) clamp(22px,6vw,32px) clamp(14px,3vh,20px);gap:8px;}
+#seed-btn button{width:100%;height:clamp(52px,14vw,62px);border:none;border-radius:31px;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(11px,2.8vw,13px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 24px rgba(107,144,128,.45);animation:seedpulse 2.2s ease-in-out infinite;}
+@keyframes seedpulse{0%,100%{box-shadow:0 6px 24px rgba(107,144,128,.4);}50%{box-shadow:0 6px 36px rgba(107,144,128,.7);}}
+.seed-note{font-family:'Playfair Display',serif;font-size:clamp(10px,2.5vw,12px);color:rgba(107,91,94,.45);text-align:center;}
+
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(28px,6vw,48px);opacity:0;pointer-events:none;transition:opacity .7s ease;z-index:50;}
+.overlay.on{opacity:1;pointer-events:all;}
+
+#o-intro{background:linear-gradient(180deg,#647E96,#728AA2);z-index:60;}
+.oi-b{font-family:'Josefin Sans',sans-serif;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:clamp(12px,3vh,18px);}
+.oi-ic{font-size:clamp(36px,10vw,48px);margin-bottom:clamp(10px,2.5vh,16px);}
+.oi-big{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(32px,9vw,44px);letter-spacing:4px;text-transform:uppercase;color:var(--parchment);line-height:1.1;margin-bottom:8px;}
+.oi-sub{font-family:'Playfair Display',serif;font-size:clamp(12px,3.2vw,15px);color:rgba(255,255,255,.6);margin-bottom:clamp(18px,4vh,28px);}
+.oi-desc{font-family:'Playfair Display',serif;font-size:clamp(11px,2.8vw,13px);line-height:1.85;color:rgba(253,246,240,.35);margin-bottom:clamp(26px,6vh,40px);max-width:280px;}
+.oi-note{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.6vw,9px);letter-spacing:2px;text-transform:uppercase;color:rgba(253,246,240,.25);margin-bottom:clamp(14px,3vh,20px);}
+.oi-btn{width:clamp(160px,48vw,190px);height:clamp(44px,11vw,52px);border-radius:26px;border:1.5px solid rgba(255,255,255,.4);background:transparent;font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(9px,2.2vw,11px);letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.8);cursor:pointer;transition:all .3s;}
+.oi-btn:active{background:rgba(255,255,255,.1);}
+
+#practice-overlay{position:absolute;inset:0;z-index:70;background:rgba(74,106,138,.96);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .4s;}
+#practice-overlay.on{opacity:1;pointer-events:all;}
+.ps-inner{width:min(340px,90vw);background:var(--parchment);border-radius:20px;overflow:hidden;position:relative;max-height:85vh;overflow-y:auto;}
+.ps-bar{height:4px;background:rgba(107,91,94,.12);}
+.ps-fill{height:100%;width:0;background:var(--sage);transition:width .4s;}
+.ps-x{position:absolute;top:12px;right:14px;width:28px;height:28px;border-radius:14px;border:none;background:rgba(107,91,94,.08);font-size:14px;color:var(--warm-gray);cursor:pointer;z-index:2;}
+.ps-step{display:none;padding:clamp(28px,6vw,40px) clamp(18px,5vw,26px) clamp(20px,4vh,28px);flex-direction:column;text-align:center;}
+.ps-step.active{display:flex;animation:fadeUp .4s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.ps-eyebrow{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:3px;text-transform:uppercase;color:var(--terracotta);margin-bottom:clamp(10px,2.5vh,16px);}
+.ps-h{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(20px,5.5vw,26px);letter-spacing:2px;text-transform:uppercase;color:var(--ink);line-height:1.15;margin-bottom:clamp(14px,3.5vh,22px);}
+.ps-body{font-family:'Playfair Display',serif;font-size:clamp(12px,3vw,14px);line-height:1.85;color:rgba(45,34,38,.65);margin-bottom:clamp(18px,4.5vh,28px);}
+.ps-btn{width:100%;height:clamp(44px,11vw,52px);border:none;border-radius:26px;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(9px,2.2vw,11px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;}
+.ps-box{background:rgba(107,91,94,.04);border-radius:12px;padding:clamp(12px,3vw,18px);margin-bottom:clamp(14px,3.5vh,22px);text-align:left;}
+.ps-lbl{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:2px;text-transform:uppercase;color:var(--warm-gray);margin-bottom:8px;}
+.ps-ta{width:100%;border:none;background:transparent;font-family:'Playfair Display',serif;font-size:clamp(13px,3.2vw,15px);color:var(--ink);line-height:1.6;resize:none;outline:none;}
+.ps-ta::placeholder{color:rgba(107,91,94,.35);}
+.ps-carry{background:rgba(107,144,128,.1);border-radius:12px;padding:clamp(12px,3vw,18px);margin-bottom:clamp(18px,4.5vh,26px);font-family:'Playfair Display',serif;font-size:clamp(11px,2.8vw,13px);line-height:1.75;color:var(--sage);text-align:left;}
+.ps-carry em{color:var(--deep-rose);font-style:normal;font-weight:600;}
+
+#o-done{position:absolute;inset:0;z-index:80;background:rgba(74,106,138,.97);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(28px,6vw,48px);opacity:0;pointer-events:none;transition:opacity .8s;}
+#o-done.on{opacity:1;pointer-events:all;}
+.done-g{font-size:clamp(36px,10vw,48px);margin-bottom:clamp(12px,3vh,20px);}
+.done-ey{font-family:'Josefin Sans',sans-serif;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:clamp(6px,1.5vh,10px);}
+.done-ti{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(26px,8vw,36px);letter-spacing:4px;text-transform:uppercase;color:var(--parchment);line-height:1.1;margin-bottom:clamp(14px,3.5vh,24px);}
+.done-bo{font-family:'Playfair Display',serif;font-size:clamp(12px,3vw,14px);line-height:1.9;color:rgba(253,246,240,.5);margin-bottom:clamp(24px,6vh,40px);max-width:280px;}
+.done-btn{width:clamp(200px,60vw,240px);height:clamp(46px,11vw,54px);border-radius:27px;border:none;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;}
+
+/* Meet moment */
+#meet-moment{position:absolute;inset:0;z-index:45;background:rgba(106,138,170,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 1s;}
+#meet-moment.on{opacity:1;pointer-events:all;}
+.meet-avatars{display:flex;gap:0;align-items:flex-end;margin-bottom:clamp(20px,5vh,32px);}
+.meet-av{display:flex;flex-direction:column;align-items:center;}
+.meet-av-head{width:clamp(32px,9vw,42px);height:clamp(32px,9vw,42px);border-radius:50%;}
+.meet-av-body{width:clamp(32px,9vw,42px);height:clamp(26px,7vw,34px);margin-top:-5px;border-radius:0 0 16px 16px;}
+.meet-av.you .meet-av-head{background:var(--you);}
+.meet-av.you .meet-av-body{background:#A84858;}
+.meet-av.them .meet-av-head{background:var(--them);}
+.meet-av.them .meet-av-body{background:#5274A4;}
+.meet-bridge{width:clamp(60px,18vw,80px);height:8px;background:linear-gradient(90deg,var(--you),var(--them));margin-bottom:-8px;}
+.meet-text{font-family:'Playfair Display',serif;font-size:clamp(16px,4.5vw,20px);color:var(--parchment);text-align:center;line-height:1.6;max-width:260px;}
+</style>
+</head>
+<body>
+<div class="phone">
+<button class="exit-x" onclick="notifyApp('close',{zone:9})" aria-label="Exit game">&#x2715;</button>
+
+  <div id="game-area">
+    <div class="water-shimmer"></div>
+    <canvas id="canvas"></canvas>
+    
+    <div id="action-label">
+      <div class="action-text" id="action-text"></div>
+    </div>
+    
+    <div class="zone-label"><div class="zone-num">Zone IX · Step 9</div><div class="zone-name">The Bridge</div></div>
+    <div id="progress-display">
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      <div class="progress-lbl">PROGRESS</div>
+    </div>
+  </div>
+
+  <div id="panel">
+    <div id="dialogue">
+      <div class="dlg-row">
+        <div class="dlg-sym" id="dlg-sym">—</div>
+        <div class="dlg-text" id="dlg-text">The gap between you must be bridged.</div>
+      </div>
+    </div>
+    
+    <div id="controls">
+      <div class="ctrl-row">
+        <button class="build-btn you" id="btn-you">
+          <span class="build-icon">🪵</span>
+          YOUR PIECE
+        </button>
+        <button class="build-btn them" id="btn-them">
+          <span class="build-icon">🪵</span>
+          THEIR PIECE
+        </button>
+      </div>
+    </div>
+    
+    <div id="seed-btn">
+      <button id="seed-tap">🌱 PICK UP THE SEED</button>
+      <div class="seed-note">A practice for rebuilding trust</div>
+    </div>
+  </div>
+
+  <div class="overlay on" id="o-intro">
+    <div class="oi-b">✦ Zone IX · Step 9 ✦</div>
+    <div class="oi-ic">🌉</div>
+    <div class="oi-big">The Bridge</div>
+    <div class="oi-sub">Act to rebuild trust</div>
+    <div class="oi-desc">You stand on one side. They stand on the other.<br><br>Trust is rebuilt plank by plank, from both sides, meeting in the middle. Neither can do it alone.</div>
+    <div class="oi-note">Best experienced in the Tender app</div>
+<button class="oi-btn" id="intro-btn">ENTER THE FIELD</button>
+  </div>
+
+  <div id="meet-moment">
+    <div class="meet-avatars">
+      <div class="meet-av you"><div class="meet-av-head"></div><div class="meet-av-body"></div></div>
+      <div class="meet-bridge"></div>
+      <div class="meet-av them"><div class="meet-av-head"></div><div class="meet-av-body"></div></div>
+    </div>
+    <div class="meet-text">You met in the middle.<br><br>The bridge holds both of you now.</div>
+  </div>
+
+  <div id="practice-overlay">
+    <div class="ps-inner">
+      <div class="ps-bar"><div class="ps-fill" id="ps-fill"></div></div>
+      <button class="ps-x" id="ps-close">✕</button>
+      <div class="ps-step active" id="ps-0">
+        <div class="ps-eyebrow">✦ Practice · Rebuilding Trust</div>
+        <div class="ps-h">Plank<br>by Plank</div>
+        <div class="ps-body">Trust is not rebuilt with grand gestures. It is rebuilt with consistent, small actions over time.<br><br>Each plank is a kept promise, a moment of presence, a choice to show up.</div>
+        <button class="ps-btn" id="ps-next-0">CONTINUE</button>
+      </div>
+      <div class="ps-step" id="ps-1">
+        <div class="ps-eyebrow">Your Part</div>
+        <div class="ps-h">What You Will Do</div>
+        <div class="ps-body">Name one specific action you will take to rebuild trust — something concrete they can see and feel.</div>
+        <div class="ps-box">
+          <div class="ps-lbl">I WILL...</div>
+          <textarea class="ps-ta" placeholder="Check in every evening... Follow through when I say... Be present when they speak..." rows="3"></textarea>
+        </div>
+        <button class="ps-btn" id="ps-next-1">NEXT</button>
+      </div>
+      <div class="ps-step" id="ps-2">
+        <div class="ps-eyebrow">Their Part</div>
+        <div class="ps-h">What You Need</div>
+        <div class="ps-body">What do you need from them to feel safe rebuilding? Not a demand — but an honest ask.</div>
+        <div class="ps-box">
+          <div class="ps-lbl">I NEED THEM TO...</div>
+          <textarea class="ps-ta" placeholder="Be patient with me... Show me they are trying... Tell me when they are struggling..." rows="3"></textarea>
+        </div>
+        <button class="ps-btn" id="ps-next-2">NEXT</button>
+      </div>
+      <div class="ps-step" id="ps-3">
+        <div class="ps-eyebrow">Integration</div>
+        <div class="ps-h">The Long Road</div>
+        <div class="ps-carry">
+          Trust takes longer to rebuild than to break.<br><br>
+          <em>Do not measure by how far you have come. Measure by whether you are still walking.</em><br><br>
+          Every plank matters. Keep building.
+        </div>
+        <button class="ps-btn" id="ps-plant">PLANT THIS SEED ✦</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="o-done">
+    <div class="done-g">🌉</div>
+    <div class="done-ey">Zone IX Complete</div>
+    <div class="done-ti">The Bridge</div>
+    <div class="done-bo">You built it together.<br>You can cross now.<br>The way between you is open.</div>
+    <button class="done-btn" id="done-btn">CONTINUE THE JOURNEY</button>
+  </div>
+
+</div>
+
+<script>
+const ACTIONS_YOU = [
+  "I will listen without defending",
+  "I will show up when I say I will",
+  "I will name my feelings",
+  "I will ask before assuming",
+  "I will stay present in hard moments"
+];
+
+const ACTIONS_THEM = [
+  "They will be patient",
+  "They will share their needs",
+  "They will trust the effort",
+  "They will stay when it is hard",
+  "They will believe in us"
+];
+
+const TOTAL_PLANKS = 10;
+
+let S = {
+  phase: 'intro',
+  yourPlanks: 0,
+  theirPlanks: 0,
+  canBuildYou: true,
+  canBuildThem: false,
+  actionIndex: 0,
+  gameLoop: null
+};
+
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+let W, H;
+
+function initCanvas() {
+  const area = document.getElementById('game-area');
+  W = area.clientWidth;
+  H = area.clientHeight;
+  canvas.width = W;
+  canvas.height = H;
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  
+  const bridgeY = H * 0.55;
+  const gapWidth = W * 0.5;
+  const plankWidth = gapWidth / (TOTAL_PLANKS / 2);
+  const plankHeight = 16;
+  
+  // Cliffs
+  ctx.fillStyle = '#5A7A5A';
+  ctx.fillRect(0, bridgeY, W * 0.25, H - bridgeY);
+  ctx.fillRect(W * 0.75, bridgeY, W * 0.25, H - bridgeY);
+  
+  // Cliff tops
+  ctx.fillStyle = '#7A9A7A';
+  ctx.fillRect(0, bridgeY - 8, W * 0.25, 8);
+  ctx.fillRect(W * 0.75, bridgeY - 8, W * 0.25, 8);
+  
+  // Draw your planks (from left)
+  for (let i = 0; i < S.yourPlanks; i++) {
+    const x = W * 0.25 + i * plankWidth;
+    drawPlank(x, bridgeY - 4, plankWidth - 2, plankHeight, '#AA8A6A', '#8A6A4A');
+  }
+  
+  // Draw their planks (from right)
+  for (let i = 0; i < S.theirPlanks; i++) {
+    const x = W * 0.75 - (i + 1) * plankWidth;
+    drawPlank(x + 2, bridgeY - 4, plankWidth - 2, plankHeight, '#8A9AAA', '#6A7A8A');
+  }
+  
+  // Avatars
+  const youX = W * 0.15;
+  const themX = W * 0.85;
+  
+  // Your avatar (left)
+  drawAvatar(youX, bridgeY - 30, '#C4616E', '#A84858');
+  
+  // Their avatar (right)
+  drawAvatar(themX, bridgeY - 30, '#7294D4', '#5274A4');
+  
+  // If bridge complete, move avatars toward center
+  if (S.yourPlanks + S.theirPlanks >= TOTAL_PLANKS) {
+    // Avatars will be in meet-moment overlay
+  }
+}
+
+function drawPlank(x, y, w, h, color1, color2) {
+  const grad = ctx.createLinearGradient(x, y, x, y + h);
+  grad.addColorStop(0, color1);
+  grad.addColorStop(1, color2);
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, 2);
+  ctx.fill();
+  
+  // Wood grain
+  ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(x + 3, y + h/3);
+  ctx.lineTo(x + w - 3, y + h/3);
+  ctx.moveTo(x + 3, y + h*2/3);
+  ctx.lineTo(x + w - 3, y + h*2/3);
+  ctx.stroke();
+}
+
+function drawAvatar(x, y, headColor, bodyColor) {
+  // Shadow
+  ctx.beginPath();
+  ctx.ellipse(x, y + 28, 12, 4, 0, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  ctx.fill();
+  
+  // Body
+  ctx.fillStyle = bodyColor;
+  ctx.beginPath();
+  ctx.roundRect(x - 10, y, 20, 24, 6);
+  ctx.fill();
+  
+  // Head
+  ctx.fillStyle = headColor;
+  ctx.beginPath();
+  ctx.arc(x, y - 8, 12, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function buildYou() {
+  if (!S.canBuildYou || S.yourPlanks >= TOTAL_PLANKS / 2) return;
+  
+  S.yourPlanks++;
+  S.canBuildYou = false;
+  S.canBuildThem = true;
+  
+  updateButtons();
+  updateProgress();
+  showAction(ACTIONS_YOU[S.actionIndex % ACTIONS_YOU.length], 'you');
+  S.actionIndex++;
+  
+  draw();
+  
+  checkComplete();
+  
+  // Partner responds after delay
+  if (S.theirPlanks < TOTAL_PLANKS / 2) {
+    setTimeout(() => {
+      buildThem(true);
+    }, 1200);
+  }
+}
+
+function buildThem(auto = false) {
+  if (auto) {
+    S.theirPlanks++;
+    S.canBuildYou = true;
+    S.canBuildThem = false;
+    
+    updateButtons();
+    updateProgress();
+    showAction(ACTIONS_THEM[S.actionIndex % ACTIONS_THEM.length], 'them');
+    S.actionIndex++;
+    
+    draw();
+    checkComplete();
+  }
+}
+
+function showAction(text, from) {
+  const el = document.getElementById('action-text');
+  const container = document.getElementById('action-label');
+  el.textContent = text;
+  el.style.color = from === 'you' ? 'var(--you)' : 'var(--them)';
+  container.style.opacity = '1';
+  
+  setTimeout(() => {
+    container.style.opacity = '0';
+  }, 1000);
+}
+
+function updateButtons() {
+  document.getElementById('btn-you').disabled = !S.canBuildYou || S.yourPlanks >= TOTAL_PLANKS / 2;
+  document.getElementById('btn-them').disabled = true; // Partner builds automatically
+}
+
+function updateProgress() {
+  const progress = (S.yourPlanks + S.theirPlanks) / TOTAL_PLANKS * 100;
+  document.getElementById('progress-fill').style.width = progress + '%';
+}
+
+function checkComplete() {
+  if (S.yourPlanks + S.theirPlanks >= TOTAL_PLANKS) {
+    setTimeout(() => {
+      document.getElementById('meet-moment').classList.add('on');
+      
+      setTimeout(() => {
+        document.getElementById('meet-moment').classList.remove('on');
+        completeGame();
+      }, 3000);
+    }, 500);
+  }
+}
+
+function begin() {
+  document.getElementById('o-intro').classList.remove('on');
+  S.phase = 'game';
+  
+  initCanvas();
+  document.getElementById('controls').style.display = 'block';
+  
+  updateButtons();
+  draw();
+  
+  fadeD('—', 'Build your side. They will build theirs.\n\nTrust is rebuilt together.');
+}
+
+function completeGame() {
+  notifyApp('gameComplete', { zone: 9 });
+  S.phase = 'done';
+  
+  document.getElementById('controls').style.display = 'none';
+  document.getElementById('seed-btn').style.display = 'flex';
+  
+  fadeD('✦', 'The bridge is complete.\n\nYou can reach each other now.');
+}
+
+function fadeD(sym, text) {
+  const el = document.getElementById('dlg-text');
+  el.style.opacity = '0';
+  setTimeout(() => {
+    document.getElementById('dlg-sym').textContent = sym;
+    el.textContent = text;
+    el.style.opacity = '1';
+  }, 200);
+}
+
+// Practice
+let P = {step: 0};
+
+function openPractice() {
+  P.step = 0;
+  psShow(0);
+  document.getElementById('ps-fill').style.width = '0%';
+  document.getElementById('practice-overlay').classList.add('on');
+}
+
+function closePractice() {
+  document.getElementById('practice-overlay').classList.remove('on');
+}
+
+function psGo(n) {
+  psShow(n);
+  document.getElementById('ps-fill').style.width = (n / 3 * 100) + '%';
+}
+
+function psShow(n) {
+  document.querySelectorAll('.ps-step').forEach(el => el.classList.remove('active'));
+  document.getElementById('ps-' + n).classList.add('active');
+  P.step = n;
+}
+
+function psPlant() {
+  document.getElementById('ps-fill').style.width = '100%';
+  setTimeout(() => {
+    document.getElementById('practice-overlay').classList.remove('on');
+    const sb = document.getElementById('seed-btn');
+    sb.innerHTML = '<div style="font-family:Playfair Display,serif;font-size:14px;color:var(--sage);text-align:center;padding:12px 0">🌱 Seed planted. The bridge awaits.</div>';
+    setTimeout(() => document.getElementById('o-done').classList.add('on'), 800);
+  }, 400);
+}
+
+function finish() {
+  notifyApp('close', { zone: 9 });
+  document.getElementById('o-done').classList.remove('on');
+  fadeD('✦', 'The bridge stands.\nKeep crossing it — together.');
+}
+
+// Event listeners
+document.getElementById('intro-btn').addEventListener('click', begin);
+document.getElementById('btn-you').addEventListener('click', buildYou);
+document.getElementById('btn-them').addEventListener('click', () => {}); // Partner auto-builds
+document.getElementById('seed-tap').addEventListener('click', openPractice);
+document.getElementById('ps-close').addEventListener('click', closePractice);
+document.getElementById('ps-next-0').addEventListener('click', () => psGo(1));
+document.getElementById('ps-next-1').addEventListener('click', () => psGo(2));
+document.getElementById('ps-next-2').addEventListener('click', () => psGo(3));
+document.getElementById('ps-plant').addEventListener('click', psPlant);
+document.getElementById('done-btn').addEventListener('click', finish);
+
+window.addEventListener('resize', () => {
+  if (S.phase === 'game') {
+    initCanvas();
+    draw();
+  }
+});
+
+// REACT NATIVE BRIDGE
+function notifyApp(event, data) {
+  try {
+    if (window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(JSON.stringify({ event: event, data: data || {} }));
+    } else if (window.parent !== window) {
+      window.parent.postMessage(JSON.stringify({ event: event, data: data || {} }), '*');
+    }
+  } catch(e) {}
+}
+</script>
+</body>
+</html>

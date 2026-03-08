@@ -259,26 +259,42 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
       // Detect streaming support — only request SSE if ReadableStream is available
       const supportsStreaming = typeof ReadableStream !== 'undefined' && typeof TextDecoder !== 'undefined';
 
+      // Abort controller with timeout — prevents indefinite hangs
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 90_000); // 90s timeout
+
       // Call edge function
-      const response = await fetch(CHAT_FUNCTION_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'apikey': SUPABASE_ANON_KEY,
-          ...(supportsStreaming ? { 'Accept': 'text/event-stream' } : {}),
-        },
-        body: JSON.stringify({
-          sessionId: session.id,
-          message: text,
-          userId: user!.id,
-          ...(supportsStreaming ? { stream: true } : {}),
-          ...(coupleModeRef.current && coupleIdRef.current ? {
-            coupleMode: true,
-            coupleId: coupleIdRef.current,
-          } : {}),
-        }),
-      });
+      let response: Response;
+      try {
+        response = await fetch(CHAT_FUNCTION_URL, {
+          method: 'POST',
+          signal: controller.signal,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'apikey': SUPABASE_ANON_KEY!,
+            ...(supportsStreaming ? { 'Accept': 'text/event-stream' } : {}),
+          },
+          body: JSON.stringify({
+            sessionId: session.id,
+            message: text,
+            userId: user!.id,
+            ...(supportsStreaming ? { stream: true } : {}),
+            ...(coupleModeRef.current && coupleIdRef.current ? {
+              coupleMode: true,
+              coupleId: coupleIdRef.current,
+            } : {}),
+          }),
+        });
+      } catch (fetchErr: any) {
+        clearTimeout(timeoutId);
+        // Distinguish timeout from network error
+        if (fetchErr.name === 'AbortError') {
+          throw new Error('The request timed out. Nuance may be busy — please try again in a moment.');
+        }
+        throw new Error('Could not reach Nuance. Please check your internet connection and try again.');
+      }
+      clearTimeout(timeoutId);
 
       if (__DEV__) console.log('[Chat] Response status:', response.status);
 

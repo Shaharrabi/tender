@@ -45,6 +45,7 @@ import {
 } from '@/constants/theme';
 import QuickLinksBar from '@/components/QuickLinksBar';
 import { ShieldIcon, SparkleIcon } from '@/assets/graphics/icons';
+import { UISticker } from '@/components/growth/stickers';
 import type { Couple, CoupleInvite, UserProfile } from '@/types/couples';
 
 export default function PartnerScreen() {
@@ -466,6 +467,9 @@ export default function PartnerScreen() {
           </View>
         ) : (
           <View style={[styles.card, styles.createInviteCard]}>
+            <View style={{ alignItems: 'center', marginBottom: Spacing.sm }}>
+              <UISticker type="partner-invite" size={80} showLabel={false} />
+            </View>
             <Text style={styles.createInviteTitle}>Invite Your Partner</Text>
             <Text style={styles.createInviteDesc}>
               Generate a unique code to share with your partner.

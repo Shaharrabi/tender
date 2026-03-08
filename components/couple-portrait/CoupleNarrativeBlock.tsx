@@ -24,7 +24,7 @@ interface NarrativeSectionProps {
 }
 
 function NarrativeSection({ title, text, accentColor = Colors.textMuted, isFirst }: NarrativeSectionProps) {
-  const [expanded, setExpanded] = useState(!!isFirst);
+  const [expanded, setExpanded] = useState(true);
 
   return (
     <TouchableOpacity
@@ -74,7 +74,7 @@ export default function CoupleNarrativeBlock({
       <NarrativeSection
         title="Your Dance"
         text={narrative.theDance}
-        accentColor={Colors.primary}
+        accentColor={Colors.couplePartnerA}
       />
       <NarrativeSection
         title="What You Bring"
@@ -94,7 +94,7 @@ export default function CoupleNarrativeBlock({
       <NarrativeSection
         title="The Growth Edge"
         text={narrative.theEdge}
-        accentColor={Colors.secondary}
+        accentColor={Colors.couplePartnerB}
       />
 
       {/* Closing — always fully visible */}
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sectionText: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.textSecondary,
     lineHeight: 22,
     marginTop: Spacing.sm,
@@ -152,12 +152,11 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     marginTop: Spacing.sm,
     borderLeftWidth: 3,
-    borderLeftColor: Colors.primary,
+    borderLeftColor: Colors.couplePartnerA,
   },
   closingText: {
-    ...Typography.bodySmall,
+    ...Typography.body,
     color: Colors.text,
-    fontStyle: 'italic' as const,
     lineHeight: 22,
   },
 });
