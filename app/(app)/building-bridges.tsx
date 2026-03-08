@@ -41,6 +41,7 @@ import {
   BookOpenIcon,
   StarIcon,
 } from '@/assets/graphics/icons';
+import QuickLinksBar from '@/components/QuickLinksBar';
 import FlippableCard from '@/components/card-game/FlippableCard';
 import CardFront from '@/components/card-game/CardFront';
 import CardBack from '@/components/card-game/CardBack';
@@ -297,6 +298,8 @@ export default function BuildingBridgesScreen() {
           onDone={handleGoHome}
         />
       )}
+
+      <QuickLinksBar currentScreen="bridges" />
     </SafeAreaView>
   );
 }
