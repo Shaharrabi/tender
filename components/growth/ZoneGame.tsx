@@ -13,12 +13,12 @@ import React, { useCallback, useRef } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
   Platform,
   Modal,
+  StatusBar,
 } from 'react-native';
-import { Colors, FontFamilies } from '@/constants/theme';
+import { Colors } from '@/constants/theme';
 
 interface ZoneGameProps {
   zoneNumber: number;
@@ -64,19 +64,12 @@ export default function ZoneGame({ zoneNumber, visible, onComplete, onClose }: Z
       visible={visible}
       animationType="slide"
       presentationStyle="fullScreen"
+      statusBarTranslucent
       onRequestClose={onClose}
     >
+      <StatusBar barStyle="light-content" backgroundColor="#0A0608" />
       <View style={styles.container}>
-        {/* Close button */}
-        <TouchableOpacity
-          style={styles.closeButton}
-          onPress={onClose}
-          activeOpacity={0.7}
-          accessibilityRole="button"
-          accessibilityLabel="Close game"
-        >
-          <Text style={styles.closeText}>{'\u2715'}</Text>
-        </TouchableOpacity>
+        {/* Close button is inside the game HTML (.exit-x) — no duplicate needed here */}
 
         {Platform.OS === 'web' ? (
           <WebIframe src={gameSrc} onMessage={handleMessage} />
@@ -151,23 +144,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#0A0608',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: Platform.OS === 'ios' ? 54 : 16,
-    right: 16,
-    zIndex: 100,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  closeText: {
-    color: '#fff',
-    fontSize: 16,
-    fontFamily: FontFamilies?.body ?? undefined,
   },
   webview: {
     flex: 1,

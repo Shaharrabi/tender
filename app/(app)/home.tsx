@@ -119,6 +119,7 @@ import {
   CheckmarkIcon,
   RefreshIcon,
   RainbowIcon,
+  ScaleIcon,
 } from '@/assets/graphics/icons';
 import type { AssessmentConfig, AllAssessmentScores, AssessmentType } from '@/types';
 import type { IndividualPortrait } from '@/types/portrait';
@@ -1037,37 +1038,67 @@ export default function HomeScreen() {
 
         {/* ═══ PARTNER SECTION — demo partner, connect prompt, or solo nudge ═══ */}
         <View ref={(r) => RefRegistry.register('home_partnerSection', r)}>
-        {relationshipMode === 'demo_partner' && demoPartnerId && DEMO_PARTNERS[demoPartnerId as DemoPartnerId] && (
-          <View style={styles.demoPartnerSection}>
-            <TouchableOpacity
-              style={styles.demoPartnerCard}
-              onPress={() => router.push({
-                pathname: '/(app)/chat' as any,
-                params: { practiceWith: DEMO_PARTNERS[demoPartnerId as DemoPartnerId].name },
-              })}
-              activeOpacity={0.8}
-              accessibilityRole="button"
-            >
-              <View style={styles.demoPartnerInfo}>
-                <View style={[
-                  styles.demoPartnerAvatar,
-                  { backgroundColor: DEMO_PARTNERS[demoPartnerId as DemoPartnerId].color + '20' },
-                ]}>
-                  <CoupleIcon size={20} color={DEMO_PARTNERS[demoPartnerId as DemoPartnerId].color} />
+        {relationshipMode === 'demo_partner' && demoPartnerId && DEMO_PARTNERS[demoPartnerId as DemoPartnerId] && (() => {
+          const partner = DEMO_PARTNERS[demoPartnerId as DemoPartnerId];
+          return (
+            <View style={styles.demoPartnerSection}>
+              {/* Practice conversation */}
+              <TouchableOpacity
+                style={styles.demoPartnerCard}
+                onPress={() => router.push({
+                  pathname: '/(app)/chat' as any,
+                  params: { practiceWith: partner.name },
+                })}
+                activeOpacity={0.8}
+                accessibilityRole="button"
+              >
+                <View style={styles.demoPartnerInfo}>
+                  <View style={[
+                    styles.demoPartnerAvatar,
+                    { backgroundColor: partner.color + '20' },
+                  ]}>
+                    <CoupleIcon size={20} color={partner.color} />
+                  </View>
+                  <View style={styles.demoPartnerTextWrap}>
+                    <Text style={styles.demoPartnerName}>
+                      Practice with {partner.name}
+                    </Text>
+                    <Text style={styles.demoPartnerStyle}>
+                      {partner.shortDescription}
+                    </Text>
+                  </View>
                 </View>
-                <View style={styles.demoPartnerTextWrap}>
-                  <Text style={styles.demoPartnerName}>
-                    Practice with {DEMO_PARTNERS[demoPartnerId as DemoPartnerId].name}
-                  </Text>
-                  <Text style={styles.demoPartnerStyle}>
-                    {DEMO_PARTNERS[demoPartnerId as DemoPartnerId].shortDescription}
-                  </Text>
-                </View>
+                <Text style={styles.demoPartnerCta}>Chat {'\u2192'}</Text>
+              </TouchableOpacity>
+
+              {/* Quick actions row — Couple Portal + Couple Assessments */}
+              <View style={styles.demoPartnerActions}>
+                <TouchableOpacity
+                  style={[styles.demoPartnerActionBtn, { borderColor: Colors.secondary + '30' }]}
+                  onPress={() => {
+                    SoundHaptics.tapSoft();
+                    router.push('/(app)/couple-portal' as any);
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <HeartPulseIcon size={16} color={Colors.secondary} />
+                  <Text style={styles.demoPartnerActionText}>Couple Portal</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.demoPartnerActionBtn, { borderColor: Colors.calm + '30' }]}
+                  onPress={() => {
+                    SoundHaptics.tapSoft();
+                    router.push('/(app)/couple-assessment' as any);
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <ScaleIcon size={16} color={Colors.calm} />
+                  <Text style={styles.demoPartnerActionText}>Couple Check-in</Text>
+                </TouchableOpacity>
               </View>
-              <Text style={styles.demoPartnerCta}>Start {'\u2192'}</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+            </View>
+          );
+        })()}
         {relationshipMode === 'solo' && !hasPortrait && completedCount > 0 && (
           <TouchableOpacity
             style={styles.demoPartnerPrompt}
@@ -1238,7 +1269,7 @@ export default function HomeScreen() {
                   onPress={(e) => {
                     e.stopPropagation();
                     SoundHaptics.tapSoft();
-                    router.push('/(app)/assessment-matrix' as any);
+                    router.push({ pathname: '/(app)/portrait' as any, params: { tab: 'matrix' } });
                   }}
                   activeOpacity={0.7}
                   accessibilityRole="button"
@@ -1479,6 +1510,34 @@ export default function HomeScreen() {
                 <TenderText variant="bodyMedium" color={Colors.primary} style={{ marginTop: 2 }}>
                   View Couple Portal {'\u2192'}
                 </TenderText>
+              </TouchableOpacity>
+            )}
+
+            {/* Couple Portal teaser strip — shows when not yet coupled */}
+            {!hasCoupleLinked && (
+              <TouchableOpacity
+                style={styles.couplePortalStrip}
+                onPress={() => {
+                  SoundHaptics.tapSoft();
+                  router.push('/(app)/couple-portal' as any);
+                }}
+                activeOpacity={0.8}
+                accessibilityRole="button"
+              >
+                <View style={styles.couplePortalStripLeft}>
+                  <CoupleIcon size={20} color={Colors.secondary} />
+                </View>
+                <View style={styles.couplePortalStripContent}>
+                  <TenderText variant="bodyMedium" color={Colors.text}>
+                    {demoPartnerId ? 'Practice Couple Portal' : 'Couple Portal'}
+                  </TenderText>
+                  <TenderText variant="body" color={Colors.textSecondary} numberOfLines={2}>
+                    {demoPartnerId
+                      ? 'Explore shared insights with your practice partner'
+                      : 'Invite your partner to unlock shared portraits and couple assessments'}
+                  </TenderText>
+                </View>
+                <TenderText variant="bodyMedium" color={Colors.primary}>{'\u2192'}</TenderText>
               </TouchableOpacity>
             )}
           </View>
@@ -3133,6 +3192,27 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: Colors.primary,
   },
+  demoPartnerActions: {
+    flexDirection: 'row',
+    gap: Spacing.xs,
+    marginTop: Spacing.xs,
+  },
+  demoPartnerActionBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+  },
+  demoPartnerActionText: {
+    fontSize: FontSizes.caption,
+    fontWeight: '500',
+    color: Colors.text,
+  },
   demoPartnerPrompt: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -3538,6 +3618,29 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.caption,
     color: Colors.textSecondary,
     lineHeight: FontSizes.caption * 1.5,
+  },
+  couplePortalStrip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
+    marginTop: Spacing.md,
+    gap: Spacing.sm,
+    borderWidth: 1,
+    borderColor: Colors.secondary + '25',
+  },
+  couplePortalStripLeft: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.secondary + '15',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  couplePortalStripContent: {
+    flex: 1,
+    gap: 2,
   },
 
   // ── Hero Top Row (greeting + gear) ──

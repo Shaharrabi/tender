@@ -766,7 +766,7 @@ export default function PortraitScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={st.tabBarContent}
         >
-          {TABS.map((tab) => {
+          {TABS.map((tab, idx) => {
             const isActive = activeTab === tab.key;
             return (
               <TouchableOpacity
@@ -793,6 +793,10 @@ export default function PortraitScreen() {
             );
           })}
         </ScrollView>
+        {/* Scroll hint — fades to show more tabs */}
+        <View style={st.tabScrollHint} pointerEvents="none">
+          <TenderText variant="caption" color={Colors.textMuted} style={{ fontSize: 10 }}>{'›'}</TenderText>
+        </View>
       </View>
 
       {/* ── Tab Content ───────────────────────────── */}
@@ -2337,7 +2341,18 @@ const st = StyleSheet.create({
   tabBarContent: {
     paddingHorizontal: Spacing.sm,
     paddingVertical: Spacing.sm,
+    paddingRight: 28,
     gap: Spacing.xs,
+  },
+  tabScrollHint: {
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.surfaceElevated + 'E0',
   },
   tabItem: {
     flexDirection: 'row',
@@ -3092,26 +3107,26 @@ const st = StyleSheet.create({
     ...Shadows.card,
   },
   cycleDiagramVisual: {
-    height: 130,
+    height: 160,
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
   },
   cycleDiagramArrowRing: {
     position: 'absolute',
-    width: 100,
-    height: 100,
+    width: 130,
+    height: 130,
     alignItems: 'center',
     justifyContent: 'center',
   },
   // cycleDiagramArrow — pure text, moved to TenderText
   cycleDiagramYouBadge: {
     position: 'absolute',
-    left: 24,
+    left: 16,
     top: '50%',
-    marginTop: -24,
-    width: 68,
-    height: 48,
+    marginTop: -28,
+    width: 78,
+    height: 56,
     borderRadius: BorderRadius.md,
     alignItems: 'center',
     justifyContent: 'center',
@@ -3123,11 +3138,11 @@ const st = StyleSheet.create({
   // cycleDiagramYouRole — pure text, moved to TenderText
   cycleDiagramPartnerBadge: {
     position: 'absolute',
-    right: 24,
+    right: 16,
     top: '50%',
-    marginTop: -24,
-    width: 68,
-    height: 48,
+    marginTop: -28,
+    width: 78,
+    height: 56,
     borderRadius: BorderRadius.md,
     alignItems: 'center',
     justifyContent: 'center',
