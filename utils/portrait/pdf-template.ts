@@ -381,6 +381,31 @@ export function generatePortraitHTML(portrait: IndividualPortrait, userName?: st
 /* ── RESET & BASE ─────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* ── PRINT FLOW — prevent cut words, orphaned lines, split sections ── */
+p, li, blockquote, .insight-callout, .mantra {
+  orphans: 3;
+  widows: 3;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  hyphens: auto;
+}
+h1, h2, h3, h4, .section-title, .section-label, .card-title {
+  page-break-after: avoid;
+  break-after: avoid;
+}
+.card, .anchor-section, .pattern-card, .growth-edge-card, .partner-section,
+.score-row, .are-row, .value-row, .two-col, .say-box {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+/* Keep dividers with their following section */
+.section-divider {
+  page-break-after: avoid;
+  break-after: avoid;
+  margin-bottom: 28px;
+}
+img, svg { max-width: 100%; }
+
 :root {
   --rose: #C4616E;
   --rose-light: #F4D5D0;
@@ -436,6 +461,8 @@ body {
   font-size: 10pt;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
   /* On-screen margins for the HTML preview */
   max-width: 8.5in;
   margin: 0 auto;
@@ -478,12 +505,13 @@ body {
 }
 
 /* ── SECTIONS ────────────────────────── */
-.section { margin-bottom: 40px; page-break-inside: avoid; }
-.section-divider { width: 100%; height: 2px; background: var(--rose); margin: 40px 0 28px; }
+.section { margin-bottom: 40px; }
+.section-divider { width: 100%; height: 2px; background: var(--rose); margin: 40px 0 28px; page-break-after: avoid; break-after: avoid; }
 .section-title {
   font-family: 'Playfair Display', Lora, Georgia, serif;
   font-weight: 700; font-size: 18pt; color: var(--text);
   letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px;
+  page-break-after: avoid; break-after: avoid;
 }
 .section-label {
   font-family: 'Josefin Sans', Poppins, 'Liberation Sans', sans-serif;
@@ -507,7 +535,7 @@ p { margin-bottom: 8px; line-height: 1.7; }
   background: var(--surface);
   border-radius: 10px; padding: 24px 28px; margin-bottom: 20px;
   border: 1px solid var(--border-light);
-  page-break-inside: avoid;
+  page-break-inside: avoid; break-inside: avoid;
 }
 .card-accent { border-left: 3px solid var(--rose); }
 .card-rose { border-left: 3px solid var(--rose); }
@@ -576,8 +604,8 @@ p { margin-bottom: 8px; line-height: 1.7; }
 .cycle-container svg { width: 320px; max-width: 100%; display: block; margin: 0 auto; }
 
 /* ── TWO-COL ─────────────────────────── */
-.two-col { display: flex; gap: 16px; page-break-inside: avoid; }
-.two-col > div { flex: 1; }
+.two-col { display: flex; gap: 16px; }
+.two-col > div { flex: 1; page-break-inside: avoid; break-inside: avoid; }
 
 /* ── INSIGHT CALLOUT ─────────────────── */
 .insight-callout {
@@ -753,8 +781,27 @@ p { margin-bottom: 8px; line-height: 1.7; }
 }
 
 /* ── PRINT HELPERS ───────────────────── */
-.page-break { page-break-before: always; }
-.avoid-break { page-break-inside: avoid; }
+.page-break { page-break-before: always; break-before: page; }
+.avoid-break { page-break-inside: avoid; break-inside: avoid; }
+
+/* ── PRINT-SPECIFIC OVERRIDES ────────── */
+@media print {
+  /* Ensure no text overflows containers */
+  .card, .anchor-section, .pattern-card, .growth-edge-card {
+    overflow: hidden;
+  }
+  /* Prevent SVG containers from splitting */
+  .radar-container, .window-container, .cycle-container, .overall-ring {
+    page-break-inside: avoid; break-inside: avoid;
+  }
+  /* Two-column layouts: if one column is too tall, allow break but keep individual cards intact */
+  .two-col {
+    page-break-inside: auto; break-inside: auto;
+  }
+  .two-col > div {
+    page-break-inside: avoid; break-inside: avoid;
+  }
+}
 </style>
 </head>
 <body>
@@ -805,7 +852,7 @@ p { margin-bottom: 8px; line-height: 1.7; }
 
 <!-- WINDOW OF TOLERANCE -->
 <div class="section-divider"></div>
-<div class="section">
+<div class="section avoid-break">
   <p class="section-label">NERVOUS SYSTEM</p>
   <div class="section-title">Window of Tolerance</div>
   <div class="window-container">${windowSVG}</div>
@@ -981,8 +1028,9 @@ ${patternsHTML ? `
 </div>
 
 <!-- ANCHOR POINTS -->
-<div class="section-divider"></div>
+<div class="page-break"></div>
 <div class="section">
+  <div class="section-divider"></div>
   <p class="section-label">YOUR ANCHORS</p>
   <div class="section-title">When You Need Grounding</div>
 
