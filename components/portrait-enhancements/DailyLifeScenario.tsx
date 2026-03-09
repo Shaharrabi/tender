@@ -14,6 +14,7 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 import TenderText from '@/components/ui/TenderText';
 import { Colors, Spacing, BorderRadius, Shadows } from '@/constants/theme';
 import type { IndividualPortrait } from '@/types/portrait';
+import { SwirlyIcon, SeedlingIcon, ChatBubbleIcon } from '@/assets/graphics/icons';
 
 interface DailyLifeScenarioProps {
   portrait: IndividualPortrait;
@@ -64,15 +65,24 @@ export default function DailyLifeScenario({ portrait }: DailyLifeScenarioProps) 
         <TenderText variant="bodySmall" color={Colors.textMuted} style={styles.situation}>{s.situation}</TenderText>
 
         <View style={styles.section}>
-          <TenderText variant="label" color={Colors.textMuted} style={styles.sectionLabel}>{'\uD83C\uDF00'} YOUR LIKELY MOVE</TenderText>
+          <View style={styles.sectionLabelRow}>
+            <SwirlyIcon size={12} color={Colors.textMuted} />
+            <TenderText variant="label" color={Colors.textMuted} style={styles.sectionLabel}>YOUR LIKELY MOVE</TenderText>
+          </View>
           <TenderText variant="body" color={Colors.textSecondary} style={styles.sectionText}>{s.pattern}</TenderText>
         </View>
         <View style={styles.section}>
-          <TenderText variant="label" color={Colors.success} style={styles.sectionLabel}>{'\uD83C\uDF31'} YOUR GROWTH MOVE</TenderText>
+          <View style={styles.sectionLabelRow}>
+            <SeedlingIcon size={12} color={Colors.success} />
+            <TenderText variant="label" color={Colors.success} style={styles.sectionLabel}>YOUR GROWTH MOVE</TenderText>
+          </View>
           <TenderText variant="body" color={Colors.textSecondary} style={styles.sectionText}>{s.growthMove}</TenderText>
         </View>
         <View style={styles.tryCard}>
-          <TenderText variant="label" color={Colors.primary} style={styles.sectionLabel}>{'\uD83D\uDCAC'} TRY SAYING</TenderText>
+          <View style={styles.sectionLabelRow}>
+            <ChatBubbleIcon size={12} color={Colors.primary} />
+            <TenderText variant="label" color={Colors.primary} style={styles.sectionLabel}>TRY SAYING</TenderText>
+          </View>
           <TenderText variant="serifItalic" color={Colors.text} style={styles.trySaying}>{s.trySaying}</TenderText>
         </View>
       </View>
@@ -85,6 +95,7 @@ const styles = StyleSheet.create({
   eyebrow: { letterSpacing: 2, fontSize: 10 },
   situation: { lineHeight: 20, fontStyle: 'italic' },
   section: { gap: Spacing.xs },
+  sectionLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   sectionLabel: { fontSize: 10, letterSpacing: 1.5 },
   sectionText: { lineHeight: 24 },
   tryCard: { backgroundColor: Colors.backgroundAlt, borderRadius: BorderRadius.sm, padding: Spacing.md, gap: Spacing.xs },

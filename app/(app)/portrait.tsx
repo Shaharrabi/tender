@@ -928,7 +928,7 @@ export default function PortraitScreen() {
             if (!action) return null;
             return (
               <TryThisTodayCTA
-                icon={action.icon}
+                Icon={action.Icon}
                 label={action.label}
                 sublabel={action.sublabel}
                 accentColor={TABS.find(t => t.key === activeTab)?.color}

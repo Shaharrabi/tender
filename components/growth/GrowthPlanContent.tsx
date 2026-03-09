@@ -31,6 +31,7 @@ import {
   BorderRadius,
   Shadows,
 } from '@/constants/theme';
+import TenderText from '@/components/ui/TenderText';
 import { getExerciseById } from '@/utils/interventions/registry';
 import { getExercisesForEdge } from '@/utils/portrait/growth-edges';
 import { CATEGORY_ACCENT_COLORS } from '@/components/intervention/ExerciseCard';
@@ -41,7 +42,19 @@ import {
 } from '@/utils/steps/intervention-protocols';
 import type { GrowthProgress } from '@/utils/steps/intervention-protocols';
 import SparkleIcon from '@/assets/graphics/icons/SparkleIcon';
+import SeedlingIcon from '@/assets/graphics/icons/SeedlingIcon';
 import GrowthEdgeSummaryCard from '@/components/portrait-enhancements/GrowthEdgeSummaryCard';
+
+// ─── Wes Anderson Palette ────────────────────────────────
+const WA = {
+  sage: '#A8B5A2',
+  terracotta: '#C4836A',
+  dustyBlue: '#8BA4B8',
+  mustard: '#D4A843',
+  blush: '#E8B4B8',
+  plum: '#8B6B7B',
+  cream: '#F5F0E8',
+};
 import type { IndividualPortrait } from '@/types';
 
 // ─── Props ───────────────────────────────────────────────
@@ -118,16 +131,19 @@ export default function GrowthPlanContent({ portrait, router, phaseColor }: Grow
       {/* ── Your Personalized Growth Plan ── */}
       {protocol && journeyMap && (
         <View style={s.protocolSection}>
-          <Text style={s.protocolEyebrow}>YOUR GROWTH PLAN</Text>
-          <Text style={s.protocolName}>{protocol.name}</Text>
-          <Text style={s.protocolDescription}>{protocol.description}</Text>
+          <TenderText variant="label" color={WA.sage} style={s.protocolEyebrow}>YOUR GROWTH PLAN</TenderText>
+          <TenderText variant="headingM" color={Colors.text} style={s.protocolName}>{protocol.name}</TenderText>
+          <TenderText variant="body" color={Colors.textSecondary} style={s.protocolDescription}>{protocol.description}</TenderText>
 
           {/* Growth Progress Bar */}
           {growthProgress && (
             <View style={s.growthProgressContainer}>
               <View style={s.growthProgressHeader}>
-                <Text style={s.growthProgressLabel}>Growth Progress</Text>
-                <Text style={s.growthProgressPct}>{growthProgress.overall}%</Text>
+                <View style={s.growthProgressLabelRow}>
+                  <SeedlingIcon size={14} color={WA.sage} />
+                  <TenderText variant="headingS" color={Colors.text}>Growth Progress</TenderText>
+                </View>
+                <TenderText variant="headingM" color={WA.sage} style={s.growthProgressPct}>{growthProgress.overall}%</TenderText>
               </View>
               <View style={s.growthProgressTrack}>
                 <View
@@ -147,14 +163,14 @@ export default function GrowthPlanContent({ portrait, router, phaseColor }: Grow
                           s.phaseProgressMiniFill,
                           {
                             width: `${Math.max(p.pct, 4)}%` as any,
-                            backgroundColor: p.isComplete ? Colors.successDark : Colors.secondary,
+                            backgroundColor: p.isComplete ? WA.sage : WA.terracotta,
                           },
                         ]}
                       />
                     </View>
-                    <Text style={s.phaseProgressMiniLabel} numberOfLines={1}>
+                    <TenderText variant="caption" color={Colors.textMuted} style={s.phaseProgressMiniLabel} numberOfLines={1}>
                       {p.isComplete ? '\u2713 ' : ''}{p.name}
-                    </Text>
+                    </TenderText>
                   </View>
                 ))}
               </View>
@@ -164,36 +180,38 @@ export default function GrowthPlanContent({ portrait, router, phaseColor }: Grow
           {/* Four Movements Visualization */}
           {boostedMovements && (
             <View style={s.movementsContainer}>
-              <Text style={[s.movementsSectionTitle, phaseColor ? { color: phaseColor } : undefined]}>Four Movements of Growth</Text>
-              <Text style={s.movementsSubtitle}>
+              <TenderText variant="headingS" color={phaseColor || WA.terracotta}>Four Movements of Growth</TenderText>
+              <TenderText variant="body" color={Colors.textSecondary} style={s.movementsSubtitle}>
                 Where you are in each dimension of relational growth
-              </Text>
-              {(['recognition', 'release', 'resonance', 'embodiment'] as const).map((key) => {
+              </TenderText>
+              {(['recognition', 'release', 'resonance', 'embodiment'] as const).map((key, idx) => {
                 const m = boostedMovements[key];
                 const explained = (FOUR_MOVEMENTS_EXPLAINED as any)[key];
+                const movementColors = [WA.terracotta, WA.plum, WA.dustyBlue, WA.sage];
+                const mColor = movementColors[idx];
                 return (
                   <View key={key} style={s.movementCard}>
                     <View style={s.movementCardHeader}>
                       {explained?.icon ? (
-                        (() => { const IconComp = explained.icon; return <IconComp size={22} color={phaseColor || Colors.primary} />; })()
+                        (() => { const IconComp = explained.icon; return <View style={[s.movementIconCircle, { backgroundColor: mColor + '15' }]}><IconComp size={18} color={mColor} /></View>; })()
                       ) : null}
                       <View style={{ flex: 1 }}>
-                        <Text style={s.movementName}>{m.name}</Text>
-                        <Text style={s.movementQuestion}>{explained?.question || m.subtitle}</Text>
+                        <TenderText variant="headingS" color={Colors.text}>{m.name}</TenderText>
+                        <TenderText variant="bodySmall" color={Colors.textSecondary}>{explained?.question || m.subtitle}</TenderText>
                       </View>
-                      <Text style={s.movementScore}>{m.readiness}%</Text>
+                      <TenderText variant="headingS" color={mColor}>{m.readiness}%</TenderText>
                     </View>
                     <View style={s.movementProgressTrack}>
                       <View
                         style={[
                           s.movementProgressFill,
-                          { width: `${Math.max(m.readiness, 3)}%` as any },
+                          { width: `${Math.max(m.readiness, 3)}%` as any, backgroundColor: mColor },
                         ]}
                       />
                     </View>
-                    <Text style={s.movementDescription}>
+                    <TenderText variant="body" color={Colors.textSecondary} style={s.movementDescription}>
                       {explained?.howItFeels || m.description}
-                    </Text>
+                    </TenderText>
                   </View>
                 );
               })}
@@ -202,20 +220,20 @@ export default function GrowthPlanContent({ portrait, router, phaseColor }: Grow
 
           {/* Your Path — Integrated into the 12-step journey */}
           <View style={s.phasesContainer}>
-            <Text style={s.movementsSectionTitle}>Your Path</Text>
+            <TenderText variant="headingS" color={Colors.text}>Your Path</TenderText>
             <View style={s.pathIntegratedCard}>
-              <Text style={s.pathIntegratedText}>
+              <TenderText variant="body" color={Colors.textSecondary} style={s.pathIntegratedText}>
                 Your 12-step journey is your path. Each step integrates the practices your protocol recommends — completing steps and exercises grows your edges and moves your portrait score.
-              </Text>
+              </TenderText>
             </View>
           </View>
 
           {/* Contraindications as gentle guidance */}
           {protocol.contraindications.length > 0 && (
             <View style={s.guidanceContainer}>
-              <Text style={s.guidanceTitle}>What to keep in mind</Text>
+              <TenderText variant="headingS" color={Colors.text} style={s.guidanceTitle}>What to keep in mind</TenderText>
               {protocol.contraindications.map((c: string, i: number) => (
-                <Text key={i} style={s.guidanceItem}>{'\u2022'} {c}</Text>
+                <TenderText key={i} variant="body" color={Colors.textSecondary} style={s.guidanceItem}>{'\u2022'} {c}</TenderText>
               ))}
             </View>
           )}
@@ -223,9 +241,9 @@ export default function GrowthPlanContent({ portrait, router, phaseColor }: Grow
       )}
 
       {/* ── Growth Edges ── */}
-      <Text style={s.tabIntro}>
+      <TenderText variant="body" color={Colors.textSecondary} style={s.tabIntro}>
         Your growth edges — the areas where small, consistent practice creates the most transformation.
-      </Text>
+      </TenderText>
 
       {portrait.growthEdges.map((edge, i) => (
         <GrowthEdgeSummaryCard
@@ -256,23 +274,13 @@ const s = StyleSheet.create({
     marginBottom: Spacing.xl,
   },
   protocolEyebrow: {
-    fontFamily: FontFamilies.body,
-    fontSize: 11,
-    color: Colors.textSecondary,
-    textTransform: 'uppercase' as const,
-    letterSpacing: 1.5,
+    letterSpacing: 2,
     marginBottom: Spacing.xs,
   },
   protocolName: {
-    fontFamily: FontFamilies.heading,
-    fontSize: FontSizes.headingM,
-    color: Colors.text,
     marginBottom: Spacing.sm,
   },
   protocolDescription: {
-    fontFamily: FontFamilies.body,
-    fontSize: FontSizes.body,
-    color: Colors.textSecondary,
     lineHeight: 24,
     marginBottom: Spacing.lg,
   },
@@ -281,62 +289,43 @@ const s = StyleSheet.create({
   movementsContainer: {
     marginBottom: Spacing.lg,
   },
-  movementsSectionTitle: {
-    fontFamily: FontFamilies.heading,
-    fontSize: FontSizes.headingS,
-    color: Colors.text,
-    marginBottom: Spacing.xs,
-  },
   movementsSubtitle: {
-    fontFamily: FontFamilies.body,
-    fontSize: FontSizes.body,
-    color: Colors.textSecondary,
     marginBottom: Spacing.md,
   },
   movementCard: {
-    backgroundColor: Colors.white,
-    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
     padding: Spacing.md,
     marginBottom: Spacing.sm,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Colors.borderLight,
+    ...Shadows.card,
   },
   movementCardHeader: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
+    gap: Spacing.sm,
     marginBottom: Spacing.sm,
   },
-  movementName: {
-    fontFamily: FontFamilies.heading,
-    fontSize: FontSizes.body,
-    color: Colors.text,
-  },
-  movementQuestion: {
-    fontFamily: FontFamilies.body,
-    fontSize: FontSizes.body,
-    color: Colors.textSecondary,
-  },
-  movementScore: {
-    fontFamily: FontFamilies.body,
-    fontSize: FontSizes.body,
-    color: Colors.textSecondary,
+  movementIconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
   },
   movementProgressTrack: {
-    height: 6,
-    backgroundColor: Colors.border,
+    height: 5,
+    backgroundColor: Colors.borderLight,
     borderRadius: 3,
     marginBottom: Spacing.sm,
     overflow: 'hidden' as const,
   },
   movementProgressFill: {
     height: '100%' as any,
-    backgroundColor: Colors.secondary,
     borderRadius: 3,
   },
   movementDescription: {
-    fontFamily: FontFamilies.body,
-    fontSize: FontSizes.body,
-    color: Colors.textSecondary,
     lineHeight: 24,
   },
 
@@ -346,16 +335,15 @@ const s = StyleSheet.create({
   },
   pathIntegratedCard: {
     backgroundColor: Colors.surfaceElevated,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
     borderWidth: 1,
     borderColor: Colors.borderLight,
+    ...Shadows.card,
+    marginTop: Spacing.xs,
   },
   pathIntegratedText: {
-    fontFamily: FontFamilies.body,
-    fontSize: FontSizes.sm,
-    color: Colors.textSecondary,
-    lineHeight: 20,
+    lineHeight: 22,
   },
   phaseCard: {
     backgroundColor: Colors.white,
@@ -446,7 +434,7 @@ const s = StyleSheet.create({
     width: 18,
     height: 18,
     borderRadius: 9,
-    backgroundColor: Colors.successDark,
+    backgroundColor: WA.sage,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
     marginRight: 10,
@@ -456,38 +444,35 @@ const s = StyleSheet.create({
     color: Colors.white,
   },
   exerciseRowTitleDone: {
-    color: Colors.successDark,
+    color: WA.sage,
   },
 
   // Guidance / Contraindications
   guidanceContainer: {
-    backgroundColor: Colors.surfaceElevated,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
+    backgroundColor: Colors.backgroundAlt,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
     marginBottom: Spacing.lg,
+    borderLeftWidth: 3,
+    borderLeftColor: WA.dustyBlue,
   },
   guidanceTitle: {
-    fontFamily: FontFamilies.heading,
-    fontSize: FontSizes.headingS,
-    color: Colors.text,
     marginBottom: Spacing.sm,
   },
   guidanceItem: {
-    fontFamily: FontFamilies.body,
-    fontSize: FontSizes.body,
-    color: Colors.textSecondary,
     lineHeight: 24,
     marginBottom: Spacing.xs,
   },
 
   // Growth Progress
   growthProgressContainer: {
-    backgroundColor: Colors.white,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
     marginBottom: Spacing.lg,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: Colors.borderLight,
+    ...Shadows.card,
   },
   growthProgressHeader: {
     flexDirection: 'row' as const,
@@ -495,27 +480,25 @@ const s = StyleSheet.create({
     alignItems: 'center' as const,
     marginBottom: Spacing.sm,
   },
-  growthProgressLabel: {
-    fontFamily: FontFamilies.heading,
-    fontSize: FontSizes.body,
-    color: Colors.text,
+  growthProgressLabelRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 8,
   },
   growthProgressPct: {
-    fontFamily: FontFamilies.heading,
-    fontSize: FontSizes.headingM,
-    color: Colors.textSecondary,
+    fontFamily: FontFamilies.accent,
   },
   growthProgressTrack: {
-    height: 10,
-    backgroundColor: Colors.border,
-    borderRadius: 5,
+    height: 8,
+    backgroundColor: Colors.borderLight,
+    borderRadius: 4,
     overflow: 'hidden' as const,
     marginBottom: Spacing.md,
   },
   growthProgressFill: {
     height: '100%' as any,
-    backgroundColor: Colors.secondary,
-    borderRadius: 5,
+    backgroundColor: WA.sage,
+    borderRadius: 4,
   },
   phaseProgressRow: {
     flexDirection: 'row' as const,
@@ -526,7 +509,7 @@ const s = StyleSheet.create({
   },
   phaseProgressMiniTrack: {
     height: 4,
-    backgroundColor: Colors.border,
+    backgroundColor: Colors.borderLight,
     borderRadius: 2,
     overflow: 'hidden' as const,
     marginBottom: 4,
@@ -536,9 +519,7 @@ const s = StyleSheet.create({
     borderRadius: 2,
   },
   phaseProgressMiniLabel: {
-    fontFamily: FontFamilies.body,
     fontSize: 9,
-    color: Colors.textMuted,
   },
   phaseProgressText: {
     fontFamily: FontFamilies.body,
@@ -550,12 +531,12 @@ const s = StyleSheet.create({
 
   // Phase Completion Summary
   phaseCompleteSummary: {
-    backgroundColor: Colors.successLight,
-    borderRadius: BorderRadius.md,
+    backgroundColor: WA.sage + '15',
+    borderRadius: BorderRadius.lg,
     padding: Spacing.md,
     marginTop: Spacing.sm,
     borderLeftWidth: 3,
-    borderLeftColor: Colors.successDark,
+    borderLeftColor: WA.sage,
   },
   phaseCompleteIcon: {
     fontSize: 18,
@@ -564,13 +545,13 @@ const s = StyleSheet.create({
   phaseCompleteTitle: {
     fontFamily: FontFamilies.heading,
     fontSize: FontSizes.body,
-    color: Colors.successDark,
+    color: WA.sage,
     marginBottom: 4,
   },
   phaseCompleteText: {
     fontFamily: FontFamilies.body,
     fontSize: FontSizes.body,
-    color: Colors.successMuted,
+    color: Colors.textSecondary,
     lineHeight: 24,
   },
 
@@ -624,11 +605,11 @@ const s = StyleSheet.create({
     lineHeight: 24,
   },
   growthEdgeRationaleBox: {
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.backgroundAlt,
     borderRadius: BorderRadius.sm,
     padding: Spacing.md,
     borderLeftWidth: 3,
-    borderLeftColor: Colors.warning,
+    borderLeftColor: WA.mustard,
   },
   growthEdgeRationale: {
     fontFamily: FontFamilies.body,

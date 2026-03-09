@@ -10,8 +10,16 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import TenderText from '@/components/ui/TenderText';
-import { Colors, Spacing, BorderRadius } from '@/constants/theme';
+import { Colors, Spacing, BorderRadius, Shadows } from '@/constants/theme';
 import type { IndividualPortrait, CyclePosition } from '@/types/portrait';
+import {
+  SwirlyIcon,
+  StarIcon,
+  SeedlingIcon,
+  CompassIcon,
+  HeartIcon,
+} from '@/assets/graphics/icons';
+import type { IconProps } from '@/assets/graphics/icons/types';
 
 interface PortraitDigestProps {
   portrait: IndividualPortrait;
@@ -65,12 +73,12 @@ export default function PortraitDigest({ portrait }: PortraitDigestProps) {
   const pos = portrait.negativeCycle.position;
   const values = portrait.fourLens?.values?.coreValues?.slice(0, 3).join(', ') ?? '';
 
-  const items = [
-    { label: 'Cycle', text: cycleDesc(pos), color: Colors.accent },
-    { label: 'Strength', text: `${strength.label} (${strength.value}) \u2014 ${STRENGTH_MEANINGS[strength.label] ?? 'a real strength'}`, color: Colors.success },
-    { label: 'Growth Edge', text: edge ? edge.title : 'Not yet identified', color: Colors.warning },
-    { label: 'Values', text: values ? `${values} \u2014 the compass underneath your decisions` : 'Complete your values assessment to see this', color: Colors.primary },
-    { label: 'Partner Needs', text: partnerNeed(pos), color: Colors.depth },
+  const items: Array<{ label: string; text: string; color: string; Icon: React.ComponentType<IconProps> }> = [
+    { label: 'Cycle', text: cycleDesc(pos), color: Colors.accent, Icon: SwirlyIcon },
+    { label: 'Strength', text: `${strength.label} (${strength.value}) \u2014 ${STRENGTH_MEANINGS[strength.label] ?? 'a real strength'}`, color: Colors.success, Icon: StarIcon },
+    { label: 'Growth Edge', text: edge ? edge.title : 'Not yet identified', color: Colors.warning, Icon: SeedlingIcon },
+    { label: 'Values', text: values ? `${values} \u2014 the compass underneath your decisions` : 'Complete your values assessment to see this', color: Colors.primary, Icon: CompassIcon },
+    { label: 'Partner Needs', text: partnerNeed(pos), color: Colors.depth, Icon: HeartIcon },
   ];
 
   return (
@@ -81,10 +89,12 @@ export default function PortraitDigest({ portrait }: PortraitDigestProps) {
         </TenderText>
         {items.map((item) => (
           <View key={item.label} style={styles.row}>
-            <View style={[styles.dot, { backgroundColor: item.color }]} />
+            <View style={[styles.iconCircle, { backgroundColor: item.color + '15' }]}>
+              <item.Icon size={13} color={item.color} />
+            </View>
             <View style={styles.rowContent}>
-              <TenderText variant="label" color={Colors.text} style={styles.itemLabel}>{item.label}: </TenderText>
-              <TenderText variant="bodySmall" color={Colors.textSecondary} style={styles.itemText}>{item.text}</TenderText>
+              <TenderText variant="label" color={Colors.text} style={styles.itemLabel}>{item.label}</TenderText>
+              <TenderText variant="body" color={Colors.textSecondary} style={styles.itemText}>{item.text}</TenderText>
             </View>
           </View>
         ))}
@@ -95,13 +105,22 @@ export default function PortraitDigest({ portrait }: PortraitDigestProps) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Colors.backgroundAlt, borderRadius: BorderRadius.lg,
-    borderWidth: 1, borderColor: Colors.border, padding: Spacing.lg, gap: Spacing.sm,
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+    padding: Spacing.lg,
+    gap: Spacing.md,
+    ...Shadows.card,
   },
-  eyebrow: { letterSpacing: 2, fontSize: 10, marginBottom: Spacing.xs },
-  row: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.sm },
-  dot: { width: 6, height: 6, borderRadius: 3, marginTop: 7 },
-  rowContent: { flex: 1, flexDirection: 'row', flexWrap: 'wrap' },
-  itemLabel: { fontSize: 12, letterSpacing: 0.5, fontWeight: '700' },
-  itemText: { lineHeight: 20 },
+  eyebrow: { letterSpacing: 2.5, fontSize: 10, marginBottom: Spacing.sm },
+  row: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.md },
+  iconCircle: {
+    width: 30, height: 30, borderRadius: 15,
+    alignItems: 'center', justifyContent: 'center',
+    marginTop: 2,
+  },
+  rowContent: { flex: 1, gap: 2 },
+  itemLabel: { fontSize: 11, letterSpacing: 0.8, fontWeight: '700' },
+  itemText: { lineHeight: 22, fontSize: 14 },
 });

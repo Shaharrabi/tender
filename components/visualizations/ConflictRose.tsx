@@ -104,12 +104,12 @@ function petalPath(
 const AnimatedSvg = RNAnimated.createAnimatedComponent(Svg);
 
 export default function ConflictRose({ dutchScores, size: sizeProp }: ConflictRoseProps) {
-  const size = sizeProp ?? 200;
-  const padding = 40; // padding for labels outside petals
+  const size = sizeProp ?? 220;
+  const padding = 50; // padding for labels outside petals
   const svgSize = size + padding * 2;
   const cx = svgSize / 2;
   const cy = svgSize / 2;
-  const maxRadius = size * 0.36;
+  const maxRadius = size * 0.38;
 
   const scaleAnim = useRef(new RNAnimated.Value(0)).current;
 
@@ -176,8 +176,9 @@ export default function ConflictRose({ dutchScores, size: sizeProp }: ConflictRo
 
           {/* Petal labels */}
           {PETALS.map((petal, i) => {
+            const isPrimary = petal.key === primaryStyle;
             const angle = (2 * Math.PI * i) / N - Math.PI / 2;
-            const labelR = maxRadius + 24;
+            const labelR = maxRadius + 28;
             const x = cx + labelR * Math.cos(angle);
             const y = cy + labelR * Math.sin(angle);
             return (
@@ -185,10 +186,10 @@ export default function ConflictRose({ dutchScores, size: sizeProp }: ConflictRo
                 key={`label-${i}`}
                 x={x}
                 y={y + 4}
-                fill={Colors.textSecondary}
-                fontSize={10}
+                fill={isPrimary ? petal.color : Colors.textSecondary}
+                fontSize={isPrimary ? 12 : 11}
                 fontFamily={FontFamilies.body}
-                fontWeight="500"
+                fontWeight={isPrimary ? '700' : '500'}
                 textAnchor="middle"
               >
                 {petal.relationalLabel}
@@ -240,9 +241,9 @@ export default function ConflictRose({ dutchScores, size: sizeProp }: ConflictRo
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
     borderWidth: 1,
     borderColor: Colors.borderLight,
     ...Shadows.card,
@@ -252,19 +253,20 @@ const styles = StyleSheet.create({
     ...Typography.label,
     color: Colors.primary,
     fontSize: 10,
-    letterSpacing: 1.0,
-    marginBottom: 2,
+    letterSpacing: 1.5,
+    marginBottom: 4,
   },
   title: {
     fontFamily: FontFamilies.heading,
-    fontSize: 16,
+    fontSize: 18,
     color: Colors.text,
-    marginBottom: 2,
+    marginBottom: 4,
   },
   subtitle: {
-    ...Typography.caption,
+    ...Typography.body,
     color: Colors.textSecondary,
-    fontSize: 11,
+    fontSize: 13,
+    lineHeight: 20,
     marginBottom: Spacing.sm,
   },
   chartWrapper: {
@@ -282,40 +284,42 @@ const styles = StyleSheet.create({
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    gap: 5,
     backgroundColor: Colors.background,
-    paddingHorizontal: 6,
-    paddingVertical: 3,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderRadius: BorderRadius.pill,
     borderWidth: 1,
     borderColor: Colors.borderLight,
   },
   chipLabel: {
     fontFamily: FontFamilies.body,
-    fontSize: 10,
+    fontSize: 12,
     color: Colors.text,
     letterSpacing: 0.2,
   },
   chipScore: {
     fontFamily: FontFamilies.accent,
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '700',
   },
   callout: {
     marginTop: Spacing.md,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
     backgroundColor: Colors.backgroundAlt,
-    borderRadius: BorderRadius.sm,
+    borderRadius: BorderRadius.md,
     alignItems: 'center',
   },
   calloutText: {
-    ...Typography.caption,
+    ...Typography.body,
     color: Colors.textSecondary,
     textAlign: 'center',
+    fontSize: 13,
+    lineHeight: 20,
   },
   calloutBold: {
-    fontWeight: '600',
+    fontWeight: '700',
     color: Colors.text,
   },
 });

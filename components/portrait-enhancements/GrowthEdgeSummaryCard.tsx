@@ -18,6 +18,29 @@ import { View, TouchableOpacity, LayoutAnimation, StyleSheet, Platform, UIManage
 import TenderText from '@/components/ui/TenderText';
 import { Colors, Spacing, BorderRadius, Shadows } from '@/constants/theme';
 import type { GrowthEdge } from '@/types/portrait';
+import {
+  ChevronUpIcon,
+  ChevronDownIcon,
+  SeedlingIcon,
+  WaveIcon,
+  MirrorIcon,
+  CompassIcon,
+  ChatBubbleIcon,
+  HandshakeIcon,
+  MeditationIcon,
+  SparkleIcon,
+  ArrowRightIcon,
+} from '@/assets/graphics/icons';
+import type { IconProps } from '@/assets/graphics/icons/types';
+
+// ─── Wes Anderson Palette ────────────────────────────────
+const WA = {
+  sage: '#A8B5A2',
+  terracotta: '#C4836A',
+  dustyBlue: '#8BA4B8',
+  mustard: '#D4A843',
+  plum: '#8B6B7B',
+};
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -29,6 +52,18 @@ interface GrowthEdgeSummaryCardProps {
   phaseColor?: string;
   /** Called when user taps a practice to navigate to it */
   onPracticePress?: (practiceId: string) => void;
+}
+
+/** Pick a relevant icon + color for the edge category */
+function getEdgeVisual(edge: GrowthEdge): { Icon: React.ComponentType<IconProps>; color: string } {
+  const title = edge.title.toLowerCase();
+  if (title.includes('regulation')) return { Icon: WaveIcon, color: WA.dustyBlue };
+  if (title.includes('access')) return { Icon: HandshakeIcon, color: WA.terracotta };
+  if (title.includes('values')) return { Icon: CompassIcon, color: WA.mustard };
+  if (title.includes('differentiation') || title.includes('self-leadership')) return { Icon: MirrorIcon, color: WA.plum };
+  if (title.includes('conflict')) return { Icon: ChatBubbleIcon, color: WA.terracotta };
+  if (title.includes('communication')) return { Icon: ChatBubbleIcon, color: WA.sage };
+  return { Icon: SeedlingIcon, color: WA.sage };
 }
 
 /** Generate a one-sentence "what this looks like in practice" from the edge */
@@ -56,21 +91,28 @@ export default function GrowthEdgeSummaryCard({
     setExpanded((prev) => !prev);
   }, []);
 
+  const { Icon: EdgeIcon, color: edgeColor } = getEdgeVisual(edge);
+
   return (
     <View style={styles.card}>
-      {/* Always visible: number + title + one-liner */}
+      {/* Always visible: icon + number + title + one-liner */}
       <TouchableOpacity onPress={toggle} activeOpacity={0.7} accessibilityRole="button" accessibilityState={{ expanded }}>
         <View style={styles.header}>
-          <View style={[styles.numberBadge, { backgroundColor: phaseColor }]}>
-            <TenderText variant="caption" color={Colors.white} style={styles.numberText}>{index + 1}</TenderText>
+          <View style={[styles.numberBadge, { backgroundColor: edgeColor + '18' }]}>
+            <EdgeIcon size={16} color={edgeColor} />
           </View>
           <View style={styles.headerText}>
+            <View style={styles.titleRow}>
+              <TenderText variant="label" color={edgeColor} style={styles.priorityLabel}>PRIORITY {index + 1}</TenderText>
+            </View>
             <TenderText variant="headingS" color={Colors.text}>{edge.title}</TenderText>
             <TenderText variant="bodySmall" color={Colors.textSecondary} style={styles.preview}>
               {practicePreview(edge)}
             </TenderText>
           </View>
-          <TenderText variant="caption" color={Colors.textMuted}>{expanded ? '\u25B4' : '\u25BE'}</TenderText>
+          {expanded
+            ? <ChevronUpIcon size={14} color={Colors.textMuted} />
+            : <ChevronDownIcon size={14} color={Colors.textMuted} />}
         </View>
       </TouchableOpacity>
 
@@ -82,8 +124,8 @@ export default function GrowthEdgeSummaryCard({
           </TenderText>
 
           {edge.rationale && (
-            <View style={[styles.rationaleBox, { borderLeftColor: phaseColor }]}>
-              <TenderText variant="label" color={phaseColor} style={styles.rationaleLabel}>WHY THIS MATTERS</TenderText>
+            <View style={[styles.rationaleBox, { borderLeftColor: edgeColor }]}>
+              <TenderText variant="label" color={edgeColor} style={styles.rationaleLabel}>WHY THIS MATTERS</TenderText>
               <TenderText variant="bodySmall" color={Colors.textSecondary} style={styles.rationaleText}>
                 {edge.rationale}
               </TenderText>
@@ -101,10 +143,13 @@ export default function GrowthEdgeSummaryCard({
                   activeOpacity={0.7}
                   accessibilityRole="button"
                 >
-                  <TenderText variant="bodySmall" color={Colors.text}>
+                  <View style={[styles.practiceIconCircle, { backgroundColor: edgeColor + '12' }]}>
+                    <MeditationIcon size={11} color={edgeColor} />
+                  </View>
+                  <TenderText variant="bodySmall" color={Colors.text} style={styles.practiceText}>
                     {practiceId.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())}
                   </TenderText>
-                  <TenderText variant="caption" color={phaseColor}>{'\u203A'}</TenderText>
+                  <ArrowRightIcon size={12} color={edgeColor} />
                 </TouchableOpacity>
               ))}
             </View>
@@ -121,6 +166,8 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.lg,
     padding: Spacing.lg,
     marginBottom: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
     ...Shadows.card,
   },
   header: {
@@ -129,20 +176,23 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   numberBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 2,
   },
-  numberText: {
-    fontWeight: '700',
-    fontSize: 13,
+  titleRow: {
+    marginBottom: 2,
+  },
+  priorityLabel: {
+    fontSize: 9,
+    letterSpacing: 1.5,
   },
   headerText: {
     flex: 1,
-    gap: Spacing.xs,
+    gap: 3,
   },
   preview: {
     lineHeight: 20,
@@ -182,11 +232,21 @@ const styles = StyleSheet.create({
   },
   practiceRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: Colors.surface,
+    gap: Spacing.sm,
+    backgroundColor: Colors.backgroundAlt,
     borderRadius: BorderRadius.md,
     paddingVertical: Spacing.sm + 2,
     paddingHorizontal: Spacing.md,
+  },
+  practiceIconCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  practiceText: {
+    flex: 1,
   },
 });

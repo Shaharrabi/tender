@@ -1,7 +1,7 @@
 /**
  * MoodRouter — "How are you right now?" emotional state check-in.
  *
- * 🌱 Curious → full content    🌊 Overwhelmed → essentials    🔥 In conflict → repair tools
+ * Curious → full content    Overwhelmed → essentials    In conflict → repair tools
  *
  * Verified: Colors.surfaceElevated='#FFF8F2', Colors.border='#E0D3CE', Shadows.subtle
  */
@@ -11,13 +11,15 @@ import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import TenderText from '@/components/ui/TenderText';
 import { Colors, Spacing, BorderRadius, Shadows } from '@/constants/theme';
+import { SeedlingIcon, WaveIcon, FireIcon } from '@/assets/graphics/icons';
+import type { IconProps } from '@/assets/graphics/icons/types';
 
 export type MoodChoice = 'curious' | 'overwhelmed' | 'conflict';
 
-const OPTIONS: Array<{ id: MoodChoice; icon: string; label: string; desc: string }> = [
-  { id: 'curious', icon: '\uD83C\uDF31', label: 'Curious', desc: 'Show me everything' },
-  { id: 'overwhelmed', icon: '\uD83C\uDF0A', label: 'Overwhelmed', desc: 'Just the essentials' },
-  { id: 'conflict', icon: '\uD83D\uDD25', label: 'In Conflict', desc: 'I need tools right now' },
+const OPTIONS: Array<{ id: MoodChoice; Icon: React.ComponentType<IconProps>; color: string; label: string; desc: string }> = [
+  { id: 'curious', Icon: SeedlingIcon, color: Colors.success, label: 'Curious', desc: 'Show me everything' },
+  { id: 'overwhelmed', Icon: WaveIcon, color: Colors.calm, label: 'Overwhelmed', desc: 'Just the essentials' },
+  { id: 'conflict', Icon: FireIcon, color: Colors.error, label: 'In Conflict', desc: 'I need tools right now' },
 ];
 
 interface MoodRouterProps {
@@ -37,7 +39,9 @@ export default function MoodRouter({ onSelect, phaseColor = Colors.primary }: Mo
       <View style={styles.list}>
         {OPTIONS.map((o) => (
           <TouchableOpacity key={o.id} style={styles.option} onPress={() => onSelect(o.id)} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel={`${o.label}: ${o.desc}`}>
-            <TenderText variant="headingL" style={styles.icon}>{o.icon}</TenderText>
+            <View style={[styles.iconCircle, { backgroundColor: o.color + '15' }]}>
+              <o.Icon size={22} color={o.color} />
+            </View>
             <View style={styles.optionText}>
               <TenderText variant="bodyMedium" color={Colors.text}>{o.label}</TenderText>
               <TenderText variant="caption" color={Colors.textMuted}>{o.desc}</TenderText>
@@ -61,6 +65,12 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surfaceElevated, borderRadius: BorderRadius.lg,
     padding: Spacing.md, borderWidth: 1.5, borderColor: Colors.border, ...Shadows.subtle,
   },
-  icon: { fontSize: 28 },
+  iconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   optionText: { flex: 1, gap: 2 },
 });

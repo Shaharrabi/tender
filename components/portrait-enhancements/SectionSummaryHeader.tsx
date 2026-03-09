@@ -14,6 +14,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import TenderText from '@/components/ui/TenderText';
 import { Colors, Spacing, BorderRadius } from '@/constants/theme';
+import { HourglassIcon } from '@/assets/graphics/icons';
 
 interface SectionSummaryHeaderProps {
   /** Warm summary of what this section contains */
@@ -35,9 +36,12 @@ export default function SectionSummaryHeader({
         {summary}
       </TenderText>
       {readMinutes != null && (
-        <TenderText variant="caption" color={Colors.textMuted}>
-          {'\u23F1\uFE0F'} ~{readMinutes} min read
-        </TenderText>
+        <View style={styles.readTimeRow}>
+          <HourglassIcon size={11} color={Colors.textMuted} />
+          <TenderText variant="caption" color={Colors.textMuted}>
+            ~{readMinutes} min read
+          </TenderText>
+        </View>
       )}
     </View>
   );
@@ -81,5 +85,10 @@ const styles = StyleSheet.create({
   summary: {
     lineHeight: 24,
     marginBottom: Spacing.xs,
+  },
+  readTimeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
 });

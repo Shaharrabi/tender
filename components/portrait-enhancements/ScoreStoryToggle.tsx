@@ -19,6 +19,7 @@ import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import TenderText from '@/components/ui/TenderText';
 import { Colors, Spacing, BorderRadius, Shadows } from '@/constants/theme';
 import type { CompositeScores } from '@/types/portrait';
+import { BookOpenIcon, ChartBarIcon } from '@/assets/graphics/icons';
 
 // ─── Toggle Component ───────────────────────────────────
 
@@ -39,13 +40,18 @@ export function ScoreViewToggle({ mode, onToggle }: ScoreViewToggleProps) {
           accessibilityRole="button"
           accessibilityState={{ selected: mode === m }}
         >
-          <TenderText
-            variant="caption"
-            color={mode === m ? Colors.text : Colors.textMuted}
-            style={mode === m ? styles.toggleTextActive : undefined}
-          >
-            {m === 'story' ? '\uD83D\uDCD6 Story' : '\uD83D\uDCCA Numbers'}
-          </TenderText>
+          <View style={styles.toggleInner}>
+            {m === 'story'
+              ? <BookOpenIcon size={13} color={mode === m ? Colors.text : Colors.textMuted} />
+              : <ChartBarIcon size={13} color={mode === m ? Colors.text : Colors.textMuted} />}
+            <TenderText
+              variant="caption"
+              color={mode === m ? Colors.text : Colors.textMuted}
+              style={mode === m ? styles.toggleTextActive : undefined}
+            >
+              {m === 'story' ? 'Story' : 'Numbers'}
+            </TenderText>
+          </View>
         </TouchableOpacity>
       ))}
     </View>
@@ -143,6 +149,11 @@ const styles = StyleSheet.create({
   toggleOptionActive: {
     backgroundColor: Colors.white,
     ...Shadows.card,
+  },
+  toggleInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
   },
   toggleTextActive: {
     fontWeight: '600',

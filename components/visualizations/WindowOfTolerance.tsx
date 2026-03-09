@@ -40,6 +40,19 @@ interface WindowOfToleranceProps {
   triggers?: string[];
 }
 
+// ─── Wes Anderson Sticker Palette ─────────────────────
+const WA = {
+  sage: '#A8B5A2',       // window zone (green/calm)
+  terracotta: '#C4836A', // hyperarousal (warm activation)
+  dustyBlue: '#8BA4B8',  // hypoarousal (cool shutdown)
+  mustard: '#D4A843',    // accents
+  blush: '#E8B4B8',      // markers
+  cream: '#F5F0E8',      // backgrounds
+  warmWhite: '#FAF7F2',  // surfaces
+  ink: '#3D3530',        // text
+  softInk: '#6B5E56',    // secondary text
+};
+
 // ─── Helpers ──────────────────────────────────────────
 
 function getWindowLabel(width: number): string {
@@ -136,12 +149,12 @@ export default function WindowOfTolerance({
         <Svg width={chartWidth} height={chartHeight} viewBox={`0 0 ${chartWidth} ${chartHeight}`}>
           <Defs>
             <LinearGradient id="hyperGrad" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0" stopColor={Colors.primary} stopOpacity="0.2" />
-              <Stop offset="1" stopColor={Colors.primary} stopOpacity="0.06" />
+              <Stop offset="0" stopColor={WA.terracotta} stopOpacity="0.25" />
+              <Stop offset="1" stopColor={WA.terracotta} stopOpacity="0.06" />
             </LinearGradient>
             <LinearGradient id="hypoGrad" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0" stopColor={Colors.secondary} stopOpacity="0.06" />
-              <Stop offset="1" stopColor={Colors.secondary} stopOpacity="0.2" />
+              <Stop offset="0" stopColor={WA.dustyBlue} stopOpacity="0.06" />
+              <Stop offset="1" stopColor={WA.dustyBlue} stopOpacity="0.25" />
             </LinearGradient>
           </Defs>
 
@@ -162,18 +175,18 @@ export default function WindowOfTolerance({
             width={innerWidth}
             height={windowZoneHeight}
             rx={0}
-            fill={Colors.success}
-            fillOpacity={0.12}
-            stroke={Colors.success}
+            fill={WA.sage}
+            fillOpacity={0.18}
+            stroke={WA.sage}
             strokeWidth={1.5}
-            strokeOpacity={0.4}
+            strokeOpacity={0.5}
           />
 
           {/* Window width label inside */}
           <SvgText
             x={margin.left + innerWidth / 2}
             y={margin.top + hyperHeight + windowZoneHeight / 2 + 4}
-            fill={Colors.success}
+            fill={WA.sage}
             fontSize={11}
             fontFamily={FontFamilies.accent}
             fontWeight="600"
@@ -197,7 +210,7 @@ export default function WindowOfTolerance({
             cx={margin.left + innerWidth * 0.65}
             cy={markerY}
             r={6}
-            fill={Colors.primary}
+            fill={WA.mustard}
             stroke={Colors.white}
             strokeWidth={2}
           />
@@ -208,7 +221,7 @@ export default function WindowOfTolerance({
             y1={margin.top + hyperHeight + windowZoneHeight / 2}
             x2={margin.left + innerWidth}
             y2={margin.top + hyperHeight + windowZoneHeight / 2}
-            stroke={Colors.success}
+            stroke={WA.sage}
             strokeWidth={0.5}
             strokeDasharray="4,4"
             strokeOpacity={0.5}
@@ -218,7 +231,7 @@ export default function WindowOfTolerance({
           <SvgText
             x={margin.left + innerWidth + 8}
             y={margin.top + hyperHeight / 2 + 4}
-            fill={Colors.primary}
+            fill={WA.terracotta}
             fontSize={9}
             fontFamily={FontFamilies.body}
             fontWeight="500"
@@ -229,7 +242,7 @@ export default function WindowOfTolerance({
           <SvgText
             x={margin.left + innerWidth + 8}
             y={margin.top + hyperHeight + windowZoneHeight / 2 + 4}
-            fill={Colors.success}
+            fill={WA.sage}
             fontSize={9}
             fontFamily={FontFamilies.body}
             fontWeight="500"
@@ -240,7 +253,7 @@ export default function WindowOfTolerance({
           <SvgText
             x={margin.left + innerWidth + 8}
             y={margin.top + hyperHeight + windowZoneHeight + hypoHeight / 2 + 4}
-            fill={Colors.secondary}
+            fill={WA.dustyBlue}
             fontSize={9}
             fontFamily={FontFamilies.body}
             fontWeight="500"
@@ -254,21 +267,21 @@ export default function WindowOfTolerance({
 
       {/* Summary pills */}
       <View style={styles.pillRow}>
-        <View style={[styles.pill, { backgroundColor: Colors.success + '15' }]}>
-          <Text style={[styles.pillLabel, { color: Colors.success }]}>Window Width</Text>
-          <Text style={[styles.pillValue, { color: Colors.success }]}>{windowLabel}</Text>
+        <View style={[styles.pill, { backgroundColor: WA.sage + '20' }]}>
+          <Text style={[styles.pillLabel, { color: WA.sage }]}>Window Width</Text>
+          <Text style={[styles.pillValue, { color: WA.sage }]}>{windowLabel}</Text>
         </View>
-        <View style={[styles.pill, { backgroundColor: Colors.primary + '15' }]}>
-          <Text style={[styles.pillLabel, { color: Colors.primary }]}>Pattern</Text>
-          <Text style={[styles.pillValue, { color: Colors.primary }]}>
+        <View style={[styles.pill, { backgroundColor: WA.terracotta + '18' }]}>
+          <Text style={[styles.pillLabel, { color: WA.terracotta }]}>Pattern</Text>
+          <Text style={[styles.pillValue, { color: WA.terracotta }]}>
             {activationPattern === 'hyperarousal' ? 'Activation (↑)' :
              activationPattern === 'hypoarousal' ? 'Shutdown (↓)' :
              activationPattern === 'both' ? 'Oscillating' : 'Balanced'}
           </Text>
         </View>
-        <View style={[styles.pill, { backgroundColor: Colors.secondary + '15' }]}>
-          <Text style={[styles.pillLabel, { color: Colors.secondary }]}>Regulation</Text>
-          <Text style={[styles.pillValue, { color: Colors.secondary }]}>{regulationScore}</Text>
+        <View style={[styles.pill, { backgroundColor: WA.dustyBlue + '18' }]}>
+          <Text style={[styles.pillLabel, { color: WA.dustyBlue }]}>Regulation</Text>
+          <Text style={[styles.pillValue, { color: WA.dustyBlue }]}>{regulationScore}</Text>
         </View>
       </View>
 
@@ -297,8 +310,8 @@ export default function WindowOfTolerance({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
     padding: Spacing.lg,
     borderWidth: 1,
     borderColor: Colors.borderLight,
@@ -306,7 +319,8 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     ...Typography.label,
-    color: Colors.primary,
+    color: WA.sage,
+    letterSpacing: 1.5,
     marginBottom: Spacing.xs,
   },
   title: {
