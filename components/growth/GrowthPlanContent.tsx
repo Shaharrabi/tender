@@ -41,6 +41,7 @@ import {
 } from '@/utils/steps/intervention-protocols';
 import type { GrowthProgress } from '@/utils/steps/intervention-protocols';
 import SparkleIcon from '@/assets/graphics/icons/SparkleIcon';
+import GrowthEdgeSummaryCard from '@/components/portrait-enhancements/GrowthEdgeSummaryCard';
 import type { IndividualPortrait } from '@/types';
 
 // ─── Props ───────────────────────────────────────────────
@@ -226,85 +227,12 @@ export default function GrowthPlanContent({ portrait, router }: GrowthPlanConten
       </Text>
 
       {portrait.growthEdges.map((edge, i) => (
-        <View key={edge.id} style={s.growthEdgeCard}>
-          <View style={s.growthEdgeHeader}>
-            <View style={s.growthEdgeNumber}>
-              <Text style={s.growthEdgeNumberText}>{i + 1}</Text>
-            </View>
-            <View style={s.growthEdgeHeaderText}>
-              <Text style={s.growthEdgeLabel}>GROWTH EDGE {i + 1}</Text>
-              <Text style={s.growthEdgeTitle}>{edge.title}</Text>
-            </View>
-          </View>
-
-          <Text style={s.growthEdgeDescription}>{edge.description}</Text>
-
-          <View style={s.growthEdgeRationaleBox}>
-            <Text style={s.growthEdgeRationale}>{edge.rationale}</Text>
-          </View>
-
-          {edge.practices.length > 0 && (
-            <View style={s.practicesSection}>
-              <Text style={s.practicesTitle}>Guidance</Text>
-              {edge.practices.map((p: string, j: number) => (
-                <View key={j} style={s.practiceItem}>
-                  <View style={s.practiceCheckbox}>
-                    <Text style={s.practiceCheckboxText}>{'○'}</Text>
-                  </View>
-                  <Text style={s.practiceText}>{p}</Text>
-                </View>
-              ))}
-            </View>
-          )}
-
-          {/* Linked exercises for this growth edge */}
-          {(() => {
-            const edgeExercises = getExercisesForEdge(edge.id)
-              .map((id) => getExerciseById(id))
-              .filter(Boolean)
-              .slice(0, 3);
-            if (edgeExercises.length === 0) return null;
-            return (
-              <View style={s.phaseExercises}>
-                <Text style={s.phaseExercisesLabel}>Try These Exercises</Text>
-                {edgeExercises.map((ex: any) => {
-                  const isDone = (completionMap[ex.id] ?? 0) > 0;
-                  const accentColor = isDone
-                    ? Colors.successDark
-                    : CATEGORY_ACCENT_COLORS[ex.category as keyof typeof CATEGORY_ACCENT_COLORS] || Colors.primary;
-                  return (
-                    <TouchableOpacity
-                      key={ex.id}
-                      style={[s.exerciseRow, isDone && s.exerciseRowDone]}
-                      activeOpacity={0.7}
-                      onPress={() => router.push({ pathname: '/(app)/exercise', params: { id: ex.id } } as any)}
-                      accessibilityRole="link"
-                      accessibilityLabel={`${ex.title}, ${isDone ? 'completed' : `${ex.duration} minutes`}`}
-                    >
-                      {isDone ? (
-                        <View style={s.exerciseCheckmark}>
-                          <Text style={s.exerciseCheckmarkText}>{'\u2713'}</Text>
-                        </View>
-                      ) : (
-                        <View style={[s.exerciseDot, { backgroundColor: accentColor }]} />
-                      )}
-                      <Text
-                        style={[s.exerciseRowTitle, isDone && s.exerciseRowTitleDone]}
-                        numberOfLines={1}
-                      >
-                        {ex.title}
-                      </Text>
-                      <Text style={s.exerciseRowMeta}>
-                        {isDone ? 'Done' : `${ex.duration} min`}
-                      </Text>
-                      <Text style={s.exerciseRowArrow}>{'\u203A'}</Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            );
-          })()}
-        </View>
+        <GrowthEdgeSummaryCard
+          key={edge.id}
+          edge={edge}
+          index={i}
+          onPracticePress={(id) => router.push({ pathname: '/(app)/exercise', params: { id } } as any)}
+        />
       ))}
     </Animated.View>
   );

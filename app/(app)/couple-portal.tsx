@@ -86,6 +86,7 @@ import DyadicDiscrepancyAlert from '@/components/couple-portrait/DyadicDiscrepan
 import CoupleNarrativeBlock from '@/components/couple-portrait/CoupleNarrativeBlock';
 import { generateOverviewSnapshot } from '@/utils/portrait/overview-snapshot';
 import CouplePortalErrorBoundary from '@/components/CouplePortalErrorBoundary';
+import { TonightTryThis, ConversationPrompts, AnchorSOSButton } from '@/components/couple-enhancements/CoupleEnhancements';
 
 type TabKey = 'overview' | 'dance' | 'together' | 'assessments' | 'insights' | 'growth' | 'anchors';
 
@@ -791,6 +792,9 @@ function CouplePortalScreen() {
         />
       )}
 
+      {/* Tonight, Try This — daily micro-action */}
+      {dp && <TonightTryThis deepPortrait={dp} />}
+
       {/* Coach Entry */}
       <TouchableOpacity
         style={styles.coachCard}
@@ -1066,6 +1070,7 @@ function CouplePortalScreen() {
 
         {/* ── CSI-16: Couple Satisfaction ── */}
         {(csi16.partnerA || csi16.partnerB) && (
+          <>
           <AssessmentCard
             title="Couple Satisfaction"
             subtitle="CSI-16 — How satisfied each partner feels in the relationship"
@@ -1108,10 +1113,16 @@ function CouplePortalScreen() {
               </View>
             )}
           </AssessmentCard>
+          <ConversationPrompts
+            assessmentType="csi16"
+            hasGap={Math.abs((csi16.partnerA?.total ?? 0) - (csi16.partnerB?.total ?? 0)) > 10}
+          />
+          </>
         )}
 
         {/* ── RDAS: Relationship Adjustment ── */}
         {(rdas.partnerA || rdas.partnerB) && (
+          <>
           <AssessmentCard
             title="Relationship Adjustment"
             subtitle="RDAS — Consensus, satisfaction, and cohesion in the relationship"
@@ -1152,10 +1163,16 @@ function CouplePortalScreen() {
               </TenderText>
             </View>
           </AssessmentCard>
+          <ConversationPrompts
+            assessmentType="rdas"
+            hasGap={Math.abs((rdas.partnerA?.total ?? 0) - (rdas.partnerB?.total ?? 0)) > 10}
+          />
+          </>
         )}
 
         {/* ── DCI: Dyadic Coping ── */}
         {(dci.partnerA || dci.partnerB) && (
+          <>
           <AssessmentCard
             title="Dyadic Coping"
             subtitle="DCI — How you support each other through stress"
@@ -1199,6 +1216,11 @@ function CouplePortalScreen() {
               </TenderText>
             </View>
           </AssessmentCard>
+          <ConversationPrompts
+            assessmentType="dci"
+            hasGap={Math.abs((dci.partnerA?.totalPositive ?? 0) - (dci.partnerB?.totalPositive ?? 0)) > 15}
+          />
+          </>
         )}
       </View>
     );
@@ -1449,6 +1471,7 @@ function CouplePortalScreen() {
 
         <View style={{ height: 100 }} />
       </ScrollView>
+      {dp?.coupleAnchors && <AnchorSOSButton anchors={dp.coupleAnchors} />}
       <QuickLinksBar />
     </SafeAreaView>
   );

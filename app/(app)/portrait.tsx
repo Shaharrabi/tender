@@ -93,6 +93,14 @@ import { getCompletions } from '@/services/intervention';
 import { calculateGrowthProgress, boostMovementsFromProgress } from '@/utils/steps/intervention-protocols';
 import type { GrowthProgress } from '@/utils/steps/intervention-protocols';
 import GrowthPlanContent from '@/components/growth/GrowthPlanContent';
+import PortraitDigest from '@/components/portrait-enhancements/PortraitDigest';
+import DailyLifeScenario from '@/components/portrait-enhancements/DailyLifeScenario';
+import TryThisTodayCTA, { PORTRAIT_TAB_ACTIONS } from '@/components/portrait-enhancements/TryThisTodayCTA';
+import { ScoreViewToggle, ScoreStoryContent } from '@/components/portrait-enhancements/ScoreStoryToggle';
+import SectionSummaryHeader, { TAB_SUMMARIES } from '@/components/portrait-enhancements/SectionSummaryHeader';
+import CollapsibleNarrative from '@/components/portrait-enhancements/CollapsibleNarrative';
+import GrowthEdgeSummaryCard from '@/components/portrait-enhancements/GrowthEdgeSummaryCard';
+import AnchorQuickAccess from '@/components/portrait-enhancements/AnchorQuickAccess';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -454,6 +462,7 @@ export default function PortraitScreen() {
   const initialTab = (params.tab as TabKey) || 'overview';
   const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
   const [exportMode, setExportMode] = useState(false);
+  const [scoreViewMode, setScoreViewMode] = useState<'numbers' | 'story'>('story');
   const [isViewAndErase, setIsViewAndErase] = useState(false);
   const [growthBoostResult, setGrowthBoostResult] = useState<GrowthBoostedResult | null>(null);
   const [journeyData, setJourneyData] = useState<{
@@ -809,7 +818,7 @@ export default function PortraitScreen() {
 
           <View style={st.exportSection}>
             <TenderText variant="headingM" color={Colors.primary} style={st.exportSectionLabel}>Scores</TenderText>
-            <ScoresTab portrait={portrait} overallScore={overallScore} rawScores={rawScores} />
+            <ScoresTab portrait={portrait} overallScore={overallScore} rawScores={rawScores} scoreViewMode={scoreViewMode} setScoreViewMode={setScoreViewMode} />
           </View>
 
           <View style={st.exportSection}>
@@ -840,6 +849,19 @@ export default function PortraitScreen() {
           contentContainerStyle={st.contentContainer}
           showsVerticalScrollIndicator={false}
         >
+          {/* Section Summary Header — shows at top of every tab */}
+          {(() => {
+            const tabSummary = TAB_SUMMARIES[activeTab];
+            if (!tabSummary) return null;
+            return (
+              <SectionSummaryHeader
+                summary={tabSummary.summary}
+                readMinutes={tabSummary.readMinutes}
+                accentColor={TABS.find(t => t.key === activeTab)?.color}
+              />
+            );
+          })()}
+
           {activeTab === 'overview' && (
             <>
             {/* Matrix link — top of overview for easy access */}
@@ -884,7 +906,7 @@ export default function PortraitScreen() {
           )}
           {activeTab === 'scores' && (
             <>
-              <ScoresTab portrait={portrait} overallScore={overallScore} rawScores={rawScores} />
+              <ScoresTab portrait={portrait} overallScore={overallScore} rawScores={rawScores} scoreViewMode={scoreViewMode} setScoreViewMode={setScoreViewMode} />
               {previousCompositeScores && (
                 <ReassessmentDelta
                   previous={previousCompositeScores}
@@ -899,6 +921,24 @@ export default function PortraitScreen() {
           {activeTab === 'anchors' && (
             <AnchorsTab portrait={portrait} router={router} />
           )}
+
+          {/* Try This Today CTA — shows at bottom of every tab */}
+          {(() => {
+            const action = PORTRAIT_TAB_ACTIONS[activeTab ?? 'overview'];
+            if (!action) return null;
+            return (
+              <TryThisTodayCTA
+                icon={action.icon}
+                label={action.label}
+                sublabel={action.sublabel}
+                accentColor={TABS.find(t => t.key === activeTab)?.color}
+                onPress={() => router.push({
+                  pathname: action.route as any,
+                  params: action.params,
+                })}
+              />
+            );
+          })()}
         </ScrollView>
       )}
 
@@ -955,6 +995,9 @@ function OverviewTab({
 
   return (
     <Animated.View style={{ opacity: fadeAnim }}>
+      {/* Portrait Digest — 60 second summary */}
+      <PortraitDigest portrait={portrait} />
+
       {/* Landing hero */}
       <View style={st.heroSection}>
         <TenderText variant="label" color={Colors.primary} style={{ letterSpacing: 2 }}>YOUR RELATIONAL PORTRAIT</TenderText>
@@ -972,8 +1015,11 @@ function OverviewTab({
       {/* Narrative */}
       <View style={st.card}>
         <TenderText variant="headingM">Here's what we learned</TenderText>
-        <TenderText variant="body" style={{ lineHeight: 26 }}>{narrative}</TenderText>
+        <CollapsibleNarrative text={narrative} previewLength={140} />
       </View>
+
+      {/* Your Pattern in Daily Life */}
+      <DailyLifeScenario portrait={portrait} />
 
       {/* Cross-Assessment Synthesis */}
       <SynthesisCard synthesis={synthesis} />
@@ -1245,7 +1291,7 @@ function SynthesisCard({ synthesis }: { synthesis: AssessmentSynthesis }) {
       </View>
 
       {/* Core Narrative */}
-      <TenderText variant="body" color={Colors.textSecondary} style={{ lineHeight: 22 }}>{synthesis.coreNarrative}</TenderText>
+      <CollapsibleNarrative text={synthesis.coreNarrative} previewLength={140} />
 
       {/* Reinforcing Factors */}
       {synthesis.reinforcingFactors.length > 0 && (
@@ -1600,10 +1646,14 @@ function ScoresTab({
   portrait,
   overallScore,
   rawScores,
+  scoreViewMode,
+  setScoreViewMode,
 }: {
   portrait: IndividualPortrait;
   overallScore: number;
   rawScores: AllAssessmentScores | null;
+  scoreViewMode: 'numbers' | 'story';
+  setScoreViewMode: (mode: 'numbers' | 'story') => void;
 }) {
   const cs = portrait.compositeScores;
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -1657,6 +1707,13 @@ function ScoresTab({
         ))}
       </View>
 
+      {/* Story / Numbers toggle */}
+      <ScoreViewToggle mode={scoreViewMode} onToggle={setScoreViewMode} />
+
+      {scoreViewMode === 'story' ? (
+        <ScoreStoryContent compositeScores={cs} />
+      ) : (
+      <>
       {/* A.R.E. Group */}
       <View style={st.scoreGroupCard}>
         <TenderText variant="label" color={Colors.primary} style={{ letterSpacing: 1.2 }}>A.R.E. — ATTACHMENT QUALITY</TenderText>
@@ -1710,6 +1767,8 @@ function ScoresTab({
       {/* Differentiation Spectrum (when DSI-R data available) */}
       {rawScores?.dsir && (
         <DifferentiationSpectrum dsirScores={rawScores.dsir} compositeScores={cs} />
+      )}
+      </>
       )}
     </Animated.View>
   );
@@ -1783,7 +1842,7 @@ function LensesTab({ portrait, rawScores }: { portrait: IndividualPortrait; rawS
             </View>
             <TenderText variant="headingM" style={{ flex: 1 }}>Field Awareness</TenderText>
           </View>
-          <TenderText variant="body" style={{ lineHeight: 26 }}>{portrait.fourLens.fieldAwareness.narrative}</TenderText>
+          <CollapsibleNarrative text={portrait.fourLens.fieldAwareness.narrative} previewLength={140} />
           {portrait.fourLens.fieldAwareness.crossPatterns.length > 0 && (
             <View style={{ marginTop: Spacing.sm }}>
               {portrait.fourLens.fieldAwareness.crossPatterns.map((cp, i) => (
@@ -1878,7 +1937,7 @@ function CycleTab({ portrait, rawScores }: { portrait: IndividualPortrait; rawSc
           </TenderText>
         </View>
         <TenderText variant="headingM">Your Negative Cycle</TenderText>
-        <TenderText variant="caption" color={Colors.text} align="center">{nc.description}</TenderText>
+        <CollapsibleNarrative text={nc.description} previewLength={140} />
       </View>
 
       {/* Cycle Diagram */}
@@ -1997,6 +2056,9 @@ function AnchorsTab({
       <TenderText variant="body" color={Colors.textSecondary} style={st.tabIntro}>
         Short phrases for difficult moments. Save the ones that resonate.
       </TenderText>
+
+      {/* Quick access by emotional state */}
+      <AnchorQuickAccess anchorPoints={portrait.anchorPoints} />
 
       {ANCHOR_ITEMS.slice(0, 2).map(({ key, label, Icon, color }) => {
         const anchor = portrait.anchorPoints[key];
@@ -2117,7 +2179,7 @@ function AnchorsTab({
       {/* Partner Guide */}
       <TenderText variant="label" color={Colors.textMuted} style={st.sectionLabel}>FOR YOUR PARTNER</TenderText>
       <View style={st.card}>
-        <TenderText variant="body" style={{ lineHeight: 26 }}>{portrait.partnerGuide.whatToKnow}</TenderText>
+        <CollapsibleNarrative text={portrait.partnerGuide.whatToKnow} previewLength={140} />
       </View>
 
       {/* Deepest longing — the most therapeutically powerful sentence */}

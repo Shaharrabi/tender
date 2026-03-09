@@ -95,6 +95,13 @@ import { fetchAllScores } from '@/services/portrait';
 import { getGrowthEdgeProgress } from '@/services/growth';
 import type { IndividualPortrait, AllAssessmentScores } from '@/types/portrait';
 import type { MiniGameOutput, StepProgress, GrowthEdgeProgress } from '@/types/growth';
+import StepProgressTracker, { computeStepStage } from '@/components/step-enhancements/StepProgressTracker';
+import StepStartHereCard from '@/components/step-enhancements/StepStartHereCard';
+import TeachingCardStack from '@/components/step-enhancements/TeachingCardStack';
+import { KeyTakeawayCard } from '@/components/step-enhancements/KeyTakeawayCard';
+import NextActionFloater, { computeNextAction } from '@/components/step-enhancements/NextActionFloater';
+import MoodRouter, { type MoodChoice } from '@/components/step-enhancements/MoodRouter';
+import { getStepTeachingCards, getKeyTakeaway, getPracticeWhy } from '@/utils/steps/step-teaching-cards';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -161,13 +168,16 @@ function StepDetailScreenInner() {
   // Step completion ritual
   const [showCompletionRitual, setShowCompletionRitual] = useState(false);
 
+  // UX enhancement state
+  const [moodChoice, setMoodChoice] = useState<MoodChoice | null>(null);
+  const [hasReadTeaching, setHasReadTeaching] = useState(false);
+
   // Step strip scroll ref — auto-centers on current step
   const stepStripScrollRef = useRef<ScrollView>(null);
 
-  // Collapsible sections — all OPEN by default so the step feels like a room, not a filing cabinet
+  // Collapsible sections — smart collapse: only 'course' open by default
   const [expandedSections, setExpandedSections] = useState<Set<SectionId>>(
-    new Set(['course', 'goals', 'practices', 'reflection', 'partnerExchange',
-             'partnerRound', 'togetherPractices', 'allCourses', 'couplePlay', 'growthPlan'])
+    new Set(['course'])
   );
 
   const toggleSection = useCallback((sectionId: SectionId) => {
@@ -227,6 +237,28 @@ function StepDetailScreenInner() {
   const isCurrentStep = stepNumber === currentStepNumber;
   const isCompletedStep = thisStepProgress?.status === 'completed';
   const canToggleCriteria = isCurrentStep || isCompletedStep;
+
+  // UX enhancement derived values
+  const teachingCards = getStepTeachingCards(stepNumber);
+  const keyTakeaway = getKeyTakeaway(stepNumber);
+
+  const stepStage = computeStepStage({
+    hasScrolledTeaching: hasReadTeaching,
+    hasMiniGameOutput: !!miniGameOutput,
+    hasCompletedPractice: practiceCount > 0,
+    hasReflection: Object.keys(reflectionTexts).some(k => reflectionTexts[Number(k)]?.trim()),
+    isStepCompleted: isCompletedStep,
+  });
+
+  const nextAction = computeNextAction({
+    hasReadTeaching,
+    hasMiniGameOutput: !!miniGameOutput,
+    practiceCount,
+    firstPracticeName: step?.practices[0] ? getExerciseById(step.practices[0])?.title : undefined,
+    firstPracticeDuration: step?.practices[0] ? getExerciseById(step.practices[0])?.duration : undefined,
+    hasReflection: Object.keys(reflectionTexts).some(k => reflectionTexts[Number(k)]?.trim()),
+    isStepCompleted: isCompletedStep,
+  });
 
   const loadData = useCallback(async () => {
     if (!user) return;
@@ -595,6 +627,18 @@ function StepDetailScreenInner() {
     );
   }
 
+  // Mood check-in gate — show before step content loads (skip for completed steps)
+  if (!moodChoice && !isCompletedStep && !loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <MoodRouter
+          onSelect={(mood) => setMoodChoice(mood)}
+          phaseColor={phase?.color}
+        />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
@@ -607,6 +651,11 @@ function StepDetailScreenInner() {
         </Text>
         <View style={styles.headerSpacer} />
       </View>
+
+      <StepProgressTracker
+        currentStage={stepStage}
+        phaseColor={phase.color}
+      />
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
@@ -644,8 +693,32 @@ function StepDetailScreenInner() {
 
         {/* ═══ 2 — TEACHING ═══ */}
 
-        {/* Step Teaching — Original therapeutic content */}
-        {teaching && (
+        {/* Teaching Cards (bite-sized) — shown before full teaching */}
+        {teaching && !hasReadTeaching && teachingCards && (
+          <>
+            <StepStartHereCard
+              stepNumber={stepNumber}
+              readMinutes={teachingCards.readMinutes}
+              practiceCount={step.practices.length}
+              reflectionCount={step.reflectionPrompts?.length ?? 0}
+              phaseColor={phase.color}
+              onBeginReading={() => {}}
+            />
+            <TeachingCardStack
+              cards={teachingCards.cards}
+              phaseColor={phase.color}
+              onComplete={() => setHasReadTeaching(true)}
+            />
+          </>
+        )}
+
+        {/* Key Takeaway — always visible */}
+        {keyTakeaway && (
+          <KeyTakeawayCard takeaway={keyTakeaway} phaseColor={phase.color} />
+        )}
+
+        {/* Original teaching (shown after cards complete OR if no card data) */}
+        {teaching && (hasReadTeaching || !teachingCards) && (
           <Animated.View entering={FadeIn.delay(450).duration(600)} style={styles.teachingSection}>
             {teaching.teaching.map((paragraph, i) => (
               <Text key={i} style={styles.teachingParagraph}>{paragraph}</Text>
@@ -1513,6 +1586,16 @@ function StepDetailScreenInner() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      <NextActionFloater
+        action={nextAction}
+        phaseColor={phase.color}
+        onPress={() => {
+          if (nextAction?.type === 'practice' && step?.practices[0]) {
+            handlePracticePress(step.practices[0]);
+          }
+        }}
+      />
 
       <QuickLinksBar />
 
