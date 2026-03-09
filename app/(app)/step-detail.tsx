@@ -170,10 +170,14 @@ function StepDetailScreenInner() {
 
   // UX enhancement state
   const [moodChoice, setMoodChoice] = useState<MoodChoice | null>(null);
-  const [hasReadTeaching, setHasReadTeaching] = useState(false);
+  const [hasReadTeaching, setHasReadTeaching] = useState(true); // true: teaching always visible
+  const [activeTab, setActiveTab] = useState(0); // 0=Read, 1=Explore, 2=Practice, 3=Reflect, 4=Complete
 
   // Step strip scroll ref — auto-centers on current step
   const stepStripScrollRef = useRef<ScrollView>(null);
+
+  // Main content ScrollView ref — for scrolling to top on tab change
+  const mainScrollRef = useRef<ScrollView>(null);
 
   // Collapsible sections — smart collapse: only 'course' open by default
   const [expandedSections, setExpandedSections] = useState<Set<SectionId>>(
@@ -192,6 +196,13 @@ function StepDetailScreenInner() {
       }
       return next;
     });
+  }, []);
+
+  // Handle tab press from progress tracker — switch active tab
+  const handleStagePress = useCallback((stageIndex: number) => {
+    setActiveTab(stageIndex);
+    // Scroll to top when switching tabs
+    mainScrollRef.current?.scrollTo({ y: 0, animated: true });
   }, []);
 
   // Auto-scroll the 12-step strip to center on current step
@@ -643,17 +654,20 @@ function StepDetailScreenInner() {
 
       <StepProgressTracker
         currentStage={stepStage}
+        activeTab={activeTab}
         phaseColor={phase.color}
+        onStagePress={handleStagePress}
       />
 
       <ScrollView
+        ref={mainScrollRef}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Phase color accent line */}
+        {/* Phase color accent line — always visible */}
         <View style={[styles.phaseAccent, { backgroundColor: phase.color }]} />
 
-        {/* Step Title + Sticker */}
+        {/* Step Title + Sticker — always visible */}
         <Animated.View entering={FadeInDown.delay(100).duration(500)}>
           <View style={styles.stepTitleRow}>
             <View style={styles.stepTitleText}>
@@ -669,6 +683,8 @@ function StepDetailScreenInner() {
           </View>
         </Animated.View>
 
+        {/* ═══ TAB 0 — READ ═══ */}
+        {activeTab === 0 && (<>
         {/* Audio Player */}
         {audioSource && (
           <Animated.View entering={FadeIn.delay(300).duration(500)}>
@@ -680,14 +696,12 @@ function StepDetailScreenInner() {
           </Animated.View>
         )}
 
-        {/* ═══ 2 — TEACHING ═══ */}
-
         {/* Key Takeaway — the one sentence to carry */}
         {keyTakeaway && (
           <KeyTakeawayCard takeaway={keyTakeaway} phaseColor={phase.color} />
         )}
 
-        {/* Full teaching text — always visible */}
+        {/* Full teaching text */}
         {teaching && (
           <Animated.View entering={FadeIn.delay(450).duration(600)} style={styles.teachingSection}>
             {teaching.teaching.map((paragraph, i) => (
@@ -696,7 +710,7 @@ function StepDetailScreenInner() {
           </Animated.View>
         )}
 
-        {/* Teaching Cards — supplemental bite-sized cards */}
+        {/* Teaching Cards — bite-sized cards */}
         {teachingCards && (
           <TeachingCardStack
             cards={teachingCards.cards}
@@ -713,8 +727,6 @@ function StepDetailScreenInner() {
             </View>
           </Animated.View>
         )}
-
-        {/* ═══ 3 — CONTEXT ═══ */}
 
         {/* Why This Step Comes Now */}
         {teaching?.whyAfterPrevious && (
@@ -807,37 +819,27 @@ function StepDetailScreenInner() {
           </Animated.View>
         )}
 
-        {/* ── Divider: context → learning guide ── */}
-        <View style={styles.sectionDivider} />
+        {/* Next tab prompt */}
+        <TouchableOpacity
+          style={[styles.tabNextPrompt, { borderColor: phase.color + '30' }]}
+          onPress={() => { setActiveTab(1); mainScrollRef.current?.scrollTo({ y: 0, animated: true }); }}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.tabNextPromptText, { color: phase.color }]}>Continue to Explore {'→'}</Text>
+        </TouchableOpacity>
+        </>)}
 
-        {/* Transition: after teaching/context → learning guide */}
-        {transitions?.afterTeaching && (
-          <Text style={styles.transitionText}>{transitions.afterTeaching}</Text>
-        )}
-
-        {/* ═══ 4 — STEP LEARNING GUIDE ═══ */}
-        <View style={styles.sectionHeaderRow}>
-          <View style={[styles.sectionHeaderLine, { backgroundColor: phase.color }]} />
-          <Text style={styles.sectionHeaderLabel}>STEP {stepNumber} COURSE</Text>
-          <View style={[styles.sectionHeaderLine, { backgroundColor: phase.color }]} />
-        </View>
-
-        {/* Course progress hint */}
-        <Animated.View entering={FadeIn.delay(580).duration(400)} style={styles.courseProgressHint}>
-          <Text style={styles.courseProgressHintText}>
-            Module {stepNumber} of 12  ·  {phase.name}
-          </Text>
-        </Animated.View>
-
-        {/* Intro Text — moved here from before teaching */}
+        {/* ═══ TAB 1 — EXPLORE ═══ */}
+        {activeTab === 1 && (<>
+        {/* Intro Text */}
         {step.introText && (
-          <Animated.View entering={FadeIn.delay(620).duration(600)} style={styles.introTextCard}>
+          <Animated.View entering={FadeIn.delay(100).duration(600)} style={styles.introTextCard}>
             <Text style={styles.introText}>{step.introText}</Text>
           </Animated.View>
         )}
 
         {/* Tagline */}
-        <Animated.View entering={FadeIn.delay(500).duration(500)} style={styles.taglineCard}>
+        <Animated.View entering={FadeIn.delay(200).duration(500)} style={styles.taglineCard}>
           <Text style={styles.taglineText}>{tagline}</Text>
         </Animated.View>
 
@@ -898,13 +900,63 @@ function StepDetailScreenInner() {
         </Animated.View>
 
         {/* Step Quote */}
-        <Animated.View entering={FadeIn.delay(700).duration(500)} style={styles.quoteCard}>
+        <Animated.View entering={FadeIn.delay(300).duration(500)} style={styles.quoteCard}>
           <View style={[styles.quoteLine, { backgroundColor: phase.color }]} />
           <Text style={styles.quoteText}>
             &ldquo;{step.quote}&rdquo;
           </Text>
         </Animated.View>
 
+        {/* Zone Game — The Field */}
+        {(() => {
+          const zoneGame = getZoneGame(stepNumber);
+          if (!zoneGame) return null;
+          return (
+            <Animated.View entering={FadeIn.delay(400).duration(500)}>
+              <TouchableOpacity
+                style={[styles.zoneGameCard, { borderColor: phase.color + '30' }]}
+                onPress={() => {
+                  haptics.tap();
+                  setShowZoneGame(true);
+                }}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+              >
+                <View style={styles.zoneGameHeader}>
+                  <Text style={styles.zoneGameZone}>{zoneGame.zoneName}</Text>
+                  {zoneGameCompleted && (
+                    <View style={[styles.zoneGameDone, { backgroundColor: phase.color + '20' }]}>
+                      <Text style={[styles.zoneGameDoneText, { color: phase.color }]}>Explored</Text>
+                    </View>
+                  )}
+                </View>
+                <Text style={styles.zoneGameTitle}>{zoneGame.title}</Text>
+                <Text style={styles.zoneGameSubtitle}>{zoneGame.subtitle}</Text>
+                <View style={styles.zoneGameFooter}>
+                  <Text style={styles.zoneGameDuration}>~{zoneGame.durationMinutes} min</Text>
+                  <View style={[styles.zoneGamePlayBtn, { backgroundColor: phase.color }]}>
+                    <Text style={styles.zoneGamePlayText}>
+                      {zoneGameCompleted ? 'PLAY AGAIN' : 'ENTER THE FIELD'}
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            </Animated.View>
+          );
+        })()}
+
+        {/* Next tab prompt */}
+        <TouchableOpacity
+          style={[styles.tabNextPrompt, { borderColor: phase.color + '30' }]}
+          onPress={() => { setActiveTab(2); mainScrollRef.current?.scrollTo({ y: 0, animated: true }); }}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.tabNextPromptText, { color: phase.color }]}>Continue to Practice {'→'}</Text>
+        </TouchableOpacity>
+        </>)}
+
+        {/* ═══ TAB 2 — PRACTICE ═══ */}
+        {activeTab === 2 && (<>
         {/* Course Gateway — collapsible */}
         {step.courseGatewayIds && step.courseGatewayIds.length > 0 && stepNumber !== 12 && (
           <Animated.View entering={FadeIn.delay(750).duration(500)} style={styles.courseGatewaySection}>
@@ -949,46 +1001,8 @@ function StepDetailScreenInner() {
           <Text style={styles.transitionText}>{transitions.afterCourse}</Text>
         )}
 
-        {/* Zone Game — The Field */}
-        {(() => {
-          const zoneGame = getZoneGame(stepNumber);
-          if (!zoneGame) return null;
-          return (
-            <Animated.View entering={FadeIn.delay(850).duration(500)}>
-              <TouchableOpacity
-                style={[styles.zoneGameCard, { borderColor: phase.color + '30' }]}
-                onPress={() => {
-                  haptics.tap();
-                  setShowZoneGame(true);
-                }}
-                activeOpacity={0.7}
-                accessibilityRole="button"
-              >
-                <View style={styles.zoneGameHeader}>
-                  <Text style={styles.zoneGameZone}>{zoneGame.zoneName}</Text>
-                  {zoneGameCompleted && (
-                    <View style={[styles.zoneGameDone, { backgroundColor: phase.color + '20' }]}>
-                      <Text style={[styles.zoneGameDoneText, { color: phase.color }]}>Explored</Text>
-                    </View>
-                  )}
-                </View>
-                <Text style={styles.zoneGameTitle}>{zoneGame.title}</Text>
-                <Text style={styles.zoneGameSubtitle}>{zoneGame.subtitle}</Text>
-                <View style={styles.zoneGameFooter}>
-                  <Text style={styles.zoneGameDuration}>~{zoneGame.durationMinutes} min</Text>
-                  <View style={[styles.zoneGamePlayBtn, { backgroundColor: phase.color }]}>
-                    <Text style={styles.zoneGamePlayText}>
-                      {zoneGameCompleted ? 'PLAY AGAIN' : 'ENTER THE FIELD'}
-                    </Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            </Animated.View>
-          );
-        })()}
-
         {/* Practices — Collapsible */}
-        <Animated.View entering={FadeIn.delay(900).duration(500)} style={styles.practicesSection}>
+        <Animated.View entering={FadeIn.delay(200).duration(500)} style={styles.practicesSection}>
           <CollapsibleHeader
             title="Solo Practices"
             subtitle={`${step.practices.length} practice${step.practices.length > 1 ? 's' : ''}`}
@@ -1109,15 +1123,18 @@ function StepDetailScreenInner() {
           </Animated.View>
         )}
 
-        {/* ── Divider: learning guide → reflect & share ── */}
-        <View style={styles.sectionDivider} />
+        {/* Next tab prompt */}
+        <TouchableOpacity
+          style={[styles.tabNextPrompt, { borderColor: phase.color + '30' }]}
+          onPress={() => { setActiveTab(3); mainScrollRef.current?.scrollTo({ y: 0, animated: true }); }}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.tabNextPromptText, { color: phase.color }]}>Continue to Reflect {'→'}</Text>
+        </TouchableOpacity>
+        </>)}
 
-        {/* Transition: after practices → reflect & share */}
-        {transitions?.afterPractices && (
-          <Text style={styles.transitionText}>{transitions.afterPractices}</Text>
-        )}
-
-        {/* ═══ 5 — REFLECT & SHARE ═══ */}
+        {/* ═══ TAB 3 — REFLECT ═══ */}
+        {activeTab === 3 && (<>
         <View style={styles.sectionHeaderRow}>
           <View style={[styles.sectionHeaderLine, { backgroundColor: phase.color }]} />
           <Text style={styles.sectionHeaderLabel}>REFLECT & SHARE</Text>
@@ -1420,7 +1437,7 @@ function StepDetailScreenInner() {
 
         {/* Story So Far — Step 12 synthesis of the user's journey */}
         {stepNumber === 12 && stepContext?.storySoFar && (
-          <Animated.View entering={FadeIn.delay(1175).duration(600)}>
+          <Animated.View entering={FadeIn.delay(400).duration(600)}>
             <View style={[styles.bridgeCard, { borderLeftColor: phase.color }]}>
               <Text style={styles.bridgeLabel}>YOUR STORY</Text>
               <Text style={styles.bridgeText}>{stepContext.storySoFar}</Text>
@@ -1428,16 +1445,18 @@ function StepDetailScreenInner() {
           </Animated.View>
         )}
 
-        {/* ── Divider: reflect & share → closing ── */}
-        <View style={styles.sectionDivider} />
+        {/* Next tab prompt */}
+        <TouchableOpacity
+          style={[styles.tabNextPrompt, { borderColor: phase.color + '30' }]}
+          onPress={() => { setActiveTab(4); mainScrollRef.current?.scrollTo({ y: 0, animated: true }); }}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.tabNextPromptText, { color: phase.color }]}>Continue to Complete {'→'}</Text>
+        </TouchableOpacity>
+        </>)}
 
-        {/* Transition: after exchange */}
-        {transitions?.afterExchange && isCoupled && (exchangeConfig || step.partnerRoundPrompt) && (
-          <Text style={styles.transitionText}>{transitions.afterExchange}</Text>
-        )}
-
-        {/* ═══ 6 — NEXT STEP + CLOSE ═══ */}
-
+        {/* ═══ TAB 4 — COMPLETE ═══ */}
+        {activeTab === 4 && (<>
         {/* Growth Plan — Personalized protocol from portrait (Steps 9+) */}
         {portrait && stepNumber >= 9 && (
           <Animated.View entering={FadeIn.delay(1250).duration(500)} style={styles.growthPlanSection}>
@@ -1499,8 +1518,9 @@ function StepDetailScreenInner() {
             />
           </View>
         )}
+        </>)}
 
-        {/* ── Full 12-Step Circle Strip ── */}
+        {/* ── Full 12-Step Circle Strip — always visible ── */}
         <View style={styles.stepStripContainer}>
           <ScrollView
             ref={stepStripScrollRef}
@@ -1570,8 +1590,18 @@ function StepDetailScreenInner() {
         action={nextAction}
         phaseColor={phase.color}
         onPress={() => {
-          if (nextAction?.type === 'practice' && step?.practices[0]) {
-            handlePracticePress(step.practices[0]);
+          if (nextAction?.type === 'read') {
+            setActiveTab(0);
+            mainScrollRef.current?.scrollTo({ y: 0, animated: true });
+          } else if (nextAction?.type === 'game') {
+            setActiveTab(1);
+            mainScrollRef.current?.scrollTo({ y: 0, animated: true });
+          } else if (nextAction?.type === 'practice' && step?.practices[0]) {
+            setActiveTab(2);
+            mainScrollRef.current?.scrollTo({ y: 0, animated: true });
+          } else if (nextAction?.type === 'reflect') {
+            setActiveTab(3);
+            mainScrollRef.current?.scrollTo({ y: 0, animated: true });
           }
         }}
       />
@@ -2407,5 +2437,22 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 1.5,
+  },
+
+  // Tab navigation prompt
+  tabNextPrompt: {
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.md,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    borderWidth: 1,
+    borderRadius: BorderRadius.pill,
+    alignItems: 'center',
+    alignSelf: 'center',
+  },
+  tabNextPromptText: {
+    fontSize: FontSizes.body,
+    fontFamily: FontFamilies.heading,
+    fontWeight: '600',
   },
 });

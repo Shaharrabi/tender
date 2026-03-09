@@ -1,7 +1,10 @@
 /**
- * StepProgressTracker — 5-stage sticky progress bar.
+ * StepProgressTracker — 5-stage tab bar for step detail.
  *
- * Read → Explore → Practice → Reflect → Complete
+ * 📖 Read → 🌀 Explore → 🧘 Practice → ✍️ Reflect → ✨ Complete
+ *
+ * Acts as real tab navigation — all tabs tappable, active tab highlighted.
+ * Progress bar shows completion status, active tab shows current view.
  *
  * Verified:
  *   Colors.background = '#FDF6F0', Colors.borderLight = '#F0E6E0'
@@ -14,16 +17,18 @@ import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import TenderText from '@/components/ui/TenderText';
 import { Colors, Spacing } from '@/constants/theme';
 
-const STAGES = ['📖 Read', '🔍 Explore', '🎯 Practice', '💭 Reflect', '✅ Complete'] as const;
+const STAGES = ['📖 Read', '🌀 Explore', '🧘 Practice', '✍️ Reflect', '✨ Complete'] as const;
 
 interface StepProgressTrackerProps {
-  currentStage: number;
+  currentStage: number;   // progress level (0-4, based on completion)
+  activeTab: number;      // which tab is currently being viewed
   phaseColor: string;
   onStagePress?: (stageIndex: number) => void;
 }
 
 export default function StepProgressTracker({
   currentStage,
+  activeTab,
   phaseColor,
   onStagePress,
 }: StepProgressTrackerProps) {
@@ -32,31 +37,30 @@ export default function StepProgressTracker({
       <View style={styles.trackRow}>
         {STAGES.map((label, i) => {
           const isDone = i < currentStage;
-          const isCurrent = i === currentStage;
-          const isFuture = i > currentStage;
+          const isActive = i === activeTab;
 
           return (
             <TouchableOpacity
               key={label}
               style={styles.stageItem}
-              onPress={() => !isFuture && onStagePress?.(i)}
-              activeOpacity={isFuture ? 1 : 0.7}
-              disabled={isFuture}
-              accessibilityRole="button"
-              accessibilityLabel={`${label}${isCurrent ? ', current' : isDone ? ', done' : ''}`}
+              onPress={() => onStagePress?.(i)}
+              activeOpacity={0.7}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: isActive }}
+              accessibilityLabel={`${label}${isActive ? ', selected' : isDone ? ', done' : ''}`}
             >
               <View style={[
                 styles.barSegment,
-                { backgroundColor: isDone || isCurrent ? phaseColor : Colors.borderLight },
-                isFuture && { opacity: 0.4 },
+                { backgroundColor: isDone || i <= currentStage ? phaseColor : Colors.borderLight },
+                i > currentStage && { opacity: 0.3 },
+                isActive && { height: 5 },
               ]} />
               <TenderText
                 variant="caption"
-                color={isCurrent ? phaseColor : Colors.textMuted}
+                color={isActive ? phaseColor : Colors.textMuted}
                 style={[
                   styles.stageLabel,
-                  isCurrent && styles.stageLabelActive,
-                  isFuture && { opacity: 0.4 },
+                  isActive && styles.stageLabelActive,
                 ]}
               >
                 {label}
@@ -109,7 +113,6 @@ const styles = StyleSheet.create({
   stageLabel: {
     fontSize: 9,
     letterSpacing: 0.8,
-    textTransform: 'uppercase',
   },
   stageLabelActive: {
     fontWeight: '700',
