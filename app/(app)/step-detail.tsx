@@ -24,6 +24,7 @@ import {
   LayoutAnimation,
   Platform,
   UIManager,
+  Dimensions,
 } from 'react-native';
 import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -206,13 +207,14 @@ function StepDetailScreenInner() {
   }, []);
 
   // Auto-scroll the 12-step strip to center on current step
-  useEffect(() => {
-    if (stepStripScrollRef.current && stepNumber > 3) {
+  const scrollStripToCenter = useCallback(() => {
+    if (stepStripScrollRef.current) {
+      const screenW = Dimensions.get('window').width;
       const ITEM_WIDTH = 48; // circle (36-44px) + gap (8px) average
-      const scrollX = (stepNumber - 1) * ITEM_WIDTH - 120;
-      setTimeout(() => {
-        stepStripScrollRef.current?.scrollTo({ x: Math.max(0, scrollX), animated: false });
-      }, 200);
+      const padH = screenW / 2 - 22;
+      const itemCenter = padH + (stepNumber - 1) * ITEM_WIDTH + ITEM_WIDTH / 2;
+      const scrollX = itemCenter - screenW / 2;
+      stepStripScrollRef.current.scrollTo({ x: Math.max(0, scrollX), animated: false });
     }
   }, [stepNumber]);
 
@@ -1518,6 +1520,8 @@ function StepDetailScreenInner() {
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.stepStripScroll}
+            style={styles.stepStripScrollOuter}
+            onContentSizeChange={scrollStripToCenter}
           >
             {TWELVE_STEPS.map((s) => {
               const sp = stepProgress.find((p) => p.stepNumber === s.stepNumber);
@@ -1953,9 +1957,14 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.md,
     marginTop: Spacing.md,
     alignItems: 'center',
+    width: '100%',
+  },
+  stepStripScrollOuter: {
+    width: '100%',
+    maxWidth: '100%',
   },
   stepStripScroll: {
-    paddingHorizontal: Spacing.lg,
+    paddingHorizontal: Dimensions.get('window').width / 2 - 22,
     gap: 8,
     alignItems: 'center',
   },

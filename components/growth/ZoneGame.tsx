@@ -17,6 +17,7 @@ import {
   Platform,
   Modal,
   StatusBar,
+  Dimensions,
 } from 'react-native';
 import { Colors } from '@/constants/theme';
 
@@ -95,24 +96,46 @@ function WebIframe({ src, onMessage }: { src: string; onMessage: (data: string) 
     return () => window.removeEventListener('message', handler);
   }, [onMessage]);
 
+  // iframe needs position: absolute to fill a flex parent — CSS flex: 1 doesn't
+  // work on iframes the same way it does on divs.
   return (
-    <iframe
-      ref={iframeRef as any}
-      src={src}
-      style={{
-        flex: 1,
-        width: '100%',
-        height: '100%',
-        border: 'none',
-        backgroundColor: '#0A0608',
-      } as any}
-      allow="autoplay"
-    />
+    <View style={styles.iframeWrapper}>
+      <iframe
+        ref={iframeRef as any}
+        src={src}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100%',
+          height: '100%',
+          border: 'none',
+          backgroundColor: '#0A0608',
+        } as any}
+        allow="autoplay"
+      />
+    </View>
   );
 }
 
 /* ─── Native: WebView ─── */
 function NativeWebView({ src, onMessage }: { src: string; onMessage: (data: string) => void }) {
+  const { height, width } = Dimensions.get('screen');
+
+  // Inject a script that forces the document to use the actual device dimensions.
+  // This fixes the `height: 100%` in the game HTML not resolving correctly inside
+  // a React Native WebView where the viewport height can be ambiguous.
+  const injectedJS = `
+    (function() {
+      var style = document.createElement('style');
+      style.textContent = 'html, body, .phone { height: ${height}px !important; max-height: ${height}px !important; }';
+      document.head.appendChild(style);
+      true;
+    })();
+  `;
+
   // Lazy-require to avoid web bundle issues
   try {
     const { WebView } = require('react-native-webview');
@@ -127,6 +150,11 @@ function NativeWebView({ src, onMessage }: { src: string; onMessage: (data: stri
         mediaPlaybackRequiresUserAction={false}
         startInLoadingState
         originWhitelist={['*']}
+        scrollEnabled={false}
+        scalesPageToFit={false}
+        injectedJavaScript={injectedJS}
+        contentMode="mobile"
+        automaticallyAdjustContentInsets={false}
       />
     );
   } catch {
@@ -144,6 +172,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#0A0608',
+  },
+  iframeWrapper: {
+    flex: 1,
+    position: 'relative' as any,
   },
   webview: {
     flex: 1,
