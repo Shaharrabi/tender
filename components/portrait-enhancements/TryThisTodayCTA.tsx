@@ -51,6 +51,7 @@ export const PORTRAIT_TAB_ACTIONS: Record<string, { Icon: React.ComponentType<Ic
   cycle:    { Icon: SwirlyIcon,     label: 'Recognize Your Cycle',      sublabel: '15 min \u00B7 Map the dance between you', route: '/(app)/exercise', params: { id: 'recognize-cycle' } },
   growth:   { Icon: SeedlingIcon,   label: 'Begin Your Growth Edge',    sublabel: 'Personalized to your top edge',          route: '/(app)/growth' },
   anchors:  { Icon: ChatBubbleIcon, label: 'Talk to Nuance AI',         sublabel: 'Explore your portrait with your AI guide', route: '/(app)/chat' },
+  matrix:   { Icon: MirrorIcon,     label: 'Explore Attachment',       sublabel: 'See how your patterns connect',           route: '/(app)/portrait', params: { tab: 'matrix' } },
 };
 
 const styles = StyleSheet.create({

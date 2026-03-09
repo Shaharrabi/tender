@@ -84,6 +84,7 @@ import {
   GreenHeartIcon,
   ScaleIcon,
   StarIcon,
+  LinkIcon,
 } from '@/assets/graphics/icons';
 import { getExerciseById } from '@/utils/interventions/registry';
 import { getExercisesForEdge } from '@/utils/portrait/growth-edges';
@@ -101,6 +102,7 @@ import SectionSummaryHeader, { TAB_SUMMARIES } from '@/components/portrait-enhan
 import CollapsibleNarrative from '@/components/portrait-enhancements/CollapsibleNarrative';
 import GrowthEdgeSummaryCard from '@/components/portrait-enhancements/GrowthEdgeSummaryCard';
 import AnchorQuickAccess from '@/components/portrait-enhancements/AnchorQuickAccess';
+import MatrixTab from '@/components/portrait/MatrixTab';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -111,7 +113,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 // ─── Tab definitions ────────────────────────────────────
 
-type TabKey = 'overview' | 'scores' | 'lenses' | 'cycle' | 'growth' | 'anchors';
+type TabKey = 'overview' | 'scores' | 'lenses' | 'cycle' | 'growth' | 'anchors' | 'matrix';
 
 interface TabDef {
   key: TabKey;
@@ -127,6 +129,7 @@ const TABS: TabDef[] = [
   { key: 'cycle', label: 'Cycle', Icon: STAT_ICONS.cycle, color: Colors.secondary },
   { key: 'growth', label: 'Growth', Icon: STAT_ICONS.growth, color: Colors.warning },
   { key: 'anchors', label: 'Anchors', Icon: STAT_ICONS.anchor, color: Colors.calm },
+  { key: 'matrix', label: 'Matrix', Icon: LinkIcon, color: Colors.depth },
 ];
 
 // ─── Narrative generator ────────────────────────────────
@@ -457,6 +460,7 @@ export default function PortraitScreen() {
   const params = useLocalSearchParams<{ tab?: string }>();
   const [portrait, setPortrait] = useState<IndividualPortrait | null>(null);
   const [rawScores, setRawScores] = useState<AllAssessmentScores | null>(null);
+  const [allScoresMap, setAllScoresMap] = useState<Record<string, { id: string; scores: any }>>({});
   const [previousCompositeScores, setPreviousCompositeScores] = useState<IndividualPortrait['compositeScores'] | null>(null);
   const [loading, setLoading] = useState(true);
   const initialTab = (params.tab as TabKey) || 'overview';
@@ -518,6 +522,8 @@ export default function PortraitScreen() {
 
       setPortrait(finalPortrait);
       if (scoresMap) {
+        // Store full scores map for Matrix tab
+        setAllScoresMap(scoresMap);
         try {
           setRawScores({
             ecrr: scoresMap['ecr-r']?.scores,
@@ -840,6 +846,11 @@ export default function PortraitScreen() {
             <TenderText variant="headingM" color={Colors.primary} style={st.exportSectionLabel}>Anchors & Partner Guide</TenderText>
             <AnchorsTab portrait={portrait} router={router} />
           </View>
+
+          <View style={st.exportSection}>
+            <TenderText variant="headingM" color={Colors.primary} style={st.exportSectionLabel}>Assessment Matrix</TenderText>
+            <MatrixTab allScores={allScoresMap} portrait={portrait} />
+          </View>
         </ScrollView>
       ) : (
         /* Normal mode: show active tab only */
@@ -863,36 +874,6 @@ export default function PortraitScreen() {
           })()}
 
           {activeTab === 'overview' && (
-            <>
-            {/* Matrix link — top of overview for easy access */}
-            <TouchableOpacity
-              onPress={() => router.push('/(app)/assessment-matrix' as any)}
-              activeOpacity={0.7}
-              style={{
-                marginHorizontal: Spacing.lg,
-                marginTop: Spacing.md,
-                marginBottom: Spacing.sm,
-                paddingVertical: Spacing.md,
-                paddingHorizontal: Spacing.lg,
-                borderRadius: BorderRadius.lg,
-                borderWidth: 1,
-                borderColor: Colors.border,
-                backgroundColor: Colors.surfaceElevated,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}
-            >
-              <View>
-                <TenderText variant="label" color={Colors.textMuted}>
-                  EXPLORE
-                </TenderText>
-                <TenderText variant="body" style={{ marginTop: 2 }}>
-                  Attachment Matrix
-                </TenderText>
-              </View>
-              <TenderText variant="body" color={Colors.textMuted}>→</TenderText>
-            </TouchableOpacity>
             <OverviewTab
               portrait={portrait}
               userName={userName}
@@ -902,7 +883,6 @@ export default function PortraitScreen() {
               growthBoostResult={growthBoostResult}
               journeyData={journeyData}
             />
-            </>
           )}
           {activeTab === 'scores' && (
             <>
@@ -920,6 +900,9 @@ export default function PortraitScreen() {
           {activeTab === 'growth' && <GrowthTab portrait={portrait} router={router} />}
           {activeTab === 'anchors' && (
             <AnchorsTab portrait={portrait} router={router} />
+          )}
+          {activeTab === 'matrix' && (
+            <MatrixTab allScores={allScoresMap} portrait={portrait} />
           )}
 
           {/* Try This Today CTA — shows at bottom of every tab */}
@@ -1748,16 +1731,6 @@ function ScoresTab({
         <AnimatedScoreBar label="Values Congruence" value={cs.valuesCongruence} delay={700} interpretation={getInterpretation('valuesCongruence', cs.valuesCongruence)} />
       </View>
 
-      {/* Window of Tolerance (SVG visualization) */}
-      <WindowOfTolerance
-        compositeScores={cs}
-        activationPattern={
-          cs.regulationScore > 60 ? 'balanced' :
-          cs.windowWidth < 35 ? 'hyperarousal' : 'both'
-        }
-        triggers={portrait.negativeCycle.primaryTriggers.slice(0, 3)}
-      />
-
       {/* Values Compass Infographic */}
       <ValuesCompassInfographic values={portrait.fourLens.values} />
 
@@ -1770,6 +1743,16 @@ function ScoresTab({
       )}
       </>
       )}
+
+      {/* Window of Tolerance — always visible regardless of view mode */}
+      <WindowOfTolerance
+        compositeScores={cs}
+        activationPattern={
+          cs.regulationScore > 60 ? 'balanced' :
+          cs.windowWidth < 35 ? 'hyperarousal' : 'both'
+        }
+        triggers={portrait.negativeCycle.primaryTriggers.slice(0, 3)}
+      />
     </Animated.View>
   );
 }

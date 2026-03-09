@@ -16,6 +16,7 @@ import { Colors } from '@/constants/theme';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 const AnimatedG = Animated.createAnimatedComponent(G);
+const AnimatedSvg = Animated.createAnimatedComponent(Svg);
 
 interface StepStickerProps {
   stepNumber: number;
@@ -48,36 +49,75 @@ export default function StepSticker({ stepNumber, size = 120, animated = true, s
   const phase = getPhaseForStep(stepNumber);
   const phaseColor = phase?.color ?? Colors.textMuted;
 
-  // ── Breathing animation — drives pulsing opacity on the whole sticker ──
+  // ── Breathing animation — gentle scale pulse ──
   const breathe = useRef(new Animated.Value(0)).current;
+  // ── Float animation — gentle vertical bob ──
+  const float = useRef(new Animated.Value(0)).current;
+  // ── Glow animation — pulsing ring opacity ──
+  const glow = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (!animated) return;
 
     const breatheLoop = Animated.loop(
       Animated.sequence([
-        Animated.timing(breathe, { toValue: 1, duration: 3000, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
-        Animated.timing(breathe, { toValue: 0, duration: 3000, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(breathe, { toValue: 1, duration: 2800, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(breathe, { toValue: 0, duration: 2800, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+      ])
+    );
+
+    const floatLoop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(float, { toValue: 1, duration: 3500, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(float, { toValue: 0, duration: 3500, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+      ])
+    );
+
+    const glowLoop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(glow, { toValue: 1, duration: 2200, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+        Animated.timing(glow, { toValue: 0, duration: 2200, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
       ])
     );
 
     breatheLoop.start();
-    return () => { breatheLoop.stop(); };
+    floatLoop.start();
+    glowLoop.start();
+    return () => { breatheLoop.stop(); floatLoop.stop(); glowLoop.stop(); };
   }, [animated]);
 
-  // Interpolate breathing → subtle scale pulse
+  // Interpolations
   const breathScale = animated
-    ? breathe.interpolate({ inputRange: [0, 1], outputRange: [1, 1.04] })
+    ? breathe.interpolate({ inputRange: [0, 1], outputRange: [0.96, 1.04] })
     : 1;
+
+  const floatY = animated
+    ? float.interpolate({ inputRange: [0, 1], outputRange: [0, -5] })
+    : 0;
+
+  const glowOpacity = animated
+    ? glow.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.7] })
+    : 0.5;
 
   const vb = '0 0 100 100';
 
   return (
-    <View style={[styles.container, { width: size, height: size }]}>
-      <Animated.View style={{ transform: [{ scale: breathScale }] }}>
+    <View style={[styles.container, { width: size, height: size + 8 }]}>
+      <Animated.View style={{
+        transform: [
+          { scale: breathScale },
+          { translateY: floatY },
+        ],
+      }}>
         <Svg width={size} height={size} viewBox={vb}>
+          {/* Outer glow ring */}
+          <AnimatedCircle cx="50" cy="50" r="48" fill="none" stroke={phaseColor} strokeWidth={0.5} opacity={glowOpacity} />
+
           {/* Circular frame */}
-          <Circle cx="50" cy="50" r="46" fill={STICKER.cream} stroke={phaseColor} strokeWidth={1} opacity={0.6} />
+          <Circle cx="50" cy="50" r="46" fill={STICKER.cream} stroke={phaseColor} strokeWidth={1.2} opacity={0.7} />
+
+          {/* Inner soft glow */}
+          <AnimatedCircle cx="50" cy="50" r="42" fill={phaseColor} opacity={glow.interpolate({ inputRange: [0, 1], outputRange: [0.02, 0.06] })} />
 
           {/* Step-specific artwork */}
           {renderStepArt(stepNumber, phaseColor)}

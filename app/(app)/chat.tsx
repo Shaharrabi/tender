@@ -31,7 +31,7 @@ import { Colors, Spacing, FontSizes, FontFamilies, BorderRadius } from '@/consta
 import { getCurrentStepNumber } from '@/services/steps';
 import { getNuanceOpeningPrompts } from '@/utils/steps/twelve-steps';
 
-function ChatScreenInner({ topic }: { topic?: string }) {
+function ChatScreenInner({ topic, practiceWith }: { topic?: string; practiceWith?: string }) {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { isGuest } = useGuest();
@@ -93,6 +93,16 @@ function ChatScreenInner({ topic }: { topic?: string }) {
       sendMessage(opener);
     }
   }, [topic, activeSession, loading, sending, initialized]);
+
+  // Auto-send a practice request when navigated with practiceWith param (from "Practice with Alex" button)
+  const practiceSentRef = useRef(false);
+  useEffect(() => {
+    if (practiceWith && activeSession && !practiceSentRef.current && !loading && !sending && initialized) {
+      practiceSentRef.current = true;
+      const opener = `I'd like to practice with ${practiceWith}. Can we do a roleplay? I want to practice having a difficult conversation.`;
+      sendMessage(opener);
+    }
+  }, [practiceWith, activeSession, loading, sending, initialized]);
 
   const handleBack = () => {
     router.back();
@@ -255,10 +265,11 @@ function ChatScreenInner({ topic }: { topic?: string }) {
 }
 
 export default function ChatScreen() {
-  const { coupleMode, coupleId, topic } = useLocalSearchParams<{
+  const { coupleMode, coupleId, topic, practiceWith } = useLocalSearchParams<{
     coupleMode?: string;
     coupleId?: string;
     topic?: string;
+    practiceWith?: string;
   }>();
 
   return (
@@ -267,7 +278,7 @@ export default function ChatScreen() {
         coupleMode={coupleMode === 'true'}
         coupleId={coupleId || undefined}
       >
-        <ChatScreenInner topic={topic || undefined} />
+        <ChatScreenInner topic={topic || undefined} practiceWith={practiceWith || undefined} />
       </ChatProvider>
     </ErrorBoundary>
   );

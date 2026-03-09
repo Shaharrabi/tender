@@ -1041,7 +1041,10 @@ export default function HomeScreen() {
           <View style={styles.demoPartnerSection}>
             <TouchableOpacity
               style={styles.demoPartnerCard}
-              onPress={() => router.push('/(app)/chat' as any)}
+              onPress={() => router.push({
+                pathname: '/(app)/chat' as any,
+                params: { practiceWith: DEMO_PARTNERS[demoPartnerId as DemoPartnerId].name },
+              })}
               activeOpacity={0.8}
               accessibilityRole="button"
             >

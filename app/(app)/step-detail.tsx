@@ -657,19 +657,17 @@ function StepDetailScreenInner() {
         {/* Phase color accent line — always visible */}
         <View style={[styles.phaseAccent, { backgroundColor: phase.color }]} />
 
-        {/* Step Title + Sticker — always visible */}
+        {/* Centered sticker + title */}
         <Animated.View entering={FadeInDown.delay(100).duration(500)}>
-          <View style={styles.stepTitleRow}>
-            <View style={styles.stepTitleText}>
-              <Text style={styles.stepLabel}>STEP {step.stepNumber}</Text>
-              <Text style={styles.stepTitle}>{step.title}</Text>
-              {step.subtitle && (
-                <Text style={styles.stepSubtitle}>{step.subtitle}</Text>
-              )}
-            </View>
-            <View style={styles.stepStickerContainer}>
-              <StepSticker stepNumber={stepNumber} size={88} showLabel={false} />
-            </View>
+          <View style={styles.stepStickerCentered}>
+            <StepSticker stepNumber={stepNumber} size={110} showLabel={false} />
+          </View>
+          <View style={styles.stepTitleCentered}>
+            <Text style={styles.stepLabel}>STEP {step.stepNumber}</Text>
+            <Text style={[styles.stepTitle, { textAlign: 'center' }]}>{step.title}</Text>
+            {step.subtitle && (
+              <Text style={[styles.stepSubtitle, { textAlign: 'center' }]}>{step.subtitle}</Text>
+            )}
           </View>
         </Animated.View>
 
@@ -1663,19 +1661,15 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
   },
 
-  // Step title row — text + sticker side by side
-  stepTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
+  // Step sticker — centered above title
+  stepStickerCentered: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.sm,
   },
-  stepTitleText: {
-    flex: 1,
-    marginRight: Spacing.sm,
-  },
-  stepStickerContainer: {
-    marginTop: -4,
-    opacity: 0.85,
+  stepTitleCentered: {
+    alignItems: 'center',
+    gap: 4,
   },
 
   // Step title area

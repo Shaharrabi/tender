@@ -73,6 +73,10 @@ export const TAB_SUMMARIES: Record<string, { summary: string; readMinutes: numbe
     summary: 'Phrases for difficult moments, a guide for your partner, and the words you need when you forget everything else.',
     readMinutes: 4,
   },
+  matrix: {
+    summary: 'Your interactive assessment map \u2014 see how attachment, personality, regulation, conflict style, values, and differentiation all connect.',
+    readMinutes: 5,
+  },
 };
 
 const styles = StyleSheet.create({
