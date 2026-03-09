@@ -87,6 +87,7 @@ import CoupleNarrativeBlock from '@/components/couple-portrait/CoupleNarrativeBl
 import { generateOverviewSnapshot } from '@/utils/portrait/overview-snapshot';
 import CouplePortalErrorBoundary from '@/components/CouplePortalErrorBoundary';
 import { TonightTryThis, ConversationPrompts, AnchorSOSButton } from '@/components/couple-enhancements/CoupleEnhancements';
+import { ScoreViewToggle } from '@/components/portrait-enhancements/ScoreStoryToggle';
 
 type TabKey = 'overview' | 'dance' | 'together' | 'assessments' | 'insights' | 'growth' | 'anchors';
 
@@ -145,6 +146,7 @@ function CouplePortalScreen() {
   // WEARE state
   const [weareProfile, setWeareProfile] = useState<WEAREProfile | null>(null);
   const [weeklyCheckIn, setWeeklyCheckIn] = useState<WeeklyCheckIn | null>(null);
+  const [assessViewMode, setAssessViewMode] = useState<'numbers' | 'story'>('numbers');
 
   const loadData = useCallback(async () => {
     if (!user) return;
@@ -1060,6 +1062,112 @@ function CouplePortalScreen() {
       );
     }
 
+    // ── Narrative generation helpers ──
+    const generateCSINarrative = (): string[] => {
+      const paras: string[] = [];
+      const scoreA = csi16.partnerA?.total;
+      const scoreB = csi16.partnerB?.total;
+      if (scoreA != null && scoreB != null) {
+        const gap = Math.abs(scoreA - scoreB);
+        const avg = (scoreA + scoreB) / 2;
+        if (avg > 60) {
+          paras.push(`Both of you report meaningful satisfaction in this relationship. ${nameA} scored ${scoreA} and ${nameB} scored ${scoreB} out of 81 \u2014 this tells us the emotional ground between you feels stable. That\u2019s not nothing. It\u2019s the foundation everything else builds on.`);
+        } else if (avg > 45) {
+          paras.push(`Your satisfaction sits in the moderate range \u2014 ${nameA} at ${scoreA} and ${nameB} at ${scoreB}. There\u2019s warmth here, and also room to deepen what\u2019s working. The question isn\u2019t whether your relationship is \u201Cgood enough\u201D \u2014 it\u2019s whether you\u2019re both getting what you need.`);
+        } else {
+          paras.push(`Satisfaction is running low right now \u2014 ${nameA} at ${scoreA}, ${nameB} at ${scoreB}. This isn\u2019t a verdict on your relationship. It\u2019s a signal that something needs attention \u2014 and the fact that you\u2019re both here looking at this together is already a step.`);
+        }
+        if (gap > 15) {
+          paras.push(`There\u2019s a ${gap}-point gap between you. That means one partner may be experiencing something the other doesn\u2019t yet see. This gap itself is worth a conversation \u2014 not to assign blame, but to understand what each of you is carrying.`);
+        } else if (gap > 5) {
+          paras.push(`You\u2019re within ${gap} points of each other \u2014 close enough to share a general sense of how things are, even if the details feel different day to day.`);
+        } else {
+          paras.push(`You\u2019re remarkably aligned in how you experience satisfaction right now \u2014 that shared perception is a quiet strength.`);
+        }
+      } else if (scoreA != null || scoreB != null) {
+        const who = scoreA != null ? nameA : nameB;
+        const score = scoreA ?? scoreB;
+        paras.push(`Only ${who} has completed this assessment so far (${score} out of 81). When both partners share their perspective, the comparison becomes a powerful conversation starter.`);
+      }
+      return paras;
+    };
+
+    const generateRDASNarrative = (): string[] => {
+      const paras: string[] = [];
+      const a = rdas.partnerA;
+      const b = rdas.partnerB;
+      if (a && b) {
+        const avgTotal = ((a.total ?? 0) + (b.total ?? 0)) / 2;
+        if (avgTotal > 52) {
+          paras.push(`Your relationship adjustment is in a healthy range. ${nameA} scored ${a.total} and ${nameB} scored ${b.total} out of 69. This means you\u2019re generally aligned on the decisions, rhythms, and emotional temperature of your life together.`);
+        } else if (avgTotal > 40) {
+          paras.push(`Your adjustment scores suggest some areas of friction \u2014 ${nameA} at ${a.total}, ${nameB} at ${b.total}. This doesn\u2019t mean your relationship is broken. It means there are places where your expectations or experiences don\u2019t quite match yet.`);
+        } else {
+          paras.push(`The adjustment scores are in a range where daily life may feel harder than it should \u2014 ${nameA} at ${a.total}, ${nameB} at ${b.total}. When consensus, satisfaction, and togetherness all run low, even small moments can feel heavy. A couples therapist can help lighten that load.`);
+        }
+        // Sub-score narrative
+        const conGap = Math.abs((a.consensus ?? 0) - (b.consensus ?? 0));
+        const satGap = Math.abs((a.satisfaction ?? 0) - (b.satisfaction ?? 0));
+        const cohGap = Math.abs((a.cohesion ?? 0) - (b.cohesion ?? 0));
+        const biggest = Math.max(conGap, satGap, cohGap);
+        if (biggest > 5) {
+          const area = biggest === conGap ? 'consensus \u2014 how you make decisions and handle values' : biggest === satGap ? 'day-to-day satisfaction' : 'cohesion \u2014 how much shared life you experience';
+          paras.push(`The biggest gap between you is in ${area}. That\u2019s a natural place to start a conversation. Not to fix, just to understand what each partner sees.`);
+        }
+      } else {
+        const who = a ? nameA : nameB;
+        paras.push(`Only ${who} has completed this assessment. The RDAS is most powerful when both partners share their experience side by side.`);
+      }
+      return paras;
+    };
+
+    const generateDCINarrative = (): string[] => {
+      const paras: string[] = [];
+      const a = dci.partnerA;
+      const b = dci.partnerB;
+      if (a && b) {
+        const avgPositive = ((a.totalPositive ?? 0) + (b.totalPositive ?? 0)) / 2;
+        if (avgPositive > 60) {
+          paras.push(`You both show strong capacity to support each other through stress \u2014 ${nameA} at ${a.totalPositive}, ${nameB} at ${b.totalPositive}. When life gets hard, you lean toward each other rather than away. That\u2019s your couple\u2019s superpower.`);
+        } else if (avgPositive > 40) {
+          paras.push(`Your coping together has a solid foundation \u2014 ${nameA} at ${a.totalPositive}, ${nameB} at ${b.totalPositive} \u2014 with room to grow. The building blocks of support are there; it\u2019s about making them more consistent and more attuned.`);
+        } else {
+          paras.push(`Stress may be creating distance between you rather than bringing you closer \u2014 ${nameA} at ${a.totalPositive}, ${nameB} at ${b.totalPositive}. This is one of the most common and most fixable patterns in relationships. Learning to co-regulate changes everything.`);
+        }
+        // Highlight strongest and weakest areas
+        const supportAvg = ((a.supportiveBySelf ?? 0) + (b.supportiveBySelf ?? 0)) / 2;
+        const commAvg = ((a.stressCommunicationBySelf ?? 0) + (b.stressCommunicationBySelf ?? 0)) / 2;
+        const negAvg = ((a.negativeBySelf ?? 0) + (b.negativeBySelf ?? 0)) / 2;
+        if (negAvg > 12) {
+          paras.push(`Your negative coping scores are elevated (${a.negativeBySelf ?? 0} and ${b.negativeBySelf ?? 0}). This often means stress brings out dismissiveness or criticism \u2014 not because you don\u2019t care, but because your nervous system is overwhelmed. This is the first place to intervene.`);
+        } else if (supportAvg > 15) {
+          paras.push(`Your supportive coping is a real asset. When one of you signals stress, the other tends to show up with genuine care. Protect this \u2014 it\u2019s rarer than you think.`);
+        }
+        if (commAvg < 10) {
+          paras.push(`Stress communication could use attention. Neither partner is signaling stress very clearly, which means support may arrive late or not at all. A simple \u201CI\u2019m having a hard day\u201D can change the entire dynamic.`);
+        }
+      } else {
+        const who = a ? nameA : nameB;
+        paras.push(`Only ${who} has completed this assessment. The DCI reveals its deepest insights when both partners share how they experience coping together.`);
+      }
+      return paras;
+    };
+
+    // ── Story mode narrative card renderer ──
+    const NarrativeCard = ({ title, accentColor, paragraphs, children }: {
+      title: string; accentColor: string; paragraphs: string[]; children?: React.ReactNode;
+    }) => (
+      <View style={[assessStyles.narrativeCard, { borderLeftColor: accentColor, borderLeftWidth: 3 }]}>
+        <TenderText variant="headingS" color={Colors.text} style={{ marginBottom: Spacing.xs }}>{title}</TenderText>
+        {paragraphs.map((p, i) => (
+          <TenderText key={i} variant="body" color={Colors.textSecondary} style={assessStyles.narrativeParagraph}>
+            {p}
+          </TenderText>
+        ))}
+        {children}
+      </View>
+    );
+
     return (
       <View style={styles.tabContent}>
         <TenderText variant="headingM" style={styles.sectionTitle}>Your Couple Assessments</TenderText>
@@ -1068,158 +1176,148 @@ function CouplePortalScreen() {
           a shared map of where you align and where attention is needed.
         </TenderText>
 
-        {/* ── CSI-16: Couple Satisfaction ── */}
-        {(csi16.partnerA || csi16.partnerB) && (
+        <ScoreViewToggle mode={assessViewMode} onToggle={setAssessViewMode} />
+
+        {assessViewMode === 'story' ? (
           <>
-          <AssessmentCard
-            title="Couple Satisfaction"
-            subtitle="CSI-16 — How satisfied each partner feels in the relationship"
-            accentColor={Colors.secondary}
-          >
-            <CompareRow
-              label="Total Score"
-              valueA={csi16.partnerA?.total ?? null}
-              valueB={csi16.partnerB?.total ?? null}
-              max={81}
-              color={Colors.secondary}
-            />
-
-            {/* Level badges */}
-            <View style={assessStyles.badgeRow}>
-              {csi16.partnerA?.satisfactionLevel && (
-                <LevelBadge
-                  level={csi16.partnerA.satisfactionLevel.charAt(0).toUpperCase() + csi16.partnerA.satisfactionLevel.slice(1)}
-                  color={csiInterpretation(csi16.partnerA.satisfactionLevel).color}
-                />
-              )}
-              {csi16.partnerB?.satisfactionLevel && (
-                <LevelBadge
-                  level={csi16.partnerB.satisfactionLevel.charAt(0).toUpperCase() + csi16.partnerB.satisfactionLevel.slice(1)}
-                  color={csiInterpretation(csi16.partnerB.satisfactionLevel).color}
-                />
-              )}
-            </View>
-
-            {/* Interpretation */}
-            {(csi16.partnerA?.satisfactionLevel || csi16.partnerB?.satisfactionLevel) && (
-              <View style={assessStyles.interpretCard}>
-                <TenderText variant="label" style={assessStyles.interpretTitle}>What This Means</TenderText>
-                <TenderText variant="body" color={Colors.textSecondary}>
-                  The CSI-16 measures overall relationship happiness on a 0–81 scale.
-                  Scores above 51.5 are considered non-distressed.
-                  {csi16.partnerA?.satisfactionLevel && `\n\n${nameA}: ${csiInterpretation(csi16.partnerA.satisfactionLevel).text}`}
-                  {csi16.partnerB?.satisfactionLevel && `\n\n${nameB}: ${csiInterpretation(csi16.partnerB.satisfactionLevel).text}`}
-                </TenderText>
-              </View>
+            {/* ── CSI-16 Narrative ── */}
+            {(csi16.partnerA || csi16.partnerB) && (
+              <>
+                <NarrativeCard title="Relationship Satisfaction" accentColor={Colors.secondary} paragraphs={generateCSINarrative()} />
+                <ConversationPrompts assessmentType="csi16" hasGap={Math.abs((csi16.partnerA?.total ?? 0) - (csi16.partnerB?.total ?? 0)) > 10} />
+              </>
             )}
-          </AssessmentCard>
-          <ConversationPrompts
-            assessmentType="csi16"
-            hasGap={Math.abs((csi16.partnerA?.total ?? 0) - (csi16.partnerB?.total ?? 0)) > 10}
-          />
+            {/* ── RDAS Narrative ── */}
+            {(rdas.partnerA || rdas.partnerB) && (
+              <>
+                <NarrativeCard title="Relationship Adjustment" accentColor={Colors.secondary} paragraphs={generateRDASNarrative()} />
+                <ConversationPrompts assessmentType="rdas" hasGap={Math.abs((rdas.partnerA?.total ?? 0) - (rdas.partnerB?.total ?? 0)) > 10} />
+              </>
+            )}
+            {/* ── DCI Narrative ── */}
+            {(dci.partnerA || dci.partnerB) && (
+              <>
+                <NarrativeCard title="How You Cope Together" accentColor={Colors.success} paragraphs={generateDCINarrative()} />
+                <ConversationPrompts assessmentType="dci" hasGap={Math.abs((dci.partnerA?.totalPositive ?? 0) - (dci.partnerB?.totalPositive ?? 0)) > 15} />
+              </>
+            )}
           </>
-        )}
-
-        {/* ── RDAS: Relationship Adjustment ── */}
-        {(rdas.partnerA || rdas.partnerB) && (
+        ) : (
           <>
-          <AssessmentCard
-            title="Relationship Adjustment"
-            subtitle="RDAS — Consensus, satisfaction, and cohesion in the relationship"
-            accentColor={Colors.secondary}
-          >
-            <CompareRow label="Total Score" valueA={rdas.partnerA?.total ?? null} valueB={rdas.partnerB?.total ?? null} max={69} color={Colors.secondary} />
-            <CompareRow label="Consensus" valueA={rdas.partnerA?.consensus ?? null} valueB={rdas.partnerB?.consensus ?? null} max={30} color={Colors.secondary} />
-            <CompareRow label="Satisfaction" valueA={rdas.partnerA?.satisfaction ?? null} valueB={rdas.partnerB?.satisfaction ?? null} max={20} color={Colors.secondary} />
-            <CompareRow label="Cohesion" valueA={rdas.partnerA?.cohesion ?? null} valueB={rdas.partnerB?.cohesion ?? null} max={20} color={Colors.success} />
-
-            {/* Level badges */}
-            <View style={assessStyles.badgeRow}>
-              {rdas.partnerA?.distressLevel && (
-                <LevelBadge
-                  level={rdas.partnerA.distressLevel.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())}
-                  color={rdasInterpretation(rdas.partnerA.distressLevel).color}
+            {/* ── CSI-16: Couple Satisfaction ── */}
+            {(csi16.partnerA || csi16.partnerB) && (
+              <>
+              <AssessmentCard
+                title="Couple Satisfaction"
+                subtitle="CSI-16 — How satisfied each partner feels in the relationship"
+                accentColor={Colors.secondary}
+              >
+                <CompareRow
+                  label="Total Score"
+                  valueA={csi16.partnerA?.total ?? null}
+                  valueB={csi16.partnerB?.total ?? null}
+                  max={81}
+                  color={Colors.secondary}
                 />
-              )}
-              {rdas.partnerB?.distressLevel && (
-                <LevelBadge
-                  level={rdas.partnerB.distressLevel.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())}
-                  color={rdasInterpretation(rdas.partnerB.distressLevel).color}
-                />
-              )}
-            </View>
+                <View style={assessStyles.badgeRow}>
+                  {csi16.partnerA?.satisfactionLevel && (
+                    <LevelBadge level={csi16.partnerA.satisfactionLevel.charAt(0).toUpperCase() + csi16.partnerA.satisfactionLevel.slice(1)} color={csiInterpretation(csi16.partnerA.satisfactionLevel).color} />
+                  )}
+                  {csi16.partnerB?.satisfactionLevel && (
+                    <LevelBadge level={csi16.partnerB.satisfactionLevel.charAt(0).toUpperCase() + csi16.partnerB.satisfactionLevel.slice(1)} color={csiInterpretation(csi16.partnerB.satisfactionLevel).color} />
+                  )}
+                </View>
+                {(csi16.partnerA?.satisfactionLevel || csi16.partnerB?.satisfactionLevel) && (
+                  <View style={assessStyles.interpretCard}>
+                    <TenderText variant="label" style={assessStyles.interpretTitle}>What This Means</TenderText>
+                    <TenderText variant="body" color={Colors.textSecondary}>
+                      The CSI-16 measures overall relationship happiness on a 0–81 scale. Scores above 51.5 are considered non-distressed.
+                      {csi16.partnerA?.satisfactionLevel && `\n\n${nameA}: ${csiInterpretation(csi16.partnerA.satisfactionLevel).text}`}
+                      {csi16.partnerB?.satisfactionLevel && `\n\n${nameB}: ${csiInterpretation(csi16.partnerB.satisfactionLevel).text}`}
+                    </TenderText>
+                  </View>
+                )}
+              </AssessmentCard>
+              <ConversationPrompts assessmentType="csi16" hasGap={Math.abs((csi16.partnerA?.total ?? 0) - (csi16.partnerB?.total ?? 0)) > 10} />
+              </>
+            )}
 
-            {/* Interpretation */}
-            <View style={assessStyles.interpretCard}>
-              <TenderText variant="label" style={assessStyles.interpretTitle}>Understanding Your Scores</TenderText>
-              <TenderText variant="body" color={Colors.textSecondary}>
-                The RDAS measures relationship adjustment across three areas:{'\n\n'}
-                • <TenderText variant="body">Consensus</TenderText> (0–30): How much you agree on important matters — finances, values, decisions{'\n'}
-                • <TenderText variant="body">Satisfaction</TenderText> (0–20): Day-to-day happiness and contentment in the relationship{'\n'}
-                • <TenderText variant="body">Cohesion</TenderText> (0–20): How much you share activities, ideas, and quality time{'\n\n'}
-                Scores above 48 on the total generally indicate a non-distressed relationship.
-                {rdas.partnerA?.distressLevel && `\n\n${nameA}: ${rdasInterpretation(rdas.partnerA.distressLevel).text}`}
-                {rdas.partnerB?.distressLevel && `\n\n${nameB}: ${rdasInterpretation(rdas.partnerB.distressLevel).text}`}
-              </TenderText>
-            </View>
-          </AssessmentCard>
-          <ConversationPrompts
-            assessmentType="rdas"
-            hasGap={Math.abs((rdas.partnerA?.total ?? 0) - (rdas.partnerB?.total ?? 0)) > 10}
-          />
-          </>
-        )}
+            {/* ── RDAS: Relationship Adjustment ── */}
+            {(rdas.partnerA || rdas.partnerB) && (
+              <>
+              <AssessmentCard
+                title="Relationship Adjustment"
+                subtitle="RDAS — Consensus, satisfaction, and cohesion in the relationship"
+                accentColor={Colors.secondary}
+              >
+                <CompareRow label="Total Score" valueA={rdas.partnerA?.total ?? null} valueB={rdas.partnerB?.total ?? null} max={69} color={Colors.secondary} />
+                <CompareRow label="Consensus" valueA={rdas.partnerA?.consensus ?? null} valueB={rdas.partnerB?.consensus ?? null} max={30} color={Colors.secondary} />
+                <CompareRow label="Satisfaction" valueA={rdas.partnerA?.satisfaction ?? null} valueB={rdas.partnerB?.satisfaction ?? null} max={20} color={Colors.secondary} />
+                <CompareRow label="Cohesion" valueA={rdas.partnerA?.cohesion ?? null} valueB={rdas.partnerB?.cohesion ?? null} max={20} color={Colors.success} />
+                <View style={assessStyles.badgeRow}>
+                  {rdas.partnerA?.distressLevel && (
+                    <LevelBadge level={rdas.partnerA.distressLevel.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())} color={rdasInterpretation(rdas.partnerA.distressLevel).color} />
+                  )}
+                  {rdas.partnerB?.distressLevel && (
+                    <LevelBadge level={rdas.partnerB.distressLevel.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())} color={rdasInterpretation(rdas.partnerB.distressLevel).color} />
+                  )}
+                </View>
+                <View style={assessStyles.interpretCard}>
+                  <TenderText variant="label" style={assessStyles.interpretTitle}>Understanding Your Scores</TenderText>
+                  <TenderText variant="body" color={Colors.textSecondary}>
+                    The RDAS measures relationship adjustment across three areas:{'\n\n'}
+                    {'\u2022'} Consensus (0–30): How much you agree on important matters{'\n'}
+                    {'\u2022'} Satisfaction (0–20): Day-to-day happiness and contentment{'\n'}
+                    {'\u2022'} Cohesion (0–20): How much you share activities and quality time{'\n\n'}
+                    Scores above 48 on the total generally indicate a non-distressed relationship.
+                    {rdas.partnerA?.distressLevel && `\n\n${nameA}: ${rdasInterpretation(rdas.partnerA.distressLevel).text}`}
+                    {rdas.partnerB?.distressLevel && `\n\n${nameB}: ${rdasInterpretation(rdas.partnerB.distressLevel).text}`}
+                  </TenderText>
+                </View>
+              </AssessmentCard>
+              <ConversationPrompts assessmentType="rdas" hasGap={Math.abs((rdas.partnerA?.total ?? 0) - (rdas.partnerB?.total ?? 0)) > 10} />
+              </>
+            )}
 
-        {/* ── DCI: Dyadic Coping ── */}
-        {(dci.partnerA || dci.partnerB) && (
-          <>
-          <AssessmentCard
-            title="Dyadic Coping"
-            subtitle="DCI — How you support each other through stress"
-            accentColor={Colors.success}
-          >
-            <CompareRow label="Positive Coping (Total)" valueA={dci.partnerA?.totalPositive ?? null} valueB={dci.partnerB?.totalPositive ?? null} max={90} color={Colors.success} />
-            <CompareRow label="Stress Communication" valueA={dci.partnerA?.stressCommunicationBySelf ?? null} valueB={dci.partnerB?.stressCommunicationBySelf ?? null} max={20} color={Colors.secondary} />
-            <CompareRow label="Supportive Coping" valueA={dci.partnerA?.supportiveBySelf ?? null} valueB={dci.partnerB?.supportiveBySelf ?? null} max={25} color={Colors.success} />
-            <CompareRow label="Delegated Coping" valueA={dci.partnerA?.delegatedBySelf ?? null} valueB={dci.partnerB?.delegatedBySelf ?? null} max={10} color={Colors.secondary} />
-            <CompareRow label="Common Coping" valueA={dci.partnerA?.commonCoping ?? null} valueB={dci.partnerB?.commonCoping ?? null} max={25} color={Colors.warning} />
-            <CompareRow label="Negative Coping" valueA={dci.partnerA?.negativeBySelf ?? null} valueB={dci.partnerB?.negativeBySelf ?? null} max={20} color={Colors.error} />
-
-            {/* Level badges */}
-            <View style={assessStyles.badgeRow}>
-              {dci.partnerA?.copingQuality && (
-                <LevelBadge
-                  level={dci.partnerA.copingQuality.charAt(0).toUpperCase() + dci.partnerA.copingQuality.slice(1)}
-                  color={dciInterpretation(dci.partnerA.copingQuality).color}
-                />
-              )}
-              {dci.partnerB?.copingQuality && (
-                <LevelBadge
-                  level={dci.partnerB.copingQuality.charAt(0).toUpperCase() + dci.partnerB.copingQuality.slice(1)}
-                  color={dciInterpretation(dci.partnerB.copingQuality).color}
-                />
-              )}
-            </View>
-
-            {/* Interpretation */}
-            <View style={assessStyles.interpretCard}>
-              <TenderText variant="label" style={assessStyles.interpretTitle}>Understanding Your Scores</TenderText>
-              <TenderText variant="body" color={Colors.textSecondary}>
-                The DCI measures how partners cope with stress together:{'\n\n'}
-                • <TenderText variant="body">Stress Communication</TenderText>: How clearly you signal stress to each other{'\n'}
-                • <TenderText variant="body">Supportive Coping</TenderText>: Emotional and practical support offered to your partner{'\n'}
-                • <TenderText variant="body">Delegated Coping</TenderText>: Taking on tasks when your partner is overwhelmed{'\n'}
-                • <TenderText variant="body">Common Coping</TenderText>: Facing challenges as a team, co-regulating together{'\n'}
-                • <TenderText variant="body">Negative Coping</TenderText>: Dismissive or hostile responses to partner's stress (lower is better)
-                {dci.partnerA?.copingQuality && `\n\n${nameA}: ${dciInterpretation(dci.partnerA.copingQuality).text}`}
-                {dci.partnerB?.copingQuality && `\n\n${nameB}: ${dciInterpretation(dci.partnerB.copingQuality).text}`}
-              </TenderText>
-            </View>
-          </AssessmentCard>
-          <ConversationPrompts
-            assessmentType="dci"
-            hasGap={Math.abs((dci.partnerA?.totalPositive ?? 0) - (dci.partnerB?.totalPositive ?? 0)) > 15}
-          />
+            {/* ── DCI: Dyadic Coping ── */}
+            {(dci.partnerA || dci.partnerB) && (
+              <>
+              <AssessmentCard
+                title="Dyadic Coping"
+                subtitle="DCI — How you support each other through stress"
+                accentColor={Colors.success}
+              >
+                <CompareRow label="Positive Coping (Total)" valueA={dci.partnerA?.totalPositive ?? null} valueB={dci.partnerB?.totalPositive ?? null} max={90} color={Colors.success} />
+                <CompareRow label="Stress Communication" valueA={dci.partnerA?.stressCommunicationBySelf ?? null} valueB={dci.partnerB?.stressCommunicationBySelf ?? null} max={20} color={Colors.secondary} />
+                <CompareRow label="Supportive Coping" valueA={dci.partnerA?.supportiveBySelf ?? null} valueB={dci.partnerB?.supportiveBySelf ?? null} max={25} color={Colors.success} />
+                <CompareRow label="Delegated Coping" valueA={dci.partnerA?.delegatedBySelf ?? null} valueB={dci.partnerB?.delegatedBySelf ?? null} max={10} color={Colors.secondary} />
+                <CompareRow label="Common Coping" valueA={dci.partnerA?.commonCoping ?? null} valueB={dci.partnerB?.commonCoping ?? null} max={25} color={Colors.warning} />
+                <CompareRow label="Negative Coping" valueA={dci.partnerA?.negativeBySelf ?? null} valueB={dci.partnerB?.negativeBySelf ?? null} max={20} color={Colors.error} />
+                <View style={assessStyles.badgeRow}>
+                  {dci.partnerA?.copingQuality && (
+                    <LevelBadge level={dci.partnerA.copingQuality.charAt(0).toUpperCase() + dci.partnerA.copingQuality.slice(1)} color={dciInterpretation(dci.partnerA.copingQuality).color} />
+                  )}
+                  {dci.partnerB?.copingQuality && (
+                    <LevelBadge level={dci.partnerB.copingQuality.charAt(0).toUpperCase() + dci.partnerB.copingQuality.slice(1)} color={dciInterpretation(dci.partnerB.copingQuality).color} />
+                  )}
+                </View>
+                <View style={assessStyles.interpretCard}>
+                  <TenderText variant="label" style={assessStyles.interpretTitle}>Understanding Your Scores</TenderText>
+                  <TenderText variant="body" color={Colors.textSecondary}>
+                    The DCI measures how partners cope with stress together:{'\n\n'}
+                    {'\u2022'} Stress Communication: How clearly you signal stress{'\n'}
+                    {'\u2022'} Supportive Coping: Emotional and practical support offered{'\n'}
+                    {'\u2022'} Delegated Coping: Taking on tasks when overwhelmed{'\n'}
+                    {'\u2022'} Common Coping: Facing challenges as a team{'\n'}
+                    {'\u2022'} Negative Coping: Dismissive responses (lower is better)
+                    {dci.partnerA?.copingQuality && `\n\n${nameA}: ${dciInterpretation(dci.partnerA.copingQuality).text}`}
+                    {dci.partnerB?.copingQuality && `\n\n${nameB}: ${dciInterpretation(dci.partnerB.copingQuality).text}`}
+                  </TenderText>
+                </View>
+              </AssessmentCard>
+              <ConversationPrompts assessmentType="dci" hasGap={Math.abs((dci.partnerA?.totalPositive ?? 0) - (dci.partnerB?.totalPositive ?? 0)) > 15} />
+              </>
+            )}
           </>
         )}
       </View>
@@ -1803,5 +1901,16 @@ const assessStyles = StyleSheet.create({
   },
   interpretTitle: {
     marginBottom: Spacing.xs,
+  },
+  narrativeCard: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    marginBottom: Spacing.md,
+    gap: Spacing.sm,
+    ...Shadows.card,
+  },
+  narrativeParagraph: {
+    lineHeight: 28,
   },
 });

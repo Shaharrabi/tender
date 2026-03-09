@@ -19,6 +19,7 @@ import { View, TouchableOpacity, StyleSheet, LayoutAnimation, Platform, UIManage
 import Animated, { FadeIn } from 'react-native-reanimated';
 import TenderText from '@/components/ui/TenderText';
 import { Colors, Spacing, BorderRadius, Shadows } from '@/constants/theme';
+import { HeartPulseIcon, CloseIcon, ChatBubbleIcon, RefreshIcon } from '@/assets/graphics/icons';
 import type { DeepCouplePortrait, CoupleAnchorSet, CoupleAnchor } from '@/types/couples';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -195,31 +196,75 @@ export function AnchorSOSButton({ anchors }: AnchorSOSButtonProps) {
 
   return (
     <>
-      <TouchableOpacity
-        style={sosStyles.fab}
-        onPress={() => setOpen(!open)}
-        activeOpacity={0.8}
-        accessibilityRole="button"
-        accessibilityLabel={open ? 'Close repair phrases' : 'Quick repair phrases'}
-      >
-        <TenderText variant="headingS" color={Colors.white} style={{ fontSize: 22 }}>{open ? '\u2715' : '\uD83D\uDC9C'}</TenderText>
-      </TouchableOpacity>
+      {/* FAB + label */}
+      <View style={sosStyles.fabContainer}>
+        <TouchableOpacity
+          style={sosStyles.fab}
+          onPress={() => {
+            LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+            setOpen(!open);
+          }}
+          activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel={open ? 'Close repair tools' : 'Quick repair tools'}
+        >
+          {open
+            ? <CloseIcon size={15} color={Colors.white} />
+            : <HeartPulseIcon size={17} color={Colors.white} />}
+        </TouchableOpacity>
+        {!open && (
+          <TenderText variant="caption" color={Colors.accent} style={sosStyles.fabLabel}>
+            SOS
+          </TenderText>
+        )}
+      </View>
 
+      {/* Panel */}
       {open && (
         <View style={sosStyles.panel}>
-          <TenderText variant="label" color={Colors.accent} style={sosStyles.title}>{'\uD83E\uDE79'} QUICK REPAIR</TenderText>
+          <View style={sosStyles.panelHeader}>
+            <HeartPulseIcon size={14} color={Colors.accent} />
+            <TenderText variant="headingS" color={Colors.text} style={{ fontSize: 15 }}>
+              Quick Repair
+            </TenderText>
+          </View>
+          <TenderText variant="caption" color={Colors.textMuted} style={sosStyles.panelDesc}>
+            Words to reach for in a difficult moment.
+          </TenderText>
+
+          {/* Repair starters */}
+          <View style={sosStyles.sectionLabel}>
+            <ChatBubbleIcon size={11} color={Colors.textMuted} />
+            <TenderText variant="label" color={Colors.textMuted} style={{ fontSize: 10, letterSpacing: 1.5 }}>
+              TRY SAYING
+            </TenderText>
+          </View>
           {anchors.repairStarters.slice(0, 3).map((phrase, i) => (
             <View key={i} style={sosStyles.row}>
-              <TenderText variant="serifItalic" color={Colors.text} style={{ fontSize: 14, lineHeight: 22 }}>
+              <TenderText variant="serifItalic" color={Colors.text} style={sosStyles.repairPhrase}>
                 {'\u201C'}{phrase}{'\u201D'}
               </TenderText>
             </View>
           ))}
-          {anchors.whenInTheCycle.slice(0, 2).map((a: CoupleAnchor, i: number) => (
-            <View key={`c${i}`} style={sosStyles.row}>
-              <TenderText variant="bodySmall" color={Colors.textSecondary}>{a.text}</TenderText>
-            </View>
-          ))}
+
+          {/* Cycle anchors */}
+          {anchors.whenInTheCycle.length > 0 && (
+            <>
+              <View style={[sosStyles.sectionLabel, { marginTop: Spacing.sm }]}>
+                <RefreshIcon size={11} color={Colors.textMuted} />
+                <TenderText variant="label" color={Colors.textMuted} style={{ fontSize: 10, letterSpacing: 1.5 }}>
+                  IN YOUR CYCLE
+                </TenderText>
+              </View>
+              {anchors.whenInTheCycle.slice(0, 2).map((a: CoupleAnchor, i: number) => (
+                <View key={`c${i}`} style={sosStyles.row}>
+                  <TenderText variant="bodySmall" color={Colors.textSecondary} style={{ lineHeight: 21 }}>
+                    {a.text}
+                  </TenderText>
+                </View>
+              ))}
+            </>
+          )}
         </View>
       )}
     </>
@@ -227,17 +272,42 @@ export function AnchorSOSButton({ anchors }: AnchorSOSButtonProps) {
 }
 
 const sosStyles = StyleSheet.create({
-  fab: {
+  fabContainer: {
     position: 'absolute', bottom: 80, right: Spacing.md,
-    width: 52, height: 52, borderRadius: 26, backgroundColor: Colors.accent,
-    alignItems: 'center', justifyContent: 'center', ...Shadows.elevated, zIndex: 30,
+    alignItems: 'center', zIndex: 30,
+  },
+  fab: {
+    width: 40, height: 40, borderRadius: 20,
+    backgroundColor: Colors.accent + 'D9',
+    alignItems: 'center', justifyContent: 'center',
+    ...Shadows.elevated,
+  },
+  fabLabel: {
+    fontSize: 9, letterSpacing: 1, marginTop: 2,
+    fontWeight: '600',
   },
   panel: {
-    position: 'absolute', bottom: 140, right: Spacing.md, width: 280,
-    backgroundColor: Colors.white, borderRadius: BorderRadius.lg, padding: Spacing.lg,
-    gap: Spacing.sm, ...Shadows.elevated, zIndex: 30,
-    borderWidth: 1, borderColor: Colors.accent + '30',
+    position: 'absolute', bottom: 130, right: Spacing.md, width: 280,
+    backgroundColor: Colors.surfaceElevated, borderRadius: BorderRadius.lg,
+    borderLeftWidth: 3, borderLeftColor: Colors.accent,
+    padding: Spacing.lg, gap: 2,
+    ...Shadows.elevated, zIndex: 30,
+    borderWidth: 1, borderColor: Colors.accent + '20',
   },
-  title: { letterSpacing: 2, fontSize: 10, marginBottom: Spacing.xs },
-  row: { paddingVertical: Spacing.xs, borderBottomWidth: 1, borderBottomColor: Colors.borderLight },
+  panelHeader: {
+    flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2,
+  },
+  panelDesc: {
+    marginBottom: Spacing.sm, lineHeight: 18,
+  },
+  sectionLabel: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    marginBottom: Spacing.xs,
+  },
+  row: {
+    paddingVertical: 2,
+  },
+  repairPhrase: {
+    fontSize: 14, lineHeight: 22,
+  },
 });

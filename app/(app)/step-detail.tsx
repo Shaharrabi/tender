@@ -1015,6 +1015,7 @@ function StepDetailScreenInner() {
               .replace(/\b\w/g, (c: string) => c.toUpperCase());
             const duration = exercise?.duration;
             const mode = exercise?.mode;
+            const why = getPracticeWhy(practiceId, stepNumber);
             return (
               <TouchableOpacity
                 key={practiceId}
@@ -1037,6 +1038,9 @@ function StepDetailScreenInner() {
                       </View>
                     )}
                   </View>
+                  {why && (
+                    <Text style={styles.practiceWhy}>{why}</Text>
+                  )}
                 </View>
                 <Text style={[styles.practiceArrow, { color: phase.color }]}>
                   {'\u203A'}
@@ -1066,6 +1070,7 @@ function StepDetailScreenInner() {
                 .replace(/-/g, ' ')
                 .replace(/\b\w/g, (c: string) => c.toUpperCase());
               const duration = exercise?.duration;
+              const why = getPracticeWhy(practiceId, stepNumber);
               return (
                 <TouchableOpacity
                   key={practiceId}
@@ -1086,6 +1091,9 @@ function StepDetailScreenInner() {
                         </Text>
                       </View>
                     </View>
+                    {why && (
+                      <Text style={styles.practiceWhy}>{why}</Text>
+                    )}
                   </View>
                   <Text style={[styles.practiceArrow, { color: phase.color }]}>
                     {'\u203A'}
@@ -1946,6 +1954,14 @@ const styles = StyleSheet.create({
   practiceStep: {
     ...Typography.caption,
     color: Colors.textMuted,
+  },
+  practiceWhy: {
+    fontFamily: FontFamilies.body,
+    fontSize: 13,
+    fontStyle: 'italic' as const,
+    color: Colors.textSecondary,
+    lineHeight: 20,
+    marginTop: 4,
   },
   practiceArrow: {
     fontSize: FontSizes.headingL,
