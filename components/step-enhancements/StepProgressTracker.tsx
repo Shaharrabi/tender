@@ -1,10 +1,10 @@
 /**
  * StepProgressTracker — 5-stage tab bar for step detail.
  *
- * 📖 Read → 🌀 Explore → 🧘 Practice → ✍️ Reflect → ✨ Complete
+ * Read → Explore → Practice → Reflect → Complete
  *
+ * Uses app SVG icons (not Unicode emojis) for consistent rendering.
  * Acts as real tab navigation — all tabs tappable, active tab highlighted.
- * Progress bar shows completion status, active tab shows current view.
  *
  * Verified:
  *   Colors.background = '#FDF6F0', Colors.borderLight = '#F0E6E0'
@@ -16,8 +16,27 @@ import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import TenderText from '@/components/ui/TenderText';
 import { Colors, Spacing } from '@/constants/theme';
+import {
+  BookOpenIcon,
+  CompassIcon,
+  MeditationIcon,
+  PenIcon,
+  SparkleIcon,
+} from '@/assets/graphics/icons';
+import type { IconProps } from '@/assets/graphics/icons/types';
 
-const STAGES = ['📖 Read', '🌀 Explore', '🧘 Practice', '✍️ Reflect', '✨ Complete'] as const;
+interface StageConfig {
+  label: string;
+  Icon: React.ComponentType<IconProps>;
+}
+
+const STAGES: StageConfig[] = [
+  { label: 'Read', Icon: BookOpenIcon },
+  { label: 'Explore', Icon: CompassIcon },
+  { label: 'Practice', Icon: MeditationIcon },
+  { label: 'Reflect', Icon: PenIcon },
+  { label: 'Complete', Icon: SparkleIcon },
+];
 
 interface StepProgressTrackerProps {
   currentStage: number;   // progress level (0-4, based on completion)
@@ -35,19 +54,19 @@ export default function StepProgressTracker({
   return (
     <View style={styles.container}>
       <View style={styles.trackRow}>
-        {STAGES.map((label, i) => {
+        {STAGES.map((stage, i) => {
           const isDone = i < currentStage;
           const isActive = i === activeTab;
 
           return (
             <TouchableOpacity
-              key={label}
+              key={stage.label}
               style={styles.stageItem}
               onPress={() => onStagePress?.(i)}
               activeOpacity={0.7}
               accessibilityRole="tab"
               accessibilityState={{ selected: isActive }}
-              accessibilityLabel={`${label}${isActive ? ', selected' : isDone ? ', done' : ''}`}
+              accessibilityLabel={`${stage.label}${isActive ? ', selected' : isDone ? ', done' : ''}`}
             >
               <View style={[
                 styles.barSegment,
@@ -55,16 +74,22 @@ export default function StepProgressTracker({
                 i > currentStage && { opacity: 0.3 },
                 isActive && { height: 5 },
               ]} />
-              <TenderText
-                variant="caption"
-                color={isActive ? phaseColor : Colors.textMuted}
-                style={[
-                  styles.stageLabel,
-                  isActive && styles.stageLabelActive,
-                ]}
-              >
-                {label}
-              </TenderText>
+              <View style={styles.stageRow}>
+                <stage.Icon
+                  size={12}
+                  color={isActive ? phaseColor : Colors.textMuted}
+                />
+                <TenderText
+                  variant="caption"
+                  color={isActive ? phaseColor : Colors.textMuted}
+                  style={[
+                    styles.stageLabel,
+                    isActive && styles.stageLabelActive,
+                  ]}
+                >
+                  {stage.label}
+                </TenderText>
+              </View>
             </TouchableOpacity>
           );
         })}
@@ -109,6 +134,11 @@ const styles = StyleSheet.create({
     height: 4,
     width: '100%',
     borderRadius: 2,
+  },
+  stageRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
   },
   stageLabel: {
     fontSize: 9,

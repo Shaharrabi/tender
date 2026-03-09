@@ -99,7 +99,7 @@ import StepProgressTracker, { computeStepStage } from '@/components/step-enhance
 import StepStartHereCard from '@/components/step-enhancements/StepStartHereCard';
 import TeachingCardStack from '@/components/step-enhancements/TeachingCardStack';
 import { KeyTakeawayCard } from '@/components/step-enhancements/KeyTakeawayCard';
-import NextActionFloater, { computeNextAction } from '@/components/step-enhancements/NextActionFloater';
+// NextActionFloater removed — tabs handle navigation now
 import MoodRouter, { type MoodChoice } from '@/components/step-enhancements/MoodRouter';
 import { getStepTeachingCards, getKeyTakeaway, getPracticeWhy } from '@/utils/steps/step-teaching-cards';
 
@@ -258,16 +258,6 @@ function StepDetailScreenInner() {
     hasScrolledTeaching: hasReadTeaching,
     hasMiniGameOutput: !!miniGameOutput,
     hasCompletedPractice: practiceCount > 0,
-    hasReflection: Object.keys(reflectionTexts).some(k => reflectionTexts[Number(k)]?.trim()),
-    isStepCompleted: isCompletedStep,
-  });
-
-  const nextAction = computeNextAction({
-    hasReadTeaching,
-    hasMiniGameOutput: !!miniGameOutput,
-    practiceCount,
-    firstPracticeName: step?.practices[0] ? getExerciseById(step.practices[0])?.title : undefined,
-    firstPracticeDuration: step?.practices[0] ? getExerciseById(step.practices[0])?.duration : undefined,
     hasReflection: Object.keys(reflectionTexts).some(k => reflectionTexts[Number(k)]?.trim()),
     isStepCompleted: isCompletedStep,
   });
@@ -1330,74 +1320,6 @@ function StepDetailScreenInner() {
           </Animated.View>
         )}
 
-        {/* Completion Criteria — Collapsible Interactive Checklist (before reflection) */}
-        <Animated.View entering={FadeIn.delay(1100).duration(500)} style={styles.goalsCard}>
-          <CollapsibleHeader
-            title={`Step ${step.stepNumber} Goals`}
-            subtitle={`${checkedCriteria.length} of ${step.completionCriteria.length} completed`}
-            isExpanded={expandedSections.has('goals')}
-            onToggle={() => toggleSection('goals')}
-            phaseColor={phase.color}
-          />
-          {expandedSections.has('goals') && (
-            <>
-              <Text style={styles.goalsSubtitle}>
-                {checkedCriteria.length} of {step.completionCriteria.length} goals completed
-                {' \u00B7 '}
-                {practiceCount} practice{practiceCount !== 1 ? 's' : ''} done
-              </Text>
-              {step.completionCriteria.map((criteria, i) => {
-                const isChecked = checkedCriteria.includes(i);
-                return (
-                  <TouchableOpacity
-                    key={i}
-                    style={styles.goalRow}
-                    activeOpacity={canToggleCriteria ? 0.6 : 1}
-                    disabled={!canToggleCriteria}
-                    onPress={() => handleCriteriaToggle(i, !isChecked)}
-                    accessibilityRole="button"
-                    accessibilityState={{ disabled: !canToggleCriteria }}
-                  >
-                    <View style={styles.criteriaCheckbox}>
-                      <View
-                        style={[
-                          styles.criteriaSquare,
-                          { borderColor: phase.color },
-                          isChecked && [styles.criteriaSquareChecked, { backgroundColor: phase.color, borderColor: phase.color }],
-                        ]}
-                      >
-                        {isChecked && (
-                          <CheckmarkIcon size={10} color={Colors.white} />
-                        )}
-                      </View>
-                    </View>
-                    <Text
-                      style={[
-                        styles.goalText,
-                        isChecked && styles.goalTextChecked,
-                      ]}
-                    >
-                      {criteria}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-              {!canToggleCriteria && (
-                <Text style={styles.criteriaHint}>
-                  These goals become active when you reach this step
-                </Text>
-              )}
-              {isCompletedStep && (
-                <View style={[styles.completedBadge, { backgroundColor: phase.color + '18' }]}>
-                  <Text style={[styles.completedBadgeText, { color: phase.color }]}>
-                    Step Complete
-                  </Text>
-                </View>
-              )}
-            </>
-          )}
-        </Animated.View>
-
         {/* Reflection Prompts — Collapsible (after exchange) */}
         {step.reflectionPrompts && step.reflectionPrompts.length > 0 && (
           <Animated.View entering={FadeIn.delay(1150).duration(500)} style={styles.reflectionSection}>
@@ -1457,6 +1379,77 @@ function StepDetailScreenInner() {
 
         {/* ═══ TAB 4 — COMPLETE ═══ */}
         {activeTab === 4 && (<>
+        {/* Step Goals — Tick the boxes to complete this step */}
+        <Animated.View entering={FadeIn.delay(100).duration(500)} style={styles.goalsCard}>
+          <CollapsibleHeader
+            title={`Step ${step.stepNumber} Goals`}
+            subtitle={`${checkedCriteria.length} of ${step.completionCriteria.length} completed`}
+            isExpanded={expandedSections.has('goals')}
+            onToggle={() => toggleSection('goals')}
+            phaseColor={phase.color}
+          />
+          {expandedSections.has('goals') && (
+            <>
+              <Text style={styles.goalsGuideNote}>
+                Tick each goal as you complete it. Once all goals are checked, this step is done and you can move on to the next one.
+              </Text>
+              <Text style={styles.goalsSubtitle}>
+                {checkedCriteria.length} of {step.completionCriteria.length} goals completed
+                {' \u00B7 '}
+                {practiceCount} practice{practiceCount !== 1 ? 's' : ''} done
+              </Text>
+              {step.completionCriteria.map((criteria, i) => {
+                const isChecked = checkedCriteria.includes(i);
+                return (
+                  <TouchableOpacity
+                    key={i}
+                    style={styles.goalRow}
+                    activeOpacity={canToggleCriteria ? 0.6 : 1}
+                    disabled={!canToggleCriteria}
+                    onPress={() => handleCriteriaToggle(i, !isChecked)}
+                    accessibilityRole="button"
+                    accessibilityState={{ disabled: !canToggleCriteria }}
+                  >
+                    <View style={styles.criteriaCheckbox}>
+                      <View
+                        style={[
+                          styles.criteriaSquare,
+                          { borderColor: phase.color },
+                          isChecked && [styles.criteriaSquareChecked, { backgroundColor: phase.color, borderColor: phase.color }],
+                        ]}
+                      >
+                        {isChecked && (
+                          <CheckmarkIcon size={10} color={Colors.white} />
+                        )}
+                      </View>
+                    </View>
+                    <Text
+                      style={[
+                        styles.goalText,
+                        isChecked && styles.goalTextChecked,
+                      ]}
+                    >
+                      {criteria}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+              {!canToggleCriteria && (
+                <Text style={styles.criteriaHint}>
+                  These goals become active when you reach this step
+                </Text>
+              )}
+              {isCompletedStep && (
+                <View style={[styles.completedBadge, { backgroundColor: phase.color + '18' }]}>
+                  <Text style={[styles.completedBadgeText, { color: phase.color }]}>
+                    Step Complete
+                  </Text>
+                </View>
+              )}
+            </>
+          )}
+        </Animated.View>
+
         {/* Growth Plan — Personalized protocol from portrait (Steps 9+) */}
         {portrait && stepNumber >= 9 && (
           <Animated.View entering={FadeIn.delay(1250).duration(500)} style={styles.growthPlanSection}>
@@ -1469,7 +1462,7 @@ function StepDetailScreenInner() {
             />
             {expandedSections.has('growthPlan') && (
               <View style={{ paddingTop: Spacing.sm }}>
-                <GrowthPlanContent portrait={portrait} router={router} />
+                <GrowthPlanContent portrait={portrait} router={router} phaseColor={phase.color} />
               </View>
             )}
           </Animated.View>
@@ -1585,26 +1578,6 @@ function StepDetailScreenInner() {
           </TouchableOpacity>
         </View>
       </ScrollView>
-
-      <NextActionFloater
-        action={nextAction}
-        phaseColor={phase.color}
-        onPress={() => {
-          if (nextAction?.type === 'read') {
-            setActiveTab(0);
-            mainScrollRef.current?.scrollTo({ y: 0, animated: true });
-          } else if (nextAction?.type === 'game') {
-            setActiveTab(1);
-            mainScrollRef.current?.scrollTo({ y: 0, animated: true });
-          } else if (nextAction?.type === 'practice' && step?.practices[0]) {
-            setActiveTab(2);
-            mainScrollRef.current?.scrollTo({ y: 0, animated: true });
-          } else if (nextAction?.type === 'reflect') {
-            setActiveTab(3);
-            mainScrollRef.current?.scrollTo({ y: 0, animated: true });
-          }
-        }}
-      />
 
       <QuickLinksBar />
 
@@ -1846,6 +1819,14 @@ const styles = StyleSheet.create({
   goalsTitle: {
     ...Typography.headingS,
     color: Colors.text,
+  },
+  goalsGuideNote: {
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    lineHeight: 20,
+    marginBottom: Spacing.sm,
+    paddingHorizontal: Spacing.xs,
   },
   goalsSubtitle: {
     ...Typography.caption,

@@ -49,11 +49,12 @@ import type { IndividualPortrait } from '@/types';
 interface GrowthPlanContentProps {
   portrait: IndividualPortrait;
   router: any;
+  phaseColor?: string;
 }
 
 // ─── Component ───────────────────────────────────────────
 
-export default function GrowthPlanContent({ portrait, router }: GrowthPlanContentProps) {
+export default function GrowthPlanContent({ portrait, router, phaseColor }: GrowthPlanContentProps) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const { user } = useAuth();
 
@@ -163,7 +164,7 @@ export default function GrowthPlanContent({ portrait, router }: GrowthPlanConten
           {/* Four Movements Visualization */}
           {boostedMovements && (
             <View style={s.movementsContainer}>
-              <Text style={s.movementsSectionTitle}>Four Movements of Growth</Text>
+              <Text style={[s.movementsSectionTitle, phaseColor ? { color: phaseColor } : undefined]}>Four Movements of Growth</Text>
               <Text style={s.movementsSubtitle}>
                 Where you are in each dimension of relational growth
               </Text>
@@ -174,7 +175,7 @@ export default function GrowthPlanContent({ portrait, router }: GrowthPlanConten
                   <View key={key} style={s.movementCard}>
                     <View style={s.movementCardHeader}>
                       {explained?.icon ? (
-                        (() => { const IconComp = explained.icon; return <IconComp size={22} color={Colors.primary} />; })()
+                        (() => { const IconComp = explained.icon; return <IconComp size={22} color={phaseColor || Colors.primary} />; })()
                       ) : null}
                       <View style={{ flex: 1 }}>
                         <Text style={s.movementName}>{m.name}</Text>
