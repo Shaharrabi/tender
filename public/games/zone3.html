@@ -126,6 +126,10 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;touch-action
 .oi-note{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.6vw,9px);letter-spacing:2px;text-transform:uppercase;color:rgba(253,246,240,.25);margin-bottom:clamp(14px,3vh,20px);}
 .oi-btn{width:clamp(150px,45vw,180px);height:clamp(42px,10vw,48px);border-radius:24px;border:1.5px solid rgba(196,148,74,.5);background:transparent;font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(9px,2.2vw,11px);letter-spacing:3px;text-transform:uppercase;color:rgba(196,148,74,.8);cursor:pointer;transition:all .3s;}
 .oi-btn:active{background:rgba(196,148,74,.15);border-color:rgba(196,148,74,.8);}
+
+@keyframes gentle-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes slow-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.08); opacity: 0.85; } }
+.oi-sticker { margin-bottom: clamp(10px,2.5vh,16px); }
 </style>
 </head>
 <body>
@@ -239,7 +243,21 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;touch-action
 
   <div class="overlay" id="o-intro">
     <div class="oi-b">✦ Zone III · Step 3 ✦</div>
-    <div class="oi-ic">🪨</div>
+    <svg class="oi-sticker" viewBox="0 0 100 100" width="80" height="80">
+  <rect x="25" y="30" width="14" height="28" rx="7" fill="none" stroke="#A8B5A2" stroke-width="1.2">
+    <animateTransform attributeName="transform" type="translate" values="0,0;4,0;0,0" dur="2.5s" repeatCount="indefinite"/>
+  </rect>
+  <rect x="61" y="30" width="14" height="28" rx="7" fill="none" stroke="#A8B5A2" stroke-width="1.2">
+    <animateTransform attributeName="transform" type="translate" values="0,0;-4,0;0,0" dur="2.5s" repeatCount="indefinite"/>
+  </rect>
+  <circle cx="50" cy="44" r="3" fill="#D4A843" opacity="0.6">
+    <animate attributeName="opacity" values="0.3;0.9;0.3" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="50" cy="44" r="6" fill="none" stroke="#D4A843" stroke-width="0.5" opacity="0.2">
+    <animate attributeName="r" values="6;10;6" dur="2.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.2;0.05;0.2" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+</svg>
     <div class="oi-big">The Story<br>Field</div>
     <div class="oi-sub">Release certainty</div>
     <div class="oi-desc">You are carrying stories about your partner. Heavy ones. They have been keeping you company for a long time.<br><br>The path forward is lighter. Tap each stone to put it down.</div>

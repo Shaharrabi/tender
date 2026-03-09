@@ -3,17 +3,22 @@
  *
  * Read → Explore → Practice → Reflect → Complete
  *
- * Uses app SVG icons (not Unicode emojis) for consistent rendering.
- * Acts as real tab navigation — all tabs tappable, active tab highlighted.
+ * Uses app SVG icons with gentle pulse animation on active tab.
+ * Icons centered in small tinted circles for visual consistency.
  *
- * Verified:
- *   Colors.background = '#FDF6F0', Colors.borderLight = '#F0E6E0'
- *   Colors.textMuted = '#6B5E61'
- *   Spacing.sm = 8, Spacing.md = 16
+ * Acts as real tab navigation — all tabs tappable, active tab highlighted.
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withSequence,
+  withTiming,
+  Easing,
+} from 'react-native-reanimated';
 import TenderText from '@/components/ui/TenderText';
 import { Colors, Spacing } from '@/constants/theme';
 import {
@@ -45,6 +50,54 @@ interface StepProgressTrackerProps {
   onStagePress?: (stageIndex: number) => void;
 }
 
+/** Animated icon with circle background — pulses gently when active */
+function AnimatedStageIcon({
+  Icon,
+  isActive,
+  phaseColor,
+}: {
+  Icon: React.ComponentType<IconProps>;
+  isActive: boolean;
+  phaseColor: string;
+}) {
+  const pulse = useSharedValue(1);
+
+  useEffect(() => {
+    if (isActive) {
+      pulse.value = withRepeat(
+        withSequence(
+          withTiming(1.18, { duration: 1200, easing: Easing.inOut(Easing.sin) }),
+          withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.sin) }),
+        ),
+        -1,
+        false
+      );
+    } else {
+      pulse.value = withTiming(1, { duration: 300 });
+    }
+  }, [isActive]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pulse.value }],
+  }));
+
+  return (
+    <Animated.View
+      style={[
+        styles.iconCircle,
+        {
+          backgroundColor: isActive ? phaseColor + '18' : 'transparent',
+          borderColor: isActive ? phaseColor + '40' : Colors.borderLight,
+          borderWidth: isActive ? 1.5 : 0.5,
+        },
+        animatedStyle,
+      ]}
+    >
+      <Icon size={13} color={isActive ? phaseColor : Colors.textMuted} />
+    </Animated.View>
+  );
+}
+
 export default function StepProgressTracker({
   currentStage,
   activeTab,
@@ -74,22 +127,21 @@ export default function StepProgressTracker({
                 i > currentStage && { opacity: 0.3 },
                 isActive && { height: 5 },
               ]} />
-              <View style={styles.stageRow}>
-                <stage.Icon
-                  size={12}
-                  color={isActive ? phaseColor : Colors.textMuted}
-                />
-                <TenderText
-                  variant="caption"
-                  color={isActive ? phaseColor : Colors.textMuted}
-                  style={[
-                    styles.stageLabel,
-                    isActive && styles.stageLabelActive,
-                  ]}
-                >
-                  {stage.label}
-                </TenderText>
-              </View>
+              <AnimatedStageIcon
+                Icon={stage.Icon}
+                isActive={isActive}
+                phaseColor={phaseColor}
+              />
+              <TenderText
+                variant="caption"
+                color={isActive ? phaseColor : Colors.textMuted}
+                style={[
+                  styles.stageLabel,
+                  isActive && styles.stageLabelActive,
+                ]}
+              >
+                {stage.label}
+              </TenderText>
             </TouchableOpacity>
           );
         })}
@@ -128,17 +180,19 @@ const styles = StyleSheet.create({
   stageItem: {
     flex: 1,
     alignItems: 'center',
-    gap: 4,
+    gap: 3,
   },
   barSegment: {
     height: 4,
     width: '100%',
     borderRadius: 2,
   },
-  stageRow: {
-    flexDirection: 'row',
+  iconCircle: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     alignItems: 'center',
-    gap: 3,
+    justifyContent: 'center',
   },
   stageLabel: {
     fontSize: 9,

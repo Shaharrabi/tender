@@ -71,6 +71,9 @@ canvas{position:absolute;inset:0;}
 #o-intro{background:linear-gradient(180deg,#647E96,#728AA2);z-index:60;}
 .oi-b{font-family:'Josefin Sans',sans-serif;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:clamp(12px,3vh,18px);}
 .oi-ic{font-size:clamp(36px,10vw,48px);margin-bottom:clamp(10px,2.5vh,16px);}
+.oi-sticker { margin-bottom: clamp(10px,2.5vh,16px); }
+@keyframes gentle-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes slow-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.08); opacity: 0.85; } }
 .oi-big{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(32px,9vw,44px);letter-spacing:4px;text-transform:uppercase;color:var(--parchment);line-height:1.1;margin-bottom:8px;}
 .oi-sub{font-family:'Playfair Display',serif;font-size:clamp(12px,3.2vw,15px);color:rgba(255,255,255,.6);margin-bottom:clamp(18px,4vh,28px);}
 .oi-desc{font-family:'Playfair Display',serif;font-size:clamp(11px,2.8vw,13px);line-height:1.85;color:rgba(253,246,240,.35);margin-bottom:clamp(26px,6vh,40px);max-width:280px;}
@@ -169,7 +172,17 @@ canvas{position:absolute;inset:0;}
 
   <div class="overlay on" id="o-intro">
     <div class="oi-b">✦ Zone IX · Step 9 ✦</div>
-    <div class="oi-ic">🌉</div>
+    <svg class="oi-sticker" viewBox="0 0 100 100" width="80" height="80">
+      <rect x="24" y="28" width="24" height="30" rx="2" fill="none" stroke="#E8B4B8" stroke-width="0.8"/>
+      <rect x="52" y="32" width="24" height="30" rx="2" fill="none" stroke="#8BA4B8" stroke-width="0.8"/>
+      <rect x="52" y="32" width="6" height="26" fill="#D4A843" opacity="0.12">
+        <animate attributeName="opacity" values="0.08;0.2;0.08" dur="3s" repeatCount="indefinite"/>
+      </rect>
+      <text x="54" y="50" text-anchor="middle" font-family="serif" font-size="10" fill="#D4A843" opacity="0.5">
+        <animate attributeName="opacity" values="0.3;0.7;0.3" dur="3s" repeatCount="indefinite"/>
+        &#x2726;
+      </text>
+    </svg>
     <div class="oi-big">The Bridge</div>
     <div class="oi-sub">Act to rebuild trust</div>
     <div class="oi-desc">You stand on one side. They stand on the other.<br><br>Trust is rebuilt plank by plank, from both sides, meeting in the middle. Neither can do it alone.</div>

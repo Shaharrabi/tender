@@ -104,6 +104,10 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;touch-action
 .oi-btn{width:clamp(160px,48vw,190px);height:clamp(44px,11vw,52px);border-radius:26px;border:1.5px solid rgba(107,144,128,.5);background:transparent;font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(9px,2.2vw,11px);letter-spacing:3px;text-transform:uppercase;color:rgba(107,144,128,.85);cursor:pointer;transition:all .3s;}
 .oi-btn:active{background:rgba(107,144,128,.15);border-color:var(--sage);}
 
+@keyframes gentle-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes slow-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.08); opacity: 0.85; } }
+.oi-sticker { margin-bottom: clamp(10px,2.5vh,16px); }
+
 #practice-overlay{background:rgba(45,34,38,.96);z-index:55;}
 .ps-inner{width:100%;max-width:340px;background:var(--parchment);border-radius:20px;overflow:hidden;position:relative;}
 .ps-bar{height:4px;background:rgba(107,91,94,.12);}
@@ -184,7 +188,22 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;touch-action
 
 <div class="overlay on" id="o-intro">
   <div class="oi-b">✦ Zone II · Step 2 ✦</div>
-  <div class="oi-ic">🪟</div>
+  <svg class="oi-sticker" viewBox="0 0 100 100" width="80" height="80">
+  <g>
+    <circle cx="35" cy="42" r="12" fill="none" stroke="#8BA4B8" stroke-width="1.2">
+      <animateTransform attributeName="transform" type="translate" values="0,0;0,-3;0,0" dur="2.5s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="50" cy="42" r="12" fill="none" stroke="#8BA4B8" stroke-width="1.2" opacity="0.7">
+      <animateTransform attributeName="transform" type="translate" values="0,0;0,-4;0,0" dur="2.5s" begin="0.2s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="65" cy="42" r="12" fill="none" stroke="#8BA4B8" stroke-width="1.2" opacity="0.4">
+      <animateTransform attributeName="transform" type="translate" values="0,0;0,-3;0,0" dur="2.5s" begin="0.4s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  <path d="M25,62 Q40,54 50,62 T75,62" fill="none" stroke="#D4A843" stroke-width="1">
+    <animate attributeName="d" values="M25,62 Q40,54 50,62 T75,62;M25,62 Q40,70 50,62 T75,62;M25,62 Q40,54 50,62 T75,62" dur="3s" repeatCount="indefinite"/>
+  </path>
+</svg>
   <div class="oi-big">The Window</div>
   <div class="oi-sub">Trust the relational field</div>
   <div class="oi-desc">Your nervous system has a window — a range where you can stay present, connected, and responsive.<br><br>Outside that window, everything becomes harder. Learn to find your way back.</div>

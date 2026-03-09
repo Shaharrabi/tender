@@ -1,14 +1,15 @@
 /**
  * TeachingCardStack — Swipeable bite-sized teaching cards.
  *
- * Uses app SVG icons instead of Unicode emojis for consistent rendering.
+ * Uses app SVG icons with gentle bob animation for visual polish.
+ * Icons centered in circular tinted containers.
  *
  * Verified: FadeIn from react-native-reanimated (same import as step-detail.tsx)
  *   Shadows.elevated = { shadowOffset: {0,4}, shadowOpacity: 0.10 }
  *   Colors.borderLight = '#F0E6E0', Colors.border = '#E0D3CE'
  */
 
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   View,
   TouchableOpacity,
@@ -17,7 +18,15 @@ import {
   FlatList,
   type ViewToken,
 } from 'react-native';
-import Animated, { FadeIn } from 'react-native-reanimated';
+import Animated, {
+  FadeIn,
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withSequence,
+  withTiming,
+  Easing,
+} from 'react-native-reanimated';
 import TenderText from '@/components/ui/TenderText';
 import { Colors, Spacing, BorderRadius, Shadows } from '@/constants/theme';
 import type { TeachingCard } from '@/utils/steps/step-teaching-cards';
@@ -70,6 +79,41 @@ const ACCENT_ICON_MAP: Record<string, React.ComponentType<IconProps>> = {
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - Spacing.xl * 2;
+
+/** Animated accent icon with gentle bob — renders icon centered in a circle */
+function AnimatedAccentIcon({ IconComp, phaseColor }: { IconComp: React.ComponentType<IconProps>; phaseColor: string }) {
+  const bob = useSharedValue(0);
+  const pulse = useSharedValue(1);
+
+  useEffect(() => {
+    bob.value = withRepeat(
+      withSequence(
+        withTiming(-3.5, { duration: 1500, easing: Easing.inOut(Easing.sin) }),
+        withTiming(0, { duration: 1500, easing: Easing.inOut(Easing.sin) }),
+      ),
+      -1,
+      false
+    );
+    pulse.value = withRepeat(
+      withSequence(
+        withTiming(1.08, { duration: 2000, easing: Easing.inOut(Easing.sin) }),
+        withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.sin) }),
+      ),
+      -1,
+      false
+    );
+  }, []);
+
+  const animStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: bob.value }, { scale: pulse.value }],
+  }));
+
+  return (
+    <Animated.View style={[styles.accentCircle, { backgroundColor: phaseColor + '12' }, animStyle]}>
+      <IconComp size={24} color={phaseColor} />
+    </Animated.View>
+  );
+}
 
 interface TeachingCardStackProps {
   cards: TeachingCard[];
@@ -125,9 +169,7 @@ export default function TeachingCardStack({
             </View>
           </View>
           {IconComp && (
-            <View style={[styles.accentBox, { backgroundColor: phaseColor + '12' }]}>
-              <IconComp size={24} color={phaseColor} />
-            </View>
+            <AnimatedAccentIcon IconComp={IconComp} phaseColor={phaseColor} />
           )}
           <TenderText variant="headingS" color={Colors.text}>{item.title}</TenderText>
           <TenderText variant="body" color={Colors.textSecondary} style={styles.body}>{item.body}</TenderText>
@@ -190,10 +232,10 @@ const styles = StyleSheet.create({
   counter: { fontSize: 10, letterSpacing: 2 },
   dotsRow: { flexDirection: 'row', gap: 4 },
   dot: { width: 8, height: 8, borderRadius: 4 },
-  accentBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+  accentCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: Spacing.xs,

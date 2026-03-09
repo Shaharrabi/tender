@@ -79,6 +79,9 @@ canvas{position:absolute;inset:0;}
 .oi-note{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.6vw,9px);letter-spacing:2px;text-transform:uppercase;color:rgba(253,246,240,.25);margin-bottom:clamp(14px,3vh,20px);}
 .oi-btn{width:clamp(160px,48vw,190px);height:clamp(44px,11vw,52px);border-radius:26px;border:1.5px solid rgba(107,144,128,.5);background:transparent;font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(9px,2.2vw,11px);letter-spacing:3px;text-transform:uppercase;color:rgba(107,144,128,.85);cursor:pointer;transition:all .3s;}
 .oi-btn:active{background:rgba(107,144,128,.15);}
+@keyframes gentle-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes slow-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.08); opacity: 0.85; } }
+.oi-sticker { margin-bottom: clamp(10px,2.5vh,16px); }
 
 #practice-overlay{position:absolute;inset:0;z-index:70;background:rgba(42,74,58,.96);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .4s;}
 #practice-overlay.on{opacity:1;pointer-events:all;}
@@ -151,7 +154,18 @@ canvas{position:absolute;inset:0;}
 
   <div class="overlay on" id="o-intro">
     <div class="oi-b">✦ Zone VII · Step 7 ✦</div>
-    <div class="oi-ic">🌱</div>
+    <svg class="oi-sticker" viewBox="0 0 100 100" width="80" height="80">
+  <rect x="34" y="55" width="32" height="12" rx="2" fill="none" stroke="#A8B5A2" stroke-width="0.8"/>
+  <rect x="34" y="55" width="32" height="12" rx="2" fill="#A8B5A2" opacity="0.08"/>
+  <rect x="38" y="43" width="24" height="12" rx="2" fill="none" stroke="#A8B5A2" stroke-width="0.8"/>
+  <rect x="38" y="43" width="24" height="12" rx="2" fill="#A8B5A2" opacity="0.12"/>
+  <rect x="42" y="31" width="16" height="12" rx="2" fill="none" stroke="#A8B5A2" stroke-width="0.8"/>
+  <rect x="42" y="31" width="16" height="12" rx="2" fill="#A8B5A2" opacity="0.16"/>
+  <circle cx="50" cy="26" r="4" fill="#D4A843" opacity="0.5">
+    <animate attributeName="r" values="4;5;4" dur="2.5s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.4;0.7;0.4" dur="2.5s" repeatCount="indefinite"/>
+  </circle>
+</svg>
     <div class="oi-big">The Garden</div>
     <div class="oi-sub">Commit to relational practices</div>
     <div class="oi-desc">Relationships do not heal themselves. They need practices — rituals of connection, repair, and care.<br><br>Plant these practices carefully. A garden only grows when you tend it.</div>

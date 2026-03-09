@@ -80,6 +80,9 @@ canvas{position:absolute;inset:0;}
 .oi-note{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.6vw,9px);letter-spacing:2px;text-transform:uppercase;color:rgba(253,246,240,.25);margin-bottom:clamp(14px,3vh,20px);}
 .oi-btn{width:clamp(160px,48vw,190px);height:clamp(44px,11vw,52px);border-radius:26px;border:1.5px solid rgba(154,122,204,.5);background:transparent;font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(9px,2.2vw,11px);letter-spacing:3px;text-transform:uppercase;color:rgba(154,122,204,.85);cursor:pointer;transition:all .3s;}
 .oi-btn:active{background:rgba(154,122,204,.15);}
+@keyframes gentle-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes slow-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.08); opacity: 0.85; } }
+.oi-sticker { margin-bottom: clamp(10px,2.5vh,16px); }
 
 #practice-overlay{position:absolute;inset:0;z-index:70;background:rgba(26,21,32,.96);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .4s;}
 #practice-overlay.on{opacity:1;pointer-events:all;}
@@ -157,7 +160,21 @@ canvas{position:absolute;inset:0;}
 
   <div class="overlay on" id="o-intro">
     <div class="oi-b">✦ Zone V · Step 5 ✦</div>
-    <div class="oi-ic">🔊</div>
+    <svg class="oi-sticker" viewBox="0 0 100 100" width="80" height="80">
+  <rect x="35" y="22" width="30" height="48" rx="2" fill="none" stroke="#FAF7F2" stroke-width="0.8" opacity="0.6"/>
+  <rect x="35" y="22" width="10" height="48" rx="1" fill="none" stroke="#D4A843" stroke-width="0.6">
+    <animate attributeName="width" values="10;4;10" dur="3.5s" repeatCount="indefinite"/>
+  </rect>
+  <ellipse cx="50" cy="60" rx="14" ry="7" fill="#D4A843" opacity="0.12">
+    <animate attributeName="opacity" values="0.08;0.2;0.08" dur="3.5s" repeatCount="indefinite"/>
+  </ellipse>
+  <ellipse cx="50" cy="55" rx="10" ry="5" fill="#D4A843" opacity="0.18">
+    <animate attributeName="opacity" values="0.12;0.25;0.12" dur="3.5s" repeatCount="indefinite"/>
+  </ellipse>
+  <circle cx="42" cy="46" r="2" fill="#8B6B7B" opacity="0.6">
+    <animate attributeName="opacity" values="0.4;0.8;0.4" dur="3.5s" repeatCount="indefinite"/>
+  </circle>
+</svg>
     <div class="oi-big">The Cave<br>of Echoes</div>
     <div class="oi-sub">Share our truths</div>
     <div class="oi-desc">In this cave, you practice the sacred exchange — sending your truth and receiving theirs.<br><br>Keep the rally going. Communication is not about winning. It is about keeping the exchange alive.</div>
