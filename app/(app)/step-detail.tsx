@@ -177,7 +177,8 @@ function StepDetailScreenInner() {
 
   // Collapsible sections — smart collapse: only 'course' open by default
   const [expandedSections, setExpandedSections] = useState<Set<SectionId>>(
-    new Set(['course'])
+    new Set(['course', 'goals', 'practices', 'reflection', 'partnerExchange',
+             'partnerRound', 'togetherPractices', 'allCourses', 'couplePlay', 'growthPlan'])
   );
 
   const toggleSection = useCallback((sectionId: SectionId) => {
@@ -627,18 +628,6 @@ function StepDetailScreenInner() {
     );
   }
 
-  // Mood check-in gate — show before step content loads (skip for completed steps)
-  if (!moodChoice && !isCompletedStep && !loading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <MoodRouter
-          onSelect={(mood) => setMoodChoice(mood)}
-          phaseColor={phase?.color}
-        />
-      </SafeAreaView>
-    );
-  }
-
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
@@ -693,37 +682,27 @@ function StepDetailScreenInner() {
 
         {/* ═══ 2 — TEACHING ═══ */}
 
-        {/* Teaching Cards (bite-sized) — shown before full teaching */}
-        {teaching && !hasReadTeaching && teachingCards && (
-          <>
-            <StepStartHereCard
-              stepNumber={stepNumber}
-              readMinutes={teachingCards.readMinutes}
-              practiceCount={step.practices.length}
-              reflectionCount={step.reflectionPrompts?.length ?? 0}
-              phaseColor={phase.color}
-              onBeginReading={() => {}}
-            />
-            <TeachingCardStack
-              cards={teachingCards.cards}
-              phaseColor={phase.color}
-              onComplete={() => setHasReadTeaching(true)}
-            />
-          </>
-        )}
-
-        {/* Key Takeaway — always visible */}
+        {/* Key Takeaway — the one sentence to carry */}
         {keyTakeaway && (
           <KeyTakeawayCard takeaway={keyTakeaway} phaseColor={phase.color} />
         )}
 
-        {/* Original teaching (shown after cards complete OR if no card data) */}
-        {teaching && (hasReadTeaching || !teachingCards) && (
+        {/* Full teaching text — always visible */}
+        {teaching && (
           <Animated.View entering={FadeIn.delay(450).duration(600)} style={styles.teachingSection}>
             {teaching.teaching.map((paragraph, i) => (
               <Text key={i} style={styles.teachingParagraph}>{paragraph}</Text>
             ))}
           </Animated.View>
+        )}
+
+        {/* Teaching Cards — supplemental bite-sized cards */}
+        {teachingCards && (
+          <TeachingCardStack
+            cards={teachingCards.cards}
+            phaseColor={phase.color}
+            onComplete={() => setHasReadTeaching(true)}
+          />
         )}
 
         {/* Step Callback — Reference to previous step's work (Steps 2-12) */}

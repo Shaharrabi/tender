@@ -14,7 +14,7 @@ import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import TenderText from '@/components/ui/TenderText';
 import { Colors, Spacing } from '@/constants/theme';
 
-const STAGES = ['Read', 'Explore', 'Practice', 'Reflect', 'Complete'] as const;
+const STAGES = ['📖 Read', '🔍 Explore', '🎯 Practice', '💭 Reflect', '✅ Complete'] as const;
 
 interface StepProgressTrackerProps {
   currentStage: number;
