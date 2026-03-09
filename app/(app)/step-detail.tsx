@@ -176,6 +176,7 @@ function StepDetailScreenInner() {
 
   // Step strip scroll ref — auto-centers on current step
   const stepStripScrollRef = useRef<ScrollView>(null);
+  const [stripWidth, setStripWidth] = useState(0);
 
   // Main content ScrollView ref — for scrolling to top on tab change
   const mainScrollRef = useRef<ScrollView>(null);
@@ -207,16 +208,16 @@ function StepDetailScreenInner() {
   }, []);
 
   // Auto-scroll the 12-step strip to center on current step
-  const scrollStripToCenter = useCallback(() => {
-    if (stepStripScrollRef.current) {
-      const screenW = Dimensions.get('window').width;
-      const ITEM_WIDTH = 48; // circle (36-44px) + gap (8px) average
-      const padH = screenW / 2 - 22;
-      const itemCenter = padH + (stepNumber - 1) * ITEM_WIDTH + ITEM_WIDTH / 2;
-      const scrollX = itemCenter - screenW / 2;
-      stepStripScrollRef.current.scrollTo({ x: Math.max(0, scrollX), animated: false });
-    }
-  }, [stepNumber]);
+  const scrollStripToCenter = useCallback((contentW?: number, containerW?: number) => {
+    if (!stepStripScrollRef.current) return;
+    const w = containerW || stripWidth || Dimensions.get('window').width;
+    if (w <= 0) return;
+    const ITEM_WIDTH = 48; // circle (36-44px) + gap (8px) average
+    const padH = w / 2 - 22;
+    const itemCenter = padH + (stepNumber - 1) * ITEM_WIDTH + ITEM_WIDTH / 2;
+    const scrollX = itemCenter - w / 2;
+    stepStripScrollRef.current.scrollTo({ x: Math.max(0, scrollX), animated: false });
+  }, [stepNumber, stripWidth]);
 
   const step = TWELVE_STEPS.find((s) => s.stepNumber === stepNumber);
   const phase = getPhaseForStep(stepNumber);
@@ -1519,9 +1520,10 @@ function StepDetailScreenInner() {
             ref={stepStripScrollRef}
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.stepStripScroll}
+            contentContainerStyle={[styles.stepStripScroll, stripWidth > 0 && { paddingHorizontal: stripWidth / 2 - 22 }]}
             style={styles.stepStripScrollOuter}
             onContentSizeChange={scrollStripToCenter}
+            onLayout={(e) => setStripWidth(e.nativeEvent.layout.width)}
           >
             {TWELVE_STEPS.map((s) => {
               const sp = stepProgress.find((p) => p.stepNumber === s.stepNumber);
@@ -1964,7 +1966,7 @@ const styles = StyleSheet.create({
     maxWidth: '100%',
   },
   stepStripScroll: {
-    paddingHorizontal: Dimensions.get('window').width / 2 - 22,
+    paddingHorizontal: Spacing.lg,
     gap: 8,
     alignItems: 'center',
   },
