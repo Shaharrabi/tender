@@ -161,9 +161,12 @@ export function ConversationPrompts({ assessmentType, hasGap }: ConversationProm
         activeOpacity={0.7}
         accessibilityRole="button"
       >
-        <TenderText variant="bodySmall" color={Colors.accent} style={{ fontWeight: '600' }}>
-          {'\uD83D\uDCAC'} Start a Conversation About This {expanded ? '\u25BE' : '\u25B8'}
-        </TenderText>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <ChatBubbleIcon size={14} color={Colors.accent} />
+          <TenderText variant="bodySmall" color={Colors.accent} style={{ fontWeight: '600' }}>
+            Start a Conversation About This {expanded ? '\u25BE' : '\u25B8'}
+          </TenderText>
+        </View>
       </TouchableOpacity>
       {expanded && (
         <View style={cpStyles.list}>

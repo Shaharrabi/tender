@@ -86,7 +86,7 @@ export default function DailyRhythmSection({
 
   const handlePracticeFromWoT = useCallback((practiceId: string) => {
     SoundHaptics.tapSoft();
-    router.push({ pathname: '/(app)/exercise', params: { exerciseId: practiceId } } as any);
+    router.push({ pathname: '/(app)/exercise', params: { id: practiceId } } as any);
   }, [router]);
 
   // ── Collapsed summary ──────────────────────────────────

@@ -59,7 +59,7 @@ export const PRACTICE_METADATA: Record<string, PracticeMetadataEntry> = {
     healingPhase: 'feeling',
     bottleneckTarget: 'dysregulation',
   },
-  'window-of-tolerance-check': {
+  'window-check': {
     fourMovement: 'recognition',
     vulnerabilityLevel: 'low',
     bestEntryStates: ['ACTIVATED', 'IN_WINDOW', 'SHUTDOWN', 'MIXED'],
