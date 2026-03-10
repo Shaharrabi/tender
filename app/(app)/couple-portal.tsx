@@ -132,29 +132,14 @@ function CouplePortalScreen() {
   const [portraitError, setPortraitError] = useState<string | null>(null);
   const [partnerSharedAssessments, setPartnerSharedAssessments] = useState<string[]>([]);
 
-  // Tab/section state
+  // Tab state — shows one section at a time, like personal portrait
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
   const scrollRef = useRef<ScrollView>(null);
-  const sectionYPositions = useRef<Record<TabKey, number>>({
-    overview: 0, dance: 0, together: 0,
-    assessments: 0, insights: 0, growth: 0, anchors: 0,
-  });
 
-  const jumpToSection = useCallback((key: TabKey) => {
+  const handleTabChange = useCallback((key: TabKey) => {
     setActiveTab(key);
-    // On web: find the nativeID element and scroll to it
-    if (Platform.OS === 'web') {
-      setTimeout(() => {
-        const el = document.getElementById(`section-${key}`);
-        el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 50);
-    } else {
-      // On native: use stored Y positions
-      const y = sectionYPositions.current[key];
-      if (y > 0 && scrollRef.current) {
-        scrollRef.current.scrollTo({ y: Math.max(0, y - 10), animated: true });
-      }
-    }
+    // Scroll to top when switching tabs
+    scrollRef.current?.scrollTo({ y: 0, animated: false });
   }, []);
 
   // Individual portraits (needed for deep portrait gen)
@@ -589,6 +574,25 @@ function CouplePortalScreen() {
 
   const renderOverview = () => (
     <View style={styles.tabContent}>
+      {/* 60-second digest */}
+      {dp && (() => {
+        const digest = generateCoupleDigest();
+        if (!digest) return null;
+        return (
+          <View style={styles.digestCard}>
+            <View style={styles.digestHeader}>
+              <HourglassIcon size={14} color={Colors.accent} />
+              <TenderText variant="label" color={Colors.accent} style={{ letterSpacing: 1.5, fontSize: 10 }}>
+                YOUR RELATIONSHIP IN 60 SECONDS
+              </TenderText>
+            </View>
+            <TenderText variant="body" color={Colors.textSecondary} style={{ lineHeight: 24 }}>
+              {digest}
+            </TenderText>
+          </View>
+        );
+      })()}
+
       {/* Fallback: show what's missing when deep portrait can't generate */}
       {!dp && (
         <View style={styles.synthesisCard}>
@@ -1536,113 +1540,18 @@ function CouplePortalScreen() {
     return parts.join(' ');
   };
 
-  /** Section header — visual divider with icon, always visible */
-  const SectionDividerHeader = ({ tabKey, title, Icon }: { tabKey: TabKey; title: string; Icon: IconComponent }) => {
-    const info = COUPLE_SECTION_SUMMARIES[tabKey];
-    const color = info?.color ?? Colors.primary;
-    return (
-      <View
-        nativeID={`section-${tabKey}`}
-        style={styles.sectionDivider}
-        onLayout={(e) => { sectionYPositions.current[tabKey] = e.nativeEvent.layout.y; }}
-      >
-        <View style={styles.sectionDividerHeader}>
-          <View style={[styles.sectionDividerDot, { backgroundColor: color }]} />
-          <Icon size={16} color={color} />
-          <TenderText variant="headingM" color={Colors.text} style={{ flex: 1 }}>{title}</TenderText>
-        </View>
-        {info && (
-          <SectionSummaryHeader
-            summary={info.summary}
-            readMinutes={info.readMinutes}
-            accentColor={color}
-          />
-        )}
-      </View>
-    );
-  };
-
-  const renderAllSections = () => {
-    const sections: React.ReactNode[] = [];
-
-    // Couple Digest — 60-second summary
-    if (dp) {
-      const digest = generateCoupleDigest();
-      if (digest) {
-        sections.push(
-          <View key="digest" style={styles.digestCard}>
-            <View style={styles.digestHeader}>
-              <HourglassIcon size={14} color={Colors.accent} />
-              <TenderText variant="label" color={Colors.accent} style={{ letterSpacing: 1.5, fontSize: 10 }}>
-                YOUR RELATIONSHIP IN 60 SECONDS
-              </TenderText>
-            </View>
-            <TenderText variant="body" color={Colors.textSecondary} style={{ lineHeight: 24 }}>
-              {digest}
-            </TenderText>
-          </View>
-        );
-      }
+  /** Render the active tab content — one section at a time, like personal portrait */
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'overview':   return renderOverview();
+      case 'dance':      return renderDance();
+      case 'together':   return renderTogether();
+      case 'assessments': return renderAssessments();
+      case 'insights':   return renderInsights();
+      case 'growth':     return renderGrowth();
+      case 'anchors':    return renderAnchors();
+      default:           return renderOverview();
     }
-
-    // Tab bar as jump-to navigation
-    sections.push(
-      <View key="nav" style={styles.tabBarWrapper}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabBarContent}>
-          {TABS.map((tab) => {
-            const isActive = activeTab === tab.key;
-            return (
-              <TouchableOpacity
-                key={tab.key}
-                style={[
-                  styles.tabItem,
-                  { backgroundColor: tab.color + (isActive ? '20' : '08'), borderColor: tab.color + (isActive ? '60' : '25') },
-                ]}
-                onPress={() => jumpToSection(tab.key)}
-                activeOpacity={0.7}
-                accessibilityRole="button"
-              >
-                <View style={styles.tabIcon}>
-                  <tab.Icon size={14} color={isActive ? tab.color : Colors.textMuted} />
-                </View>
-                <TenderText variant="caption" color={isActive ? tab.color : Colors.textSecondary}>{tab.label}</TenderText>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </View>
-    );
-
-    // Audio Library — at top for easy access
-    if (myPortrait) {
-      sections.push(
-        <View key="audio">
-          <AudioLibrary portrait={myPortrait} couplePortrait={dp} />
-        </View>
-      );
-    }
-
-    // All sections — always visible, with section dividers
-    const SECTION_MAP: { key: TabKey; title: string; Icon: IconComponent; render: () => React.ReactNode }[] = [
-      { key: 'overview',    title: 'Overview',    Icon: HeartPulseIcon, render: renderOverview },
-      { key: 'dance',       title: 'Your Dance',  Icon: LightningIcon,  render: renderDance },
-      { key: 'together',    title: 'Together',    Icon: LinkIcon,        render: renderTogether },
-      { key: 'assessments', title: 'Assessments', Icon: CompassIcon,     render: renderAssessments },
-      { key: 'insights',    title: 'Insights',    Icon: SparkleIcon,     render: renderInsights },
-      { key: 'growth',      title: 'Growth',      Icon: SeedlingIcon,    render: renderGrowth },
-      { key: 'anchors',     title: 'Anchors',     Icon: LeafIcon,        render: renderAnchors },
-    ];
-
-    for (const sec of SECTION_MAP) {
-      sections.push(
-        <View key={`sec-${sec.key}`}>
-          <SectionDividerHeader tabKey={sec.key} title={sec.title} Icon={sec.Icon} />
-          {sec.render()}
-        </View>
-      );
-    }
-
-    return sections;
   };
 
   // ─── Main Render ─────────────────────────────────────
@@ -1699,8 +1608,50 @@ function CouplePortalScreen() {
           </View>
         )}
 
-        {/* All Sections — continuous scrollable layout */}
-        {renderAllSections()}
+        {/* Tab Bar — switch between sections */}
+        <View style={styles.tabBarWrapper}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabBarContent}>
+            {TABS.map((tab) => {
+              const isActive = activeTab === tab.key;
+              return (
+                <TouchableOpacity
+                  key={tab.key}
+                  style={[
+                    styles.tabItem,
+                    { backgroundColor: tab.color + (isActive ? '20' : '08'), borderColor: tab.color + (isActive ? '60' : '25') },
+                  ]}
+                  onPress={() => handleTabChange(tab.key)}
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                >
+                  <View style={styles.tabIcon}>
+                    <tab.Icon size={14} color={isActive ? tab.color : Colors.textMuted} />
+                  </View>
+                  <TenderText variant="caption" color={isActive ? tab.color : Colors.textSecondary}>{tab.label}</TenderText>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
+
+        {/* Section summary header */}
+        {(() => {
+          const info = COUPLE_SECTION_SUMMARIES[activeTab];
+          if (!info) return null;
+          return (
+            <SectionSummaryHeader
+              summary={info.summary}
+              readMinutes={info.readMinutes}
+              accentColor={info.color}
+            />
+          );
+        })()}
+
+        {/* Active tab content — one section at a time */}
+        {renderTabContent()}
+
+        {/* Audio Library — at bottom of every tab */}
+        {myPortrait && <AudioLibrary portrait={myPortrait} couplePortrait={dp} />}
 
         <View style={{ height: 160 }} />
       </ScrollView>
@@ -1779,25 +1730,6 @@ const styles = StyleSheet.create({
   // Tab Content
   tabContent: {
     gap: Spacing.sm,
-  },
-
-  // Section Dividers
-  sectionDivider: {
-    marginTop: Spacing.xl,
-    marginBottom: Spacing.sm,
-    paddingTop: Spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: Colors.borderLight,
-  },
-  sectionDividerHeader: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    gap: Spacing.sm,
-  },
-  sectionDividerDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
   },
 
   // Couple Digest
