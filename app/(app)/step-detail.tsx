@@ -71,7 +71,7 @@ import {
   getPartnerStepResponse,
   savePartnerExchangeFollowUp,
 } from '@/services/steps';
-import { getMyCouple, isSelfCouple } from '@/services/couples';
+import { getMyCouple, isSelfCouple, getDeepCouplePortrait } from '@/services/couples';
 import { getPortrait, savePortrait, extractSupplementScores } from '@/services/portrait';
 import { generatePortrait, isPortraitStale } from '@/utils/portrait/portrait-generator';
 import { supabase } from '@/services/supabase';
@@ -94,6 +94,7 @@ import CouplePlayCard from '@/components/growth/CouplePlayCard';
 import GrowthPlanContent from '@/components/growth/GrowthPlanContent';
 import StepEdgeProgress from '@/components/growth/StepEdgeProgress';
 import StepPortraitInsight from '@/components/growth/StepPortraitInsight';
+import StepVisualizationInsert from '@/components/growth/StepVisualizationInsert';
 import StepCompletionRitual from '@/components/growth/StepCompletionRitual';
 import { fetchAllScores } from '@/services/portrait';
 import { getGrowthEdgeProgress } from '@/services/growth';
@@ -150,6 +151,10 @@ function StepDetailScreenInner() {
   const [portrait, setPortrait] = useState<IndividualPortrait | null>(null);
   const [exchangeFollowUp, setExchangeFollowUp] = useState('');
   const [exchangeFollowUpSaved, setExchangeFollowUpSaved] = useState(false);
+
+  // Visualization data — raw scores + deep couple portrait for chart inserts
+  const [rawScores, setRawScores] = useState<Record<string, { id: string; scores: any }> | null>(null);
+  const [couplePortrait, setCouplePortrait] = useState<any>(null);
 
   // Growth edge progress for this step
   const [edgeProgressMap, setEdgeProgressMap] = useState<Record<string, GrowthEdgeProgress>>({});
@@ -338,16 +343,19 @@ function StepDetailScreenInner() {
         setStepContext(null);
       }
 
-      // Fetch raw scores for early insights (only when no portrait)
-      if (!userPortrait && assessmentRows.length > 0) {
+      // Fetch raw scores for early insights + visualization charts
+      if (assessmentRows.length > 0) {
         try {
           const scores = await fetchAllScores(user.id);
           setAssessmentScores(scores);
+          setRawScores(scores);
         } catch {
           setAssessmentScores(null);
+          setRawScores(null);
         }
       } else {
         setAssessmentScores(null);
+        setRawScores(null);
       }
 
       // Find current active step
@@ -393,6 +401,15 @@ function StepDetailScreenInner() {
         setCouplePlayResponse(cpNotes?.couplePlayResponse ?? null);
         setCouplePlayFollowUp(cpNotes?.couplePlayFollowUp ?? null);
         setCouplePlayPartnerResponse(null); // TODO: load from partner's step_progress
+        // Fetch deep couple portrait for visualization inserts
+        try {
+          const deepCP = await getDeepCouplePortrait(couple.id);
+          setCouplePortrait(deepCP);
+        } catch {
+          setCouplePortrait(null);
+        }
+      } else {
+        setCouplePortrait(null);
       }
 
       // Load growth edge progress for StepEdgeProgress component
@@ -798,6 +815,20 @@ function StepDetailScreenInner() {
             <StepPortraitInsight
               stepNumber={stepNumber}
               portrait={portrait}
+              phaseColor={phase.color}
+            />
+          </Animated.View>
+        )}
+
+        {/* Visualization Insert — SVG charts from portrait/couple data */}
+        {(portrait || rawScores) && (
+          <Animated.View entering={FadeIn.delay(bridge ? 680 : 620).duration(600)}>
+            <StepVisualizationInsert
+              stepNumber={stepNumber}
+              portrait={portrait}
+              rawScores={rawScores}
+              couplePortrait={couplePortrait}
+              isCoupled={isCoupled}
               phaseColor={phase.color}
             />
           </Animated.View>
