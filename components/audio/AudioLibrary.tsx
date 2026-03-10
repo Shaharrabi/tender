@@ -39,13 +39,16 @@ import PortraitAudioCard from './PortraitAudioCard';
 interface AudioLibraryProps {
   portrait: IndividualPortrait;
   couplePortrait?: DeepCouplePortrait | null;
+  /** Start with the library expanded (default: false) */
+  defaultExpanded?: boolean;
 }
 
 export default function AudioLibrary({
   portrait,
   couplePortrait,
+  defaultExpanded = false,
 }: AudioLibraryProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const hasCoupleTracks = !!couplePortrait;
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     // Open the first group by default — couple tracks if available

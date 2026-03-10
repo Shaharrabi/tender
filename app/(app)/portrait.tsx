@@ -910,8 +910,8 @@ export default function PortraitScreen() {
             <MatrixTab allScores={allScoresMap} portrait={portrait} />
           )}
 
-          {/* Portrait Audio Library — personalized tracks based on portrait data */}
-          <AudioLibrary portrait={portrait} />
+          {/* Portrait Audio Library — at bottom for non-overview tabs (overview has it inline) */}
+          {activeTab !== 'overview' && <AudioLibrary portrait={portrait} />}
 
           {/* Try This Today CTA — shows at bottom of every tab */}
           {(() => {
@@ -988,6 +988,9 @@ function OverviewTab({
     <Animated.View style={{ opacity: fadeAnim }}>
       {/* Portrait Digest — 60 second summary */}
       <PortraitDigest portrait={portrait} />
+
+      {/* Audio Library — expanded by default on overview */}
+      <AudioLibrary portrait={portrait} defaultExpanded />
 
       {/* Landing hero */}
       <View style={st.heroSection}>
