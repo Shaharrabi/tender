@@ -879,7 +879,6 @@ export default function PortraitScreen() {
           })()}
 
           {activeTab === 'overview' && (
-            <>
               <OverviewTab
                 portrait={portrait}
                 userName={userName}
@@ -889,9 +888,6 @@ export default function PortraitScreen() {
                 growthBoostResult={growthBoostResult}
                 journeyData={journeyData}
               />
-              {/* Audio Library — easy access at top of overview */}
-              <AudioLibrary portrait={portrait} />
-            </>
           )}
           {activeTab === 'scores' && (
             <>
@@ -2384,7 +2380,7 @@ const st = StyleSheet.create({
   },
   contentContainer: {
     padding: Spacing.lg,
-    paddingBottom: Spacing.scrollPadBottom,
+    paddingBottom: 200,
   },
 
   // ── Hero ──

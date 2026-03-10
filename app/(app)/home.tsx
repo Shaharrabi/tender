@@ -2103,7 +2103,8 @@ const styles = StyleSheet.create({
   // ── Sections ──
   section: {
     paddingHorizontal: Spacing.xl,
-    marginBottom: Spacing.lg,
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.xl,
   },
   sectionTitle: {
     fontSize: FontSizes.headingM,

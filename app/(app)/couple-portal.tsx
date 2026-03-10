@@ -21,14 +21,7 @@ import {
   Dimensions,
   Platform,
   Alert,
-  LayoutAnimation,
-  UIManager,
 } from 'react-native';
-
-// Enable LayoutAnimation on Android
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '@/context/AuthContext';
@@ -141,42 +134,26 @@ function CouplePortalScreen() {
 
   // Tab/section state
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
-  const [expandedSections, setExpandedSections] = useState<Record<TabKey, boolean>>({
-    overview: true,
-    dance: false,
-    together: false,
-    assessments: false,
-    insights: false,
-    growth: false,
-    anchors: false,
-  });
   const scrollRef = useRef<ScrollView>(null);
   const sectionYPositions = useRef<Record<TabKey, number>>({
     overview: 0, dance: 0, together: 0,
     assessments: 0, insights: 0, growth: 0, anchors: 0,
   });
 
-  const toggleSection = useCallback((key: TabKey) => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setExpandedSections((prev) => ({ ...prev, [key]: !prev[key] }));
-  }, []);
-
   const jumpToSection = useCallback((key: TabKey) => {
-    // Expand the section if collapsed
-    setExpandedSections((prev) => {
-      if (!prev[key]) {
-        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-        return { ...prev, [key]: true };
-      }
-      return prev;
-    });
     setActiveTab(key);
-    // Scroll to the section using stored Y position
-    const y = sectionYPositions.current[key];
-    if (y > 0 && scrollRef.current) {
+    // On web: find the nativeID element and scroll to it
+    if (Platform.OS === 'web') {
       setTimeout(() => {
-        scrollRef.current?.scrollTo({ y: Math.max(0, y - 10), animated: true });
-      }, 100); // small delay to let LayoutAnimation settle
+        const el = document.getElementById(`section-${key}`);
+        el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 50);
+    } else {
+      // On native: use stored Y positions
+      const y = sectionYPositions.current[key];
+      if (y > 0 && scrollRef.current) {
+        scrollRef.current.scrollTo({ y: Math.max(0, y - 10), animated: true });
+      }
     }
   }, []);
 
@@ -1559,38 +1536,22 @@ function CouplePortalScreen() {
     return parts.join(' ');
   };
 
-  /** Collapsible section header — tappable to expand/collapse */
-  const CollapsibleSectionHeader = ({ tabKey, title, Icon }: { tabKey: TabKey; title: string; Icon: IconComponent }) => {
+  /** Section header — visual divider with icon, always visible */
+  const SectionDividerHeader = ({ tabKey, title, Icon }: { tabKey: TabKey; title: string; Icon: IconComponent }) => {
     const info = COUPLE_SECTION_SUMMARIES[tabKey];
-    const isOpen = expandedSections[tabKey];
     const color = info?.color ?? Colors.primary;
     return (
       <View
+        nativeID={`section-${tabKey}`}
         style={styles.sectionDivider}
         onLayout={(e) => { sectionYPositions.current[tabKey] = e.nativeEvent.layout.y; }}
       >
-        <TouchableOpacity
-          style={styles.sectionDividerTouchable}
-          onPress={() => toggleSection(tabKey)}
-          activeOpacity={0.7}
-          accessibilityRole="button"
-          accessibilityState={{ expanded: isOpen }}
-        >
-          <View style={styles.sectionDividerHeader}>
-            <View style={[styles.sectionDividerDot, { backgroundColor: color }]} />
-            <Icon size={16} color={color} />
-            <TenderText variant="headingM" color={Colors.text} style={{ flex: 1 }}>{title}</TenderText>
-            <TenderText variant="body" color={Colors.textMuted} style={{ fontSize: 16 }}>
-              {isOpen ? '\u25B4' : '\u25BE'}
-            </TenderText>
-          </View>
-          {!isOpen && info && (
-            <TenderText variant="caption" color={Colors.textMuted} style={styles.collapsedHint} numberOfLines={1}>
-              {info.summary}
-            </TenderText>
-          )}
-        </TouchableOpacity>
-        {isOpen && info && (
+        <View style={styles.sectionDividerHeader}>
+          <View style={[styles.sectionDividerDot, { backgroundColor: color }]} />
+          <Icon size={16} color={color} />
+          <TenderText variant="headingM" color={Colors.text} style={{ flex: 1 }}>{title}</TenderText>
+        </View>
+        {info && (
           <SectionSummaryHeader
             summary={info.summary}
             readMinutes={info.readMinutes}
@@ -1629,22 +1590,22 @@ function CouplePortalScreen() {
       <View key="nav" style={styles.tabBarWrapper}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabBarContent}>
           {TABS.map((tab) => {
-            const isOpen = expandedSections[tab.key];
+            const isActive = activeTab === tab.key;
             return (
               <TouchableOpacity
                 key={tab.key}
                 style={[
                   styles.tabItem,
-                  { backgroundColor: tab.color + (isOpen ? '20' : '08'), borderColor: tab.color + (isOpen ? '60' : '25') },
+                  { backgroundColor: tab.color + (isActive ? '20' : '08'), borderColor: tab.color + (isActive ? '60' : '25') },
                 ]}
                 onPress={() => jumpToSection(tab.key)}
                 activeOpacity={0.7}
                 accessibilityRole="button"
               >
                 <View style={styles.tabIcon}>
-                  <tab.Icon size={14} color={isOpen ? tab.color : Colors.textMuted} />
+                  <tab.Icon size={14} color={isActive ? tab.color : Colors.textMuted} />
                 </View>
-                <TenderText variant="caption" color={isOpen ? tab.color : Colors.textSecondary}>{tab.label}</TenderText>
+                <TenderText variant="caption" color={isActive ? tab.color : Colors.textSecondary}>{tab.label}</TenderText>
               </TouchableOpacity>
             );
           })}
@@ -1661,7 +1622,7 @@ function CouplePortalScreen() {
       );
     }
 
-    // Collapsible sections
+    // All sections — always visible, with section dividers
     const SECTION_MAP: { key: TabKey; title: string; Icon: IconComponent; render: () => React.ReactNode }[] = [
       { key: 'overview',    title: 'Overview',    Icon: HeartPulseIcon, render: renderOverview },
       { key: 'dance',       title: 'Your Dance',  Icon: LightningIcon,  render: renderDance },
@@ -1675,8 +1636,8 @@ function CouplePortalScreen() {
     for (const sec of SECTION_MAP) {
       sections.push(
         <View key={`sec-${sec.key}`}>
-          <CollapsibleSectionHeader tabKey={sec.key} title={sec.title} Icon={sec.Icon} />
-          {expandedSections[sec.key] && sec.render()}
+          <SectionDividerHeader tabKey={sec.key} title={sec.title} Icon={sec.Icon} />
+          {sec.render()}
         </View>
       );
     }
@@ -1741,7 +1702,7 @@ function CouplePortalScreen() {
         {/* All Sections — continuous scrollable layout */}
         {renderAllSections()}
 
-        <View style={{ height: 120 }} />
+        <View style={{ height: 160 }} />
       </ScrollView>
       {dp?.coupleAnchors && <AnchorSOSButton anchors={dp.coupleAnchors} />}
       <QuickLinksBar />
@@ -1820,13 +1781,13 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
 
-  // Section Dividers (collapsible sections)
+  // Section Dividers
   sectionDivider: {
-    marginTop: Spacing.lg,
+    marginTop: Spacing.xl,
     marginBottom: Spacing.sm,
-  },
-  sectionDividerTouchable: {
-    paddingVertical: Spacing.sm,
+    paddingTop: Spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderLight,
   },
   sectionDividerHeader: {
     flexDirection: 'row' as const,
@@ -1837,10 +1798,6 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-  },
-  collapsedHint: {
-    marginTop: 4,
-    marginLeft: 30,
   },
 
   // Couple Digest
