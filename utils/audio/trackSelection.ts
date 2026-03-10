@@ -234,6 +234,18 @@ export interface TrackGroup {
 export function groupTracksBySection(tracks: PortraitTrack[]): TrackGroup[] {
   const groups: TrackGroup[] = [];
 
+  // Couple tracks first — most relevant when in couple portal
+  const couple = tracks.filter((t) =>
+    ['couple-dance', 'couple-constellation'].includes(t.category)
+  );
+  if (couple.length > 0) {
+    groups.push({
+      label: 'Your Dance Together',
+      subtitle: 'How your patterns interact as a couple',
+      tracks: couple,
+    });
+  }
+
   const orientation = tracks.filter((t) => t.category === 'orientation');
   if (orientation.length > 0) {
     groups.push({
@@ -260,17 +272,6 @@ export function groupTracksBySection(tracks: PortraitTrack[]): TrackGroup[] {
       label: 'What We Noticed',
       subtitle: 'Additional patterns detected in your portrait data',
       tracks: detections,
-    });
-  }
-
-  const couple = tracks.filter((t) =>
-    ['couple-dance', 'couple-constellation'].includes(t.category)
-  );
-  if (couple.length > 0) {
-    groups.push({
-      label: 'Your Dance Together',
-      subtitle: 'How your patterns interact as a couple',
-      tracks: couple,
     });
   }
 

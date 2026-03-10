@@ -46,8 +46,12 @@ export default function AudioLibrary({
   couplePortrait,
 }: AudioLibraryProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const hasCoupleTracks = !!couplePortrait;
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
-    'Getting Started': true, // first group open by default
+    // Open the first group by default — couple tracks if available
+    ...(hasCoupleTracks
+      ? { 'Your Dance Together': true }
+      : { 'Getting Started': true }),
   });
 
   // ── Compute tracks from portrait data ──

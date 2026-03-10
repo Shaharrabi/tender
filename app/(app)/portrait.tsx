@@ -879,15 +879,19 @@ export default function PortraitScreen() {
           })()}
 
           {activeTab === 'overview' && (
-            <OverviewTab
-              portrait={portrait}
-              userName={userName}
-              overallScore={overallScore}
-              onNavigate={handleTabChange}
-              rawScores={rawScores}
-              growthBoostResult={growthBoostResult}
-              journeyData={journeyData}
-            />
+            <>
+              <OverviewTab
+                portrait={portrait}
+                userName={userName}
+                overallScore={overallScore}
+                onNavigate={handleTabChange}
+                rawScores={rawScores}
+                growthBoostResult={growthBoostResult}
+                journeyData={journeyData}
+              />
+              {/* Audio Library — easy access at top of overview */}
+              <AudioLibrary portrait={portrait} />
+            </>
           )}
           {activeTab === 'scores' && (
             <>
