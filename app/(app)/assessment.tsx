@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   Alert,
   ScrollView,
+  Animated,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -57,6 +58,8 @@ export default function AssessmentScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [showInstructions, setShowInstructions] = useState(true);
   const [sectionBreak, setSectionBreak] = useState<AssessmentSection | null>(null);
+  const questionOpacity = useRef(new Animated.Value(1)).current;
+  const autoAdvanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     loadProgress();
@@ -96,6 +99,32 @@ export default function AssessmentScreen() {
     setResponses(newResponses);
     saveProgress(newResponses, currentIndex);
   };
+
+  /** Auto-advance after likert/choice selection with a brief delay + fade */
+  const handleAutoAdvance = useCallback(() => {
+    const isLast = currentIndex >= config.totalQuestions - 1;
+    if (isLast) return;
+
+    // Cancel any pending timer (e.g. user taps twice quickly)
+    if (autoAdvanceTimer.current) clearTimeout(autoAdvanceTimer.current);
+
+    autoAdvanceTimer.current = setTimeout(() => {
+      // Fade out
+      Animated.timing(questionOpacity, {
+        toValue: 0,
+        duration: 150,
+        useNativeDriver: true,
+      }).start(() => {
+        handleNext();
+        // Fade in
+        Animated.timing(questionOpacity, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }).start();
+      });
+    }, 350);
+  }, [currentIndex, config.totalQuestions]);
 
   const findNextSection = (fromIndex: number, toIndex: number): AssessmentSection | null => {
     if (!config.sections) return null;
@@ -313,15 +342,18 @@ export default function AssessmentScreen() {
           style={styles.questionScroll}
           contentContainerStyle={styles.questionScrollContent}
         >
-          <Text style={styles.questionText}>"{question.text}"</Text>
+          <Animated.View style={{ opacity: questionOpacity }}>
+            <Text style={styles.questionText}>"{question.text}"</Text>
 
-          {/* Input based on type — delegated to shared QuestionRenderer */}
-          <QuestionRenderer
-            question={question}
-            currentAnswer={currentAnswer}
-            onSelect={handleSelect}
-            defaultLikertScale={config.likertScale}
-          />
+            {/* Input based on type — delegated to shared QuestionRenderer */}
+            <QuestionRenderer
+              question={question}
+              currentAnswer={currentAnswer}
+              onSelect={handleSelect}
+              defaultLikertScale={config.likertScale}
+              onAutoAdvance={handleAutoAdvance}
+            />
+          </Animated.View>
         </ScrollView>
 
         {/* Navigation */}
@@ -354,7 +386,7 @@ export default function AssessmentScreen() {
               style={{ flex: 1 }}
               accessibilityLabel={submitting ? 'Submitting assessment' : 'See Results'}
             />
-          ) : (
+          ) : (question.inputType === 'text' || question.inputType === 'ranking') ? (
             <TouchableOpacity
               style={[
                 styles.navButton,
@@ -367,7 +399,7 @@ export default function AssessmentScreen() {
                 {hasAnswer ? 'Next' : 'Skip'}
               </Text>
             </TouchableOpacity>
-          )}
+          ) : null}
         </View>
       </View>
       <QuickLinksBar />

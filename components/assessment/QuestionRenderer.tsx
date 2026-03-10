@@ -21,6 +21,8 @@ interface QuestionRendererProps {
   currentAnswer: any;
   onSelect: (value: any) => void;
   defaultLikertScale?: LikertOption[];
+  /** Called after a likert/choice selection — lets the parent auto-advance */
+  onAutoAdvance?: () => void;
 }
 
 export default function QuestionRenderer({
@@ -28,6 +30,7 @@ export default function QuestionRenderer({
   currentAnswer,
   onSelect,
   defaultLikertScale,
+  onAutoAdvance,
 }: QuestionRendererProps) {
   return (
     <View>
@@ -43,7 +46,7 @@ export default function QuestionRenderer({
                 styles.likertOption,
                 currentAnswer === item.value && styles.likertOptionSelected,
               ]}
-              onPress={() => onSelect(item.value)}
+              onPress={() => { onSelect(item.value); onAutoAdvance?.(); }}
               accessibilityRole="radio"
               accessibilityLabel={`${item.label}, option ${item.value} of ${scale.length}`}
               accessibilityState={{ selected: currentAnswer === item.value }}
@@ -101,7 +104,7 @@ export default function QuestionRenderer({
                 styles.choiceOption,
                 currentAnswer === choice.key && styles.choiceOptionSelected,
               ]}
-              onPress={() => onSelect(choice.key)}
+              onPress={() => { onSelect(choice.key); onAutoAdvance?.(); }}
               accessibilityRole="radio"
               accessibilityLabel={`${choice.text}, option ${choiceIndex + 1} of ${question.choices!.length}`}
               accessibilityState={{ selected: currentAnswer === choice.key }}

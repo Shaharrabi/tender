@@ -149,6 +149,10 @@ export default function TenderAssessmentScreen() {
   // Ref for debounced save
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Question fade for auto-advance
+  const questionOpacity = useRef(new Animated.Value(1)).current;
+  const autoAdvanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Celebration animation for completion screen
   const celebrationScale = useRef(new Animated.Value(0.3)).current;
   const celebrationOpacity = useRef(new Animated.Value(0)).current;
@@ -404,6 +408,31 @@ export default function TenderAssessmentScreen() {
       });
     }
   };
+
+  /** Auto-advance after likert/choice selection with a brief delay + fade */
+  const handleAutoAdvance = useCallback(() => {
+    if (isLastQuestionInSection) return;
+
+    // Cancel any pending timer (e.g. user taps twice quickly)
+    if (autoAdvanceTimer.current) clearTimeout(autoAdvanceTimer.current);
+
+    autoAdvanceTimer.current = setTimeout(() => {
+      // Fade out
+      Animated.timing(questionOpacity, {
+        toValue: 0,
+        duration: 150,
+        useNativeDriver: true,
+      }).start(() => {
+        handleNext();
+        // Fade in
+        Animated.timing(questionOpacity, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }).start();
+      });
+    }, 350);
+  }, [isLastQuestionInSection, qIndex, totalCombined]);
 
   const handlePrevious = () => {
     if (qIndex > 0) {
@@ -1027,14 +1056,17 @@ export default function TenderAssessmentScreen() {
           style={styles.questionScroll}
           contentContainerStyle={styles.questionScrollContent}
         >
-          <Text style={styles.questionText}>"{currentQuestion?.text}"</Text>
+          <Animated.View style={{ opacity: questionOpacity }}>
+            <Text style={styles.questionText}>"{currentQuestion?.text}"</Text>
 
-          <QuestionRenderer
-            question={currentQuestion}
-            currentAnswer={currentAnswer}
-            onSelect={handleSelect}
-            defaultLikertScale={currentConfig?.likertScale}
-          />
+            <QuestionRenderer
+              question={currentQuestion}
+              currentAnswer={currentAnswer}
+              onSelect={handleSelect}
+              defaultLikertScale={currentConfig?.likertScale}
+              onAutoAdvance={handleAutoAdvance}
+            />
+          </Animated.View>
         </ScrollView>
 
         {/* Navigation */}
@@ -1070,7 +1102,7 @@ export default function TenderAssessmentScreen() {
                 style={{ backgroundColor: Colors.success }}
               />
             </View>
-          ) : (
+          ) : (currentQuestion?.inputType === 'text' || currentQuestion?.inputType === 'ranking') ? (
             <TouchableOpacity
               style={[styles.navButton, styles.navButtonPrimary]}
               onPress={handleNext}
@@ -1080,7 +1112,7 @@ export default function TenderAssessmentScreen() {
                 {hasAnswer ? 'Next' : 'Skip'}
               </Text>
             </TouchableOpacity>
-          )}
+          ) : null}
         </View>
       </View>
 
