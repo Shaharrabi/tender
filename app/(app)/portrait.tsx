@@ -103,6 +103,7 @@ import CollapsibleNarrative from '@/components/portrait-enhancements/Collapsible
 import GrowthEdgeSummaryCard from '@/components/portrait-enhancements/GrowthEdgeSummaryCard';
 import AnchorQuickAccess from '@/components/portrait-enhancements/AnchorQuickAccess';
 import MatrixTab from '@/components/portrait/MatrixTab';
+import AudioLibrary from '@/components/audio/AudioLibrary';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -908,6 +909,9 @@ export default function PortraitScreen() {
           {activeTab === 'matrix' && (
             <MatrixTab allScores={allScoresMap} portrait={portrait} />
           )}
+
+          {/* Portrait Audio Library — personalized tracks based on portrait data */}
+          <AudioLibrary portrait={portrait} />
 
           {/* Try This Today CTA — shows at bottom of every tab */}
           {(() => {
