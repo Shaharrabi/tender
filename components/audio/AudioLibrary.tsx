@@ -24,7 +24,7 @@ import {
   Shadows,
   Typography,
 } from '@/constants/theme';
-import { ChevronUpIcon, ChevronDownIcon } from '@/assets/graphics/icons';
+import { ChevronUpIcon, ChevronDownIcon, NotepadIcon } from '@/assets/graphics/icons';
 import type { IndividualPortrait } from '@/types/portrait';
 import type { DeepCouplePortrait } from '@/types/couples';
 import {
@@ -89,7 +89,7 @@ export default function AudioLibrary({
         accessibilityLabel={`Portrait Audio Library, ${trackCount} tracks, ${isExpanded ? 'expanded' : 'collapsed'}`}
       >
         <View style={styles.headerLeft}>
-          <Text style={styles.headerIcon}>{'\uD83C\uDFA7'}</Text>
+          <NotepadIcon size={22} color={Colors.accent} />
           <View style={styles.headerText}>
             <Text style={styles.headerTitle}>Portrait Audio Library</Text>
             <Text style={styles.headerSubtitle}>

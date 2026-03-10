@@ -19,7 +19,7 @@ import { View, TouchableOpacity, StyleSheet, LayoutAnimation, Platform, UIManage
 import Animated, { FadeIn } from 'react-native-reanimated';
 import TenderText from '@/components/ui/TenderText';
 import { Colors, Spacing, BorderRadius, Shadows } from '@/constants/theme';
-import { HeartPulseIcon, CloseIcon, ChatBubbleIcon, RefreshIcon } from '@/assets/graphics/icons';
+import { HeartPulseIcon, CloseIcon, ChatBubbleIcon, RefreshIcon, MoonIcon } from '@/assets/graphics/icons';
 import type { DeepCouplePortrait, CoupleAnchorSet, CoupleAnchor } from '@/types/couples';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -87,7 +87,10 @@ export function TonightTryThis({ deepPortrait }: TonightTryThisProps) {
   return (
     <Animated.View entering={FadeIn.delay(300).duration(500)}>
       <View style={tttStyles.card}>
-        <TenderText variant="label" color={Colors.accentGold} style={tttStyles.eyebrow}>{'\uD83C\uDF05'} TONIGHT, TRY THIS</TenderText>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+          <MoonIcon size={13} color={Colors.accentGold} />
+          <TenderText variant="label" color={Colors.accentGold} style={tttStyles.eyebrow}>TONIGHT, TRY THIS</TenderText>
+        </View>
         <TenderText variant="body" color={Colors.text} style={tttStyles.action}>{today.action}</TenderText>
         <TenderText variant="caption" color={Colors.textSecondary} style={{ fontStyle: 'italic' }}>{today.why}</TenderText>
         <TenderText variant="caption" color={Colors.textMuted}>Based on: {today.basedOn} {'\u00B7'} Refreshes daily</TenderText>
@@ -276,7 +279,7 @@ export function AnchorSOSButton({ anchors }: AnchorSOSButtonProps) {
 
 const sosStyles = StyleSheet.create({
   fabContainer: {
-    position: 'absolute', bottom: 80, right: Spacing.md,
+    position: 'absolute', bottom: 90, right: Spacing.md,
     alignItems: 'center', zIndex: 30,
   },
   fab: {

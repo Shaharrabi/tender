@@ -88,6 +88,9 @@ import { generateOverviewSnapshot } from '@/utils/portrait/overview-snapshot';
 import CouplePortalErrorBoundary from '@/components/CouplePortalErrorBoundary';
 import { TonightTryThis, ConversationPrompts, AnchorSOSButton } from '@/components/couple-enhancements/CoupleEnhancements';
 import { ScoreViewToggle } from '@/components/portrait-enhancements/ScoreStoryToggle';
+import SectionSummaryHeader from '@/components/portrait-enhancements/SectionSummaryHeader';
+import AudioLibrary from '@/components/audio/AudioLibrary';
+import { HourglassIcon } from '@/assets/graphics/icons';
 
 type TabKey = 'overview' | 'dance' | 'together' | 'assessments' | 'insights' | 'growth' | 'anchors';
 
@@ -1440,39 +1443,208 @@ function CouplePortalScreen() {
     );
   };
 
-  const renderTabContent = () => {
-    try {
-      switch (activeTab) {
-        case 'overview': return renderOverview();
-        case 'dance': return renderDance();
-        case 'together': return renderTogether();
-        case 'assessments': return renderAssessments();
-        case 'insights': return renderInsights();
-        case 'growth': return renderGrowth();
-        case 'anchors': return renderAnchors();
-      }
-    } catch (e: any) {
-      console.error('[CouplePortal] Tab render error:', e);
-      return (
-        <View style={styles.tabContent}>
-          <View style={styles.synthesisCard}>
-            <TenderText variant="headingS" style={styles.synthesisTitle}>Something went wrong</TenderText>
-            <TenderText variant="body" color={Colors.textSecondary}>
-              This section couldn't render. Try switching tabs or refreshing.
-              {__DEV__ ? `\n\nError: ${e?.message}` : ''}
+  /** Section summary content for each couple portrait section */
+  const COUPLE_SECTION_SUMMARIES: Record<string, { summary: string; readMinutes: number; color: string }> = {
+    overview: {
+      summary: 'Your relationship at a glance \u2014 patterns, strengths, attachment dynamics, and the story between you.',
+      readMinutes: 3,
+      color: Colors.couplePartnerA,
+    },
+    dance: {
+      summary: 'Your combined cycle \u2014 the dance you fall into under stress, with exit points and repair steps.',
+      readMinutes: 4,
+      color: Colors.couplePartnerB,
+    },
+    together: {
+      summary: 'Profiles overlaid \u2014 where you converge, complement, and create friction.',
+      readMinutes: 5,
+      color: Colors.calm,
+    },
+    assessments: {
+      summary: 'Side-by-side assessment scores \u2014 satisfaction, adjustment, and coping.',
+      readMinutes: 4,
+      color: Colors.depth,
+    },
+    insights: {
+      summary: 'The deeper story \u2014 narrative synthesis and where data tells a different tale.',
+      readMinutes: 5,
+      color: Colors.accent,
+    },
+    growth: {
+      summary: 'Where your relationship is asking to evolve \u2014 protection, cost, and invitation.',
+      readMinutes: 4,
+      color: Colors.warning,
+    },
+    anchors: {
+      summary: 'Phrases for difficult moments \u2014 personalized to your cycle and attachment dynamics.',
+      readMinutes: 3,
+      color: Colors.calm,
+    },
+  };
+
+  /** Generate a 60-second digest of the couple portrait */
+  const generateCoupleDigest = (): string => {
+    if (!dp) return '';
+    const parts: string[] = [];
+
+    // Dynamic
+    const dynamic = dp.patternInterlock.combinedCycle.dynamic.replace(/-/g, ' ');
+    parts.push(`Your relational dance is a ${dynamic} pattern \u2014 ${dp.partnerAName} tends to ${dp.patternInterlock.combinedCycle.partnerAPosition}, while ${dp.partnerBName} tends to ${dp.patternInterlock.combinedCycle.partnerBPosition}.`);
+
+    // Attachment
+    parts.push(`In the attachment landscape, you\u2019re a ${dp.patternInterlock.attachmentDynamic.dynamicLabel} pairing.`);
+
+    // Strengths
+    if (dp.convergenceDivergence.sharedStrengths.length > 0) {
+      const top = dp.convergenceDivergence.sharedStrengths.slice(0, 2).map(s => s.dimensionLabel).join(' and ');
+      parts.push(`Your shared strengths include ${top}.`);
+    }
+
+    // Growth
+    if (dp.coupleGrowthEdges.length > 0) {
+      parts.push(`Your top growth edge: ${dp.coupleGrowthEdges[0].title}.`);
+    }
+
+    // Vitality
+    if (dp.relationalField?.vitality > 0) {
+      const vLabel = dp.relationalField.qualitativeLabel || `${Math.round(dp.relationalField.vitality)}%`;
+      parts.push(`Field vitality: ${vLabel}.`);
+    }
+
+    return parts.join(' ');
+  };
+
+  /** Render a section divider with icon, title, and summary */
+  const SectionDivider = ({ tabKey, title, Icon }: { tabKey: string; title: string; Icon: IconComponent }) => {
+    const info = COUPLE_SECTION_SUMMARIES[tabKey];
+    if (!info) return null;
+    return (
+      <View style={styles.sectionDivider}>
+        <View style={styles.sectionDividerHeader}>
+          <View style={[styles.sectionDividerDot, { backgroundColor: info.color }]} />
+          <Icon size={16} color={info.color} />
+          <TenderText variant="headingM" color={Colors.text}>{title}</TenderText>
+        </View>
+        <SectionSummaryHeader
+          summary={info.summary}
+          readMinutes={info.readMinutes}
+          accentColor={info.color}
+        />
+      </View>
+    );
+  };
+
+  const renderAllSections = () => {
+    const sections: React.ReactNode[] = [];
+
+    // Couple Digest — 60-second summary
+    if (dp) {
+      const digest = generateCoupleDigest();
+      if (digest) {
+        sections.push(
+          <View key="digest" style={styles.digestCard}>
+            <View style={styles.digestHeader}>
+              <HourglassIcon size={14} color={Colors.accent} />
+              <TenderText variant="label" color={Colors.accent} style={{ letterSpacing: 1.5, fontSize: 10 }}>
+                YOUR RELATIONSHIP IN 60 SECONDS
+              </TenderText>
+            </View>
+            <TenderText variant="body" color={Colors.textSecondary} style={{ lineHeight: 24 }}>
+              {digest}
             </TenderText>
-            <TouchableOpacity
-              onPress={() => { setDeepPortrait(null); setPortrait(null); loadData(); }}
-              style={styles.retryBtn}
-              accessibilityRole="button"
-              accessibilityLabel="Refresh"
-            >
-              <TenderText variant="body" color={Colors.secondary}>Refresh</TenderText>
-            </TouchableOpacity>
           </View>
+        );
+      }
+    }
+
+    // Tab bar as jump-to navigation
+    sections.push(
+      <View key="nav" style={styles.tabBarWrapper}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabBarContent}>
+          {TABS.map((tab) => (
+            <TouchableOpacity
+              key={tab.key}
+              style={[styles.tabItem, { backgroundColor: tab.color + '12', borderColor: tab.color + '40' }]}
+              onPress={() => setActiveTab(tab.key)}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+            >
+              <View style={styles.tabIcon}>
+                <tab.Icon size={14} color={tab.color} />
+              </View>
+              <TenderText variant="caption" color={tab.color}>{tab.label}</TenderText>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+    );
+
+    // Overview section
+    sections.push(
+      <View key="sec-overview">
+        <SectionDivider tabKey="overview" title="Overview" Icon={HeartPulseIcon} />
+        {renderOverview()}
+      </View>
+    );
+
+    // Your Dance section
+    sections.push(
+      <View key="sec-dance">
+        <SectionDivider tabKey="dance" title="Your Dance" Icon={LightningIcon} />
+        {renderDance()}
+      </View>
+    );
+
+    // Together section
+    sections.push(
+      <View key="sec-together">
+        <SectionDivider tabKey="together" title="Together" Icon={LinkIcon} />
+        {renderTogether()}
+      </View>
+    );
+
+    // Assessments section
+    sections.push(
+      <View key="sec-assessments">
+        <SectionDivider tabKey="assessments" title="Assessments" Icon={CompassIcon} />
+        {renderAssessments()}
+      </View>
+    );
+
+    // Insights section
+    sections.push(
+      <View key="sec-insights">
+        <SectionDivider tabKey="insights" title="Insights" Icon={SparkleIcon} />
+        {renderInsights()}
+      </View>
+    );
+
+    // Growth section
+    sections.push(
+      <View key="sec-growth">
+        <SectionDivider tabKey="growth" title="Growth" Icon={SeedlingIcon} />
+        {renderGrowth()}
+      </View>
+    );
+
+    // Anchors section
+    sections.push(
+      <View key="sec-anchors">
+        <SectionDivider tabKey="anchors" title="Anchors" Icon={LeafIcon} />
+        {renderAnchors()}
+      </View>
+    );
+
+    // Audio Library
+    if (myPortrait) {
+      sections.push(
+        <View key="audio">
+          <AudioLibrary portrait={myPortrait} couplePortrait={dp} />
         </View>
       );
     }
+
+    return sections;
   };
 
   // ─── Main Render ─────────────────────────────────────
@@ -1529,45 +1701,10 @@ function CouplePortalScreen() {
           </View>
         )}
 
-        {/* Tab Bar — portrait-style icon pills */}
-        <View style={styles.tabBarWrapper}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.tabBarContent}
-          >
-            {TABS.map((tab) => {
-              const isActive = activeTab === tab.key;
-              return (
-                <TouchableOpacity
-                  key={tab.key}
-                  style={[
-                    styles.tabItem,
-                    isActive && { backgroundColor: tab.color + '15', borderColor: tab.color },
-                  ]}
-                  onPress={() => setActiveTab(tab.key)}
-                  activeOpacity={0.7}
-                  accessibilityRole="button"
-                >
-                  <View style={styles.tabIcon}>
-                    <tab.Icon size={14} color={isActive ? tab.color : Colors.textMuted} />
-                  </View>
-                  <TenderText
-                    variant="caption"
-                    color={isActive ? tab.color : Colors.textSecondary}
-                  >
-                    {tab.label}
-                  </TenderText>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        </View>
+        {/* All Sections — continuous scrollable layout */}
+        {renderAllSections()}
 
-        {/* Tab Content */}
-        {renderTabContent()}
-
-        <View style={{ height: 100 }} />
+        <View style={{ height: 120 }} />
       </ScrollView>
       {dp?.coupleAnchors && <AnchorSOSButton anchors={dp.coupleAnchors} />}
       <QuickLinksBar />
@@ -1645,6 +1782,41 @@ const styles = StyleSheet.create({
   tabContent: {
     gap: Spacing.sm,
   },
+
+  // Section Dividers (continuous scroll layout)
+  sectionDivider: {
+    marginTop: Spacing.xl,
+    marginBottom: Spacing.sm,
+  },
+  sectionDividerHeader: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: Spacing.sm,
+    marginBottom: Spacing.sm,
+  },
+  sectionDividerDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+
+  // Couple Digest
+  digestCard: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    marginBottom: Spacing.md,
+    borderLeftWidth: 3,
+    borderLeftColor: Colors.accent,
+    gap: Spacing.sm,
+    ...Shadows.card,
+  },
+  digestHeader: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 6,
+  },
+
   noDataText: {
     marginTop: Spacing.xl,
   },
