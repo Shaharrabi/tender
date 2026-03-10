@@ -2,7 +2,7 @@
  * Portrait Audio Library — Track Metadata
  *
  * 36 audio tracks across 3 tiers, selected by portrait data.
- * Audio files will be at assets/audio/portrait/*.mp3 once recorded.
+ * Audio files live at assets/audio/portrait/*.mp3.
  *
  * Tier 1: Orientation (5 tracks — everyone gets all 5)
  * Tier 2: Pattern Tracks (19 tracks — person gets 1 per category)

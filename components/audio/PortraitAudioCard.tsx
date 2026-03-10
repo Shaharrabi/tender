@@ -53,19 +53,47 @@ function formatTime(millis: number): string {
  * Audio files live at assets/audio/portrait/{filePath}.
  */
 function resolveAudioSource(filePath: string): any | undefined {
-  // Static require map for portrait audio tracks.
-  // Files will be populated as they are recorded.
-  // The component handles undefined gracefully.
+  // Static require map — Metro bundler requires static string literals.
   const AUDIO_SOURCES: Record<string, any> = {
-    // Tier 1: Orientation
-    // 'O-1.mp3': require('@/assets/audio/portrait/O-1.mp3'),
-    // 'O-2.mp3': require('@/assets/audio/portrait/O-2.mp3'),
-    // 'O-3.mp3': require('@/assets/audio/portrait/O-3.mp3'),
-    // 'O-4.mp3': require('@/assets/audio/portrait/O-4.mp3'),
-    // 'O-5.mp3': require('@/assets/audio/portrait/O-5.mp3'),
-    // Tier 2: Attachment
-    // 'A-1.mp3': require('@/assets/audio/portrait/A-1.mp3'),
-    // ... (uncomment as files are recorded)
+    // Tier 1: Orientation (everyone)
+    'O-1.mp3': require('@/assets/audio/portrait/O-1.mp3'),
+    'O-2.mp3': require('@/assets/audio/portrait/O-2.mp3'),
+    'O-3.mp3': require('@/assets/audio/portrait/O-3.mp3'),
+    'O-4.mp3': require('@/assets/audio/portrait/O-4.mp3'),
+    'O-5.mp3': require('@/assets/audio/portrait/O-5.mp3'),
+    // Tier 2: Attachment (1 of 4)
+    'A-1.mp3': require('@/assets/audio/portrait/A-1.mp3'),
+    'A-2.mp3': require('@/assets/audio/portrait/A-2.mp3'),
+    'A-3.mp3': require('@/assets/audio/portrait/A-3.mp3'),
+    'A-4.mp3': require('@/assets/audio/portrait/A-4.mp3'),
+    // Tier 2: Cycle Position (1 of 3)
+    'C-1.mp3': require('@/assets/audio/portrait/C-1.mp3'),
+    'C-2.mp3': require('@/assets/audio/portrait/C-2.mp3'),
+    'C-3.mp3': require('@/assets/audio/portrait/C-3.mp3'),
+    // Tier 2: Window of Tolerance (1 of 3)
+    'W-1.mp3': require('@/assets/audio/portrait/W-1.mp3'),
+    'W-2.mp3': require('@/assets/audio/portrait/W-2.mp3'),
+    'W-3.mp3': require('@/assets/audio/portrait/W-3.mp3'),
+    // Tier 2: IFS Parts (1 of 3)
+    'P-1.mp3': require('@/assets/audio/portrait/P-1.mp3'),
+    'P-2.mp3': require('@/assets/audio/portrait/P-2.mp3'),
+    'P-3.mp3': require('@/assets/audio/portrait/P-3.mp3'),
+    // Tier 2: Detections (0-3 of 6)
+    'D-1.mp3': require('@/assets/audio/portrait/D-1.mp3'),
+    'D-2.mp3': require('@/assets/audio/portrait/D-2.mp3'),
+    'D-3.mp3': require('@/assets/audio/portrait/D-3.mp3'),
+    'D-4.mp3': require('@/assets/audio/portrait/D-4.mp3'),
+    'D-5.mp3': require('@/assets/audio/portrait/D-5.mp3'),
+    'D-6.mp3': require('@/assets/audio/portrait/D-6.mp3'),
+    // Tier 3: Couple Dance (1 of 4)
+    'CP-1.mp3': require('@/assets/audio/portrait/CP-1.mp3'),
+    'CP-2.mp3': require('@/assets/audio/portrait/CP-2.mp3'),
+    'CP-3.mp3': require('@/assets/audio/portrait/CP-3.mp3'),
+    'CP-4.mp3': require('@/assets/audio/portrait/CP-4.mp3'),
+    // Tier 3: Couple Constellation (1 of 3)
+    'CC-1.mp3': require('@/assets/audio/portrait/CC-1.mp3'),
+    'CC-2.mp3': require('@/assets/audio/portrait/CC-2.mp3'),
+    'CC-3.mp3': require('@/assets/audio/portrait/CC-3.mp3'),
   };
   return AUDIO_SOURCES[filePath];
 }

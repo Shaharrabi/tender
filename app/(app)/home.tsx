@@ -87,6 +87,7 @@ import { getTaglineForStep, getPracticesForStep, getStep, getJournalPromptForSte
 import { MICRO_COURSES, calculateCourseProgress, type CourseProgress } from '@/utils/microcourses/course-registry';
 import { getCompletions as getMicroCourseCompletions } from '@/services/intervention';
 import MicroCourseCard from '@/components/microcourse/MicroCourseCard';
+import DailyPatternCard from '@/components/today/DailyPatternCard';
 import TenderText from '@/components/ui/TenderText';
 import { TENDER_SECTIONS, TOTAL_QUESTIONS, TOTAL_ESTIMATED_MINUTES } from '@/utils/assessments/tender-sections';
 import {
@@ -1781,6 +1782,16 @@ export default function HomeScreen() {
               isSolo={relationshipMode === 'solo'}
               weekDots={weekDots}
               journalPrompt={getJournalPromptForStep(currentStepNum, relationshipMode === 'solo')}
+            />
+          </View>
+        )}
+
+        {/* ═══ DAILY PATTERN CARD ════════════════════════ */}
+        {hasPortrait && portrait && (
+          <View style={styles.section}>
+            <DailyPatternCard
+              portrait={portrait}
+              onAwardXP={awardGamificationXP}
             />
           </View>
         )}
