@@ -56,6 +56,7 @@ import {
   getTaglineForStep,
   getPracticesForStep,
   getStepAssessmentNudge,
+  getStepAssessmentGate,
 } from '@/utils/steps/twelve-steps';
 import { getExerciseById } from '@/utils/interventions/registry';
 import { getCourseById } from '@/utils/microcourses/course-registry';
@@ -85,12 +86,14 @@ import { getGrowthPulse } from '@/utils/steps/growth-pulse';
 import { loadStepContext, getEnhancedCallback } from '@/utils/steps/step-context';
 import type { StepContext } from '@/utils/steps/step-context';
 import AssessmentNudgeCard from '@/components/growth/AssessmentNudgeCard';
+import AssessmentGateCard from '@/components/growth/AssessmentGateCard';
 import CommunityNudgeCard from '@/components/growth/CommunityNudgeCard';
 import StepAssessmentInsight from '@/components/growth/StepAssessmentInsight';
 import GrowthPulseCard from '@/components/growth/GrowthPulseCard';
 import CouplePlayCard from '@/components/growth/CouplePlayCard';
 import GrowthPlanContent from '@/components/growth/GrowthPlanContent';
 import StepEdgeProgress from '@/components/growth/StepEdgeProgress';
+import StepPortraitInsight from '@/components/growth/StepPortraitInsight';
 import StepCompletionRitual from '@/components/growth/StepCompletionRitual';
 import { fetchAllScores } from '@/services/portrait';
 import { getGrowthEdgeProgress } from '@/services/growth';
@@ -230,6 +233,7 @@ function StepDetailScreenInner() {
   const teaching = getStepTeaching(stepNumber);
   const bridge = getStepBridge(stepNumber, portrait);
   const assessmentNudge = getStepAssessmentNudge(stepNumber);
+  const assessmentGate = getStepAssessmentGate(stepNumber);
   const earlyInsight = !bridge ? getEarlyInsight(stepNumber, assessmentScores) : null;
   const exchangeConfig = getPartnerExchange(stepNumber);
   const exchangePhase = exchangeConfig
@@ -252,7 +256,13 @@ function StepDetailScreenInner() {
   const thisStepProgress = stepProgress.find((sp) => sp.stepNumber === stepNumber);
   const isCurrentStep = stepNumber === currentStepNumber;
   const isCompletedStep = thisStepProgress?.status === 'completed';
-  const canToggleCriteria = isCurrentStep || isCompletedStep;
+
+  // Assessment gate — blocks completion until required assessments are done
+  const gateApplies = assessmentGate && (!assessmentGate.coupleOnly || isCoupled);
+  const gateMet = !gateApplies || assessmentGate!.assessmentIds.every(
+    (id) => completedAssessmentIds.includes(id),
+  );
+  const canToggleCriteria = (isCurrentStep || isCompletedStep) && gateMet;
 
   // UX enhancement derived values
   const teachingCards = getStepTeachingCards(stepNumber);
@@ -428,7 +438,7 @@ function StepDetailScreenInner() {
   };
 
   const handleCriteriaToggle = async (criteriaIndex: number, checked: boolean) => {
-    if (!user || !canToggleCriteria) return;
+    if (!user || !canToggleCriteria || !gateMet) return;
     haptics.tap();
     try {
       // Optimistic update
@@ -775,10 +785,21 @@ function StepDetailScreenInner() {
           </Animated.View>
         )}
 
-        {/* Community Nudge — Step 9: repair deepens when witnessed */}
-        {stepNumber === 9 && (
+        {/* Community Nudge — Steps 8-9: connection deepens when witnessed */}
+        {(stepNumber === 8 || stepNumber === 9) && (
           <Animated.View entering={FadeIn.delay(bridge ? 590 : 530).duration(600)}>
             <CommunityNudgeCard phaseColor={phase.color} />
+          </Animated.View>
+        )}
+
+        {/* Portrait Snapshot — Relevant portrait data for this step */}
+        {portrait && (
+          <Animated.View entering={FadeIn.delay(bridge ? 620 : 560).duration(600)}>
+            <StepPortraitInsight
+              stepNumber={stepNumber}
+              portrait={portrait}
+              phaseColor={phase.color}
+            />
           </Animated.View>
         )}
 
@@ -1391,6 +1412,18 @@ function StepDetailScreenInner() {
 
         {/* ═══ TAB 4 — COMPLETE ═══ */}
         {activeTab === 4 && (<>
+
+        {/* Assessment Gate — blocks completion until required assessments done */}
+        {gateApplies && !gateMet && assessmentGate && (
+          <Animated.View entering={FadeIn.delay(50).duration(500)}>
+            <AssessmentGateCard
+              gate={assessmentGate}
+              completedAssessmentIds={completedAssessmentIds}
+              phaseColor={phase.color}
+            />
+          </Animated.View>
+        )}
+
         {/* Step Goals — Tick the boxes to complete this step */}
         <Animated.View entering={FadeIn.delay(100).duration(500)} style={styles.goalsCard}>
           <CollapsibleHeader

@@ -1282,3 +1282,44 @@ export const STEP_ASSESSMENT_NUDGES: Record<number, StepAssessmentNudge> = {
 export function getStepAssessmentNudge(stepNumber: number): StepAssessmentNudge | null {
   return STEP_ASSESSMENT_NUDGES[stepNumber] ?? null;
 }
+
+// ─── Step-Assessment Gate Mapping ────────────────────────
+// Hard gates that BLOCK step completion until required
+// assessments are finished. Unlike nudges, these are mandatory.
+
+export interface StepAssessmentGate {
+  /** Assessment IDs that must ALL be completed */
+  assessmentIds: string[];
+  /** Gate only applies to coupled users (solo users pass freely) */
+  coupleOnly?: boolean;
+  /** Warm but firm explanation of why this gate exists */
+  gateText: string;
+  /** CTA button label */
+  ctaLabel: string;
+}
+
+export const STEP_ASSESSMENT_GATES: Record<number, StepAssessmentGate> = {
+  4: {
+    assessmentIds: ['ecr-r', 'ipip-neo-120', 'sseit', 'dutch', 'dsi-r', 'values'],
+    gateText:
+      'This step asks you to examine your part in the dance. ' +
+      'To do that well, you need a complete picture of yourself. ' +
+      'Complete your remaining assessments to continue.',
+    ctaLabel: 'Complete Your Assessments',
+  },
+  6: {
+    assessmentIds: ['rdas', 'dci', 'csi-16'],
+    coupleOnly: true,
+    gateText:
+      'Releasing the enemy story works best when you can see the relationship together. ' +
+      'Complete your couple assessments to continue.',
+    ctaLabel: 'Take Couple Assessments',
+  },
+};
+
+/**
+ * Get the assessment gate for a specific step, if one exists.
+ */
+export function getStepAssessmentGate(stepNumber: number): StepAssessmentGate | null {
+  return STEP_ASSESSMENT_GATES[stepNumber] ?? null;
+}

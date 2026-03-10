@@ -88,6 +88,9 @@ export const ASSESSMENT_DISPLAY_NAMES: Record<string, string> = {
   'dutch': 'Conflict Style',
   'dsi-r': 'Differentiation',
   'values': 'Values',
+  'rdas': 'Relationship Satisfaction',
+  'dci': 'Dyadic Coping',
+  'csi-16': 'Couple Satisfaction',
 };
 
 /** Feature display info */
