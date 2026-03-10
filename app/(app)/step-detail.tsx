@@ -103,6 +103,7 @@ import { KeyTakeawayCard } from '@/components/step-enhancements/KeyTakeawayCard'
 // NextActionFloater removed — tabs handle navigation now
 import MoodRouter, { type MoodChoice } from '@/components/step-enhancements/MoodRouter';
 import { getStepTeachingCards, getKeyTakeaway, getPracticeWhy } from '@/utils/steps/step-teaching-cards';
+import { generateWhySentence } from '@/utils/practices/whyThisPractice';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -1015,7 +1016,8 @@ function StepDetailScreenInner() {
               .replace(/\b\w/g, (c: string) => c.toUpperCase());
             const duration = exercise?.duration;
             const mode = exercise?.mode;
-            const why = getPracticeWhy(practiceId, stepNumber);
+            const personalizedWhy = generateWhySentence(portrait, exercise);
+            const why = personalizedWhy ?? getPracticeWhy(practiceId, stepNumber);
             return (
               <TouchableOpacity
                 key={practiceId}
@@ -1070,7 +1072,8 @@ function StepDetailScreenInner() {
                 .replace(/-/g, ' ')
                 .replace(/\b\w/g, (c: string) => c.toUpperCase());
               const duration = exercise?.duration;
-              const why = getPracticeWhy(practiceId, stepNumber);
+              const personalizedWhy = generateWhySentence(portrait, exercise);
+              const why = personalizedWhy ?? getPracticeWhy(practiceId, stepNumber);
               return (
                 <TouchableOpacity
                   key={practiceId}

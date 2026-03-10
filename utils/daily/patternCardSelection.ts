@@ -26,7 +26,8 @@ import {
 export interface DailyCardResult {
   card: PatternCard;
   dimensionLabel: string;
-  dimensionEmoji: string;
+  /** Icon name string (maps to SVG component in DailyPatternCard) */
+  dimensionIcon: string;
   /** Which composite score field this dimension maps to */
   compositeKey: string;
   /** The user's actual score for this dimension (0-100) */
@@ -101,7 +102,7 @@ export function selectDailyCard(
   return {
     card,
     dimensionLabel: meta.label,
-    dimensionEmoji: meta.emoji,
+    dimensionIcon: meta.icon,
     compositeKey: meta.compositeKey,
     score: todaysDimension.score,
   };

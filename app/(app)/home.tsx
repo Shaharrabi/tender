@@ -89,6 +89,7 @@ import { getCompletions as getMicroCourseCompletions } from '@/services/interven
 import MicroCourseCard from '@/components/microcourse/MicroCourseCard';
 import DailyPatternCard from '@/components/today/DailyPatternCard';
 import PatternReset from '@/components/emergency/PatternReset';
+import MicroRitualCard from '@/components/couples/MicroRitualCard';
 import TenderText from '@/components/ui/TenderText';
 import { TENDER_SECTIONS, TOTAL_QUESTIONS, TOTAL_ESTIMATED_MINUTES } from '@/utils/assessments/tender-sections';
 import {
@@ -127,7 +128,7 @@ import type { AssessmentConfig, AllAssessmentScores, AssessmentType } from '@/ty
 import type { IndividualPortrait } from '@/types/portrait';
 import type { WEAREProfile } from '@/types/weare';
 import type { DailyCheckIn } from '@/types/growth';
-import type { Couple } from '@/types/couples';
+import type { Couple, CycleDynamic } from '@/types/couples';
 import { getLatestWEAREProfile } from '@/services/weare';
 import { DEMO_PARTNERS, type DemoPartnerId } from '@/constants/demoPartners';
 
@@ -224,6 +225,7 @@ export default function HomeScreen() {
 
   // Couple portal preview — cached narrative snapshot
   const [coupleNarrativeSnapshot, setCoupleNarrativeSnapshot] = useState<string | null>(null);
+  const [cycleDynamic, setCycleDynamic] = useState<CycleDynamic | null>(null);
 
   // Unlock state
   const [unlockState, setUnlockState] = useState<UnlockState | null>(null);
@@ -676,17 +678,20 @@ export default function HomeScreen() {
           setWeareProfile(null);
         }
 
-        // 8b. Load cached deep couple portrait for home preview
+        // 8b. Load cached deep couple portrait for home preview + cycle dynamic
         try {
           const dp = await getDeepCouplePortrait(loadedCouple.id);
           if (dp) {
             const snapshot = generateOverviewSnapshot(dp);
             setCoupleNarrativeSnapshot(snapshot);
+            setCycleDynamic(dp.patternInterlock?.combinedCycle?.dynamic ?? null);
           } else {
             setCoupleNarrativeSnapshot(null);
+            setCycleDynamic(null);
           }
         } catch {
           setCoupleNarrativeSnapshot(null);
+          setCycleDynamic(null);
         }
       }
 
@@ -1897,6 +1902,14 @@ export default function HomeScreen() {
               </View>
               <Text style={styles.gatewayCardArrow}>{'\u2192'}</Text>
             </TouchableOpacity>
+          )}
+
+          {/* COUPLE MICRO-RITUAL — daily 30-second ritual for coupled users */}
+          {hasCoupleLinked && (
+            <MicroRitualCard
+              cycleDynamic={cycleDynamic}
+              onAwardXP={awardGamificationXP}
+            />
           )}
 
           {/* MORE */}

@@ -37,45 +37,45 @@ export interface PatternCard {
   relatedTrackId?: string;
 }
 
-/** Human-readable label + color for each dimension */
+/** Human-readable label + icon name for each dimension */
 export const DIMENSION_META: Record<
   PatternDimension,
-  { label: string; compositeKey: string; emoji: string }
+  { label: string; compositeKey: string; icon: string }
 > = {
   security: {
     label: 'Attachment Security',
     compositeKey: 'attachmentSecurity',
-    emoji: '🛡️',
+    icon: 'shield',
   },
   regulation: {
     label: 'Emotional Regulation',
     compositeKey: 'regulationScore',
-    emoji: '🌊',
+    icon: 'wave',
   },
   differentiation: {
     label: 'Differentiation',
     compositeKey: 'differentiation',
-    emoji: '🌱',
+    icon: 'seedling',
   },
   eq: {
     label: 'Emotional Intelligence',
     compositeKey: 'emotionalIntelligence',
-    emoji: '💡',
+    icon: 'lightbulb',
   },
   values: {
     label: 'Values Alignment',
     compositeKey: 'valuesCongruence',
-    emoji: '🧭',
+    icon: 'compass',
   },
   conflict: {
     label: 'Conflict Flexibility',
     compositeKey: 'conflictFlexibility',
-    emoji: '🤝',
+    icon: 'handshake',
   },
   awareness: {
     label: 'Relational Awareness',
     compositeKey: 'relationalAwareness',
-    emoji: '👁️',
+    icon: 'eye',
   },
 };
 

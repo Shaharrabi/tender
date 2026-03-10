@@ -29,9 +29,27 @@ import {
   LightbulbIcon,
   CheckmarkIcon,
   SparkleIcon,
+  ShieldIcon,
+  WaveIcon,
+  SeedlingIcon,
+  CompassIcon,
+  HandshakeIcon,
+  EyeIcon,
 } from '@/assets/graphics/icons';
+import type { IconProps } from '@/assets/graphics/icons';
 import type { IndividualPortrait } from '@/types/portrait';
 import { selectDailyCard, type DailyCardResult } from '@/utils/daily/patternCardSelection';
+
+/** Map dimension icon names to SVG components */
+const DIMENSION_ICONS: Record<string, React.FC<IconProps>> = {
+  shield: ShieldIcon,
+  wave: WaveIcon,
+  seedling: SeedlingIcon,
+  lightbulb: LightbulbIcon,
+  compass: CompassIcon,
+  handshake: HandshakeIcon,
+  eye: EyeIcon,
+};
 
 interface DailyPatternCardProps {
   portrait: IndividualPortrait | null;
@@ -102,7 +120,8 @@ export default function DailyPatternCard({
   // Don't render until we've checked storage and have a result
   if (!checkedStorage || !result) return null;
 
-  const { card, dimensionLabel, dimensionEmoji } = result;
+  const { card, dimensionLabel, dimensionIcon } = result;
+  const DimensionIcon = DIMENSION_ICONS[dimensionIcon] ?? LightbulbIcon;
 
   return (
     <Animated.View entering={FadeIn.duration(500)} style={styles.container}>
@@ -117,13 +136,11 @@ export default function DailyPatternCard({
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <View style={styles.iconCircle}>
-              <LightbulbIcon size={16} color={Colors.accent} />
+              <DimensionIcon size={16} color={Colors.accent} />
             </View>
             <View style={styles.headerText}>
               <Text style={styles.sectionLabel}>TODAY'S INSIGHT</Text>
-              <Text style={styles.dimensionLabel}>
-                {dimensionEmoji} {dimensionLabel}
-              </Text>
+              <Text style={styles.dimensionLabel}>{dimensionLabel}</Text>
             </View>
           </View>
           {didComplete && (
