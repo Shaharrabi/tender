@@ -88,6 +88,7 @@ import { MICRO_COURSES, calculateCourseProgress, type CourseProgress } from '@/u
 import { getCompletions as getMicroCourseCompletions } from '@/services/intervention';
 import MicroCourseCard from '@/components/microcourse/MicroCourseCard';
 import DailyPatternCard from '@/components/today/DailyPatternCard';
+import PatternReset from '@/components/emergency/PatternReset';
 import TenderText from '@/components/ui/TenderText';
 import { TENDER_SECTIONS, TOTAL_QUESTIONS, TOTAL_ESTIMATED_MINUTES } from '@/utils/assessments/tender-sections';
 import {
@@ -1153,6 +1154,13 @@ export default function HomeScreen() {
           </TouchableOpacity>
         )}
         </View>
+
+        {/* ═══ PATTERN RESET — always visible ══════════════ */}
+        {hasCompletedOnboarding && (
+          <View style={styles.section}>
+            <PatternReset portrait={portrait} />
+          </View>
+        )}
 
         {/* ═══ YOUR PORTRAIT SUMMARY (if portrait exists) ══════ */}
         {hasPortrait && portrait && (() => {
