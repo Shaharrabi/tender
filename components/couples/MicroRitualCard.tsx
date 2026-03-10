@@ -116,7 +116,7 @@ export default function MicroRitualCard({
               <HeartDoubleIcon size={16} color={Colors.secondary} />
             </View>
             <View style={styles.headerText}>
-              <Text style={styles.sectionLabel}>TODAY\u2019S RITUAL</Text>
+              <Text style={styles.sectionLabel}>TODAY{'\u2019'}S RITUAL</Text>
               <Text style={styles.title}>{ritual.title}</Text>
             </View>
           </View>

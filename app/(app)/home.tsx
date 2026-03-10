@@ -1809,6 +1809,16 @@ export default function HomeScreen() {
           </View>
         )}
 
+        {/* ═══ COUPLE MICRO-RITUAL — daily 30-second ritual ═══ */}
+        {hasCoupleLinked && (
+          <View style={styles.section}>
+            <MicroRitualCard
+              cycleDynamic={cycleDynamic}
+              onAwardXP={awardGamificationXP}
+            />
+          </View>
+        )}
+
         {/* ═══ EXPLORE — 4 Gateway Cards ══════════════════ */}
         <View ref={(r) => RefRegistry.register('home_exploreSection', r)} style={styles.gatewaySection}>
           <Text style={styles.gatewaySectionLabel}>EXPLORE</Text>
@@ -1902,14 +1912,6 @@ export default function HomeScreen() {
               </View>
               <Text style={styles.gatewayCardArrow}>{'\u2192'}</Text>
             </TouchableOpacity>
-          )}
-
-          {/* COUPLE MICRO-RITUAL — daily 30-second ritual for coupled users */}
-          {hasCoupleLinked && (
-            <MicroRitualCard
-              cycleDynamic={cycleDynamic}
-              onAwardXP={awardGamificationXP}
-            />
           )}
 
           {/* MORE */}
@@ -2996,7 +2998,7 @@ const styles = StyleSheet.create({
   // ── WEARE Summary Card ──
   weareSummaryCard: {
     marginHorizontal: Spacing.lg,
-    marginBottom: Spacing.md,
+    marginBottom: Spacing.lg,
     backgroundColor: Colors.surface,
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
