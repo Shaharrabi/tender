@@ -88,7 +88,7 @@ function scoreSSEIT(responses: (number | string | string[] | null)[]): SSEITScor
 
 export const sseitConfig: AssessmentConfig = {
   type: 'sseit',
-  name: 'Emotional Intelligence (SSEIT)',
+  name: 'Emotional Intelligence',
   shortName: 'SSEIT',
   description: 'Measure your ability to perceive, manage, and use emotions effectively.',
   instructions:

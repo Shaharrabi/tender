@@ -110,7 +110,7 @@ function scoreDSIR(responses: (number | string | string[] | null)[]): DSIRScores
 
 export const dsirConfig: AssessmentConfig = {
   type: 'dsi-r',
-  name: 'Differentiation of Self (DSI-R)',
+  name: 'Differentiation of Self',
   shortName: 'DSI-R',
   description: 'Explore how well you maintain your sense of self while staying emotionally connected in relationships.',
   instructions:

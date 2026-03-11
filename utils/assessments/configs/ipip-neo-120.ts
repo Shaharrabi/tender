@@ -314,7 +314,7 @@ function scoreIPIP(responses: (number | string | string[] | null)[]): IPIPScores
 
 export const ipipConfig: AssessmentConfig = {
   type: 'ipip-neo-120',
-  name: 'Personality (IPIP-NEO-120)',
+  name: 'Personality',
   shortName: 'IPIP-NEO-120',
   description: 'Explore your Big Five personality traits across 30 facets.',
   instructions:

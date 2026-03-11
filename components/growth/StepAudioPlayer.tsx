@@ -14,6 +14,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -151,10 +152,22 @@ export default function StepAudioPlayer({
       loadAndPlay();
     }
     return () => {
-      soundRef.current?.unloadAsync();
+      soundRef.current?.stopAsync().then(() => soundRef.current?.unloadAsync()).catch(() => {});
       audioManager.unregister(ownerId);
     };
   }, []);
+
+  // Pause audio when screen loses focus (navigating back, switching tabs)
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        // Screen blurred — pause and unload audio
+        if (soundRef.current) {
+          soundRef.current.pauseAsync().catch(() => {});
+        }
+      };
+    }, [])
+  );
 
   const progress = duration > 0 ? position / duration : 0;
 

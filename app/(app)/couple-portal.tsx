@@ -615,7 +615,7 @@ function CouplePortalScreen() {
           <TenderText variant="headingS" style={styles.synthesisTitle}>Your deep portrait needs more data</TenderText>
           <TenderText variant="body" color={Colors.textSecondary}>
             {!myPortrait && !partnerPortrait
-              ? 'Both individual portraits are missing. Each partner needs to complete all 6 individual assessments (ECR-R, DUTCH, SSEIT, DSI-R, IPIP-NEO, Values) and generate their portrait from the Home screen.'
+              ? 'Both individual portraits are missing. Each partner needs to complete all 6 individual assessments (Attachment, Conflict, Emotional Intelligence, Differentiation, Personality, Values) and generate their portrait from the Home screen.'
               : !myPortrait
                 ? 'Your individual portrait is missing. Complete all 6 assessments on the Home screen, then come back.'
                 : !partnerPortrait
@@ -1254,7 +1254,7 @@ function CouplePortalScreen() {
               <>
               <AssessmentCard
                 title="Couple Satisfaction"
-                subtitle="CSI-16 — How satisfied each partner feels in the relationship"
+                subtitle="How satisfied each partner feels in the relationship"
                 accentColor={Colors.secondary}
               >
                 <CompareRow
@@ -1276,7 +1276,7 @@ function CouplePortalScreen() {
                   <View style={assessStyles.interpretCard}>
                     <TenderText variant="label" style={assessStyles.interpretTitle}>What This Means</TenderText>
                     <TenderText variant="body" color={Colors.textSecondary}>
-                      The CSI-16 measures overall relationship happiness on a 0–81 scale. Scores above 51.5 are considered non-distressed.
+                      This measures overall relationship happiness on a 0–81 scale. Scores above 51.5 are considered non-distressed.
                       {csi16.partnerA?.satisfactionLevel && `\n\n${nameA}: ${csiInterpretation(csi16.partnerA.satisfactionLevel).text}`}
                       {csi16.partnerB?.satisfactionLevel && `\n\n${nameB}: ${csiInterpretation(csi16.partnerB.satisfactionLevel).text}`}
                     </TenderText>
@@ -1292,7 +1292,7 @@ function CouplePortalScreen() {
               <>
               <AssessmentCard
                 title="Relationship Adjustment"
-                subtitle="RDAS — Consensus, satisfaction, and cohesion in the relationship"
+                subtitle="Consensus, satisfaction, and cohesion in the relationship"
                 accentColor={Colors.secondary}
               >
                 <CompareRow label="Total Score" valueA={rdas.partnerA?.total ?? null} valueB={rdas.partnerB?.total ?? null} max={69} color={Colors.secondary} />
@@ -1310,7 +1310,7 @@ function CouplePortalScreen() {
                 <View style={assessStyles.interpretCard}>
                   <TenderText variant="label" style={assessStyles.interpretTitle}>Understanding Your Scores</TenderText>
                   <TenderText variant="body" color={Colors.textSecondary}>
-                    The RDAS measures relationship adjustment across three areas:{'\n\n'}
+                    This measures relationship adjustment across three areas:{'\n\n'}
                     {'\u2022'} Consensus (0–30): How much you agree on important matters{'\n'}
                     {'\u2022'} Satisfaction (0–20): Day-to-day happiness and contentment{'\n'}
                     {'\u2022'} Cohesion (0–20): How much you share activities and quality time{'\n\n'}
@@ -1329,7 +1329,7 @@ function CouplePortalScreen() {
               <>
               <AssessmentCard
                 title="Dyadic Coping"
-                subtitle="DCI — How you support each other through stress"
+                subtitle="How you support each other through stress"
                 accentColor={Colors.success}
               >
                 <CompareRow label="Positive Coping (Total)" valueA={dci.partnerA?.totalPositive ?? null} valueB={dci.partnerB?.totalPositive ?? null} max={90} color={Colors.success} />
@@ -1349,7 +1349,7 @@ function CouplePortalScreen() {
                 <View style={assessStyles.interpretCard}>
                   <TenderText variant="label" style={assessStyles.interpretTitle}>Understanding Your Scores</TenderText>
                   <TenderText variant="body" color={Colors.textSecondary}>
-                    The DCI measures how partners cope with stress together:{'\n\n'}
+                    This measures how partners cope with stress together:{'\n\n'}
                     {'\u2022'} Stress Communication: How clearly you signal stress{'\n'}
                     {'\u2022'} Supportive Coping: Emotional and practical support offered{'\n'}
                     {'\u2022'} Delegated Coping: Taking on tasks when overwhelmed{'\n'}

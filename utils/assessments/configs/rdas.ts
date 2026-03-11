@@ -199,7 +199,7 @@ function scoreRDAS(
 
 export const rdasConfig: AssessmentConfig = {
   type: 'rdas' as any,
-  name: 'Relationship Adjustment (RDAS)',
+  name: 'Relationship Adjustment',
   shortName: 'RDAS',
   description:
     'Measure dyadic consensus, satisfaction, and cohesion in your relationship.',

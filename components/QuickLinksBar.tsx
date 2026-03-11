@@ -23,6 +23,7 @@ import {
 } from '@/assets/graphics/icons';
 import { Colors, Spacing, FontSizes, FontFamilies } from '@/constants/theme';
 import { SoundHaptics } from '@/services/SoundHapticsService';
+import { RefRegistry } from '@/utils/ftue/refRegistry';
 
 type ScreenKey = 'nuance' | 'courses' | 'practices' | 'journal' | 'community' | 'bridges' | 'home';
 
@@ -39,6 +40,7 @@ export default function QuickLinksBar({ showHome = true, currentScreen }: QuickL
       <View style={styles.row}>
         {currentScreen !== 'nuance' && (
           <TouchableOpacity
+            ref={currentScreen === 'home' ? (r) => RefRegistry.register('home_nuanceCard', r) : undefined}
             style={styles.linkButton}
             onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/chat' as any); }}
             activeOpacity={0.7}
@@ -52,6 +54,7 @@ export default function QuickLinksBar({ showHome = true, currentScreen }: QuickL
 
         {currentScreen !== 'courses' && (
           <TouchableOpacity
+            ref={currentScreen === 'home' ? (r) => RefRegistry.register('home_coursesCard', r) : undefined}
             style={styles.linkButton}
             onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/courses' as any); }}
             activeOpacity={0.7}
@@ -78,6 +81,7 @@ export default function QuickLinksBar({ showHome = true, currentScreen }: QuickL
 
         {currentScreen !== 'journal' && (
           <TouchableOpacity
+            ref={currentScreen === 'home' ? (r) => RefRegistry.register('home_journalCard', r) : undefined}
             style={styles.linkButton}
             onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/journal' as any); }}
             activeOpacity={0.7}
@@ -91,6 +95,7 @@ export default function QuickLinksBar({ showHome = true, currentScreen }: QuickL
 
         {currentScreen !== 'community' && (
           <TouchableOpacity
+            ref={currentScreen === 'home' ? (r) => RefRegistry.register('home_communityCard', r) : undefined}
             style={styles.linkButton}
             onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/community' as any); }}
             activeOpacity={0.7}

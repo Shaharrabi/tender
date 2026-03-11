@@ -568,11 +568,11 @@ export default function TenderAssessmentScreen() {
         await AsyncStorage.removeItem(currentConfig.progressKey);
       } catch {}
 
-      // Award XP for completing a section (non-blocking)
+      // Award XP for completing a section (non-blocking, silent to avoid double sound with completion celebration)
       if (retakeMode.current) {
-        awardXP('assessment_retake', currentConfig.type, `Retook: ${currentSection.fieldName}`).catch(() => {});
+        awardXP('assessment_retake', currentConfig.type, `Retook: ${currentSection.fieldName}`, { silent: true }).catch(() => {});
       } else {
-        awardXP('assessment_complete', currentConfig.type, `Completed: ${currentSection.fieldName}`).catch(() => {});
+        awardXP('assessment_complete', currentConfig.type, `Completed: ${currentSection.fieldName}`, { silent: true }).catch(() => {});
       }
 
       // What's next?

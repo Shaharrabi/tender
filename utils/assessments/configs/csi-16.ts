@@ -202,7 +202,7 @@ function scoreCSI16(
 
 export const csi16Config: AssessmentConfig = {
   type: 'csi-16' as any,
-  name: 'Couples Satisfaction Index (CSI-16)',
+  name: 'Couple Satisfaction',
   shortName: 'CSI-16',
   description:
     'Measure your overall relationship satisfaction using one of the most precise and sensitive instruments available.',

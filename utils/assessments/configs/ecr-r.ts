@@ -104,7 +104,7 @@ function scoreECRR(responses: (number | string | string[] | null)[]): ECRRScores
 
 export const ecrRConfig: AssessmentConfig = {
   type: 'ecr-r',
-  name: 'Attachment Style (ECR-R)',
+  name: 'Attachment Style',
   shortName: 'ECR-R',
   description: 'Understand your attachment patterns in close relationships.',
   instructions:

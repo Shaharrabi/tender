@@ -68,7 +68,7 @@ function scoreDUTCH(responses: (number | string | string[] | null)[]): DUTCHScor
 
 export const dutchConfig: AssessmentConfig = {
   type: 'dutch',
-  name: 'Conflict Style (DUTCH)',
+  name: 'Conflict Style',
   shortName: 'DUTCH',
   description: 'Discover how you handle disagreements and conflicts in your relationship.',
   instructions: `${STEM}\n\nThe following statements describe different ways people handle disagreements and conflicts. Please respond thinking specifically about conflicts or disagreements with your romantic partner — not conflicts at work or with friends/family.`,
