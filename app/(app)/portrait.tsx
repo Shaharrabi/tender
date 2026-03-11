@@ -538,6 +538,14 @@ export default function PortraitScreen() {
     if (!user) return;
     setLoading(true);
     try {
+      // Gate: require consent before showing results
+      const userConsent = await getUserConsent(user.id);
+      if (!userConsent) {
+        setLoading(false);
+        router.replace('/(app)/consent-waiver' as any);
+        return;
+      }
+
       // Load portrait + raw assessment scores in parallel
       const [p, scoresMap] = await Promise.all([
         getPortrait(user.id),
