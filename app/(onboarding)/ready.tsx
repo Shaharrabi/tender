@@ -142,6 +142,10 @@ export default function ReadyScreen() {
       </View>
 
       <Animated.View entering={FadeIn.duration(1000).delay(2000)} style={styles.bottomSection}>
+        <Text style={styles.disclaimerNote}>
+          Tender is a wellness tool, not therapy. If you need clinical
+          support, please reach out to a licensed professional.
+        </Text>
         <TouchableOpacity
           style={styles.letsGoButton}
           onPress={handleLetsGo}
@@ -208,6 +212,14 @@ const styles = StyleSheet.create({
   bottomSection: {
     paddingHorizontal: Spacing.xl,
     paddingBottom: Platform.OS === 'ios' ? 50 : 30,
+  },
+  disclaimerNote: {
+    fontSize: FontSizes.caption,
+    fontFamily: 'JosefinSans_300Light',
+    color: Colors.textMuted,
+    textAlign: 'center',
+    lineHeight: 17,
+    marginBottom: Spacing.md,
   },
   letsGoButton: {
     backgroundColor: Colors.primary,

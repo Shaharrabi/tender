@@ -4,6 +4,7 @@
 
 import { supabase } from './supabase';
 import { getPortrait } from './portrait';
+import { assertNotGuest } from '@/utils/security/guest-guard';
 import type { GrowthEdgeProgress, GrowthStage, DailyCheckIn } from '@/types/growth';
 
 // ─── Growth Edge Progress ───────────────────────────────
@@ -110,6 +111,7 @@ export async function incrementPracticeCount(
   userId: string,
   edgeId: string
 ): Promise<void> {
+  assertNotGuest(userId, 'track_practice');
   const now = new Date().toISOString();
 
   // Fetch current count + stage
@@ -210,6 +212,7 @@ export async function saveDailyCheckIn(
   practiced: boolean,
   note?: string
 ): Promise<DailyCheckIn> {
+  assertNotGuest(userId, 'save_check_in');
   const today = localDateString();
 
   try {

@@ -33,6 +33,7 @@ import {
   Typography,
 } from '@/constants/theme';
 import type { PortraitTrack } from '@/utils/audio/trackMetadata';
+import { audioManager } from '@/services/AudioManager';
 
 interface PortraitAudioCardProps {
   track: PortraitTrack;
@@ -114,6 +115,7 @@ export default function PortraitAudioCard({
 
   const audioSource = resolveAudioSource(track.filePath);
   const isAvailable = !!audioSource;
+  const ownerId = useRef(`portrait-audio-${track.id}`).current;
 
   // Breathing animation while playing
   const breathe = useSharedValue(1);
@@ -160,15 +162,21 @@ export default function PortraitAudioCard({
         if (status.isPlaying) {
           await soundRef.current.pauseAsync();
         } else {
+          // Stop any other audio playing in the app
+          await audioManager.stopCurrent(ownerId);
           if (status.didJustFinish) {
             await soundRef.current.setPositionAsync(0);
             setHasFinished(false);
           }
           await soundRef.current.playAsync();
+          await audioManager.register(soundRef.current, ownerId);
         }
         return;
       }
     }
+
+    // Stop any other audio playing in the app
+    await audioManager.stopCurrent(ownerId);
 
     setIsLoading(true);
     try {
@@ -179,18 +187,20 @@ export default function PortraitAudioCard({
       );
       soundRef.current = sound;
       setIsLoaded(true);
+      await audioManager.register(sound, ownerId);
     } catch (err) {
       console.warn('[PortraitAudioCard] Failed to load:', track.id, err);
       setLoadError(true);
     } finally {
       setIsLoading(false);
     }
-  }, [audioSource, isAvailable, onPlaybackStatusUpdate, track.id]);
+  }, [audioSource, isAvailable, onPlaybackStatusUpdate, track.id, ownerId]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       soundRef.current?.unloadAsync();
+      audioManager.unregister(ownerId);
     };
   }, []);
 

@@ -5,24 +5,26 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useGuest } from '@/context/GuestContext';
 import { Colors, Spacing, FontSizes, BorderRadius } from '@/constants/theme';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
 
-// Routes guests CAN access
+// Routes guests CAN access (browse-only — no data writes)
 const GUEST_ALLOWED_ROUTES = [
   'home',
-  'assessment',
-  'tender-assessment',
-  'results',
-  'portrait',
   'assessment-matrix',
   'exercises',
   'exercise',
   'courses',
   'microcourse',
   'privacy',
+  'terms',
 ];
 
-// Routes guests CANNOT access (chat, growth writes, couple features, settings)
+// Routes guests CANNOT access (assessments, results, chat, growth, couple features)
 const GUEST_RESTRICTED_ROUTES = [
+  'assessment',
+  'tender-assessment',
+  'results',
+  'portrait',
   'chat',
   'growth',
   'step-detail',
@@ -69,6 +71,7 @@ export default function AppLayout() {
 
   return (
     <>
+      <ErrorBoundary fallbackMessage="Something went wrong. Please restart the app or try again.">
       <Stack
         screenOptions={{
           headerShown: false,
@@ -106,8 +109,10 @@ export default function AppLayout() {
         <Stack.Screen name="building-bridges" options={{ animation: 'fade_from_bottom' }} />
         <Stack.Screen name="support-groups" options={{ animation: 'slide_from_bottom' }} />
         <Stack.Screen name="notification-feed" options={{ animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="terms" options={{ animation: 'slide_from_bottom' }} />
         <Stack.Screen name="more" options={{ animation: 'slide_from_right' }} />
       </Stack>
+      </ErrorBoundary>
 
       {/* Guest restriction modal */}
       <Modal
@@ -120,7 +125,7 @@ export default function AppLayout() {
           <View style={guestStyles.modal}>
             <Text style={guestStyles.title}>Account Required</Text>
             <Text style={guestStyles.message}>
-              Create an account to access this feature. Your assessment data will be saved.
+              Create a free account to take assessments and access this feature. It only takes a moment.
             </Text>
             <TouchableOpacity
               style={guestStyles.signUpButton}

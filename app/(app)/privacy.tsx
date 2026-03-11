@@ -167,6 +167,21 @@ export default function PrivacyScreen() {
           </Text>
         </View>
 
+        {/* ── Mental Health Disclaimer ── */}
+        <View style={s.disclaimerCard}>
+          <ShieldIcon size={20} color={Colors.warning} />
+          <View style={s.disclaimerContent}>
+            <Text style={s.disclaimerTitle}>Important Notice</Text>
+            <Text style={s.disclaimerText}>
+              Tender is a relational wellness tool — not therapy, and not a substitute
+              for professional mental health care. The insights, exercises, and AI
+              coaching provided here are educational and supportive in nature. If you
+              are in crisis or need clinical support, please reach out to a licensed
+              therapist or call 988 (Suicide & Crisis Lifeline).
+            </Text>
+          </View>
+        </View>
+
         {/* ── Info Sections ──────────── */}
         {DATA_SECTIONS.map((section) => {
           const isExpanded = expandedSection === section.id;
@@ -319,6 +334,32 @@ const s = StyleSheet.create({
     color: Colors.textSecondary,
     textAlign: 'center',
     lineHeight: 22,
+  },
+
+  // Disclaimer
+  disclaimerCard: {
+    backgroundColor: Colors.warningLight || '#FFF8E7',
+    borderRadius: BorderRadius.md,
+    borderLeftWidth: 3,
+    borderLeftColor: Colors.warning,
+    padding: Spacing.md,
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    marginBottom: Spacing.lg,
+  },
+  disclaimerContent: {
+    flex: 1,
+  },
+  disclaimerTitle: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '700',
+    color: Colors.text,
+    marginBottom: 4,
+  },
+  disclaimerText: {
+    fontSize: FontSizes.caption,
+    color: Colors.textSecondary,
+    lineHeight: 18,
   },
 
   // Expandable sections

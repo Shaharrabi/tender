@@ -33,6 +33,7 @@ import {
   Shadows,
   Typography,
 } from '@/constants/theme';
+import { audioManager } from '@/services/AudioManager';
 
 interface StepAudioPlayerProps {
   audioSource: any; // require() source
@@ -101,6 +102,8 @@ export default function StepAudioPlayer({
     [hasFinished, onComplete]
   );
 
+  const ownerId = useRef(`step-audio-${Date.now()}`).current;
+
   const loadAndPlay = useCallback(async () => {
     if (soundRef.current) {
       // Already loaded — just toggle
@@ -109,15 +112,21 @@ export default function StepAudioPlayer({
         if (status.isPlaying) {
           await soundRef.current.pauseAsync();
         } else {
+          // Stop any other audio playing in the app
+          await audioManager.stopCurrent(ownerId);
           if (status.didJustFinish) {
             await soundRef.current.setPositionAsync(0);
             setHasFinished(false);
           }
           await soundRef.current.playAsync();
+          await audioManager.register(soundRef.current, ownerId);
         }
         return;
       }
     }
+
+    // Stop any other audio playing in the app
+    await audioManager.stopCurrent(ownerId);
 
     setIsLoading(true);
     try {
@@ -128,12 +137,13 @@ export default function StepAudioPlayer({
       );
       soundRef.current = sound;
       setIsLoaded(true);
+      await audioManager.register(sound, ownerId);
     } catch (err) {
       console.warn('[StepAudioPlayer] Failed to load:', err);
     } finally {
       setIsLoading(false);
     }
-  }, [audioSource, onPlaybackStatusUpdate]);
+  }, [audioSource, onPlaybackStatusUpdate, ownerId]);
 
   // Auto-play if requested
   useEffect(() => {
@@ -142,6 +152,7 @@ export default function StepAudioPlayer({
     }
     return () => {
       soundRef.current?.unloadAsync();
+      audioManager.unregister(ownerId);
     };
   }, []);
 

@@ -1,9 +1,14 @@
 /**
- * Treatment Plan Generator — V2 Attachment-Aware
+ * Treatment Plan Generator — V2.1 Attachment + Progress Aware
  *
  * Generates a personalized treatment plan from an individual portrait.
- * Now attachment-aware: pathway ordering, milestone language, and weekly goals
+ * Attachment-aware: pathway ordering, milestone language, and weekly goals
  * adapt based on the user's attachment style.
+ *
+ * V2.1 — Now optionally progress-aware: when GrowthEdgeProgress data is
+ * provided, pathways are reordered to prioritize edges still in early stages,
+ * estimated weeks are adjusted based on current progress, and completed
+ * pathways are deprioritized.
  *
  * V2 Pathways:
  * - Anxious: Regulation first → capacity to be alone → values work
@@ -14,7 +19,7 @@
 
 import type { IndividualPortrait } from '@/types/portrait';
 import type { AttachmentStyle } from '@/types';
-import type { TreatmentPlan, TreatmentPathway } from '@/types/growth';
+import type { TreatmentPlan, TreatmentPathway, GrowthEdgeProgress, GrowthStage } from '@/types/growth';
 
 // ─── Exercise Mappings ──────────────────────────────────
 
@@ -191,7 +196,8 @@ function getAttachmentFocusIntro(style: AttachmentStyle): string {
 
 export function generateTreatmentPlan(
   portrait: IndividualPortrait,
-  attachmentStyle?: AttachmentStyle
+  attachmentStyle?: AttachmentStyle,
+  edgeProgress?: GrowthEdgeProgress[],
 ): TreatmentPlan {
   const { growthEdges, compositeScores } = portrait;
   const hasRegulationPriority = compositeScores.regulationScore < 40;
@@ -199,11 +205,25 @@ export function generateTreatmentPlan(
   // Infer attachment style from portrait data if not provided
   const style = attachmentStyle || inferAttachmentStyle(portrait);
 
+  // Index progress by edgeId for O(1) lookup
+  const progressByEdge = new Map<string, GrowthEdgeProgress>();
+  if (edgeProgress) {
+    for (const ep of edgeProgress) {
+      progressByEdge.set(ep.edgeId, ep);
+    }
+  }
+
   // Build pathways from growth edges with attachment-tailored milestones
   const pathways: TreatmentPathway[] = growthEdges.map((edge) => {
     const milestones = getMilestonesForEdge(edge.id, style);
     const exercises = getExercisesForEdge(edge.id);
-    const estimatedWeeks = getEstimatedWeeks(edge.id);
+    let estimatedWeeks = getEstimatedWeeks(edge.id);
+
+    // Progress-aware: adjust estimated weeks based on current stage
+    const progress = progressByEdge.get(edge.id);
+    if (progress) {
+      estimatedWeeks = adjustWeeksForProgress(estimatedWeeks, progress.stage);
+    }
 
     return {
       name: edge.title,
@@ -216,6 +236,11 @@ export function generateTreatmentPlan(
 
   // Attachment-aware pathway ordering
   reorderPathways(pathways, style, hasRegulationPriority);
+
+  // Progress-aware: deprioritize already-advanced pathways
+  if (progressByEdge.size > 0) {
+    reorderByProgress(pathways, growthEdges, progressByEdge);
+  }
 
   // Attachment-aware primary focus
   const attachmentIntro = getAttachmentFocusIntro(style);
@@ -235,8 +260,13 @@ export function generateTreatmentPlan(
   }
   const recommendedExercises = Array.from(exerciseSet);
 
-  // Check-in frequency
-  const checkInFrequency = compositeScores.regulationScore < 50 ? 'daily' : 'weekly';
+  // Check-in frequency — progress-aware: if user is actively practicing, weekly is fine
+  const hasActivePractice = edgeProgress?.some(
+    (ep) => ep.practiceCount > 0 && ep.stage !== 'integrated'
+  );
+  const checkInFrequency = (compositeScores.regulationScore < 50 && !hasActivePractice)
+    ? 'daily'
+    : 'weekly';
 
   return {
     primaryFocus,
@@ -400,4 +430,63 @@ function generateWeeklyGoals(
   }
 
   return goals.slice(0, 5);
+}
+
+// ─── Progress-Aware Helpers ─────────────────────────────
+
+const STAGE_WEIGHT: Record<GrowthStage, number> = {
+  emerging: 0,
+  practicing: 1,
+  integrating: 2,
+  integrated: 3,
+};
+
+/**
+ * Adjust estimated weeks remaining based on current growth stage.
+ * A user in 'practicing' has already made headway; 'integrating' is nearly there.
+ */
+function adjustWeeksForProgress(baseWeeks: number, stage: GrowthStage): number {
+  switch (stage) {
+    case 'emerging':
+      return baseWeeks;
+    case 'practicing':
+      return Math.max(2, Math.round(baseWeeks * 0.6));
+    case 'integrating':
+      return Math.max(1, Math.round(baseWeeks * 0.3));
+    case 'integrated':
+      return 0;
+    default:
+      return baseWeeks;
+  }
+}
+
+/**
+ * Reorder pathways so that edges still in early stages come first,
+ * and already-integrated edges move to the end.
+ * Applied AFTER attachment-aware ordering as a secondary sort.
+ */
+function reorderByProgress(
+  pathways: TreatmentPathway[],
+  growthEdges: IndividualPortrait['growthEdges'],
+  progressByEdge: Map<string, GrowthEdgeProgress>,
+): void {
+  // Build a lookup from pathway name → edgeId
+  const nameToEdgeId = new Map<string, string>();
+  for (const edge of growthEdges) {
+    nameToEdgeId.set(edge.title, edge.id);
+  }
+
+  // Stable sort: push 'integrated' edges to end, pull 'emerging' to front
+  pathways.sort((a, b) => {
+    const aEdgeId = nameToEdgeId.get(a.name);
+    const bEdgeId = nameToEdgeId.get(b.name);
+    const aProgress = aEdgeId ? progressByEdge.get(aEdgeId) : undefined;
+    const bProgress = bEdgeId ? progressByEdge.get(bEdgeId) : undefined;
+
+    const aWeight = aProgress ? STAGE_WEIGHT[aProgress.stage] : 0;
+    const bWeight = bProgress ? STAGE_WEIGHT[bProgress.stage] : 0;
+
+    // Edges with less progress should come first
+    return aWeight - bWeight;
+  });
 }

@@ -388,6 +388,15 @@ export default function ConsentWaiverScreen() {
           </Text>
         </View>
 
+        {/* ── Mental health disclaimer ─ */}
+        <View style={s.disclaimerCard}>
+          <Text style={s.disclaimerText}>
+            Tender is a relational wellness tool — not therapy, and not a
+            substitute for professional mental health care. If you are in
+            crisis, please call 988 (Suicide & Crisis Lifeline).
+          </Text>
+        </View>
+
         {/* ── Section 3: Option Cards ─ */}
         <Text style={s.sectionLabel}>CHOOSE YOUR DATA PATH</Text>
 
@@ -558,6 +567,22 @@ const s = StyleSheet.create({
     color: Colors.text,
     lineHeight: 26,
     fontFamily: FontFamilies.body,
+  },
+
+  // ── Disclaimer ────────────────────────
+  disclaimerCard: {
+    backgroundColor: Colors.warningLight,
+    borderRadius: BorderRadius.md,
+    borderLeftWidth: 3,
+    borderLeftColor: Colors.warning,
+    padding: Spacing.md,
+    marginBottom: Spacing.lg,
+  },
+  disclaimerText: {
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.caption,
+    color: Colors.text,
+    lineHeight: 18,
   },
 
   // ── Section Label ───────────────────

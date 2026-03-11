@@ -96,6 +96,8 @@ import StepEdgeProgress from '@/components/growth/StepEdgeProgress';
 import StepPortraitInsight from '@/components/growth/StepPortraitInsight';
 import StepVisualizationInsert from '@/components/growth/StepVisualizationInsert';
 import StepCompletionRitual from '@/components/growth/StepCompletionRitual';
+import FieldGameNudgeCard from '@/components/growth/FieldGameNudgeCard';
+import { getFieldGameForStep } from '@/services/field-games/registry';
 import { fetchAllScores } from '@/services/portrait';
 import { getGrowthEdgeProgress } from '@/services/growth';
 import type { IndividualPortrait, AllAssessmentScores } from '@/types/portrait';
@@ -233,6 +235,7 @@ function StepDetailScreenInner() {
   const tagline = getTaglineForStep(stepNumber);
   const audioSource = STEP_AUDIO_MAP[stepNumber];
   const nextStep = TWELVE_STEPS.find((s) => s.stepNumber === stepNumber + 1);
+  const fieldGame = getFieldGameForStep(stepNumber);
 
   // Sprint B2 — Derived content
   const teaching = getStepTeaching(stepNumber);
@@ -942,6 +945,15 @@ function StepDetailScreenInner() {
             </TouchableOpacity>
           )}
         </Animated.View>
+
+        {/* Field Game — Zone experience */}
+        {fieldGame && (
+          <FieldGameNudgeCard
+            game={fieldGame}
+            phaseColor={phase.color}
+            isCompleted={!!miniGameOutput}
+          />
+        )}
 
         {/* Step Quote */}
         <Animated.View entering={FadeIn.delay(300).duration(500)} style={styles.quoteCard}>

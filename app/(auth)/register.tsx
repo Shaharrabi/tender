@@ -199,7 +199,7 @@ export default function RegisterScreen() {
             onPress={() => setAgreedToTerms(!agreedToTerms)}
             activeOpacity={0.7}
             accessibilityRole="checkbox"
-            accessibilityLabel="Agree to data usage terms"
+            accessibilityLabel="Agree to Terms of Service"
             accessibilityState={{ checked: agreedToTerms }}
           >
             <View
@@ -211,9 +211,17 @@ export default function RegisterScreen() {
               {agreedToTerms && <Text style={styles.checkboxCheck}>{'✓'}</Text>}
             </View>
             <Text style={styles.termsText}>
-              I agree that my assessment data may be used to generate my
-              relational portrait and provide personalized guidance. My data is
-              private and never shared without my explicit consent.
+              I agree to the{' '}
+              <Text
+                style={styles.termsLink}
+                onPress={() => router.push('/(app)/terms')}
+                accessibilityRole="link"
+              >
+                Terms of Service
+              </Text>
+              . Tender is a wellness tool, not therapy. My data is used to
+              generate my relational portrait and provide personalized
+              guidance, and is never shared without my explicit consent.
             </Text>
           </TouchableOpacity>
 
@@ -330,6 +338,11 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.caption,
     color: Colors.textSecondary,
     lineHeight: 18,
+  },
+  termsLink: {
+    color: Colors.primary,
+    textDecorationLine: 'underline',
+    fontWeight: '600',
   },
 
   errorText: {

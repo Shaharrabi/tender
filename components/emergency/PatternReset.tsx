@@ -55,6 +55,7 @@ import {
   type ActivationState,
   type ResetScript,
 } from '@/utils/emergency/resetScripts';
+import { audioManager } from '@/services/AudioManager';
 
 interface PatternResetProps {
   portrait: IndividualPortrait | null;
@@ -161,6 +162,7 @@ interface ResetPlayerProps {
 
 function ResetPlayer({ script, activationState, onClose }: ResetPlayerProps) {
   const soundRef = useRef<Audio.Sound | null>(null);
+  const ownerId = useRef(`pattern-reset-${script.id}`).current;
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [position, setPosition] = useState(0);
@@ -213,6 +215,9 @@ function ResetPlayer({ script, activationState, onClose }: ResetPlayerProps) {
 
     (async () => {
       try {
+        // Stop any other audio playing in the app
+        await audioManager.stopCurrent(ownerId);
+
         const source = resolveResetAudio(script.filePath);
         if (!source) {
           setIsLoading(false);
@@ -228,6 +233,7 @@ function ResetPlayer({ script, activationState, onClose }: ResetPlayerProps) {
         if (isMounted) {
           soundRef.current = sound;
           setIsLoading(false);
+          await audioManager.register(sound, ownerId);
         } else {
           sound.unloadAsync();
         }
@@ -240,6 +246,7 @@ function ResetPlayer({ script, activationState, onClose }: ResetPlayerProps) {
     return () => {
       isMounted = false;
       soundRef.current?.unloadAsync();
+      audioManager.unregister(ownerId);
     };
   }, [script]);
 
@@ -251,13 +258,16 @@ function ResetPlayer({ script, activationState, onClose }: ResetPlayerProps) {
     if (status.isPlaying) {
       await soundRef.current.pauseAsync();
     } else {
+      // Stop any other audio playing in the app
+      await audioManager.stopCurrent(ownerId);
       if (status.didJustFinish) {
         await soundRef.current.setPositionAsync(0);
         setHasFinished(false);
       }
       await soundRef.current.playAsync();
+      await audioManager.register(soundRef.current, ownerId);
     }
-  }, []);
+  }, [ownerId]);
 
   const handleCloseAndStop = useCallback(async () => {
     await soundRef.current?.stopAsync();

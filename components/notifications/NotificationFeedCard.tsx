@@ -108,7 +108,7 @@ export default function NotificationFeedCard({
       </View>
 
       {/* Title */}
-      <Text style={[styles.title, isRead && styles.titleRead]} numberOfLines={1}>
+      <Text style={[styles.title, isRead && styles.titleRead]} numberOfLines={2}>
         {prompt.title}
       </Text>
 

@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@/services/supabase';
+import { assertNotGuest } from '@/utils/security/guest-guard';
 import type { ConsentType, DataConsent, SharingPreference } from '@/types/consent';
 
 // ─── Individual Assessment Types ─────────────────────────
@@ -179,8 +180,22 @@ export async function getPartnerSharedAssessments(
 
 // ─── Data Erasure ─────────────────────────────────────────
 
+/**
+ * Erase ALL user data across every table the app writes to.
+ *
+ * Phases:
+ *   0 — Couple-related data (FK dependencies)
+ *   1 — Chat / couple-chat message cascades
+ *   2 — Every remaining user_id table (dependency-safe order)
+ *
+ * Tables that are global/shared (no user_id) are NOT touched:
+ *   weekly_prompts, support_groups, support_group_sessions,
+ *   daily_challenges, badges, steps, mystery_content.
+ */
 export async function eraseUserData(userId: string): Promise<void> {
-  // 0. Clean up couple-related data first (has foreign key dependencies)
+  assertNotGuest(userId, 'delete_account_data');
+
+  // ── Phase 0: Couple-related data (FK dependencies) ─────────
   const { data: myCouples } = await supabase
     .from('couples')
     .select('id')
@@ -198,39 +213,92 @@ export async function eraseUserData(userId: string): Promise<void> {
       .or(`partner_a_id.eq.${userId},partner_b_id.eq.${userId}`);
   }
 
-  // Also clean up couple invites
   await supabase.from('couple_invites').delete().eq('inviter_id', userId);
 
-  // 1. Delete chat messages via sessions owned by this user
-  const { data: sessions } = await supabase
+  // ── Phase 1: Chat message cascades ─────────────────────────
+  // Individual chat
+  const { data: chatSessions } = await supabase
     .from('chat_sessions')
     .select('id')
     .eq('user_id', userId);
 
-  if (sessions && sessions.length > 0) {
-    const sessionIds = sessions.map((s: any) => s.id);
-    const { error: msgError } = await supabase
+  if (chatSessions && chatSessions.length > 0) {
+    await supabase
       .from('chat_messages')
       .delete()
-      .in('session_id', sessionIds);
-
-    if (msgError) {
-      console.error('[Consent] Failed to delete chat messages:', msgError);
-      throw msgError;
-    }
+      .in('session_id', chatSessions.map((s: any) => s.id));
   }
 
-  // 2. Delete from remaining tables in dependency-safe order
+  // Couple chat (user may have created sessions)
+  const { data: coupleSessions } = await supabase
+    .from('couple_chat_sessions')
+    .select('id')
+    .eq('user_id', userId);
+
+  if (coupleSessions && coupleSessions.length > 0) {
+    await supabase
+      .from('couple_chat_messages')
+      .delete()
+      .in('session_id', coupleSessions.map((s: any) => s.id));
+  }
+
+  // ── Phase 2: All user_id tables (dependency-safe order) ────
   const tables = [
+    // Chat parents (children already deleted above)
     'chat_sessions',
-    'exercise_completions',
-    'growth_edge_progress',
-    'daily_check_ins',
+    'couple_chat_sessions',
+
+    // Core assessment & portrait data
     'assessments',
     'portraits',
+
+    // Growth & progress
+    'growth_edge_progress',
+    'daily_check_ins',
+    'step_progress',
+    'step_minigame_outputs',
+    'practice_completions',
+    'exercise_completions',
+
+    // Gamification
+    'xp_transactions',
+    'user_badges',
+    'user_daily_challenges',
+    'user_gamification',
+
+    // Engagement
+    'engagement_streaks',
+    'engagement_notification_log',
+
+    // Journal & reflections
+    'daily_reflections',
+    'card_completions',
+    'weare_scores',
+    'weekly_check_ins',
+
+    // Dating mode
+    'dating_room_activity',
+    'dating_journal',
+    'dating_letters',
+    'dating_profiles',
+
+    // Community & support
+    'community_reactions',
+    'community_posts',
+    'community_letters',
+    'community_memberships',
+    'support_group_attendance',
+    'support_group_members',
+
+    // Consent & sharing (last — least dependent)
     'sharing_preferences',
     'data_consents',
+
+    // User profile (very last — identity row)
+    'user_profiles',
   ];
+
+  const errors: string[] = [];
 
   for (const table of tables) {
     const { error } = await supabase
@@ -239,8 +307,20 @@ export async function eraseUserData(userId: string): Promise<void> {
       .eq('user_id', userId);
 
     if (error) {
+      // Log but continue — best-effort deletion across all tables
       console.error(`[Consent] Failed to delete from ${table}:`, error);
-      throw error;
+      errors.push(`${table}: ${error.message}`);
+    }
+  }
+
+  if (errors.length > 0) {
+    console.error(`[Consent] Data erasure completed with ${errors.length} error(s):`, errors);
+    // Throw only if critical tables failed
+    const critical = errors.filter(
+      (e) => e.startsWith('assessments:') || e.startsWith('portraits:') || e.startsWith('chat_sessions:'),
+    );
+    if (critical.length > 0) {
+      throw new Error(`Failed to delete critical data: ${critical.join('; ')}`);
     }
   }
 }

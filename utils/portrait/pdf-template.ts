@@ -22,9 +22,9 @@ function esc(text: string | undefined): string {
 }
 
 function scoreColor(score: number): string {
-  if (score >= 70) return '#C4616E';
+  if (score >= 70) return '#6B7B9B';  // primary (Gentle Indigo)
   if (score >= 45) return '#D4A843';
-  return '#7294D4';
+  return '#4A6FA8';  // secondary (Lobby Blue)
 }
 
 function scoreBar(label: string, value: number, color?: string): string {
@@ -77,9 +77,9 @@ function overallRingSVG(score: number, label: string): string {
   const offset = circ * 0.25; // start at top
   return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     <circle cx="50" cy="50" r="${r}" fill="none" stroke="#E0D3CE" stroke-width="3"/>
-    <circle cx="50" cy="50" r="${r}" fill="none" stroke="#C4616E" stroke-width="3" stroke-dasharray="${fill.toFixed(1)} ${gap.toFixed(1)}" stroke-dashoffset="${offset.toFixed(1)}" stroke-linecap="round"/>
-    <text x="50" y="48" text-anchor="middle" font-family="Playfair Display, Lora, Georgia, serif" font-size="16" font-weight="600" fill="#C4616E">${Math.round(score)}</text>
-    <text x="50" y="62" text-anchor="middle" font-family="Josefin Sans, Poppins, Liberation Sans, sans-serif" font-size="7" fill="#9B8E91">${esc(label)}</text>
+    <circle cx="50" cy="50" r="${r}" fill="none" stroke="#6B7B9B" stroke-width="3" stroke-dasharray="${fill.toFixed(1)} ${gap.toFixed(1)}" stroke-dashoffset="${offset.toFixed(1)}" stroke-linecap="round"/>
+    <text x="50" y="48" text-anchor="middle" font-family="Playfair Display, Lora, Georgia, serif" font-size="16" font-weight="600" fill="#6B7B9B">${Math.round(score)}</text>
+    <text x="50" y="62" text-anchor="middle" font-family="Josefin Sans, Poppins, Liberation Sans, sans-serif" font-size="7" fill="#6B5E61">${esc(label)}</text>
   </svg>`;
 }
 
@@ -156,7 +156,7 @@ function generateRadarSVG(scores: {
     const br = radius * (score / 100);
     const bx = center + br * Math.cos(a);
     const by = center + br * Math.sin(a);
-    labels += `<circle cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="12" fill="#C4616E" opacity="0.9"/>`;
+    labels += `<circle cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="12" fill="#6B7B9B" opacity="0.9"/>`;
     labels += `<text x="${bx.toFixed(1)}" y="${(by + 1).toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-family="Jost, Poppins, Liberation Sans, sans-serif" font-size="9" font-weight="600" fill="white">${Math.round(score)}</text>`;
   }
 
@@ -164,7 +164,7 @@ function generateRadarSVG(scores: {
     ${grid}${axes}
     <polygon points="${avgHigh.join(' ')}" fill="#E0D3CE" opacity="0.2"/>
     <polygon points="${avgLow.join(' ')}" fill="#FDF6F0"/>
-    <polygon points="${dataPts.join(' ')}" fill="#C4616E" fill-opacity="0.15" stroke="#C4616E" stroke-width="2"/>
+    <polygon points="${dataPts.join(' ')}" fill="#6B7B9B" fill-opacity="0.15" stroke="#6B7B9B" stroke-width="2"/>
     ${labels}
   </svg>`;
 }
@@ -182,7 +182,7 @@ function generateWindowSVG(widthScore: number): string {
   return `<svg viewBox="0 0 ${barW} ${totalH}" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="hG" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#C4616E" stop-opacity="0.3"/><stop offset="100%" stop-color="#C4616E" stop-opacity="0.05"/></linearGradient>
-      <linearGradient id="lG" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#7294D4" stop-opacity="0.05"/><stop offset="100%" stop-color="#7294D4" stop-opacity="0.3"/></linearGradient>
+      <linearGradient id="lG" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#4A6FA8" stop-opacity="0.05"/><stop offset="100%" stop-color="#4A6FA8" stop-opacity="0.3"/></linearGradient>
     </defs>
     <rect x="0" y="0" width="${barW}" height="${zoneY}" rx="4" fill="url(#hG)"/>
     <rect x="0" y="${zoneY}" width="${barW}" height="${windowH}" fill="#F4D5D0" opacity="0.3"/>
@@ -193,7 +193,7 @@ function generateWindowSVG(widthScore: number): string {
     <circle cx="${dotX.toFixed(1)}" cy="${zoneY + windowH / 2}" r="6" fill="#C4616E" stroke="white" stroke-width="1.5"/>
     <text x="${barW - 4}" y="12" text-anchor="end" font-family="Josefin Sans, Poppins, Liberation Sans, sans-serif" font-size="8" fill="#C4616E" opacity="0.6">Activation</text>
     <text x="${barW - 4}" y="${zoneY + windowH / 2 + 3}" text-anchor="end" font-family="Josefin Sans, Poppins, Liberation Sans, sans-serif" font-size="8" fill="#6B9080">Window</text>
-    <text x="${barW - 4}" y="${totalH - 4}" text-anchor="end" font-family="Josefin Sans, Poppins, Liberation Sans, sans-serif" font-size="8" fill="#7294D4" opacity="0.6">Shutdown</text>
+    <text x="${barW - 4}" y="${totalH - 4}" text-anchor="end" font-family="Josefin Sans, Poppins, Liberation Sans, sans-serif" font-size="8" fill="#4A6FA8" opacity="0.6">Shutdown</text>
   </svg>`;
 }
 
@@ -205,19 +205,19 @@ function generateCycleSVG(position: string): string {
 
   return `<svg viewBox="0 0 340 140" xmlns="http://www.w3.org/2000/svg">
     <circle cx="60" cy="70" r="40" fill="#C4616E" opacity="0.12" stroke="#C4616E" stroke-width="1.5"/>
-    <text x="60" y="62" text-anchor="middle" font-family="Josefin Sans, Poppins, Liberation Sans, sans-serif" font-size="8" fill="#9B8E91" letter-spacing="0.5">YOU</text>
+    <text x="60" y="62" text-anchor="middle" font-family="Josefin Sans, Poppins, Liberation Sans, sans-serif" font-size="8" fill="#6B5E61" letter-spacing="0.5">YOU</text>
     <text x="60" y="78" text-anchor="middle" font-family="Jost, Poppins, Liberation Sans, sans-serif" font-size="13" font-weight="600" fill="#C4616E">${pos}</text>
-    <circle cx="280" cy="70" r="40" fill="#7294D4" opacity="0.12" stroke="#7294D4" stroke-width="1.5"/>
-    <text x="280" y="62" text-anchor="middle" font-family="Josefin Sans, Poppins, Liberation Sans, sans-serif" font-size="8" fill="#9B8E91" letter-spacing="0.5">PARTNER</text>
-    <text x="280" y="78" text-anchor="middle" font-family="Jost, Poppins, Liberation Sans, sans-serif" font-size="13" font-weight="600" fill="#7294D4">${partnerPos}</text>
+    <circle cx="280" cy="70" r="40" fill="#4A6FA8" opacity="0.12" stroke="#4A6FA8" stroke-width="1.5"/>
+    <text x="280" y="62" text-anchor="middle" font-family="Josefin Sans, Poppins, Liberation Sans, sans-serif" font-size="8" fill="#6B5E61" letter-spacing="0.5">PARTNER</text>
+    <text x="280" y="78" text-anchor="middle" font-family="Jost, Poppins, Liberation Sans, sans-serif" font-size="13" font-weight="600" fill="#4A6FA8">${partnerPos}</text>
     <path d="M 105 55 Q 170 20 235 55" fill="none" stroke="#C4616E" stroke-width="1.5" marker-end="url(#aR)"/>
     <text x="170" y="32" text-anchor="middle" font-family="Josefin Sans, Poppins, Liberation Sans, sans-serif" font-size="8" fill="#C4616E">${topLabel}</text>
-    <path d="M 235 85 Q 170 120 105 85" fill="none" stroke="#7294D4" stroke-width="1.5" marker-end="url(#aL)"/>
-    <text x="170" y="118" text-anchor="middle" font-family="Josefin Sans, Poppins, Liberation Sans, sans-serif" font-size="8" fill="#7294D4">${bottomLabel}</text>
-    <text x="170" y="72" text-anchor="middle" font-family="Jost, Poppins, Liberation Sans, sans-serif" font-size="18" fill="#9B8E91">\u21BB</text>
+    <path d="M 235 85 Q 170 120 105 85" fill="none" stroke="#4A6FA8" stroke-width="1.5" marker-end="url(#aL)"/>
+    <text x="170" y="118" text-anchor="middle" font-family="Josefin Sans, Poppins, Liberation Sans, sans-serif" font-size="8" fill="#4A6FA8">${bottomLabel}</text>
+    <text x="170" y="72" text-anchor="middle" font-family="Jost, Poppins, Liberation Sans, sans-serif" font-size="18" fill="#6B5E61">\u21BB</text>
     <defs>
       <marker id="aR" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6" fill="#C4616E"/></marker>
-      <marker id="aL" markerWidth="6" markerHeight="6" refX="1" refY="3" orient="auto"><path d="M6,0 L0,3 L6,6" fill="#7294D4"/></marker>
+      <marker id="aL" markerWidth="6" markerHeight="6" refX="1" refY="3" orient="auto"><path d="M6,0 L0,3 L6,6" fill="#4A6FA8"/></marker>
     </defs>
   </svg>`;
 }
@@ -341,7 +341,7 @@ export function generatePortraitHTML(portrait: IndividualPortrait, userName?: st
   // Values gaps
   const valuesGapsHTML = fl.values.significantGaps.length > 0
     ? fl.values.significantGaps.map((g) => {
-        const gapColor = g.gap >= 3 ? '#C4616E' : g.gap >= 2 ? '#D4A843' : '#6B9080';
+        const gapColor = g.gap >= 3 ? '#A84D59' : g.gap >= 2 ? '#D4A843' : '#6B9080';
         const status = g.gap >= 3 ? 'Growth Edge' : g.gap >= 2 ? 'Aligned' : 'Integrated';
         const statusClass = g.gap >= 3 ? 'growth-edge' : g.gap >= 2 ? 'aligned' : 'integrated';
         const impPct = (g.importance / 10) * 100;
@@ -410,7 +410,9 @@ img, svg { max-width: 100%; }
   --rose: #C4616E;
   --rose-light: #F4D5D0;
   --rose-dark: #8B3A4A;
-  --blue: #7294D4;
+  --primary: #6B7B9B;
+  --primary-light: #A8B4CC;
+  --blue: #4A6FA8;
   --blue-light: #C6CDF7;
   --gold: #D4A843;
   --gold-light: #F1BB7B;
@@ -424,7 +426,7 @@ img, svg { max-width: 100%; }
   --surface-elevated: #FFF8F2;
   --text: #2D2226;
   --text-secondary: #6B5B5E;
-  --text-muted: #9B8E91;
+  --text-muted: #6B5E61;
   --border: #E0D3CE;
   --border-light: #F0E6E0;
 }
@@ -436,14 +438,14 @@ img, svg { max-width: 100%; }
     content: "Tender: The Science of Relationships";
     font-family: 'Josefin Sans', Poppins, 'Liberation Sans', sans-serif;
     font-size: 7.5pt;
-    color: #9B8E91;
+    color: #6B5E61;
     letter-spacing: 1.5px;
   }
   @bottom-right {
     content: counter(page);
     font-family: 'Jost', Poppins, 'Liberation Sans', sans-serif;
     font-size: 7.5pt;
-    color: #9B8E91;
+    color: #6B5E61;
   }
 }
 
@@ -844,7 +846,7 @@ p { margin-bottom: 8px; line-height: 1.7; }
   <div class="card">
     <p class="section-label">A.R.E. \u2014 ATTACHMENT QUALITY</p>
     <p style="font-size:9pt;color:var(--text-muted);margin-bottom:12px">Based on Emotionally Focused Therapy: Are you emotionally reachable, do you tune in to your partner's needs, and are you invested in the connection?</p>
-    ${areBarSVG('Accessible', cs.accessibility, accLabel, '#C4616E')}
+    ${areBarSVG('Accessible', cs.accessibility, accLabel, '#6B7B9B')}
     ${areBarSVG('Responsive', cs.responsiveness, resLabel, '#D4A843')}
     ${areBarSVG('Engaged', cs.engagement, engLabel, '#6B9080')}
   </div>
@@ -970,7 +972,7 @@ ${fl.fieldAwareness ? `
   <div class="section-title">Relational Field</div>
   <p>${esc(fl.fieldAwareness.narrative)}</p>
   ${scoreBar('Field Sensitivity', Math.round((fl.fieldAwareness.fieldSensitivity / 5) * 100), '#6B9080')}
-  ${scoreBar('Boundary Clarity', Math.round((fl.fieldAwareness.boundaryClarity / 6) * 100), '#7294D4')}
+  ${scoreBar('Boundary Clarity', Math.round((fl.fieldAwareness.boundaryClarity / 6) * 100), '#4A6FA8')}
   ${scoreBar('Pattern Awareness', Math.round((fl.fieldAwareness.patternAwareness / 7) * 100), '#D4A843')}
 </div>` : ''}
 

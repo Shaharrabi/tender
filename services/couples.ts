@@ -5,6 +5,7 @@
 
 import { supabase } from './supabase';
 import { initializeSharingDefaults } from './consent';
+import { assertNotGuest } from '@/utils/security/guest-guard';
 import type {
   CoupleInvite,
   Couple,
@@ -71,6 +72,7 @@ export async function updateProfile(userId: string, updates: Partial<UserProfile
 // ─── Partner Invitation ────────────────────────────────
 
 export async function createInvite(inviterId: string, inviterName?: string): Promise<CoupleInvite | null> {
+  assertNotGuest(inviterId, 'create_partner_invite');
   const code = generateInviteCode();
 
   const { data, error } = await supabase
@@ -129,6 +131,7 @@ export async function getMyInvites(userId: string): Promise<CoupleInvite[]> {
 }
 
 export async function acceptInvite(inviteId: string, acceptorId: string): Promise<Couple | null> {
+  assertNotGuest(acceptorId, 'accept_partner_invite');
   // 1. Update the invite
   const { data: invite, error: invError } = await supabase
     .from('couple_invites')
