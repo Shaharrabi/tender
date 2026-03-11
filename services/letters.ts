@@ -153,11 +153,16 @@ export async function markLetterRead(letterId: string): Promise<void> {
 /**
  * Try to match undelivered letters to the given user.
  *
- * Matching logic (simplified MVP):
+ * Uses a SECURITY DEFINER RPC function (match_letter_for_user) that
+ * bypasses RLS to atomically find + deliver a letter. This is needed
+ * because RLS SELECT policies only allow author_id or recipient_id
+ * = auth.uid(), but during matching the user is neither.
+ *
+ * Matching logic (in the RPC):
  * 1. Find oldest undelivered, approved letter NOT authored by this user
  * 2. Prefer same attachment pattern (they understand each other)
  * 3. Fallback to any pattern if no same-pattern match
- * 4. Set recipient_id + delivered_at
+ * 4. Atomically set recipient_id + delivered_at (FOR UPDATE SKIP LOCKED)
  *
  * Returns the matched letter or null if none available.
  */
@@ -165,56 +170,21 @@ export async function matchLetterForUser(
   userId: string,
   userPattern: string | null
 ): Promise<CommunityLetter | null> {
-  // First: try to find a letter from someone with the same pattern
-  if (userPattern) {
-    const samePattern = await findAndDeliverLetter(userId, userPattern);
-    if (samePattern) return samePattern;
+  const { data, error } = await supabase.rpc('match_letter_for_user', {
+    p_recipient_id: userId,
+    p_user_pattern: userPattern,
+  });
+
+  if (error) {
+    console.error('[Letters] match_letter_for_user RPC failed:', error);
+    return null;
   }
 
-  // Fallback: any undelivered letter (cross-pattern)
-  const anyPattern = await findAndDeliverLetter(userId, null);
-  return anyPattern;
-}
+  // RPC returns SETOF — an array; take first row if any
+  const rows = Array.isArray(data) ? data : data ? [data] : [];
+  if (rows.length === 0) return null;
 
-/**
- * Internal: find oldest undelivered letter matching criteria and deliver it.
- */
-async function findAndDeliverLetter(
-  recipientId: string,
-  authorPattern: string | null
-): Promise<CommunityLetter | null> {
-  let query = supabase
-    .from('community_letters')
-    .select('*')
-    .is('recipient_id', null)
-    .eq('is_approved', true)
-    .neq('author_id', recipientId) // never receive your own letter
-    .order('created_at', { ascending: true })
-    .limit(1);
-
-  if (authorPattern) {
-    query = query.eq('author_pattern', authorPattern);
-  }
-
-  const { data, error } = await query;
-  if (error || !data || data.length === 0) return null;
-
-  const letter = data[0];
-
-  // Deliver the letter
-  const { data: updated, error: updateError } = await supabase
-    .from('community_letters')
-    .update({
-      recipient_id: recipientId,
-      delivered_at: new Date().toISOString(),
-    })
-    .eq('id', letter.id)
-    .is('recipient_id', null) // race condition guard
-    .select()
-    .single();
-
-  if (updateError || !updated) return null;
-  return mapLetter(updated);
+  return mapLetter(rows[0]);
 }
 
 // ─── Helpers ──────────────────────────────────────────────────
