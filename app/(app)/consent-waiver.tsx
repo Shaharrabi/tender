@@ -21,6 +21,8 @@ import {
   TextInput,
   ActivityIndicator,
   Alert,
+  Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
@@ -354,9 +356,11 @@ export default function ConsentWaiverScreen() {
 
   return (
     <SafeAreaView style={s.container}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
       <ScrollView
         contentContainerStyle={s.scrollContent}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         {/* ── Back Button ───────────── */}
         <View style={s.header}>
@@ -503,6 +507,7 @@ export default function ConsentWaiverScreen() {
         {/* Bottom spacing */}
         <View style={{ height: Spacing.xxxl }} />
       </ScrollView>
+      </KeyboardAvoidingView>
       <QuickLinksBar />
     </SafeAreaView>
   );

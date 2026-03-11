@@ -19,6 +19,8 @@ import {
   StyleSheet,
   SafeAreaView,
   Animated,
+  Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -157,6 +159,7 @@ export default function ExercisesScreen() {
         <View style={styles.headerSpacer} />
       </View>
 
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -401,6 +404,7 @@ export default function ExercisesScreen() {
         {/* Bottom padding */}
         <View style={{ height: Spacing.xxxl }} />
       </ScrollView>
+      </KeyboardAvoidingView>
       <QuickLinksBar currentScreen="practices" />
     </SafeAreaView>
   );

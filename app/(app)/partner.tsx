@@ -19,6 +19,7 @@ import {
   Alert,
   Share,
   Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -267,7 +268,8 @@ export default function PartnerScreen() {
       : allDyadicAssessments;
     return (
       <SafeAreaView style={styles.container}>
-        <ScrollView contentContainerStyle={styles.scroll}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           {/* Header */}
           <TouchableOpacity onPress={handleBack} style={styles.backBtn} accessibilityRole="button">
             <Text style={styles.backText}>{'< Back'}</Text>
@@ -416,6 +418,7 @@ export default function PartnerScreen() {
             </View>
           )}
         </ScrollView>
+        </KeyboardAvoidingView>
         <QuickLinksBar />
       </SafeAreaView>
     );
@@ -425,7 +428,8 @@ export default function PartnerScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <TouchableOpacity onPress={handleBack} style={styles.backBtn} accessibilityRole="button">
           <Text style={styles.backText}>{'< Back'}</Text>
         </TouchableOpacity>
@@ -559,6 +563,7 @@ export default function PartnerScreen() {
           </Text>
         </View>
       </ScrollView>
+      </KeyboardAvoidingView>
       <QuickLinksBar />
     </SafeAreaView>
   );

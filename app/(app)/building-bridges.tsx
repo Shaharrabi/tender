@@ -17,6 +17,7 @@ import {
   TextInput,
   Dimensions,
   Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
@@ -634,6 +635,7 @@ function ReflectingView({
   const hasBonus = sentenceCount >= 3;
 
   return (
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
     <ScrollView style={styles.scrollView} contentContainerStyle={styles.reflectingContent} keyboardShouldPersistTaps="handled">
       <Animated.View entering={FadeIn.duration(400)}>
         <Text style={styles.reflectTitle}>{card.title}</Text>
@@ -686,6 +688,7 @@ function ReflectingView({
         </TouchableOpacity>
       </Animated.View>
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
