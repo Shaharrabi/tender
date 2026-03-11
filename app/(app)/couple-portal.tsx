@@ -44,6 +44,7 @@ import {
   Colors,
   Spacing,
   FontFamilies,
+  FontSizes,
   BorderRadius,
   Shadows,
 } from '@/constants/theme';
@@ -597,7 +598,7 @@ function CouplePortalScreen() {
           <View style={styles.digestCard}>
             <View style={styles.digestHeader}>
               <HourglassIcon size={14} color={Colors.accent} />
-              <TenderText variant="label" color={Colors.accent} style={{ letterSpacing: 1.5, fontSize: 10 }}>
+              <TenderText variant="label" color={Colors.accent} style={{ letterSpacing: 1.5, fontSize: FontSizes.micro }}>
                 YOUR RELATIONSHIP IN 60 SECONDS
               </TenderText>
             </View>
@@ -1817,7 +1818,7 @@ const styles = StyleSheet.create({
   },
   quickStatValue: {
     fontFamily: 'PlayfairDisplay_700Bold',
-    fontSize: 28,
+    fontSize: FontSizes.hero,
   },
   quickStatLabel: {
     marginTop: 2,
@@ -1882,7 +1883,7 @@ const styles = StyleSheet.create({
   },
   repairStepNumberText: {
     fontFamily: 'PlayfairDisplay_700Bold',
-    fontSize: 12,
+    fontSize: FontSizes.caption,
   },
   repairStepText: {
     flex: 1,
@@ -1996,7 +1997,7 @@ const assessStyles = StyleSheet.create({
   },
   partnerScore: {
     fontFamily: FontFamilies.heading,
-    fontSize: 16,
+    fontSize: FontSizes.body,
   },
   barBg: {
     height: 6,

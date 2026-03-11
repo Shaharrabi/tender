@@ -1945,7 +1945,7 @@ const styles = StyleSheet.create({
   quoteText: {
     flex: 1,
     ...Typography.serifItalic,
-    fontSize: 16,
+    fontSize: FontSizes.body,
     color: Colors.textSecondary,
     lineHeight: 26,
   },
@@ -2080,7 +2080,7 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
   },
   practiceModeBadgeText: {
-    fontSize: 10,
+    fontSize: FontSizes.micro,
     fontWeight: '700',
     letterSpacing: 0.5,
     textTransform: 'uppercase' as const,
@@ -2148,7 +2148,7 @@ const styles = StyleSheet.create({
     color: Colors.primary,
   },
   stepStripNumCurrent: {
-    fontSize: 17,
+    fontSize: FontSizes.headingS,
     fontWeight: '700',
   },
   stepStripAllButton: {
@@ -2245,7 +2245,7 @@ const styles = StyleSheet.create({
     ...Typography.label,
     color: Colors.textMuted,
     letterSpacing: 1,
-    fontSize: 10,
+    fontSize: FontSizes.micro,
   },
   partnerResponseSavedText: {
     ...Typography.bodySmall,
@@ -2264,7 +2264,7 @@ const styles = StyleSheet.create({
     ...Typography.label,
     color: Colors.secondary,
     letterSpacing: 1,
-    fontSize: 10,
+    fontSize: FontSizes.micro,
   },
   partnerRevealedText: {
     ...Typography.bodySmall,
@@ -2361,7 +2361,7 @@ const styles = StyleSheet.create({
   // Section transition text — pullquote style
   transitionText: {
     fontFamily: 'PlayfairDisplay_400Regular_Italic',
-    fontSize: 17,
+    fontSize: FontSizes.headingS,
     color: Colors.textSecondary,
     fontStyle: 'italic' as const,
     textAlign: 'center' as const,
@@ -2409,7 +2409,7 @@ const styles = StyleSheet.create({
     ...Typography.label,
     color: Colors.textMuted,
     letterSpacing: 1,
-    fontSize: 10,
+    fontSize: FontSizes.micro,
   },
 
   // Course Gateway section
@@ -2498,7 +2498,7 @@ const styles = StyleSheet.create({
   sectionHeaderLabel: {
     ...Typography.label,
     letterSpacing: 3,
-    fontSize: 10,
+    fontSize: FontSizes.micro,
     color: Colors.textMuted,
   },
   courseProgressHint: {
@@ -2506,7 +2506,7 @@ const styles = StyleSheet.create({
     paddingBottom: Spacing.xs,
   },
   courseProgressHintText: {
-    fontSize: 11,
+    fontSize: FontSizes.tiny,
     color: Colors.textSecondary,
     letterSpacing: 0.5,
   },
@@ -2530,7 +2530,7 @@ const styles = StyleSheet.create({
     ...Typography.label,
     letterSpacing: 3,
     color: Colors.textMuted,
-    fontSize: 10,
+    fontSize: FontSizes.micro,
   },
   zoneGameDone: {
     paddingHorizontal: 8,
@@ -2538,7 +2538,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   zoneGameDoneText: {
-    fontSize: 10,
+    fontSize: FontSizes.micro,
     fontWeight: '600',
     letterSpacing: 1,
   },
@@ -2570,7 +2570,7 @@ const styles = StyleSheet.create({
   },
   zoneGamePlayText: {
     color: '#fff',
-    fontSize: 11,
+    fontSize: FontSizes.tiny,
     fontWeight: '700',
     letterSpacing: 1.5,
   },

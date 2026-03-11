@@ -40,6 +40,7 @@ import {
   ButtonSizes,
   BorderRadius,
   Shadows,
+  FontSizes,
 } from '@/constants/theme';
 import type { IndividualPortrait } from '@/types';
 import type { FieldAwarenessLens } from '@/types/portrait';
@@ -1089,7 +1090,7 @@ function OverviewTab({
                     paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999,
                     backgroundColor: stageColor + '15', borderWidth: 1, borderColor: stageColor + '40',
                   }}>
-                    <TenderText variant="caption" color={stageColor} style={{ fontSize: 10 }}>
+                    <TenderText variant="caption" color={stageColor} style={{ fontSize: FontSizes.micro }}>
                       {edgeDef?.title?.split(' ').slice(0, 3).join(' ') ?? ep.edgeId}
                     </TenderText>
                     <TenderText variant="caption" color={stageColor} style={{ fontSize: 9 }}>
@@ -1364,7 +1365,7 @@ function SynthesisCard({ synthesis }: { synthesis: AssessmentSynthesis }) {
 
       {/* Recommended Step */}
       <View style={st.synthesisStepBox}>
-        <TenderText variant="label" color={Colors.primary} style={{ fontSize: 10, letterSpacing: 1.5 }}>RECOMMENDED STARTING POINT</TenderText>
+        <TenderText variant="label" color={Colors.primary} style={{ fontSize: FontSizes.micro, letterSpacing: 1.5 }}>RECOMMENDED STARTING POINT</TenderText>
         <TenderText variant="headingM">
           Step {synthesis.recommendedStep}
           {stepInfo ? `: ${stepInfo.title}` : ''}
@@ -1596,7 +1597,7 @@ function CycleDiagramInfographic({
     <Animated.View style={[st.cycleDiagramContainer, { opacity: fadeAnim }]}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
         <RefreshIcon size={13} color={Colors.textMuted} />
-        <TenderText variant="label" color={Colors.primary} style={{ fontSize: 10, letterSpacing: 1.0 }}>YOUR CYCLE POSITION</TenderText>
+        <TenderText variant="label" color={Colors.primary} style={{ fontSize: FontSizes.micro, letterSpacing: 1.0 }}>YOUR CYCLE POSITION</TenderText>
       </View>
       <View style={st.scoreGroupDivider} />
 
