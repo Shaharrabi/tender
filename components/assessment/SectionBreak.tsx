@@ -1,8 +1,9 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
 import { AssessmentSection } from '@/types';
-import { Colors, Spacing, FontSizes, ButtonSizes } from '@/constants/theme';
+import { Colors, Spacing, FontSizes, FontFamilies, ButtonSizes, BorderRadius } from '@/constants/theme';
 import { CheckmarkIcon } from '@/assets/graphics/icons';
+import type { MiniTeaser } from '@/utils/assessments/mini-teaser';
 
 interface SectionBreakProps {
   section: AssessmentSection;
@@ -16,6 +17,8 @@ interface SectionBreakProps {
   encouragingMessage?: string;
   /** Section-level progress (e.g., 2 of 6 sections) */
   sectionProgress?: { completed: number; total: number };
+  /** Optional mini-result teaser shown between header and "Up Next" */
+  miniResult?: MiniTeaser | null;
 }
 
 function SectionBreak({
@@ -27,6 +30,7 @@ function SectionBreak({
   sectionName,
   encouragingMessage,
   sectionProgress,
+  miniResult,
 }: SectionBreakProps) {
   const percent = Math.round((questionsCompleted / totalQuestions) * 100);
 
@@ -52,6 +56,14 @@ function SectionBreak({
             <Text style={styles.encouragingMessage}>{encouragingMessage}</Text>
           ) : null}
         </View>
+
+        {miniResult && (
+          <View style={styles.teaserCard}>
+            <Text style={styles.teaserIcon}>{miniResult.icon}</Text>
+            <Text style={styles.teaserLabel}>{miniResult.label}</Text>
+            <Text style={styles.teaserDetail}>{miniResult.detail}</Text>
+          </View>
+        )}
 
         <View style={styles.sectionInfo}>
           <Text style={styles.upNext}>Up Next</Text>
@@ -124,6 +136,32 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     lineHeight: 22,
     marginTop: Spacing.sm,
+  },
+  teaserCard: {
+    backgroundColor: Colors.secondary + '0D',
+    borderWidth: 1,
+    borderColor: Colors.secondary + '30',
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  teaserIcon: {
+    fontSize: 28,
+  },
+  teaserLabel: {
+    fontSize: FontSizes.headingS,
+    fontWeight: '700',
+    fontFamily: FontFamilies.heading,
+    color: Colors.secondary,
+    textAlign: 'center',
+  },
+  teaserDetail: {
+    fontSize: FontSizes.body,
+    fontFamily: FontFamilies.body,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
   },
   sectionInfo: {
     backgroundColor: Colors.surface,

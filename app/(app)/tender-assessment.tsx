@@ -40,6 +40,8 @@ import CelebrationDots from '@/components/ui/CelebrationDots';
 import RetakeDeltaComponent, { computeRetakeDelta } from '@/components/assessment/RetakeDelta';
 import type { RetakeDeltaData } from '@/components/assessment/RetakeDelta';
 import { useSoundHaptics } from '@/services/SoundHapticsService';
+import { generateMiniTeaser } from '@/utils/assessments/mini-teaser';
+import type { MiniTeaser } from '@/utils/assessments/mini-teaser';
 import type { AssessmentConfig, GenericQuestion, AssessmentSection } from '@/types';
 
 // ─── Types ───────────────────────────────────────────────
@@ -140,6 +142,9 @@ export default function TenderAssessmentScreen() {
   // Retake delta state — captured before retake, shown after
   const [retakeDelta, setRetakeDelta] = useState<RetakeDeltaData | null>(null);
   const [showingRetakeDelta, setShowingRetakeDelta] = useState(false);
+
+  // Mini-result teaser — shown on section break to motivate continued engagement
+  const [miniTeaser, setMiniTeaser] = useState<MiniTeaser | null>(null);
   const previousScoresRef = useRef<any>(null);
 
   // When navigated with startSection param (e.g. retake from home), run as
@@ -600,6 +605,9 @@ export default function TenderAssessmentScreen() {
         await AsyncStorage.removeItem(PROGRESS_KEY);
         setShowingCompletion(true);
       } else if (currentSection.breakAfter) {
+        // Generate mini-result teaser for motivation
+        const teaser = generateMiniTeaser(currentConfig.type, scores);
+        setMiniTeaser(teaser);
         // Show section break
         setShowingSectionBreak(true);
       } else {
@@ -1016,6 +1024,7 @@ export default function TenderAssessmentScreen() {
           completed: completedSections.length,
           total: TENDER_SECTIONS.length,
         }}
+        miniResult={miniTeaser}
       />
     );
   }
