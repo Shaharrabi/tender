@@ -28,6 +28,8 @@ import { AuthProvider } from '@/context/AuthContext';
 import { GuestProvider } from '@/context/GuestContext';
 import { GamificationProvider } from '@/context/GamificationContext';
 import { FirstTimeProvider } from '@/context/FirstTimeContext';
+import { NetworkProvider } from '@/context/NetworkContext';
+import OfflineBanner from '@/components/ui/OfflineBanner';
 import { SoundHaptics } from '@/services/SoundHapticsService';
 import { registerAllAppSounds } from '@/services/sounds';
 
@@ -75,21 +77,24 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <GamificationProvider>
-          <GuestProvider>
-            <FirstTimeProvider>
-              <Stack screenOptions={{ headerShown: false }}>
-                <Stack.Screen name="index" />
-                <Stack.Screen name="(auth)" />
-                <Stack.Screen name="(onboarding)" />
-                <Stack.Screen name="(app)" />
-              </Stack>
-              <StatusBar style="dark" />
-            </FirstTimeProvider>
-          </GuestProvider>
-        </GamificationProvider>
-      </AuthProvider>
+      <NetworkProvider>
+        <AuthProvider>
+          <GamificationProvider>
+            <GuestProvider>
+              <FirstTimeProvider>
+                <OfflineBanner />
+                <Stack screenOptions={{ headerShown: false }}>
+                  <Stack.Screen name="index" />
+                  <Stack.Screen name="(auth)" />
+                  <Stack.Screen name="(onboarding)" />
+                  <Stack.Screen name="(app)" />
+                </Stack>
+                <StatusBar style="dark" />
+              </FirstTimeProvider>
+            </GuestProvider>
+          </GamificationProvider>
+        </AuthProvider>
+      </NetworkProvider>
     </QueryClientProvider>
   );
 }
