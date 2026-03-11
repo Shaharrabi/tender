@@ -58,6 +58,7 @@ import {
   LightningIcon,
   CompassIcon,
   LeafIcon,
+  RefreshIcon,
 } from '@/assets/graphics/icons';
 import QuickLinksBar from '@/components/QuickLinksBar';
 import TenderText from '@/components/ui/TenderText';
@@ -145,6 +146,7 @@ function CouplePortalScreen() {
   // Individual portraits (needed for deep portrait gen)
   const [myPortrait, setMyPortrait] = useState<IndividualPortrait | null>(null);
   const [partnerPortrait, setPartnerPortrait] = useState<IndividualPortrait | null>(null);
+  const [partnerPortraitStale, setPartnerPortraitStale] = useState(false);
 
   // Dyadic scores
   const [dyadicScores, setDyadicScores] = useState<{
@@ -264,6 +266,9 @@ function CouplePortalScreen() {
         const partnerVersionStale = isPortraitStale((pp as any).version);
         if (partnerVersionStale) {
           console.log('[CouplePortal] Partner portrait is stale but still usable — partner should regenerate from their device');
+          setPartnerPortraitStale(true);
+        } else {
+          setPartnerPortraitStale(false);
         }
       }
 
@@ -574,6 +579,16 @@ function CouplePortalScreen() {
 
   const renderOverview = () => (
     <View style={styles.tabContent}>
+      {/* Stale partner portrait nudge */}
+      {partnerPortraitStale && (
+        <View style={styles.staleBanner}>
+          <RefreshIcon size={14} color={Colors.accentGold} />
+          <TenderText variant="bodySmall" color={Colors.textSecondary} style={{ flex: 1 }}>
+            {partnerName}'s portrait was built with an earlier version. Their insights still work — they'll get even richer once they regenerate from their device.
+          </TenderText>
+        </View>
+      )}
+
       {/* 60-second digest */}
       {dp && (() => {
         const digest = generateCoupleDigest();
@@ -1747,6 +1762,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     gap: 6,
+  },
+
+  staleBanner: {
+    flexDirection: 'row' as const,
+    alignItems: 'flex-start' as const,
+    gap: Spacing.sm,
+    backgroundColor: Colors.accentGold + '12',
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    marginBottom: Spacing.md,
+    borderLeftWidth: 3,
+    borderLeftColor: Colors.accentGold,
   },
 
   noDataText: {
