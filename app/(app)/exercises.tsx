@@ -470,7 +470,7 @@ const statStyles = StyleSheet.create({
     fontWeight: '500',
   },
   subtitle: {
-    fontSize: 10,
+    fontSize: FontSizes.micro,
     color: Colors.textMuted,
     textAlign: 'center',
     marginTop: 1,
@@ -652,7 +652,7 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
   },
   filterCountText: {
-    fontSize: 11,
+    fontSize: FontSizes.tiny,
     color: Colors.textOnPrimary,
     fontWeight: '700',
   },

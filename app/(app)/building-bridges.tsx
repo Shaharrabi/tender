@@ -775,7 +775,7 @@ const styles = StyleSheet.create({
   },
   headerPre: {
     fontFamily: FontFamilies.body,
-    fontSize: 10,
+    fontSize: FontSizes.micro,
     color: Colors.textMuted,
     letterSpacing: 2,
     textTransform: 'uppercase',
@@ -953,7 +953,7 @@ const styles = StyleSheet.create({
   },
   categoryCount: {
     fontFamily: FontFamilies.body,
-    fontSize: 11,
+    fontSize: FontSizes.tiny,
     color: Colors.textMuted,
     marginTop: 2,
   },
@@ -1150,7 +1150,7 @@ const styles = StyleSheet.create({
   },
   soloHintLabel: {
     fontFamily: FontFamilies.heading,
-    fontSize: 11,
+    fontSize: FontSizes.tiny,
     fontWeight: '600',
     color: Colors.calm,
     textTransform: 'uppercase',
@@ -1236,7 +1236,7 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontFamily: FontFamilies.body,
-    fontSize: 11,
+    fontSize: FontSizes.tiny,
     color: Colors.textMuted,
     textAlign: 'center',
     marginTop: Spacing.xs,

@@ -809,7 +809,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   inviteCode: {
-    fontSize: 32,
+    fontSize: FontSizes.headingXL,
     fontFamily: FontFamilies.heading,
     color: Colors.primary,
     fontWeight: '700',
@@ -918,7 +918,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
-    fontSize: 24,
+    fontSize: FontSizes.headingL,
     fontFamily: FontFamilies.heading,
     color: Colors.text,
     textAlign: 'center',

@@ -24,7 +24,7 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { useAuth } from '@/context/AuthContext';
-import { Colors, Spacing, BorderRadius, Typography, Shadows } from '@/constants/theme';
+import { Colors, Spacing, BorderRadius, Typography, Shadows, FontSizes } from '@/constants/theme';
 import { getDatingProfile, saveGameResults, updateDatingProfile } from '@/services/dating';
 import {
   ArrowLeftIcon,
@@ -359,7 +359,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontFamily: 'PlayfairDisplay_600SemiBold',
-    fontSize: 24,
+    fontSize: FontSizes.headingL,
     letterSpacing: 1,
     color: '#3D3530',
   },
@@ -400,7 +400,7 @@ const styles = StyleSheet.create({
   },
   tabLabel: {
     fontFamily: 'JosefinSans_400Regular',
-    fontSize: 11,
+    fontSize: FontSizes.tiny,
     letterSpacing: 1.5,
     textTransform: 'uppercase',
     color: '#6B5E56',
@@ -451,7 +451,7 @@ const styles = StyleSheet.create({
   },
   completeDesc: {
     fontFamily: 'JosefinSans_300Light',
-    fontSize: 16,
+    fontSize: FontSizes.body,
     color: '#6B5E56',
     lineHeight: 26,
     textAlign: 'center',

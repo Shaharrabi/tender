@@ -931,7 +931,7 @@ const styles = StyleSheet.create({
     color: Colors.primary,
   },
   ringLabel: {
-    fontSize: 10,
+    fontSize: FontSizes.micro,
     fontWeight: '600',
     color: Colors.textMuted,
     textTransform: 'uppercase',
@@ -1069,7 +1069,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.pill,
   },
   weeksBadgeText: {
-    fontSize: 11,
+    fontSize: FontSizes.tiny,
     fontWeight: '700',
   },
 
@@ -1226,7 +1226,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.pill,
   },
   durationBadgeText: {
-    fontSize: 11,
+    fontSize: FontSizes.tiny,
     fontWeight: '700',
   },
   modeBadge: {
@@ -1235,7 +1235,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.pill,
   },
   modeBadgeText: {
-    fontSize: 11,
+    fontSize: FontSizes.tiny,
     fontWeight: '600',
     color: Colors.textSecondary,
     textTransform: 'capitalize',

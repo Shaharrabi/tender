@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
   },
   closeText: {
     color: 'rgba(255,255,255,0.7)',
-    fontSize: 16,
+    fontSize: FontSizes.body,
     fontWeight: '600',
   },
   errorContainer: {

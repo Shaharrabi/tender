@@ -874,7 +874,7 @@ const styles = StyleSheet.create({
   },
   insightGrowthLabel: {
     fontFamily: FontFamilies.heading,
-    fontSize: 10,
+    fontSize: FontSizes.micro,
     color: Colors.textMuted,
     textTransform: 'uppercase' as const,
     letterSpacing: 0.8,
@@ -896,7 +896,7 @@ const styles = StyleSheet.create({
   },
   insightGrowthDescription: {
     fontFamily: FontFamilies.body,
-    fontSize: 11,
+    fontSize: FontSizes.tiny,
     color: Colors.textMuted,
     lineHeight: 16,
     paddingLeft: 12,

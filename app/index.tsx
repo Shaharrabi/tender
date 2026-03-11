@@ -4,7 +4,7 @@ import { ActivityIndicator, View, Text, StyleSheet } from 'react-native';
 import { useAuth } from '@/context/AuthContext';
 import { useGuest } from '@/context/GuestContext';
 import { supabase } from '@/services/supabase';
-import { Colors } from '@/constants/theme';
+import { Colors, FontSizes } from '@/constants/theme';
 
 export default function Index() {
   const { session, user, loading } = useAuth();
@@ -107,13 +107,13 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   title: {
-    fontSize: 28,
+    fontSize: FontSizes.hero,
     fontWeight: 'bold',
     color: Colors.text,
     marginBottom: 8,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: FontSizes.body,
     color: Colors.textSecondary,
   },
   spinner: {
