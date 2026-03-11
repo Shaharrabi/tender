@@ -36,7 +36,7 @@ export default function QuestionRenderer({
     <View>
       {/* Likert */}
       {question.inputType === 'likert' && (question.likertScale || defaultLikertScale) && (
-        <View style={styles.likertSection}>
+        <View style={styles.likertSection} accessibilityRole="radiogroup" accessibilityLabel={question.text || 'Likert scale question'}>
           {(question.likertScale || defaultLikertScale!).map((item) => {
             const scale = question.likertScale || defaultLikertScale!;
             return (
@@ -88,7 +88,11 @@ export default function QuestionRenderer({
             accessibilityRole="text"
             accessibilityLabel={question.placeholder || 'Type your response'}
           />
-          <Text style={styles.charCount}>
+          <Text
+            style={styles.charCount}
+            accessibilityLabel={`${(currentAnswer || '').length} of ${question.charLimit || 500} characters used`}
+            accessibilityRole="text"
+          >
             {(currentAnswer || '').length}/{question.charLimit || 500}
           </Text>
         </View>
@@ -96,7 +100,7 @@ export default function QuestionRenderer({
 
       {/* Choice */}
       {question.inputType === 'choice' && question.choices && (
-        <View style={styles.choiceSection}>
+        <View style={styles.choiceSection} accessibilityRole="radiogroup" accessibilityLabel={question.text || 'Multiple choice question'}>
           {question.choices.map((choice, choiceIndex) => (
             <TouchableOpacity
               key={choice.key}
@@ -134,8 +138,8 @@ export default function QuestionRenderer({
 
       {/* Ranking */}
       {question.inputType === 'ranking' && question.rankingItems && (
-        <View style={styles.rankingSection}>
-          <Text style={styles.rankingHint}>
+        <View style={styles.rankingSection} accessibilityLabel={`${question.text || 'Ranking question'}. Tap items in order of importance. Tap again to remove.`}>
+          <Text style={styles.rankingHint} accessibilityRole="text">
             Tap items in order of importance (1st, 2nd, 3rd...). Tap again to remove.
           </Text>
           {question.rankingItems.map((item) => {
@@ -160,8 +164,8 @@ export default function QuestionRenderer({
                   }
                 }}
                 accessibilityRole="button"
-                accessibilityLabel={`${item.label}${isSelected ? `, ranked ${position + 1} of ${question.rankCount || 5}` : ', not ranked'}`}
-                accessibilityState={{ disabled: !isSelected && isFull }}
+                accessibilityLabel={`${item.label}${isSelected ? `, ranked ${position + 1} of ${question.rankCount || 5}` : ', not ranked'}${!isSelected && isFull ? ', maximum rankings reached' : ''}`}
+                accessibilityState={{ selected: isSelected, disabled: !isSelected && isFull }}
               >
                 <View
                   style={[
