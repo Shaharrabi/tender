@@ -18,6 +18,7 @@ import QuickLinksBar from '@/components/QuickLinksBar';
 import {
   View,
   Text,
+  TouchableOpacity,
   StyleSheet,
   SafeAreaView,
   ScrollView,
@@ -521,6 +522,22 @@ export default function CommunityScreen() {
                 We're carefully designing this to feel warm and safe. The first circles will open once our community reaches enough members to match thoughtfully.
               </Text>
             </View>
+
+            {/* Interest CTA */}
+            <TouchableOpacity
+              style={st.circleNotifyBtn}
+              onPress={() => Alert.alert(
+                'You\'re on the List',
+                'We\'ll let you know as soon as the first Fireplace Circles are ready. Thank you for your interest.',
+                [{ text: 'Looking Forward to It', style: 'default' }],
+              )}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Get notified when Circle launches"
+            >
+              <FireIcon size={16} color={Colors.accentGold} />
+              <Text style={st.circleNotifyText}>Notify Me When Circles Open</Text>
+            </TouchableOpacity>
           </View>
         )}
 
@@ -638,5 +655,23 @@ const st = StyleSheet.create({
     fontSize: FontSizes.bodySmall,
     color: Colors.textSecondary,
     lineHeight: 22,
+  },
+  circleNotifyBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    paddingVertical: 14,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1.5,
+    borderColor: Colors.accentGold,
+    backgroundColor: Colors.accentGold + '10',
+  },
+  circleNotifyText: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '600',
+    fontFamily: FontFamilies.heading,
+    color: Colors.accentGold,
+    letterSpacing: 0.5,
   },
 });
