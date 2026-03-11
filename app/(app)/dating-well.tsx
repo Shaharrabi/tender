@@ -20,6 +20,7 @@ import {
   SafeAreaView,
   StyleSheet,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import Animated, { FadeIn } from 'react-native-reanimated';
@@ -125,7 +126,7 @@ export default function DatingWellScreen() {
     async (prefs: Record<string, any>) => {
       if (!session?.user?.id) return;
       try {
-        await updateDatingProfile(session.user.id, {
+        const updated = await updateDatingProfile(session.user.id, {
           preferences: {
             genderIdentity: prefs.gender_identity,
             lookingFor: prefs.looking_for,
@@ -142,6 +143,7 @@ export default function DatingWellScreen() {
             loveLanguages: prefs.love_language,
           },
         });
+        setProfile(updated);
       } catch (err) {
         if (__DEV__) console.error('Failed to update preferences:', err);
       }
@@ -153,7 +155,8 @@ export default function DatingWellScreen() {
     async (bio: string) => {
       if (!session?.user?.id) return;
       try {
-        await updateDatingProfile(session.user.id, { bio });
+        const updated = await updateDatingProfile(session.user.id, { bio });
+        setProfile(updated);
       } catch (err) {
         if (__DEV__) console.error('Failed to update bio:', err);
       }
@@ -162,7 +165,14 @@ export default function DatingWellScreen() {
   );
 
   const handleTabPress = (tabId: TabKey) => {
-    if (!gameComplete && tabId !== 'game') return;
+    if (!gameComplete && tabId !== 'game') {
+      Alert.alert(
+        'Play The Field First',
+        'Complete the constellation game to unlock your profile, discovery, and rooms.',
+        [{ text: 'Got it', style: 'default' }],
+      );
+      return;
+    }
     setActiveTab(tabId);
   };
 
