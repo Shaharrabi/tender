@@ -1,11 +1,12 @@
 import { Stack, Redirect, usePathname } from 'expo-router';
-import { ActivityIndicator, View, Text, TouchableOpacity, Modal, StyleSheet } from 'react-native';
+import { ActivityIndicator, View, Text, TouchableOpacity, Modal, StyleSheet, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useGuest } from '@/context/GuestContext';
 import { Colors, Spacing, FontSizes, BorderRadius } from '@/constants/theme';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
+import { registerAndStorePushToken } from '@/services/notifications';
 
 // Routes guests CAN access (browse-only — no data writes)
 const GUEST_ALLOWED_ROUTES = [
@@ -50,6 +51,17 @@ export default function AppLayout() {
   const pathname = usePathname();
   const router = useRouter();
   const [showGuestModal, setShowGuestModal] = useState(false);
+  const pushRegistered = useRef(false);
+
+  // Register push token once after authenticated user mounts (native only)
+  useEffect(() => {
+    if (session?.user?.id && !isGuest && !pushRegistered.current && Platform.OS !== 'web') {
+      pushRegistered.current = true;
+      registerAndStorePushToken(session.user.id).catch(() => {
+        // Non-critical — silently ignore; user can still use the app
+      });
+    }
+  }, [session?.user?.id, isGuest]);
 
   // Check if current route is restricted for guests
   useEffect(() => {

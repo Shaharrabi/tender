@@ -22,6 +22,12 @@ import {
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
+  scheduleWeeklyCheckIn,
+  scheduleDailyReminder,
+  cancelWeeklyCheckIn,
+  cancelDailyReminder,
+} from '@/services/notifications';
+import {
   Colors,
   Spacing,
   FontSizes,
@@ -116,6 +122,27 @@ export default function NotificationSettingsScreen() {
     setPrefs(updated);
     try {
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+
+      // Schedule or cancel local notifications based on toggle state
+      if (Platform.OS !== 'web') {
+        const timeHour = updated.reminderTime === 'morning' ? 8 : updated.reminderTime === 'afternoon' ? 13 : 19;
+
+        if (key === 'dailyCheckInReminder' || key === 'reminderTime') {
+          if (updated.dailyCheckInReminder) {
+            scheduleWeeklyCheckIn(timeHour, 0).catch(() => {});
+          } else {
+            cancelWeeklyCheckIn().catch(() => {});
+          }
+        }
+
+        if (key === 'practiceReminders' || key === 'reminderTime') {
+          if (updated.practiceReminders) {
+            scheduleDailyReminder(timeHour, 0).catch(() => {});
+          } else {
+            cancelDailyReminder().catch(() => {});
+          }
+        }
+      }
     } catch {
       // Silently fail
     }
