@@ -17,7 +17,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
-import { AppButton } from '@/components/ui/AppButton';
+import TenderButton from '@/components/ui/TenderButton';
 import {
   Colors,
   Spacing,
@@ -79,22 +79,22 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 
       {/* Primary CTA */}
       {ctaText && ctaOnPress && (
-        <AppButton
+        <TenderButton
           title={ctaText}
           onPress={ctaOnPress}
           variant="primary"
-          size="medium"
+          size="md"
           style={styles.ctaButton}
         />
       )}
 
       {/* Secondary CTA */}
       {secondaryCtaText && secondaryCtaOnPress && (
-        <AppButton
+        <TenderButton
           title={secondaryCtaText}
           onPress={secondaryCtaOnPress}
           variant="ghost"
-          size="small"
+          size="sm"
           style={styles.secondaryButton}
         />
       )}
