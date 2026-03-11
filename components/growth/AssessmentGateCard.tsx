@@ -33,7 +33,7 @@ interface AssessmentGateCardProps {
   phaseColor: string;
 }
 
-export default function AssessmentGateCard({
+function AssessmentGateCard({
   gate,
   completedAssessmentIds,
   phaseColor,
@@ -205,3 +205,5 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
 });
+
+export default React.memo(AssessmentGateCard);

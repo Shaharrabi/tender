@@ -38,7 +38,7 @@ export interface CardProps {
   accessibilityLabel?: string;
 }
 
-export default function Card({
+function Card({
   children,
   variant = 'surface',
   padding = 'md',
@@ -110,3 +110,5 @@ const styles = StyleSheet.create({
     ...Shadows.card,
   },
 });
+
+export default React.memo(Card);

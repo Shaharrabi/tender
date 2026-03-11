@@ -65,7 +65,7 @@ function getCompletionKey(date: Date): string {
   return `${COMPLETION_KEY_PREFIX}${y}-${m}-${d}`;
 }
 
-export default function DailyPatternCard({
+function DailyPatternCard({
   portrait,
   onAwardXP,
 }: DailyPatternCardProps) {
@@ -330,3 +330,5 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 });
+
+export default React.memo(DailyPatternCard);

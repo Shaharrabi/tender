@@ -56,7 +56,7 @@ function getTodayKey(): string {
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 }
 
-export default function MicroRitualCard({
+function MicroRitualCard({
   cycleDynamic,
   onAwardXP,
 }: MicroRitualCardProps) {
@@ -294,3 +294,5 @@ const styles = StyleSheet.create({
     color: Colors.white,
   },
 });
+
+export default React.memo(MicroRitualCard);

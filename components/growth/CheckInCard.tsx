@@ -60,7 +60,7 @@ interface CheckInCardProps {
   ) => Promise<void>;
 }
 
-export default function CheckInCard({
+function CheckInCard({
   todaysCheckIn,
   onSubmit,
 }: CheckInCardProps) {
@@ -511,3 +511,5 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 });
+
+export default React.memo(CheckInCard);

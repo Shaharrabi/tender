@@ -74,7 +74,7 @@ interface MicroCourseCardProps {
 
 // ─── Component ──────────────────────────────────────────
 
-export default function MicroCourseCard({
+function MicroCourseCard({
   course,
   progress,
   isLocked,
@@ -424,3 +424,5 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
 });
+
+export default React.memo(MicroCourseCard);

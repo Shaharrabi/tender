@@ -40,7 +40,7 @@ interface CouplePlayCardProps {
 
 // ─── Component ──────────────────────────────────────────
 
-export default function CouplePlayCard({
+function CouplePlayCard({
   activity,
   phaseColor,
   isExpanded,
@@ -293,3 +293,5 @@ const styles = StyleSheet.create({
     gap: 4,
   },
 });
+
+export default React.memo(CouplePlayCard);

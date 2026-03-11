@@ -99,7 +99,7 @@ function resolveAudioSource(filePath: string): any | undefined {
   return AUDIO_SOURCES[filePath];
 }
 
-export default function PortraitAudioCard({
+function PortraitAudioCard({
   track,
   accentColor = Colors.accent,
   compact = false,
@@ -392,3 +392,5 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
 });
+
+export default React.memo(PortraitAudioCard);

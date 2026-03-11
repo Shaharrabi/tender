@@ -30,7 +30,7 @@ interface GrowthPulseCardProps {
 
 // ─── Component ──────────────────────────────────────────
 
-export default function GrowthPulseCard({
+function GrowthPulseCard({
   pulse,
   phaseColor,
   hasPortrait,
@@ -89,3 +89,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+
+export default React.memo(GrowthPulseCard);

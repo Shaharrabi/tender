@@ -40,7 +40,7 @@ interface AssessmentNudgeCardProps {
   isSolo: boolean;
 }
 
-export default function AssessmentNudgeCard({
+function AssessmentNudgeCard({
   nudge,
   phaseColor,
   completedAssessmentIds,
@@ -137,3 +137,5 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
 });
+
+export default React.memo(AssessmentNudgeCard);
