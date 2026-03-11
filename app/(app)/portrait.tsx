@@ -243,7 +243,11 @@ function AnimatedScoreBar({
   });
 
   return (
-    <Animated.View style={[st.barContainer, { opacity: opacityAnim }]}>
+    <Animated.View
+      style={[st.barContainer, { opacity: opacityAnim }]}
+      accessibilityRole="text"
+      accessibilityLabel={`${label}: ${value} out of 100${interpretation ? `, ${interpretation}` : ''}`}
+    >
       <View style={st.barLabelRow}>
         <TenderText variant="body">{label}</TenderText>
         <TenderText variant="body" color={tier.color}>{value}</TenderText>
@@ -314,7 +318,11 @@ function AnimatedScoreCircle({ score, growthBoost }: { score: number; growthBoos
         },
       ]}
     >
-      <View style={[st.scoreCircleOuter, { borderColor: tier.color }]}>
+      <View
+        style={[st.scoreCircleOuter, { borderColor: tier.color }]}
+        accessibilityRole="text"
+        accessibilityLabel={`Overall relational score: ${score} out of 100, ${tier.label}`}
+      >
         <TenderText variant="headingXL" color={tier.color}>{displayCount}</TenderText>
         <TenderText variant="caption" color={Colors.textMuted} style={st.scoreCircleLabel}>overall</TenderText>
       </View>
@@ -378,7 +386,7 @@ function StatCard({
         <IconComp size={16} color={Colors.white} />
       </View>
       <TenderText variant="caption" color={Colors.textMuted} style={st.statLabel}>{label}</TenderText>
-      <TenderText variant="body" style={st.statValue} numberOfLines={2}>{value}</TenderText>
+      <TenderText variant="body" style={st.statValue} numberOfLines={2} accessibilityRole="text" accessibilityLabel={`${label}: ${value}`}>{value}</TenderText>
     </Animated.View>
   );
 }
@@ -443,7 +451,11 @@ function AREScoreRing({
         },
       ]}
     >
-      <View style={[st.areRingOuter, { borderColor: color }]}>
+      <View
+        style={[st.areRingOuter, { borderColor: color }]}
+        accessibilityRole="text"
+        accessibilityLabel={`${label} score: ${value} out of 100, ${tier.label}`}
+      >
         {/* Background track */}
         <View style={[st.areRingTrack, { borderColor: color + '20' }]} />
         <TenderText variant="headingM" color={color}>{displayCount}</TenderText>
@@ -720,7 +732,7 @@ export default function PortraitScreen() {
           activeOpacity={0.7}
           style={st.headerBackBtn}
           accessibilityRole="button"
-          accessibilityLabel="Your Portrait"
+          accessibilityLabel="Go back to home"
         >
           <TenderText variant="body" color={Colors.primary}>{'<'} Back</TenderText>
         </TouchableOpacity>
@@ -745,7 +757,7 @@ export default function PortraitScreen() {
           activeOpacity={0.7}
           style={[st.headerBackBtn, { alignItems: 'flex-end' }]}
           accessibilityRole="button"
-          accessibilityLabel="Export PDF"
+          accessibilityLabel="Export your portrait as PDF"
         >
           <TenderText variant="body" color={Colors.primary}>Export PDF</TenderText>
         </TouchableOpacity>
@@ -753,7 +765,7 @@ export default function PortraitScreen() {
 
       {/* ── View-and-Erase Warning ─────────────── */}
       {isViewAndErase && (
-        <View style={st.viewAndEraseBanner}>
+        <View style={st.viewAndEraseBanner} accessibilityRole="alert" accessibilityLabel="One-time view — your data will be erased when you leave this screen">
           <TenderText variant="body" color={Colors.warning} align="center">
             One-time view — your data will be erased when you leave this screen
           </TenderText>
@@ -780,6 +792,8 @@ export default function PortraitScreen() {
                 onPress={() => handleTabChange(tab.key)}
                 activeOpacity={0.7}
                 accessibilityRole="button"
+                accessibilityLabel={`View ${tab.label} tab`}
+                accessibilityState={{ selected: isActive }}
               >
                 <View style={st.tabIcon}>
                   <tab.Icon size={14} color={isActive ? tab.color : Colors.textMuted} />
@@ -1067,7 +1081,7 @@ function OverviewTab({
           <View style={st.scoreGroupDivider} />
 
           {/* Steps progress */}
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }} accessibilityRole="text" accessibilityLabel={`Steps completed: ${jd.stepsCompleted} of ${jd.totalSteps}`}>
             <TenderText variant="body" style={{ flex: 1 }}>Steps Completed</TenderText>
             <TenderText variant="body" color={Colors.secondary}>{jd.stepsCompleted}/{jd.totalSteps}</TenderText>
           </View>
@@ -1104,16 +1118,16 @@ function OverviewTab({
 
           {/* Stats row */}
           <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
-            <View style={{ alignItems: 'center' }}>
+            <View style={{ alignItems: 'center' }} accessibilityRole="text" accessibilityLabel={`${jd.totalPractices} practices completed`}>
               <TenderText variant="headingM" color={Colors.primary}>{jd.totalPractices}</TenderText>
               <TenderText variant="caption" color={Colors.textMuted}>Practices</TenderText>
             </View>
-            <View style={{ alignItems: 'center' }}>
+            <View style={{ alignItems: 'center' }} accessibilityRole="text" accessibilityLabel={`${jd.currentStreak} day streak`}>
               <TenderText variant="headingM" color={Colors.primary}>{jd.currentStreak}</TenderText>
               <TenderText variant="caption" color={Colors.textMuted}>Day Streak</TenderText>
             </View>
             {gbr && gbr.growthBoost > 0 && (
-              <View style={{ alignItems: 'center' }}>
+              <View style={{ alignItems: 'center' }} accessibilityRole="text" accessibilityLabel={`Plus ${gbr.growthBoost} growth boost points`}>
                 <TenderText variant="headingM" color={Colors.success}>+{gbr.growthBoost}</TenderText>
                 <TenderText variant="caption" color={Colors.textMuted}>Growth Boost</TenderText>
               </View>
@@ -1165,6 +1179,7 @@ function OverviewTab({
             onPress={() => onNavigate(tab.key)}
             activeOpacity={0.8}
             accessibilityRole="button"
+            accessibilityLabel={`Explore your ${tab.label}`}
           >
             <View style={[st.navCardIcon, { backgroundColor: tab.color }]}>
               <tab.Icon size={16} color={Colors.white} />
@@ -1229,6 +1244,7 @@ function FieldAwarenessCard({ fieldAwareness }: { fieldAwareness: FieldAwareness
             style={st.fieldExpandBtn}
             activeOpacity={0.7}
             accessibilityRole="button"
+            accessibilityLabel={expanded ? 'Collapse cross-pattern insights' : 'Expand cross-pattern insights'}
           >
             <TenderText variant="headingS" color={Colors.primary}>
               Cross-Pattern Insights ({fieldAwareness.crossPatterns.length})
@@ -1261,7 +1277,7 @@ function FieldScoreBar({ label, value, color, maxScale = 7 }: { label: string; v
   }, [pct]);
 
   return (
-    <View style={st.fieldScoreItem}>
+    <View style={st.fieldScoreItem} accessibilityRole="text" accessibilityLabel={`${label}: ${value.toFixed(1)} out of ${maxScale}`}>
       <TenderText variant="caption" color={Colors.textSecondary} style={st.fieldScoreLabel}>{label}</TenderText>
       <View style={st.fieldScoreBarBg}>
         <Animated.View
@@ -1453,7 +1469,7 @@ function ValuesCompassInfographic({
             The distance between how important a value is to you and how much you're currently living it. A gap of 3+ means this value matters deeply but your daily actions aren't yet matching.
           </TenderText>
           {gaps.map((g) => (
-            <View key={g.value} style={st.valuesGapRow}>
+            <View key={g.value} style={st.valuesGapRow} accessibilityRole="text" accessibilityLabel={`${g.value}: values-action gap of ${g.gap} out of 10`}>
               <TenderText variant="caption" style={st.valuesGapLabel}>{g.value}</TenderText>
               <View style={st.valuesGapBarTrack}>
                 <View style={[st.valuesGapBarFill, {
@@ -1499,7 +1515,11 @@ function PartsMapInfographic({
 
       {/* Self-Leadership Circle */}
       <View style={st.partsMapCenter}>
-        <View style={[st.partsMapSelfCircle, { borderColor: selfTier.color }]}>
+        <View
+          style={[st.partsMapSelfCircle, { borderColor: selfTier.color }]}
+          accessibilityRole="text"
+          accessibilityLabel={`Self-leadership score: ${selfScore} out of 100, ${selfTier.label}`}
+        >
           <TenderText variant="headingM" color={selfTier.color}>{selfScore}</TenderText>
           <TenderText variant="caption" color={Colors.textMuted} align="center">Self{'\n'}Leadership</TenderText>
         </View>
@@ -1609,10 +1629,14 @@ function CycleDiagramInfographic({
         </Animated.View>
 
         {/* Your position */}
-        <View style={[
-          st.cycleDiagramYouBadge,
-          { backgroundColor: isPursuer ? Colors.secondary : Colors.depth },
-        ]}>
+        <View
+          style={[
+            st.cycleDiagramYouBadge,
+            { backgroundColor: isPursuer ? Colors.secondary : Colors.depth },
+          ]}
+          accessibilityRole="text"
+          accessibilityLabel={`You: ${isPursuer ? 'Pursuer' : negativeCycle.position === 'withdrawer' ? 'Withdrawer' : 'Mixed'}`}
+        >
           <TenderText variant="caption" color={Colors.white} style={st.cycleDiagramYouText}>You</TenderText>
           <TenderText variant="caption" color={Colors.white}>
             {isPursuer ? 'Pursuer' : negativeCycle.position === 'withdrawer' ? 'Withdrawer' : 'Mixed'}
@@ -1901,7 +1925,7 @@ function BigFiveReframesSection({ reframes }: { reframes: string[] }) {
         }}
         activeOpacity={0.7}
         accessibilityRole="button"
-        accessibilityLabel="Personality Reframes"
+        accessibilityLabel={expanded ? 'Collapse personality reframes' : 'Expand personality reframes'}
       >
         <View style={st.cardHeaderRow}>
           <View style={[st.lensIconCircle, { backgroundColor: Colors.secondary + '20' }]}>
@@ -1949,7 +1973,11 @@ function CycleTab({ portrait, rawScores }: { portrait: IndividualPortrait; rawSc
     <Animated.View style={{ opacity: fadeAnim }}>
       {/* Position Hero */}
       <View style={[st.cycleHero, { backgroundColor: positionColor + '12' }]}>
-        <View style={[st.cycleBadge, { backgroundColor: positionColor }]}>
+        <View
+          style={[st.cycleBadge, { backgroundColor: positionColor }]}
+          accessibilityRole="text"
+          accessibilityLabel={`Your cycle position: ${nc.position}`}
+        >
           <TenderText variant="caption" color={Colors.white} style={st.cycleBadgeText}>
             {nc.position.toUpperCase()}
           </TenderText>
@@ -2015,9 +2043,13 @@ function CycleTab({ portrait, rawScores }: { portrait: IndividualPortrait; rawSc
           {portrait.patterns.map((pattern) => (
             <View key={pattern.id} style={st.patternCard}>
               <View style={st.patternHeader}>
-                <View style={[st.patternBadge, {
-                  backgroundColor: pattern.confidence === 'high' ? Colors.success + '20' : Colors.warning + '20',
-                }]}>
+                <View
+                  style={[st.patternBadge, {
+                    backgroundColor: pattern.confidence === 'high' ? Colors.success + '20' : Colors.warning + '20',
+                  }]}
+                  accessibilityRole="text"
+                  accessibilityLabel={`${pattern.confidence} confidence pattern`}
+                >
                   <TenderText variant="caption" color={pattern.confidence === 'high' ? Colors.success : Colors.warning} style={st.patternBadgeText}>
                     {pattern.confidence} confidence
                   </TenderText>
@@ -2282,7 +2314,7 @@ function AnchorsTab({
         onPress={() => router.push('/(app)/chat' as any)}
         activeOpacity={0.8}
         accessibilityRole="button"
-        accessibilityLabel="Nuance AI"
+        accessibilityLabel="Talk with Nuance AI about your portrait"
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           <TenderText variant="button" color={Colors.white}>Nuance AI</TenderText>
@@ -2295,7 +2327,7 @@ function AnchorsTab({
         onPress={() => router.push('/(app)/exercises' as any)}
         activeOpacity={0.8}
         accessibilityRole="button"
-        accessibilityLabel="Practice an Exercise"
+        accessibilityLabel="Browse growth exercises to practice"
       >
         <TenderText variant="button" color={Colors.primary}>Practice an Exercise</TenderText>
       </TouchableOpacity>
