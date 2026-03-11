@@ -80,15 +80,21 @@ export const WelcomeAudio: React.FC<WelcomeAudioProps> = ({ screenKey }) => {
     };
   }, []);
 
-  // Cleanup sound on unmount
+  // Cleanup sound on unmount — also mark as heard so it won't replay
   useEffect(() => {
     return () => {
       if (soundRef.current) {
         soundRef.current.unloadAsync().catch(() => {});
         soundRef.current = null;
       }
+      // If audio was shown but user navigated away before finish/skip,
+      // still mark as heard so it doesn't replay on next visit.
+      if (isVisible && !completedRef.current) {
+        _heardThisSession.add(screenKey);
+        markAudioHeard(screenKey);
+      }
     };
-  }, []);
+  }, [isVisible, screenKey, markAudioHeard]);
 
   const doComplete = useCallback(() => {
     if (completedRef.current) return;
@@ -186,6 +192,10 @@ export const WelcomeAudio: React.FC<WelcomeAudioProps> = ({ screenKey }) => {
     const timer = setTimeout(() => {
       if (mountedRef.current) {
         setIsVisible(true);
+        // Mark as heard immediately — showing the player is enough.
+        // Don't wait for finish/skip (user may navigate away).
+        _heardThisSession.add(screenKey);
+        markAudioHeard(screenKey);
         // Fade in, then try to play
         Animated.timing(fadeAnim, {
           toValue: 1,

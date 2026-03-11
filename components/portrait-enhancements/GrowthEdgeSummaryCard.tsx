@@ -13,7 +13,7 @@
  *   BorderRadius.lg=16, Shadows.card
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { View, TouchableOpacity, LayoutAnimation, StyleSheet, Platform, UIManager } from 'react-native';
 import TenderText from '@/components/ui/TenderText';
 import { Colors, Spacing, BorderRadius, Shadows } from '@/constants/theme';
@@ -30,8 +30,11 @@ import {
   MeditationIcon,
   SparkleIcon,
   ArrowRightIcon,
+  LeafIcon,
 } from '@/assets/graphics/icons';
 import type { IconProps } from '@/assets/graphics/icons/types';
+import { getExercisesForEdge } from '@/utils/portrait/growth-edges';
+import { getExerciseById } from '@/utils/interventions/registry';
 
 // ─── Wes Anderson Palette ────────────────────────────────
 const WA = {
@@ -93,6 +96,14 @@ export default function GrowthEdgeSummaryCard({
 
   const { Icon: EdgeIcon, color: edgeColor } = getEdgeVisual(edge);
 
+  // Resolve actual exercises for this edge
+  const exercises = useMemo(() => {
+    const ids = getExercisesForEdge(edge.id);
+    return ids
+      .map((id) => getExerciseById(id))
+      .filter((ex): ex is NonNullable<typeof ex> => !!ex);
+  }, [edge.id]);
+
   return (
     <View style={styles.card}>
       {/* Always visible: icon + number + title + one-liner */}
@@ -132,14 +143,32 @@ export default function GrowthEdgeSummaryCard({
             </View>
           )}
 
+          {/* Narrative guidance (non-clickable) */}
           {edge.practices.length > 0 && (
             <View style={styles.practicesSection}>
-              <TenderText variant="label" color={Colors.textMuted} style={styles.practicesLabel}>PRACTICES</TenderText>
-              {edge.practices.map((practiceId) => (
+              <TenderText variant="label" color={Colors.textMuted} style={styles.practicesLabel}>GUIDANCE</TenderText>
+              {edge.practices.map((practice, i) => (
+                <View key={i} style={styles.guidanceRow}>
+                  <View style={[styles.practiceIconCircle, { backgroundColor: edgeColor + '12' }]}>
+                    <LeafIcon size={11} color={edgeColor} />
+                  </View>
+                  <TenderText variant="bodySmall" color={Colors.textSecondary} style={styles.practiceText}>
+                    {practice}
+                  </TenderText>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* Linked exercises (clickable) */}
+          {exercises.length > 0 && (
+            <View style={styles.practicesSection}>
+              <TenderText variant="label" color={Colors.textMuted} style={styles.practicesLabel}>EXERCISES</TenderText>
+              {exercises.map((ex) => (
                 <TouchableOpacity
-                  key={practiceId}
+                  key={ex.id}
                   style={styles.practiceRow}
-                  onPress={() => onPracticePress?.(practiceId)}
+                  onPress={() => onPracticePress?.(ex.id)}
                   activeOpacity={0.7}
                   accessibilityRole="button"
                 >
@@ -147,7 +176,7 @@ export default function GrowthEdgeSummaryCard({
                     <MeditationIcon size={11} color={edgeColor} />
                   </View>
                   <TenderText variant="bodySmall" color={Colors.text} style={styles.practiceText}>
-                    {practiceId.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())}
+                    {ex.title}
                   </TenderText>
                   <ArrowRightIcon size={12} color={edgeColor} />
                 </TouchableOpacity>
@@ -229,6 +258,13 @@ const styles = StyleSheet.create({
     fontSize: 10,
     letterSpacing: 1.5,
     marginBottom: Spacing.xs,
+  },
+  guidanceRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.sm,
+    paddingVertical: 4,
+    paddingHorizontal: Spacing.xs,
   },
   practiceRow: {
     flexDirection: 'row',

@@ -915,17 +915,40 @@ export default function PortraitScreen() {
 
           {/* Try This Today CTA — shows at bottom of every tab */}
           {(() => {
-            const action = PORTRAIT_TAB_ACTIONS[activeTab ?? 'overview'];
+            const tab = activeTab ?? 'overview';
+            const action = PORTRAIT_TAB_ACTIONS[tab];
             if (!action) return null;
+
+            // Dynamic overrides based on user progress
+            let label = action.label;
+            let sublabel = action.sublabel;
+            let route = action.route;
+            let params = action.params;
+
+            if (tab === 'overview') {
+              const nextStep = Math.min((journeyData?.stepsCompleted ?? 0) + 1, 12);
+              if (nextStep > 1) {
+                label = `Continue Step ${nextStep}`;
+                sublabel = 'Pick up where you left off';
+              }
+              params = { step: String(nextStep) };
+            } else if (tab === 'matrix') {
+              // Don't navigate back to portrait/matrix — go to growth instead
+              label = 'Explore Your Growth Edge';
+              sublabel = 'Turn insight into practice';
+              route = '/(app)/growth';
+              params = undefined;
+            }
+
             return (
               <TryThisTodayCTA
                 Icon={action.Icon}
-                label={action.label}
-                sublabel={action.sublabel}
+                label={label}
+                sublabel={sublabel}
                 accentColor={TABS.find(t => t.key === activeTab)?.color}
                 onPress={() => router.push({
-                  pathname: action.route as any,
-                  params: action.params,
+                  pathname: route as any,
+                  params,
                 })}
               />
             );
