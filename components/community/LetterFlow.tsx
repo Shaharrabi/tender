@@ -1,10 +1,11 @@
 /**
- * LetterFlow — Multi-step compose flow for writing anonymous letters.
+ * LetterFlow — Compose flow for writing anonymous letters.
  *
  * Steps:
- * 1. Prompt — see this week's writing prompt
- * 2. Write — text input with alias, char counter (500 max), safety check
- * 3. Celebration — letter sent confirmation with XP
+ * 1. Write — text input with alias, char counter (500 max), safety check
+ * 2. Celebration — letter sent confirmation with XP
+ *
+ * The prompt is shown in LetterDesk before this flow opens.
  */
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
@@ -29,17 +30,13 @@ import {
   ButtonSizes,
 } from '@/constants/theme';
 import { CommunityColors, LETTER_PROMPTS } from '@/constants/community';
-import {
-  MailboxIcon,
-  SparkleIcon,
-  CloseIcon,
-} from '@/assets/graphics/icons';
+import { MailboxIcon } from '@/assets/graphics/icons';
 import { useSoundHaptics } from '@/services/SoundHapticsService';
 import { checkSafety } from '@/utils/agent/safety-check';
 import { sanitizeTextInput } from '@/utils/security/validation';
 import type { CommunityAlias, WeeklyPrompt } from '@/types/community';
 
-type LetterStep = 'prompt' | 'write' | 'celebrate';
+type LetterStep = 'write' | 'celebrate';
 
 interface LetterFlowProps {
   visible: boolean;
@@ -60,7 +57,7 @@ export function LetterFlow({
 }: LetterFlowProps) {
   const haptics = useSoundHaptics();
 
-  const [step, setStep] = useState<LetterStep>('prompt');
+  const [step, setStep] = useState<LetterStep>('write');
   const [letterText, setLetterText] = useState('');
   const celebrateFade = useRef(new Animated.Value(0)).current;
 
@@ -71,7 +68,7 @@ export function LetterFlow({
   // Reset state when closed
   useEffect(() => {
     if (!visible) {
-      setStep('prompt');
+      setStep('write');
       setLetterText('');
       celebrateFade.setValue(0);
     }
@@ -94,11 +91,6 @@ export function LetterFlow({
       return () => clearTimeout(timer);
     }
   }, [step]);
-
-  const handleStartWriting = useCallback(() => {
-    haptics.tap();
-    setStep('write');
-  }, [haptics]);
 
   const handleSubmit = useCallback(async () => {
     const sanitized = sanitizeTextInput(letterText);
@@ -138,35 +130,7 @@ export function LetterFlow({
     }
   }, [letterText, weeklyPrompt, onSubmit]);
 
-  // ─── Step 1: Prompt ──────────────────────────
-
-  const renderPromptStep = () => (
-    <View style={st.stepContainer}>
-      <MailboxIcon size={32} color={CommunityColors.quoteAccent} />
-
-      <Text style={st.stepTitle}>The Letter Desk</Text>
-      <Text style={st.stepSubtitle}>
-        Write a letter to someone who might need to hear it today.
-      </Text>
-
-      <View style={st.promptCard}>
-        <Text style={st.promptLabel}>This week's prompt:</Text>
-        <Text style={st.promptText}>{`"${promptText}"`}</Text>
-      </View>
-
-      <TouchableOpacity
-        style={st.startBtn}
-        onPress={handleStartWriting}
-        activeOpacity={0.7}
-        accessibilityRole="button"
-        accessibilityLabel="Write a letter"
-      >
-        <Text style={st.startBtnText}>Write a Letter</Text>
-      </TouchableOpacity>
-    </View>
-  );
-
-  // ─── Step 2: Write ──────────────────────────
+  // ─── Step 1: Write ──────────────────────────
 
   const renderWriteStep = () => (
     <View style={st.stepContainer}>
@@ -224,7 +188,7 @@ export function LetterFlow({
     </View>
   );
 
-  // ─── Step 3: Celebration ──────────────────────
+  // ─── Step 2: Celebration ──────────────────────
 
   const renderCelebrateStep = () => (
     <Animated.View style={[st.celebrateContainer, { opacity: celebrateFade }]}>
@@ -248,23 +212,13 @@ export function LetterFlow({
           {/* Header */}
           {step !== 'celebrate' && (
             <View style={st.modalHeader}>
-              <Text style={st.modalTitle}>
-                {step === 'prompt' ? 'Letter Desk' : 'Your Letter'}
-              </Text>
+              <Text style={st.modalTitle}>Your Letter</Text>
               <TouchableOpacity
-                onPress={() => {
-                  if (step === 'write') {
-                    setStep('prompt');
-                  } else {
-                    onDismiss();
-                  }
-                }}
+                onPress={onDismiss}
                 accessibilityRole="button"
-                accessibilityLabel={step === 'prompt' ? 'Close letter flow' : 'Go back'}
+                accessibilityLabel="Close letter flow"
               >
-                <Text style={st.modalClose}>
-                  {step === 'prompt' ? '\u2715' : '\u2039 Back'}
-                </Text>
+                <Text style={st.modalClose}>{'\u2715'}</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -274,7 +228,6 @@ export function LetterFlow({
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            {step === 'prompt' && renderPromptStep()}
             {step === 'write' && renderWriteStep()}
             {step === 'celebrate' && renderCelebrateStep()}
           </ScrollView>
@@ -321,56 +274,6 @@ const st = StyleSheet.create({
   stepContainer: {
     gap: Spacing.md,
     alignItems: 'center',
-  },
-  stepTitle: {
-    fontSize: FontSizes.headingM,
-    fontWeight: '700',
-    fontFamily: FontFamilies.heading,
-    color: Colors.text,
-    textAlign: 'center',
-  },
-  stepSubtitle: {
-    fontSize: FontSizes.body,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 24,
-  },
-
-  // ─── Prompt Card ──────────────
-  promptCard: {
-    backgroundColor: CommunityColors.cardBackground,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
-    borderColor: CommunityColors.cardBorder,
-    padding: Spacing.lg,
-    gap: Spacing.sm,
-    width: '100%',
-  },
-  promptLabel: {
-    fontSize: FontSizes.caption,
-    fontWeight: '700',
-    color: Colors.textMuted,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-  },
-  promptText: {
-    fontSize: FontSizes.body,
-    color: CommunityColors.warmDarkBrown,
-    fontStyle: 'italic',
-    lineHeight: 24,
-  },
-  startBtn: {
-    backgroundColor: Colors.primary,
-    height: ButtonSizes.medium,
-    borderRadius: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-  },
-  startBtnText: {
-    color: Colors.textOnPrimary,
-    fontSize: FontSizes.body,
-    fontWeight: '600',
   },
 
   // ─── Write ─────────────────────

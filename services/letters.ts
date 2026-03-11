@@ -107,29 +107,27 @@ export async function getLetterStats(userId: string): Promise<{
   receivedCount: number;
   unreadCount: number;
 }> {
-  // Sent count
-  const { count: sentCount } = await supabase
-    .from('community_letters')
-    .select('id', { count: 'exact', head: true })
-    .eq('author_id', userId);
-
-  // Received count
-  const { count: receivedCount } = await supabase
-    .from('community_letters')
-    .select('id', { count: 'exact', head: true })
-    .eq('recipient_id', userId);
-
-  // Unread count
-  const { count: unreadCount } = await supabase
-    .from('community_letters')
-    .select('id', { count: 'exact', head: true })
-    .eq('recipient_id', userId)
-    .eq('is_read', false);
+  // Run all counts in parallel; use error field so one failure doesn't block the rest
+  const [sentRes, receivedRes, unreadRes] = await Promise.all([
+    supabase
+      .from('community_letters')
+      .select('id', { count: 'exact', head: true })
+      .eq('author_id', userId),
+    supabase
+      .from('community_letters')
+      .select('id', { count: 'exact', head: true })
+      .eq('recipient_id', userId),
+    supabase
+      .from('community_letters')
+      .select('id', { count: 'exact', head: true })
+      .eq('recipient_id', userId)
+      .eq('is_read', false),
+  ]);
 
   return {
-    sentCount: sentCount ?? 0,
-    receivedCount: receivedCount ?? 0,
-    unreadCount: unreadCount ?? 0,
+    sentCount: sentRes.error ? 0 : (sentRes.count ?? 0),
+    receivedCount: receivedRes.error ? 0 : (receivedRes.count ?? 0),
+    unreadCount: unreadRes.error ? 0 : (unreadRes.count ?? 0),
   };
 }
 
