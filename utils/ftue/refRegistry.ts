@@ -39,12 +39,13 @@ class RefRegistryClass {
   /**
    * Measure a registered element's position on screen.
    * Returns null if the ref is not registered or measurement fails.
+   * Includes a timeout to prevent hanging if measureInWindow callback never fires (web).
    */
   measure(key: string): Promise<TargetMeasurement | null> {
     const ref = this.refs.get(key);
     if (!ref) return Promise.resolve(null);
 
-    return new Promise((resolve) => {
+    const measurePromise = new Promise<TargetMeasurement | null>((resolve) => {
       try {
         ref.measureInWindow((x, y, width, height) => {
           if (width === 0 && height === 0) {
@@ -57,6 +58,13 @@ class RefRegistryClass {
         resolve(null);
       }
     });
+
+    // Timeout: resolve null after 500ms if callback never fires
+    const timeout = new Promise<null>((resolve) =>
+      setTimeout(() => resolve(null), 500)
+    );
+
+    return Promise.race([measurePromise, timeout]);
   }
 
   /**
@@ -68,7 +76,7 @@ class RefRegistryClass {
     const ref = this.refs.get(key);
     if (!ref) return Promise.resolve(null);
 
-    return new Promise((resolve) => {
+    const measurePromise = new Promise<TargetMeasurement | null>((resolve) => {
       try {
         // measure() gives (x, y, width, height, pageX, pageY) relative to root
         (ref as any).measure(
@@ -85,6 +93,12 @@ class RefRegistryClass {
         resolve(null);
       }
     });
+
+    const timeout = new Promise<null>((resolve) =>
+      setTimeout(() => resolve(null), 500)
+    );
+
+    return Promise.race([measurePromise, timeout]);
   }
 
   /**

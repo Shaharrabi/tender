@@ -20,6 +20,7 @@ import {
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { eraseUserData } from '@/services/consent';
+import { supabase } from '@/services/supabase';
 import {
   Colors,
   Spacing,
@@ -65,7 +66,24 @@ export default function PrivacyScreen() {
             if (!user) return;
             setDeleting(true);
             try {
+              // Grab token before any deletions (JWT stays valid regardless,
+              // but safer to capture it upfront)
+              const { data: { session: currentSession } } = await supabase.auth.getSession();
+
+              // Phase 1: Delete all public table rows (client-side RLS)
               await eraseUserData(user.id);
+
+              // Phase 2: Delete auth account via edge function (service_role)
+              if (currentSession?.access_token) {
+                const resp = await supabase.functions.invoke('delete-account', {
+                  headers: { Authorization: `Bearer ${currentSession.access_token}` },
+                });
+                if (resp.error) {
+                  console.warn('[Privacy] Auth account deletion failed:', resp.error);
+                  // Continue — data is already erased, auth cleanup is best-effort
+                }
+              }
+
               await signOut();
               router.replace('/(auth)/login');
             } catch (e) {

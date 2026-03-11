@@ -7,6 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Modal,
 } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
@@ -31,6 +32,7 @@ export default function RegisterScreen() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
 
   const passwordStrength = useMemo(
     () => checkPasswordStrength(password),
@@ -214,7 +216,7 @@ export default function RegisterScreen() {
               I agree to the{' '}
               <Text
                 style={styles.termsLink}
-                onPress={() => router.push('/(app)/terms')}
+                onPress={() => setShowTerms(true)}
                 accessibilityRole="link"
               >
                 Terms of Service
@@ -238,6 +240,67 @@ export default function RegisterScreen() {
             accessibilityLabel="Sign up"
           />
         </View>
+
+        {/* Terms of Service Modal */}
+        <Modal
+          visible={showTerms}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowTerms(false)}
+        >
+          <View style={styles.modalBackdrop}>
+            <View style={styles.modalCard}>
+              <Text style={styles.modalTitle}>Terms of Service</Text>
+              <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
+                <Text style={styles.modalDate}>Effective: March 2026</Text>
+                <View style={styles.modalDisclaimer}>
+                  <Text style={styles.modalDisclaimerText}>
+                    Tender is a relational wellness tool — not therapy, and not a
+                    substitute for professional mental health care. If you need
+                    clinical support, please reach out to a licensed therapist or
+                    call 988 (Suicide & Crisis Lifeline).
+                  </Text>
+                </View>
+                <Text style={styles.modalSectionTitle}>1. Acceptance of Terms</Text>
+                <Text style={styles.modalBody}>
+                  By creating an account or using Tender, you agree to these Terms
+                  of Service and our Privacy practices described within the app.
+                </Text>
+                <Text style={styles.modalSectionTitle}>2. What Tender Is (and Is Not)</Text>
+                <Text style={styles.modalBody}>
+                  Tender provides relationship self-assessment tools, educational
+                  exercises, and AI-assisted reflections. Tender is not a medical
+                  device, not a diagnostic tool, and does not provide therapy or
+                  clinical treatment.
+                </Text>
+                <Text style={styles.modalSectionTitle}>3. Your Data</Text>
+                <Text style={styles.modalBody}>
+                  Assessment responses and chat history are stored securely. You may
+                  delete all data at any time from Privacy & Data settings. We never
+                  sell your personal data.
+                </Text>
+                <Text style={styles.modalSectionTitle}>4. Couple Features</Text>
+                <Text style={styles.modalBody}>
+                  When you link with a partner, you choose which results to share.
+                  You can revoke sharing at any time.
+                </Text>
+                <Text style={styles.modalSectionTitle}>5. Limitation of Liability</Text>
+                <Text style={styles.modalBody}>
+                  Tender is provided "as is" without warranties. We are not liable
+                  for decisions made based on assessment results or AI insights.
+                </Text>
+              </ScrollView>
+              <TouchableOpacity
+                style={styles.modalCloseButton}
+                onPress={() => setShowTerms(false)}
+                accessibilityRole="button"
+                accessibilityLabel="Close terms"
+              >
+                <Text style={styles.modalCloseText}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
 
         <Link href="/(auth)/login" asChild>
           <TouchableOpacity
@@ -312,6 +375,7 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
     alignItems: 'flex-start',
     paddingVertical: Spacing.xs,
+    marginTop: Spacing.md,
   },
   checkbox: {
     width: 22,
@@ -342,6 +406,77 @@ const styles = StyleSheet.create({
   termsLink: {
     color: Colors.primary,
     textDecorationLine: 'underline',
+    fontWeight: '600',
+  },
+
+  // Terms modal
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(45, 34, 38, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: Spacing.lg,
+  },
+  modalCard: {
+    backgroundColor: Colors.background,
+    borderRadius: 16,
+    padding: Spacing.lg,
+    maxHeight: '80%',
+    width: '100%',
+    maxWidth: 500,
+  },
+  modalTitle: {
+    fontSize: FontSizes.headingM,
+    fontWeight: '700',
+    fontFamily: FontFamilies.heading,
+    color: Colors.text,
+    textAlign: 'center',
+    marginBottom: Spacing.md,
+  },
+  modalScroll: {
+    marginBottom: Spacing.md,
+  },
+  modalDate: {
+    fontSize: FontSizes.caption,
+    color: Colors.textMuted,
+    marginBottom: Spacing.sm,
+  },
+  modalDisclaimer: {
+    backgroundColor: Colors.warningLight ?? '#FFF8E1',
+    borderLeftWidth: 3,
+    borderLeftColor: Colors.warning ?? '#F9A825',
+    borderRadius: 8,
+    padding: Spacing.sm,
+    marginBottom: Spacing.md,
+  },
+  modalDisclaimerText: {
+    fontSize: FontSizes.caption,
+    color: Colors.text,
+    lineHeight: 18,
+  },
+  modalSectionTitle: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '600',
+    fontFamily: FontFamilies.heading,
+    color: Colors.text,
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.xs,
+  },
+  modalBody: {
+    fontSize: FontSizes.caption,
+    color: Colors.textSecondary,
+    lineHeight: 18,
+    marginBottom: Spacing.sm,
+  },
+  modalCloseButton: {
+    backgroundColor: Colors.primary,
+    borderRadius: 24,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  modalCloseText: {
+    color: Colors.white,
+    fontSize: FontSizes.body,
     fontWeight: '600',
   },
 

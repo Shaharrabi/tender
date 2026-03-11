@@ -222,7 +222,11 @@ export default function StatusWelcomeScreen() {
         // Play after visuals settle
         setTimeout(async () => {
           if (isMounted && soundRef.current) {
-            await soundRef.current.playAsync();
+            try {
+              await soundRef.current.playAsync();
+            } catch {
+              // Sound may have been unloaded (browser cleanup, unmount race)
+            }
           }
         }, 1500);
       } catch (err) {

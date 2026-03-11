@@ -123,8 +123,8 @@ export default function StepProgressTracker({
             >
               <View style={[
                 styles.barSegment,
-                { backgroundColor: isDone || i <= currentStage ? phaseColor : Colors.borderLight },
-                i > currentStage && { opacity: 0.3 },
+                { backgroundColor: isDone || isActive ? phaseColor : Colors.borderLight },
+                !isDone && !isActive && { opacity: 0.3 },
                 isActive && { height: 5 },
               ]} />
               <AnimatedStageIcon

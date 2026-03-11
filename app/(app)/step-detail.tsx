@@ -192,6 +192,9 @@ function StepDetailScreenInner() {
   // Main content ScrollView ref — for scrolling to top on tab change
   const mainScrollRef = useRef<ScrollView>(null);
 
+  // Mutex to serialize criteria toggles (prevents race condition with rapid clicks)
+  const toggleQueueRef = useRef<Promise<void>>(Promise.resolve());
+
   // Collapsible sections — smart collapse: only 'course' open by default
   const [expandedSections, setExpandedSections] = useState<Set<SectionId>>(
     new Set(['course', 'goals', 'practices', 'reflection', 'partnerExchange',
@@ -214,9 +217,16 @@ function StepDetailScreenInner() {
   // Handle tab press from progress tracker — switch active tab
   const handleStagePress = useCallback((stageIndex: number) => {
     setActiveTab(stageIndex);
-    // Scroll to top when switching tabs
-    mainScrollRef.current?.scrollTo({ y: 0, animated: true });
   }, []);
+
+  // Scroll to top whenever the active tab changes (after re-render settles)
+  useEffect(() => {
+    // Small delay lets new tab content render before scrolling
+    const timer = setTimeout(() => {
+      mainScrollRef.current?.scrollTo({ y: 0, animated: false });
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [activeTab]);
 
   // Auto-scroll the 12-step strip to center on current step
   const scrollStripToCenter = useCallback((contentW?: number, containerW?: number) => {
@@ -368,7 +378,30 @@ function StepDetailScreenInner() {
       // Extract checked criteria + reflections from reflectionNotes
       const thisStep = spData.find((sp) => sp.stepNumber === stepNumber);
       const notes = thisStep?.reflectionNotes as Record<string, any> | undefined;
-      setCheckedCriteria(notes?.completedCriteria ?? []);
+      const loadedCriteria: number[] = notes?.completedCriteria ?? [];
+      setCheckedCriteria(loadedCriteria);
+
+      // Recovery: if all criteria are checked but step wasn't marked completed
+      // (e.g. race condition lost the completion trigger), silently complete it.
+      // Don't show the ritual — it should only appear from user interaction.
+      if (
+        step &&
+        loadedCriteria.length >= step.completionCriteria.length &&
+        thisStep?.status === 'active'
+      ) {
+        console.log('[StepDetail] Recovery: all criteria met but step still active — silently completing');
+        try {
+          await completeStep(user.id, stepNumber);
+          // Reload progress so UI reflects the completed state
+          const freshProgress = await ensureStepProgress(user.id);
+          setStepProgress(freshProgress);
+          const freshActive = freshProgress.find((sp) => sp.status === 'active');
+          setCurrentStepNumber(freshActive?.stepNumber ?? stepNumber + 1);
+        } catch (recoverErr) {
+          console.warn('[StepDetail] Recovery completion failed:', recoverErr);
+        }
+      }
+
       setReflectionTexts(notes?.reflections ?? {});
       setPartnerResponse(notes?.partnerRoundResponse ?? '');
       setPartnerRoundSaved(!!notes?.partnerRoundResponse);
@@ -457,32 +490,33 @@ function StepDetailScreenInner() {
     });
   };
 
-  const handleCriteriaToggle = async (criteriaIndex: number, checked: boolean) => {
+  const handleCriteriaToggle = (criteriaIndex: number, checked: boolean) => {
     if (!user || !canToggleCriteria || !gateMet) return;
     haptics.tap();
-    try {
-      // Optimistic update
-      setCheckedCriteria((prev) => {
-        return checked
-          ? [...prev, criteriaIndex]
-          : prev.filter((i) => i !== criteriaIndex);
-      });
 
-      // Persist to DB
-      const updatedCriteria = await toggleStepCriteria(user.id, stepNumber, criteriaIndex, checked);
+    // Optimistic update (immediate visual feedback)
+    setCheckedCriteria((prev) => {
+      return checked
+        ? [...prev, criteriaIndex]
+        : prev.filter((i) => i !== criteriaIndex);
+    });
 
-      // Check if all criteria for this step are now completed
-      if (step && updatedCriteria.length >= step.completionCriteria.length) {
-        // All criteria checked — complete this step and unlock next
-        await completeStep(user.id, stepNumber);
-        // Show completion ritual instead of immediately reloading
-        setShowCompletionRitual(true);
+    // Chain through mutex — serializes DB writes to prevent race conditions
+    // where rapid clicks cause read-then-write to lose earlier criteria.
+    toggleQueueRef.current = toggleQueueRef.current.then(async () => {
+      try {
+        const updatedCriteria = await toggleStepCriteria(user.id, stepNumber, criteriaIndex, checked);
+
+        // Check if all criteria for this step are now completed
+        if (step && updatedCriteria.length >= step.completionCriteria.length) {
+          await completeStep(user.id, stepNumber);
+          setShowCompletionRitual(true);
+        }
+      } catch (err) {
+        console.error('[StepDetail] Failed to toggle criteria:', err);
+        await loadData();
       }
-    } catch (err) {
-      console.error('[StepDetail] Failed to toggle criteria:', err);
-      // Revert optimistic update on error
-      await loadData();
-    }
+    });
   };
 
   // Check if the next step is navigable (active or completed)
@@ -869,7 +903,7 @@ function StepDetailScreenInner() {
         {/* Next tab prompt */}
         <TouchableOpacity
           style={[styles.tabNextPrompt, { borderColor: phase.color + '30' }]}
-          onPress={() => { setActiveTab(1); mainScrollRef.current?.scrollTo({ y: 0, animated: true }); }}
+          onPress={() => setActiveTab(1)}
           activeOpacity={0.7}
         >
           <Text style={[styles.tabNextPromptText, { color: phase.color }]}>Continue to Explore {'→'}</Text>
@@ -1004,7 +1038,7 @@ function StepDetailScreenInner() {
         {/* Next tab prompt */}
         <TouchableOpacity
           style={[styles.tabNextPrompt, { borderColor: phase.color + '30' }]}
-          onPress={() => { setActiveTab(2); mainScrollRef.current?.scrollTo({ y: 0, animated: true }); }}
+          onPress={() => setActiveTab(2)}
           activeOpacity={0.7}
         >
           <Text style={[styles.tabNextPromptText, { color: phase.color }]}>Continue to Practice {'→'}</Text>
@@ -1192,7 +1226,7 @@ function StepDetailScreenInner() {
         {/* Next tab prompt */}
         <TouchableOpacity
           style={[styles.tabNextPrompt, { borderColor: phase.color + '30' }]}
-          onPress={() => { setActiveTab(3); mainScrollRef.current?.scrollTo({ y: 0, animated: true }); }}
+          onPress={() => setActiveTab(3)}
           activeOpacity={0.7}
         >
           <Text style={[styles.tabNextPromptText, { color: phase.color }]}>Continue to Reflect {'→'}</Text>
@@ -1446,7 +1480,7 @@ function StepDetailScreenInner() {
         {/* Next tab prompt */}
         <TouchableOpacity
           style={[styles.tabNextPrompt, { borderColor: phase.color + '30' }]}
-          onPress={() => { setActiveTab(4); mainScrollRef.current?.scrollTo({ y: 0, animated: true }); }}
+          onPress={() => setActiveTab(4)}
           activeOpacity={0.7}
         >
           <Text style={[styles.tabNextPromptText, { color: phase.color }]}>Continue to Complete {'→'}</Text>

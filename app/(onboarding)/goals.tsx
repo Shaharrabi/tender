@@ -274,8 +274,8 @@ const styles = StyleSheet.create({
   // Bottom
   bottomSection: {
     paddingHorizontal: Spacing.xl,
-    paddingTop: Spacing.sm,
-    paddingBottom: Platform.OS === 'ios' ? 50 : 30,
+    paddingTop: Spacing.md,
+    paddingBottom: Platform.OS === 'web' ? 40 : Platform.OS === 'ios' ? 50 : 30,
     alignItems: 'center',
     gap: Spacing.sm,
     borderTopWidth: 1,

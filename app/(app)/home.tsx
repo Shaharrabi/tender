@@ -80,7 +80,7 @@ import { WelcomeAudio } from '@/components/ftue/WelcomeAudio';
 import { TOOLTIP_CONFIGS } from '@/constants/ftue/tooltips';
 import { HOME_TOUR } from '@/constants/ftue/tourSteps';
 import { RefRegistry } from '@/utils/ftue/refRegistry';
-import JourneyUnlockOverlay, { hasSeenJourneyUnlock } from '@/components/growth/JourneyUnlockOverlay';
+import JourneyUnlockOverlay, { hasSeenJourneyUnlock, markJourneyUnlockSeen } from '@/components/growth/JourneyUnlockOverlay';
 import JourneySpiral from '@/components/growth/JourneySpiral';
 import { getCurrentStepNumber } from '@/services/steps';
 import { getTaglineForStep, getPracticesForStep, getStep, getJournalPromptForStep, getPhaseForStep } from '@/utils/steps/twelve-steps';
@@ -608,11 +608,23 @@ export default function HomeScreen() {
       );
       setUnlockState(unlock);
 
-      // Show Journey Unlock celebration on first visit after first assessment
+      // Show Journey Unlock celebration on first visit after first assessment.
+      // Also skip if user is already past step 1 (they've clearly seen the journey).
       if (unlock.healingJourney && completedAssessmentTypes.length >= 1) {
         const seen = await hasSeenJourneyUnlock();
         if (!seen) {
-          setShowJourneyUnlock(true);
+          // Double-check: if user has already progressed past step 1,
+          // they've been on the journey — don't show the unlock overlay.
+          try {
+            const stepNum = await getCurrentStepNumber(user.id);
+            if (stepNum > 1) {
+              markJourneyUnlockSeen(); // persist so we never check again
+            } else {
+              setShowJourneyUnlock(true);
+            }
+          } catch {
+            setShowJourneyUnlock(true); // fallback: show it
+          }
         }
       }
 
@@ -1440,315 +1452,219 @@ export default function HomeScreen() {
           );
         })()}
 
-        {/* ═══ 4. STEP JOURNEY (portrait) or ASSESSMENT (pre-portrait) ═══ */}
-        {hasPortrait ? (
-          /* ── Journey Spiral — circular 12-step visualization ── */
-          <View ref={(r) => RefRegistry.register('home_journeyCard', r)}>
-            <View style={styles.fieldHeader}>
-              <Text style={styles.fieldTitle}>THE FIELD</Text>
-              <Text style={styles.fieldSubtitle}>Your 12-step healing journey</Text>
+        {/* ═══ 4. THE FIELD — always visible ═══ */}
+        <View ref={(r) => RefRegistry.register('home_journeyCard', r)}>
+          <View style={styles.fieldHeader}>
+            <Text style={styles.fieldTitle}>THE FIELD</Text>
+            <Text style={styles.fieldSubtitle}>Your 12-step healing journey</Text>
+          </View>
+          <JourneySpiral
+            currentStep={currentStepNum}
+            onStepPress={(stepNum) => {
+              SoundHaptics.tapSoft();
+              router.push(`/(app)/step-detail?step=${stepNum}` as any);
+            }}
+          />
+
+          {/* ── Assessment card (pre-portrait, not yet complete) ── */}
+          {!hasPortrait && tenderStatus.state !== 'completed' && (
+            <HighlightWrapper highlightId="home_assessment_cta">
+              <View
+                ref={(r) => RefRegistry.register('home_assessmentCta', r)}
+                style={styles.tenderCard}
+              >
+                {tenderStatus.state === 'not_started' && (
+                  <>
+                    <Text style={styles.tenderCardTitle}>The Tender Assessment</Text>
+                    <Text style={styles.tenderCardDescription}>
+                      7 sections covering how you connect, feel, fight, and what matters to you.
+                      Take breaks between sections and come back anytime.
+                    </Text>
+                    <View style={styles.tenderSegmentBar}>
+                      {TENDER_SECTIONS.map((sec) => (
+                        <View
+                          key={sec.assessmentType}
+                          style={[
+                            styles.tenderSegment,
+                            tenderStatus.completedTypes.includes(sec.assessmentType) && styles.tenderSegmentDone,
+                          ]}
+                        />
+                      ))}
+                    </View>
+                    <Text style={styles.tenderCardMeta}>
+                      {TOTAL_QUESTIONS} questions {'\u00B7'} ~{TOTAL_ESTIMATED_MINUTES} min {'\u00B7'} Save & exit anytime
+                    </Text>
+                    <TenderButton
+                      title="Start Assessment"
+                      onPress={() => { SoundHaptics.tap(); router.push('/(app)/tender-assessment' as any); }}
+                      variant="primary"
+                      size="md"
+                      fullWidth
+                      style={{ marginTop: Spacing.xs }}
+                      accessibilityLabel="Start Assessment"
+                    />
+                  </>
+                )}
+
+                {tenderStatus.state === 'in_progress' && (
+                  <>
+                    <Text style={styles.tenderCardTitle}>The Tender Assessment</Text>
+                    <View style={styles.tenderSegmentBar}>
+                      {TENDER_SECTIONS.map((sec) => (
+                        <View
+                          key={sec.assessmentType}
+                          style={[
+                            styles.tenderSegment,
+                            tenderStatus.completedTypes.includes(sec.assessmentType) && styles.tenderSegmentDone,
+                          ]}
+                        />
+                      ))}
+                    </View>
+                    <Text style={styles.tenderCardMeta}>
+                      {tenderStatus.completedSections} of {TENDER_SECTIONS.length} sections complete
+                    </Text>
+                    {tenderStatus.currentSectionName && (
+                      <Text style={styles.tenderCurrentSection}>
+                        Next: {tenderStatus.currentSectionName}
+                      </Text>
+                    )}
+                    <TenderButton
+                      title="Continue"
+                      onPress={() => { SoundHaptics.tap(); router.push('/(app)/tender-assessment' as any); }}
+                      variant="primary"
+                      size="md"
+                      fullWidth
+                      style={{ marginTop: Spacing.xs }}
+                      accessibilityLabel="Continue Assessment"
+                    />
+                  </>
+                )}
+              </View>
+            </HighlightWrapper>
+          )}
+
+          {/* Portrait generation prompt */}
+          {individualCompleted && !hasPortrait && (
+            <View style={[styles.portraitGenerateCard, { marginHorizontal: 0 }]}>
+              <Text style={styles.portraitGenerateTitle}>
+                Your Portrait is Ready
+              </Text>
+              <Text style={styles.portraitGenerateSubtitle}>
+                All assessments complete — generate your relational portrait
+              </Text>
+              <TenderButton
+                title="Generate Portrait"
+                onPress={handleGeneratePortrait}
+                variant="secondary"
+                size="lg"
+                fullWidth
+                loading={generating}
+                disabled={generating}
+                style={{ marginTop: Spacing.sm }}
+                accessibilityLabel="Generate your relational portrait"
+              />
             </View>
-            <JourneySpiral
-              currentStep={currentStepNum}
-              onStepPress={(stepNum) => {
+          )}
+
+          {/* ═══ COUPLE PORTAL PREVIEW ═══════════════════════ */}
+          {hasCoupleLinked && (
+            <TouchableOpacity
+              style={styles.couplePreviewCard}
+              onPress={() => {
                 SoundHaptics.tapSoft();
-                router.push(`/(app)/step-detail?step=${stepNum}` as any);
+                router.push('/(app)/couple-portal' as any);
               }}
-            />
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="View Couple Portal"
+            >
+              <View style={styles.couplePreviewHeader}>
+                <HeartPulseIcon size={18} color={Colors.secondary} />
+                <TenderText variant="headingS" color={Colors.text}>The Space Between You</TenderText>
+              </View>
 
-            {/* ═══ COUPLE PORTAL PREVIEW ═══════════════════════ */}
-            {hasCoupleLinked && (
-              <TouchableOpacity
-                style={styles.couplePreviewCard}
-                onPress={() => {
-                  SoundHaptics.tapSoft();
-                  router.push('/(app)/couple-portal' as any);
-                }}
-                activeOpacity={0.8}
-                accessibilityRole="button"
-                accessibilityLabel="View Couple Portal"
-              >
-                <View style={styles.couplePreviewHeader}>
-                  <HeartPulseIcon size={18} color={Colors.secondary} />
-                  <TenderText variant="headingS" color={Colors.text}>The Space Between You</TenderText>
-                </View>
-
-                {weareProfile ? (
-                  <View style={styles.couplePreviewBody}>
-                    <View style={[
-                      styles.couplePreviewPulse,
-                      {
-                        borderColor: weareProfile.layers.resonancePulse >= 60
-                          ? Colors.primary
-                          : weareProfile.layers.resonancePulse >= 40
-                            ? Colors.secondary
-                            : Colors.textMuted,
-                      },
-                    ]}>
-                      {weareProfile.warmSummary === 'Deeply alive'
-                        ? <SparkleIcon size={16} color={Colors.primary} />
-                        : weareProfile.warmSummary === 'Growing stronger'
-                          ? <SeedlingIcon size={16} color={Colors.primary} />
-                          : weareProfile.warmSummary === 'Finding its way'
-                            ? <SearchIcon size={16} color={Colors.textSecondary} />
-                            : <LeafIcon size={16} color={Colors.textSecondary} />}
-                    </View>
-                    <View style={styles.couplePreviewContent}>
-                      <TenderText variant="bodyMedium" color={Colors.text}>
-                        {weareProfile.warmSummary}
-                      </TenderText>
-                      <TenderText variant="body" color={Colors.textSecondary} style={{ marginTop: 2 }}>
-                        {weareProfile.layers.emergenceDirection > 1
-                          ? 'Growing'
-                          : weareProfile.layers.emergenceDirection < -1
-                            ? 'Contracting'
-                            : 'Steady'}
-                        {weareProfile.bottleneck
-                          ? ` \u00B7 ${weareProfile.bottleneck.label}`
-                          : ''}
-                      </TenderText>
-                    </View>
+              {weareProfile ? (
+                <View style={styles.couplePreviewBody}>
+                  <View style={[
+                    styles.couplePreviewPulse,
+                    {
+                      borderColor: weareProfile.layers.resonancePulse >= 60
+                        ? Colors.primary
+                        : weareProfile.layers.resonancePulse >= 40
+                          ? Colors.secondary
+                          : Colors.textMuted,
+                    },
+                  ]}>
+                    {weareProfile.warmSummary === 'Deeply alive'
+                      ? <SparkleIcon size={16} color={Colors.primary} />
+                      : weareProfile.warmSummary === 'Growing stronger'
+                        ? <SeedlingIcon size={16} color={Colors.primary} />
+                        : weareProfile.warmSummary === 'Finding its way'
+                          ? <SearchIcon size={16} color={Colors.textSecondary} />
+                          : <LeafIcon size={16} color={Colors.textSecondary} />}
                   </View>
-                ) : (
-                  <TenderText variant="body" color={Colors.textSecondary}>
-                    Your shared relational portrait awaits
-                  </TenderText>
-                )}
-
-                {coupleNarrativeSnapshot && (
-                  <TenderText variant="body" color={Colors.textSecondary} style={{ lineHeight: 22 }} numberOfLines={3}>
-                    {coupleNarrativeSnapshot}
-                  </TenderText>
-                )}
-
-                <TenderText variant="bodyMedium" color={Colors.primary} style={{ marginTop: 2 }}>
-                  View Couple Portal {'\u2192'}
+                  <View style={styles.couplePreviewContent}>
+                    <TenderText variant="bodyMedium" color={Colors.text}>
+                      {weareProfile.warmSummary}
+                    </TenderText>
+                    <TenderText variant="body" color={Colors.textSecondary} style={{ marginTop: 2 }}>
+                      {weareProfile.layers.emergenceDirection > 1
+                        ? 'Growing'
+                        : weareProfile.layers.emergenceDirection < -1
+                          ? 'Contracting'
+                          : 'Steady'}
+                      {weareProfile.bottleneck
+                        ? ` \u00B7 ${weareProfile.bottleneck.label}`
+                        : ''}
+                    </TenderText>
+                  </View>
+                </View>
+              ) : (
+                <TenderText variant="body" color={Colors.textSecondary}>
+                  Your shared relational portrait awaits
                 </TenderText>
-              </TouchableOpacity>
-            )}
+              )}
 
-            {/* Couple Portal teaser strip — shows when not yet coupled */}
-            {!hasCoupleLinked && (
-              <TouchableOpacity
-                style={styles.couplePortalStrip}
-                onPress={() => {
-                  SoundHaptics.tapSoft();
-                  router.push('/(app)/couple-portal' as any);
-                }}
-                activeOpacity={0.8}
-                accessibilityRole="button"
-              >
-                <View style={styles.couplePortalStripLeft}>
-                  <CoupleIcon size={20} color={Colors.secondary} />
-                </View>
-                <View style={styles.couplePortalStripContent}>
-                  <TenderText variant="bodyMedium" color={Colors.text}>
-                    {demoPartnerId ? 'Practice Couple Portal' : 'Couple Portal'}
-                  </TenderText>
-                  <TenderText variant="body" color={Colors.textSecondary} numberOfLines={2}>
-                    {demoPartnerId
-                      ? 'Explore shared insights with your practice partner'
-                      : 'Invite your partner to unlock shared portraits and couple assessments'}
-                  </TenderText>
-                </View>
-                <TenderText variant="bodyMedium" color={Colors.primary}>{'\u2192'}</TenderText>
-              </TouchableOpacity>
-            )}
-          </View>
-        ) : (
-          /* ── Consolidated Assessment Section (pre-portrait) ── */
-          <View style={styles.assessmentSection}>
-            {/* Tender Assessment card with embedded progress */}
-            {tenderStatus.state !== 'completed' && (
-              <HighlightWrapper highlightId="home_assessment_cta">
-                <View
-                  ref={(r) => RefRegistry.register('home_assessmentCta', r)}
-                  style={styles.tenderCard}
-                >
-                  {tenderStatus.state === 'not_started' && (
-                    <>
-                      <Text style={styles.tenderCardTitle}>The Tender Assessment</Text>
-                      <Text style={styles.tenderCardDescription}>
-                        7 sections covering how you connect, feel, fight, and what matters to you.
-                        Take breaks between sections and come back anytime.
-                      </Text>
-                      <View style={styles.tenderSegmentBar}>
-                        {TENDER_SECTIONS.map((sec) => (
-                          <View
-                            key={sec.assessmentType}
-                            style={[
-                              styles.tenderSegment,
-                              tenderStatus.completedTypes.includes(sec.assessmentType) && styles.tenderSegmentDone,
-                            ]}
-                          />
-                        ))}
-                      </View>
-                      <Text style={styles.tenderCardMeta}>
-                        {TOTAL_QUESTIONS} questions {'\u00B7'} ~{TOTAL_ESTIMATED_MINUTES} min {'\u00B7'} Save & exit anytime
-                      </Text>
-                      <TenderButton
-                        title="Start Assessment"
-                        onPress={() => { SoundHaptics.tap(); router.push('/(app)/tender-assessment' as any); }}
-                        variant="primary"
-                        size="md"
-                        fullWidth
-                        style={{ marginTop: Spacing.xs }}
-                        accessibilityLabel="Start Assessment"
-                      />
-                    </>
-                  )}
+              {coupleNarrativeSnapshot && (
+                <TenderText variant="body" color={Colors.textSecondary} style={{ lineHeight: 22 }} numberOfLines={3}>
+                  {coupleNarrativeSnapshot}
+                </TenderText>
+              )}
 
-                  {tenderStatus.state === 'in_progress' && (
-                    <>
-                      <Text style={styles.tenderCardTitle}>The Tender Assessment</Text>
-                      <View style={styles.tenderSegmentBar}>
-                        {TENDER_SECTIONS.map((sec) => (
-                          <View
-                            key={sec.assessmentType}
-                            style={[
-                              styles.tenderSegment,
-                              tenderStatus.completedTypes.includes(sec.assessmentType) && styles.tenderSegmentDone,
-                            ]}
-                          />
-                        ))}
-                      </View>
-                      <Text style={styles.tenderCardMeta}>
-                        {tenderStatus.completedSections} of {TENDER_SECTIONS.length} sections complete
-                      </Text>
-                      {tenderStatus.currentSectionName && (
-                        <Text style={styles.tenderCurrentSection}>
-                          Next: {tenderStatus.currentSectionName}
-                        </Text>
-                      )}
-                      <TenderButton
-                        title="Continue"
-                        onPress={() => { SoundHaptics.tap(); router.push('/(app)/tender-assessment' as any); }}
-                        variant="primary"
-                        size="md"
-                        fullWidth
-                        style={{ marginTop: Spacing.xs }}
-                        accessibilityLabel="Continue Assessment"
-                      />
-                    </>
-                  )}
-                </View>
-              </HighlightWrapper>
-            )}
+              <TenderText variant="bodyMedium" color={Colors.primary} style={{ marginTop: 2 }}>
+                View Couple Portal {'\u2192'}
+              </TenderText>
+            </TouchableOpacity>
+          )}
 
-            {/* Assessment complete achievement */}
-            {tenderStatus.state === 'completed' && (
-              <View style={styles.assessmentCompleteCard}>
-                <View style={styles.assessmentCompleteHeader}>
-                  <CheckmarkIcon size={16} color={Colors.calm} />
-                  <Text style={styles.assessmentCompleteTitle}>
-                    All {TENDER_SECTIONS.length} Sections Complete
-                  </Text>
-                </View>
-                <Text style={styles.assessmentCompleteDesc}>
-                  Your portrait captures how you connect, feel, fight, and what matters to you.
-                </Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    SoundHaptics.tapSoft();
-                    router.push('/(app)/tender-assessment' as any);
-                  }}
-                  style={styles.retakeLink}
-                  accessibilityLabel="Retake any section"
-                >
-                  <RefreshIcon size={14} color={Colors.primary} />
-                  <Text style={styles.retakeLinkText}>
-                    Retake any section to see how you've grown
-                  </Text>
-                </TouchableOpacity>
+          {/* Couple Portal teaser strip — shows when not yet coupled */}
+          {!hasCoupleLinked && (
+            <TouchableOpacity
+              style={styles.couplePortalStrip}
+              onPress={() => {
+                SoundHaptics.tapSoft();
+                router.push('/(app)/couple-portal' as any);
+              }}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+            >
+              <View style={styles.couplePortalStripLeft}>
+                <CoupleIcon size={20} color={Colors.secondary} />
               </View>
-            )}
-
-            {/* Portrait generation prompt */}
-            {individualCompleted && !hasPortrait && (
-              <View style={[styles.portraitGenerateCard, { marginHorizontal: 0 }]}>
-                <Text style={styles.portraitGenerateTitle}>
-                  Your Portrait is Ready
-                </Text>
-                <Text style={styles.portraitGenerateSubtitle}>
-                  All assessments complete — generate your relational portrait
-                </Text>
-                <TenderButton
-                  title="Generate Portrait"
-                  onPress={handleGeneratePortrait}
-                  variant="secondary"
-                  size="lg"
-                  fullWidth
-                  loading={generating}
-                  disabled={generating}
-                  style={{ marginTop: Spacing.sm }}
-                  accessibilityLabel="Generate your relational portrait"
-                />
+              <View style={styles.couplePortalStripContent}>
+                <TenderText variant="bodyMedium" color={Colors.text}>
+                  {demoPartnerId ? 'Practice Couple Portal' : 'Couple Portal'}
+                </TenderText>
+                <TenderText variant="body" color={Colors.textSecondary} numberOfLines={2}>
+                  {demoPartnerId
+                    ? 'Explore shared insights with your practice partner'
+                    : 'Invite your partner to unlock shared portraits and couple assessments'}
+                </TenderText>
               </View>
-            )}
-          </View>
-        )}
-
-        {/* ═══ 4A2. YOUR HEALING JOURNEY (after first assessment, before portrait) */}
-        {completedCount >= 1 && !hasPortrait && (
-          <TouchableOpacity
-            style={styles.healingJourneyCard}
-            onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/growth' as any); }}
-            activeOpacity={0.8}
-            accessibilityRole="button"
-            accessibilityLabel="NEW"
-          >
-            <View style={styles.healingJourneyHeader}>
-              <SeedlingIcon size={28} color={Colors.primary} />
-              <View style={styles.healingJourneyNewBadge}>
-                <Text style={styles.healingJourneyNewBadgeText}>NEW</Text>
-              </View>
-            </View>
-            <Text style={styles.healingJourneyTitle}>Your Relational Journey</Text>
-            <Text style={styles.healingJourneySubtitle}>
-              Twelve steps, daily practices, and your growth arc are ready to explore.
-            </Text>
-            <View style={styles.healingJourneyCta}>
-              <Text style={styles.healingJourneyCtaText}>Begin Journey {'\u2192'}</Text>
-            </View>
-          </TouchableOpacity>
-        )}
-
-        {/* ═══ 4A3. RELATIONAL SCORE TEASER (after first assessment, before portrait) */}
-        {completedCount >= 1 && !hasPortrait && (
-          <View style={styles.relationalScoreTeaser}>
-            <View style={styles.relationalScoreTeaserHeader}>
-              <Text style={styles.relationalScoreTeaserEyebrow}>COMING SOON</Text>
-              <Text style={styles.relationalScoreTeaserTitle}>The Space Between You</Text>
-            </View>
-            <Text style={styles.relationalScoreTeaserBody}>
-              Your relational score measures the health and vitality of your connection.
-              Complete all 6 assessment sections to unlock your individual portrait, then
-              invite your partner to build your shared Couple Portal.
-            </Text>
-
-            {/* Progress indicator */}
-            <View style={styles.relationalScoreTeaserProgress}>
-              <View style={styles.relationalScoreTeaserProgressTrack}>
-                <View style={[
-                  styles.relationalScoreTeaserProgressFill,
-                  { width: `${(completedCount / 6) * 100}%` },
-                ]} />
-              </View>
-              <Text style={styles.relationalScoreTeaserProgressLabel}>
-                {completedCount} of 6 sections complete
-              </Text>
-            </View>
-
-            {/* Couple Portal awareness */}
-            <View style={styles.couplePortalTeaser}>
-              <CoupleIcon size={18} color={Colors.secondary} />
-              <Text style={styles.couplePortalTeaserText}>
-                When both partners complete their portraits, the Couple Portal unlocks
-                shared insights, couple assessments, and relational coaching.
-              </Text>
-            </View>
-          </View>
-        )}
+              <TenderText variant="bodyMedium" color={Colors.primary}>{'\u2192'}</TenderText>
+            </TouchableOpacity>
+          )}
+        </View>
 
         {/* ═══ MICRO-COURSE (Continue Course card) ═══════════ */}
         {activeCourse && (() => {

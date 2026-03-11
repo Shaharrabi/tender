@@ -1434,11 +1434,12 @@ const styles = StyleSheet.create({
   questionScroll: { flex: 1 },
   questionScrollContent: { paddingVertical: Spacing.lg },
   questionText: {
-    fontSize: FontSizes.headingM,
+    fontSize: FontSizes.headingS,
     color: Colors.text,
     textAlign: 'center',
-    lineHeight: 28,
+    lineHeight: 24,
     fontStyle: 'italic',
+    fontFamily: FontFamilies.body,
     marginBottom: Spacing.lg,
   },
 

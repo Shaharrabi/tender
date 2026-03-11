@@ -229,11 +229,19 @@ class SoundHapticsServiceClass {
       if (!config.allowOverlap) {
         let sound = this.loadedSounds.get(name);
         if (sound) {
-          await sound.stopAsync();
-          await sound.setPositionAsync(0);
-          await sound.setVolumeAsync(config.volume);
-          await sound.playAsync();
-          return;
+          try {
+            const status = await sound.getStatusAsync();
+            if (status.isLoaded) {
+              if (status.isPlaying) await sound.stopAsync();
+              await sound.setPositionAsync(0);
+              await sound.setVolumeAsync(config.volume);
+              await sound.playAsync();
+              return;
+            }
+          } catch {
+            // Cached sound is stale — remove and re-create below
+          }
+          this.loadedSounds.delete(name);
         }
       }
 

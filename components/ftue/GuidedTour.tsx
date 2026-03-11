@@ -20,6 +20,7 @@ import {
   Animated,
   Dimensions,
   Modal,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -76,6 +77,9 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({
   const hasCta = !!currentStep.ctaLabel;
 
   const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+  const isWeb = Platform.OS === 'web';
+  // useNativeDriver is not supported on web — force false to prevent silent failures
+  const useNative = !isWeb;
 
   /**
    * Scroll the target element into view, wait for scroll to settle,
@@ -136,53 +140,46 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({
   }, [scrollRef, scrollOffset, screenHeight]);
 
   // Measure target and animate in.
-  // IMPORTANT: Do NOT wrap Animated.start() callbacks in Promises — with
-  // useNativeDriver the callback can silently fail to fire on native,
-  // causing the Promise to hang forever and freezing the tour.
-  // Instead, use a callback-chain pattern.
+  // Uses setValue(0) for instant hide instead of Animated.timing().start(callback)
+  // because on web the animation callback can silently fail to fire when the
+  // animated value is already at the target, freezing the tour.
   useEffect(() => {
     let cancelled = false;
 
-    // Step 1: Fade out the card
-    Animated.timing(cardFadeAnim, {
-      toValue: 0,
-      duration: 100,
-      useNativeDriver: true,
-    }).start(() => {
-      if (cancelled) return;
+    // Step 1: Instantly hide the card (no animation callback needed)
+    cardFadeAnim.setValue(0);
 
-      // Step 2: Measure target (scrolling into view if needed)
-      const doMeasure = async () => {
-        try {
-          if (!isCenterStep) {
-            const layout = await scrollToAndMeasure(currentStep.targetRef);
-            if (!cancelled) setTargetLayout(layout);
-          } else {
-            if (!cancelled) setTargetLayout(null);
-          }
-        } catch {
+    // Step 2: Measure target, then fade in
+    const doMeasure = async () => {
+      try {
+        if (!isCenterStep) {
+          const layout = await scrollToAndMeasure(currentStep.targetRef);
+          if (!cancelled) setTargetLayout(layout);
+        } else {
           if (!cancelled) setTargetLayout(null);
         }
+      } catch {
+        if (!cancelled) setTargetLayout(null);
+      }
 
-        if (cancelled) return;
+      if (cancelled) return;
 
-        // Step 3: Fade in — always runs even if measurement failed
-        Animated.parallel([
-          Animated.timing(fadeAnim, {
-            toValue: 1,
-            duration: FTUETiming.tourTransition,
-            useNativeDriver: true,
-          }),
-          Animated.timing(cardFadeAnim, {
-            toValue: 1,
-            duration: FTUETiming.tourTransition,
-            useNativeDriver: true,
-          }),
-        ]).start();
-      };
+      // Step 3: Fade in — always runs even if measurement failed
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: FTUETiming.tourTransition,
+          useNativeDriver: useNative,
+        }),
+        Animated.timing(cardFadeAnim, {
+          toValue: 1,
+          duration: FTUETiming.tourTransition,
+          useNativeDriver: useNative,
+        }),
+      ]).start();
+    };
 
-      doMeasure();
-    });
+    doMeasure();
 
     return () => { cancelled = true; };
   }, [currentStepIndex, isCenterStep, currentStep.targetRef, scrollToAndMeasure]);
@@ -192,20 +189,21 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({
     if (ctaRoute) {
       pendingRouteRef.current = ctaRoute;
     }
+    const duration = 200;
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
+        duration,
+        useNativeDriver: useNative,
       }),
       Animated.timing(cardFadeAnim, {
         toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
+        duration,
+        useNativeDriver: useNative,
       }),
-    ]).start(() => {
-      setVisible(false);
-    });
+    ]).start();
+    // Use timeout as fallback — animation callback can fail on web
+    setTimeout(() => setVisible(false), duration + 50);
   }, [fadeAnim, cardFadeAnim]);
 
   /** Called when Modal's visible transitions to false — safe to clean up. */
@@ -231,13 +229,21 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({
     dismissTour();
   }, [dismissTour]);
 
-  // Calculate card position
+  // Calculate card position — centered on wide screens, edge-to-edge on narrow
   const getCardStyle = () => {
+    const margin = FTUELayout.tourCardMarginH;
+    const maxCardW = 440;
+    const availableW = screenWidth - margin * 2;
+    // On wide screens, center the card; on narrow, use margin
+    const horizontalPad = availableW > maxCardW
+      ? (screenWidth - maxCardW) / 2
+      : margin;
+
     if (isCenterStep || !targetLayout) {
       return {
         top: screenHeight * 0.32,
-        left: FTUELayout.tourCardMarginH,
-        right: FTUELayout.tourCardMarginH,
+        left: horizontalPad,
+        right: horizontalPad,
       };
     }
 
@@ -250,14 +256,14 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({
           targetLayout.y + targetLayout.height + spacing,
           screenHeight - cardHeight - 40
         ),
-        left: FTUELayout.tourCardMarginH,
-        right: FTUELayout.tourCardMarginH,
+        left: horizontalPad,
+        right: horizontalPad,
       };
     } else {
       return {
         top: Math.max(targetLayout.y - cardHeight - spacing, 60),
-        left: FTUELayout.tourCardMarginH,
-        right: FTUELayout.tourCardMarginH,
+        left: horizontalPad,
+        right: horizontalPad,
       };
     }
   };

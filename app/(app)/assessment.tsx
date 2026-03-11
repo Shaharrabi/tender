@@ -436,9 +436,10 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
   },
   instructionsText: {
-    fontSize: FontSizes.body,
+    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
     color: Colors.text,
-    lineHeight: 24,
+    lineHeight: 22,
   },
 
   // Top bar
@@ -481,11 +482,12 @@ const styles = StyleSheet.create({
   questionScroll: { flex: 1 },
   questionScrollContent: { paddingVertical: Spacing.lg },
   questionText: {
-    fontSize: FontSizes.headingM,
+    fontSize: FontSizes.headingS,
     color: Colors.text,
     textAlign: 'center',
-    lineHeight: 28,
+    lineHeight: 24,
     fontStyle: 'italic',
+    fontFamily: FontFamilies.body,
     marginBottom: Spacing.lg,
   },
 
