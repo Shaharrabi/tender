@@ -5,7 +5,7 @@
  * the user's completed assessments, portrait status, and partner link.
  */
 
-import type { AssessmentType } from '@/types';
+import type { AssessmentType, DyadicAssessmentType } from '@/types';
 import { Colors } from '@/constants/theme';
 import type { ComponentType } from 'react';
 import type { IconProps } from '@/assets/graphics/icons';
@@ -328,6 +328,37 @@ export function getNextAssessment(completedAssessments: AssessmentType[]): Asses
   const order: AssessmentType[] = ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'values', 'ipip-neo-120'];
   const completed = new Set(completedAssessments);
   return order.find((t) => !completed.has(t)) ?? null;
+}
+
+// ─── Dyadic Assessment Timing Gates ─────────────────────
+
+/**
+ * Relationship-duration values stored in user profiles.
+ * 'less-than-1' means < 1 year together.
+ */
+type RelationshipDuration = string | null | undefined;
+
+/**
+ * CSI-16 (Couple Satisfaction Index) should only be available for
+ * couples who have been together at least one year.
+ * Satisfaction measurement is less meaningful for very new relationships.
+ */
+export function canTakeCSI16(relationshipDuration: RelationshipDuration): boolean {
+  return relationshipDuration !== 'less-than-1';
+}
+
+/**
+ * Filter dyadic assessment types based on timing gates.
+ * Currently only CSI-16 has a gate; extend here as more gates are added.
+ */
+export function getGatedDyadicTypes(
+  allTypes: DyadicAssessmentType[],
+  relationshipDuration: RelationshipDuration,
+): DyadicAssessmentType[] {
+  return allTypes.filter((type) => {
+    if (type === 'csi-16') return canTakeCSI16(relationshipDuration);
+    return true;
+  });
 }
 
 /**

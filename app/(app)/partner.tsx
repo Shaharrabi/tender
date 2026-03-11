@@ -36,6 +36,7 @@ import {
   isSelfCouple,
 } from '@/services/couples';
 import { getDyadicAssessments } from '@/utils/assessments/registry';
+import { getGatedDyadicTypes } from '@/utils/unlockLogic';
 import {
   Colors,
   Spacing,
@@ -48,6 +49,7 @@ import QuickLinksBar from '@/components/QuickLinksBar';
 import { ShieldIcon, SparkleIcon } from '@/assets/graphics/icons';
 import { UISticker } from '@/components/growth/stickers';
 import type { Couple, CoupleInvite, UserProfile } from '@/types/couples';
+import type { DyadicAssessmentType } from '@/types';
 
 export default function PartnerScreen() {
   const { user } = useAuth();
@@ -261,11 +263,14 @@ export default function PartnerScreen() {
 
   if (couple) {
     const allDyadicAssessments = getDyadicAssessments();
-    // Filter out CSI-16 for couples together less than 1 year
-    // (CSI-16 measures satisfaction which is less meaningful for very new relationships)
-    const dyadicAssessments = relationshipDuration === 'less-than-1'
-      ? allDyadicAssessments.filter((a) => a.type !== 'csi-16')
-      : allDyadicAssessments;
+    // Apply timing gates (e.g. CSI-16 hidden for couples < 1 year)
+    const gatedTypes = getGatedDyadicTypes(
+      allDyadicAssessments.map((a) => a.type as DyadicAssessmentType),
+      relationshipDuration,
+    );
+    const dyadicAssessments = allDyadicAssessments.filter((a) =>
+      gatedTypes.includes(a.type as DyadicAssessmentType),
+    );
     return (
       <SafeAreaView style={styles.container}>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
