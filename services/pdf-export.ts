@@ -1,47 +1,34 @@
 /**
  * PDF Export Service
  *
- * Generates a printable portrait report.
+ * Generates printable reports: portraits, couple portraits, journal.
  * - Web:    opens browser print dialog via a new window
- * - Native: uses expo-print → expo-sharing (future)
+ * - Native: uses expo-print → expo-sharing
  */
 
 import { Platform } from 'react-native';
 import { generatePortraitHTML } from '@/utils/portrait/pdf-template';
 import { generateCouplePortraitHTML } from '@/utils/portrait/couple-pdf-template';
+import { generateJournalHTML, type JournalExportOptions } from '@/utils/journal/journal-pdf-template';
 import type { IndividualPortrait } from '@/types/portrait';
 import type { DeepCouplePortrait } from '@/types/couples';
+import type { JournalEntry, DailyReflection } from '@/services/journal';
 
-/**
- * Generate and present a portrait PDF.
- *
- * On web this opens a print-ready window (user can Save As PDF).
- * On native it will use expo-print + expo-sharing when available.
- */
-export async function generatePortraitPDF(portrait: IndividualPortrait, userName?: string): Promise<void> {
-  const html = generatePortraitHTML(portrait, userName);
+// ─── Shared PDF Rendering ─────────────────────────────
 
+/** Present an HTML document as a PDF (web: print dialog, native: share sheet). */
+async function presentPDF(html: string, dialogTitle: string): Promise<void> {
   if (Platform.OS === 'web') {
-    // Web — open a print window
     const printWindow = window.open('', '_blank');
     if (printWindow) {
       printWindow.document.write(html);
       printWindow.document.close();
-      // Small delay so the content renders before print dialog
-      setTimeout(() => {
-        printWindow.print();
-      }, 400);
+      setTimeout(() => printWindow.print(), 400);
     } else {
-      // Popup blocked — fallback to inline print
+      // Popup blocked — fallback to hidden iframe
       const iframe = document.createElement('iframe');
-      iframe.style.position = 'fixed';
-      iframe.style.right = '0';
-      iframe.style.bottom = '0';
-      iframe.style.width = '0';
-      iframe.style.height = '0';
-      iframe.style.border = 'none';
+      iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:none;';
       document.body.appendChild(iframe);
-
       const doc = iframe.contentDocument ?? iframe.contentWindow?.document;
       if (doc) {
         doc.open();
@@ -56,26 +43,22 @@ export async function generatePortraitPDF(portrait: IndividualPortrait, userName
     return;
   }
 
-  // Native — use expo-print + expo-sharing
+  // Native — expo-print + expo-sharing
   try {
     const Print = await import('expo-print');
     const Sharing = await import('expo-sharing');
-
     const { uri } = await Print.printToFileAsync({ html });
-
     const isSharingAvailable = await Sharing.isAvailableAsync();
     if (isSharingAvailable) {
       await Sharing.shareAsync(uri, {
         mimeType: 'application/pdf',
-        dialogTitle: 'Share Portrait Report',
+        dialogTitle,
         UTI: 'com.adobe.pdf',
       });
     } else {
-      // Fallback — just print directly
       await Print.printAsync({ html });
     }
   } catch (err) {
-    // Fallback — direct print
     try {
       const Print = await import('expo-print');
       await Print.printAsync({ html });
@@ -86,80 +69,34 @@ export async function generatePortraitPDF(portrait: IndividualPortrait, userName
   }
 }
 
-/**
- * Generate and present a couple portrait PDF.
- *
- * On web this opens a print-ready window (user can Save As PDF).
- * On native it will use expo-print + expo-sharing when available.
- */
+// ─── Portrait PDF ─────────────────────────────────────
+
+/** Generate and present an individual portrait PDF. */
+export async function generatePortraitPDF(portrait: IndividualPortrait, userName?: string): Promise<void> {
+  const html = generatePortraitHTML(portrait, userName);
+  await presentPDF(html, 'Share Portrait Report');
+}
+
+// ─── Couple Portrait PDF ──────────────────────────────
+
+/** Generate and present a couple portrait PDF. */
 export async function generateCouplePortraitPDF(
   portrait: DeepCouplePortrait,
   partnerAName?: string,
   partnerBName?: string,
 ): Promise<void> {
   const html = generateCouplePortraitHTML(portrait, partnerAName, partnerBName);
+  await presentPDF(html, 'Share Couple Portrait Report');
+}
 
-  if (Platform.OS === 'web') {
-    // Web — open a print window
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(html);
-      printWindow.document.close();
-      // Small delay so the content renders before print dialog
-      setTimeout(() => {
-        printWindow.print();
-      }, 400);
-    } else {
-      // Popup blocked — fallback to inline print
-      const iframe = document.createElement('iframe');
-      iframe.style.position = 'fixed';
-      iframe.style.right = '0';
-      iframe.style.bottom = '0';
-      iframe.style.width = '0';
-      iframe.style.height = '0';
-      iframe.style.border = 'none';
-      document.body.appendChild(iframe);
+// ─── Journal PDF ──────────────────────────────────────
 
-      const doc = iframe.contentDocument ?? iframe.contentWindow?.document;
-      if (doc) {
-        doc.open();
-        doc.write(html);
-        doc.close();
-        setTimeout(() => {
-          iframe.contentWindow?.print();
-          setTimeout(() => document.body.removeChild(iframe), 1000);
-        }, 400);
-      }
-    }
-    return;
-  }
-
-  // Native — use expo-print + expo-sharing
-  try {
-    const Print = await import('expo-print');
-    const Sharing = await import('expo-sharing');
-
-    const { uri } = await Print.printToFileAsync({ html });
-
-    const isSharingAvailable = await Sharing.isAvailableAsync();
-    if (isSharingAvailable) {
-      await Sharing.shareAsync(uri, {
-        mimeType: 'application/pdf',
-        dialogTitle: 'Share Couple Portrait Report',
-        UTI: 'com.adobe.pdf',
-      });
-    } else {
-      // Fallback — just print directly
-      await Print.printAsync({ html });
-    }
-  } catch (err) {
-    // Fallback — direct print
-    try {
-      const Print = await import('expo-print');
-      await Print.printAsync({ html });
-    } catch {
-      if (__DEV__) console.warn('[PDF] Couple export failed:', err);
-      throw new Error('Unable to generate PDF. Please try again.');
-    }
-  }
+/** Generate and present a journal export PDF. */
+export async function generateJournalPDF(
+  entries: JournalEntry[],
+  reflections: DailyReflection[],
+  options?: JournalExportOptions,
+): Promise<void> {
+  const html = generateJournalHTML(entries, reflections, options);
+  await presentPDF(html, 'Share Journal');
 }

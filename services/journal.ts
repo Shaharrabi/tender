@@ -799,6 +799,69 @@ export async function getJournalStats(
   };
 }
 
+// ─── Bulk Fetch for Export ───────────────────────────────
+
+/**
+ * Fetch all journal entries for a month (used by PDF export).
+ * Iterates over each day in the month and aggregates.
+ */
+export async function getJournalEntriesForMonth(
+  userId: string,
+  year: number,
+  month: number,
+): Promise<JournalEntry[]> {
+  const { start, end } = monthRange(year, month);
+  const startDate = new Date(start + 'T00:00:00');
+  const endDate = new Date(end + 'T00:00:00');
+
+  const allEntries: JournalEntry[] = [];
+  const cursor = new Date(startDate);
+
+  while (cursor < endDate) {
+    const dateStr = localDateString(cursor);
+    try {
+      const dayEntries = await getJournalEntriesForDate(userId, dateStr);
+      allEntries.push(...dayEntries);
+    } catch {
+      // Skip failed days silently
+    }
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return allEntries;
+}
+
+/**
+ * Fetch all daily reflections for a month (used by PDF export).
+ */
+export async function getReflectionsForMonth(
+  userId: string,
+  year: number,
+  month: number,
+): Promise<DailyReflection[]> {
+  const { start, end } = monthRange(year, month);
+
+  const { data, error } = await supabase
+    .from('daily_reflections')
+    .select('*')
+    .eq('user_id', userId)
+    .gte('reflection_date', start)
+    .lt('reflection_date', end)
+    .order('reflection_date', { ascending: true });
+
+  if (error || !data) return [];
+
+  return data.map((row: any) => ({
+    id: row.id,
+    userId: row.user_id,
+    reflectionDate: row.reflection_date,
+    questionResponses: row.question_responses || [],
+    freeText: row.free_text || '',
+    dayTags: row.day_tags || [],
+    updatedAt: row.updated_at,
+  }));
+}
+
 // ─── Daily Reflections ──────────────────────────────────
 
 export interface QuestionResponse {

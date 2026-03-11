@@ -21,6 +21,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Platform,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -36,11 +37,14 @@ import {
   getReflectionQuestions,
   getDailyReflection,
   saveDailyReflection,
+  getJournalEntriesForMonth,
+  getReflectionsForMonth,
   type JournalEntry,
   type JournalStats,
   type CalendarDayData,
   type DailyReflection,
 } from '@/services/journal';
+import { generateJournalPDF } from '@/services/pdf-export';
 import { getTodaysCheckIn } from '@/services/growth';
 import { getCompletions } from '@/services/intervention';
 import { getCurrentStepNumber } from '@/services/steps';
@@ -357,6 +361,51 @@ export default function JournalScreen() {
     [user, selectedDate]
   );
 
+  // ─── PDF Export ──────────────────────────────────────
+
+  const [exporting, setExporting] = useState(false);
+
+  const handleExportPDF = useCallback(async () => {
+    if (!user) return;
+    SoundHaptics.tapSoft();
+
+    setExporting(true);
+    try {
+      const monthName = new Date(calendarYear, calendarMonth - 1).toLocaleString(
+        'en-US',
+        { month: 'long', year: 'numeric' },
+      );
+
+      const [entries, reflections] = await Promise.all([
+        getJournalEntriesForMonth(user.id, calendarYear, calendarMonth),
+        getReflectionsForMonth(user.id, calendarYear, calendarMonth),
+      ]);
+
+      if (entries.length === 0 && reflections.length === 0) {
+        Alert.alert('Nothing to export', `No journal entries found for ${monthName}.`);
+        return;
+      }
+
+      const { start, end } = {
+        start: `${calendarYear}-${String(calendarMonth).padStart(2, '0')}-01`,
+        end: calendarMonth === 12
+          ? `${calendarYear + 1}-01-01`
+          : `${calendarYear}-${String(calendarMonth + 1).padStart(2, '0')}-01`,
+      };
+
+      await generateJournalPDF(entries, reflections, {
+        userName: displayName || undefined,
+        stats: stats ?? undefined,
+        dateRange: { from: start, to: end },
+      });
+    } catch (err) {
+      console.warn('[Journal] Export error:', err);
+      Alert.alert('Export failed', 'Unable to generate your journal PDF. Please try again.');
+    } finally {
+      setExporting(false);
+    }
+  }, [user, calendarYear, calendarMonth, displayName, stats]);
+
   // ─── Render ──────────────────────────────────────────
 
   if (loading) {
@@ -371,7 +420,7 @@ export default function JournalScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Back button */}
+      {/* Top bar: back + export */}
       <View style={styles.topBar}>
         <TouchableOpacity
           style={styles.backButton}
@@ -382,6 +431,21 @@ export default function JournalScreen() {
         >
           <Text style={styles.backArrow}>{'\u2039'}</Text>
           <Text style={styles.backText}>Home</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.exportButton}
+          onPress={handleExportPDF}
+          activeOpacity={0.6}
+          disabled={exporting || !user}
+          accessibilityRole="button"
+          accessibilityLabel="Export journal as PDF"
+        >
+          {exporting ? (
+            <ActivityIndicator size="small" color={Colors.secondary} />
+          ) : (
+            <Text style={styles.exportText}>Export</Text>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -453,6 +517,9 @@ const styles = StyleSheet.create({
   },
 
   topBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: Spacing.md,
     paddingTop: Platform.OS === 'ios' ? Spacing.xs : Spacing.md,
     paddingBottom: Spacing.sm,
@@ -474,6 +541,24 @@ const styles = StyleSheet.create({
     fontFamily: 'JosefinSans_400Regular',
     fontSize: FontSizes.body,
     color: Colors.textSecondary,
+  },
+
+  exportButton: {
+    paddingVertical: Spacing.xs,
+    paddingHorizontal: Spacing.md,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: Colors.secondary,
+    minWidth: 72,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  exportText: {
+    fontFamily: 'Jost_500Medium',
+    fontSize: FontSizes.caption,
+    color: Colors.secondary,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
   },
 
   scrollContent: {
