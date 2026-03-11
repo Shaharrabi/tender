@@ -152,7 +152,7 @@ export default function ExercisesScreen() {
     <SafeAreaView style={styles.container}>
       {/* ─── Header ─────────────────────────────────────── */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Exercises">
+        <TouchableOpacity onPress={handleBack} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Go back">
           <Text style={styles.backText}>{'\u2039'} Back</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Exercises</Text>
@@ -234,7 +234,9 @@ export default function ExercisesScreen() {
                   style={styles.breakdownItem}
                   onPress={() => setActiveFilter(activeFilter === cat ? 'all' : cat)}
                   activeOpacity={0.7}
-                  accessibilityRole="button"
+                  accessibilityRole="tab"
+                  accessibilityLabel={`Filter by ${cat} practices`}
+                  accessibilityState={{ selected: activeFilter === cat }}
                 >
                   <View style={[styles.breakdownCircle, { borderColor: color }]}>
                     <CatIcon size={18} color={color} />
@@ -295,6 +297,7 @@ export default function ExercisesScreen() {
                 activeOpacity={0.6}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 accessibilityRole="button"
+                accessibilityLabel="Clear search"
               >
                 <Text style={styles.clearIcon}>{'\u2715'}</Text>
               </TouchableOpacity>
@@ -326,7 +329,9 @@ export default function ExercisesScreen() {
                 ]}
                 onPress={() => setActiveFilter(cat.key)}
                 activeOpacity={0.7}
-                accessibilityRole="button"
+                accessibilityRole="tab"
+                accessibilityLabel={cat.key === 'all' ? 'Show all exercises' : `Filter by ${cat.label}`}
+                accessibilityState={{ selected: isActive }}
               >
                 <Text
                   style={[
