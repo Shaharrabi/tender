@@ -547,7 +547,7 @@ function CouplePortalScreen() {
                 onPress={() => { setPortrait(null); setPortraitError(null); loadData(); }}
                 style={styles.retryBtn}
                 accessibilityRole="button"
-                accessibilityLabel="Try Again"
+                accessibilityLabel="Try loading your couple portrait again"
               >
                 <TenderText variant="body" color={Colors.secondary}>Try Again</TenderText>
               </TouchableOpacity>
@@ -562,7 +562,7 @@ function CouplePortalScreen() {
             onPress={() => router.replace('/(app)/partner')}
             style={styles.backBtnCenter}
             accessibilityRole="button"
-            accessibilityLabel="Back to Partner"
+            accessibilityLabel="Return to partner screen"
           >
             <View style={styles.backRow}>
               <ArrowLeftIcon size={16} color={Colors.primary} />
@@ -626,7 +626,7 @@ function CouplePortalScreen() {
             onPress={() => { setDeepPortrait(null); setPortrait(null); loadData(); }}
             style={styles.retryBtn}
             accessibilityRole="button"
-            accessibilityLabel="Refresh"
+            accessibilityLabel="Refresh your couple portrait data"
           >
             <TenderText variant="body" color={Colors.secondary}>Refresh</TenderText>
           </TouchableOpacity>
@@ -851,7 +851,7 @@ function CouplePortalScreen() {
         })}
         activeOpacity={0.7}
         accessibilityRole="button"
-        accessibilityLabel="Talk to Your Couple Coach"
+        accessibilityLabel="Start a conversation with your couple coach"
       >
         <View style={styles.journeyHeader}>
           <ChatBubbleIcon size={20} color={Colors.depth} />
@@ -1446,7 +1446,7 @@ function CouplePortalScreen() {
           onPress={() => router.push('/(app)/growth' as any)}
           activeOpacity={0.7}
           accessibilityRole="button"
-          accessibilityLabel="Continue Your Relational Journey"
+          accessibilityLabel="Explore your twelve-step relational growth journey"
         >
           <View style={styles.journeyHeader}>
             <SeedlingIcon size={22} color={Colors.primary} />
@@ -1577,7 +1577,7 @@ function CouplePortalScreen() {
       <ScrollView ref={scrollRef} contentContainerStyle={styles.scroll}>
         {/* Header Row */}
         <View style={styles.headerRow}>
-          <TouchableOpacity onPress={() => router.replace('/(app)/partner' as any)} style={styles.backBtn} accessibilityRole="button" accessibilityLabel="Back">
+          <TouchableOpacity onPress={() => router.replace('/(app)/partner' as any)} style={styles.backBtn} accessibilityRole="button" accessibilityLabel="Return to partner screen">
             <View style={styles.backRow}>
               <ArrowLeftIcon size={16} color={Colors.primary} />
               <TenderText variant="body" color={Colors.primary}>Back</TenderText>
@@ -1602,7 +1602,7 @@ function CouplePortalScreen() {
             style={styles.exportBtn}
             disabled={!dp}
             accessibilityRole="button"
-            accessibilityLabel="Export PDF"
+            accessibilityLabel="Export your couple portrait as PDF"
             accessibilityState={{ disabled: !dp }}
           >
             <TenderText variant="body" color={Colors.primary} style={[styles.exportBtnText, !dp && { opacity: 0.4 }]}>Export PDF</TenderText>
@@ -1625,7 +1625,7 @@ function CouplePortalScreen() {
         )}
 
         {/* Tab Bar — switch between sections */}
-        <View style={styles.tabBarWrapper}>
+        <View style={styles.tabBarWrapper} accessibilityRole="tablist" accessibilityLabel="Couple portrait sections">
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabBarContent}>
             {TABS.map((tab) => {
               const isActive = activeTab === tab.key;
@@ -1638,7 +1638,9 @@ function CouplePortalScreen() {
                   ]}
                   onPress={() => handleTabChange(tab.key)}
                   activeOpacity={0.7}
-                  accessibilityRole="button"
+                  accessibilityRole="tab"
+                  accessibilityLabel={`View ${tab.label} section`}
+                  accessibilityState={{ selected: isActive }}
                 >
                   <View style={styles.tabIcon}>
                     <tab.Icon size={14} color={isActive ? tab.color : Colors.textMuted} />
