@@ -10,6 +10,7 @@ import {
   Animated,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '@/context/AuthContext';
 import { getAssessmentConfig, isDyadicAssessment } from '@/utils/assessments/registry';
@@ -60,6 +61,26 @@ export default function AssessmentScreen() {
   const [sectionBreak, setSectionBreak] = useState<AssessmentSection | null>(null);
   const questionOpacity = useRef(new Animated.Value(1)).current;
   const autoAdvanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hasSubmittedRef = useRef(false);
+
+  // Guard against accidental navigation (hardware back button)
+  const navigation = useNavigation();
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+      // Allow navigation if assessment was submitted or hasn't started
+      if (hasSubmittedRef.current || showInstructions) return;
+      e.preventDefault();
+      Alert.alert(
+        'Leave assessment?',
+        'Your progress is saved. You can resume later.',
+        [
+          { text: 'Keep going', style: 'cancel' },
+          { text: 'Save & exit', style: 'destructive', onPress: () => navigation.dispatch(e.data.action) },
+        ]
+      );
+    });
+    return unsubscribe;
+  }, [navigation, showInstructions]);
 
   useEffect(() => {
     loadProgress();
@@ -170,6 +191,7 @@ export default function AssessmentScreen() {
 
   const handleSaveAndExit = () => {
     setSectionBreak(null);
+    hasSubmittedRef.current = true; // allow navigation without guard
     // Navigate to couple portal for dyadic assessments, home for individual
     if (isDyadicAssessment(config.type as any)) {
       router.replace('/(app)/couple-portal');
@@ -240,6 +262,7 @@ export default function AssessmentScreen() {
       await AsyncStorage.removeItem(PROGRESS_KEY);
       await AsyncStorage.removeItem(LEGACY_KEY).catch(() => {});
 
+      hasSubmittedRef.current = true;
       router.replace({
         pathname: '/(app)/results',
         params: {

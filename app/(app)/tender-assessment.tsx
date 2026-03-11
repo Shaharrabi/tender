@@ -22,6 +22,7 @@ import {
   Animated,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '@/context/AuthContext';
 import { WelcomeAudio } from '@/components/ftue/WelcomeAudio';
@@ -180,6 +181,26 @@ export default function TenderAssessmentScreen() {
       celebrationOpacity.setValue(0);
     }
   }, [showingCompletion, showingIntro]);
+
+  // Guard against accidental back-navigation (hardware back button)
+  const hasExitedRef = useRef(false);
+  const navigation = useNavigation();
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+      // Allow navigation when: explicitly exited, on intro/completion screens
+      if (hasExitedRef.current || showingIntro || showingCompletion || showingRetakeDelta) return;
+      e.preventDefault();
+      Alert.alert(
+        'Leave assessment?',
+        'Your progress is saved. You can resume later.',
+        [
+          { text: 'Keep going', style: 'cancel' },
+          { text: 'Save & exit', style: 'destructive', onPress: () => navigation.dispatch(e.data.action) },
+        ]
+      );
+    });
+    return unsubscribe;
+  }, [navigation, showingIntro, showingCompletion, showingRetakeDelta]);
 
   // ── Load saved progress on mount ──
   useEffect(() => {
@@ -629,6 +650,7 @@ export default function TenderAssessmentScreen() {
       };
       await AsyncStorage.setItem(PROGRESS_KEY, JSON.stringify(data));
     } catch {}
+    hasExitedRef.current = true;
     router.replace('/(app)/home');
   };
 
