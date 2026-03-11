@@ -27,6 +27,7 @@ import {
   View,
   ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { RefRegistry, TargetMeasurement } from '@/utils/ftue/refRegistry';
 import { Tour, TourStep } from '@/constants/ftue/tourSteps';
@@ -276,6 +277,7 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({
       onDismiss={handleModalDismiss}
       onRequestClose={handleSkip}
     >
+      <SafeAreaView style={StyleSheet.absoluteFill} pointerEvents="box-none">
       {/* Backdrop */}
       <Animated.View style={[styles.backdrop, { opacity: fadeAnim }]}>
         {/* Spotlight cutout around target */}
@@ -361,6 +363,7 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({
           </Pressable>
         </View>
       </Animated.View>
+      </SafeAreaView>
     </Modal>
   );
 };

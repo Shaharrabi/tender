@@ -24,6 +24,7 @@ import {
   View,
   Platform,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/context/AuthContext';
@@ -54,6 +55,7 @@ interface WelcomeAudioProps {
 }
 
 export const WelcomeAudio: React.FC<WelcomeAudioProps> = ({ screenKey }) => {
+  const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const { state, loading, markAudioHeard } = useFirstTime();
   const soundRef = useRef<Audio.Sound | null>(null);
@@ -241,7 +243,7 @@ export const WelcomeAudio: React.FC<WelcomeAudioProps> = ({ screenKey }) => {
   if (!isVisible || !config) return null;
 
   return (
-    <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
+    <Animated.View style={[styles.container, { opacity: fadeAnim, bottom: Math.max(insets.bottom, Platform.OS === 'web' ? 20 : 40) }]}>
       {/* Progress bar */}
       <View style={styles.progressBar}>
         <View

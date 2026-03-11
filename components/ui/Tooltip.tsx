@@ -19,6 +19,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { RefRegistry, TargetMeasurement } from '@/utils/ftue/refRegistry';
 import { TooltipConfig } from '@/constants/ftue/tooltips';
 import {
@@ -166,6 +167,7 @@ export const Tooltip: React.FC<TooltipProps> = ({ config, onDismiss }) => {
 
   return (
     <Modal transparent visible={visible} animationType="none">
+      <SafeAreaView style={StyleSheet.absoluteFill} pointerEvents="box-none">
       {/* Backdrop */}
       <Pressable
         style={styles.backdrop}
@@ -236,6 +238,7 @@ export const Tooltip: React.FC<TooltipProps> = ({ config, onDismiss }) => {
           <Text style={styles.closeText}>×</Text>
         </Pressable>
       </Animated.View>
+      </SafeAreaView>
     </Modal>
   );
 };
