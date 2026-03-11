@@ -272,13 +272,14 @@ function StepDetailScreenInner() {
   const thisStepProgress = stepProgress.find((sp) => sp.stepNumber === stepNumber);
   const isCurrentStep = stepNumber === currentStepNumber;
   const isCompletedStep = thisStepProgress?.status === 'completed';
+  const isActiveStep = thisStepProgress?.status === 'active';
 
   // Assessment gate — blocks completion until required assessments are done
   const gateApplies = assessmentGate && (!assessmentGate.coupleOnly || isCoupled);
   const gateMet = !gateApplies || assessmentGate!.assessmentIds.every(
     (id) => completedAssessmentIds.includes(id),
   );
-  const canToggleCriteria = (isCurrentStep || isCompletedStep) && gateMet;
+  const canToggleCriteria = (isCurrentStep || isCompletedStep || isActiveStep) && gateMet;
 
   // UX enhancement derived values
   const teachingCards = getStepTeachingCards(stepNumber);
@@ -369,9 +370,37 @@ function StepDetailScreenInner() {
         setRawScores(null);
       }
 
-      // Find current active step
-      const activeStep = spData.find((sp) => sp.status === 'active');
-      setCurrentStepNumber(activeStep?.stepNumber ?? 1);
+      // Find current active step (use highest active step to handle out-of-order completions)
+      const activeSteps = spData.filter((sp) => sp.status === 'active');
+      const resolvedCurrentStep = activeSteps.length > 0
+        ? Math.max(...activeSteps.map((sp) => sp.stepNumber))
+        : 1;
+      setCurrentStepNumber(resolvedCurrentStep);
+
+      // Cleanup: if an earlier step is still 'active' but a later step is already
+      // 'completed', the earlier step was orphaned (e.g. out-of-order completion).
+      // Silently mark orphaned steps as completed to fix the progression.
+      const completedSteps = spData.filter((sp) => sp.status === 'completed');
+      const highestCompleted = completedSteps.length > 0
+        ? Math.max(...completedSteps.map((sp) => sp.stepNumber))
+        : 0;
+      const orphanedSteps = activeSteps.filter((sp) => sp.stepNumber < highestCompleted);
+      if (orphanedSteps.length > 0) {
+        // Fire-and-forget: complete orphaned steps in background
+        Promise.all(
+          orphanedSteps.map((sp) =>
+            supabase
+              .from('step_progress')
+              .update({
+                status: 'completed',
+                completed_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              })
+              .eq('user_id', user.id)
+              .eq('step_number', sp.stepNumber)
+          )
+        ).catch(() => {/* ignore cleanup errors */});
+      }
 
       // Extract checked criteria + reflections from reflectionNotes
       const thisStep = spData.find((sp) => sp.stepNumber === stepNumber);
@@ -393,8 +422,11 @@ function StepDetailScreenInner() {
           // Reload progress so UI reflects the completed state
           const freshProgress = await ensureStepProgress(user.id);
           setStepProgress(freshProgress);
-          const freshActive = freshProgress.find((sp) => sp.status === 'active');
-          setCurrentStepNumber(freshActive?.stepNumber ?? stepNumber + 1);
+          const freshActiveSteps = freshProgress.filter((sp) => sp.status === 'active');
+          const freshCurrent = freshActiveSteps.length > 0
+            ? Math.max(...freshActiveSteps.map((sp) => sp.stepNumber))
+            : stepNumber + 1;
+          setCurrentStepNumber(freshCurrent);
         } catch (recoverErr) {
           console.warn('[StepDetail] Recovery completion failed:', recoverErr);
         }
