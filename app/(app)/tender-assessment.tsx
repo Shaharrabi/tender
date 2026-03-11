@@ -1089,7 +1089,8 @@ export default function TenderAssessmentScreen() {
   if (showingDomainBreak && domainBreakInfo) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.domainBreakContent}>
+        {/* Center the info in the upper flex area */}
+        <View style={styles.domainBreakCenter}>
           <View style={styles.domainBreakHeader}>
             <CheckmarkIcon size={36} color={Colors.success} />
             <Text style={styles.domainBreakCompleted}>
@@ -1108,26 +1109,27 @@ export default function TenderAssessmentScreen() {
               <Text style={styles.domainBreakNextDesc}>{domainBreakInfo.nextDescription}</Text>
             ) : null}
           </View>
+        </View>
 
-          <View style={styles.domainBreakActions}>
-            <TouchableOpacity
-              style={styles.domainBreakContinue}
-              onPress={handleDomainBreakContinue}
-              accessibilityRole="button"
-              accessibilityLabel={`Continue to ${domainBreakInfo.nextTitle}`}
-            >
-              <Text style={styles.domainBreakContinueText}>Continue</Text>
-            </TouchableOpacity>
+        {/* Buttons pinned at the bottom — always visible */}
+        <View style={styles.domainBreakActions}>
+          <TouchableOpacity
+            style={styles.domainBreakContinue}
+            onPress={handleDomainBreakContinue}
+            accessibilityRole="button"
+            accessibilityLabel={`Continue to ${domainBreakInfo.nextTitle}`}
+          >
+            <Text style={styles.domainBreakContinueText}>Continue</Text>
+          </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.domainBreakExit}
-              onPress={handleSaveAndExit}
-              accessibilityRole="button"
-              accessibilityLabel="Save progress and exit assessment"
-            >
-              <Text style={styles.domainBreakExitText}>Take a Break</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity
+            style={styles.domainBreakExit}
+            onPress={handleSaveAndExit}
+            accessibilityRole="button"
+            accessibilityLabel="Save progress and exit assessment"
+          >
+            <Text style={styles.domainBreakExitText}>Take a Break</Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     );
@@ -1622,9 +1624,9 @@ const styles = StyleSheet.create({
   },
 
   // ── Internal Domain Break ──
-  domainBreakContent: {
+  domainBreakCenter: {
     flex: 1,
-    padding: Spacing.xl,
+    paddingHorizontal: Spacing.xl,
     justifyContent: 'center',
     gap: Spacing.xl,
   },
@@ -1668,6 +1670,8 @@ const styles = StyleSheet.create({
   },
   domainBreakActions: {
     gap: Spacing.md,
+    padding: Spacing.xl,
+    paddingTop: 0,
   },
   domainBreakContinue: {
     backgroundColor: Colors.primary,
