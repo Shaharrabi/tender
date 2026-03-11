@@ -136,13 +136,20 @@ const TABS: TabDef[] = [
 
 // ─── Narrative generator ────────────────────────────────
 
-function generateLandingNarrative(portrait: IndividualPortrait): string {
+interface WhoYouAreSection {
+  title: string;
+  icon: string;
+  body: string;
+  color: string;
+}
+
+function generateWhoYouAreSections(portrait: IndividualPortrait): WhoYouAreSection[] {
   const cs = portrait.compositeScores;
   const nc = portrait.negativeCycle;
+  const sections: WhoYouAreSection[] = [];
 
+  // 1. Your Strengths
   const strengths: string[] = [];
-  const growth: string[] = [];
-
   if (cs.accessibility >= 60) strengths.push('emotional openness');
   if (cs.responsiveness >= 60) strengths.push('attunement to others');
   if (cs.engagement >= 60) strengths.push('relational investment');
@@ -150,28 +157,59 @@ function generateLandingNarrative(portrait: IndividualPortrait): string {
   if (cs.valuesCongruence >= 60) strengths.push('values alignment');
   if (cs.regulationScore >= 60) strengths.push('emotional regulation');
 
+  sections.push({
+    title: 'Your Strengths',
+    icon: '\u2728',
+    color: Colors.success,
+    body: strengths.length > 0
+      ? `You show real strength in ${strengths.slice(0, 3).join(', ')}. These are the gifts you bring to your relationships — the places where you naturally shine.`
+      : 'Your profile reveals a complex, nuanced picture of how you relate. You have a solid foundation to build on.',
+  });
+
+  // 2. Under Stress
+  const cycleBody = nc.position === 'pursuer'
+    ? 'You tend to move toward connection under stress — reaching for reassurance and closeness. This is a natural response rooted in a deep need to feel connected.'
+    : nc.position === 'withdrawer'
+    ? 'You tend to pull inward under stress — creating space to protect yourself. This is a natural response rooted in a need for safety and autonomy.'
+    : nc.position === 'mixed'
+    ? 'Your response to stress is nuanced — sometimes reaching toward, sometimes pulling back. You adapt depending on what feels safest in the moment.'
+    : 'You show flexibility in how you respond to relational stress — adapting to the moment rather than defaulting to one pattern.';
+
+  sections.push({
+    title: 'Under Stress',
+    icon: '\uD83C\uDF0A',
+    color: Colors.secondary,
+    body: `${cycleBody} Understanding this pattern is the first step toward choosing something different when you're ready.`,
+  });
+
+  // 3. Growth Areas
+  const growth: string[] = [];
   if (cs.regulationScore < 40) growth.push('widening your emotional window');
   if (cs.windowWidth < 40) growth.push('building tolerance for discomfort');
   if (cs.valuesCongruence < 40) growth.push('aligning your actions with your values');
   if (cs.selfLeadership < 40) growth.push('developing your inner compass');
 
-  const strengthText = strengths.length > 0
-    ? `Your profile shows real strength in ${strengths.slice(0, 3).join(', ')}`
-    : 'Your profile reveals a complex, nuanced picture of how you relate';
+  sections.push({
+    title: 'Where You Can Grow',
+    icon: '\uD83C\uDF31',
+    color: Colors.warning,
+    body: growth.length > 0
+      ? `Your portrait points to opportunities in ${growth.slice(0, 2).join(' and ')}. These aren't weaknesses — they're the edges where meaningful change happens.`
+      : 'Your scores are well-balanced across the board. Focus on deepening what you already do well and staying curious about your patterns.',
+  });
 
-  const growthText = growth.length > 0
-    ? `, with opportunities to grow in ${growth.slice(0, 2).join(' and ')}`
-    : ', with a solid foundation to build on';
+  // 4. Core Values
+  const coreValues = portrait.fourLens.values.coreValues.slice(0, 3);
+  if (coreValues.length > 0) {
+    sections.push({
+      title: 'What Matters Most',
+      icon: '\uD83D\uDCA1',
+      color: Colors.primary,
+      body: `Your core values are ${coreValues.join(', ')}. These are the principles that guide your choices and shape what you need from a relationship.`,
+    });
+  }
 
-  const cycleText = nc.position === 'pursuer'
-    ? 'You tend to move toward connection under stress — reaching for reassurance and closeness.'
-    : nc.position === 'withdrawer'
-    ? 'You tend to pull inward under stress — creating space to protect yourself.'
-    : nc.position === 'mixed'
-    ? 'Your response to stress is nuanced — sometimes reaching toward, sometimes pulling back.'
-    : 'You show flexibility in how you respond to relational stress — adapting to the moment.';
-
-  return `${strengthText}${growthText}.\n\n${cycleText} This isn't a flaw — it's a strategy that developed for good reasons. Understanding it is the first step toward choosing something different when you're ready.`;
+  return sections;
 }
 
 // ─── Score helpers ──────────────────────────────────────
@@ -1009,7 +1047,7 @@ function OverviewTab({
     currentStreak: number;
   } | null;
 }) {
-  const narrative = generateLandingNarrative(portrait);
+  const whoYouAre = generateWhoYouAreSections(portrait);
   const synthesis = synthesizeAssessments(portrait, portrait.supplementData);
   const cs = portrait.compositeScores;
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -1044,11 +1082,17 @@ function OverviewTab({
       {/* Radar Chart — The Shape of You */}
       <RadarChart scores={cs} onDimensionTap={() => onNavigate('scores')} />
 
-      {/* Narrative */}
-      <View style={st.card}>
-        <TenderText variant="headingM">Here's what we learned</TenderText>
-        <CollapsibleNarrative text={narrative} previewLength={140} />
-      </View>
+      {/* Who You Are — sectioned */}
+      <TenderText variant="label" color={Colors.textMuted} style={st.sectionLabel}>WHO YOU ARE</TenderText>
+      {whoYouAre.map((section, idx) => (
+        <View key={section.title} style={st.card}>
+          <View style={st.cardHeaderRow}>
+            <TenderText variant="body" style={{ fontSize: 18 }}>{section.icon}</TenderText>
+            <TenderText variant="headingS" style={{ color: section.color }}>{section.title}</TenderText>
+          </View>
+          <TenderText variant="body" color={Colors.textSecondary}>{section.body}</TenderText>
+        </View>
+      ))}
 
       {/* Your Pattern in Daily Life */}
       <DailyLifeScenario portrait={portrait} />
