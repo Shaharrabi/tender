@@ -24,7 +24,7 @@ import {
 } from '@expo-google-fonts/playfair-display';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '@/services/query-client';
-import { AuthProvider } from '@/context/AuthContext';
+import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { GuestProvider } from '@/context/GuestContext';
 import { GamificationProvider } from '@/context/GamificationContext';
 import { FirstTimeProvider } from '@/context/FirstTimeContext';
@@ -32,9 +32,25 @@ import { NetworkProvider } from '@/context/NetworkContext';
 import OfflineBanner from '@/components/ui/OfflineBanner';
 import { SoundHaptics } from '@/services/SoundHapticsService';
 import { registerAllAppSounds } from '@/services/sounds';
+import { registerAndStorePushToken, scheduleWeeklyCheckIn } from '@/services/notifications';
 
 // Keep splash screen visible while loading fonts
 SplashScreen.preventAutoHideAsync();
+
+/** Registers push token + schedules local notifications once authed. */
+function NotificationSetup() {
+  const { session } = useAuth();
+  const userId = session?.user?.id;
+
+  useEffect(() => {
+    if (!userId) return;
+    // Non-blocking: register token & schedule weekly check-in
+    registerAndStorePushToken(userId).catch(() => {});
+    scheduleWeeklyCheckIn(9, 0).catch(() => {});
+  }, [userId]);
+
+  return null;
+}
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
@@ -79,6 +95,7 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <NetworkProvider>
         <AuthProvider>
+          <NotificationSetup />
           <GamificationProvider>
             <GuestProvider>
               <FirstTimeProvider>
