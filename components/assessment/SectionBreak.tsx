@@ -2,8 +2,16 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
 import { AssessmentSection } from '@/types';
 import { Colors, Spacing, FontSizes, FontFamilies, ButtonSizes, BorderRadius } from '@/constants/theme';
-import { CheckmarkIcon } from '@/assets/graphics/icons';
-import type { MiniTeaser } from '@/utils/assessments/mini-teaser';
+import {
+  CheckmarkIcon,
+  HeartIcon,
+  MasksIcon,
+  SparkleIcon,
+  AnchorIcon,
+  ShieldIcon,
+  CompassIcon,
+} from '@/assets/graphics/icons';
+import type { MiniTeaser, TeaserIconName } from '@/utils/assessments/mini-teaser';
 
 interface SectionBreakProps {
   section: AssessmentSection;
@@ -19,6 +27,21 @@ interface SectionBreakProps {
   sectionProgress?: { completed: number; total: number };
   /** Optional mini-result teaser shown between header and "Up Next" */
   miniResult?: MiniTeaser | null;
+}
+
+/** Render the correct SVG icon component for a teaser icon name. */
+function TeaserIcon({ name }: { name: TeaserIconName }) {
+  const size = 28;
+  const color = Colors.secondary;
+  switch (name) {
+    case 'heart': return <HeartIcon size={size} color={color} />;
+    case 'masks': return <MasksIcon size={size} color={color} />;
+    case 'sparkle': return <SparkleIcon size={size} color={color} />;
+    case 'anchor': return <AnchorIcon size={size} color={color} />;
+    case 'shield': return <ShieldIcon size={size} color={color} />;
+    case 'compass': return <CompassIcon size={size} color={color} />;
+    default: return <SparkleIcon size={size} color={color} />;
+  }
 }
 
 function SectionBreak({
@@ -59,7 +82,9 @@ function SectionBreak({
 
         {miniResult && (
           <View style={styles.teaserCard}>
-            <Text style={styles.teaserIcon}>{miniResult.icon}</Text>
+            <View style={styles.teaserIconWrap}>
+              <TeaserIcon name={miniResult.iconName} />
+            </View>
             <Text style={styles.teaserLabel}>{miniResult.label}</Text>
             <Text style={styles.teaserDetail}>{miniResult.detail}</Text>
           </View>
@@ -146,8 +171,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.xs,
   },
-  teaserIcon: {
-    fontSize: 28,
+  teaserIconWrap: {
+    marginBottom: Spacing.xs,
   },
   teaserLabel: {
     fontSize: FontSizes.headingS,

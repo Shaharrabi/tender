@@ -35,7 +35,7 @@ import { getSupplementDef } from '@/utils/assessments/supplements';
 import QuestionRenderer from '@/components/assessment/QuestionRenderer';
 import SectionBreak from '@/components/assessment/SectionBreak';
 import { Colors, Spacing, FontSizes, FontFamilies, ButtonSizes, BorderRadius, Shadows } from '@/constants/theme';
-import { SparkleIcon, BookOpenIcon, RefreshIcon, HeartIcon } from '@/assets/graphics/icons';
+import { SparkleIcon, BookOpenIcon, RefreshIcon, HeartIcon, CheckmarkIcon } from '@/assets/graphics/icons';
 import CelebrationDots from '@/components/ui/CelebrationDots';
 import RetakeDeltaComponent, { computeRetakeDelta } from '@/components/assessment/RetakeDelta';
 import type { RetakeDeltaData } from '@/components/assessment/RetakeDelta';
@@ -146,6 +146,17 @@ export default function TenderAssessmentScreen() {
   // Mini-result teaser — shown on section break to motivate continued engagement
   const [miniTeaser, setMiniTeaser] = useState<MiniTeaser | null>(null);
   const previousScoresRef = useRef<any>(null);
+
+  // Internal domain break — lightweight pause between domains within a long assessment (e.g. IPIP-NEO-120)
+  const [showingDomainBreak, setShowingDomainBreak] = useState(false);
+  const [domainBreakInfo, setDomainBreakInfo] = useState<{
+    completedTitle: string;
+    completedDomainIndex: number;
+    totalDomains: number;
+    nextTitle: string;
+    nextDescription: string;
+    nextQuestionIndex: number;
+  } | null>(null);
 
   // When navigated with startSection param (e.g. retake from home), run as
   // a single-section flow and return to home after submission.
@@ -375,10 +386,10 @@ export default function TenderAssessmentScreen() {
   // IMPORTANT: This useEffect MUST be before all conditional returns
   // to satisfy React's rules of hooks (same number of hooks every render).
   useEffect(() => {
-    if (loaded && !showingIntro && !showingSectionBreak && !showingCompletion && currentSectionState.completed) {
+    if (loaded && !showingIntro && !showingSectionBreak && !showingDomainBreak && !showingCompletion && currentSectionState.completed) {
       advanceToNextSection();
     }
-  }, [currentSectionIndex, currentSectionState.completed, loaded, showingIntro, showingSectionBreak, showingCompletion]);
+  }, [currentSectionIndex, currentSectionState.completed, loaded, showingIntro, showingSectionBreak, showingDomainBreak, showingCompletion]);
 
   // ── Handlers ──
 
@@ -411,16 +422,44 @@ export default function TenderAssessmentScreen() {
     if (qIndex < totalCombined - 1) {
       const nextIndex = qIndex + 1;
 
-      // Check for internal section breaks in the original assessment
-      if (currentConfig?.sections && nextIndex < currentConfig.totalQuestions) {
+      // Check for internal domain breaks within long assessments (e.g. IPIP-NEO-120).
+      // This gives users a breather every 24 questions instead of powering through 120 straight.
+      if (currentConfig?.sections && currentConfig.sections.length > 1 && nextIndex < currentConfig.totalQuestions) {
         const fromSection = currentConfig.sections.find(
           (s) => qIndex >= s.questionRange[0] && qIndex <= s.questionRange[1],
         );
         const toSection = currentConfig.sections.find(
           (s) => nextIndex >= s.questionRange[0] && nextIndex <= s.questionRange[1],
         );
-        // We skip internal breaks in the unified flow — they make it too choppy.
-        // The unified flow has its own section breaks between assessment types.
+        if (fromSection && toSection && fromSection.id !== toSection.id) {
+          // Warm domain labels for the IPIP-NEO-120 internal sections
+          const DOMAIN_WARM_LABELS: Record<string, string> = {
+            neuroticism: 'Emotional Landscape',
+            extraversion: 'Social Energy',
+            openness: 'Curiosity & Imagination',
+            agreeableness: 'How You Relate',
+            conscientiousness: 'Structure & Drive',
+          };
+          const DOMAIN_WARM_DESCRIPTIONS: Record<string, string> = {
+            neuroticism: 'How you experience and process difficult emotions.',
+            extraversion: 'Where you draw energy from and how you connect socially.',
+            openness: 'Your relationship with new ideas, creativity, and exploration.',
+            agreeableness: 'How you navigate harmony, trust, and cooperation with others.',
+            conscientiousness: 'Your patterns around planning, discipline, and follow-through.',
+          };
+          const fromIdx = currentConfig.sections.indexOf(fromSection);
+          const toIdx = currentConfig.sections.indexOf(toSection);
+          setDomainBreakInfo({
+            completedTitle: DOMAIN_WARM_LABELS[fromSection.id] || fromSection.title,
+            completedDomainIndex: fromIdx + 1,
+            totalDomains: currentConfig.sections.length,
+            nextTitle: DOMAIN_WARM_LABELS[toSection.id] || toSection.title,
+            nextDescription: DOMAIN_WARM_DESCRIPTIONS[toSection.id] || toSection.description || '',
+            nextQuestionIndex: nextIndex,
+          });
+          setShowingDomainBreak(true);
+          return; // Don't advance yet — wait for user to tap Continue
+        }
       }
 
       setSectionStates((prev) => {
@@ -433,6 +472,23 @@ export default function TenderAssessmentScreen() {
         return updated;
       });
     }
+  };
+
+  /** Continue past an internal domain break (e.g. between IPIP personality domains). */
+  const handleDomainBreakContinue = () => {
+    if (!domainBreakInfo) return;
+    const nextIndex = domainBreakInfo.nextQuestionIndex;
+    setShowingDomainBreak(false);
+    setDomainBreakInfo(null);
+    setSectionStates((prev) => {
+      const updated = [...prev];
+      updated[currentSectionIndex] = {
+        ...updated[currentSectionIndex],
+        currentQuestionIndex: nextIndex,
+      };
+      saveProgress(currentSectionIndex, updated, completedSections);
+      return updated;
+    });
   };
 
   /** Auto-advance after likert/choice selection with a brief delay + fade */
@@ -1029,6 +1085,54 @@ export default function TenderAssessmentScreen() {
     );
   }
 
+  // ── Render: Internal Domain Break (lightweight pause within long assessments) ──
+  if (showingDomainBreak && domainBreakInfo) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.domainBreakContent}>
+          <View style={styles.domainBreakHeader}>
+            <CheckmarkIcon size={36} color={Colors.success} />
+            <Text style={styles.domainBreakCompleted}>
+              {domainBreakInfo.completedTitle} complete
+            </Text>
+            <Text style={styles.domainBreakProgress}>
+              {domainBreakInfo.completedDomainIndex} of {domainBreakInfo.totalDomains} parts
+              {' \u00B7 '}Section {currentSection.sectionNumber}: {currentSection.fieldName}
+            </Text>
+          </View>
+
+          <View style={styles.domainBreakNext}>
+            <Text style={styles.domainBreakUpNext}>Up Next</Text>
+            <Text style={styles.domainBreakNextTitle}>{domainBreakInfo.nextTitle}</Text>
+            {domainBreakInfo.nextDescription ? (
+              <Text style={styles.domainBreakNextDesc}>{domainBreakInfo.nextDescription}</Text>
+            ) : null}
+          </View>
+
+          <View style={styles.domainBreakActions}>
+            <TouchableOpacity
+              style={styles.domainBreakContinue}
+              onPress={handleDomainBreakContinue}
+              accessibilityRole="button"
+              accessibilityLabel={`Continue to ${domainBreakInfo.nextTitle}`}
+            >
+              <Text style={styles.domainBreakContinueText}>Continue</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.domainBreakExit}
+              onPress={handleSaveAndExit}
+              accessibilityRole="button"
+              accessibilityLabel="Save progress and exit assessment"
+            >
+              <Text style={styles.domainBreakExitText}>Take a Break</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   // If current section is already completed, render nothing while the
   // useEffect above triggers advanceToNextSection.
   if (currentSectionState.completed) {
@@ -1515,5 +1619,79 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontWeight: '700',
     textAlign: 'center' as const,
+  },
+
+  // ── Internal Domain Break ──
+  domainBreakContent: {
+    flex: 1,
+    padding: Spacing.xl,
+    justifyContent: 'center',
+    gap: Spacing.xl,
+  },
+  domainBreakHeader: {
+    alignItems: 'center' as const,
+    gap: Spacing.sm,
+  },
+  domainBreakCompleted: {
+    fontSize: FontSizes.headingS,
+    fontWeight: '600' as const,
+    color: Colors.text,
+    textAlign: 'center' as const,
+  },
+  domainBreakProgress: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    textAlign: 'center' as const,
+  },
+  domainBreakNext: {
+    backgroundColor: Colors.surface,
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.md,
+    gap: Spacing.xs,
+  },
+  domainBreakUpNext: {
+    fontSize: FontSizes.caption,
+    color: Colors.primary,
+    fontWeight: '700' as const,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 1,
+  },
+  domainBreakNextTitle: {
+    fontSize: FontSizes.headingS,
+    fontWeight: '600' as const,
+    color: Colors.text,
+  },
+  domainBreakNextDesc: {
+    fontSize: FontSizes.body,
+    color: Colors.textSecondary,
+    lineHeight: 22,
+  },
+  domainBreakActions: {
+    gap: Spacing.md,
+  },
+  domainBreakContinue: {
+    backgroundColor: Colors.primary,
+    height: ButtonSizes.large,
+    borderRadius: BorderRadius.md,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+  },
+  domainBreakContinueText: {
+    color: Colors.white,
+    fontSize: FontSizes.body,
+    fontWeight: '600' as const,
+  },
+  domainBreakExit: {
+    borderWidth: 1,
+    borderColor: Colors.border,
+    height: ButtonSizes.large,
+    borderRadius: BorderRadius.md,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+  },
+  domainBreakExitText: {
+    color: Colors.textSecondary,
+    fontSize: FontSizes.body,
+    fontWeight: '600' as const,
   },
 });

@@ -86,6 +86,8 @@ import {
   ScaleIcon,
   StarIcon,
   LinkIcon,
+  SeedlingIcon,
+  LightbulbIcon,
 } from '@/assets/graphics/icons';
 import { getExerciseById } from '@/utils/interventions/registry';
 import { getExercisesForEdge } from '@/utils/portrait/growth-edges';
@@ -138,7 +140,7 @@ const TABS: TabDef[] = [
 
 interface WhoYouAreSection {
   title: string;
-  icon: string;
+  icon: React.ReactNode;
   body: string;
   color: string;
 }
@@ -159,7 +161,7 @@ function generateWhoYouAreSections(portrait: IndividualPortrait): WhoYouAreSecti
 
   sections.push({
     title: 'Your Strengths',
-    icon: '\u2728',
+    icon: <SparkleIcon size={18} color={Colors.success} />,
     color: Colors.success,
     body: strengths.length > 0
       ? `You show real strength in ${strengths.slice(0, 3).join(', ')}. These are the gifts you bring to your relationships — the places where you naturally shine.`
@@ -177,7 +179,7 @@ function generateWhoYouAreSections(portrait: IndividualPortrait): WhoYouAreSecti
 
   sections.push({
     title: 'Under Stress',
-    icon: '\uD83C\uDF0A',
+    icon: <WaveIcon size={18} color={Colors.secondary} />,
     color: Colors.secondary,
     body: `${cycleBody} Understanding this pattern is the first step toward choosing something different when you're ready.`,
   });
@@ -191,7 +193,7 @@ function generateWhoYouAreSections(portrait: IndividualPortrait): WhoYouAreSecti
 
   sections.push({
     title: 'Where You Can Grow',
-    icon: '\uD83C\uDF31',
+    icon: <SeedlingIcon size={18} color={Colors.warning} />,
     color: Colors.warning,
     body: growth.length > 0
       ? `Your portrait points to opportunities in ${growth.slice(0, 2).join(' and ')}. These aren't weaknesses — they're the edges where meaningful change happens.`
@@ -203,7 +205,7 @@ function generateWhoYouAreSections(portrait: IndividualPortrait): WhoYouAreSecti
   if (coreValues.length > 0) {
     sections.push({
       title: 'What Matters Most',
-      icon: '\uD83D\uDCA1',
+      icon: <LightbulbIcon size={18} color={Colors.primary} />,
       color: Colors.primary,
       body: `Your core values are ${coreValues.join(', ')}. These are the principles that guide your choices and shape what you need from a relationship.`,
     });
@@ -1087,7 +1089,7 @@ function OverviewTab({
       {whoYouAre.map((section, idx) => (
         <View key={section.title} style={st.card}>
           <View style={st.cardHeaderRow}>
-            <TenderText variant="body" style={{ fontSize: 18 }}>{section.icon}</TenderText>
+            {section.icon}
             <TenderText variant="headingS" style={{ color: section.color }}>{section.title}</TenderText>
           </View>
           <TenderText variant="body" color={Colors.textSecondary}>{section.body}</TenderText>

@@ -96,9 +96,12 @@ export const TooltipManager: React.FC<TooltipManagerProps> = ({
       return;
     }
 
-    // After tour: short wait for highlights to finish (~0.5s animation)
-    // Then tooltips start. 500ms feels snappy after the welcome modal.
-    const delay = wasFirstLaunch.current ? 500 : 400;
+    // After tour: wait for highlights to finish animation + re-render.
+    // Highlights take ~500ms (enter + pulse + exit) + re-render after
+    // markHighlightSeen. We add generous margin to ensure the
+    // HighlightWrapper has unmounted its Animated.View (which adds border
+    // and scale transform that offset measureInWindow results).
+    const delay = wasFirstLaunch.current ? 1200 : 400;
     wasFirstLaunch.current = false;
 
     const timer = setTimeout(() => {

@@ -1471,6 +1471,7 @@ export default function HomeScreen() {
             <HighlightWrapper highlightId="home_assessment_cta">
               <View
                 ref={(r) => RefRegistry.register('home_assessmentCta', r)}
+                collapsable={false}
                 style={styles.tenderCard}
               >
                 {tenderStatus.state === 'not_started' && (
