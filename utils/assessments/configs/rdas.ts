@@ -37,7 +37,7 @@ const SATISFACTION_FORWARD_SCALE: LikertOption[] = [
   { value: 5, label: 'All the Time' },
 ];
 
-/** Cohesion items (11-14): 0 = Never ... 5 = More often than once a day */
+/** Cohesion items (12-14): 0 = Never ... 5 = More often than once a day */
 const COHESION_SCALE: LikertOption[] = [
   { value: 0, label: 'Never' },
   { value: 1, label: 'Less Than Once a Month' },
@@ -45,6 +45,15 @@ const COHESION_SCALE: LikertOption[] = [
   { value: 3, label: 'Once or Twice a Week' },
   { value: 4, label: 'Once a Day' },
   { value: 5, label: 'More Often' },
+];
+
+/** Cohesion item 11 only: 0 = Never ... 4 = Every day (published RDAS uses 0-4 for this item) */
+const COHESION_SCALE_11: LikertOption[] = [
+  { value: 0, label: 'Never' },
+  { value: 1, label: 'Less Than Once a Month' },
+  { value: 2, label: 'Once or Twice a Month' },
+  { value: 3, label: 'Once or Twice a Week' },
+  { value: 4, label: 'Once a Day' },
 ];
 
 // ─── Questions ──────────────────────────────────────────
@@ -130,7 +139,7 @@ const QUESTIONS: GenericQuestion[] = [
     text: 'Have a stimulating exchange of ideas?',
     inputType: 'likert',
     subscale: 'cohesion',
-    likertScale: COHESION_SCALE,
+    likertScale: COHESION_SCALE_11,
   },
   {
     id: 12,

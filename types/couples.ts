@@ -69,7 +69,7 @@ export interface RDASScores {
   total: number;             // 0-69
   consensus: number;         // 0-30
   satisfaction: number;      // 0-20
-  cohesion: number;          // 0-20
+  cohesion: number;          // 0-19  (item 11 uses 0-4 scale per published RDAS)
   distressLevel: 'non-distressed' | 'mild' | 'moderate' | 'severe';
 }
 
