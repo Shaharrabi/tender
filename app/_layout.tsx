@@ -32,7 +32,7 @@ import { NetworkProvider } from '@/context/NetworkContext';
 import OfflineBanner from '@/components/ui/OfflineBanner';
 import { SoundHaptics } from '@/services/SoundHapticsService';
 import { registerAllAppSounds } from '@/services/sounds';
-import { registerAndStorePushToken, scheduleWeeklyCheckIn } from '@/services/notifications';
+import { registerAndStorePushToken, refreshNotificationContent } from '@/services/notifications';
 
 // Keep splash screen visible while loading fonts
 SplashScreen.preventAutoHideAsync();
@@ -44,9 +44,9 @@ function NotificationSetup() {
 
   useEffect(() => {
     if (!userId) return;
-    // Non-blocking: register token & schedule weekly check-in
+    // Non-blocking: register token & refresh notification content with fresh prompts
     registerAndStorePushToken(userId).catch(() => {});
-    scheduleWeeklyCheckIn(9, 0).catch(() => {});
+    refreshNotificationContent(9, 0, 9, 0).catch(() => {});
   }, [userId]);
 
   return null;

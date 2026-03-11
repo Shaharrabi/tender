@@ -13,6 +13,7 @@ import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { supabase } from './supabase';
+import { ENGAGEMENT_PROMPTS } from '@/constants/engagement-prompts';
 
 // ─── Configuration ──────────────────────────────────────
 
@@ -111,8 +112,22 @@ export async function registerAndStorePushToken(userId: string): Promise<void> {
 
 // ─── Local Notifications (Phase 1) ──────────────────────
 
+// ─── Prompt Helpers ─────────────────────────────────────
+
+/** Pick a random engagement prompt from a given category. */
+function pickRandomPrompt(category: string): { title: string; body: string } {
+  const pool = ENGAGEMENT_PROMPTS.filter((p) => p.category === category);
+  if (pool.length === 0) {
+    return { title: 'Weekly Check-In', body: 'How are you and your relationship doing this week?' };
+  }
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+  return { title: pick.title, body: pick.body };
+}
+
 /**
  * Schedule a weekly check-in reminder as a local notification.
+ * Picks a random motivational prompt from the weekly_checkin pool
+ * so the user sees fresh content each week.
  * Runs every Monday at the user's preferred time (default 9 AM).
  */
 export async function scheduleWeeklyCheckIn(
@@ -122,10 +137,12 @@ export async function scheduleWeeklyCheckIn(
   // Cancel existing weekly check-in first
   await cancelWeeklyCheckIn();
 
+  const { title, body } = pickRandomPrompt('weekly_checkin');
+
   await Notifications.scheduleNotificationAsync({
     content: {
-      title: 'Weekly Check-In',
-      body: 'How are you and your relationship doing this week? Take a moment to reflect.',
+      title,
+      body,
       data: { type: 'weekly_checkin' },
     },
     trigger: {
@@ -136,11 +153,13 @@ export async function scheduleWeeklyCheckIn(
     },
   });
 
-  if (__DEV__) console.log(`[Notifications] Weekly check-in scheduled for Monday at ${hour}:${String(minute).padStart(2, '0')}`);
+  if (__DEV__) console.log(`[Notifications] Weekly check-in scheduled for Monday at ${hour}:${String(minute).padStart(2, '0')} — "${title}"`);
 }
 
 /**
  * Schedule a daily practice reminder as a local notification.
+ * Picks a random motivational prompt from the practice_nudge pool
+ * so the user sees fresh content each day.
  */
 export async function scheduleDailyReminder(
   hour: number = 9,
@@ -149,10 +168,12 @@ export async function scheduleDailyReminder(
   // Cancel existing daily reminder first
   await cancelDailyReminder();
 
+  const { title, body } = pickRandomPrompt('practice_nudge');
+
   await Notifications.scheduleNotificationAsync({
     content: {
-      title: 'Your Daily Practice',
-      body: 'A small moment of awareness can shift your whole day. Your practice is waiting.',
+      title,
+      body,
       data: { type: 'daily_reminder' },
     },
     trigger: {
@@ -162,7 +183,24 @@ export async function scheduleDailyReminder(
     },
   });
 
-  if (__DEV__) console.log(`[Notifications] Daily reminder scheduled at ${hour}:${String(minute).padStart(2, '0')}`);
+  if (__DEV__) console.log(`[Notifications] Daily reminder scheduled at ${hour}:${String(minute).padStart(2, '0')} — "${title}"`);
+}
+
+/**
+ * Re-roll notification content on app launch.
+ * Reschedules both weekly and daily notifications with fresh prompts
+ * so users don't see the same message repeatedly.
+ * Preserves the existing schedule times.
+ */
+export async function refreshNotificationContent(
+  weeklyHour: number = 9,
+  weeklyMinute: number = 0,
+  dailyHour: number = 9,
+  dailyMinute: number = 0,
+): Promise<void> {
+  await scheduleWeeklyCheckIn(weeklyHour, weeklyMinute);
+  await scheduleDailyReminder(dailyHour, dailyMinute);
+  if (__DEV__) console.log('[Notifications] Refreshed all notification content with new prompts');
 }
 
 /**
