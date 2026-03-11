@@ -119,6 +119,7 @@ export const FontFamilies = {
 };
 
 export const FontSizes = {
+  hero: 28,           // Hero tagline on home screen
   headingXL: 32,
   headingL: 24,
   headingM: 20,
@@ -131,6 +132,8 @@ export const FontSizes = {
   bodySmall: 14,
   xs: 12,
   caption: 12,
+  tiny: 11,           // Badges, meta labels, step numbers
+  micro: 10,          // Eyebrow text, score labels, hint text
 };
 
 // ─── Typography Presets (composite styles for gradual adoption) ──

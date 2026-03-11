@@ -1222,7 +1222,7 @@ export default function HomeScreen() {
                     <Text style={styles.portraitScoreBadgeText}>{overallScore}</Text>
                   </View>
                   {growthBoostResult && growthBoostResult.growthBoost > 0 && (
-                    <Text style={{ fontSize: 11, color: Colors.success, fontWeight: '600' }}>
+                    <Text style={{ fontSize: FontSizes.tiny, color: Colors.success, fontWeight: '600' }}>
                       +{growthBoostResult.growthBoost} growth
                     </Text>
                   )}
@@ -1915,7 +1915,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.sm,
   },
   heroTagline: {
-    fontSize: 28,
+    fontSize: FontSizes.hero,
     fontWeight: '700',
     fontFamily: FontFamilies.heading,
     color: Colors.text,
@@ -2007,7 +2007,7 @@ const styles = StyleSheet.create({
     ...Shadows.subtle,
   },
   nudgeIcon: {
-    fontSize: 24,
+    fontSize: FontSizes.headingL,
   },
   nudgeText: {
     fontSize: FontSizes.bodySmall,
@@ -2063,7 +2063,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
   },
   resultIcon: {
-    fontSize: 20,
+    fontSize: FontSizes.headingM,
   },
   resultTitle: {
     fontSize: FontSizes.bodySmall,
@@ -2084,7 +2084,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.pill,
   },
   askNuanceText: {
-    fontSize: 11,
+    fontSize: FontSizes.tiny,
     color: Colors.primary,
     fontWeight: '600',
   },
@@ -2149,7 +2149,7 @@ const styles = StyleSheet.create({
     color: Colors.primary,
   },
   previewScoreLabel: {
-    fontSize: 10,
+    fontSize: FontSizes.micro,
     color: Colors.textMuted,
     fontWeight: '500',
   },
@@ -2189,7 +2189,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
   },
   nextAssessmentBadgeText: {
-    fontSize: 11,
+    fontSize: FontSizes.tiny,
     color: Colors.primary,
     fontWeight: '700',
     textTransform: 'uppercase',
@@ -2266,7 +2266,7 @@ const styles = StyleSheet.create({
     fontFamily: FontFamilies.heading,
   },
   lockIcon: {
-    fontSize: 14,
+    fontSize: FontSizes.bodySmall,
   },
   nuanceCardSubtitle: {
     fontSize: FontSizes.caption,
@@ -2314,7 +2314,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.pill,
   },
   practiceCategoryText: {
-    fontSize: 11,
+    fontSize: FontSizes.tiny,
     color: Colors.secondary,
     fontWeight: '700',
     textTransform: 'capitalize',
@@ -2360,10 +2360,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   featureCardIcon: {
-    fontSize: 24,
+    fontSize: FontSizes.headingL,
   },
   featureCardLockIcon: {
-    fontSize: 14,
+    fontSize: FontSizes.bodySmall,
   },
   featureCardTitle: {
     fontSize: FontSizes.bodySmall,
@@ -2377,7 +2377,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   featureCardHint: {
-    fontSize: 10,
+    fontSize: FontSizes.micro,
     color: Colors.warning,
     fontWeight: '600',
     marginTop: Spacing.xs,
@@ -2541,7 +2541,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   tenderCompleteEmoji: {
-    fontSize: 32,
+    fontSize: FontSizes.headingXL,
     color: Colors.success,
     fontWeight: '700',
     textAlign: 'center',
@@ -2648,7 +2648,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.successFaded,
   },
   badgeCompletedText: {
-    fontSize: 10,
+    fontSize: FontSizes.micro,
     fontWeight: '600',
     color: Colors.successDarkText,
   },
@@ -2656,7 +2656,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.accentGoldLight,
   },
   badgeInProgressText: {
-    fontSize: 10,
+    fontSize: FontSizes.micro,
     fontWeight: '600',
     color: Colors.warningDark,
   },
@@ -2779,7 +2779,7 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   portraitStatLabel: {
-    fontSize: 10,
+    fontSize: FontSizes.micro,
     fontWeight: '600' as const,
     color: Colors.textMuted,
     textTransform: 'uppercase' as const,
@@ -2860,7 +2860,7 @@ const styles = StyleSheet.create({
     width: '100%' as any,
   },
   movementLabel: {
-    fontSize: 11,
+    fontSize: FontSizes.tiny,
     color: Colors.textSecondary,
     fontWeight: '600' as const,
     textAlign: 'center' as const,
@@ -2870,7 +2870,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   quickPracticeLabel: {
-    fontSize: 11,
+    fontSize: FontSizes.tiny,
     fontWeight: '700' as const,
     color: Colors.textMuted,
     textTransform: 'uppercase' as const,
@@ -2894,7 +2894,7 @@ const styles = StyleSheet.create({
     color: Colors.text,
   },
   quickPracticeMeta: {
-    fontSize: 12,
+    fontSize: FontSizes.caption,
     color: Colors.primary,
     fontWeight: '600' as const,
   },
@@ -3214,7 +3214,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   journeyStepNumberText: {
-    fontSize: 11,
+    fontSize: FontSizes.tiny,
     fontWeight: '700',
     color: Colors.primary,
   },
@@ -3227,7 +3227,7 @@ const styles = StyleSheet.create({
     color: Colors.text,
   },
   journeyStepDesc: {
-    fontSize: 11,
+    fontSize: FontSizes.tiny,
     color: Colors.textSecondary,
     marginTop: 1,
   },
@@ -3370,7 +3370,7 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
   },
   stepJourneyArrow: {
-    fontSize: 20,
+    fontSize: FontSizes.headingM,
     color: Colors.textMuted,
   },
   stepJourneySegmentBar: {
@@ -3475,7 +3475,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   healingJourneyNewBadgeText: {
-    fontSize: 10,
+    fontSize: FontSizes.micro,
     fontWeight: '700',
     color: Colors.white,
     letterSpacing: 1,
@@ -3520,7 +3520,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   relationalScoreTeaserEyebrow: {
-    fontSize: 10,
+    fontSize: FontSizes.micro,
     fontWeight: '700',
     letterSpacing: 1.5,
     color: Colors.secondary,
