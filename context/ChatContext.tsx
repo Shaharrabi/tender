@@ -3,6 +3,7 @@
  */
 
 import React, { createContext, useContext, useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { Platform } from 'react-native';
 import { useAuth } from './AuthContext';
 import { getPortrait } from '@/services/portrait';
 import { supabase } from '@/services/supabase';
@@ -256,8 +257,14 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
         console.log('[Chat] Has auth token:', !!token, 'Token length:', token?.length);
       }
 
-      // Detect streaming support — only request SSE if ReadableStream is available
-      const supportsStreaming = typeof ReadableStream !== 'undefined' && typeof TextDecoder !== 'undefined';
+      // Detect streaming support — only request SSE on web where ReadableStream
+      // bodies actually work.  React Native's fetch polyfill may expose
+      // ReadableStream as a global but response.body is always null, which
+      // causes us to fall through to the JSON path on an SSE response body.
+      const supportsStreaming =
+        Platform.OS === 'web' &&
+        typeof ReadableStream !== 'undefined' &&
+        typeof TextDecoder !== 'undefined';
 
       // Abort controller with timeout — prevents indefinite hangs
       const controller = new AbortController();
