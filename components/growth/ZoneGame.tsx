@@ -58,7 +58,12 @@ export default function ZoneGame({ zoneNumber, visible, onComplete, onClose }: Z
 
   if (!visible) return null;
 
-  const gameSrc = `/games/zone${zoneNumber}.html`;
+  // On web, use relative path (served by the same origin).
+  // On native, load from the hosted Netlify site since local files
+  // aren't accessible via URI in a WebView.
+  const gameSrc = Platform.OS === 'web'
+    ? `/games/zone${zoneNumber}.html`
+    : `https://couples-app-demo.netlify.app/games/zone${zoneNumber}.html`;
 
   return (
     <Modal
