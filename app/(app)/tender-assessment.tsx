@@ -906,6 +906,18 @@ export default function TenderAssessmentScreen() {
 
     return (
       <SafeAreaView style={styles.container}>
+        {/* Back button */}
+        <View style={styles.welcomeTopBar}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            activeOpacity={0.7}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
+            <Ionicons name="chevron-back" size={24} color={Colors.text} />
+          </TouchableOpacity>
+        </View>
         <ScrollView contentContainerStyle={styles.welcomeContent} showsVerticalScrollIndicator={false}>
           {/* Title block */}
           <Text style={styles.welcomeTitle}>THE TENDER ASSESSMENT</Text>
@@ -1329,10 +1341,15 @@ const styles = StyleSheet.create({
   },
 
   // ── Welcome Screen ──
+  welcomeTopBar: {
+    paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.sm,
+    paddingBottom: Spacing.xs,
+  },
   welcomeContent: {
     flexGrow: 1,
     paddingHorizontal: Spacing.xl,
-    paddingTop: Spacing.xxl,
+    paddingTop: Spacing.md,
     paddingBottom: Spacing.xl,
   },
   welcomeTitle: {
