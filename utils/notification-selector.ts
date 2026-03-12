@@ -385,6 +385,21 @@ export async function getUnreadCount(): Promise<number> {
   return history.filter((n) => !n.dismissed && !n.tapped).length;
 }
 
+export async function markAllHistoryRead(): Promise<void> {
+  try {
+    const key = historyKey();
+    const raw = await AsyncStorage.getItem(key);
+    if (!raw) return;
+    const history: StoredNotification[] = JSON.parse(raw);
+    for (const entry of history) {
+      entry.dismissed = true;
+    }
+    await AsyncStorage.setItem(key, JSON.stringify(history));
+  } catch {
+    // Silent fail
+  }
+}
+
 export async function markHistoryDismissed(promptId: string): Promise<void> {
   try {
     const key = historyKey();

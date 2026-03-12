@@ -16,18 +16,23 @@ import { BellIcon } from '@/assets/graphics/icons';
 
 interface NotificationBellButtonProps {
   unreadCount: number;
+  onPress?: () => void;
 }
 
 // ─── Component ──────────────────────────────────────
 
 export default function NotificationBellButton({
   unreadCount,
+  onPress,
 }: NotificationBellButtonProps) {
   const router = useRouter();
 
   return (
     <Pressable
-      onPress={() => router.push('/(app)/notification-feed' as any)}
+      onPress={() => {
+        onPress?.();
+        router.push('/(app)/notification-feed' as any);
+      }}
       style={({ pressed }) => [
         styles.button,
         pressed && styles.buttonPressed,

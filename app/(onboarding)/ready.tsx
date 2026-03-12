@@ -368,14 +368,6 @@ export default function ReadyScreen() {
         </Animated.View>
 
         <Animated.View entering={FadeInDown.duration(1200).delay(1500)}>
-          <Text style={styles.message}>
-            This isn't about being perfect.{'\n'}
-            It's about showing up —{'\n'}
-            for yourself, and for the people you love.
-          </Text>
-        </Animated.View>
-
-        <Animated.View entering={FadeInDown.duration(1200).delay(2000)}>
           <Text style={styles.submessage}>
             We'll start with a gentle assessment{'\n'}
             to understand how you connect.
@@ -458,14 +450,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: Colors.text,
     textAlign: 'center',
-    marginBottom: Spacing.lg,
-  },
-  message: {
-    fontSize: FontSizes.headingM,
-    fontFamily: 'PlayfairDisplay_400Regular_Italic',
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 30,
     marginBottom: Spacing.lg,
   },
   submessage: {

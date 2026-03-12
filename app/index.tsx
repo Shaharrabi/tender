@@ -88,7 +88,7 @@ export default function Index() {
 
   // Logged in but hasn't completed onboarding
   if (session && onboardingCheck === 'needed') {
-    return <Redirect href="/(onboarding)/welcome" />;
+    return <Redirect href="/(onboarding)/status" />;
   }
 
   // Logged in and onboarding done (or guest)

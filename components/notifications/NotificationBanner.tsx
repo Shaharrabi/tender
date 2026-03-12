@@ -97,16 +97,21 @@ export default function NotificationBanner({
           )}
         </View>
 
-        {/* Dismiss button */}
-        <Pressable
-          onPress={onDismiss}
-          hitSlop={12}
-          style={styles.dismissButton}
-          accessibilityRole="button"
-          accessibilityLabel="Dismiss notification"
-        >
-          <CloseIcon size={14} color={Colors.textMuted} />
-        </Pressable>
+        {/* Dismiss button — wrapped in a View to prevent tap-through to parent Pressable */}
+        <View style={styles.dismissButton}>
+          <Pressable
+            onPress={(e) => {
+              e.stopPropagation();
+              onDismiss();
+            }}
+            hitSlop={12}
+            style={styles.dismissTouchable}
+            accessibilityRole="button"
+            accessibilityLabel="Dismiss notification"
+          >
+            <CloseIcon size={14} color={Colors.textMuted} />
+          </Pressable>
+        </View>
 
         {/* Action chevron */}
         {notification.actionRoute && (
@@ -181,7 +186,9 @@ const styles = StyleSheet.create({
   },
   dismissButton: {
     marginLeft: Spacing.sm,
-    padding: Spacing.xs,
+  },
+  dismissTouchable: {
+    padding: Spacing.xs + 4,
   },
   chevron: {
     fontSize: FontSizes.headingL,

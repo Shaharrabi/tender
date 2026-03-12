@@ -127,15 +127,18 @@ function WebIframe({ src, onMessage }: { src: string; onMessage: (data: string) 
 
 /* ─── Native: WebView ─── */
 function NativeWebView({ src, onMessage }: { src: string; onMessage: (data: string) => void }) {
-  const { height, width } = Dimensions.get('screen');
+  // Use window dimensions (visible area) instead of screen (full physical screen)
+  // to avoid the game overflowing past the safe area / home indicator.
+  const { height } = Dimensions.get('window');
 
-  // Inject a script that forces the document to use the actual device dimensions.
-  // This fixes the `height: 100%` in the game HTML not resolving correctly inside
-  // a React Native WebView where the viewport height can be ambiguous.
+  // Inject a script that forces the document to use the WebView's actual visible
+  // height via window.innerHeight (most accurate), with a fallback to the RN
+  // window height. This prevents the game from being clipped at the bottom.
   const injectedJS = `
     (function() {
+      var h = window.innerHeight || ${height};
       var style = document.createElement('style');
-      style.textContent = 'html, body, .phone { height: ${height}px !important; max-height: ${height}px !important; }';
+      style.textContent = 'html, body, .phone { height: ' + h + 'px !important; max-height: ' + h + 'px !important; overflow: hidden !important; }';
       document.head.appendChild(style);
       true;
     })();
@@ -160,6 +163,8 @@ function NativeWebView({ src, onMessage }: { src: string; onMessage: (data: stri
         injectedJavaScript={injectedJS}
         contentMode="mobile"
         automaticallyAdjustContentInsets={false}
+        overScrollMode="never"
+        bounces={false}
       />
     );
   } catch {

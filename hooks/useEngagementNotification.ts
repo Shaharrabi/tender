@@ -19,6 +19,7 @@ import {
   getUnreadCount,
   markHistoryDismissed,
   markHistoryTapped,
+  markAllHistoryRead,
   setNotificationUserId,
 } from '@/utils/notification-selector';
 import {
@@ -39,6 +40,8 @@ interface UseEngagementNotificationResult {
   dismiss: () => void;
   /** Mark the current notification as tapped (navigated) */
   markTapped: () => void;
+  /** Mark all notifications as read (clears unread count) */
+  markAllRead: () => void;
   /** Force a refresh of the notification */
   refresh: () => void;
   /** Whether the system is still loading */
@@ -212,6 +215,12 @@ export function useEngagementNotification(
     }
   }, [notification]);
 
+  // Mark all read handler (used when bell is tapped)
+  const markAllRead = useCallback(async () => {
+    await markAllHistoryRead();
+    setUnreadCount(0);
+  }, []);
+
   // Refresh handler
   const refresh = useCallback(() => {
     setLoading(true);
@@ -225,6 +234,7 @@ export function useEngagementNotification(
     unreadCount,
     dismiss,
     markTapped,
+    markAllRead,
     refresh,
     loading,
   };

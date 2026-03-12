@@ -101,7 +101,7 @@ export default function RegisterScreen() {
       } catch {
         // Non-blocking — name will fall back to email prefix
       }
-      router.replace('/(onboarding)/welcome');
+      router.replace('/(onboarding)/status');
     }
   };
 

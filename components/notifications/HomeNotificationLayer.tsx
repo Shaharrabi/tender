@@ -36,6 +36,7 @@ export default function HomeNotificationLayer({
     unreadCount,
     dismiss,
     markTapped,
+    markAllRead,
     loading,
   } = useEngagementNotification(userId, weareBottleneck, dayNumber);
 
@@ -48,7 +49,7 @@ export default function HomeNotificationLayer({
     <View style={styles.container}>
       {/* Bell button — always visible, positioned for home screen header */}
       <View style={styles.bellRow}>
-        <NotificationBellButton unreadCount={unreadCount} />
+        <NotificationBellButton unreadCount={unreadCount} onPress={markAllRead} />
       </View>
 
       {/* Banner in normal flow — visible above XP bar */}
