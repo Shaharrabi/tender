@@ -24,6 +24,7 @@ import {
   View,
   Platform,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Audio, AVPlaybackStatus } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
@@ -187,11 +188,24 @@ export const WelcomeAudio: React.FC<WelcomeAudioProps> = ({ screenKey }) => {
     }
   }, [config, onPlaybackStatusUpdate]);
 
-  // Auto-play on first render
+  // Auto-play on first render — with direct AsyncStorage double-check
+  // to prevent replaying when module-level Set is cleared (e.g. Expo hot reload)
   useEffect(() => {
     if (!shouldShow) return;
 
-    const timer = setTimeout(() => {
+    const timer = setTimeout(async () => {
+      // Double-check AsyncStorage directly to avoid replays from stale state
+      try {
+        const raw = await AsyncStorage.getItem(`@ftue_audios_${user?.id || 'guest'}`);
+        const persisted: string[] = raw ? JSON.parse(raw) : [];
+        if (persisted.includes(screenKey)) {
+          _heardThisSession.add(screenKey);
+          return; // Already heard — skip
+        }
+      } catch {
+        // AsyncStorage error — proceed with context-based check (shouldShow)
+      }
+
       if (mountedRef.current) {
         setIsVisible(true);
         // Mark as heard immediately — showing the player is enough.
