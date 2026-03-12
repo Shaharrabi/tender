@@ -18,7 +18,10 @@ import {
   Modal,
   StatusBar,
   Dimensions,
+  TouchableOpacity,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/theme';
 
 interface ZoneGameProps {
@@ -29,6 +32,7 @@ interface ZoneGameProps {
 }
 
 export default function ZoneGame({ zoneNumber, visible, onComplete, onClose }: ZoneGameProps) {
+  const insets = useSafeAreaInsets();
   const completedRef = useRef(false);
 
   const handleMessage = useCallback(
@@ -75,7 +79,17 @@ export default function ZoneGame({ zoneNumber, visible, onComplete, onClose }: Z
     >
       <StatusBar barStyle="light-content" backgroundColor="#0A0608" />
       <View style={styles.container}>
-        {/* Close button is inside the game HTML (.exit-x) — no duplicate needed here */}
+        {/* Native close button — always available even if game HTML hasn't loaded */}
+        <TouchableOpacity
+          onPress={onClose}
+          activeOpacity={0.7}
+          style={[styles.nativeCloseButton, { top: insets.top + 10 }]}
+          accessibilityRole="button"
+          accessibilityLabel="Close game"
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Ionicons name="close" size={20} color="rgba(255,255,255,0.85)" />
+        </TouchableOpacity>
 
         {Platform.OS === 'web' ? (
           <WebIframe src={gameSrc} onMessage={handleMessage} />
@@ -182,6 +196,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#0A0608',
+  },
+  nativeCloseButton: {
+    position: 'absolute',
+    right: 12,
+    zIndex: 100,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   iframeWrapper: {
     flex: 1,

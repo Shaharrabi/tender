@@ -23,6 +23,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { Audio, AVPlaybackStatus } from 'expo-av';
+import { Ionicons } from '@expo/vector-icons';
 import {
   Colors,
   Spacing,
@@ -207,7 +208,7 @@ function PortraitAudioCard({
   const progress = duration > 0 ? position / duration : 0;
 
   // ── Play Button Icon ──
-  const playIcon = isPlaying ? '\u23F8' : hasFinished ? '\u21BB' : '\u25B6';
+  const playIconName: keyof typeof Ionicons.glyphMap = isPlaying ? 'pause' : hasFinished ? 'refresh' : 'play';
 
   return (
     <View style={[styles.card, compact && styles.cardCompact]}>
@@ -238,14 +239,11 @@ function PortraitAudioCard({
           {isLoading ? (
             <ActivityIndicator size="small" color={accentColor} />
           ) : (
-            <Text
-              style={[
-                styles.playIcon,
-                { color: isAvailable ? accentColor : Colors.textMuted },
-              ]}
-            >
-              {isAvailable ? playIcon : '\u25B6'}
-            </Text>
+            <Ionicons
+              name={isAvailable ? playIconName : 'play'}
+              size={18}
+              color={isAvailable ? accentColor : Colors.textMuted}
+            />
           )}
         </Animated.View>
       </TouchableOpacity>

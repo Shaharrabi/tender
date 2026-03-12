@@ -29,6 +29,7 @@ import Animated, {
   FadeIn,
 } from 'react-native-reanimated';
 import { Audio, AVPlaybackStatus } from 'expo-av';
+import { Ionicons } from '@expo/vector-icons';
 import {
   Colors,
   Spacing,
@@ -233,9 +234,11 @@ export default function StepAudioPlayer({
             {isLoading ? (
               <ActivityIndicator size="small" color={phaseColor} />
             ) : (
-              <Text style={[styles.playIcon, { color: phaseColor }]}>
-                {isPlaying ? '\u23F8' : hasFinished ? '\u21BB' : '\u25B6'}
-              </Text>
+              <Ionicons
+                name={isPlaying ? 'pause' : hasFinished ? 'refresh' : 'play'}
+                size={20}
+                color={phaseColor}
+              />
             )}
           </Animated.View>
         </TouchableOpacity>
