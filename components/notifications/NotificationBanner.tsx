@@ -18,7 +18,6 @@ import {
   BorderRadius,
   Shadows,
 } from '@/constants/theme';
-import { CloseIcon } from '@/assets/graphics/icons';
 import { CATEGORY_CONFIG } from '@/constants/engagement-prompts';
 import type { EngagementPrompt } from '@/types/notifications';
 
@@ -97,22 +96,6 @@ export default function NotificationBanner({
           )}
         </View>
 
-        {/* Dismiss button — wrapped in a View to prevent tap-through to parent Pressable */}
-        <View style={styles.dismissButton}>
-          <Pressable
-            onPress={(e) => {
-              e.stopPropagation();
-              onDismiss();
-            }}
-            hitSlop={12}
-            style={styles.dismissTouchable}
-            accessibilityRole="button"
-            accessibilityLabel="Dismiss notification"
-          >
-            <CloseIcon size={14} color={Colors.textMuted} />
-          </Pressable>
-        </View>
-
         {/* Action chevron */}
         {notification.actionRoute && (
           <Text style={styles.chevron}>{'›'}</Text>
@@ -183,12 +166,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: Colors.textMuted,
     marginTop: Spacing.xs,
-  },
-  dismissButton: {
-    marginLeft: Spacing.sm,
-  },
-  dismissTouchable: {
-    padding: Spacing.xs + 4,
   },
   chevron: {
     fontSize: FontSizes.headingL,
