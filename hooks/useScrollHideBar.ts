@@ -22,10 +22,16 @@ export function useScrollHideBar(barHeight = BAR_HEIGHT) {
   const barTranslateY = useSharedValue(0);
 
   const handleScroll = useCallback((event: any) => {
-    const currentY = event.nativeEvent.contentOffset.y;
+    const { contentOffset, layoutMeasurement, contentSize } = event.nativeEvent;
+    const currentY = contentOffset.y;
     const delta = currentY - lastScrollY.value;
 
-    if (delta > 5 && currentY > 50) {
+    // If user reached the bottom (within 20px), always show the bar
+    const atBottom = currentY + layoutMeasurement.height >= contentSize.height - 20;
+
+    if (atBottom) {
+      barTranslateY.value = withTiming(0, { duration: 200 });
+    } else if (delta > 5 && currentY > 50) {
       // Scrolling down — hide bar
       barTranslateY.value = withTiming(barHeight, { duration: 200 });
     } else if (delta < -5) {
