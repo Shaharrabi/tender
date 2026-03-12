@@ -726,8 +726,8 @@ export default function TenderAssessmentScreen() {
       };
       await AsyncStorage.setItem(PROGRESS_KEY, JSON.stringify(data));
     } catch {}
-    hasExitedRef.current = true;
-    router.back();
+    // Show the chapter list so the user can pick another assessment
+    setShowingIntro(true);
   };
 
   // ── Welcome screen helpers ──
