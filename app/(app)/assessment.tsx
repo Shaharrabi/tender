@@ -16,6 +16,7 @@ import { useAuth } from '@/context/AuthContext';
 import { getAssessmentConfig, isDyadicAssessment } from '@/utils/assessments/registry';
 import { saveDyadicAssessment } from '@/services/couples';
 import { supabase } from '@/services/supabase';
+import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, FontSizes, ButtonSizes, FontFamilies, BorderRadius } from '@/constants/theme';
 import QuickLinksBar from '@/components/QuickLinksBar';
 import TenderButton from '@/components/ui/TenderButton';
@@ -62,6 +63,14 @@ export default function AssessmentScreen() {
   const questionOpacity = useRef(new Animated.Value(1)).current;
   const autoAdvanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasSubmittedRef = useRef(false);
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  // Scroll to top whenever the question changes — safety net for auto-advance timing
+  useEffect(() => {
+    if (!showInstructions) {
+      scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+    }
+  }, [currentIndex]);
 
   // Guard against accidental navigation (hardware back button)
   const navigation = useNavigation();
@@ -172,6 +181,7 @@ export default function AssessmentScreen() {
       }
       setCurrentIndex(nextIndex);
       saveProgress(responses, nextIndex);
+      scrollViewRef.current?.scrollTo({ y: 0, animated: false });
     }
   };
 
@@ -180,6 +190,7 @@ export default function AssessmentScreen() {
       const prevIndex = currentIndex - 1;
       setCurrentIndex(prevIndex);
       saveProgress(responses, prevIndex);
+      scrollViewRef.current?.scrollTo({ y: 0, animated: false });
     }
   };
 
@@ -192,12 +203,7 @@ export default function AssessmentScreen() {
   const handleSaveAndExit = () => {
     setSectionBreak(null);
     hasSubmittedRef.current = true; // allow navigation without guard
-    // Navigate to couple portal for dyadic assessments, home for individual
-    if (isDyadicAssessment(config.type as any)) {
-      router.replace('/(app)/couple-portal');
-    } else {
-      router.replace('/(app)/home');
-    }
+    router.back();
   };
 
   const handleSubmit = async () => {
@@ -339,8 +345,17 @@ export default function AssessmentScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        {/* Top bar: progress + save & exit */}
+        {/* Top bar: back + progress + save & exit */}
         <View style={styles.topBar}>
+          <TouchableOpacity
+            onPress={handleSaveAndExit}
+            activeOpacity={0.7}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
+            <Ionicons name="chevron-back" size={24} color={Colors.text} />
+          </TouchableOpacity>
           <View style={styles.progressSection}>
             <Text style={styles.progressText} accessibilityLiveRegion="polite" accessibilityLabel={`Question ${currentIndex + 1} of ${config.totalQuestions}`}>
               Question {currentIndex + 1} of {config.totalQuestions}
@@ -362,6 +377,7 @@ export default function AssessmentScreen() {
 
         {/* Question */}
         <ScrollView
+          ref={scrollViewRef}
           style={styles.questionScroll}
           contentContainerStyle={styles.questionScrollContent}
         >
@@ -468,8 +484,8 @@ const styles = StyleSheet.create({
   // Top bar
   topBar: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: Spacing.md,
+    alignItems: 'center',
+    gap: Spacing.sm,
   },
   saveExitButton: {
     paddingVertical: Spacing.xs,

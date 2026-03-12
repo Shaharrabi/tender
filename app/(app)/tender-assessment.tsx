@@ -34,6 +34,7 @@ import { TENDER_SECTIONS, TOTAL_QUESTIONS, TOTAL_ESTIMATED_MINUTES } from '@/uti
 import { getSupplementDef } from '@/utils/assessments/supplements';
 import QuestionRenderer from '@/components/assessment/QuestionRenderer';
 import SectionBreak from '@/components/assessment/SectionBreak';
+import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, FontSizes, FontFamilies, ButtonSizes, BorderRadius, Shadows } from '@/constants/theme';
 import { SparkleIcon, BookOpenIcon, RefreshIcon, HeartIcon, CheckmarkIcon } from '@/assets/graphics/icons';
 import CelebrationDots from '@/components/ui/CelebrationDots';
@@ -169,6 +170,7 @@ export default function TenderAssessmentScreen() {
   // Question fade for auto-advance
   const questionOpacity = useRef(new Animated.Value(1)).current;
   const autoAdvanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   // Celebration animation for completion screen
   const celebrationScale = useRef(new Animated.Value(0.3)).current;
@@ -382,6 +384,13 @@ export default function TenderAssessmentScreen() {
   const isLastQuestionInSection = qIndex === totalCombined - 1;
   const isLastSection = currentSectionIndex === TENDER_SECTIONS.length - 1;
 
+  // Scroll to top whenever the question changes — safety net for auto-advance timing
+  useEffect(() => {
+    if (!showingIntro && !showingSectionBreak && !showingDomainBreak && !showingCompletion) {
+      scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+    }
+  }, [qIndex, currentSectionIndex]);
+
   // ── Skip completed sections (via effect, not during render) ──
   // IMPORTANT: This useEffect MUST be before all conditional returns
   // to satisfy React's rules of hooks (same number of hooks every render).
@@ -471,6 +480,7 @@ export default function TenderAssessmentScreen() {
         saveProgress(currentSectionIndex, updated, completedSections);
         return updated;
       });
+      scrollViewRef.current?.scrollTo({ y: 0, animated: false });
     }
   };
 
@@ -489,6 +499,7 @@ export default function TenderAssessmentScreen() {
       saveProgress(currentSectionIndex, updated, completedSections);
       return updated;
     });
+    scrollViewRef.current?.scrollTo({ y: 0, animated: false });
   };
 
   /** Auto-advance after likert/choice selection with a brief delay + fade */
@@ -527,6 +538,7 @@ export default function TenderAssessmentScreen() {
         saveProgress(currentSectionIndex, updated, completedSections);
         return updated;
       });
+      scrollViewRef.current?.scrollTo({ y: 0, animated: false });
     }
   };
 
@@ -715,7 +727,7 @@ export default function TenderAssessmentScreen() {
       await AsyncStorage.setItem(PROGRESS_KEY, JSON.stringify(data));
     } catch {}
     hasExitedRef.current = true;
-    router.replace('/(app)/home');
+    router.back();
   };
 
   // ── Welcome screen helpers ──
@@ -1145,8 +1157,17 @@ export default function TenderAssessmentScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        {/* Top bar: section indicator + save & exit */}
+        {/* Top bar: back + section indicator + save & exit */}
         <View style={styles.topBar}>
+          <TouchableOpacity
+            onPress={handleSaveAndExit}
+            activeOpacity={0.7}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
+            <Ionicons name="chevron-back" size={24} color={Colors.text} />
+          </TouchableOpacity>
           <View style={styles.progressSection}>
             {/* Section-level progress */}
             <Text style={styles.sectionLabel}>
@@ -1190,6 +1211,7 @@ export default function TenderAssessmentScreen() {
 
         {/* Question */}
         <ScrollView
+          ref={scrollViewRef}
           style={styles.questionScroll}
           contentContainerStyle={styles.questionScrollContent}
         >
@@ -1511,8 +1533,8 @@ const styles = StyleSheet.create({
   // ── Top Bar ──
   topBar: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: Spacing.md,
+    alignItems: 'center',
+    gap: Spacing.sm,
   },
   progressSection: { flex: 1, gap: Spacing.xs },
   sectionLabel: {
