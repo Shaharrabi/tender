@@ -38,6 +38,8 @@ import ArcadeGame from '@/components/dating/ArcadeGame';
 import ProfileBuilder from '@/components/dating/ProfileBuilder';
 import DiscoverView from '@/components/dating/DiscoverView';
 import RoomsView from '@/components/dating/RoomsView';
+import LetterInbox from '@/components/dating/LetterInbox';
+import { MailboxIcon } from '@/assets/graphics/icons';
 import type {
   DatingProfile,
   GameAnswer,
@@ -45,12 +47,13 @@ import type {
   ArchetypeScores,
 } from '@/types/dating';
 
-type TabKey = 'game' | 'profile' | 'discover' | 'rooms';
+type TabKey = 'game' | 'profile' | 'discover' | 'letters' | 'rooms';
 
 const TABS: { id: TabKey; label: string; Icon: React.ComponentType<{ size: number; color: string }> }[] = [
   { id: 'game', label: 'The Field', Icon: TargetIcon },
   { id: 'profile', label: 'My Shape', Icon: SparkleIcon },
   { id: 'discover', label: 'Discover', Icon: SearchIcon },
+  { id: 'letters', label: 'Letters', Icon: MailboxIcon },
   { id: 'rooms', label: 'Rooms', Icon: CommunityIcon },
 ];
 
@@ -164,6 +167,19 @@ export default function DatingWellScreen() {
     [session?.user?.id],
   );
 
+  const handleVisibilityChange = useCallback(
+    async (isVisible: boolean, isActive: boolean) => {
+      if (!session?.user?.id) return;
+      try {
+        const updated = await updateDatingProfile(session.user.id, { isVisible, isActive });
+        setProfile(updated);
+      } catch (err) {
+        if (__DEV__) console.error('Failed to update visibility:', err);
+      }
+    },
+    [session?.user?.id],
+  );
+
   const handleTabPress = (tabId: TabKey) => {
     if (!gameComplete && tabId !== 'game') {
       Alert.alert(
@@ -269,15 +285,27 @@ export default function DatingWellScreen() {
               constellation={constellation}
               initialPreferences={profile?.preferences}
               initialBio={profile?.bio || ''}
+              initialIsVisible={profile?.isVisible ?? true}
+              initialIsActive={profile?.isActive ?? true}
               onPreferencesChange={handlePreferencesChange}
               onBioChange={handleBioChange}
+              onVisibilityChange={handleVisibilityChange}
             />
           </Animated.View>
         )}
 
         {activeTab === 'discover' && (
           <Animated.View entering={FadeIn.duration(400)}>
-            <DiscoverView />
+            <DiscoverView userId={session?.user?.id || ''} userProfile={profile} />
+          </Animated.View>
+        )}
+
+        {activeTab === 'letters' && (
+          <Animated.View entering={FadeIn.duration(400)}>
+            <LetterInbox
+              userId={session?.user?.id || ''}
+              onBack={() => setActiveTab('discover')}
+            />
           </Animated.View>
         )}
 
