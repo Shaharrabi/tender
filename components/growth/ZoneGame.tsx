@@ -143,17 +143,107 @@ function WebIframe({ src, onMessage }: { src: string; onMessage: (data: string) 
 function NativeWebView({ src, onMessage }: { src: string; onMessage: (data: string) => void }) {
   // Use window dimensions (visible area) instead of screen (full physical screen)
   // to avoid the game overflowing past the safe area / home indicator.
-  const { height } = Dimensions.get('window');
+  const { width, height } = Dimensions.get('window');
 
-  // Inject a script that forces the document to use the WebView's actual visible
-  // height via window.innerHeight (most accurate), with a fallback to the RN
-  // window height. This prevents the game from being clipped at the bottom.
+  // Comprehensive viewport fix for iOS WebView.
+  //
+  // Problem: iOS WebView can clamp the viewport to a different size than the
+  // actual visible area. The games use `clientWidth/clientHeight` at init and
+  // `getBoundingClientRect()` during touch events — if these disagree (because
+  // the layout shifted after the modal animated in), paddle tracking and
+  // collision detection break.
+  //
+  // Fix:
+  // 1. Force viewport meta tag (prevents iOS scaling)
+  // 2. Replace vh-based heights with pixel values from window.innerHeight
+  // 3. Monkey-patch initCanvas() to re-measure after a frame
+  // 4. Add ResizeObserver to re-init if game-area changes size
+  // 5. Fire deferred resize events after modal animation settles
   const injectedJS = `
     (function() {
       var h = window.innerHeight || ${height};
+      var w = window.innerWidth || ${width};
+
+      /* 1. Force viewport meta — prevent iOS auto-scaling */
+      var meta = document.querySelector('meta[name=viewport]');
+      if (!meta) {
+        meta = document.createElement('meta');
+        meta.name = 'viewport';
+        document.head.appendChild(meta);
+      }
+      meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
+
+      /* 2. Force pixel-based dimensions (replaces vh units) */
       var style = document.createElement('style');
-      style.textContent = 'html, body, .phone { height: ' + h + 'px !important; max-height: ' + h + 'px !important; }';
+      style.textContent =
+        'html, body, .phone { height: ' + h + 'px !important; max-height: ' + h + 'px !important; width: ' + w + 'px !important; }' +
+        '#game-area { min-height: ' + Math.floor(h * 0.45) + 'px !important; }';
       document.head.appendChild(style);
+
+      /* 3. Monkey-patch initCanvas to re-measure after layout settles */
+      var _patchApplied = false;
+      function patchInitCanvas() {
+        if (_patchApplied || typeof window.initCanvas !== 'function') return;
+        _patchApplied = true;
+        var origInit = window.initCanvas;
+        window.initCanvas = function() {
+          origInit();
+          /* Re-measure after a frame to catch post-animation layout shifts */
+          requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+              var area = document.getElementById('game-area');
+              var cvs = document.getElementById('canvas');
+              if (!area || !cvs) return;
+              var rect = area.getBoundingClientRect();
+              var rW = Math.round(rect.width);
+              var rH = Math.round(rect.height);
+              if (typeof W !== 'undefined' && (Math.abs(rW - W) > 2 || Math.abs(rH - H) > 2)) {
+                W = rW; H = rH;
+                cvs.width = W; cvs.height = H;
+                /* Re-derive size-dependent constants if they exist */
+                if (typeof PADDLE_W !== 'undefined') { PADDLE_W = W * 0.22; }
+                if (typeof PADDLE_H !== 'undefined') { PADDLE_H = H * 0.025; }
+                if (typeof BALL_R !== 'undefined') { BALL_R = Math.min(W, H) * 0.025; }
+                if (typeof BRICK_W !== 'undefined') { BRICK_W = W / 5 - 4; }
+                if (typeof BRICK_H !== 'undefined') { BRICK_H = H * 0.04; }
+                if (typeof draw === 'function') { draw(); }
+              }
+            });
+          });
+        };
+      }
+
+      /* 4. ResizeObserver — re-init canvas if game-area changes size */
+      function attachResizeObserver() {
+        var area = document.getElementById('game-area');
+        if (!area || typeof ResizeObserver === 'undefined') return;
+        new ResizeObserver(function() {
+          if (typeof S !== 'undefined' && S.phase === 'game' && typeof initCanvas === 'function') {
+            initCanvas();
+            if (typeof draw === 'function') draw();
+          }
+        }).observe(area);
+      }
+
+      /* Apply patches once DOM is ready */
+      if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        patchInitCanvas();
+        attachResizeObserver();
+      } else {
+        document.addEventListener('DOMContentLoaded', function() {
+          patchInitCanvas();
+          attachResizeObserver();
+        });
+      }
+
+      /* 5. Deferred resize events — catch post-modal-animation layout shifts */
+      [100, 300, 600].forEach(function(delay) {
+        setTimeout(function() {
+          patchInitCanvas();
+          window.dispatchEvent(new Event('resize'));
+        }, delay);
+      });
+
       true;
     })();
   `;
