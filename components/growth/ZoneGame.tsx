@@ -152,7 +152,7 @@ function NativeWebView({ src, onMessage }: { src: string; onMessage: (data: stri
     (function() {
       var h = window.innerHeight || ${height};
       var style = document.createElement('style');
-      style.textContent = 'html, body, .phone { height: ' + h + 'px !important; max-height: ' + h + 'px !important; overflow: hidden !important; }';
+      style.textContent = 'html, body, .phone { height: ' + h + 'px !important; max-height: ' + h + 'px !important; }';
       document.head.appendChild(style);
       true;
     })();
@@ -172,7 +172,7 @@ function NativeWebView({ src, onMessage }: { src: string; onMessage: (data: stri
         mediaPlaybackRequiresUserAction={false}
         startInLoadingState
         originWhitelist={['*']}
-        scrollEnabled={false}
+        scrollEnabled
         scalesPageToFit={false}
         injectedJavaScript={injectedJS}
         contentMode="mobile"
