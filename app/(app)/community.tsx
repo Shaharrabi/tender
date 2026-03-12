@@ -14,7 +14,9 @@
  */
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
+import Animated from 'react-native-reanimated';
 import QuickLinksBar from '@/components/QuickLinksBar';
+import { useScrollHideBar } from '@/hooks/useScrollHideBar';
 import {
   View,
   Text,
@@ -88,6 +90,7 @@ export default function CommunityScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const { isGuest } = useGuest();
+  const { handleScroll: handleBarScroll, animatedStyle: quickLinksAnimStyle } = useScrollHideBar();
   const { awardXP } = useGamification();
   const haptics = useSoundHaptics();
 
@@ -436,6 +439,8 @@ export default function CommunityScreen() {
         style={st.scrollView}
         contentContainerStyle={st.scrollContent}
         showsVerticalScrollIndicator={false}
+        onScroll={handleBarScroll}
+        scrollEventThrottle={16}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
@@ -600,7 +605,9 @@ export default function CommunityScreen() {
         <View style={{ height: Spacing.xxl }} />
       </ScrollView>
 
-      <QuickLinksBar currentScreen="community" />
+      <Animated.View style={[st.quickLinksWrapper, quickLinksAnimStyle]}>
+        <QuickLinksBar currentScreen="community" />
+      </Animated.View>
 
       {/* FAB (stories only) */}
       <FAB
@@ -653,6 +660,15 @@ const st = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  quickLinksWrapper: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: Colors.background,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderLight,
   },
   scrollView: {
     flex: 1,

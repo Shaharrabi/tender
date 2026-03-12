@@ -21,9 +21,11 @@ import {
   SafeAreaView,
   ActivityIndicator,
 } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import QuickLinksBar from '@/components/QuickLinksBar';
+import { useScrollHideBar } from '@/hooks/useScrollHideBar';
 import { useAuth } from '@/context/AuthContext';
 import {
   Colors,
@@ -47,6 +49,7 @@ import type { Couple } from '@/types/couples';
 export default function GrowthScreen() {
   const { user } = useAuth();
   const router = useRouter();
+  const { handleScroll, animatedStyle: quickLinksAnimStyle, BAR_HEIGHT } = useScrollHideBar();
 
   const [loading, setLoading] = useState(true);
   const [stepProgress, setStepProgress] = useState<StepProgress[]>([]);
@@ -152,8 +155,10 @@ export default function GrowthScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: BAR_HEIGHT + Spacing.xl }]}
         showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
       >
         {/* Tagline + Progress Summary */}
         <View style={styles.introSection}>
@@ -195,8 +200,11 @@ export default function GrowthScreen() {
             </Text>
           )}
         </View>
-        <QuickLinksBar />
       </ScrollView>
+
+      <Animated.View style={[styles.quickLinksWrapper, quickLinksAnimStyle]}>
+        <QuickLinksBar />
+      </Animated.View>
     </SafeAreaView>
     </ErrorBoundary>
   );
@@ -208,6 +216,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  quickLinksWrapper: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: Colors.background,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderLight,
   },
   loadingContainer: {
     flex: 1,
