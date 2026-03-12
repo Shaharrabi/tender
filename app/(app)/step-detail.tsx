@@ -26,7 +26,14 @@ import {
   UIManager,
   Dimensions,
 } from 'react-native';
-import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated';
+import Animated, {
+  FadeIn,
+  FadeInDown,
+  FadeInUp,
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+} from 'react-native-reanimated';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '@/context/AuthContext';
@@ -190,6 +197,30 @@ function StepDetailScreenInner() {
 
   // Main content ScrollView ref — for scrolling to top on tab change
   const mainScrollRef = useRef<ScrollView>(null);
+
+  // Scroll-hide QuickLinksBar — hides on scroll down, shows on scroll up
+  const QUICK_LINKS_HEIGHT = 100;
+  const lastScrollY = useSharedValue(0);
+  const barTranslateY = useSharedValue(0);
+
+  const handleScroll = useCallback((event: any) => {
+    const currentY = event.nativeEvent.contentOffset.y;
+    const delta = currentY - lastScrollY.value;
+
+    if (delta > 5 && currentY > 50) {
+      // Scrolling down — hide bar
+      barTranslateY.value = withTiming(QUICK_LINKS_HEIGHT, { duration: 200 });
+    } else if (delta < -5) {
+      // Scrolling up — show bar
+      barTranslateY.value = withTiming(0, { duration: 200 });
+    }
+
+    lastScrollY.value = currentY;
+  }, []);
+
+  const quickLinksAnimStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: barTranslateY.value }],
+  }));
 
   // Mutex to serialize criteria toggles (prevents race condition with rapid clicks)
   const toggleQueueRef = useRef<Promise<void>>(Promise.resolve());
@@ -749,8 +780,10 @@ function StepDetailScreenInner() {
 
       <ScrollView
         ref={mainScrollRef}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: QUICK_LINKS_HEIGHT + Spacing.xl }]}
         showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
       >
         {/* Phase color accent line — always visible */}
         <View style={[styles.phaseAccent, { backgroundColor: phase.color }]} />
@@ -1725,7 +1758,9 @@ function StepDetailScreenInner() {
         </View>
       </ScrollView>
 
-      <QuickLinksBar />
+      <Animated.View style={[styles.quickLinksWrapper, quickLinksAnimStyle]}>
+        <QuickLinksBar />
+      </Animated.View>
 
       {/* Zone Game Modal */}
       <ZoneGame
@@ -1800,6 +1835,17 @@ const styles = StyleSheet.create({
     padding: Spacing.xl,
     paddingBottom: Spacing.scrollPadBottom,
     gap: Spacing.md,
+  },
+
+  // QuickLinksBar wrapper — slides in/out on scroll
+  quickLinksWrapper: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: Colors.background,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderLight,
   },
 
   // Phase accent

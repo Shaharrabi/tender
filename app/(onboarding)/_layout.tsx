@@ -12,7 +12,6 @@ export default function OnboardingLayout() {
       >
         <Stack.Screen name="welcome" />
         <Stack.Screen name="status" />
-        <Stack.Screen name="status-welcome" />
         <Stack.Screen name="duration" />
         <Stack.Screen name="mode-select" />
         <Stack.Screen name="partner-select" />
