@@ -106,6 +106,8 @@ import StepCompletionRitual from '@/components/growth/StepCompletionRitual';
 // FieldGameNudgeCard removed — ZoneGame card handles zone games with web iframe support
 import { fetchAllScores } from '@/services/portrait';
 import { getGrowthEdgeProgress } from '@/services/growth';
+import { getArticlesForStep } from '@/constants/articles';
+import { StepArticleCard } from '@/components/growth/StepArticleCard';
 import type { IndividualPortrait, AllAssessmentScores } from '@/types/portrait';
 import type { MiniGameOutput, StepProgress, GrowthEdgeProgress } from '@/types/growth';
 import StepProgressTracker, { computeStepStage } from '@/components/step-enhancements/StepProgressTracker';
@@ -124,7 +126,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 }
 
 /** Section IDs for collapsible accordion */
-type SectionId = 'course' | 'goals' | 'practices' | 'reflection' | 'partnerExchange' | 'partnerRound' | 'togetherPractices' | 'allCourses' | 'couplePlay' | 'growthPlan';
+type SectionId = 'course' | 'goals' | 'practices' | 'reflection' | 'partnerExchange' | 'partnerRound' | 'togetherPractices' | 'allCourses' | 'couplePlay' | 'growthPlan' | 'reading';
 
 function StepDetailScreenInner() {
   const { user } = useAuth();
@@ -1310,6 +1312,34 @@ function StepDetailScreenInner() {
           <Text style={styles.sectionHeaderLabel}>REFLECT & SHARE</Text>
           <View style={[styles.sectionHeaderLine, { backgroundColor: phase.color }]} />
         </View>
+
+        {/* Recommended Reading — Collapsed articles relevant to this step */}
+        {(() => {
+          const stepArticles = getArticlesForStep(stepNumber);
+          if (stepArticles.length === 0) return null;
+          return (
+            <Animated.View entering={FadeIn.delay(200).duration(500)} style={styles.partnerRoundSection}>
+              <CollapsibleHeader
+                title="Recommended Reading"
+                subtitle={`${stepArticles.length} article${stepArticles.length > 1 ? 's' : ''}`}
+                isExpanded={expandedSections.has('reading')}
+                onToggle={() => toggleSection('reading')}
+                phaseColor={phase.color}
+              />
+              {expandedSections.has('reading') && (
+                <View style={{ marginTop: Spacing.sm }}>
+                  {stepArticles.map((article) => (
+                    <StepArticleCard
+                      key={article.id}
+                      article={article}
+                      phaseColor={phase.color}
+                    />
+                  ))}
+                </View>
+              )}
+            </Animated.View>
+          );
+        })()}
 
         {/* Partner Exchange — Collapsible enhanced couple dialogue (Steps 1-10) */}
         {isCoupled && exchangeConfig && exchangePhase && (

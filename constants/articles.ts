@@ -34,6 +34,30 @@ export interface Article {
   pullQuote: string;
 }
 
+/**
+ * Returns the 1-3 articles most relevant to a given step number.
+ * Mapping based on thematic alignment between article topics and step focus.
+ */
+const STEP_ARTICLE_MAP: Record<number, string[]> = {
+  1:  ['art-01', 'art-04'],       // Attachment patterns + perpetual conflicts
+  2:  ['art-03', 'art-02'],       // Relational field + bids for connection
+  3:  ['art-05'],                 // Nervous system / vulnerability
+  4:  ['art-09'],                 // Stories we tell about each other
+  5:  ['art-02'],                 // The Bid — sharing / intimacy
+  6:  ['art-08', 'art-09'],       // Contempt + narrative rewriting
+  7:  ['art-10'],                 // Showing up — daily practice
+  8:  ['art-06'],                 // Repair is the skill
+  9:  ['art-10'],                 // Consistent action — showing up
+  10: ['art-07'],                 // Differentiation — staying yourself
+  11: ['art-03'],                 // Two people, one space — shared insight
+  12: ['art-06', 'art-10'],       // Repair + showing up — carrying the message
+};
+
+export function getArticlesForStep(stepNumber: number): Article[] {
+  const ids = STEP_ARTICLE_MAP[stepNumber] || [];
+  return ids.map((id) => ARTICLES.find((a) => a.id === id)!).filter(Boolean);
+}
+
 export const ARTICLES: Article[] = [
   {
     id: 'art-01',
