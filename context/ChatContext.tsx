@@ -305,6 +305,10 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
           rawError = await response.text();
           const errorData = JSON.parse(rawError);
           errorMessage = errorData.error || errorData.message || errorMessage;
+          // Log debug info from edge function in dev mode
+          if (__DEV__ && errorData.debug) {
+            console.error('[Chat] Edge function debug:', JSON.stringify(errorData.debug, null, 2));
+          }
         } catch {
           if (rawError) errorMessage += `: ${rawError.substring(0, 100)}`;
         }

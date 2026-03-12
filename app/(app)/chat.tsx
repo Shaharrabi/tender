@@ -105,7 +105,11 @@ function ChatScreenInner({ topic, practiceWith }: { topic?: string; practiceWith
   }, [practiceWith, activeSession, loading, sending, initialized]);
 
   const handleBack = () => {
-    router.back();
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(app)/home' as any);
+    }
   };
 
   const handleExerciseTap = (exerciseId: string) => {

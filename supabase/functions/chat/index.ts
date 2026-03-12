@@ -17,22 +17,21 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
 // ─── CORS — restrict to your domains only ────────────
-const ALLOWED_ORIGINS = [
-  'https://couples-app-demo.netlify.app', // Production
-  'http://localhost:8081',           // Expo dev
-  'http://localhost:8082',           // Expo dev (alt port)
-  'http://localhost:8083',           // Expo dev (alt port)
-  'http://127.0.0.1:8081',          // Expo dev (IP variant)
-  'http://127.0.0.1:8082',          // Expo dev (IP variant, alt port)
-  'http://127.0.0.1:8083',          // Expo dev (IP variant, alt port)
-  'http://localhost:19006',          // Expo web dev
-  'http://localhost:19000',          // Expo web dev (alt port)
-  'http://127.0.0.1:19006',         // Expo web dev (IP variant)
+const PRODUCTION_ORIGINS = [
+  'https://couples-app-demo.netlify.app',
 ];
+
+function isAllowedOrigin(origin: string): boolean {
+  // Production origins — exact match
+  if (PRODUCTION_ORIGINS.includes(origin)) return true;
+  // Local development — allow any localhost / 127.0.0.1 port
+  if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return true;
+  return false;
+}
 
 function getCorsHeaders(req: Request) {
   const origin = req.headers.get('Origin') || '';
-  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  const allowedOrigin = isAllowedOrigin(origin) ? origin : PRODUCTION_ORIGINS[0];
   return {
     'Access-Control-Allow-Origin': allowedOrigin,
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, accept',
@@ -82,16 +81,26 @@ serve(async (req: Request) => {
     const jwt = authHeader.replace('Bearer ', '');
 
     // Create a user-context client to verify the token.
-    // We use the ANON KEY here (not service role) so the client acts with user-level permissions.
-    const supabaseAuth = createClient(SUPABASE_URL!, Deno.env.get('SUPABASE_ANON_KEY') || SUPABASE_SERVICE_ROLE_KEY!, {
+    // Use the SERVICE ROLE KEY for verification — it has full access to validate any JWT.
+    // The ANON KEY format may vary across projects; service role is guaranteed to work.
+    const supabaseAuth = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!, {
       global: { headers: { Authorization: `Bearer ${jwt}` } },
     });
 
     const { data: { user: authUser }, error: authError } = await supabaseAuth.auth.getUser();
     if (authError || !authUser) {
-      console.error('[chat] Auth failed:', authError?.message || 'no user returned');
+      const debugInfo = {
+        authError: authError?.message || 'no user returned',
+        hasUrl: !!SUPABASE_URL,
+        hasServiceKey: !!SUPABASE_SERVICE_ROLE_KEY,
+        jwtPrefix: jwt.substring(0, 20) + '...',
+      };
+      console.error('[chat] Auth failed:', JSON.stringify(debugInfo));
       return new Response(
-        JSON.stringify({ error: 'Invalid or expired session. Please sign in again.' }),
+        JSON.stringify({
+          error: 'Invalid or expired session. Please sign in again.',
+          debug: debugInfo,
+        }),
         { status: 401, headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' } }
       );
     }

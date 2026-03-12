@@ -4,6 +4,9 @@
  *
  * Shows play/pause, progress bar, elapsed/total time,
  * and an animated breathing visual while playing.
+ *
+ * When `alreadyHeard` is true, renders a compact single-line
+ * "✓ Heard · Tap to replay" that expands to the full player on tap.
  */
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
@@ -13,6 +16,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  LayoutAnimation,
 } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import Animated, {
@@ -40,7 +44,9 @@ interface StepAudioPlayerProps {
   audioSource: any; // require() source
   title?: string;
   autoPlay?: boolean;
+  alreadyHeard?: boolean;
   onComplete?: () => void;
+  onFirstPlay?: () => void;
   phaseColor?: string;
 }
 
@@ -55,7 +61,9 @@ export default function StepAudioPlayer({
   audioSource,
   title,
   autoPlay = false,
+  alreadyHeard = false,
   onComplete,
+  onFirstPlay,
   phaseColor = Colors.primary,
 }: StepAudioPlayerProps) {
   const soundRef = useRef<Audio.Sound | null>(null);
@@ -65,6 +73,8 @@ export default function StepAudioPlayer({
   const [position, setPosition] = useState(0);
   const [duration, setDuration] = useState(0);
   const [hasFinished, setHasFinished] = useState(false);
+  const [collapsed, setCollapsed] = useState(alreadyHeard);
+  const firstPlayFiredRef = useRef(false);
 
   // Breathing animation for the play button
   const breathe = useSharedValue(1);
@@ -106,6 +116,12 @@ export default function StepAudioPlayer({
   const ownerId = useRef(`step-audio-${Date.now()}`).current;
 
   const loadAndPlay = useCallback(async () => {
+    // Fire onFirstPlay callback the first time play is tapped
+    if (!firstPlayFiredRef.current) {
+      firstPlayFiredRef.current = true;
+      onFirstPlay?.();
+    }
+
     if (soundRef.current) {
       // Already loaded — just toggle
       const status = await soundRef.current.getStatusAsync();
@@ -144,7 +160,7 @@ export default function StepAudioPlayer({
     } finally {
       setIsLoading(false);
     }
-  }, [audioSource, onPlaybackStatusUpdate, ownerId]);
+  }, [audioSource, onPlaybackStatusUpdate, ownerId, onFirstPlay]);
 
   // Auto-play if requested
   useEffect(() => {
@@ -170,6 +186,26 @@ export default function StepAudioPlayer({
   );
 
   const progress = duration > 0 ? position / duration : 0;
+
+  // ── Collapsed "already heard" state ──
+  if (collapsed && !isPlaying && !isLoaded) {
+    return (
+      <TouchableOpacity
+        onPress={() => {
+          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+          setCollapsed(false);
+        }}
+        activeOpacity={0.7}
+        style={styles.collapsedContainer}
+        accessibilityRole="button"
+        accessibilityLabel="Introduction already heard. Tap to replay."
+      >
+        <Text style={[styles.collapsedCheck, { color: phaseColor }]}>✓</Text>
+        <Text style={styles.collapsedText}>Introduction heard</Text>
+        <Text style={styles.collapsedReplay}>Tap to replay</Text>
+      </TouchableOpacity>
+    );
+  }
 
   return (
     <Animated.View entering={FadeIn.duration(400)} style={styles.container}>
@@ -293,5 +329,31 @@ const styles = StyleSheet.create({
     color: Colors.textMuted,
     fontStyle: 'italic',
     textAlign: 'center',
+  },
+  // ── Collapsed state ──
+  collapsedContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    gap: Spacing.xs,
+    ...Shadows.subtle,
+  },
+  collapsedCheck: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  collapsedText: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    fontFamily: FontFamilies.body,
+    flex: 1,
+  },
+  collapsedReplay: {
+    fontSize: FontSizes.caption,
+    color: Colors.textMuted,
+    fontStyle: 'italic',
   },
 });

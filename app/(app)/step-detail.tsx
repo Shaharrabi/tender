@@ -116,6 +116,7 @@ import { KeyTakeawayCard } from '@/components/step-enhancements/KeyTakeawayCard'
 import MoodRouter, { type MoodChoice } from '@/components/step-enhancements/MoodRouter';
 import { getStepTeachingCards, getKeyTakeaway, getPracticeWhy } from '@/utils/steps/step-teaching-cards';
 import { generateWhySentence } from '@/utils/practices/whyThisPractice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -190,6 +191,19 @@ function StepDetailScreenInner() {
   const [moodChoice, setMoodChoice] = useState<MoodChoice | null>(null);
   const [hasReadTeaching, setHasReadTeaching] = useState(true); // true: teaching always visible
   const [activeTab, setActiveTab] = useState(0); // 0=Read, 1=Explore, 2=Practice, 3=Reflect, 4=Complete
+
+  // Audio "already heard" tracking — collapses player on repeat visits
+  const [audioHeard, setAudioHeard] = useState(false);
+  useEffect(() => {
+    AsyncStorage.getItem(`step_audio_heard_${stepNumber}`).then((val) => {
+      if (val === 'true') setAudioHeard(true);
+    }).catch(() => {});
+  }, [stepNumber]);
+
+  const markAudioHeard = useCallback(() => {
+    setAudioHeard(true);
+    AsyncStorage.setItem(`step_audio_heard_${stepNumber}`, 'true').catch(() => {});
+  }, [stepNumber]);
 
   // Step strip scroll ref — auto-centers on current step
   const stepStripScrollRef = useRef<ScrollView>(null);
@@ -811,6 +825,8 @@ function StepDetailScreenInner() {
               audioSource={audioSource}
               title="LISTEN TO INTRODUCTION"
               phaseColor={phase.color}
+              alreadyHeard={audioHeard}
+              onFirstPlay={markAudioHeard}
             />
           </Animated.View>
         )}
