@@ -1,13 +1,15 @@
 /**
  * QuickLinksBar — Shared bottom navigation row for all screens.
  *
- * Shows 5 quick links (Nuance, Courses, Practices, Journal, Community) and
- * optionally a Home link below. Used at the bottom of every screen
- * to give fast access to core features.
+ * Shows 5-6 quick links and optionally a Home link below.
+ * Used at the bottom of every screen to give fast access to core features.
+ *
+ * For single users, replaces "Bridges" with "Dating" link.
  *
  * Props:
  * - showHome: show "Home" link below the quick links (default: true)
  * - currentScreen: hides the link for the screen the user is already on
+ * - isSingle: if true, shows Dating Well instead of Bridges (default: false)
  */
 
 import React from 'react';
@@ -20,19 +22,21 @@ import {
   CommunityIcon,
   RainbowIcon,
   HomeIcon,
+  SparkleIcon,
 } from '@/assets/graphics/icons';
 import { Colors, Spacing, FontSizes, FontFamilies } from '@/constants/theme';
 import { SoundHaptics } from '@/services/SoundHapticsService';
 import { RefRegistry } from '@/utils/ftue/refRegistry';
 
-type ScreenKey = 'nuance' | 'courses' | 'practices' | 'journal' | 'community' | 'bridges' | 'home';
+type ScreenKey = 'nuance' | 'courses' | 'practices' | 'journal' | 'community' | 'bridges' | 'dating' | 'home';
 
 interface QuickLinksBarProps {
   showHome?: boolean;
   currentScreen?: ScreenKey;
+  isSingle?: boolean;
 }
 
-export default function QuickLinksBar({ showHome = true, currentScreen }: QuickLinksBarProps) {
+export default function QuickLinksBar({ showHome = true, currentScreen, isSingle = false }: QuickLinksBarProps) {
   const router = useRouter();
 
   return (
@@ -107,17 +111,33 @@ export default function QuickLinksBar({ showHome = true, currentScreen }: QuickL
           </TouchableOpacity>
         )}
 
-        {currentScreen !== 'bridges' && (
-          <TouchableOpacity
-            style={styles.linkButton}
-            onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/building-bridges' as any); }}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel="Building Bridges"
-          >
-            <RainbowIcon size={20} color={Colors.accent} />
-            <Text style={styles.linkLabel}>Bridges</Text>
-          </TouchableOpacity>
+        {/* Single users see Dating Well; relationship users see Bridges */}
+        {isSingle ? (
+          currentScreen !== 'dating' && (
+            <TouchableOpacity
+              style={styles.linkButton}
+              onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/dating-well' as any); }}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Dating Well"
+            >
+              <SparkleIcon size={20} color={Colors.accent} />
+              <Text style={styles.linkLabel}>Dating</Text>
+            </TouchableOpacity>
+          )
+        ) : (
+          currentScreen !== 'bridges' && (
+            <TouchableOpacity
+              style={styles.linkButton}
+              onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/building-bridges' as any); }}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Building Bridges"
+            >
+              <RainbowIcon size={20} color={Colors.accent} />
+              <Text style={styles.linkLabel}>Bridges</Text>
+            </TouchableOpacity>
+          )
         )}
       </View>
 

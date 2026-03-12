@@ -158,7 +158,7 @@ function TimeGreetingIcon({ iconName, size = 22 }: { iconName: 'sun' | 'sunAfter
   }
 }
 
-const DAILY_GREETINGS = [
+const DAILY_GREETINGS_COUPLE = [
   "How are you and your partner doing today?",
   "Every small step strengthens your bond.",
   "You're investing in what matters most.",
@@ -172,6 +172,23 @@ const DAILY_GREETINGS = [
   "Regulate before you reason.",
   "You keep showing up. That rhythm changes everything.",
   "Vulnerability is not weakness. It is the birthplace of connection.",
+  "Small, consistent practice changes everything.",
+];
+
+const DAILY_GREETINGS_SINGLE = [
+  "How are you showing up for yourself today?",
+  "Every small step shapes the love you'll give and receive.",
+  "You're investing in the most important relationship — with yourself.",
+  "Welcome back to your growth journey.",
+  "Today is another chance to understand yourself more deeply.",
+  "You deserve this time for self-discovery.",
+  "Let's continue where you left off.",
+  "Presence is the first practice. Everything else follows.",
+  "Understanding yourself changes every relationship that follows.",
+  "What kind of person do you want to be in love?",
+  "Regulate before you reason.",
+  "You keep showing up. That rhythm changes everything.",
+  "Knowing your patterns is the beginning of choosing differently.",
   "Small, consistent practice changes everything.",
 ];
 
@@ -246,6 +263,7 @@ export default function HomeScreen() {
   // Display name + relationship mode from user_profiles
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [relationshipMode, setRelationshipMode] = useState<string>('solo');
+  const [relationshipStatus, setRelationshipStatus] = useState<string | null>(null);
   const [demoPartnerId, setDemoPartnerId] = useState<string | null>(null);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
 
@@ -293,6 +311,9 @@ export default function HomeScreen() {
         if (profile?.relationship_mode) {
           userRelMode = profile.relationship_mode;
           setRelationshipMode(profile.relationship_mode);
+        }
+        if (profile?.relationship_status) {
+          setRelationshipStatus(profile.relationship_status);
         }
         if (profile?.demo_partner_id) {
           setDemoPartnerId(profile.demo_partner_id);
@@ -1007,7 +1028,8 @@ export default function HomeScreen() {
                     <Text style={styles.heroSubtitle}>
                       {(() => {
                         const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
-                        return DAILY_GREETINGS[dayOfYear % DAILY_GREETINGS.length];
+                        const greetings = relationshipStatus === 'single' ? DAILY_GREETINGS_SINGLE : DAILY_GREETINGS_COUPLE;
+                        return greetings[dayOfYear % greetings.length];
                       })()}
                     </Text>
                   )}
@@ -1118,7 +1140,25 @@ export default function HomeScreen() {
             </View>
           );
         })()}
-        {relationshipMode === 'solo' && !hasPortrait && completedCount > 0 && (
+        {relationshipMode === 'solo' && relationshipStatus === 'single' && (
+          <TouchableOpacity
+            style={styles.datingWellPrompt}
+            onPress={() => router.push('/(app)/dating-well' as any)}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Dating Well"
+          >
+            <SparkleIcon size={18} color={Colors.accent} />
+            <View style={styles.datingWellPromptContent}>
+              <Text style={styles.datingWellPromptTitle}>Dating Well</Text>
+              <Text style={styles.datingWellPromptDesc}>
+                Navigate new relationships with self-awareness and intention.
+              </Text>
+            </View>
+            <Text style={styles.realPartnerPromptArrow}>{'\u2192'}</Text>
+          </TouchableOpacity>
+        )}
+        {relationshipMode === 'solo' && relationshipStatus !== 'single' && !hasPortrait && completedCount > 0 && (
           <TouchableOpacity
             style={styles.demoPartnerPrompt}
             onPress={() => router.push('/(app)/relationship-mode' as any)}
@@ -1659,6 +1699,8 @@ export default function HomeScreen() {
                 <TenderText variant="body" color={Colors.textSecondary} numberOfLines={2}>
                   {demoPartnerId
                     ? 'Explore shared insights with your practice partner'
+                    : relationshipStatus === 'single'
+                    ? 'Practice couple dynamics with a demo partner'
                     : 'Invite your partner to unlock shared portraits and couple assessments'}
                 </TenderText>
               </View>
@@ -1809,7 +1851,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
           )}
 
-          {/* BUILDING BRIDGES */}
+          {/* BUILDING BRIDGES — shown for coupled users */}
           {hasCoupleLinked && (
             <TouchableOpacity
               style={styles.gatewayCard}
@@ -1825,6 +1867,28 @@ export default function HomeScreen() {
                 <Text style={styles.gatewayCardTitle}>Building Bridges</Text>
                 <Text style={styles.gatewayCardSubtitle} numberOfLines={1}>
                   Card game for deeper connection
+                </Text>
+              </View>
+              <Text style={styles.gatewayCardArrow}>{'\u2192'}</Text>
+            </TouchableOpacity>
+          )}
+
+          {/* DATING WELL — shown for single users */}
+          {relationshipStatus === 'single' && (
+            <TouchableOpacity
+              style={styles.gatewayCard}
+              onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/dating-well' as any); }}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Dating Well"
+            >
+              <View style={styles.gatewayCardIconWrap}>
+                <SparkleIcon size={22} color={Colors.accent} />
+              </View>
+              <View style={styles.gatewayCardContent}>
+                <Text style={styles.gatewayCardTitle}>Dating Well</Text>
+                <Text style={styles.gatewayCardSubtitle} numberOfLines={1}>
+                  Navigate new relationships with awareness
                 </Text>
               </View>
               <Text style={styles.gatewayCardArrow}>{'\u2192'}</Text>
@@ -1856,7 +1920,7 @@ export default function HomeScreen() {
 
         {/* ═══ QUICK LINKS (bottom row) ════════════════════════ */}
         <View ref={(r) => RefRegistry.register('home_quickLinks', r)}>
-          <QuickLinksBar showHome={false} currentScreen="home" />
+          <QuickLinksBar showHome={false} currentScreen="home" isSingle={relationshipStatus === 'single'} />
         </View>
       </ScrollView>
 
@@ -3421,6 +3485,33 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.body,
     fontWeight: '600',
     color: Colors.secondary,
+  },
+
+  // ── Dating Well Prompt (for singles) ──
+  datingWellPrompt: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginHorizontal: Spacing.lg,
+    marginBottom: Spacing.md,
+    backgroundColor: Colors.accent + '0D',
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.accent + '25',
+  },
+  datingWellPromptContent: {
+    flex: 1,
+  },
+  datingWellPromptTitle: {
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '700',
+    color: Colors.text,
+  },
+  datingWellPromptDesc: {
+    fontSize: FontSizes.caption,
+    color: Colors.textSecondary,
+    marginTop: 2,
   },
 
   consentBanner: {
