@@ -119,7 +119,10 @@ export default function DailyRhythmSection({
             )}
           </View>
         </View>
-        <ChevronDownIcon size={18} color={Colors.primary} />
+        <View style={styles.expandHint}>
+          <Text style={styles.expandHintText}>Open</Text>
+          <ChevronDownIcon size={14} color={Colors.primary} />
+        </View>
       </TouchableOpacity>
     );
   }
@@ -227,6 +230,21 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontWeight: '500',
     fontStyle: 'italic',
+  },
+  expandHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: Colors.primary + '12',
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 5,
+    borderRadius: BorderRadius.pill,
+  },
+  expandHintText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.primary,
+    letterSpacing: 0.3,
   },
 
   // Expanded state

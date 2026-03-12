@@ -1,8 +1,8 @@
 /**
- * Tour Steps — 5-stop guided walkthrough for first launch.
+ * Tour Steps — 6-stop guided walkthrough for first launch.
  *
  * Walks first-time users through the home page structure:
- * Welcome → Partner → Assessment → Daily Rhythm → Ready
+ * Welcome → 12 Steps → Couple Portal → Your Portal → Daily Rhythm → Ready
  *
  * Uses RefRegistry to spotlight target elements on-screen.
  * The final step includes a CTA button to begin the first assessment.
@@ -46,24 +46,31 @@ export const HOME_TOUR: Tour = {
       position: 'center',
     },
     {
-      id: 'tour_partner',
-      targetRef: 'home_partnerSection',
-      title: 'Connect With Your Partner',
-      body: 'Tender is built for two. Invite your partner to join, or practice with an AI partner \u2014 either way, the work deepens when it is shared.',
+      id: 'tour_12steps',
+      targetRef: 'home_journeyCard',
+      title: 'The 12 Steps',
+      body: 'Your healing journey is mapped across twelve steps \u2014 each one builds on the last. Practices, games, and reflections guide you through attachment, intimacy, and growth.',
       position: 'bottom',
     },
     {
-      id: 'tour_assessment',
-      targetRef: 'home_assessmentCta',
-      title: 'The Tender Assessment',
-      body: "Seven sections covering how you connect, feel, fight, and what matters to you. Your answers create your unique Portrait \u2014 a map of your relational self.",
+      id: 'tour_couple_portal',
+      targetRef: 'home_partnerSection',
+      title: 'Couple Portal',
+      body: 'Invite your partner to join Tender. When you\u2019re both here, couple exercises, shared reflections, and your relationship portrait unlock automatically.',
+      position: 'bottom',
+    },
+    {
+      id: 'tour_your_portal',
+      targetRef: 'home_portraitCard',
+      title: 'Your Portal',
+      body: 'Complete the Tender Assessment to unlock your personal portrait \u2014 a map of how you attach, feel, and connect. Everything else builds from here.',
       position: 'bottom',
     },
     {
       id: 'tour_daily_rhythm',
       targetRef: 'home_dailyRhythm',
       title: 'Your Daily Rhythm',
-      body: "Your daily practice lives here \u2014 a quick check-in, a journal prompt, and a nervous system scan. Small moments, repeated, change everything.",
+      body: "Tap here to open your daily practice \u2014 a quick check-in, a journal prompt, and a nervous system scan. Small moments, repeated, change everything.",
       position: 'top',
     },
     {
