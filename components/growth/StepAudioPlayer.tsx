@@ -188,25 +188,8 @@ export default function StepAudioPlayer({
 
   const progress = duration > 0 ? position / duration : 0;
 
-  // ── Collapsed "already heard" state ──
-  if (collapsed && !isPlaying && !isLoaded) {
-    return (
-      <TouchableOpacity
-        onPress={() => {
-          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-          setCollapsed(false);
-        }}
-        activeOpacity={0.7}
-        style={styles.collapsedContainer}
-        accessibilityRole="button"
-        accessibilityLabel="Introduction already heard. Tap to replay."
-      >
-        <Text style={[styles.collapsedCheck, { color: phaseColor }]}>✓</Text>
-        <Text style={styles.collapsedText}>Introduction heard</Text>
-        <Text style={styles.collapsedReplay}>Tap to replay</Text>
-      </TouchableOpacity>
-    );
-  }
+  // Previously collapsed "already heard" state — removed because users
+  // couldn't find the audio player when it was hidden behind a tiny line.
 
   return (
     <Animated.View entering={FadeIn.duration(400)} style={styles.container}>
