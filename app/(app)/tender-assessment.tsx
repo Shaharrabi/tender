@@ -159,9 +159,11 @@ export default function TenderAssessmentScreen() {
     nextQuestionIndex: number;
   } | null>(null);
 
-  // When navigated with startSection param (e.g. retake from home), run as
-  // a single-section flow and return to home after submission.
+  // When navigated with startSection param (e.g. retake from home) or when
+  // user retakes from the chapter list, run as a single-section flow.
   const retakeMode = useRef(params.startSection != null);
+  // Track whether retake was initiated from the chapter list (return to it)
+  const retakeFromChapterList = useRef(false);
   const startSectionIdx = params.startSection != null ? parseInt(params.startSection, 10) : null;
 
   // Ref for debounced save
@@ -650,7 +652,7 @@ export default function TenderAssessmentScreen() {
 
       // What's next?
       if (retakeMode.current) {
-        // Single-section retake — compute delta and show it (or go home)
+        // Single-section retake — compute delta and show it, then return
         if (previousScoresRef.current) {
           const delta = computeRetakeDelta(
             currentConfig.type,
@@ -664,6 +666,13 @@ export default function TenderAssessmentScreen() {
             previousScoresRef.current = null;
             return;
           }
+        }
+        // If retake came from chapter list, go back to chapter list
+        if (retakeFromChapterList.current) {
+          retakeMode.current = false;
+          retakeFromChapterList.current = false;
+          setShowingIntro(true);
+          return;
         }
         router.replace('/(app)/home');
         return;
@@ -785,6 +794,9 @@ export default function TenderAssessmentScreen() {
     setShowingCompletion(false);
     setCurrentSectionIndex(idx);
     setShowingIntro(false);
+    // Mark as retake so after completion we return to chapter list, not auto-advance
+    retakeMode.current = true;
+    retakeFromChapterList.current = true;
   };
 
   /** Handle tapping a chapter card. */
@@ -857,7 +869,14 @@ export default function TenderAssessmentScreen() {
             onContinue={() => {
               setShowingRetakeDelta(false);
               setRetakeDelta(null);
-              router.replace('/(app)/home');
+              // If retake came from chapter list, return there
+              if (retakeFromChapterList.current) {
+                retakeMode.current = false;
+                retakeFromChapterList.current = false;
+                setShowingIntro(true);
+              } else {
+                router.replace('/(app)/home');
+              }
             }}
           />
         </View>

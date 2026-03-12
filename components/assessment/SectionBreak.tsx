@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView } from 'react-native';
 import { AssessmentSection } from '@/types';
 import { Colors, Spacing, FontSizes, FontFamilies, ButtonSizes, BorderRadius } from '@/constants/theme';
 import {
@@ -59,7 +59,11 @@ function SectionBreak({
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        bounces={false}
+      >
         <View style={styles.header}>
           <CheckmarkIcon size={48} color={Colors.success} />
           {sectionName ? (
@@ -117,7 +121,7 @@ function SectionBreak({
             <Text style={styles.exitButtonText}>Save & Exit</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -130,7 +134,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
     padding: Spacing.xl,
     justifyContent: 'center',
     gap: Spacing.xl,
