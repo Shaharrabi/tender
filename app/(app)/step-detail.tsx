@@ -244,7 +244,7 @@ function StepDetailScreenInner() {
   // Collapsible sections — smart collapse: only 'course' open by default
   const [expandedSections, setExpandedSections] = useState<Set<SectionId>>(
     new Set(['course', 'goals', 'practices', 'reflection', 'partnerExchange',
-             'partnerRound', 'togetherPractices', 'allCourses', 'couplePlay', 'growthPlan'])
+             'partnerRound', 'togetherPractices', 'allCourses', 'couplePlay', 'growthPlan', 'reading'])
   );
 
   const toggleSection = useCallback((sectionId: SectionId) => {
