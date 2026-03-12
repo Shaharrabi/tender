@@ -601,13 +601,30 @@ export default function TenderAssessmentScreen() {
         ? { ...originalScores, supplementScores }
         : originalScores;
 
+      // Verify auth is valid before writing
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData?.session) {
+        const msg = 'Your session expired. Please sign in again and retake this section.';
+        typeof window !== 'undefined' ? window.alert(msg) : Alert.alert('Session Expired', msg);
+        setSubmittingSection(false);
+        return;
+      }
+
       // Remove any previous record for this assessment type (handles retakes
       // and avoids duplicate-key failures on the insert)
-      await supabase
+      const { error: deleteError } = await supabase
         .from('assessments')
         .delete()
         .eq('user_id', user.id)
         .eq('type', currentConfig.type);
+
+      if (deleteError) {
+        console.error('[Assessment] Delete failed:', deleteError.message, deleteError.code);
+        const msg = `Failed to save: ${deleteError.message}. Please try again.`;
+        typeof window !== 'undefined' ? window.alert(msg) : Alert.alert('Error', msg);
+        setSubmittingSection(false);
+        return;
+      }
 
       // Save to Supabase with the ORIGINAL assessment type
       const { error } = await supabase.from('assessments').insert({
@@ -619,11 +636,14 @@ export default function TenderAssessmentScreen() {
       });
 
       if (error) {
-        const msg = 'Failed to save section results. Please try again.';
+        console.error('[Assessment] Insert failed:', error.message, error.code);
+        const msg = `Failed to save section results: ${error.message}. Please try again.`;
         typeof window !== 'undefined' ? window.alert(msg) : Alert.alert('Error', msg);
         setSubmittingSection(false);
         return;
       }
+
+      console.log('[Assessment] Saved successfully:', currentConfig.type, 'for user', user.id);
 
       // Mark section complete — build updated state synchronously so
       // auto-advance (breakAfter: false) saves correct progress.
