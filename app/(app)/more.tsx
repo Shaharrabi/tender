@@ -99,7 +99,10 @@ export default function MoreScreen() {
     router.replace('/(auth)/login');
   };
 
-  const showDatingWell = !onboardedAsPartner && relationshipMode === 'solo';
+  // Dating Well is always visible in More for single users.
+  // For non-single users, show it only if they're in solo mode (exploratory).
+  const isSingleStatus = !onboardedAsPartner && (relationshipMode === 'solo' || relationshipMode === 'random_partner');
+  const showDatingWell = isSingleStatus;
 
   return (
     <SafeAreaView style={styles.container}>
