@@ -263,50 +263,56 @@ function initCanvas() {
 function createLevel() {
   S.platforms = [];
   S.pieces = [];
-  
+
+  // Scale positions proportionally to available height.
+  // Original design assumed H=500. We scale all vertical offsets so
+  // platforms are always reachable regardless of actual game-area height.
+  var REF_H = 500;
+  function sy(offset) { return H - (offset / REF_H) * (H - 40); }
+
   // Ground
   S.platforms.push({x: 0, y: H - 30, w: W, h: 30, stable: true});
-  
-  // Platforms at various heights
-  const platformData = [
-    {x: 20, y: H - 100, w: 80},
-    {x: W - 120, y: H - 100, w: 100},
-    {x: W/2 - 50, y: H - 160, w: 100, fragile: true},
-    {x: 30, y: H - 220, w: 90},
-    {x: W - 100, y: H - 280, w: 80},
-    {x: W/2 - 40, y: H - 340, w: 80, fragile: true},
-    {x: 60, y: H - 400, w: 70},
+
+  // Platforms at various heights (offsets relative to REF_H)
+  var platformData = [
+    {xFn: function(){ return 20; },              off: 100, w: 80},
+    {xFn: function(){ return W - 120; },         off: 100, w: 100},
+    {xFn: function(){ return W/2 - 50; },        off: 160, w: 100, fragile: true},
+    {xFn: function(){ return 30; },              off: 220, w: 90},
+    {xFn: function(){ return W - 100; },         off: 280, w: 80},
+    {xFn: function(){ return W/2 - 40; },        off: 340, w: 80, fragile: true},
+    {xFn: function(){ return 60; },              off: 400, w: 70},
   ];
-  
-  platformData.forEach(p => {
+
+  platformData.forEach(function(p) {
     S.platforms.push({
-      x: p.x, y: p.y, w: p.w, h: 16,
+      x: p.xFn(), y: sy(p.off), w: p.w, h: 16,
       stable: !p.fragile,
       fragile: p.fragile,
       crumble: 0
     });
   });
-  
+
   // Pieces to collect (on platforms)
-  const piecePositions = [
-    {x: 50, y: H - 120},
-    {x: W - 80, y: H - 120},
-    {x: W/2, y: H - 180},
-    {x: 70, y: H - 240},
-    {x: W - 60, y: H - 300},
-    {x: W/2, y: H - 360},
+  var piecePositions = [
+    {xFn: function(){ return 50; },      off: 120},
+    {xFn: function(){ return W - 80; },  off: 120},
+    {xFn: function(){ return W/2; },     off: 180},
+    {xFn: function(){ return 70; },      off: 240},
+    {xFn: function(){ return W - 60; },  off: 300},
+    {xFn: function(){ return W/2; },     off: 360},
   ];
-  
-  piecePositions.forEach((p, i) => {
+
+  piecePositions.forEach(function(p, i) {
     S.pieces.push({
-      x: p.x, y: p.y,
+      x: p.xFn(), y: sy(p.off),
       label: PIECE_LABELS[i % PIECE_LABELS.length],
       collected: false
     });
   });
-  
+
   // Player start
-  S.player = {x: 50, y: H - 60, vx: 0, vy: 0, grounded: false};
+  S.player = {x: 50, y: sy(60), vx: 0, vy: 0, grounded: false};
 }
 
 function draw() {
@@ -439,10 +445,10 @@ function update() {
     }
   });
   
-  // Fall reset
+  // Fall reset — respawn just above ground
   if (p.y > H + 50) {
     p.x = 50;
-    p.y = H - 60;
+    p.y = H - (60 / 500) * (H - 40);
     p.vx = 0;
     p.vy = 0;
     fadeD('—', 'You fell. Begin again.\n\nPatience is part of the practice.');
@@ -476,7 +482,11 @@ function flashWarning() {
 
 function jump() {
   if (S.player.grounded) {
-    S.player.vy = -10;
+    // Scale jump strength so player can always reach the next platform tier.
+    // At REF_H (500) the original -10 works; at smaller H we need proportionally
+    // less because platforms are closer together.
+    var jumpV = -10 * Math.max(H / 500, 0.7);
+    S.player.vy = jumpV;
     S.player.grounded = false;
   }
 }
@@ -595,9 +605,30 @@ document.getElementById('ps-next-2').addEventListener('click', () => psGo(3));
 document.getElementById('ps-plant').addEventListener('click', psPlant);
 document.getElementById('done-btn').addEventListener('click', finish);
 
-window.addEventListener('resize', () => {
+window.addEventListener('resize', function() {
   if (S.phase === 'game') {
+    // Save collection state before rebuilding
+    var collectedSet = {};
+    S.pieces.forEach(function(pc, i) { if (pc.collected) collectedSet[i] = true; });
+    var savedCollected = S.collected;
+    var savedPlayerVx = S.player.vx;
+    var savedPlayerVy = S.player.vy;
+    // Save player position as fraction of old dimensions
+    var pxFrac = W > 0 ? S.player.x / W : 0.15;
+
     initCanvas();
+    createLevel();
+
+    // Restore collection state
+    S.collected = savedCollected;
+    Object.keys(collectedSet).forEach(function(k) {
+      if (S.pieces[k]) S.pieces[k].collected = true;
+    });
+    // Restore player x proportionally to new W, keep on ground
+    S.player.x = pxFrac * W;
+    S.player.vx = savedPlayerVx;
+    S.player.vy = savedPlayerVy;
+
     draw();
   }
 });
