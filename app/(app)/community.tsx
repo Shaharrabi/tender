@@ -75,7 +75,8 @@ import { WelcomeModal } from '@/components/community/WelcomeModal';
 import { LetterDesk } from '@/components/community/LetterDesk';
 import { LetterFlow } from '@/components/community/LetterFlow';
 import { ArticlesSection } from '@/components/community/ArticlesSection';
-import { ThoughtBubbleIcon, LockIcon, SparkleIcon, FireIcon } from '@/assets/graphics/icons';
+import { ARTICLES } from '@/constants/articles';
+import { ThoughtBubbleIcon, LockIcon, SparkleIcon, FireIcon, PenIcon } from '@/assets/graphics/icons';
 
 // ─── FTUE ───────────────────────────────────────────────
 import { TooltipManager } from '@/components/ftue/TooltipManager';
@@ -471,6 +472,61 @@ export default function CommunityScreen() {
                 />
               ))
             )}
+
+            {/* ── Articles Teaser ─────────────────── */}
+            {posts.length > 0 && (
+              <View style={st.articlesTeaserSection}>
+                <View style={st.articlesTeaserDivider}>
+                  <View style={st.articlesTeaserLine} />
+                  <PenIcon size={12} color={Colors.textMuted} />
+                  <View style={st.articlesTeaserLine} />
+                </View>
+                <Text style={st.articlesTeaserPre}>Tender Reads</Text>
+                <Text style={st.articlesTeaserTitle}>The Science of Relationships</Text>
+                <Text style={st.articlesTeaserSub}>
+                  Evidence-based articles on what makes love work.
+                </Text>
+
+                {ARTICLES.slice(0, 3).map((article) => {
+                  const IconComp = article.Icon;
+                  return (
+                    <TouchableOpacity
+                      key={article.id}
+                      style={[st.articleTeaser, { borderLeftColor: article.accentColor }]}
+                      onPress={() => {
+                        setActiveTab('articles');
+                      }}
+                      activeOpacity={0.7}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Read article: ${article.title}`}
+                    >
+                      <View style={[st.articleTeaserIcon, { backgroundColor: article.accentColor + '18' }]}>
+                        <IconComp size={16} color={article.accentColor} />
+                      </View>
+                      <View style={st.articleTeaserBody}>
+                        <Text style={st.articleTeaserTitle2} numberOfLines={1}>{article.title}</Text>
+                        <View style={st.articleTeaserMeta}>
+                          <View style={[st.articleTeaserBadge, { backgroundColor: article.accentColor + '15' }]}>
+                            <Text style={[st.articleTeaserBadgeText, { color: article.accentColor }]}>{article.category}</Text>
+                          </View>
+                          <Text style={st.articleTeaserTime}>{article.readTime}</Text>
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+
+                <TouchableOpacity
+                  style={st.articlesTeaserCta}
+                  onPress={() => setActiveTab('articles')}
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel="See all articles"
+                >
+                  <Text style={st.articlesTeaserCtaText}>See all {ARTICLES.length} articles →</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </>
         )}
 
@@ -608,6 +664,107 @@ const st = StyleSheet.create({
   },
   loader: {
     marginTop: Spacing.xxl,
+  },
+
+  // ─── Articles Teaser ──────────────────────
+  articlesTeaserSection: {
+    marginTop: Spacing.xl,
+    paddingTop: Spacing.md,
+    gap: Spacing.sm,
+  },
+  articlesTeaserDivider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    marginBottom: Spacing.sm,
+  },
+  articlesTeaserLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: Colors.borderLight,
+  },
+  articlesTeaserPre: {
+    fontFamily: 'Jost_500Medium',
+    fontSize: 10,
+    letterSpacing: 3,
+    textTransform: 'uppercase' as const,
+    color: Colors.textMuted,
+    textAlign: 'center' as const,
+  },
+  articlesTeaserTitle: {
+    fontFamily: 'PlayfairDisplay_600SemiBold',
+    fontSize: 18,
+    color: Colors.text,
+    textAlign: 'center' as const,
+    letterSpacing: 0.3,
+  },
+  articlesTeaserSub: {
+    fontFamily: 'JosefinSans_300Light',
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    textAlign: 'center' as const,
+    lineHeight: 20,
+    marginBottom: Spacing.sm,
+  },
+  articleTeaser: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+    borderLeftWidth: 3,
+  },
+  articleTeaserIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  articleTeaserBody: {
+    flex: 1,
+    gap: 3,
+  },
+  articleTeaserTitle2: {
+    fontFamily: 'PlayfairDisplay_600SemiBold',
+    fontSize: 13,
+    color: Colors.text,
+    lineHeight: 18,
+  },
+  articleTeaserMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  articleTeaserBadge: {
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  articleTeaserBadgeText: {
+    fontFamily: 'Jost_500Medium',
+    fontSize: 8,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase' as const,
+  },
+  articleTeaserTime: {
+    fontFamily: 'JosefinSans_400Regular',
+    fontSize: 10,
+    color: Colors.textMuted,
+  },
+  articlesTeaserCta: {
+    alignItems: 'center' as const,
+    paddingVertical: Spacing.md,
+  },
+  articlesTeaserCtaText: {
+    fontFamily: 'JosefinSans_500Medium',
+    fontSize: FontSizes.bodySmall,
+    color: Colors.primary,
+    fontWeight: '600',
+    letterSpacing: 0.3,
   },
 
   // ─── Circle Section ────────────────────────

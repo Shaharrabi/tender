@@ -300,6 +300,18 @@ export default function AssessmentScreen() {
   if (showInstructions) {
     return (
       <SafeAreaView style={styles.container}>
+        {/* Back button at top */}
+        <View style={styles.instructionsTopBar}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            activeOpacity={0.7}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
+            <Ionicons name="chevron-back" size={24} color={Colors.text} />
+          </TouchableOpacity>
+        </View>
         <ScrollView contentContainerStyle={styles.instructionsContent}>
           <Text style={styles.instructionsTitle}>{config.name}</Text>
           <Text style={styles.instructionsSubtitle}>
@@ -451,6 +463,11 @@ const styles = StyleSheet.create({
   content: { flex: 1, padding: Spacing.xl, justifyContent: 'space-between' },
 
   // Instructions
+  instructionsTopBar: {
+    paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.sm,
+    paddingBottom: Spacing.xs,
+  },
   instructionsContent: {
     flexGrow: 1,
     justifyContent: 'center',
