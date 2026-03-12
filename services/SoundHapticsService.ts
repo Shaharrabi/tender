@@ -171,7 +171,7 @@ class SoundHapticsServiceClass {
       // setAudioModeAsync is iOS/Android-only; skip on web
       if (Platform.OS !== 'web') {
         await Audio.setAudioModeAsync({
-          playsInSilentModeIOS: false,
+          playsInSilentModeIOS: true,
           staysActiveInBackground: false,
           shouldDuckAndroid: true,
         });

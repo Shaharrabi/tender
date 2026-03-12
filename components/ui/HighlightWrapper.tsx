@@ -60,7 +60,7 @@ export const HighlightWrapper: React.FC<HighlightWrapperProps> = ({
           Animated.timing(scaleAnim, {
             toValue: 1.02,
             duration: FTUETiming.highlightEnter,
-            useNativeDriver: true,
+            useNativeDriver: false,
           }),
           Animated.timing(glowAnim, {
             toValue: 1,
@@ -75,12 +75,12 @@ export const HighlightWrapper: React.FC<HighlightWrapperProps> = ({
             Animated.timing(scaleAnim, {
               toValue: 1.03,
               duration: FTUETiming.highlightPulseDuration / 2,
-              useNativeDriver: true,
+              useNativeDriver: false,
             }),
             Animated.timing(scaleAnim, {
               toValue: 1.02,
               duration: FTUETiming.highlightPulseDuration / 2,
-              useNativeDriver: true,
+              useNativeDriver: false,
             }),
           ]),
           { iterations: FTUETiming.highlightPulseCount }
@@ -91,7 +91,7 @@ export const HighlightWrapper: React.FC<HighlightWrapperProps> = ({
           Animated.timing(scaleAnim, {
             toValue: 1,
             duration: FTUETiming.highlightExit,
-            useNativeDriver: true,
+            useNativeDriver: false,
           }),
           Animated.timing(glowAnim, {
             toValue: 0,
