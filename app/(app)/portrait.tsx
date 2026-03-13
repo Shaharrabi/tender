@@ -56,6 +56,7 @@ import type { IconComponent } from '@/constants/icons';
 // ── Sprint 4: New visualization imports ──
 import RadarChart from '@/components/visualizations/RadarChart';
 import ThreeLayerDashboard from '@/components/portrait/ThreeLayerDashboard';
+import YourFieldTab from '@/components/portrait/YourFieldTab';
 import WaterfallChart from '@/components/visualizations/WaterfallChart';
 import ConflictRose from '@/components/visualizations/ConflictRose';
 import EQHeatmap from '@/components/visualizations/EQHeatmap';
@@ -117,7 +118,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 // ─── Tab definitions ────────────────────────────────────
 
-type TabKey = 'overview' | 'scores' | 'lenses' | 'cycle' | 'growth' | 'anchors' | 'matrix';
+type TabKey = 'overview' | 'scores' | 'lenses' | 'cycle' | 'growth' | 'anchors' | 'matrix' | 'field';
 
 interface TabDef {
   key: TabKey;
@@ -134,6 +135,7 @@ const TABS: TabDef[] = [
   { key: 'growth', label: 'Growth', Icon: STAT_ICONS.growth, color: Colors.warning },
   { key: 'anchors', label: 'Anchors', Icon: STAT_ICONS.anchor, color: Colors.calm },
   { key: 'matrix', label: 'Matrix', Icon: LinkIcon, color: Colors.depth },
+  { key: 'field', label: 'Your Field', Icon: SparkleIcon, color: Colors.accentGold },
 ];
 
 // ─── Narrative generator ────────────────────────────────
@@ -971,6 +973,9 @@ export default function PortraitScreen() {
           )}
           {activeTab === 'matrix' && (
             <MatrixTab allScores={allScoresMap} portrait={portrait} />
+          )}
+          {activeTab === 'field' && (
+            <YourFieldTab compositeScores={portrait.compositeScores} />
           )}
 
           {/* Portrait Audio Library — at bottom for non-overview tabs (overview has it inline) */}

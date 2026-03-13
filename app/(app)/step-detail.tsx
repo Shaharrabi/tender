@@ -847,6 +847,13 @@ function StepDetailScreenInner() {
           </Animated.View>
         )}
 
+        {/* Transition: after teaching */}
+        {transitions?.afterTeaching && (
+          <Text style={styles.transitionText}>{transitions.afterTeaching}</Text>
+        )}
+
+        <View style={styles.sectionDivider} />
+
         {/* Teaching Cards — bite-sized cards */}
         {teachingCards && (
           <TeachingCardStack
@@ -1163,6 +1170,8 @@ function StepDetailScreenInner() {
           <Text style={styles.transitionText}>{transitions.afterCourse}</Text>
         )}
 
+        <View style={styles.sectionDivider} />
+
         {/* Practices — Collapsible */}
         <Animated.View entering={FadeIn.delay(200).duration(500)} style={styles.practicesSection}>
           <CollapsibleHeader
@@ -1221,6 +1230,13 @@ function StepDetailScreenInner() {
             );
           })}
         </Animated.View>
+
+        {/* Transition: after practices */}
+        {transitions?.afterPractices && (
+          <Text style={styles.transitionText}>{transitions.afterPractices}</Text>
+        )}
+
+        <View style={styles.sectionDivider} />
 
         {/* Together Practices — Collapsible, couple-only */}
         {isCoupled && step.togetherPractices && step.togetherPractices.length > 0 && (
@@ -1464,6 +1480,13 @@ function StepDetailScreenInner() {
             </>}
           </Animated.View>
         )}
+
+        {/* Transition: after exchange */}
+        {transitions?.afterExchange && (
+          <Text style={styles.transitionText}>{transitions.afterExchange}</Text>
+        )}
+
+        <View style={styles.sectionDivider} />
 
         {/* Partner Round — Collapsible fallback for steps 11-12 (couple-only) */}
         {isCoupled && !exchangeConfig && step.partnerRoundPrompt && (

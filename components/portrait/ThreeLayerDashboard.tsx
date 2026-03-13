@@ -7,7 +7,9 @@
  * Layer 3: Relational Vitality — Horizontal gradient spectrum with position marker
  *          and qualitative band label (Constrained → Potential → Generative → Resonant).
  *
- * Data source: CompositeScores (overall mean drives all three layers).
+ * Data source: WEARE layers (preferred) or CompositeScores (fallback).
+ * When weareData is provided, the dashboard uses real WEARE engine output.
+ * When absent, it falls back to CompositeScores average (legacy behavior).
  */
 
 import React, { useEffect, useRef, useMemo } from 'react';
@@ -21,6 +23,7 @@ import {
 } from '@/constants/theme';
 import TenderText from '@/components/ui/TenderText';
 import type { CompositeScores } from '@/types';
+import type { WEARELayers } from '@/types/weare';
 
 // Icons
 import SparkleIcon from '@/assets/graphics/icons/SparkleIcon';
@@ -31,6 +34,8 @@ import LeafIcon from '@/assets/graphics/icons/LeafIcon';
 
 interface ThreeLayerDashboardProps {
   compositeScores: CompositeScores;
+  /** Real WEARE engine output — when present, drives all 3 layers directly */
+  weareData?: WEARELayers;
   onSeeDetails?: () => void;
 }
 
@@ -78,6 +83,15 @@ function getDirectionStatus(score: number): DirectionStatus {
   if (score >= 55) return { label: 'Moving', description: 'You\'re moving — new possibilities are opening', rotation: -30 };
   if (score >= 35) return { label: 'Emerging', description: 'Early signs of movement — stay curious', rotation: 0 };
   return { label: 'Gathering', description: 'Gathering strength — this is where growth begins', rotation: 15 };
+}
+
+/** Direction status from raw WEARE emergence direction (-9 to +9) */
+function getEmergenceDirectionStatus(direction: number): DirectionStatus {
+  if (direction > 3) return { label: 'Moving', description: 'You\'re moving — new possibilities are opening.', rotation: -45 };
+  if (direction > 0) return { label: 'Emerging', description: 'Early signs of movement — stay curious.', rotation: -15 };
+  if (Math.abs(direction) <= 0) return { label: 'Threshold', description: 'You\'re at a threshold — a tipping point.', rotation: 0 };
+  if (direction > -3) return { label: 'Gathering', description: 'More resistance than movement right now.', rotation: 10 };
+  return { label: 'Holding', description: 'Something is holding on tightly. Be gentle with that.', rotation: 15 };
 }
 
 // ─── Helpers ──────────────────────────────────────────
@@ -308,15 +322,65 @@ function RelationalVitality({
 
 export default function ThreeLayerDashboard({
   compositeScores,
+  weareData,
   onSeeDetails,
 }: ThreeLayerDashboardProps) {
-  const overallScore = useMemo(() => getOverallScore(compositeScores), [compositeScores]);
+  // When WEARE data is available, use it directly for all 3 layers.
+  // Otherwise fall back to CompositeScores average (legacy behavior).
+  const fallbackScore = useMemo(() => getOverallScore(compositeScores), [compositeScores]);
+  const resonanceScore = weareData?.resonancePulse ?? fallbackScore;
+  const vitalityScore = weareData?.overall ?? fallbackScore;
 
   return (
     <View style={styles.container}>
-      <ResonancePulse score={overallScore} />
-      <EmergenceDirection score={overallScore} />
-      <RelationalVitality score={overallScore} onSeeDetails={onSeeDetails} />
+      <ResonancePulse score={resonanceScore} />
+      {weareData ? (
+        <EmergenceDirectionWEARE direction={weareData.emergenceDirection} />
+      ) : (
+        <EmergenceDirection score={fallbackScore} />
+      )}
+      <RelationalVitality score={vitalityScore} onSeeDetails={onSeeDetails} />
+    </View>
+  );
+}
+
+/** Emergence direction driven by real WEARE data (-9 to +9 scale) */
+function EmergenceDirectionWEARE({ direction }: { direction: number }) {
+  const tilt = useRef(new Animated.Value(0)).current;
+  const status = getEmergenceDirectionStatus(direction);
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(tilt, { toValue: 1, duration: 1500, useNativeDriver: true }),
+        Animated.timing(tilt, { toValue: 0, duration: 1500, useNativeDriver: true }),
+      ])
+    ).start();
+  }, []);
+
+  const arrowRotate = tilt.interpolate({
+    inputRange: [0, 1],
+    outputRange: [`${status.rotation}deg`, `${status.rotation - 5}deg`],
+  });
+
+  const arrowColor = direction > 0 ? Colors.success : direction < -2 ? Colors.secondary : Colors.accentGold;
+
+  return (
+    <View style={styles.directionContainer}>
+      <Animated.View
+        style={[
+          styles.directionArrowCircle,
+          { transform: [{ rotate: arrowRotate }], backgroundColor: arrowColor + '18' },
+        ]}
+      >
+        <CompassIcon size={22} color={arrowColor} />
+      </Animated.View>
+      <View style={styles.directionTextContainer}>
+        <TenderText variant="label" color={arrowColor} style={{ marginBottom: 2 }}>
+          Emergence Direction
+        </TenderText>
+        <TenderText variant="body">{status.description}</TenderText>
+      </View>
     </View>
   );
 }

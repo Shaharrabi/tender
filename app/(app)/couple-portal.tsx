@@ -86,6 +86,7 @@ import CoupleAnchorCard from '@/components/couple-portrait/CoupleAnchorCard';
 import ExitPointCard from '@/components/couple-portrait/ExitPointCard';
 import DyadicDiscrepancyAlert from '@/components/couple-portrait/DyadicDiscrepancyAlert';
 import CoupleNarrativeBlock from '@/components/couple-portrait/CoupleNarrativeBlock';
+import OurFieldTab from '@/components/couple-portrait/OurFieldTab';
 import { generateOverviewSnapshot } from '@/utils/portrait/overview-snapshot';
 import CouplePortalErrorBoundary from '@/components/CouplePortalErrorBoundary';
 import { TonightTryThis, ConversationPrompts, AnchorSOSButton } from '@/components/couple-enhancements/CoupleEnhancements';
@@ -94,7 +95,7 @@ import SectionSummaryHeader from '@/components/portrait-enhancements/SectionSumm
 import AudioLibrary from '@/components/audio/AudioLibrary';
 import { HourglassIcon } from '@/assets/graphics/icons';
 
-type TabKey = 'overview' | 'dance' | 'together' | 'assessments' | 'insights' | 'growth' | 'anchors';
+type TabKey = 'overview' | 'dance' | 'together' | 'assessments' | 'insights' | 'growth' | 'anchors' | 'field';
 
 interface CoupleTabDef {
   key: TabKey;
@@ -111,6 +112,7 @@ const TABS: CoupleTabDef[] = [
   { key: 'insights',    label: 'Insights',    Icon: SparkleIcon,     color: Colors.accent },
   { key: 'growth',      label: 'Growth',      Icon: SeedlingIcon,    color: Colors.warning },
   { key: 'anchors',     label: 'Anchors',     Icon: LeafIcon,        color: Colors.calm },
+  { key: 'field',       label: 'Our Field',   Icon: SparkleIcon,     color: Colors.accentGold },
 ];
 
 export default function CouplePortalScreenWithBoundary() {
@@ -1522,6 +1524,11 @@ function CouplePortalScreen() {
       readMinutes: 3,
       color: Colors.calm,
     },
+    field: {
+      summary: 'Your relational field \u2014 what you\u2019re creating together, what needs care, and what to try next.',
+      readMinutes: 3,
+      color: Colors.accentGold,
+    },
   };
 
   /** Generate a 60-second digest of the couple portrait */
@@ -1566,6 +1573,7 @@ function CouplePortalScreen() {
       case 'insights':   return renderInsights();
       case 'growth':     return renderGrowth();
       case 'anchors':    return renderAnchors();
+      case 'field':      return <OurFieldTab coupleId={couple!.id} userId={user!.id} compositeScores={myPortrait?.compositeScores} />;
       default:           return renderOverview();
     }
   };

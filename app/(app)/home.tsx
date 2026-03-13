@@ -84,6 +84,7 @@ import JourneyUnlockOverlay, { hasSeenJourneyUnlock, markJourneyUnlockSeen } fro
 import JourneySpiral from '@/components/growth/JourneySpiral';
 import { getCurrentStepNumber } from '@/services/steps';
 import { getTaglineForStep, getPracticesForStep, getStep, getJournalPromptForStep, getPhaseForStep } from '@/utils/steps/twelve-steps';
+import { getDailyTagline } from '@/constants/taglines';
 import { MICRO_COURSES, calculateCourseProgress, type CourseProgress } from '@/utils/microcourses/course-registry';
 import { getCompletions as getMicroCourseCompletions } from '@/services/intervention';
 import MicroCourseCard from '@/components/microcourse/MicroCourseCard';
@@ -1038,7 +1039,7 @@ export default function HomeScreen() {
                     onPress={handleTaglineTripleTap}
                     suppressHighlighting
                   >
-                    The Science of Relationships
+                    {getDailyTagline()}
                   </Text>
                 </>
               );

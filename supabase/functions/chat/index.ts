@@ -190,7 +190,7 @@ serve(async (req: Request) => {
     // 1b. Fetch user's current step progress (includes started_at for days-in-step)
     const { data: stepRows } = await supabase
       .from('step_progress')
-      .select('step_number, status, started_at')
+      .select('step_number, status, started_at, reflection_notes')
       .eq('user_id', userId)
       .order('step_number', { ascending: true });
 
@@ -382,7 +382,10 @@ serve(async (req: Request) => {
     // This changes between messages (new check-ins, exercises) — dynamic block
     dynamicPrompt += buildUserContextBlock(checkInRows, exerciseRows, reflectionRows, assessmentRows, growthEdgeRows);
 
-    // 4c. Append relationship mode context
+    // 4c. Step reflection context — user's own words from previous steps
+    dynamicPrompt += buildStepReflectionContext(stepRows, currentStepNumber);
+
+    // 4d. Append relationship mode context
     dynamicPrompt += buildModeContext(relationshipMode, demoPartnerId, currentStepNumber);
 
     // 5. Diagnostic observation (internal — guides coaching, never shown to user)
@@ -1173,6 +1176,16 @@ Use this to:
 - Frame the movement phase as context for where they are
 - NEVER mention scores, numbers, "WEARE", or any technical terms
 - Use warm relational language: "the space between you", "how alive the connection feels"`;
+
+    // Attunement gap coaching — when attunement is notably low
+    const attunementVal = (w.variables as any)?.attunement?.raw;
+    if (typeof attunementVal === 'number' && attunementVal < 4) {
+      prompt += `\n\nATTUNEMENT GAP DETECTED: Field sensing is low (${pulseLevel} range).
+Coaching priority: Help each partner recognize the asymmetry without shame.
+For the higher-attunement partner: their sensitivity may feel like a burden ("I always have to do the emotional work").
+For the lower-attunement partner: they may not know they're missing cues ("I didn't realize you were upset").
+Do NOT name or compare scores. Coach toward curiosity: "What does your partner's body do just before a hard conversation?"`;
+    }
   }
 
   if (!safety.safe) {
@@ -1927,6 +1940,42 @@ When the user wants to practice a conversation or scenario with their partner:
 - Always return to your Nuance coaching role when the practice ends`,
   },
 };
+
+/**
+ * Build step reflection context — weaves the user's own words from previous steps
+ * into the coaching context so Nuance can reference their journey.
+ */
+function buildStepReflectionContext(stepRows: any[] | null, currentStep: number): string {
+  if (!stepRows || stepRows.length === 0 || currentStep <= 1) return '';
+
+  const reflections: string[] = [];
+
+  for (const row of stepRows) {
+    if (row.step_number >= currentStep) continue;
+    const notes = row.reflection_notes as Record<string, any> | null;
+    if (!notes) continue;
+
+    const refls = notes.reflections as Record<string, string> | undefined;
+    if (!refls) continue;
+
+    // Take the first reflection from each completed step (most meaningful)
+    const firstReflection = refls['0'];
+    if (firstReflection?.trim()) {
+      const truncated = firstReflection.trim().length > 80
+        ? firstReflection.trim().substring(0, 77) + '...'
+        : firstReflection.trim();
+      reflections.push(`Step ${row.step_number}: "${truncated}"`);
+    }
+  }
+
+  if (reflections.length === 0) return '';
+
+  return `\n\n## Their Journey So Far (use gently — reference their words when relevant)
+${reflections.join('\n')}
+
+When coaching, you may echo their own words back to them. For example: "You once named the strain as '...' — how does that feel now?"
+Do NOT recite all reflections at once. Use ONE at a time, when it's naturally relevant.`;
+}
 
 function buildModeContext(mode: string, demoPartnerId: string | null, currentStep: number): string {
   if (mode === 'solo') {
