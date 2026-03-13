@@ -34,6 +34,7 @@ import Animated, {
   FadeOut,
 } from 'react-native-reanimated';
 import { Audio, AVPlaybackStatus } from 'expo-av';
+import { Ionicons } from '@expo/vector-icons';
 import {
   Colors,
   Spacing,
@@ -276,7 +277,7 @@ function ResetPlayer({ script, activationState, onClose }: ResetPlayerProps) {
   }, [onClose]);
 
   const progress = duration > 0 ? position / duration : 0;
-  const playIcon = isPlaying ? '\u23F8' : hasFinished ? '\u21BB' : '\u25B6';
+  const playIconName: keyof typeof Ionicons.glyphMap = isPlaying ? 'pause' : hasFinished ? 'refresh' : 'play';
 
   return (
     <View style={[styles.playerContainer, { backgroundColor: bgColor }]}>
@@ -335,9 +336,7 @@ function ResetPlayer({ script, activationState, onClose }: ResetPlayerProps) {
               {isLoading ? (
                 <ActivityIndicator size="small" color={accentColor} />
               ) : (
-                <Text style={[styles.playIcon, { color: accentColor }]}>
-                  {playIcon}
-                </Text>
+                <Ionicons name={playIconName} size={22} color={accentColor} />
               )}
             </View>
           </TouchableOpacity>
@@ -519,9 +518,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  playIcon: {
-    fontSize: 20,
-  },
+  // playIcon style removed — now using Ionicons component
   progressSection: {
     flex: 1,
     gap: 4,
