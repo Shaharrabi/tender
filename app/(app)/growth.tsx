@@ -38,6 +38,7 @@ import {
 } from '@/constants/theme';
 import CurrentStepFocus from '@/components/growth/CurrentStepFocus';
 import StepJourney from '@/components/growth/StepJourney';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import FoundationOverlay, { hasHeardFoundation } from '@/components/growth/FoundationOverlay';
 import { ensureStepProgress } from '@/services/steps';
 import { getMyCouple, isSelfCouple } from '@/services/couples';
@@ -59,11 +60,46 @@ export default function GrowthScreen() {
   const [showFoundation, setShowFoundation] = useState(false);
 
   // Check if Foundation audio should auto-play on first visit
+  // Pass server hint once step data loads — if user has any step progress
+  // beyond initial state, they've been here before (survives cache clears)
+  const foundationCheckedRef = React.useRef(false);
   useEffect(() => {
+    if (foundationCheckedRef.current) return;
+    // Immediate check with local cache
     hasHeardFoundation().then((heard) => {
-      if (!heard) setShowFoundation(true);
+      if (heard) {
+        foundationCheckedRef.current = true;
+        return;
+      }
+      // Not in local cache — wait for step data to provide server hint
+      // (will be checked again in loadData via serverHintRef)
     });
   }, []);
+
+  // After step data loads, double-check with server hint
+  const serverHintRef = React.useRef(false);
+  useEffect(() => {
+    if (foundationCheckedRef.current) return;
+    if (stepProgress.length === 0) return;
+
+    // If any step is completed or the user is beyond step 1, they've visited before
+    const hasBeenHereBefore = stepProgress.some(
+      (sp) => sp.status === 'completed' || (sp.status === 'active' && sp.stepNumber > 1)
+    );
+    if (hasBeenHereBefore) {
+      foundationCheckedRef.current = true;
+      serverHintRef.current = true;
+      // Don't show overlay — mark it as heard for next time
+      AsyncStorage.setItem('has_heard_foundation', 'true').catch(() => {});
+      return;
+    }
+
+    // Truly first visit — show the overlay
+    if (!serverHintRef.current) {
+      setShowFoundation(true);
+      foundationCheckedRef.current = true;
+    }
+  }, [stepProgress]);
 
   const loadData = useCallback(async () => {
     if (!user) return;

@@ -58,7 +58,10 @@ export async function getCurrentStepNumber(userId: string): Promise<number> {
   return activeStep?.stepNumber ?? 1;
 }
 
-/** Advance a step to 'completed' and unlock the next step. */
+/** Advance a step to 'completed' and unlock the next step.
+ *  SAFE: only unlocks next step if it's currently 'locked'.
+ *  This prevents regression (e.g. overwriting a completed step 5 back to active
+ *  when the user completes step 4 out of order). */
 export async function completeStep(
   userId: string,
   stepNumber: number
@@ -72,13 +75,15 @@ export async function completeStep(
     .eq('user_id', userId)
     .eq('step_number', stepNumber);
 
-  // Unlock next step (if not Step 12)
+  // Unlock next step ONLY if it's currently locked
+  // (prevents overwriting 'completed' or 'active' states)
   if (stepNumber < 12) {
     await supabase
       .from('step_progress')
       .update({ status: 'active', started_at: now, updated_at: now })
       .eq('user_id', userId)
-      .eq('step_number', stepNumber + 1);
+      .eq('step_number', stepNumber + 1)
+      .eq('status', 'locked');  // ← only unlock if currently locked
   }
 }
 

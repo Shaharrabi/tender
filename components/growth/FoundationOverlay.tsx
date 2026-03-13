@@ -214,8 +214,15 @@ export default function FoundationOverlay({ onDismiss }: FoundationOverlayProps)
   );
 }
 
-/** Check if Foundation has been heard before. */
-export async function hasHeardFoundation(): Promise<boolean> {
+/**
+ * Check if Foundation has been heard before.
+ * Uses AsyncStorage as a fast local cache, but also accepts a
+ * server-side hint (e.g. user already has step progress) so the
+ * audio doesn't replay on new devices or after cache clears.
+ */
+export async function hasHeardFoundation(serverHint?: boolean): Promise<boolean> {
+  // If server says user has been here before, trust it
+  if (serverHint === true) return true;
   try {
     const value = await AsyncStorage.getItem(STORAGE_KEY);
     return value === 'true';
