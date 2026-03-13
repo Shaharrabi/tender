@@ -33,10 +33,10 @@ export function getZone5Html(): string {
 .rally-lbl{font-family:'GameMono',monospace;font-size:7px;letter-spacing:2px;text-transform:uppercase;color:rgba(154,122,204,.45);margin-top:2px;}
 
 /* Truth bubble floating */
-#truth-display{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10;opacity:0;transition:opacity .4s;pointer-events:none;}
+#truth-display{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10;opacity:0;transition:opacity .8s;pointer-events:none;}
 #truth-display.show{opacity:1;}
-.truth-bubble{background:rgba(42,32,53,.9);border:1px solid rgba(154,122,204,.3);border-radius:16px;padding:12px 18px;max-width:200px;text-align:center;}
-.truth-text{font-family:'GameSerif',serif;font-style:italic;font-size:clamp(11px,2.8vw,13px);color:var(--parchment);line-height:1.5;}
+.truth-bubble{background:rgba(42,32,53,.9);border:1px solid rgba(154,122,204,.3);border-radius:16px;padding:16px 24px;max-width:280px;text-align:center;}
+.truth-text{font-family:'GameSerif',serif;font-style:italic;font-size:clamp(15px,4vw,19px);color:var(--parchment);line-height:1.6;}
 .truth-from{font-family:'GameMono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(154,122,204,.5);margin-top:6px;}
 
 /* Controls */
@@ -348,7 +348,7 @@ function showTruth(from) {
 
   setTimeout(function() {
     document.getElementById('truth-display').classList.remove('show');
-  }, 1500);
+  }, 3500);
 }
 
 function resetBall() {
