@@ -3,10 +3,11 @@
   "configurations": [
     {
       "name": "expo-web",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["expo", "start", "--web", "--port", "8082"],
+      "runtimeExecutable": "/usr/local/bin/node",
+      "runtimeArgs": ["/usr/local/bin/npx", "expo", "start", "--web", "--port", "8082"],
       "port": 8082,
-      "autoPort": true
+      "autoPort": true,
+      "env": {"PATH": "/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin"}
     },
     {
       "name": "expo-dev",

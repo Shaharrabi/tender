@@ -6,8 +6,8 @@
  *   • Two grouped sections: Hot (activated) and Cold (shutdown)
  *   • Inline play/pause cards with progress bar (no full-screen modal)
  *
- * Hot  (🔥): R-1 Slow Your Reach, R-3 Anchor Before You Leave, R-5 Steady the Swing
- * Cold (❄️): R-2 Thaw the Freeze, R-4 Gentle Re-Entry, R-6 Find Your Center
+ * Hot  (🔥): R-1 Slow Your Reach, R-3 Anchor Before You Leave, R-6 Find Your Center
+ * Cold (❄️): R-2 Thaw the Freeze, R-4 Gentle Re-Entry, R-5 Steady the Swing
  */
 
 import React, { useState, useRef, useCallback, useEffect } from 'react';
@@ -53,8 +53,8 @@ import { audioManager } from '@/services/AudioManager';
 
 // ─── Script Groups ───────────────────────────────────────
 
-const HOT_SCRIPTS = ['R-1', 'R-3', 'R-5'] as const;
-const COLD_SCRIPTS = ['R-2', 'R-4', 'R-6'] as const;
+const HOT_SCRIPTS = ['R-1', 'R-3', 'R-6'] as const;
+const COLD_SCRIPTS = ['R-2', 'R-4', 'R-5'] as const;
 
 const GROUPS = [
   {

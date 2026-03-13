@@ -10,8 +10,8 @@
  *     Shutdown pursuer   → R-2  (thaw the freeze)
  *     Activated withdrawer → R-3  (anchor before you leave)
  *     Shutdown withdrawer  → R-4  (gentle re-entry)
- *     Activated mixed     → R-5  (steady the swing)
- *     Shutdown mixed      → R-6  (find your center)
+ *     Activated mixed     → R-6  (find your center)
+ *     Shutdown mixed      → R-5  (steady the swing)
  *
  *   Without portrait (generic):
  *     Activated → R-4  (gentle re-entry — calming)
@@ -122,7 +122,7 @@ const RESET_SCRIPTS: Record<string, ResetScript> = {
  * With portrait:
  *   pursuer   + activated → R-1, shutdown → R-2
  *   withdrawer + activated → R-3, shutdown → R-4
- *   mixed/flexible + activated → R-5, shutdown → R-6
+ *   mixed/flexible + activated → R-6, shutdown → R-5
  *
  * Without portrait (generic):
  *   activated → R-4 (calming)
@@ -155,8 +155,8 @@ export function selectResetScript(
 
   // mixed / flexible / anything else
   return activationState === 'activated'
-    ? RESET_SCRIPTS['R-5']
-    : RESET_SCRIPTS['R-6'];
+    ? RESET_SCRIPTS['R-6']
+    : RESET_SCRIPTS['R-5'];
 }
 
 /**
