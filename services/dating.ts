@@ -170,6 +170,95 @@ export async function updateDatingProfile(
   return mapDatingProfile(data);
 }
 
+/** Discover other active, visible profiles (excludes current user + blocked) */
+export async function discoverProfiles(
+  userId: string,
+  options?: {
+    limit?: number;
+    offset?: number;
+    blockedIds?: string[];
+    /** Current user's profile for preference-based filtering */
+    currentUserProfile?: DatingProfile | null;
+  },
+): Promise<DatingProfile[]> {
+  const limit = options?.limit ?? 50;
+  const offset = options?.offset ?? 0;
+
+  // Fetch more than needed to account for client-side preference filtering
+  const fetchLimit = limit * 2;
+
+  let query = supabase
+    .from('dating_profiles')
+    .select('*')
+    .eq('is_active', true)
+    .eq('is_visible', true)
+    .not('constellation', 'is', null)
+    .neq('user_id', userId)
+    .range(offset, offset + fetchLimit - 1)
+    .order('updated_at', { ascending: false });
+
+  // Filter out blocked users if any
+  if (options?.blockedIds && options.blockedIds.length > 0) {
+    // Supabase .not('user_id', 'in', ...) for excluding blocked
+    query = query.not('user_id', 'in', `(${options.blockedIds.join(',')})`);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+
+  let profiles = (data || []).map(mapDatingProfile);
+
+  // Preference-based soft filtering: prioritise matches but still show others
+  const userPrefs = options?.currentUserProfile?.preferences;
+  if (userPrefs && userPrefs.lookingFor && userPrefs.lookingFor.length > 0) {
+    const matches: DatingProfile[] = [];
+    const rest: DatingProfile[] = [];
+
+    for (const p of profiles) {
+      // Check bidirectional compatibility:
+      // 1. Current user's lookingFor includes candidate's genderIdentity
+      // 2. Candidate's lookingFor includes current user's genderIdentity
+      const candidateGenders = p.preferences?.genderIdentity ?? [];
+      const candidateLookingFor = p.preferences?.lookingFor ?? [];
+      const userGenders = userPrefs.genderIdentity ?? [];
+
+      const userWantsCandidate =
+        userPrefs.lookingFor.length === 0 ||
+        candidateGenders.length === 0 ||
+        userPrefs.lookingFor.some((g: string) => candidateGenders.includes(g));
+      const candidateWantsUser =
+        candidateLookingFor.length === 0 ||
+        userGenders.length === 0 ||
+        candidateLookingFor.some((g: string) => userGenders.includes(g));
+
+      if (userWantsCandidate && candidateWantsUser) {
+        matches.push(p);
+      } else {
+        rest.push(p);
+      }
+    }
+
+    // Preference-matched profiles first, then the rest
+    profiles = [...matches, ...rest];
+  }
+
+  // Return only the requested limit
+  return profiles.slice(0, limit);
+}
+
+/** Get multiple profiles by user IDs (for sender alias lookup in letters) */
+export async function getProfilesByUserIds(userIds: string[]): Promise<DatingProfile[]> {
+  if (userIds.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from('dating_profiles')
+    .select('*')
+    .in('user_id', userIds);
+
+  if (error) throw error;
+  return (data || []).map(mapDatingProfile);
+}
+
 /** Check if user has completed The Field game */
 export async function hasCompletedGame(userId: string): Promise<boolean> {
   const { data, error } = await supabase
@@ -306,4 +395,60 @@ export async function getDatingJournalEntries(userId: string): Promise<DatingJou
 
   if (error) throw error;
   return (data || []).map(mapJournalEntry);
+}
+
+// ─── Blocking & Reporting ─────────────────────────────────────
+
+/** Block a user from appearing in discovery */
+export async function blockUser(blockerId: string, blockedId: string): Promise<void> {
+  const { error } = await supabase
+    .from('dating_blocks')
+    .upsert(
+      { blocker_id: blockerId, blocked_id: blockedId },
+      { onConflict: 'blocker_id,blocked_id' },
+    );
+
+  if (error) throw error;
+}
+
+/** Unblock a user */
+export async function unblockUser(blockerId: string, blockedId: string): Promise<void> {
+  const { error } = await supabase
+    .from('dating_blocks')
+    .delete()
+    .eq('blocker_id', blockerId)
+    .eq('blocked_id', blockedId);
+
+  if (error) throw error;
+}
+
+/** Get list of blocked user IDs */
+export async function getBlockedUserIds(userId: string): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('dating_blocks')
+    .select('blocked_id')
+    .eq('blocker_id', userId);
+
+  if (error) throw error;
+  return (data || []).map((row: any) => row.blocked_id);
+}
+
+/** Report a user or letter */
+export async function reportUser(
+  reporterId: string,
+  reportedUserId: string,
+  reason: string,
+  opts?: { letterId?: string; details?: string },
+): Promise<void> {
+  const { error } = await supabase
+    .from('dating_reports')
+    .insert({
+      reporter_id: reporterId,
+      reported_user_id: reportedUserId,
+      reason,
+      letter_id: opts?.letterId || null,
+      details: opts?.details || null,
+    });
+
+  if (error) throw error;
 }

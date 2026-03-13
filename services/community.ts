@@ -6,6 +6,23 @@ import { supabase } from './supabase';
 import type { CommunityPost, CommunityMembership, CommunityAlias, ReactionType } from '@/types/community';
 import { generateAlias, shouldRotateAlias } from '@/constants/community';
 
+// ─── Content Moderation ─────────────────────────────────────────
+
+/** Basic keyword filter for community content safety */
+const BLOCKED_PATTERNS = [
+  // Hate speech / slurs (partial list)
+  /\b(kys|kill\s*yourself|unalive)\b/i,
+  // Explicit violence
+  /\b(I('ll| will)\s+(hurt|kill|attack|harm))\b/i,
+  // Contact info in anonymous space
+  /(\+?\d[\d\s\-().]{7,}\d)/,  // phone numbers
+  /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/, // emails
+];
+
+function isContentSafe(content: string): boolean {
+  return !BLOCKED_PATTERNS.some((pattern) => pattern.test(content));
+}
+
 // ─── Membership / Alias ───────────────────────────────────────
 
 /**
@@ -154,6 +171,9 @@ export async function createPost(
   aliasName?: string,
   aliasColor?: string
 ): Promise<CommunityPost> {
+  // Content moderation: auto-flag unsafe content
+  const approved = isContentSafe(content);
+
   const { data, error } = await supabase
     .from('community_posts')
     .insert({
@@ -164,11 +184,19 @@ export async function createPost(
       attachment_style: attachmentStyle ?? null,
       alias_name: aliasName ?? null,
       alias_color: aliasColor ?? null,
+      is_approved: approved,
     })
     .select()
     .single();
 
   if (error) throw error;
+
+  if (!approved) {
+    // Still return the post object, but feed queries filter by is_approved
+    // so it won't show to others until reviewed
+    console.warn('[Community] Post flagged by content filter, pending review');
+  }
+
   return mapPost(data);
 }
 

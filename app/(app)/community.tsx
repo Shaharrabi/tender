@@ -32,6 +32,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { useGuest } from '@/context/GuestContext';
 import { useGamification } from '@/context/GamificationContext';
+import { supabase } from '@/services/supabase';
 import {
   getPosts,
   createPost,
@@ -190,6 +191,37 @@ export default function CommunityScreen() {
       loadPosts();
     }
   }, [activeTab, activeCategory, attachmentStyle]);
+
+  // ── Realtime: live-prepend new posts ────────
+  useEffect(() => {
+    const channel = supabase
+      .channel('community-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'community_posts',
+          filter: 'is_approved=eq.true',
+        },
+        (payload) => {
+          // Only auto-prepend if we're viewing stories and the post isn't ours
+          if (
+            (activeTab === 'forYou' || activeTab === 'allStories') &&
+            payload.new &&
+            payload.new.user_id !== user?.id
+          ) {
+            // Reload to get properly formatted posts with reactions
+            loadPosts();
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [activeTab, user?.id, loadPosts]);
 
   // ── Load letters ───────────────────────────
   const loadLetters = useCallback(async () => {

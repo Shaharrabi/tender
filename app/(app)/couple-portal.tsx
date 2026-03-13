@@ -93,6 +93,7 @@ import { TonightTryThis, ConversationPrompts, AnchorSOSButton } from '@/componen
 import { ScoreViewToggle } from '@/components/portrait-enhancements/ScoreStoryToggle';
 import SectionSummaryHeader from '@/components/portrait-enhancements/SectionSummaryHeader';
 import AudioLibrary from '@/components/audio/AudioLibrary';
+import ResetLibrary from '@/components/emergency/ResetLibrary';
 import { HourglassIcon } from '@/assets/graphics/icons';
 
 type TabKey = 'overview' | 'dance' | 'together' | 'assessments' | 'insights' | 'growth' | 'anchors' | 'field';
@@ -1675,6 +1676,9 @@ function CouplePortalScreen() {
 
         {/* Active tab content — one section at a time */}
         {renderTabContent()}
+
+        {/* Reset Library — collapsible, above audio library */}
+        <ResetLibrary />
 
         {/* Audio Library — at bottom of every tab */}
         {myPortrait && <AudioLibrary portrait={myPortrait} couplePortrait={dp} />}

@@ -25,22 +25,30 @@ interface ProfileBuilderProps {
   constellation: string[] | null;
   initialPreferences?: Partial<DatingPreferences>;
   initialBio?: string;
+  initialIsVisible?: boolean;
+  initialIsActive?: boolean;
   onPreferencesChange?: (preferences: Record<string, any>) => void;
   onBioChange?: (bio: string) => void;
+  onVisibilityChange?: (isVisible: boolean, isActive: boolean) => void;
 }
 
 export default function ProfileBuilder({
   constellation,
   initialPreferences,
   initialBio = '',
+  initialIsVisible = true,
+  initialIsActive = true,
   onPreferencesChange,
   onBioChange,
+  onVisibilityChange,
 }: ProfileBuilderProps) {
   const [activeSection, setActiveSection] = useState(0);
   const [preferences, setPreferences] = useState<Record<string, any>>(
     initialPreferences ? flattenPreferences(initialPreferences) : {},
   );
   const [bio, setBio] = useState(initialBio);
+  const [isVisible, setIsVisible] = useState(initialIsVisible);
+  const [isActive, setIsActive] = useState(initialIsActive);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const bioTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -219,6 +227,55 @@ export default function ProfileBuilder({
           accessibilityLabel="Your letter to the lobby bio"
         />
         <Text style={styles.bioCounter}>{bio.length}/500</Text>
+      </View>
+
+      {/* Visibility Controls */}
+      <View style={styles.visibilityContainer}>
+        <Text style={styles.visibilitySectionTitle}>Privacy</Text>
+
+        <TouchableOpacity
+          style={styles.toggleRow}
+          onPress={() => {
+            const newVal = !isVisible;
+            setIsVisible(newVal);
+            onVisibilityChange?.(newVal, isActive);
+          }}
+          accessibilityRole="switch"
+          accessibilityState={{ checked: isVisible }}
+          accessibilityLabel="Appear in Discovery"
+        >
+          <View style={styles.toggleTextWrap}>
+            <Text style={styles.toggleLabel}>Appear in Discovery</Text>
+            <Text style={styles.toggleDesc}>
+              {isVisible ? 'Others can find your profile' : 'Your profile is hidden from discovery'}
+            </Text>
+          </View>
+          <View style={[styles.toggleSwitch, isVisible && styles.toggleSwitchActive]}>
+            <View style={[styles.toggleThumb, isVisible && styles.toggleThumbActive]} />
+          </View>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.toggleRow}
+          onPress={() => {
+            const newVal = !isActive;
+            setIsActive(newVal);
+            onVisibilityChange?.(isVisible, newVal);
+          }}
+          accessibilityRole="switch"
+          accessibilityState={{ checked: isActive }}
+          accessibilityLabel="Profile Active"
+        >
+          <View style={styles.toggleTextWrap}>
+            <Text style={styles.toggleLabel}>Profile Active</Text>
+            <Text style={styles.toggleDesc}>
+              {isActive ? 'You can send and receive letters' : 'Paused — no new letters'}
+            </Text>
+          </View>
+          <View style={[styles.toggleSwitch, isActive && styles.toggleSwitchActive]}>
+            <View style={[styles.toggleThumb, isActive && styles.toggleThumbActive]} />
+          </View>
+        </TouchableOpacity>
       </View>
 
       {/* Save Status Indicator */}
@@ -430,5 +487,63 @@ const styles = StyleSheet.create({
   },
   saveStatusError: {
     color: Colors.error,
+  },
+  visibilityContainer: {
+    marginTop: Spacing.lg,
+    backgroundColor: Colors.backgroundAlt,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+    gap: 4,
+  },
+  visibilitySectionTitle: {
+    fontFamily: 'PlayfairDisplay_600SemiBold',
+    fontSize: 17,
+    color: Colors.text,
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderLight,
+  },
+  toggleTextWrap: {
+    flex: 1,
+    gap: 2,
+  },
+  toggleLabel: {
+    fontFamily: 'JosefinSans_500Medium',
+    fontSize: 14,
+    color: Colors.text,
+  },
+  toggleDesc: {
+    fontFamily: 'JosefinSans_300Light',
+    fontSize: 12,
+    color: Colors.textMuted,
+  },
+  toggleSwitch: {
+    width: 44,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: Colors.border,
+    padding: 2,
+    justifyContent: 'center',
+  },
+  toggleSwitchActive: {
+    backgroundColor: Colors.primary,
+  },
+  toggleThumb: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#fff',
+  },
+  toggleThumbActive: {
+    alignSelf: 'flex-end',
   },
 });
