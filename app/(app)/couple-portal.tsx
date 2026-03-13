@@ -92,9 +92,10 @@ import { TonightTryThis, ConversationPrompts, AnchorSOSButton } from '@/componen
 import { ScoreViewToggle } from '@/components/portrait-enhancements/ScoreStoryToggle';
 import SectionSummaryHeader from '@/components/portrait-enhancements/SectionSummaryHeader';
 import AudioLibrary from '@/components/audio/AudioLibrary';
+import ResetLibrary from '@/components/emergency/ResetLibrary';
 import { HourglassIcon } from '@/assets/graphics/icons';
 
-type TabKey = 'overview' | 'dance' | 'together' | 'assessments' | 'insights' | 'growth' | 'anchors';
+type TabKey = 'overview' | 'dance' | 'together' | 'assessments' | 'insights' | 'growth' | 'anchors' | 'resets';
 
 interface CoupleTabDef {
   key: TabKey;
@@ -111,6 +112,7 @@ const TABS: CoupleTabDef[] = [
   { key: 'insights',    label: 'Insights',    Icon: SparkleIcon,     color: Colors.accent },
   { key: 'growth',      label: 'Growth',      Icon: SeedlingIcon,    color: Colors.warning },
   { key: 'anchors',     label: 'Anchors',     Icon: LeafIcon,        color: Colors.calm },
+  { key: 'resets',      label: 'Resets',      Icon: HeartPulseIcon,  color: Colors.accent },
 ];
 
 export default function CouplePortalScreenWithBoundary() {
@@ -1522,6 +1524,11 @@ function CouplePortalScreen() {
       readMinutes: 3,
       color: Colors.calm,
     },
+    resets: {
+      summary: 'Six guided audio resets \u2014 three for when you\u2019re activated, three for when you\u2019re shut down.',
+      readMinutes: 2,
+      color: Colors.accent,
+    },
   };
 
   /** Generate a 60-second digest of the couple portrait */
@@ -1566,6 +1573,7 @@ function CouplePortalScreen() {
       case 'insights':   return renderInsights();
       case 'growth':     return renderGrowth();
       case 'anchors':    return renderAnchors();
+      case 'resets':     return <ResetLibrary />;
       default:           return renderOverview();
     }
   };
