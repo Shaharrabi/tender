@@ -18,18 +18,22 @@ CREATE INDEX IF NOT EXISTS idx_push_tokens_user_id ON push_tokens(user_id);
 -- RLS: users can only read/write their own tokens
 ALTER TABLE push_tokens ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can insert their own push tokens" ON push_tokens;
 CREATE POLICY "Users can insert their own push tokens"
   ON push_tokens FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can read their own push tokens" ON push_tokens;
 CREATE POLICY "Users can read their own push tokens"
   ON push_tokens FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can delete their own push tokens" ON push_tokens;
 CREATE POLICY "Users can delete their own push tokens"
   ON push_tokens FOR DELETE
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update their own push tokens" ON push_tokens;
 CREATE POLICY "Users can update their own push tokens"
   ON push_tokens FOR UPDATE
   USING (auth.uid() = user_id)
