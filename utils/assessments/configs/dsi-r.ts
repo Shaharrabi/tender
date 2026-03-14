@@ -9,68 +9,56 @@ const LIKERT_SCALE: LikertOption[] = [
   { value: 6, label: 'Very true of me' },
 ];
 
-// 0-based indices of reverse-scored items (items 4, 5, 12, 15, 18, 26, 27, 32, 40, 42, 43, 45)
-const REVERSE_ITEMS = new Set([3, 4, 11, 14, 17, 25, 26, 31, 39, 41, 42, 44]);
+// 0-based indices of reverse-scored items in the trimmed 20-item version
+// idx 4=item5(R:"calm in chaos"), 6=item7(R:"do what I believe"), 7=item8(R:"stating position"),
+// 8=item9(R:"say no"), 9=item10(R:"clear sense"), 11=item12(R:"remain calm"),
+// 15=item16(R:"calmly listen"), 17=item18(R:"keep focused")
+const REVERSE_ITEMS = new Set([4, 6, 7, 8, 9, 11, 15, 17]);
 
 const QUESTIONS: GenericQuestion[] = [
+  // ── Emotional Reactivity (Items 1–5) ──
+  // Original items: 1, 6, 9, 17, 26(R)
   { id: 1, text: 'People have remarked that I\'m overly emotional.', inputType: 'likert', subscale: 'emotionalReactivity' },
-  { id: 2, text: 'I have difficulty expressing my feelings to people I care for.', inputType: 'likert', subscale: 'iPosition' },
-  { id: 3, text: 'I often feel like I\'m being controlled by others.', inputType: 'likert', subscale: 'emotionalCutoff' },
-  { id: 4, text: 'I\'m able to calmly listen to my partner, even when I disagree.', inputType: 'likert', subscale: 'fusionWithOthers', reverseScored: true },
-  { id: 5, text: 'I tend to remain pretty calm even when everyone around me is upset.', inputType: 'likert', subscale: 'emotionalCutoff', reverseScored: true },
-  { id: 6, text: 'At times my feelings get the best of me and I have trouble thinking clearly.', inputType: 'likert', subscale: 'emotionalReactivity' },
-  { id: 7, text: 'When I\'m with my partner, I often feel smothered.', inputType: 'likert', subscale: 'iPosition' },
-  { id: 8, text: 'It\'s important for me to keep in touch with my parents regularly.', inputType: 'likert', subscale: 'emotionalCutoff' },
-  { id: 9, text: 'When my partner criticizes me, it bothers me for days.', inputType: 'likert', subscale: 'emotionalReactivity' },
-  { id: 10, text: 'I often agree with others just to appease them.', inputType: 'likert', subscale: 'fusionWithOthers' },
-  { id: 11, text: 'I\'m likely to be drawn into other people\'s problems.', inputType: 'likert', subscale: 'emotionalCutoff' },
-  { id: 12, text: 'I usually do what I believe is right regardless of what others say.', inputType: 'likert', subscale: 'iPosition', reverseScored: true },
-  { id: 13, text: 'I want to live up to my parents\' expectations.', inputType: 'likert', subscale: 'emotionalCutoff' },
-  { id: 14, text: 'I\'m very sensitive to being hurt by others.', inputType: 'likert', subscale: 'emotionalReactivity' },
-  { id: 15, text: 'When I\'m having an argument, I can keep focused on the issues and not let things get personal.', inputType: 'likert', subscale: 'fusionWithOthers', reverseScored: true },
-  { id: 16, text: 'At times, I feel as if I\'m riding an emotional roller-coaster.', inputType: 'likert', subscale: 'fusionWithOthers' },
-  { id: 17, text: 'I often feel overwhelmed.', inputType: 'likert', subscale: 'emotionalReactivity' },
-  { id: 18, text: 'I\'m good at knowing what I believe and stating my position clearly.', inputType: 'likert', subscale: 'iPosition', reverseScored: true },
-  { id: 19, text: 'I\'m very uncomfortable when people express negative feelings toward me.', inputType: 'likert', subscale: 'emotionalCutoff' },
-  { id: 20, text: 'Our relationship would be better if my partner would give me the space I need.', inputType: 'likert', subscale: 'fusionWithOthers' },
-  { id: 21, text: 'I tend to react emotionally when things don\'t go as I\'ve planned.', inputType: 'likert', subscale: 'emotionalReactivity' },
-  { id: 22, text: 'I tend to distance myself when people get too close to me.', inputType: 'likert', subscale: 'iPosition' },
-  { id: 23, text: 'I wish I weren\'t so emotional.', inputType: 'likert', subscale: 'emotionalCutoff' },
-  { id: 24, text: 'It\'s hard for me to make decisions for myself when I know others might disapprove.', inputType: 'likert', subscale: 'fusionWithOthers' },
-  { id: 25, text: 'I often end up taking care of others\' needs at the expense of my own.', inputType: 'likert', subscale: 'fusionWithOthers' },
-  { id: 26, text: 'I\'m fairly calm even when things get chaotic around me.', inputType: 'likert', subscale: 'emotionalReactivity', reverseScored: true },
-  { id: 27, text: 'I\'m able to say "no" to others even when I feel pressured by them.', inputType: 'likert', subscale: 'iPosition', reverseScored: true },
-  { id: 28, text: 'Our relationship has suffered because of my partner\'s unreasonable demands.', inputType: 'likert', subscale: 'emotionalCutoff' },
-  { id: 29, text: 'When I am with others, I lose my sense of who I am.', inputType: 'likert', subscale: 'fusionWithOthers' },
-  { id: 30, text: 'I often find myself making decisions based on what will make others happy.', inputType: 'likert', subscale: 'emotionalReactivity' },
-  { id: 31, text: 'I often feel that my partner wants too much from me.', inputType: 'likert', subscale: 'fusionWithOthers' },
-  { id: 32, text: 'I have a clear sense of who I am and what I believe.', inputType: 'likert', subscale: 'iPosition', reverseScored: true },
-  { id: 33, text: 'When one of my relationships becomes very intense, I feel the urge to run away from it.', inputType: 'likert', subscale: 'emotionalCutoff' },
-  { id: 34, text: 'Relationships with others are usually more trouble than they\'re worth.', inputType: 'likert', subscale: 'fusionWithOthers' },
-  { id: 35, text: 'When things go wrong, talking about them usually makes it worse.', inputType: 'likert', subscale: 'emotionalReactivity' },
-  { id: 36, text: 'Sometimes I feel sick after arguing with my partner.', inputType: 'likert', subscale: 'iPosition' },
-  { id: 37, text: 'My self-esteem really depends on how others think of me.', inputType: 'likert', subscale: 'emotionalCutoff' },
-  { id: 38, text: 'I frequently feel threatened in close relationships.', inputType: 'likert', subscale: 'fusionWithOthers' },
-  { id: 39, text: 'I feel things more intensely than others do.', inputType: 'likert', subscale: 'emotionalReactivity' },
-  { id: 40, text: 'I tend to feel pretty stable under stress.', inputType: 'likert', subscale: 'iPosition', reverseScored: true },
-  { id: 41, text: 'I often wonder about the kind of impression I create.', inputType: 'likert', subscale: 'emotionalCutoff' },
-  { id: 42, text: 'There\'s no point in getting upset about things I cannot change.', inputType: 'likert', subscale: 'fusionWithOthers', reverseScored: true },
-  { id: 43, text: 'I feel comfortable when people get close to me.', inputType: 'likert', subscale: 'iPosition', reverseScored: true },
-  { id: 44, text: 'I\'m likely to smooth over or settle conflicts between two people I care about.', inputType: 'likert', subscale: 'emotionalReactivity' },
-  { id: 45, text: 'I usually don\'t change my behavior simply to please another person.', inputType: 'likert', subscale: 'iPosition', reverseScored: true },
-  { id: 46, text: 'I\'m uncomfortable being around people I don\'t know.', inputType: 'likert', subscale: 'emotionalCutoff' },
+  { id: 2, text: 'At times my feelings get the best of me and I have trouble thinking clearly.', inputType: 'likert', subscale: 'emotionalReactivity' },
+  { id: 3, text: 'When my partner criticizes me, it bothers me for days.', inputType: 'likert', subscale: 'emotionalReactivity' },
+  { id: 4, text: 'I often feel overwhelmed.', inputType: 'likert', subscale: 'emotionalReactivity' },
+  { id: 5, text: 'I\'m fairly calm even when things get chaotic around me.', inputType: 'likert', subscale: 'emotionalReactivity', reverseScored: true },
+
+  // ── I-Position (Items 6–10) ──
+  // Original items: 2, 12(R), 18(R), 27(R), 32(R)
+  { id: 6, text: 'I have difficulty expressing my feelings to people I care for.', inputType: 'likert', subscale: 'iPosition' },
+  { id: 7, text: 'I usually do what I believe is right regardless of what others say.', inputType: 'likert', subscale: 'iPosition', reverseScored: true },
+  { id: 8, text: 'I\'m good at knowing what I believe and stating my position clearly.', inputType: 'likert', subscale: 'iPosition', reverseScored: true },
+  { id: 9, text: 'I\'m able to say "no" to others even when I feel pressured by them.', inputType: 'likert', subscale: 'iPosition', reverseScored: true },
+  { id: 10, text: 'I have a clear sense of who I am and what I believe.', inputType: 'likert', subscale: 'iPosition', reverseScored: true },
+
+  // ── Emotional Cutoff (Items 11–15) ──
+  // Original items: 3, 5(R), 19, 33, 46
+  { id: 11, text: 'I often feel like I\'m being controlled by others.', inputType: 'likert', subscale: 'emotionalCutoff' },
+  { id: 12, text: 'I tend to remain pretty calm even when everyone around me is upset.', inputType: 'likert', subscale: 'emotionalCutoff', reverseScored: true },
+  { id: 13, text: 'I\'m very uncomfortable when people express negative feelings toward me.', inputType: 'likert', subscale: 'emotionalCutoff' },
+  { id: 14, text: 'When one of my relationships becomes very intense, I feel the urge to run away from it.', inputType: 'likert', subscale: 'emotionalCutoff' },
+  { id: 15, text: 'I\'m uncomfortable being around people I don\'t know.', inputType: 'likert', subscale: 'emotionalCutoff' },
+
+  // ── Fusion with Others (Items 16–20) ──
+  // Original items: 4(R), 10, 15(R), 24, 29
+  { id: 16, text: 'I\'m able to calmly listen to my partner, even when I disagree.', inputType: 'likert', subscale: 'fusionWithOthers', reverseScored: true },
+  { id: 17, text: 'I often agree with others just to appease them.', inputType: 'likert', subscale: 'fusionWithOthers' },
+  { id: 18, text: 'When I\'m having an argument, I can keep focused on the issues and not let things get personal.', inputType: 'likert', subscale: 'fusionWithOthers', reverseScored: true },
+  { id: 19, text: 'It\'s hard for me to make decisions for myself when I know others might disapprove.', inputType: 'likert', subscale: 'fusionWithOthers' },
+  { id: 20, text: 'When I am with others, I lose my sense of who I am.', inputType: 'likert', subscale: 'fusionWithOthers' },
 ];
 
 const SUBSCALE_ITEMS: Record<string, number[]> = {
-  emotionalReactivity: [0, 5, 8, 13, 16, 20, 25, 29, 34, 38, 43],  // 11 items
-  iPosition: [1, 6, 11, 17, 21, 26, 31, 35, 39, 42, 44],            // 11 items
-  emotionalCutoff: [2, 4, 7, 10, 12, 18, 22, 27, 32, 36, 40, 45],   // 12 items
-  fusionWithOthers: [3, 9, 14, 15, 19, 23, 24, 28, 30, 33, 37, 41], // 12 items
+  emotionalReactivity: [0, 1, 2, 3, 4],  // 5 items
+  iPosition: [5, 6, 7, 8, 9],             // 5 items
+  emotionalCutoff: [10, 11, 12, 13, 14],   // 5 items
+  fusionWithOthers: [15, 16, 17, 18, 19],  // 5 items
 };
 
 function scoreDSIR(responses: (number | string | string[] | null)[]): DSIRScores {
   const nums = responses as number[];
-  if (nums.length !== 46) throw new Error('DSI-R requires 46 responses');
+  if (nums.length !== 20) throw new Error('DSI-R requires 20 responses');
 
   // Step 1: Reverse score items (7 - score)
   const scored = nums.map((r, i) => (REVERSE_ITEMS.has(i) ? 7 - r : r));
@@ -114,9 +102,9 @@ export const dsirConfig: AssessmentConfig = {
   shortName: 'DSI-R',
   description: 'Explore how well you maintain your sense of self while staying emotionally connected in relationships.',
   instructions:
-    'These are questions concerning your thoughts and feelings about yourself and relationships with others. Please read each statement carefully and decide how much the statement is generally true of you on a 1 (not at all) to 6 (very) scale.',
-  estimatedMinutes: 12,
-  totalQuestions: 46,
+    'These are questions about your thoughts and feelings about yourself and your relationships. Please read each statement carefully and decide how much it is generally true of you.',
+  estimatedMinutes: 6,
+  totalQuestions: 20,
   questions: QUESTIONS,
   likertScale: LIKERT_SCALE,
   scoringFn: scoreDSIR,

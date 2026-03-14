@@ -1,7 +1,7 @@
 /**
  * SSEIT Supplement: "Field Sensitivity" (3 items)
  *
- * Added after the standard 33 SSEIT items.
+ * Added after the 16 base SSEIT items (was 33 pre-migration).
  * Scored separately — does not affect original SSEIT scoring.
  *
  * IMPORTANT: Uses 5-point Likert scale to match the original SSEIT
@@ -22,21 +22,21 @@ export const SSEIT_SUPPLEMENT_LIKERT: LikertOption[] = [
 
 export const SSEIT_SUPPLEMENT_QUESTIONS: GenericQuestion[] = [
   {
-    id: 34,
+    id: 17,
     text: 'I can sense the emotional atmosphere in a room without anyone telling me what they are feeling.',
     inputType: 'likert',
     subscale: 'field-sensitivity',
     likertScale: SSEIT_SUPPLEMENT_LIKERT,
   },
   {
-    id: 35,
+    id: 18,
     text: 'I notice when the space between me and my partner shifts — even when neither of us has said anything.',
     inputType: 'likert',
     subscale: 'field-sensitivity',
     likertScale: SSEIT_SUPPLEMENT_LIKERT,
   },
   {
-    id: 36,
+    id: 19,
     text: 'I can distinguish between my own emotions and the emotions that belong to the space between us.',
     inputType: 'likert',
     subscale: 'field-sensitivity',

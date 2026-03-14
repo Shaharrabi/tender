@@ -1,49 +1,51 @@
 import { AssessmentConfig, GenericQuestion, LikertOption, DUTCHScores } from '@/types';
 
 const LIKERT_SCALE: LikertOption[] = [
-  { value: 1, label: 'Never' },
-  { value: 2, label: 'Rarely' },
-  { value: 3, label: 'Sometimes' },
-  { value: 4, label: 'Often' },
-  { value: 5, label: 'Always' },
+  { value: 1, label: 'Not at all like me' },
+  { value: 2, label: 'A little like me' },
+  { value: 3, label: 'Somewhat like me' },
+  { value: 4, label: 'Quite like me' },
+  { value: 5, label: 'Very much like me' },
 ];
 
-const STEM = 'When I have a conflict or disagreement with my partner, I typically...';
-
 const QUESTIONS: GenericQuestion[] = [
-  { id: 1, text: 'Give in to the wishes of my partner.', inputType: 'likert', subscale: 'yielding' },
-  { id: 2, text: 'Try to realize a middle-of-the-road solution.', inputType: 'likert', subscale: 'compromising' },
-  { id: 3, text: 'Push my own point of view.', inputType: 'likert', subscale: 'forcing' },
-  { id: 4, text: 'Examine issues until I find a solution that really satisfies me and my partner.', inputType: 'likert', subscale: 'problemSolving' },
-  { id: 5, text: 'Avoid a confrontation about our differences.', inputType: 'likert', subscale: 'avoiding' },
-  { id: 6, text: 'Concur with my partner.', inputType: 'likert', subscale: 'yielding' },
-  { id: 7, text: 'Emphasize that we have to find a compromise solution.', inputType: 'likert', subscale: 'compromising' },
-  { id: 8, text: 'Search for gains.', inputType: 'likert', subscale: 'forcing' },
-  { id: 9, text: 'Stand for my own and the other\'s goals and interests.', inputType: 'likert', subscale: 'problemSolving' },
-  { id: 10, text: 'Avoid differences of opinion as much as possible.', inputType: 'likert', subscale: 'avoiding' },
-  { id: 11, text: 'Try to accommodate my partner.', inputType: 'likert', subscale: 'yielding' },
-  { id: 12, text: 'Insist we both give in a little.', inputType: 'likert', subscale: 'compromising' },
-  { id: 13, text: 'Fight for a good outcome for myself.', inputType: 'likert', subscale: 'forcing' },
-  { id: 14, text: 'Examine ideas from both sides to find a mutually optimal solution.', inputType: 'likert', subscale: 'problemSolving' },
-  { id: 15, text: 'Try to make differences seem less severe.', inputType: 'likert', subscale: 'avoiding' },
-  { id: 16, text: 'Adapt to my partner\'s goals and interests.', inputType: 'likert', subscale: 'yielding' },
-  { id: 17, text: 'Strive whenever possible towards a fifty-fifty compromise.', inputType: 'likert', subscale: 'compromising' },
-  { id: 18, text: 'Do everything to win.', inputType: 'likert', subscale: 'forcing' },
-  { id: 19, text: 'Work out a solution that serves my own as well as my partner\'s interests as well as possible.', inputType: 'likert', subscale: 'problemSolving' },
-  { id: 20, text: 'Try to avoid a confrontation with my partner.', inputType: 'likert', subscale: 'avoiding' },
+  // ── Yielding (Items 1–3) ──
+  { id: 1, text: 'When my partner and I disagree, I usually let go of what I want so things can be calm between us.', inputType: 'likert', subscale: 'yielding' },
+  { id: 2, text: 'I tend to go along with my partner\'s preferences even when I have a different opinion.', inputType: 'likert', subscale: 'yielding' },
+  { id: 3, text: 'Keeping the peace matters more to me than getting my way.', inputType: 'likert', subscale: 'yielding' },
+
+  // ── Compromising (Items 4–6) ──
+  { id: 4, text: 'When we disagree, I look for something we can both live with — even if neither of us gets exactly what we want.', inputType: 'likert', subscale: 'compromising' },
+  { id: 5, text: 'I\'m willing to give up some of what I want if my partner does the same.', inputType: 'likert', subscale: 'compromising' },
+  { id: 6, text: 'I\'d rather we each bend a little than keep fighting for the perfect outcome.', inputType: 'likert', subscale: 'compromising' },
+
+  // ── Forcing (Items 7–9) ──
+  { id: 7, text: 'When I feel strongly about something, I press my point until my partner understands where I stand.', inputType: 'likert', subscale: 'forcing' },
+  { id: 8, text: 'In a disagreement, I tend to hold my position firmly — I don\'t give ground easily.', inputType: 'likert', subscale: 'forcing' },
+  { id: 9, text: 'If something really matters to me, I\'d rather have a hard conversation than let it slide.', inputType: 'likert', subscale: 'forcing' },
+
+  // ── Problem-Solving (Items 10–12) ──
+  { id: 10, text: 'When we disagree, I try to understand what my partner actually needs underneath what they\'re asking for.', inputType: 'likert', subscale: 'problemSolving' },
+  { id: 11, text: 'I believe most disagreements have a solution that works for both of us — it just takes more conversation to find it.', inputType: 'likert', subscale: 'problemSolving' },
+  { id: 12, text: 'During a conflict, I\'d rather slow down and figure out what\'s really going on than settle for a quick fix.', inputType: 'likert', subscale: 'problemSolving' },
+
+  // ── Avoiding (Items 13–15) ──
+  { id: 13, text: 'When a tense topic comes up, I tend to steer the conversation somewhere easier.', inputType: 'likert', subscale: 'avoiding' },
+  { id: 14, text: 'I usually wait for disagreements to blow over on their own rather than addressing them directly.', inputType: 'likert', subscale: 'avoiding' },
+  { id: 15, text: 'If things get heated between us, my instinct is to create some space rather than keep talking.', inputType: 'likert', subscale: 'avoiding' },
 ];
 
 const SUBSCALE_ITEMS: Record<string, number[]> = {
-  yielding: [0, 5, 10, 15],
-  compromising: [1, 6, 11, 16],
-  forcing: [2, 7, 12, 17],
-  problemSolving: [3, 8, 13, 18],
-  avoiding: [4, 9, 14, 19],
+  yielding: [0, 1, 2],
+  compromising: [3, 4, 5],
+  forcing: [6, 7, 8],
+  problemSolving: [9, 10, 11],
+  avoiding: [12, 13, 14],
 };
 
 function scoreDUTCH(responses: (number | string | string[] | null)[]): DUTCHScores {
   const nums = responses as number[];
-  if (nums.length !== 20) throw new Error('DUTCH requires 20 responses');
+  if (nums.length !== 15) throw new Error('DUTCH requires 15 responses');
 
   const subscaleScores: Record<string, { sum: number; mean: number }> = {};
 
@@ -51,7 +53,7 @@ function scoreDUTCH(responses: (number | string | string[] | null)[]): DUTCHScor
     const sum = items.reduce((s, i) => s + nums[i], 0);
     subscaleScores[scale] = {
       sum,
-      mean: Math.round((sum / 4) * 100) / 100,
+      mean: Math.round((sum / 3) * 100) / 100,
     };
   }
 
@@ -70,10 +72,11 @@ export const dutchConfig: AssessmentConfig = {
   type: 'dutch',
   name: 'Conflict Style',
   shortName: 'DUTCH',
-  description: 'Discover how you handle disagreements and conflicts in your relationship.',
-  instructions: `${STEM}\n\nThe following statements describe different ways people handle disagreements and conflicts. Please respond thinking specifically about conflicts or disagreements with your romantic partner — not conflicts at work or with friends/family.`,
-  estimatedMinutes: 6,
-  totalQuestions: 20,
+  description: 'Discover how you navigate disagreements and conflicts in your relationship.',
+  instructions:
+    'The following statements describe different ways people handle disagreements in their relationships. For each one, indicate how much it sounds like you. There are no right or wrong answers — every approach has its place.',
+  estimatedMinutes: 4,
+  totalQuestions: 15,
   questions: QUESTIONS,
   likertScale: LIKERT_SCALE,
   scoringFn: scoreDUTCH,

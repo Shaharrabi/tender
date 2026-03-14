@@ -1,7 +1,7 @@
 /**
  * DSI-R Supplement: "Boundary Awareness" (4 items)
  *
- * Added after the standard 46 DSI-R items.
+ * Added after the 20 base DSI-R items (was 46 pre-migration).
  * Scored separately — does not affect original DSI-R scoring.
  *
  * IMPORTANT: Uses 6-point Likert scale to match the original DSI-R
@@ -26,28 +26,28 @@ export const DSI_R_SUPPLEMENT_LIKERT: LikertOption[] = [
 
 export const DSI_R_SUPPLEMENT_QUESTIONS: GenericQuestion[] = [
   {
-    id: 47,
+    id: 21,
     text: 'I can be close to my partner without losing my sense of who I am.',
     inputType: 'likert',
     subscale: 'boundary-awareness',
     likertScale: DSI_R_SUPPLEMENT_LIKERT,
   },
   {
-    id: 48,
+    id: 22,
     text: 'I can disagree with my partner and still feel connected to them.',
     inputType: 'likert',
     subscale: 'boundary-awareness',
     likertScale: DSI_R_SUPPLEMENT_LIKERT,
   },
   {
-    id: 49,
+    id: 23,
     text: 'I know where I end and my partner begins — emotionally, not just physically.',
     inputType: 'likert',
     subscale: 'boundary-awareness',
     likertScale: DSI_R_SUPPLEMENT_LIKERT,
   },
   {
-    id: 50,
+    id: 24,
     text: 'I can hold a boundary with my partner without feeling guilty or cruel.',
     inputType: 'likert',
     subscale: 'boundary-awareness',

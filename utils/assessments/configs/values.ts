@@ -1,6 +1,6 @@
 import { AssessmentConfig, GenericQuestion, LikertOption, AssessmentSection, ValuesScores } from '@/types';
 
-// ─── Value Domains ──────────────────────────────────────────
+// ─── Value Domains (unchanged — consumed by lens-values.ts, growth-edges.ts) ──
 
 const VALUE_DOMAINS = [
   { id: 'intimacy', label: 'Intimacy & Connection', description: 'Emotional closeness, vulnerability, being deeply known and knowing your partner' },
@@ -15,7 +15,7 @@ const VALUE_DOMAINS = [
   { id: 'spirituality', label: 'Spirituality & Meaning', description: 'Transcendence, purpose, connection to something larger than yourselves' },
 ];
 
-// ─── Likert Scales ──────────────────────────────────────────
+// ─── Likert Scales (unchanged — 1-10 range preserved for composite-scores.ts) ──
 
 const IMPORTANCE_SCALE: LikertOption[] = [
   { value: 1, label: 'Not at all important' },
@@ -47,35 +47,82 @@ const ACCORDANCE_SCALE: LikertOption[] = [
 
 const SECTIONS: AssessmentSection[] = [
   { id: 'scaled', title: 'Part 1: Your Values', description: 'Rate how important each value is to you, and how well you\'re currently living it.', questionRange: [0, 20] },
-  { id: 'text', title: 'Part 2: Reflection', description: 'Share your thoughts in your own words. There are no right answers.', questionRange: [21, 23] },
-  { id: 'scenarios', title: 'Part 3: Values in Action', description: 'Choose the response that best describes what you would typically do — not what you think you should do.', questionRange: [24, 31] },
+  { id: 'text', title: 'Part 2: Reflection', description: 'Share your thoughts in your own words. There are no right answers.', questionRange: [21, 22] },
+  { id: 'scenarios', title: 'Part 3: Values in Action', description: 'Choose the response that best describes what you would typically do — not what you think you should do.', questionRange: [23, 27] },
 ];
+
+// ─── Importance/Accordance question text per domain ─────────
+
+const DOMAIN_QUESTIONS: Record<string, { importance: string; accordance: string }> = {
+  intimacy: {
+    importance: 'How important is it to you to feel deeply connected to your partner — not just coexisting, but truly knowing and being known by each other?',
+    accordance: 'How well does your current relationship reflect that kind of deep connection right now?',
+  },
+  growth: {
+    importance: 'How important is it to you that your relationship is a place where you\'re both still growing — still becoming more of who you are?',
+    accordance: 'How much does your relationship currently feel like a place of growth for you?',
+  },
+  honesty: {
+    importance: 'How important is it to you to be able to say what\'s true for you in your relationship — even when it\'s hard?',
+    accordance: 'How often do you actually speak your truth in your relationship right now?',
+  },
+  security: {
+    importance: 'How important is it to you to feel safe and stable in your relationship — to know it\'s solid ground?',
+    accordance: 'How safe and stable does your relationship actually feel to you right now?',
+  },
+  adventure: {
+    importance: 'How important is it to you that your relationship has a sense of aliveness — new experiences, surprises, things that break the routine?',
+    accordance: 'How much aliveness and novelty does your relationship currently have?',
+  },
+  independence: {
+    importance: 'How important is it to you to maintain your own identity within your relationship — your own friendships, interests, and sense of self?',
+    accordance: 'How much room does your relationship currently give you to be your own person?',
+  },
+  family: {
+    importance: 'How important is it to you to build something lasting together — whether through family, tradition, or shared legacy?',
+    accordance: 'How well does your relationship currently reflect this sense of legacy or family?',
+  },
+  service: {
+    importance: 'How important is it to you that your relationship contributes something to the world beyond just the two of you — through family, community, or shared purpose?',
+    accordance: 'How well does your relationship currently serve something larger than yourselves?',
+  },
+  playfulness: {
+    importance: 'How important is it to you that your relationship is genuinely enjoyable — that you laugh together, have fun, and take pleasure in each other\'s company?',
+    accordance: 'How much genuine enjoyment and playfulness exists in your relationship right now?',
+  },
+  spirituality: {
+    importance: 'How important is it to you that your relationship has a sense of deeper meaning — something that goes beyond the practical and touches what matters most?',
+    accordance: 'How much does your relationship currently feel connected to something meaningful to you?',
+  },
+};
 
 // ─── Questions ──────────────────────────────────────────────
 
 const QUESTIONS: GenericQuestion[] = [
-  // Part 1: Importance/Accordance pairs (Q1-20)
-  // Each domain has 2 questions: importance then accordance
-  ...VALUE_DOMAINS.flatMap((domain, i) => [
-    {
-      id: i * 2 + 1,
-      text: `How important is ${domain.label} to you in your life and relationships?`,
-      inputType: 'likert' as const,
-      subscale: `${domain.id}_importance`,
-    },
-    {
-      id: i * 2 + 2,
-      text: `How fully are you currently living this value (${domain.label}) in your relationship?`,
-      inputType: 'likert' as const,
-      subscale: `${domain.id}_accordance`,
-      likertScale: ACCORDANCE_SCALE,
-    },
-  ]),
+  // Part A: Importance/Accordance pairs (Q1-20)
+  ...VALUE_DOMAINS.flatMap((domain, i) => {
+    const dq = DOMAIN_QUESTIONS[domain.id];
+    return [
+      {
+        id: i * 2 + 1,
+        text: dq?.importance ?? `How important is ${domain.label} to you in your life and relationships?`,
+        inputType: 'likert' as const,
+        subscale: `${domain.id}_importance`,
+      },
+      {
+        id: i * 2 + 2,
+        text: dq?.accordance ?? `How fully are you currently living this value (${domain.label}) in your relationship?`,
+        inputType: 'likert' as const,
+        subscale: `${domain.id}_accordance`,
+        likertScale: ACCORDANCE_SCALE,
+      },
+    ];
+  }),
 
-  // Part 1: Ranking exercise (Q21)
+  // Part B: Ranking exercise (Q21)
   {
     id: 21,
-    text: 'Of these 10 value domains, please rank your top 5 in order of importance to who you want to be as a partner.',
+    text: 'From the list below, choose the 5 values that matter most to you in your relationship right now.',
     inputType: 'ranking',
     rankingItems: VALUE_DOMAINS.map((d) => ({
       id: d.id,
@@ -85,124 +132,76 @@ const QUESTIONS: GenericQuestion[] = [
     rankCount: 5,
   },
 
-  // Part 2: Open text (Q22-24)
+  // Part C: Open text (Q22-23)
   {
     id: 22,
-    text: 'What kind of partner do you most want to be? Describe the qualities you want to embody in your relationship.',
+    text: 'When you imagine your partner at their best — the version of them that makes you feel most grateful — what are they doing? What does it look like?',
     inputType: 'text',
     charLimit: 500,
-    placeholder: 'Describe the partner you aspire to be...',
+    placeholder: 'Describe your partner at their best...',
   },
   {
     id: 23,
-    text: 'What matters so much to you that you wouldn\'t compromise on it in a relationship?',
-    inputType: 'text',
-    charLimit: 500,
-    placeholder: 'Share your non-negotiables...',
-  },
-  {
-    id: 24,
-    text: 'Imagine your relationship at its best, five years from now. What does it look like? What are you doing together? How do you treat each other?',
+    text: 'If your relationship could become anything you wanted over the next year, what would it look and feel like?',
     inputType: 'text',
     charLimit: 750,
     placeholder: 'Describe your ideal future...',
   },
 
-  // Part 3: Scenarios (Q25-32)
+  // Part D: Scenarios (Q24-28) — 5 relational value-conflict situations
+  {
+    id: 24,
+    text: 'Your partner wants to spend the holiday with their family. You had your heart set on a trip together — just the two of you. You:',
+    inputType: 'choice',
+    subscale: 'holiday_conflict',
+    choices: [
+      { key: 'A', text: 'Say nothing and go along with their plan, feeling quietly resentful', coding: 'avoidance' },
+      { key: 'B', text: 'Suggest splitting the time — part with family, part together — even though neither is exactly what you wanted', coding: 'balanced' },
+      { key: 'C', text: 'Tell your partner honestly that the trip matters to you, and ask if you can find a way to honor both', coding: 'aligned' },
+    ],
+  },
   {
     id: 25,
-    text: 'When my partner does something that bothers me but mentioning it might cause conflict, I tend to:',
+    text: 'You notice your partner has been distant for a few days. You\'re not sure if something is wrong. You:',
     inputType: 'choice',
-    subscale: 'honesty_harmony',
+    subscale: 'distance_response',
     choices: [
-      { key: 'A', text: 'Say something right away, even if it\'s uncomfortable', coding: 'honesty_high' },
-      { key: 'B', text: 'Wait for the right moment, then bring it up carefully', coding: 'honesty_moderate' },
-      { key: 'C', text: 'Let it go unless it happens repeatedly', coding: 'harmony_moderate' },
-      { key: 'D', text: 'Keep it to myself to avoid tension', coding: 'avoidance' },
+      { key: 'A', text: 'Give them space and wait for them to come to you — bringing it up feels risky', coding: 'avoidance' },
+      { key: 'B', text: 'Casually mention that they seem quiet, but don\'t push it', coding: 'balanced' },
+      { key: 'C', text: 'Find a calm moment and say, "I\'ve noticed some distance between us. I want to understand what\'s happening."', coding: 'aligned' },
     ],
   },
   {
     id: 26,
-    text: 'When I need alone time but my partner wants to spend time together, I tend to:',
+    text: 'A close friend tells you something critical about your partner. It bothers you. You:',
     inputType: 'choice',
-    subscale: 'autonomy_connection',
+    subscale: 'outside_criticism',
     choices: [
-      { key: 'A', text: 'Take the space I need and trust they\'ll understand', coding: 'autonomy_high' },
-      { key: 'B', text: 'Negotiate a compromise — some together, some apart', coding: 'balanced' },
-      { key: 'C', text: 'Put aside my need and be present with them', coding: 'connection_high' },
-      { key: 'D', text: 'Go along with togetherness but feel resentful', coding: 'avoidance' },
+      { key: 'A', text: 'Keep it to yourself — it would only start a fight', coding: 'avoidance' },
+      { key: 'B', text: 'Mention it lightly to your partner, downplaying how much it bothered you', coding: 'balanced' },
+      { key: 'C', text: 'Bring it up honestly: "Someone said something about you that stuck with me. I\'d rather talk about it with you than carry it alone."', coding: 'aligned' },
     ],
   },
   {
     id: 27,
-    text: 'When there\'s an opportunity for something new but it would disrupt our routine, I tend to:',
+    text: 'You and your partner disagree about something important — how to raise your kids, how to spend money, or how much time to spend with extended family. You:',
     inputType: 'choice',
-    subscale: 'growth_stability',
+    subscale: 'core_disagreement',
     choices: [
-      { key: 'A', text: 'Push for the new experience', coding: 'growth_high' },
-      { key: 'B', text: 'Discuss it and weigh the trade-offs together', coding: 'balanced' },
-      { key: 'C', text: 'Default to keeping things stable unless there\'s a strong reason to change', coding: 'stability_high' },
-      { key: 'D', text: 'Avoid the decision as long as possible', coding: 'avoidance' },
+      { key: 'A', text: 'Avoid the topic — it always ends the same way', coding: 'avoidance' },
+      { key: 'B', text: 'Revisit it occasionally, but eventually just go with whatever feels easiest', coding: 'balanced' },
+      { key: 'C', text: 'Keep the conversation alive, even when it\'s hard, because you believe finding real alignment matters more than avoiding discomfort', coding: 'aligned' },
     ],
   },
   {
     id: 28,
-    text: 'When my partner has a strong opinion that differs from mine, I tend to:',
+    text: 'Your partner does something that hurts you — not maliciously, but carelessly. It happens more than once. You:',
     inputType: 'choice',
-    subscale: 'authenticity_accommodation',
+    subscale: 'repeated_hurt',
     choices: [
-      { key: 'A', text: 'State my view clearly, even if we disagree', coding: 'authenticity_high' },
-      { key: 'B', text: 'Share my perspective but remain open to theirs', coding: 'balanced' },
-      { key: 'C', text: 'Listen to understand their view before sharing mine', coding: 'connection_high' },
-      { key: 'D', text: 'Go along with their opinion to keep peace', coding: 'avoidance' },
-    ],
-  },
-  {
-    id: 29,
-    text: 'When my partner asks me to share something vulnerable, I tend to:',
-    inputType: 'choice',
-    subscale: 'intimacy_protection',
-    choices: [
-      { key: 'A', text: 'Share openly, even if it\'s uncomfortable', coding: 'intimacy_high' },
-      { key: 'B', text: 'Share gradually, testing how they respond', coding: 'intimacy_moderate' },
-      { key: 'C', text: 'Share only what feels safe', coding: 'protection_moderate' },
-      { key: 'D', text: 'Deflect or change the subject', coding: 'avoidance' },
-    ],
-  },
-  {
-    id: 30,
-    text: 'When something goes wrong in a minor way (small mishap, forgotten task), I tend to:',
-    inputType: 'choice',
-    subscale: 'playfulness_seriousness',
-    choices: [
-      { key: 'A', text: 'Laugh it off and find the humor', coding: 'playfulness_high' },
-      { key: 'B', text: 'Keep it light while still addressing it', coding: 'balanced' },
-      { key: 'C', text: 'Focus on fixing the problem', coding: 'seriousness_high' },
-      { key: 'D', text: 'Feel annoyed even if I don\'t show it', coding: 'reactivity' },
-    ],
-  },
-  {
-    id: 31,
-    text: 'When my partner needs support but I\'m already depleted, I tend to:',
-    inputType: 'choice',
-    subscale: 'service_selfcare',
-    choices: [
-      { key: 'A', text: 'Show up for them anyway', coding: 'service_high' },
-      { key: 'B', text: 'Offer what I can while naming my limits', coding: 'balanced' },
-      { key: 'C', text: 'Ask to help later when I have more capacity', coding: 'selfcare_high' },
-      { key: 'D', text: 'Help but feel resentful about it', coding: 'avoidance' },
-    ],
-  },
-  {
-    id: 32,
-    text: 'When telling the full truth might hurt my partner unnecessarily, I tend to:',
-    inputType: 'choice',
-    subscale: 'security_honesty',
-    choices: [
-      { key: 'A', text: 'Tell the truth anyway — they deserve to know', coding: 'honesty_high' },
-      { key: 'B', text: 'Tell the truth with care for how I deliver it', coding: 'balanced' },
-      { key: 'C', text: 'Soften or omit details to protect their feelings', coding: 'protection_moderate' },
-      { key: 'D', text: 'Avoid the conversation entirely', coding: 'avoidance' },
+      { key: 'A', text: 'Tell yourself it\'s not a big deal and try to let it go', coding: 'avoidance' },
+      { key: 'B', text: 'Drop hints or bring it up indirectly, hoping they\'ll catch on', coding: 'balanced' },
+      { key: 'C', text: 'Name it clearly and specifically: "When you do X, it hurts me. I need you to know that."', coding: 'aligned' },
     ],
   },
 ];
@@ -210,7 +209,7 @@ const QUESTIONS: GenericQuestion[] = [
 // ─── Scoring ────────────────────────────────────────────────
 
 function scoreValues(responses: (number | string | string[] | null)[]): ValuesScores {
-  // Part 1: Domain scores (importance/accordance pairs)
+  // Part A: Domain scores (importance/accordance pairs — indices 0-19)
   const domainScores: Record<string, { importance: number; accordance: number; gap: number }> = {};
   VALUE_DOMAINS.forEach((domain, i) => {
     const importance = responses[i * 2] as number;
@@ -222,30 +221,31 @@ function scoreValues(responses: (number | string | string[] | null)[]): ValuesSc
     };
   });
 
-  // Part 1: Ranking (index 20)
+  // Part B: Ranking (index 20)
   const top5Values = (responses[20] as string[]) || [];
 
-  // Part 2: Qualitative (indices 21-23)
+  // Part C: Qualitative (indices 21-22)
+  // nonNegotiables kept as empty string for type compatibility — derived in portrait from domain scores
   const qualitativeResponses = {
     partnerIdentity: (responses[21] as string) || '',
-    nonNegotiables: (responses[22] as string) || '',
-    aspirationalVision: (responses[23] as string) || '',
+    nonNegotiables: '',
+    aspirationalVision: (responses[22] as string) || '',
   };
 
-  // Part 3: Scenario coding (indices 24-31)
-  const scenarioQuestions = QUESTIONS.slice(24); // Q25-Q32
+  // Part D: Scenario coding (indices 23-27) — 5 scenarios
+  const scenarioQuestions = QUESTIONS.slice(23); // Q24-Q28
   const actionResponses: Record<string, string> = {};
   let avoidanceCount = 0;
   let balancedCount = 0;
 
   scenarioQuestions.forEach((q, i) => {
-    const selectedKey = responses[24 + i] as string;
+    const selectedKey = responses[23 + i] as string;
     const choice = q.choices?.find((c) => c.key === selectedKey);
     const coding = choice?.coding || '';
     actionResponses[q.subscale || `scenario_${i}`] = coding;
 
-    if (coding === 'avoidance' || coding === 'reactivity') avoidanceCount++;
-    if (coding === 'balanced' || coding.endsWith('_moderate')) balancedCount++;
+    if (coding === 'avoidance') avoidanceCount++;
+    if (coding === 'balanced') balancedCount++;
   });
 
   // High-gap domains: importance >= 7 AND gap >= 3
@@ -258,8 +258,8 @@ function scoreValues(responses: (number | string | string[] | null)[]): ValuesSc
     top5Values,
     qualitativeResponses,
     actionResponses,
-    avoidanceTendency: Math.round((avoidanceCount / 8) * 100) / 100,
-    balancedTendency: Math.round((balancedCount / 8) * 100) / 100,
+    avoidanceTendency: Math.round((avoidanceCount / 5) * 100) / 100,
+    balancedTendency: Math.round((balancedCount / 5) * 100) / 100,
     highGapDomains,
   };
 }
@@ -272,11 +272,11 @@ export const valuesConfig: AssessmentConfig = {
   shortName: 'Values',
   description: 'Explore what matters most to you in your life and relationships.',
   instructions:
-    'The following questions ask about what matters most to you in your life and relationships. There are no right or wrong answers — this is about understanding your personal values.',
-  estimatedMinutes: 15,
-  totalQuestions: 32,
+    'The following questions explore what matters most to you in your relationship. There are no right or wrong answers — this is about understanding what you value and how you live it.',
+  estimatedMinutes: 10,
+  totalQuestions: 28,
   questions: QUESTIONS,
-  likertScale: IMPORTANCE_SCALE, // default; accordance questions will need the other scale
+  likertScale: IMPORTANCE_SCALE,
   sections: SECTIONS,
   scoringFn: scoreValues,
   progressKey: 'values_progress',
