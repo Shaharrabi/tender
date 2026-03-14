@@ -31,7 +31,8 @@ import { WelcomeAudio } from '@/components/ftue/WelcomeAudio';
 import QuickLinksBar from '@/components/QuickLinksBar';
 import { getPortrait, savePortrait, extractSupplementScores, fetchPreviousScores } from '@/services/portrait';
 import { fetchGrowthBoostData } from '@/services/growth-boost';
-import { getGrowthBoostedScore, type GrowthBoostedResult } from '@/utils/portrait/growth-boost';
+import { getGrowthBoostedScore, calculatePerScoreBoosts, type GrowthBoostedResult } from '@/utils/portrait/growth-boost';
+import type { CompositeScores } from '@/types/portrait';
 import type { GrowthEdgeProgress } from '@/types/growth';
 import { getUserConsent, eraseUserData } from '@/services/consent';
 import {
@@ -251,14 +252,19 @@ function AnimatedScoreBar({
   value,
   delay = 0,
   interpretation,
+  description,
+  growthBoost,
 }: {
   label: string;
   value: number;
   delay?: number;
   interpretation?: string;
+  description?: string;
+  growthBoost?: number;
 }) {
   const widthAnim = useRef(new Animated.Value(0)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
+  const [expanded, setExpanded] = useState(false);
   const tier = getTierInfo(value);
 
   useEffect(() => {
@@ -290,10 +296,32 @@ function AnimatedScoreBar({
       accessibilityRole="text"
       accessibilityLabel={`${label}: ${value} out of 100${interpretation ? `, ${interpretation}` : ''}`}
     >
-      <View style={st.barLabelRow}>
-        <TenderText variant="body">{label}</TenderText>
-        <TenderText variant="body" color={tier.color}>{value}</TenderText>
-      </View>
+      <TouchableOpacity
+        activeOpacity={description ? 0.7 : 1}
+        onPress={() => description && setExpanded((v) => !v)}
+        style={st.barLabelRow}
+        accessibilityRole={description ? 'button' : 'text'}
+        accessibilityLabel={description ? `${label}, tap for details` : label}
+        accessibilityHint={description ? (expanded ? 'Collapse description' : 'Expand description') : undefined}
+      >
+        <View style={st.barLabelLeft}>
+          <TenderText variant="body">{label}</TenderText>
+          {description ? (
+            <TenderText variant="caption" color={Colors.primary} style={st.infoIcon}>
+              {expanded ? '▲' : 'ⓘ'}
+            </TenderText>
+          ) : null}
+        </View>
+        {growthBoost != null && growthBoost > 0 ? (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <TenderText variant="caption" color={Colors.textMuted} style={{ textDecorationLine: 'none' }}>{value}</TenderText>
+            <TenderText variant="caption" color={Colors.success} style={{ fontWeight: '700' }}>+{growthBoost}</TenderText>
+            <TenderText variant="body" color={tier.color} style={{ fontWeight: '700' }}>{Math.min(100, value + growthBoost)}</TenderText>
+          </View>
+        ) : (
+          <TenderText variant="body" color={tier.color}>{value}</TenderText>
+        )}
+      </TouchableOpacity>
       <View style={st.barTrack}>
         <Animated.View
           style={[
@@ -309,6 +337,13 @@ function AnimatedScoreBar({
         <TenderText variant="caption" color={tier.color}>
           {interpretation}
         </TenderText>
+      )}
+      {description && expanded && (
+        <View style={st.scoreDescription}>
+          <TenderText variant="caption" color={Colors.textSecondary} style={st.scoreDescriptionText}>
+            {description}
+          </TenderText>
+        </View>
       )}
     </Animated.View>
   );
@@ -525,6 +560,7 @@ export default function PortraitScreen() {
   const [scoreViewMode, setScoreViewMode] = useState<'numbers' | 'story'>('story');
   const [isViewAndErase, setIsViewAndErase] = useState(false);
   const [growthBoostResult, setGrowthBoostResult] = useState<GrowthBoostedResult | null>(null);
+  const [perScoreBoosts, setPerScoreBoosts] = useState<Partial<Record<keyof CompositeScores, number>>>({});
   const [journeyData, setJourneyData] = useState<{
     stepsCompleted: number;
     totalSteps: number;
@@ -645,6 +681,13 @@ export default function PortraitScreen() {
             totalPractices: boostData.totalPracticeCompletions,
             currentStreak: boostData.currentStreak,
           });
+
+          // Compute per-score boosts from individual completion records
+          const completionInputs = boostData.completionRecords.map((c) => {
+            const exerciseDef = getExerciseById(c.exerciseId);
+            return { practiceId: c.exerciseId, category: exerciseDef?.category };
+          });
+          setPerScoreBoosts(calculatePerScoreBoosts(completionInputs));
         } catch (e) {
           console.warn('[Portrait] Failed to load growth boost data:', e);
         }
@@ -894,7 +937,7 @@ export default function PortraitScreen() {
 
           <View style={st.exportSection}>
             <TenderText variant="headingM" color={Colors.primary} style={st.exportSectionLabel}>Scores</TenderText>
-            <ScoresTab portrait={portrait} overallScore={overallScore} rawScores={rawScores} scoreViewMode={scoreViewMode} setScoreViewMode={setScoreViewMode} />
+            <ScoresTab portrait={portrait} overallScore={overallScore} rawScores={rawScores} scoreViewMode={scoreViewMode} setScoreViewMode={setScoreViewMode} perScoreBoosts={perScoreBoosts} />
           </View>
 
           <View style={st.exportSection}>
@@ -956,7 +999,7 @@ export default function PortraitScreen() {
           )}
           {activeTab === 'scores' && (
             <>
-              <ScoresTab portrait={portrait} overallScore={overallScore} rawScores={rawScores} scoreViewMode={scoreViewMode} setScoreViewMode={setScoreViewMode} />
+              <ScoresTab portrait={portrait} overallScore={overallScore} rawScores={rawScores} scoreViewMode={scoreViewMode} setScoreViewMode={setScoreViewMode} perScoreBoosts={perScoreBoosts} />
               {previousCompositeScores && (
                 <ReassessmentDelta
                   previous={previousCompositeScores}
@@ -1807,12 +1850,14 @@ function ScoresTab({
   rawScores,
   scoreViewMode,
   setScoreViewMode,
+  perScoreBoosts = {},
 }: {
   portrait: IndividualPortrait;
   overallScore: number;
   rawScores: AllAssessmentScores | null;
   scoreViewMode: 'numbers' | 'story';
   setScoreViewMode: (mode: 'numbers' | 'story') => void;
+  perScoreBoosts?: Partial<Record<keyof CompositeScores, number>>;
 }) {
   const cs = portrait.compositeScores;
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -1833,6 +1878,26 @@ function ScoresTab({
     windowWidth: ['Wide window', 'Moderate window', 'Narrow window'],
     selfLeadership: ['Strong self-awareness', 'Building awareness', 'Self-led growth needed'],
     valuesCongruence: ['Living your values', 'Some gaps to bridge', 'Significant values gap'],
+    attachmentSecurity: ['Securely anchored', 'Building security', 'Anxious or avoidant'],
+    emotionalIntelligence: ['High EQ', 'Developing EQ', 'Emerging EQ'],
+    differentiation: ['Well differentiated', 'Differentiating', 'Enmeshed or cut-off'],
+    conflictFlexibility: ['Highly flexible', 'Moderately flexible', 'One-mode pattern'],
+    relationalAwareness: ['Highly attuned', 'Building attunement', 'Needs awareness'],
+  };
+
+  const SCORE_DESCRIPTIONS: Record<string, string> = {
+    regulationScore: 'How well you stay calm under emotional pressure. Combines your emotional intelligence and self-differentiation.',
+    windowWidth: 'How much emotional intensity you can hold before shutting down or flooding. Wider = more resilience.',
+    accessibility: 'How emotionally open and reachable you are to your partner. High = you let them in.',
+    responsiveness: "How well you attune to your partner's emotional cues. High = you pick up on what they need.",
+    engagement: 'How invested and present you are in connection. High = you show up and stay.',
+    selfLeadership: 'How much of a secure, grounded self you bring to relationships. Rooted = less reactive.',
+    valuesCongruence: 'How closely your actions match what you say you value. High = you walk your talk.',
+    attachmentSecurity: 'How secure you feel in close relationships. High = trust comes more naturally.',
+    emotionalIntelligence: 'Your ability to read, understand, and manage emotions — yours and others\'.',
+    differentiation: 'Your capacity to be fully yourself while staying connected. High = close without losing yourself.',
+    conflictFlexibility: "How adaptable you are across different conflict situations. High = you don't get stuck in one mode.",
+    relationalAwareness: 'How attuned you are to social and emotional dynamics in relationships.',
   };
 
   const getInterpretation = (key: string, value: number): string => {
@@ -1842,12 +1907,12 @@ function ScoresTab({
     return low;
   };
 
-  // Legend
+  // Tier legend
   const TIERS = [
-    { label: 'Strength', color: Colors.success, range: '75-100' },
-    { label: 'Developing', color: Colors.calm, range: '55-74' },
-    { label: 'Emerging', color: Colors.warning, range: '35-54' },
-    { label: 'Focus Area', color: Colors.error, range: '0-34' },
+    { label: 'Flourishing', color: Colors.success, range: '80–100' },
+    { label: 'Strong', color: Colors.calm, range: '60–79' },
+    { label: 'Growing', color: Colors.warning, range: '40–59' },
+    { label: 'Developing', color: Colors.error, range: '0–39' },
   ];
 
   return (
@@ -1855,15 +1920,21 @@ function ScoresTab({
       {/* Overall */}
       <AnimatedScoreCircle score={overallScore} />
 
-      {/* Legend */}
-      <View style={st.legendRow}>
-        {TIERS.map((t) => (
-          <View key={t.label} style={st.legendItem}>
-            <View style={[st.legendDot, { backgroundColor: t.color }]} />
-            <TenderText variant="caption">{t.label}</TenderText>
-            <TenderText variant="caption" color={Colors.textMuted}>{t.range}</TenderText>
-          </View>
-        ))}
+      {/* Tier Legend */}
+      <View style={st.tierLegendCard}>
+        <TenderText variant="label" color={Colors.textMuted} style={{ letterSpacing: 1, marginBottom: 8 }}>SCORE GUIDE</TenderText>
+        <View style={st.legendRow}>
+          {TIERS.map((t) => (
+            <View key={t.label} style={st.legendItem}>
+              <View style={[st.legendDot, { backgroundColor: t.color }]} />
+              <TenderText variant="caption" style={{ fontWeight: '600' }}>{t.label}</TenderText>
+              <TenderText variant="caption" color={Colors.textMuted}>{t.range}</TenderText>
+            </View>
+          ))}
+        </View>
+        <TenderText variant="caption" color={Colors.textMuted} style={{ marginTop: 6 }}>
+          Tap any score name (ⓘ) to see what it measures.
+        </TenderText>
       </View>
 
       {/* Story / Numbers toggle */}
@@ -1880,9 +1951,9 @@ function ScoresTab({
           Based on Emotionally Focused Therapy: Are you emotionally reachable, do you tune in to your partner's needs, and are you invested in the connection?
         </TenderText>
         <View style={st.scoreGroupDivider} />
-        <AnimatedScoreBar label="Accessible" value={cs.accessibility} delay={100} interpretation={getInterpretation('accessibility', cs.accessibility)} />
-        <AnimatedScoreBar label="Responsive" value={cs.responsiveness} delay={200} interpretation={getInterpretation('responsiveness', cs.responsiveness)} />
-        <AnimatedScoreBar label="Engaged" value={cs.engagement} delay={300} interpretation={getInterpretation('engagement', cs.engagement)} />
+        <AnimatedScoreBar label="Accessibility" value={cs.accessibility} delay={100} interpretation={getInterpretation('accessibility', cs.accessibility)} description={SCORE_DESCRIPTIONS.accessibility} />
+        <AnimatedScoreBar label="Responsiveness" value={cs.responsiveness} delay={200} interpretation={getInterpretation('responsiveness', cs.responsiveness)} description={SCORE_DESCRIPTIONS.responsiveness} />
+        <AnimatedScoreBar label="Engagement" value={cs.engagement} delay={300} interpretation={getInterpretation('engagement', cs.engagement)} description={SCORE_DESCRIPTIONS.engagement} />
       </View>
 
       {/* Capacity Group */}
@@ -1892,9 +1963,9 @@ function ScoresTab({
           Your internal toolkit for staying grounded. Regulation measures how well you recover from emotional activation, window width shows how much stress you can hold, and self-leadership reflects your ability to observe your own patterns.
         </TenderText>
         <View style={st.scoreGroupDivider} />
-        <AnimatedScoreBar label="Regulation" value={cs.regulationScore} delay={400} interpretation={getInterpretation('regulationScore', cs.regulationScore)} />
-        <AnimatedScoreBar label="Window Width" value={cs.windowWidth} delay={500} interpretation={getInterpretation('windowWidth', cs.windowWidth)} />
-        <AnimatedScoreBar label="Self-Leadership" value={cs.selfLeadership} delay={600} interpretation={getInterpretation('selfLeadership', cs.selfLeadership)} />
+        <AnimatedScoreBar label="Regulation Score" value={cs.regulationScore} delay={400} interpretation={getInterpretation('regulationScore', cs.regulationScore)} description={SCORE_DESCRIPTIONS.regulationScore} />
+        <AnimatedScoreBar label="Window Width" value={cs.windowWidth} delay={500} interpretation={getInterpretation('windowWidth', cs.windowWidth)} description={SCORE_DESCRIPTIONS.windowWidth} />
+        <AnimatedScoreBar label="Self Leadership" value={cs.selfLeadership} delay={600} interpretation={getInterpretation('selfLeadership', cs.selfLeadership)} description={SCORE_DESCRIPTIONS.selfLeadership} />
       </View>
 
       {/* Values Group */}
@@ -1904,7 +1975,21 @@ function ScoresTab({
           How closely your daily actions match what you say matters most to you. A high score means you're living in line with your values; a lower score points to protective patterns overriding your intentions.
         </TenderText>
         <View style={st.scoreGroupDivider} />
-        <AnimatedScoreBar label="Values Congruence" value={cs.valuesCongruence} delay={700} interpretation={getInterpretation('valuesCongruence', cs.valuesCongruence)} />
+        <AnimatedScoreBar label="Values Congruence" value={cs.valuesCongruence} delay={700} interpretation={getInterpretation('valuesCongruence', cs.valuesCongruence)} description={SCORE_DESCRIPTIONS.valuesCongruence} />
+      </View>
+
+      {/* Depth Dimensions Group */}
+      <View style={st.scoreGroupCard}>
+        <TenderText variant="label" color={Colors.primary} style={{ letterSpacing: 1.2 }}>DEPTH DIMENSIONS</TenderText>
+        <TenderText variant="body" color={Colors.textSecondary} style={st.scoreGroupDescription}>
+          Deeper psychological dimensions that shape how you relate — attachment patterns, emotional intelligence, differentiation, conflict adaptability, and relational attunement.
+        </TenderText>
+        <View style={st.scoreGroupDivider} />
+        <AnimatedScoreBar label="Attachment Security" value={cs.attachmentSecurity} delay={800} interpretation={getInterpretation('attachmentSecurity', cs.attachmentSecurity)} description={SCORE_DESCRIPTIONS.attachmentSecurity} />
+        <AnimatedScoreBar label="Emotional Intelligence" value={cs.emotionalIntelligence} delay={900} interpretation={getInterpretation('emotionalIntelligence', cs.emotionalIntelligence)} description={SCORE_DESCRIPTIONS.emotionalIntelligence} />
+        <AnimatedScoreBar label="Differentiation" value={cs.differentiation} delay={1000} interpretation={getInterpretation('differentiation', cs.differentiation)} description={SCORE_DESCRIPTIONS.differentiation} />
+        <AnimatedScoreBar label="Conflict Flexibility" value={cs.conflictFlexibility} delay={1100} interpretation={getInterpretation('conflictFlexibility', cs.conflictFlexibility)} description={SCORE_DESCRIPTIONS.conflictFlexibility} />
+        <AnimatedScoreBar label="Relational Awareness" value={cs.relationalAwareness} delay={1200} interpretation={getInterpretation('relationalAwareness', cs.relationalAwareness)} description={SCORE_DESCRIPTIONS.relationalAwareness} />
       </View>
 
       {/* Values Compass Infographic */}
@@ -2725,21 +2810,25 @@ const st = StyleSheet.create({
   // navCardArrow — pure text, moved to TenderText
 
   // ── Legend ──
+  // ── Tier Legend Card ──
+  tierLegendCard: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
+    marginBottom: Spacing.md,
+    ...Shadows.card,
+  },
   legendRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: Spacing.md,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.sm,
-    backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.sm,
-    marginBottom: Spacing.lg,
+    justifyContent: 'flex-start',
+    gap: Spacing.sm,
   },
   legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    minWidth: 90,
   },
   legendDot: {
     width: 10,
@@ -2780,6 +2869,25 @@ const st = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  barLabelLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    flex: 1,
+  },
+  infoIcon: {
+    fontSize: 13,
+  },
+  scoreDescription: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.sm,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    marginTop: 2,
+  },
+  scoreDescriptionText: {
+    lineHeight: 18,
   },
   // barLabel — pure text, moved to TenderText
   // barValue — pure text, moved to TenderText

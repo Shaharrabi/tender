@@ -29,6 +29,7 @@ interface ChatContextType {
   loading: boolean;
   sending: boolean;
   error: string | null;
+  sessionExpired: boolean;
   safetyAlert: SafetyCheckResult | null;
   sendMessage: (text: string) => Promise<void>;
   startNewSession: () => Promise<void>;
@@ -67,6 +68,7 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sessionExpired, setSessionExpired] = useState(false);
   const [safetyAlert, setSafetyAlert] = useState<SafetyCheckResult | null>(null);
 
   // Use a ref to track the active session for sendMessage so it doesn't
@@ -225,6 +227,7 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
     setMessages((prev) => [...prev, tempUserMsg]);
     setSending(true);
     setError(null);
+    setSessionExpired(false);
 
     try {
       // Get auth token — refreshSession FIRST for a guaranteed-fresh JWT,
@@ -306,25 +309,83 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
       if (__DEV__) console.log('[Chat] Response status:', response.status);
 
       if (!response.ok) {
-        let errorMessage = `Server error (${response.status})`;
-        let rawError = '';
-        try {
-          rawError = await response.text();
-          const errorData = JSON.parse(rawError);
-          errorMessage = errorData.error || errorData.message || errorMessage;
-          // Log debug info from edge function in dev mode
-          if (__DEV__ && errorData.debug) {
-            console.error('[Chat] Edge function debug:', JSON.stringify(errorData.debug, null, 2));
-          }
-        } catch {
-          if (rawError) errorMessage += `: ${rawError.substring(0, 100)}`;
-        }
-        console.error('[Chat] Response error:', response.status, rawError.substring(0, 200));
-        // Give user-friendly messages for common errors
+        // ── 401: try one session refresh + retry before giving up ──
         if (response.status === 401) {
-          errorMessage = 'Your session has expired. Please sign out and sign back in.';
+          if (__DEV__) console.log('[Chat] Got 401 — attempting session refresh and retry...');
+          const { data: retryRefresh, error: retryRefreshError } = await supabase.auth.refreshSession();
+          const retryToken = retryRefresh?.session?.access_token;
+
+          if (retryToken) {
+            if (__DEV__) console.log('[Chat] Retry token obtained, re-sending request...');
+            const retryController = new AbortController();
+            const retryTimeoutId = setTimeout(() => retryController.abort(), 90_000);
+            let retryResponse: Response;
+            try {
+              retryResponse = await fetch(CHAT_FUNCTION_URL, {
+                method: 'POST',
+                signal: retryController.signal,
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${retryToken}`,
+                  'apikey': SUPABASE_ANON_KEY!,
+                  ...(supportsStreaming ? { 'Accept': 'text/event-stream' } : {}),
+                },
+                body: JSON.stringify({
+                  sessionId: session.id,
+                  message: text,
+                  userId: user!.id,
+                  ...(supportsStreaming ? { stream: true } : {}),
+                  ...(coupleModeRef.current && coupleIdRef.current ? {
+                    coupleMode: true,
+                    coupleId: coupleIdRef.current,
+                  } : {}),
+                }),
+              });
+            } catch (retryFetchErr: any) {
+              clearTimeout(retryTimeoutId);
+              if (retryFetchErr.name === 'AbortError') {
+                throw new Error('The request timed out. Nuance may be busy — please try again in a moment.');
+              }
+              throw new Error('Could not reach Nuance. Please check your internet connection and try again.');
+            }
+            clearTimeout(retryTimeoutId);
+
+            if (retryResponse.ok) {
+              // Retry succeeded — replace `response` and continue normal processing
+              response = retryResponse;
+            } else if (retryResponse.status === 401) {
+              // Still 401 after refresh — session is truly expired
+              if (__DEV__) console.log('[Chat] Retry still 401 — session truly expired');
+              setSessionExpired(true);
+              throw new Error('__SESSION_EXPIRED__:Your session has expired. Please sign out and sign back in.');
+            } else {
+              // Some other error on retry
+              response = retryResponse;
+            }
+          } else {
+            if (__DEV__) console.log('[Chat] Could not refresh session token:', retryRefreshError?.message);
+            setSessionExpired(true);
+            throw new Error('__SESSION_EXPIRED__:Your session has expired. Please sign out and sign back in.');
+          }
         }
-        throw new Error(errorMessage);
+
+        if (!response.ok) {
+          let errorMessage = `Server error (${response.status})`;
+          let rawError = '';
+          try {
+            rawError = await response.text();
+            const errorData = JSON.parse(rawError);
+            errorMessage = errorData.error || errorData.message || errorMessage;
+            // Log debug info from edge function in dev mode
+            if (__DEV__ && errorData.debug) {
+              console.error('[Chat] Edge function debug:', JSON.stringify(errorData.debug, null, 2));
+            }
+          } catch {
+            if (rawError) errorMessage += `: ${rawError.substring(0, 100)}`;
+          }
+          console.error('[Chat] Response error:', response.status, rawError.substring(0, 200));
+          throw new Error(errorMessage);
+        }
       }
 
       // ─── Handle SSE streaming response ─────────────────
@@ -429,20 +490,32 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
         if (__DEV__) console.log('[Chat] Stream complete, length:', fullContent.length);
       } else {
         // ─── Fallback: non-streaming JSON response ─────────
-        const data = await response.json();
-        if (__DEV__) console.log('[Chat] Got reply (non-stream), length:', data.reply?.length);
+        const rawText = await response.text();
+        let data: any = null;
+        let replyText = '';
+
+        try {
+          data = JSON.parse(rawText);
+          replyText = data.reply ?? '';
+        } catch {
+          // Some edge responses return plain text even on 200.
+          // Use raw text as the assistant reply instead of crashing.
+          replyText = rawText || '';
+        }
+
+        if (__DEV__) console.log('[Chat] Got reply (non-stream), length:', replyText?.length);
 
         const assistantMsg: ChatMessage = {
           id: `reply-${Date.now()}`,
           sessionId: session.id,
           role: 'assistant',
-          content: data.reply,
-          metadata: data.metadata,
+          content: replyText || 'I was not able to parse the response. Please try again.',
+          metadata: data?.metadata,
           createdAt: new Date().toISOString(),
         };
         setMessages((prev) => [...prev, assistantMsg]);
 
-        if (data.sessionTitle) {
+        if (data?.sessionTitle) {
           const updatedSession = { ...session, title: data.sessionTitle };
           setActiveSession(updatedSession);
           activeSessionRef.current = updatedSession;
@@ -450,12 +523,20 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
       }
     } catch (e: any) {
       console.error('[Chat] Send message error:', e);
-      // Add error message
+      // Add error message — strip internal prefix if present
+      const rawMsg: string = e.message || 'Please try again in a moment.';
+      const isExpired = rawMsg.startsWith('__SESSION_EXPIRED__:');
+      const displayMsg = isExpired
+        ? rawMsg.replace('__SESSION_EXPIRED__:', '')
+        : rawMsg;
       const errorMsg: ChatMessage = {
         id: `error-${Date.now()}`,
         sessionId: session.id,
         role: 'assistant',
-        content: `I wasn't able to connect just now. ${e.message || 'Please try again in a moment.'}`,
+        content: isExpired
+          ? displayMsg
+          : `I wasn't able to connect just now. ${displayMsg}`,
+        metadata: isExpired ? { safetyTriggered: false } : undefined,
         createdAt: new Date().toISOString(),
       };
       setMessages((prev) => [...prev, errorMsg]);
@@ -476,13 +557,14 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
     loading,
     sending,
     error,
+    sessionExpired,
     safetyAlert,
     sendMessage,
     startNewSession,
     loadSession,
     loadSessions,
     dismissSafetyAlert,
-  }), [activeSession, sessions, messages, loading, sending, error, safetyAlert, sendMessage, startNewSession, loadSession, loadSessions, dismissSafetyAlert]);
+  }), [activeSession, sessions, messages, loading, sending, error, sessionExpired, safetyAlert, sendMessage, startNewSession, loadSession, loadSessions, dismissSafetyAlert]);
 
   return (
     <ChatContext.Provider value={contextValue}>

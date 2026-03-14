@@ -15,7 +15,9 @@ import {
   Modal,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
+import { supabase } from '@/services/supabase';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { useGuest } from '@/context/GuestContext';
@@ -42,6 +44,7 @@ function ChatScreenInner({ topic, practiceWith }: { topic?: string; practiceWith
     loading,
     sending,
     error,
+    sessionExpired,
     safetyAlert,
     sendMessage,
     startNewSession,
@@ -49,6 +52,15 @@ function ChatScreenInner({ topic, practiceWith }: { topic?: string; practiceWith
     loadSessions,
     dismissSafetyAlert,
   } = useChat();
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      router.replace('/(auth)/login' as any);
+    } catch {
+      Alert.alert('Error', 'Could not sign out. Please try again.');
+    }
+  };
   const [showSessions, setShowSessions] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [sessionCreateAttempted, setSessionCreateAttempted] = useState(false);
@@ -182,8 +194,27 @@ function ChatScreenInner({ topic, practiceWith }: { topic?: string; practiceWith
         />
       )}
 
-      {/* Error banner */}
-      {error && (
+      {/* Session expired banner */}
+      {sessionExpired && (
+        <View style={styles.sessionExpiredBanner}>
+          <Text style={styles.sessionExpiredTitle}>Session expired</Text>
+          <Text style={styles.sessionExpiredBody}>
+            Your session expired — this happens automatically for security.
+          </Text>
+          <TouchableOpacity
+            onPress={handleSignOut}
+            activeOpacity={0.8}
+            style={styles.signOutButton}
+            accessibilityRole="button"
+            accessibilityLabel="Sign out and back in"
+          >
+            <Text style={styles.signOutButtonText}>Sign out and back in →</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Error banner (non-session-expired errors) */}
+      {error && !sessionExpired && (
         <View style={styles.errorBanner}>
           <Text style={styles.errorBannerText}>{error}</Text>
           <TouchableOpacity onPress={startNewSession} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Retry">
@@ -394,6 +425,40 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: FontSizes.bodySmall,
     color: Colors.textMuted,
+  },
+
+  // ── Session expired banner ──
+  sessionExpiredBanner: {
+    backgroundColor: '#FFF0F3',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: '#FFB3C6',
+    gap: 6,
+  },
+  sessionExpiredTitle: {
+    fontFamily: FontFamilies.heading,
+    fontSize: FontSizes.bodySmall,
+    fontWeight: '700',
+    color: Colors.primary,
+  },
+  sessionExpiredBody: {
+    fontSize: FontSizes.caption,
+    color: Colors.text,
+    lineHeight: 18,
+  },
+  signOutButton: {
+    alignSelf: 'flex-start',
+    backgroundColor: Colors.primary,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.md,
+    marginTop: 4,
+  },
+  signOutButtonText: {
+    fontSize: FontSizes.bodySmall,
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
 
   // ── Modal ──
