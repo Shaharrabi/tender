@@ -9,10 +9,13 @@ import { getCompletions } from './intervention';
 import { getStreakData } from './streaks';
 import type { GrowthBoostInput } from '@/utils/portrait/growth-boost';
 import type { GrowthStage, GrowthEdgeProgress } from '@/types/growth';
+import type { ExerciseCompletion } from '@/types/intervention';
 
 export interface GrowthBoostData extends GrowthBoostInput {
   /** Full edge progress records (for UI display beyond just stages) */
   edgeProgress: GrowthEdgeProgress[];
+  /** Raw completion records — used for per-score boost calculation */
+  completionRecords: ExerciseCompletion[];
 }
 
 /**
@@ -44,5 +47,6 @@ export async function fetchGrowthBoostData(
     totalPracticeCompletions: completions.length,
     currentStreak: streakData.currentStreak,
     edgeProgress,
+    completionRecords: completions,
   };
 }

@@ -10,6 +10,7 @@
  */
 
 import type { GrowthStage } from '@/types/growth';
+import type { CompositeScores } from '@/types/portrait';
 
 // ─── Types ────────────────────────────────────────────────
 
@@ -103,4 +104,122 @@ export function getGrowthBoostedScore(
 
 function round1(n: number): number {
   return Math.round(n * 10) / 10;
+}
+
+// ─── Per-Score Practice Boost ─────────────────────────────
+//
+// Maps individual practices (by ID or category) to the composite score
+// they are most likely to improve. Used to show "+N" indicators on
+// specific score rows in the Scores tab and to fire boost toasts.
+//
+// Assessment baselines are NEVER changed — this is a visual boost layer.
+
+/** Max cumulative boost any single composite score can receive. */
+export const MAX_PER_SCORE_BOOST = 15;
+
+/** Points awarded per practice completion for a mapped score. */
+export const BOOST_PER_PRACTICE = 2;
+
+/**
+ * Maps specific practice/exercise IDs to the composite score they boost.
+ * These IDs correspond to entries in the intervention registry.
+ */
+export const PRACTICE_SCORE_MAP: Partial<Record<string, keyof CompositeScores>> = {
+  // Regulation exercises
+  'grounding-478': 'regulationScore',
+  'window-widening': 'regulationScore',
+  'nervous-system-reset': 'regulationScore',
+  'window-of-tolerance-expansion': 'windowWidth',
+  // Attachment exercises
+  'attachment-awareness': 'attachmentSecurity',
+  'secure-base-visualization': 'attachmentSecurity',
+  'accessibility-check-in': 'accessibility',
+  'responsiveness-practice': 'responsiveness',
+  'engagement-deepener': 'engagement',
+  // Conflict exercises
+  'conflict-repair': 'conflictFlexibility',
+  'rupture-repair': 'conflictFlexibility',
+  'de-escalation-moves': 'conflictFlexibility',
+  // Emotional intelligence exercises
+  'emotional-check-in': 'emotionalIntelligence',
+  'emotion-naming': 'emotionalIntelligence',
+  'empathy-deepener': 'emotionalIntelligence',
+  // Values exercises
+  'values-alignment': 'valuesCongruence',
+  'values-inventory': 'valuesCongruence',
+  'values-gap-reflection': 'valuesCongruence',
+  // Differentiation exercises
+  'differentiation-exercise': 'differentiation',
+  'self-leadership-practice': 'selfLeadership',
+  'reclaim-self': 'selfLeadership',
+  // Relational awareness
+  'relational-awareness': 'relationalAwareness',
+  'partner-lens': 'relationalAwareness',
+};
+
+/**
+ * Maps exercise categories to the composite score they boost.
+ * Used as a fallback when the exercise ID has no specific mapping.
+ */
+export const CATEGORY_BOOST: Record<string, keyof CompositeScores> = {
+  regulation: 'regulationScore',
+  attachment: 'attachmentSecurity',
+  conflict: 'conflictFlexibility',
+  values: 'valuesCongruence',
+  differentiation: 'differentiation',
+  communication: 'relationalAwareness',
+};
+
+/**
+ * Human-readable label for each boosted composite score.
+ * Used in the boost toast message.
+ */
+export const SCORE_DISPLAY_NAMES: Partial<Record<keyof CompositeScores, string>> = {
+  regulationScore: 'Regulation Score',
+  windowWidth: 'Window of Tolerance',
+  accessibility: 'Accessibility',
+  responsiveness: 'Responsiveness',
+  engagement: 'Engagement',
+  selfLeadership: 'Self-Leadership',
+  valuesCongruence: 'Values Congruence',
+  attachmentSecurity: 'Attachment Security',
+  emotionalIntelligence: 'Emotional Intelligence',
+  differentiation: 'Differentiation',
+  conflictFlexibility: 'Conflict Flexibility',
+  relationalAwareness: 'Relational Awareness',
+};
+
+/**
+ * Determines which composite score a practice boosts, checking the
+ * specific practice ID first, then the exercise category as a fallback.
+ */
+export function getScoreKeyForPractice(
+  practiceId: string,
+  category?: string,
+): keyof CompositeScores | null {
+  if (PRACTICE_SCORE_MAP[practiceId]) return PRACTICE_SCORE_MAP[practiceId]!;
+  if (category && CATEGORY_BOOST[category]) return CATEGORY_BOOST[category];
+  return null;
+}
+
+/**
+ * Calculates per-score boosts from a list of practice completion records.
+ * Returns a map of scoreKey → total boost points (capped at MAX_PER_SCORE_BOOST).
+ *
+ * @param completions - Array of { practiceId, category? } objects
+ */
+export function calculatePerScoreBoosts(
+  completions: Array<{ practiceId: string; category?: string }>,
+): Partial<Record<keyof CompositeScores, number>> {
+  const boosts: Partial<Record<keyof CompositeScores, number>> = {};
+
+  for (const c of completions) {
+    const scoreKey = getScoreKeyForPractice(c.practiceId, c.category);
+    if (!scoreKey) continue;
+
+    const current = boosts[scoreKey] ?? 0;
+    boosts[scoreKey] = Math.min(MAX_PER_SCORE_BOOST, current + BOOST_PER_PRACTICE);
+  }
+
+  return boosts;
 }

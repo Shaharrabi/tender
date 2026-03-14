@@ -127,10 +127,33 @@ export async function fetchPreviousScores(userId: string): Promise<Record<string
   return Object.keys(previous).length > 0 ? previous : null;
 }
 
-/** Save (upsert) a portrait. */
+/** Save (upsert) a portrait. Archives the previous portrait to portraits_history first. */
 export async function savePortrait(
   portrait: Omit<IndividualPortrait, 'id' | 'createdAt'>
 ): Promise<IndividualPortrait> {
+  // Before upsert: archive the current portrait if one exists
+  try {
+    const { data: existing } = await supabase
+      .from('portraits')
+      .select('*')
+      .eq('user_id', portrait.userId)
+      .maybeSingle();
+
+    if (existing) {
+      await supabase
+        .from('portraits_history')
+        .insert({
+          user_id: portrait.userId,
+          portrait_snapshot: existing,
+          version: existing.version ?? 1,
+          reason: 'retake',
+        })
+        .throwOnError();
+    }
+  } catch (archiveErr) {
+    console.warn('[savePortrait] Could not archive portrait history (non-blocking):', archiveErr);
+  }
+
   // Build the row data — Phase 3 columns may not exist on older DBs
   const row: Record<string, any> = {
     user_id: portrait.userId,

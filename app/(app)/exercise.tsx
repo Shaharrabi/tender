@@ -25,6 +25,11 @@ import { recordPracticeCompletion } from '@/services/steps';
 import QuickLinksBar from '@/components/QuickLinksBar';
 import ExerciseFlow from '@/components/intervention/ExerciseFlow';
 import type { StepResponse } from '@/components/intervention/ExerciseFlow';
+import {
+  getScoreKeyForPractice,
+  SCORE_DISPLAY_NAMES,
+  BOOST_PER_PRACTICE,
+} from '@/utils/portrait/growth-boost';
 
 /**
  * Maps exercise categories to possible growth edge IDs.
@@ -66,6 +71,13 @@ export default function ExerciseScreen() {
 
         // 1b. Award XP for exercise completion (non-blocking)
         awardXP('lesson_complete', exercise.id, `Completed: ${exercise.title}`).catch(() => {});
+
+        // 1c. Notify which composite score was boosted by this practice (non-blocking)
+        const boostedScoreKey = getScoreKeyForPractice(exercise.id, exercise.category);
+        if (boostedScoreKey) {
+          const scoreName = SCORE_DISPLAY_NAMES[boostedScoreKey] ?? String(boostedScoreKey);
+          console.log(`[GrowthBoost] +${BOOST_PER_PRACTICE} boost applied to: ${scoreName}`);
+        }
 
         // 1c. Also record in practice_completions for step context + couple attribution
         if (stepNumber) {

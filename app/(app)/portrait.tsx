@@ -1951,9 +1951,9 @@ function ScoresTab({
           Based on Emotionally Focused Therapy: Are you emotionally reachable, do you tune in to your partner's needs, and are you invested in the connection?
         </TenderText>
         <View style={st.scoreGroupDivider} />
-        <AnimatedScoreBar label="Accessibility" value={cs.accessibility} delay={100} interpretation={getInterpretation('accessibility', cs.accessibility)} description={SCORE_DESCRIPTIONS.accessibility} />
-        <AnimatedScoreBar label="Responsiveness" value={cs.responsiveness} delay={200} interpretation={getInterpretation('responsiveness', cs.responsiveness)} description={SCORE_DESCRIPTIONS.responsiveness} />
-        <AnimatedScoreBar label="Engagement" value={cs.engagement} delay={300} interpretation={getInterpretation('engagement', cs.engagement)} description={SCORE_DESCRIPTIONS.engagement} />
+        <AnimatedScoreBar label="Accessibility" value={cs.accessibility} delay={100} interpretation={getInterpretation('accessibility', cs.accessibility)} description={SCORE_DESCRIPTIONS.accessibility} growthBoost={perScoreBoosts.accessibility} />
+        <AnimatedScoreBar label="Responsiveness" value={cs.responsiveness} delay={200} interpretation={getInterpretation('responsiveness', cs.responsiveness)} description={SCORE_DESCRIPTIONS.responsiveness} growthBoost={perScoreBoosts.responsiveness} />
+        <AnimatedScoreBar label="Engagement" value={cs.engagement} delay={300} interpretation={getInterpretation('engagement', cs.engagement)} description={SCORE_DESCRIPTIONS.engagement} growthBoost={perScoreBoosts.engagement} />
       </View>
 
       {/* Capacity Group */}
@@ -1963,9 +1963,9 @@ function ScoresTab({
           Your internal toolkit for staying grounded. Regulation measures how well you recover from emotional activation, window width shows how much stress you can hold, and self-leadership reflects your ability to observe your own patterns.
         </TenderText>
         <View style={st.scoreGroupDivider} />
-        <AnimatedScoreBar label="Regulation Score" value={cs.regulationScore} delay={400} interpretation={getInterpretation('regulationScore', cs.regulationScore)} description={SCORE_DESCRIPTIONS.regulationScore} />
-        <AnimatedScoreBar label="Window Width" value={cs.windowWidth} delay={500} interpretation={getInterpretation('windowWidth', cs.windowWidth)} description={SCORE_DESCRIPTIONS.windowWidth} />
-        <AnimatedScoreBar label="Self Leadership" value={cs.selfLeadership} delay={600} interpretation={getInterpretation('selfLeadership', cs.selfLeadership)} description={SCORE_DESCRIPTIONS.selfLeadership} />
+        <AnimatedScoreBar label="Regulation Score" value={cs.regulationScore} delay={400} interpretation={getInterpretation('regulationScore', cs.regulationScore)} description={SCORE_DESCRIPTIONS.regulationScore} growthBoost={perScoreBoosts.regulationScore} />
+        <AnimatedScoreBar label="Window Width" value={cs.windowWidth} delay={500} interpretation={getInterpretation('windowWidth', cs.windowWidth)} description={SCORE_DESCRIPTIONS.windowWidth} growthBoost={perScoreBoosts.windowWidth} />
+        <AnimatedScoreBar label="Self Leadership" value={cs.selfLeadership} delay={600} interpretation={getInterpretation('selfLeadership', cs.selfLeadership)} description={SCORE_DESCRIPTIONS.selfLeadership} growthBoost={perScoreBoosts.selfLeadership} />
       </View>
 
       {/* Values Group */}
@@ -1975,7 +1975,7 @@ function ScoresTab({
           How closely your daily actions match what you say matters most to you. A high score means you're living in line with your values; a lower score points to protective patterns overriding your intentions.
         </TenderText>
         <View style={st.scoreGroupDivider} />
-        <AnimatedScoreBar label="Values Congruence" value={cs.valuesCongruence} delay={700} interpretation={getInterpretation('valuesCongruence', cs.valuesCongruence)} description={SCORE_DESCRIPTIONS.valuesCongruence} />
+        <AnimatedScoreBar label="Values Congruence" value={cs.valuesCongruence} delay={700} interpretation={getInterpretation('valuesCongruence', cs.valuesCongruence)} description={SCORE_DESCRIPTIONS.valuesCongruence} growthBoost={perScoreBoosts.valuesCongruence} />
       </View>
 
       {/* Depth Dimensions Group */}
@@ -1985,11 +1985,11 @@ function ScoresTab({
           Deeper psychological dimensions that shape how you relate — attachment patterns, emotional intelligence, differentiation, conflict adaptability, and relational attunement.
         </TenderText>
         <View style={st.scoreGroupDivider} />
-        <AnimatedScoreBar label="Attachment Security" value={cs.attachmentSecurity} delay={800} interpretation={getInterpretation('attachmentSecurity', cs.attachmentSecurity)} description={SCORE_DESCRIPTIONS.attachmentSecurity} />
-        <AnimatedScoreBar label="Emotional Intelligence" value={cs.emotionalIntelligence} delay={900} interpretation={getInterpretation('emotionalIntelligence', cs.emotionalIntelligence)} description={SCORE_DESCRIPTIONS.emotionalIntelligence} />
-        <AnimatedScoreBar label="Differentiation" value={cs.differentiation} delay={1000} interpretation={getInterpretation('differentiation', cs.differentiation)} description={SCORE_DESCRIPTIONS.differentiation} />
-        <AnimatedScoreBar label="Conflict Flexibility" value={cs.conflictFlexibility} delay={1100} interpretation={getInterpretation('conflictFlexibility', cs.conflictFlexibility)} description={SCORE_DESCRIPTIONS.conflictFlexibility} />
-        <AnimatedScoreBar label="Relational Awareness" value={cs.relationalAwareness} delay={1200} interpretation={getInterpretation('relationalAwareness', cs.relationalAwareness)} description={SCORE_DESCRIPTIONS.relationalAwareness} />
+        <AnimatedScoreBar label="Attachment Security" value={cs.attachmentSecurity} delay={800} interpretation={getInterpretation('attachmentSecurity', cs.attachmentSecurity)} description={SCORE_DESCRIPTIONS.attachmentSecurity} growthBoost={perScoreBoosts.attachmentSecurity} />
+        <AnimatedScoreBar label="Emotional Intelligence" value={cs.emotionalIntelligence} delay={900} interpretation={getInterpretation('emotionalIntelligence', cs.emotionalIntelligence)} description={SCORE_DESCRIPTIONS.emotionalIntelligence} growthBoost={perScoreBoosts.emotionalIntelligence} />
+        <AnimatedScoreBar label="Differentiation" value={cs.differentiation} delay={1000} interpretation={getInterpretation('differentiation', cs.differentiation)} description={SCORE_DESCRIPTIONS.differentiation} growthBoost={perScoreBoosts.differentiation} />
+        <AnimatedScoreBar label="Conflict Flexibility" value={cs.conflictFlexibility} delay={1100} interpretation={getInterpretation('conflictFlexibility', cs.conflictFlexibility)} description={SCORE_DESCRIPTIONS.conflictFlexibility} growthBoost={perScoreBoosts.conflictFlexibility} />
+        <AnimatedScoreBar label="Relational Awareness" value={cs.relationalAwareness} delay={1200} interpretation={getInterpretation('relationalAwareness', cs.relationalAwareness)} description={SCORE_DESCRIPTIONS.relationalAwareness} growthBoost={perScoreBoosts.relationalAwareness} />
       </View>
 
       {/* Values Compass Infographic */}
