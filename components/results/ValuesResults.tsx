@@ -160,7 +160,7 @@ export default function ValuesResults({ scores }: Props) {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Your Reflections</Text>
             <View style={styles.reflectionCard}>
-              <Text style={styles.reflectionLabel}>The partner you want to be</Text>
+              <Text style={styles.reflectionLabel}>Your partner at their best</Text>
               <Text style={styles.reflectionText}>{scores.qualitativeResponses.partnerIdentity}</Text>
             </View>
             {scores.qualitativeResponses.nonNegotiables ? (
@@ -171,7 +171,7 @@ export default function ValuesResults({ scores }: Props) {
             ) : null}
             {scores.qualitativeResponses.aspirationalVision ? (
               <View style={styles.reflectionCard}>
-                <Text style={styles.reflectionLabel}>Where you are headed</Text>
+                <Text style={styles.reflectionLabel}>Your relationship in a year</Text>
                 <Text style={styles.reflectionText}>{scores.qualitativeResponses.aspirationalVision}</Text>
               </View>
             ) : null}
