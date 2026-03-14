@@ -233,3 +233,143 @@ export async function cancelDailyReminder(): Promise<void> {
 export async function cancelAllNotifications(): Promise<void> {
   await Notifications.cancelAllScheduledNotificationsAsync();
 }
+
+// ─── Smart Assessment-Aware Nudges ──────────────────────
+
+/**
+ * Cancel all scheduled assessment reminder notifications.
+ */
+export async function cancelAssessmentReminder(): Promise<void> {
+  const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+  for (const notif of scheduled) {
+    if (notif.content.data?.type === 'assessment_reminder') {
+      await Notifications.cancelScheduledNotificationAsync(notif.identifier);
+    }
+  }
+}
+
+/**
+ * Cancel all scheduled re-engagement notifications.
+ */
+export async function cancelReEngagementNudge(): Promise<void> {
+  const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+  for (const notif of scheduled) {
+    if (notif.content.data?.type === 're_engagement') {
+      await Notifications.cancelScheduledNotificationAsync(notif.identifier);
+    }
+  }
+}
+
+/**
+ * Cancel all scheduled partner invite follow-up notifications.
+ */
+export async function cancelPartnerInviteFollowUp(): Promise<void> {
+  const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+  for (const notif of scheduled) {
+    if (notif.content.data?.type === 'partner_invite_followup') {
+      await Notifications.cancelScheduledNotificationAsync(notif.identifier);
+    }
+  }
+}
+
+/**
+ * Schedule a one-time assessment reminder 24 hours from now.
+ * Content adapts based on how many assessments the user has completed.
+ * Cancels any existing assessment reminder first.
+ */
+export async function scheduleAssessmentReminder(
+  completedCount: number,
+  nextAssessmentName: string,
+): Promise<void> {
+  await cancelAssessmentReminder();
+
+  let body: string;
+  if (completedCount === 0) {
+    body = 'Your journey starts with one question. The first assessment takes ~10 minutes.';
+  } else if (completedCount <= 2) {
+    body = `${completedCount} down, ${6 - completedCount} to go. Your portrait gets richer with each one.`;
+  } else if (completedCount <= 4) {
+    body = `You're over halfway. ${nextAssessmentName} is next — 10 minutes to unlock more of your portrait.`;
+  } else {
+    body = `One left. Complete ${nextAssessmentName} to unlock your full portrait and everything that comes after it.`;
+  }
+
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: 'Your portrait is waiting',
+      body,
+      data: { type: 'assessment_reminder', completedCount },
+    },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+      seconds: 86400,
+      repeats: false,
+    },
+  });
+
+  if (__DEV__) console.log(`[Notifications] Assessment reminder scheduled (${completedCount} completed) — "${body}"`);
+}
+
+/**
+ * Schedule a one-time re-engagement notification for inactive users.
+ * Fires immediately (delay 0) with content appropriate to how long
+ * the user has been away.
+ * Cancels any existing re-engagement nudge first.
+ */
+export async function scheduleReEngagementNudge(
+  daysSinceLastActivity: number,
+): Promise<void> {
+  await cancelReEngagementNudge();
+
+  let body: string;
+  if (daysSinceLastActivity >= 14) {
+    body = "Your portrait is waiting. Come back and see what's shifted.";
+  } else if (daysSinceLastActivity >= 7) {
+    body = "It's been a week. Small moments, repeated, change everything. Ready when you are.";
+  } else {
+    body = 'Your data is here whenever you are. No pressure — just progress.';
+  }
+
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: 'Still here for you',
+      body,
+      data: { type: 're_engagement', daysSinceLastActivity },
+    },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+      seconds: 1,
+      repeats: false,
+    },
+  });
+
+  if (__DEV__) console.log(`[Notifications] Re-engagement nudge scheduled (${daysSinceLastActivity} days inactive) — "${body}"`);
+}
+
+/**
+ * Schedule a one-time partner invite follow-up 48 hours after the invite is sent.
+ * Cancels any existing partner invite follow-up first.
+ */
+export async function schedulePartnerInviteFollowUp(
+  partnerName?: string,
+): Promise<void> {
+  await cancelPartnerInviteFollowUp();
+
+  const name = partnerName ?? 'your partner';
+  const body = `Did ${name} get your Tender invite? The couple portal unlocks when you're both here.`;
+
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: 'Waiting on your partner?',
+      body,
+      data: { type: 'partner_invite_followup' },
+    },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+      seconds: 172800,
+      repeats: false,
+    },
+  });
+
+  if (__DEV__) console.log(`[Notifications] Partner invite follow-up scheduled for ${name} — "${body}"`);
+}

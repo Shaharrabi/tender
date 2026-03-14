@@ -28,6 +28,7 @@ import {
   ActivityIndicator,
   Animated,
   Alert,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -48,6 +49,7 @@ import {
   getAssessmentConfig,
 } from '@/utils/assessments/registry';
 import { supabase } from '@/services/supabase';
+import { scheduleAssessmentReminder } from '@/services/notifications';
 import { fetchGrowthBoostData } from '@/services/growth-boost';
 import { getGrowthBoostedScore, type GrowthBoostedResult } from '@/utils/portrait/growth-boost';
 import { getPortrait, savePortrait, fetchAllScores, extractSupplementScores } from '@/services/portrait';
@@ -628,6 +630,27 @@ export default function HomeScreen() {
         hasCoupleLinked
       );
       setUnlockState(unlock);
+
+      // Schedule assessment reminder (native only) if assessments are incomplete
+      if (Platform.OS !== 'web' && unlock.completedCount < 6) {
+        try {
+          const ASSESSMENT_NAMES: Record<string, string> = {
+            'ecr-r': 'How You Connect',
+            'ipip-neo-120': 'Who You Are',
+            'dutch': 'How You Fight',
+            'sseit': 'How You Feel',
+            'dsi-r': 'How You Hold Ground',
+            'values': 'What Matters',
+          };
+          const ASSESSMENT_ORDER = ['ecr-r', 'ipip-neo-120', 'dutch', 'sseit', 'dsi-r', 'values'];
+          const completedSet = new Set(completedAssessmentTypes as string[]);
+          const nextType = ASSESSMENT_ORDER.find((t) => !completedSet.has(t));
+          const nextName = nextType ? (ASSESSMENT_NAMES[nextType] ?? 'your next assessment') : 'your next assessment';
+          await scheduleAssessmentReminder(unlock.completedCount, nextName);
+        } catch (notifErr) {
+          if (__DEV__) console.warn('[Home] Failed to schedule assessment reminder:', notifErr);
+        }
+      }
 
       // Show Journey Unlock celebration on first visit after first assessment.
       // Also skip if user is already past step 1 (they've clearly seen the journey).

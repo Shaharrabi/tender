@@ -19,7 +19,10 @@ export type NotificationCategory =
   | 'growth_mirror'
   | 'couple_bubble'
   | 'milestone_streak'
-  | 'weekly_checkin';
+  | 'weekly_checkin'
+  | 'assessment_reminder'
+  | 're_engagement'
+  | 'partner_followup';
 
 // ─── Engagement Prompt ──────────────────────────────────
 
