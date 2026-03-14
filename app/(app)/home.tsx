@@ -1505,6 +1505,10 @@ export default function HomeScreen() {
               SoundHaptics.tapSoft();
               router.push(`/(app)/step-detail?step=${stepNum}` as any);
             }}
+            onCenterPress={() => {
+              SoundHaptics.tapSoft();
+              router.push('/(app)/growth' as any);
+            }}
           />
 
           {/* ── Assessment card (pre-portrait, not yet complete) ── */}

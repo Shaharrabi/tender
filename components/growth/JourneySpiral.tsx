@@ -101,11 +101,13 @@ interface JourneySpiralProps {
   currentStep: number;
   /** Called when user taps an unlocked step node */
   onStepPress: (stepNumber: number) => void;
+  /** Called when user taps the center of the circle */
+  onCenterPress?: () => void;
 }
 
 // ─── Component ───────────────────────────────────────────
 
-export default function JourneySpiral({ currentStep, onStepPress }: JourneySpiralProps) {
+export default function JourneySpiral({ currentStep, onStepPress, onCenterPress }: JourneySpiralProps) {
   // ── Sequential zone dot animations ──
   // Each of 12 dots pulses in sequence (staggered by 250ms)
   const zoneDots = useRef(
@@ -476,36 +478,44 @@ export default function JourneySpiral({ currentStep, onStepPress }: JourneySpira
           ]}
         />
 
-        {/* Center text — breathes with the orb */}
-        <Animated.View style={[styles.centerContent, { opacity: textBreathe }]}>
-          <TenderText
-            variant="label"
-            color={Colors.textMuted}
-            align="center"
-            style={styles.centerLabel}
-          >
-            THE FIELD
-          </TenderText>
-          {currentPhase && (
+        {/* Center text — breathes with the orb, tappable to open growth page */}
+        <TouchableOpacity
+          onPress={() => onCenterPress ? onCenterPress() : onStepPress(currentStep)}
+          activeOpacity={0.7}
+          style={styles.centerTouchable}
+          accessibilityRole="button"
+          accessibilityLabel="Open your 12-step journey"
+        >
+          <Animated.View style={[styles.centerContent, { opacity: textBreathe }]}>
             <TenderText
               variant="label"
-              color={currentPhase.color}
+              color={Colors.textMuted}
               align="center"
-              style={styles.centerPhase}
+              style={styles.centerLabel}
             >
-              {currentPhase.name}
+              THE FIELD
             </TenderText>
-          )}
-          <TenderText
-            variant="caption"
-            color={Colors.text}
-            align="center"
-            style={styles.centerStep}
-            numberOfLines={1}
-          >
-            Step {currentStep}
-          </TenderText>
-        </Animated.View>
+            {currentPhase && (
+              <TenderText
+                variant="label"
+                color={currentPhase.color}
+                align="center"
+                style={styles.centerPhase}
+              >
+                {currentPhase.name}
+              </TenderText>
+            )}
+            <TenderText
+              variant="caption"
+              color={Colors.text}
+              align="center"
+              style={styles.centerStep}
+              numberOfLines={1}
+            >
+              Step {currentStep}
+            </TenderText>
+          </Animated.View>
+        </TouchableOpacity>
 
         {/* Step nodes — absolute positioned on outer ring */}
         {Array.from({ length: 12 }, (_, i) => {
@@ -677,12 +687,20 @@ const styles = StyleSheet.create({
     borderRadius: 52,
     backgroundColor: STICKER.cream,
   },
-  // Center text
-  centerContent: {
+  // Center touchable area
+  centerTouchable: {
     position: 'absolute',
     left: CENTER - 42,
-    top: CENTER - 22,
+    top: CENTER - 42,
     width: 84,
+    height: 84,
+    borderRadius: 42,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+  },
+  // Center text
+  centerContent: {
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -833,6 +833,18 @@ function StepDetailScreenInner() {
           </Animated.View>
         )}
 
+        {/* Closing audio also available at top of Step 12 */}
+        {stepNumber === 12 && STEP_AUDIO_MAP[13] && (
+          <Animated.View entering={FadeIn.delay(400).duration(500)}>
+            <StepAudioPlayer
+              audioSource={STEP_AUDIO_MAP[13]}
+              title="THE CLOSING"
+              phaseColor={phase.color}
+              alreadyHeard={true}
+            />
+          </Animated.View>
+        )}
+
         {/* Key Takeaway — the one sentence to carry */}
         {keyTakeaway && (
           <KeyTakeawayCard takeaway={keyTakeaway} phaseColor={phase.color} />
