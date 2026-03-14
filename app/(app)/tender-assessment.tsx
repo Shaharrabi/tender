@@ -753,10 +753,8 @@ export default function TenderAssessmentScreen() {
 
     setCurrentSectionIndex(nextIdx);
     setShowingSectionBreak(false);
-    // Show section intro for the new section (unless resuming mid-section)
-    if (!states[nextIdx]?.responses?.some((r: any) => r != null)) {
-      setShowingSectionIntro(true);
-    }
+    // Section intro removed — SectionBreak already shows the upcoming section name/desc.
+    // Going directly to questions avoids a redundant blank-looking screen.
     saveProgress(nextIdx, states, completed);
   };
 
@@ -856,14 +854,9 @@ export default function TenderAssessmentScreen() {
         );
       }
     } else {
-      // Not started or in-progress — jump directly
+      // Not started or in-progress — jump directly to questions
       setCurrentSectionIndex(idx);
       setShowingIntro(false);
-      // Show section intro if not yet started (no answers)
-      const hasAnswers = sectionStates[idx]?.responses?.some((r: any) => r != null);
-      if (!hasAnswers) {
-        setShowingSectionIntro(true);
-      }
     }
   };
 
@@ -882,11 +875,6 @@ export default function TenderAssessmentScreen() {
     const idx = firstIncomplete >= 0 ? firstIncomplete : 0;
     setCurrentSectionIndex(idx);
     setShowingIntro(false);
-    // Show section intro for fresh sections
-    const hasAnswers = sectionStates[idx]?.responses?.some((r: any) => r != null);
-    if (!hasAnswers) {
-      setShowingSectionIntro(true);
-    }
   };
 
   // ── Derived values for question flow (must be computed before conditional
@@ -1125,7 +1113,7 @@ export default function TenderAssessmentScreen() {
           {/* Back link */}
           <TenderButton
             title="Back"
-            onPress={() => router.back()}
+            onPress={() => router.canGoBack() ? router.back() : router.replace('/(app)/home' as any)}
             variant="ghost"
             size="lg"
             fullWidth

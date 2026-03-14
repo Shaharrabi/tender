@@ -457,15 +457,6 @@ export default function CommunityScreen() {
       {/* Tab navigation */}
       <CommunityTabs activeTab={activeTab} onTabChange={handleTabChange} />
 
-      {/* Category filters (story tabs only) */}
-      {isStoryTab && (
-        <CategoryPills
-          activeCategory={activeCategory}
-          onCategoryChange={setActiveCategory}
-          categories={CATEGORIES}
-        />
-      )}
-
       {/* Content area */}
       <ScrollView
         style={st.scrollView}
@@ -480,6 +471,13 @@ export default function CommunityScreen() {
         {/* ═══ For You / All Stories ═══════════════ */}
         {isStoryTab && (
           <>
+            {/* Category filters inside scroll — collapses with content */}
+            <CategoryPills
+              activeCategory={activeCategory}
+              onCategoryChange={setActiveCategory}
+              categories={CATEGORIES}
+            />
+
             {/* "For You" gentle banner when no portrait available */}
             {activeTab === 'forYou' && !attachmentStyle && initialLoadDone.current && (
               <EmptyState
