@@ -506,7 +506,7 @@ html,body{
 .dlg-text{
   font-style:normal !important;
   font-size:clamp(21px,5.5vw,28px) !important;
-  line-height:1.76 !important;
+  line-height:1.5 !important;
   color:rgba(37,30,34,.98) !important;
   overflow-wrap:anywhere;
 }
@@ -560,7 +560,8 @@ html,body{
 }
 @media (max-width:420px){
   #panel{max-height:min(25vh,250px) !important;}
-  .dlg-text{font-size:clamp(21px,5.8vw,28px) !important;}
+  .dlg-text{font-size:clamp(18px,4.9vw,23px) !important;}
+  .oi-desc,.ps-body,.done-body,.ps-carry{font-size:clamp(16px,4vw,19px) !important; line-height:1.58 !important;}
 }
 .web-embed .exit-x{display:none !important;}
 </style>
@@ -659,7 +660,7 @@ html,body{
     <!-- breathe section -->
     <div id="breathe-section">
       <div class="b-label" id="b-label">
-        <span class="emphasis">Hold the circle</span> to breathe · 3 seconds
+        <span class="emphasis">Hold the circle</span> to breathe · 4 seconds
       </div>
       <div id="b-circle">
         <svg id="b-svg" viewBox="0 0 100 100">
@@ -818,7 +819,7 @@ html,body{
 // CONSTANTS
 // ══════════════════════════════════════════════
 const CIRC = 2 * Math.PI * 46;
-const HOLD_MS = 3000;
+const HOLD_MS = 4000;
 
 // ══════════════════════════════════════════════
 // STATE
@@ -981,6 +982,10 @@ function openBreathe() {
   
   // Set up touch handlers
   const circle = document.getElementById('b-circle');
+  circle.addEventListener('pointerdown', breatheDown);
+  circle.addEventListener('pointerup', breatheUp);
+  circle.addEventListener('pointercancel', breatheUp);
+  circle.addEventListener('pointerleave', breatheUp);
   circle.addEventListener('mousedown', breatheDown);
   circle.addEventListener('touchstart', breatheDown, { passive: false });
   circle.addEventListener('mouseup', breatheUp);

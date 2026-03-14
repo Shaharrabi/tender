@@ -307,11 +307,11 @@ html,body{
 
 <script>
 const SHADOW_LABELS = [
-  "Criticism", "Withdrawal", "Blame", "Defensiveness",
-  "Contempt", "Stonewalling", "The old story", "Fear"
+  "Criticism", "Withdrawal", "Blame",
+  "Defensiveness", "Contempt", "Stonewalling"
 ];
 
-const TARGET_CAUGHT = 8;
+const TARGET_CAUGHT = 6;
 
 let S = {
   phase: 'intro',
@@ -320,7 +320,8 @@ let S = {
   missed: 0,
   awareness: 100,
   gameLoop: null,
-  spawnTimer: 0
+  spawnTimer: 0,
+  resolveCooldown: 0
 };
 
 const canvas = document.getElementById('canvas');
@@ -347,8 +348,8 @@ function spawnShadow() {
     y: centerY + Math.sin(angle) * dist,
     targetX: centerX,
     targetY: centerY,
-    speed: 0.0036 + Math.random() * 0.0016,
-    size: 18 + Math.random() * 10,
+    speed: 0.0053 + Math.random() * 0.0021,
+    size: 14 + Math.random() * 8,
     label: SHADOW_LABELS[Math.floor(Math.random() * SHADOW_LABELS.length)],
     alpha: 0,
     progress: 0
@@ -435,8 +436,9 @@ function draw() {
 
 function update() {
   if (S.awaitingAck) return;
+  if (S.resolveCooldown > 0) S.resolveCooldown--;
   S.spawnTimer++;
-  if (S.spawnTimer > 172 && S.shadows.length < 2) {
+  if (S.resolveCooldown <= 0 && S.spawnTimer > 82 && S.shadows.length < 1) {
     S.spawnTimer = 0;
     spawnShadow();
   }
@@ -456,10 +458,12 @@ function update() {
     if (dist < 30) {
       S.shadows.splice(i, 1);
       S.missed++;
+      S.resolveCooldown = 70;
+      S.spawnTimer = 0;
       S.awareness = Math.max(0, S.awareness - 12);
       updateAwareness();
       fadeD('-', `${shadow.label} got too close.\n\nPause and notice what arrives before it takes over.`);
-      showSignal(`${shadow.label} got too close. Breathe, then choose a steadier response.`, 'warn', true);
+      showSignal(`${shadow.label} got too close. Breathe, then choose a steadier response.`, 'warn', false);
       
       if (S.awareness <= 0) {
         resetGame();
@@ -481,8 +485,10 @@ function handleTap(x, y) {
     const shadow = S.shadows[i];
     const dist = Math.hypot(x - shadow.x, y - shadow.y);
     
-    if (dist < shadow.size + 42) {
+    if (dist < shadow.size + 62) {
       S.shadows.splice(i, 1);
+      S.resolveCooldown = 52;
+      S.spawnTimer = 0;
       S.caught++;
       document.getElementById('caught').textContent = S.caught;
       
@@ -515,7 +521,7 @@ function resetGame() {
   document.getElementById('caught').textContent = '0';
   updateAwareness();
   fadeD('-', 'Awareness faded. Begin again.\n\nStart with one calm breath, then notice sooner.');
-  showSignal('Begin again with less urgency. Calm attention teaches more than panic does.', 'warn', true);
+  showSignal('Begin again with less urgency. Calm attention teaches more than panic does.', 'warn', false);
 }
 
 // Touch/click handler
@@ -543,12 +549,12 @@ function begin() {
   S.caught = 0;
   S.missed = 0;
   S.awareness = 100;
+  S.spawnTimer = 64;
   
   draw();
   fadeD('-', 'Watch the outer edge first.\n\nTap each shadow before it reaches the tower. Calm attention works better than speed.');
-  showSignal('Look to the edges first. Notice the old pattern early, then steady yourself before it reaches the center.', 'soft', true, () => {
-    S.gameLoop = setInterval(update, 16);
-  });
+  showSignal('Look to the edges first. Notice the old pattern early, then steady yourself before it reaches the center.', 'soft', false);
+  S.gameLoop = setInterval(update, 16);
 }
 
 function completeGame() {
@@ -624,7 +630,7 @@ function showSignal(text, tone = 'soft', requireAck = false, onAck = null) {
     };
   }
   requestAnimationFrame(() => el.classList.add('show'));
-  if (!requireAck) setTimeout(() => hideSignal(), 2400);
+  if (!requireAck) setTimeout(() => hideSignal(), 3100);
 }
 
 // Practice

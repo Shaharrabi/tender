@@ -509,7 +509,7 @@ function update() {
       // Reset for new rally
       S.maxRally = Math.max(S.maxRally, S.rallyCount);
       fadeD('-', `Rally: ${S.rallyCount}\n\nThe exchange broke. Slow down, listen, and begin again.`);
-      showSignal('The exchange broke. Slow down, listen, and begin again with a softer start.', 'warn', true);
+      showSignal('The exchange broke. Slow down, listen, and begin again with a softer start.', 'warn', false);
       resetBall();
     }
   }
@@ -533,8 +533,9 @@ function showTruth(from) {
   
   setTimeout(() => {
     document.getElementById('truth-display').classList.remove('show');
-  }, 1500);
+  }, 2900);
 }
+
 
 function resetBall() {
   S.rallyCount = 0;
@@ -551,7 +552,7 @@ function launchServe() {
   if (!S.serving) return;
   S.serving = false;
   S.serveHintShown = true;
-  S.ball.vy = 0.0078;
+  S.ball.vy = 0.0072;
   S.ball.vx = (Math.random() - 0.5) * 0.0048;
 }
 
@@ -608,9 +609,8 @@ function begin() {
   S.phase = 'game';
 
   initCanvas();
-  document.getElementById('game-area').appendChild(document.getElementById('controls'));
   hidePanelForPlay();
-  document.getElementById('controls').style.display = 'block';
+  document.getElementById('controls').style.display = 'none';
 
   resetBall();
   draw();
@@ -692,7 +692,7 @@ function showSignal(text, tone = 'soft', requireAck = false, onAck = null) {
   }
   requestAnimationFrame(() => card.classList.add('show'));
   if (!requireAck) {
-    setTimeout(() => hideSignal(), 2400);
+    setTimeout(() => hideSignal(), 3200);
   }
 }
 

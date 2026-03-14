@@ -340,7 +340,7 @@ html,body{
 <script>
 // Game constants
 const GRID_SIZE = 12;
-const REFLECTIONS_NEEDED = 6;
+const REFLECTIONS_NEEDED = 3;
 
 const REFLECTION_WORDS = [
   "my part", "my fear", "my wall", "my need",
@@ -576,9 +576,9 @@ function begin() {
   spawnFood();
   draw();
 
-  showSignal('Move across the lake and gather six reflections. Each one names something tender in you that the mirror is asking you to face with honesty.', true, () => {
-    S.gameLoop = setInterval(update, 200);
-  });
+  showSignal('Move across the lake and gather three reflections. Each one names something tender in you that the mirror is asking you to face with honesty.', false);
+  fadeD('✦', 'Gather three reflections.\n\nLet each one show you a truth you usually avoid.');
+  S.gameLoop = setInterval(update, 188);
 }
 
 function completeGame() {
@@ -590,7 +590,7 @@ function completeGame() {
   showPanelForNextStep();
   document.getElementById('seed-btn').style.display = 'flex';
   
-  showSignal('You gathered each reflection without looking away. Honest repair begins when you can stay with what the water shows you.', true);
+  showSignal('You gathered each reflection without looking away. Honest repair begins when you can stay with what the water shows you.', false);
 }
 
 function hidePanelForPlay() {
@@ -627,7 +627,7 @@ function showSignal(text, requireAck = false, onAck = null) {
     if (typeof next === 'function') next();
   } : null;
   requestAnimationFrame(() => card.classList.add('show'));
-  if (!requireAck) setTimeout(hideSignal, 2200);
+  if (!requireAck) setTimeout(hideSignal, 3200);
 }
 
 function fadeD(sym, text) {

@@ -1809,19 +1809,16 @@ function StepDetailScreenInner() {
                   disabled={isLocked || isCurrent}
                   accessibilityLabel={`Step ${s.stepNumber}: ${s.title}${isLocked ? ' (locked)' : ''}`}
                 >
-                  {isCompleted ? (
-                    <CheckmarkIcon size={isCurrent ? 18 : 14} color={phaseColor} />
-                  ) : (
-                    <Text style={[
-                      styles.stepStripNum,
-                      isCurrent && styles.stepStripNumCurrent,
-                      isLocked && { color: Colors.textMuted },
-                      !isLocked && !isCurrent && { color: Colors.primary },
-                      isCurrent && { color: phaseColor },
-                    ]}>
-                      {s.stepNumber}
-                    </Text>
-                  )}
+                  <Text style={[
+                    styles.stepStripNum,
+                    isCurrent && styles.stepStripNumCurrent,
+                    isLocked && { color: Colors.textMuted },
+                    !isLocked && !isCurrent && { color: Colors.primary },
+                    isCurrent && { color: phaseColor },
+                    isCompleted && !isCurrent && { color: phaseColor },
+                  ]}>
+                    {s.stepNumber}
+                  </Text>
                 </TouchableOpacity>
               );
             })}

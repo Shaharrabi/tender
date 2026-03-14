@@ -92,6 +92,35 @@ export default function AdminPanel({ userId, onDataChanged, onClose }: AdminPane
     }
   };
 
+  // Clear ALL existing assessments + portrait, then re-seed fresh with current demo data
+  // This gives a clean slate with the latest intelligence upgrade applied
+  const handleReseedFresh = async () => {
+    setBusy('reseed-fresh');
+    try {
+      // 1. Clear existing assessments + portrait
+      await clearDemoAssessments(userId);
+      // 2. Seed all 6 with current DEMO data
+      const ids = await seedDemoAssessments(userId);
+      const scores: AllAssessmentScores = {
+        ecrr: DEMO_ECRR,
+        dutch: DEMO_DUTCH,
+        sseit: DEMO_SSEIT,
+        dsir: DEMO_DSIR,
+        ipip: DEMO_IPIP,
+        values: DEMO_VALUES,
+      };
+      // 3. Generate portrait with the full upgraded pipeline (integrated narratives, etc.)
+      const portrait = generatePortrait(userId, ids, scores, DEMO_SUPPLEMENTS);
+      await savePortrait(portrait);
+      Alert.alert('✅ Fresh Start', 'Cleared old data and re-seeded with the latest assessment data + full intelligence upgrade. Your portrait is now up to date.');
+      onDataChanged();
+    } catch (e: any) {
+      Alert.alert('Error', e.message || 'Failed to re-seed');
+    } finally {
+      setBusy(null);
+    }
+  };
+
   const handleSeedSingle = async (type: string) => {
     setBusy(`seed-${type}`);
     try {
@@ -293,6 +322,16 @@ export default function AdminPanel({ userId, onDataChanged, onClose }: AdminPane
             color={Colors.calm}
             busy={busy === 'portrait'}
             onPress={handleGeneratePortrait}
+            disabled={!!busy}
+          />
+        </View>
+        <View style={styles.buttonRow}>
+          <ActionButton
+            label="🔄 Re-seed Fresh (Latest Data)"
+            icon={<RefreshIcon size={14} color={Colors.white} />}
+            color={Colors.accentGold}
+            busy={busy === 'reseed-fresh'}
+            onPress={handleReseedFresh}
             disabled={!!busy}
           />
         </View>

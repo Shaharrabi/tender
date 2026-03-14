@@ -250,7 +250,8 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
 
       // If still no token, the user truly isn't authenticated
       if (!token) {
-        throw new Error('Your session has expired. Please sign in again to chat with Nuance.');
+        setSessionExpired(true);
+        throw new Error('__SESSION_EXPIRED__:Your session has expired. Please sign out and back in to chat with Nuance.');
       }
 
       if (__DEV__) {

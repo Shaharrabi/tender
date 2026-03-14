@@ -55,9 +55,9 @@ canvas{position:absolute;inset:0;}
 .dlg-sym{font-family:'Josefin Sans',sans-serif;font-size:clamp(10px,2.5vw,12px);color:var(--terracotta);flex-shrink:0;margin-top:2px;width:14px;}
 .dlg-text{font-family:'Playfair Display',serif;font-size:clamp(17px,4.2vw,22px);line-height:1.82;color:var(--ink);white-space:pre-wrap;transition:opacity .35s;}
 
-#controls{display:none;position:absolute;left:10px;right:10px;bottom:max(10px, env(safe-area-inset-bottom, 0px));padding:0;z-index:18;pointer-events:auto;}
-.ctrl-row{display:flex;gap:8px;justify-content:center;background:rgba(253,246,240,.94);border:1px solid rgba(216,164,153,.24);border-radius:18px;padding:8px 10px;box-shadow:0 12px 28px rgba(22,14,18,.12);pointer-events:auto;width:max-content;margin:0 auto;}
-.ctrl-btn{width:clamp(44px,12vw,54px);height:clamp(40px,11vw,48px);border:none;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:clamp(14px,4vw,18px);transition:all .15s;-webkit-tap-highlight-color:transparent;}
+#controls{display:none;position:absolute;left:50%;top:calc(env(safe-area-inset-top, 0px) + 96px);transform:translateX(-50%);padding:0;z-index:18;pointer-events:auto;}
+.ctrl-row{display:grid;grid-template-columns:repeat(2,minmax(44px,52px));gap:8px;background:rgba(253,246,240,.94);border:1px solid rgba(216,164,153,.24);border-radius:18px;padding:8px;box-shadow:0 12px 28px rgba(22,14,18,.12);pointer-events:auto;width:max-content;margin:0;}
+.ctrl-btn{width:clamp(40px,10vw,48px);height:clamp(38px,10vw,44px);border:none;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:clamp(13px,3.8vw,16px);transition:all .15s;-webkit-tap-highlight-color:transparent;}
 .ctrl-btn:active{transform:scale(.94);}
 .ctrl-btn.move{background:linear-gradient(135deg,rgba(107,144,128,.2),rgba(107,144,128,.1));border:2px solid rgba(107,144,128,.4);}
 .ctrl-btn.rotate{background:linear-gradient(135deg,rgba(212,168,67,.2),rgba(212,168,67,.1));border:2px solid rgba(212,168,67,.4);}
@@ -384,7 +384,7 @@ function showSignal(text, tone = 'soft', requireAck = false, onAck = null) {
   }
   requestAnimationFrame(() => card.classList.add('show'));
   if (!requireAck) {
-    setTimeout(() => hideSignal(), 2400);
+    setTimeout(() => hideSignal(), 3000);
   }
 }
 
@@ -593,7 +593,7 @@ function plant() {
       // Game over - but in this version, we just clear and continue
       S.grid = [];
       for (let r = 0; r < ROWS; r++) S.grid.push(new Array(COLS).fill(null));
-      showSignal('The garden needs replanting. Start again gently. In relationships, rhythm matters more than perfection.', 'warn', true);
+      showSignal('The garden needs replanting. Start again gently. In relationships, rhythm matters more than perfection.', 'warn', false);
     }
   }
 }
@@ -631,7 +631,7 @@ function drop() {
 function update() {
   if (S.awaitingAck) { draw(); return; }
   S.dropTimer++;
-  if (S.dropTimer > 42) {
+  if (S.dropTimer > 20) {
     S.dropTimer = 0;
     if (!collision(S.x, S.y + 1, S.current.shape)) {
       S.y++;
@@ -647,6 +647,10 @@ document.getElementById('btn-left').addEventListener('click', moveLeft);
 document.getElementById('btn-right').addEventListener('click', moveRight);
 document.getElementById('btn-rotate').addEventListener('click', rotatePiece);
 document.getElementById('btn-drop').addEventListener('click', drop);
+document.getElementById('btn-left').addEventListener('pointerdown', (e) => { e.preventDefault(); moveLeft(); });
+document.getElementById('btn-right').addEventListener('pointerdown', (e) => { e.preventDefault(); moveRight(); });
+document.getElementById('btn-rotate').addEventListener('pointerdown', (e) => { e.preventDefault(); rotatePiece(); });
+document.getElementById('btn-drop').addEventListener('pointerdown', (e) => { e.preventDefault(); drop(); });
 document.getElementById('btn-left').addEventListener('touchstart', (e) => { e.preventDefault(); moveLeft(); }, { passive: false });
 document.getElementById('btn-right').addEventListener('touchstart', (e) => { e.preventDefault(); moveRight(); }, { passive: false });
 document.getElementById('btn-rotate').addEventListener('touchstart', (e) => { e.preventDefault(); rotatePiece(); }, { passive: false });
@@ -677,9 +681,8 @@ function begin() {
   newPiece();
   draw();
 
-  showSignal('This step is about rhythm. Each falling piece is a practice like checking in, repairing, or making time. Place them so the relationship has something steady to stand on.', 'soft', true, () => {
-    S.gameLoop = setInterval(update, 60);
-  });
+  showSignal('This step is about rhythm. Each falling piece is a practice like checking in, repairing, or making time. Place them so the relationship has something steady to stand on.', 'soft', false);
+  S.gameLoop = setInterval(update, 60);
 }
 
 function completeGame() {

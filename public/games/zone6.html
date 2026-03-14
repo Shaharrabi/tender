@@ -566,11 +566,11 @@ function update() {
 function showBreakLabel(text) {
   const el = document.getElementById('break-text');
   const container = document.getElementById('break-label');
-  el.textContent = `"${text}"`;
+  el.textContent = text;
   container.style.opacity = '1';
   setTimeout(() => {
     container.style.opacity = '0';
-  }, 800);
+  }, 1750);
 }
 
 function movePaddle(dir) {
@@ -627,10 +627,12 @@ function begin() {
   S.balls = [createBall(false)];
 
   draw();
-  showSignal('Break the wall a little at a time. You begin, and your partner helps from the other side. Let each opening teach you that the person behind the defense is still your partner.', 'soft', true, () => {
-    S.gameLoop = setInterval(update, 16);
-  });
+  showSignal("Break the wall a little at a time. You begin, and your partner's help arrives from the other side. Let each opening remind you that the person behind the defense is still your partner.", 'soft', false);
+  setTimeout(() => {
+    if (S.phase === 'game' && !S.gameLoop) S.gameLoop = setInterval(update, 16);
+  }, 1100);
 }
+
 
 function completeGame() {
   notifyApp('gameComplete', { zone: 6 });
@@ -679,7 +681,7 @@ function hideSignal() {
   }
 }
 
-function showSignal(text, tone = 'soft', requireAck = false, onAck = null, minReadMs = 1000) {
+function showSignal(text, tone = 'soft', requireAck = false, onAck = null, minReadMs = 1200) {
   const card = document.getElementById('signal-card');
   const btn = document.getElementById('signal-ack');
   card.textContent = text;
@@ -706,7 +708,7 @@ function showSignal(text, tone = 'soft', requireAck = false, onAck = null, minRe
   }
   requestAnimationFrame(() => card.classList.add('show'));
   if (!requireAck) {
-    setTimeout(() => hideSignal(), 2400);
+    setTimeout(() => hideSignal(), 3050);
   }
 }
 

@@ -75,10 +75,9 @@ import QuickLinksBar from '@/components/QuickLinksBar';
 import LockedPortraitPreview from '@/components/portrait/LockedPortraitPreview';
 import { HighlightWrapper } from '@/components/ui/HighlightWrapper';
 import { TooltipManager } from '@/components/ftue/TooltipManager';
-import { GuidedTour } from '@/components/ftue/GuidedTour';
+import { WelcomeTour } from '@/components/ftue/WelcomeTour';
 import { WelcomeAudio } from '@/components/ftue/WelcomeAudio';
 import { TOOLTIP_CONFIGS } from '@/constants/ftue/tooltips';
-import { HOME_TOUR } from '@/constants/ftue/tourSteps';
 import { RefRegistry } from '@/utils/ftue/refRegistry';
 import JourneyUnlockOverlay, { hasSeenJourneyUnlock, markJourneyUnlockSeen } from '@/components/growth/JourneyUnlockOverlay';
 import JourneySpiral from '@/components/growth/JourneySpiral';
@@ -1142,7 +1141,7 @@ export default function HomeScreen() {
               {/* Quick actions row — Couple Portal + Couple Assessments */}
               <View style={styles.demoPartnerActions}>
                 <TouchableOpacity
-                  style={[styles.demoPartnerActionBtn, { borderColor: Colors.secondary + '30' }]}
+                  style={[styles.demoPartnerActionBtn, { borderColor: Colors.secondary + '30', flex: 1 }]}
                   onPress={() => {
                     SoundHaptics.tapSoft();
                     router.push('/(app)/couple-portal' as any);
@@ -1150,18 +1149,7 @@ export default function HomeScreen() {
                   activeOpacity={0.8}
                 >
                   <HeartPulseIcon size={16} color={Colors.secondary} />
-                  <Text style={styles.demoPartnerActionText}>Couple Portal</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.demoPartnerActionBtn, { borderColor: Colors.calm + '30' }]}
-                  onPress={() => {
-                    SoundHaptics.tapSoft();
-                    router.push('/(app)/couple-assessment' as any);
-                  }}
-                  activeOpacity={0.8}
-                >
-                  <ScaleIcon size={16} color={Colors.calm} />
-                  <Text style={styles.demoPartnerActionText}>Couple Check-in</Text>
+                  <Text style={styles.demoPartnerActionText}>Open Couple Portal</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -1185,7 +1173,28 @@ export default function HomeScreen() {
             <Text style={styles.realPartnerPromptArrow}>{'\u2192'}</Text>
           </TouchableOpacity>
         )}
-        {relationshipMode === 'solo' && relationshipStatus !== 'single' && !hasPortrait && completedCount > 0 && (
+        {/* Solo users who have a portrait can try the demo couple experience */}
+        {relationshipMode === 'solo' && hasPortrait && (
+          <TouchableOpacity
+            style={styles.demoPartnerPrompt}
+            onPress={() => router.push('/(app)/relationship-mode' as any)}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Try Couple Portal with Demo Partner"
+          >
+            <CoupleIcon size={16} color={Colors.primary} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.demoPartnerPromptText}>
+                Explore the Couple Portal with a Demo Partner
+              </Text>
+              <Text style={[styles.demoPartnerPromptText, { fontSize: 11, opacity: 0.7, marginTop: 2 }]}>
+                Practice with an AI partner — no real partner needed
+              </Text>
+            </View>
+            <Text style={styles.realPartnerPromptArrow}>{'\u2192'}</Text>
+          </TouchableOpacity>
+        )}
+        {relationshipMode === 'solo' && !hasPortrait && relationshipStatus !== 'single' && completedCount > 0 && (
           <TouchableOpacity
             style={styles.demoPartnerPrompt}
             onPress={() => router.push('/(app)/relationship-mode' as any)}
@@ -1971,7 +1980,7 @@ export default function HomeScreen() {
 
       {/* ═══ FTUE Overlays ═══════════════════════════════════ */}
       {showTour && (
-        <GuidedTour tour={HOME_TOUR} onComplete={handleTourComplete} scrollRef={scrollRef} scrollOffset={scrollOffset} />
+        <WelcomeTour onComplete={handleTourComplete} />
       )}
       <TooltipManager screen="home" scrollRef={scrollRef} scrollOffset={scrollOffset} />
     </SafeAreaView>

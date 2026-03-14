@@ -43,7 +43,7 @@ npx expo export --platform web
     # Restrict browser permissions (camera, mic, location, etc.)
     Permissions-Policy = "camera=(), microphone=(), geolocation=(), interest-cohort=()"
     # Content Security Policy — allow self + Supabase + Anthropic
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.anthropic.com; img-src 'self' data: blob: https:; font-src 'self' data:; media-src 'self' data: blob:; frame-ancestors 'none';"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.anthropic.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; media-src 'self' data: blob:; frame-ancestors 'none';"
 
 # SPA fallback — only for routes without a pre-rendered HTML file.
 # Expo static export generates per-route HTML files; Netlify serves

@@ -307,19 +307,19 @@ html,body{
 const CONSTELLATIONS = [
   {
     name: "Trust",
-    stars: [{x:0.18,y:0.3},{x:0.34,y:0.16},{x:0.5,y:0.24},{x:0.66,y:0.14},{x:0.82,y:0.28},{x:0.64,y:0.42},{x:0.38,y:0.44}]
+    stars: [{x:0.18,y:0.28},{x:0.38,y:0.16},{x:0.58,y:0.24},{x:0.74,y:0.4},{x:0.42,y:0.56}]
   },
   {
     name: "Connection",
-    stars: [{x:0.16,y:0.46},{x:0.3,y:0.32},{x:0.46,y:0.4},{x:0.56,y:0.26},{x:0.72,y:0.38},{x:0.84,y:0.22}]
+    stars: [{x:0.2,y:0.5},{x:0.34,y:0.3},{x:0.52,y:0.4},{x:0.7,y:0.24},{x:0.82,y:0.48}]
   },
   {
     name: "Growth",
-    stars: [{x:0.22,y:0.66},{x:0.34,y:0.54},{x:0.46,y:0.42},{x:0.56,y:0.3},{x:0.68,y:0.44},{x:0.78,y:0.22},{x:0.62,y:0.64}]
+    stars: [{x:0.22,y:0.62},{x:0.38,y:0.46},{x:0.52,y:0.24},{x:0.68,y:0.42},{x:0.82,y:0.62}]
   },
   {
     name: "Home",
-    stars: [{x:0.22,y:0.68},{x:0.38,y:0.48},{x:0.5,y:0.32},{x:0.62,y:0.48},{x:0.78,y:0.68},{x:0.62,y:0.78},{x:0.38,y:0.78}]
+    stars: [{x:0.24,y:0.58},{x:0.38,y:0.34},{x:0.62,y:0.34},{x:0.76,y:0.58},{x:0.5,y:0.72}]
   }
 ];
 
@@ -361,15 +361,15 @@ function initCanvas() {
 
 function loadConstellation(index) {
   const c = CONSTELLATIONS[index];
-  const usableW = W * 0.66;
-  const usableH = H * 0.46;
-  const topOffset = H * 0.2;
+  const usableW = W * 0.82;
+  const usableH = H * 0.58;
+  const centerY = H * 0.44;
   S.stars = c.stars.map((s, i) => ({
     x: W * 0.5 + (s.x - 0.5) * usableW,
-    y: topOffset + s.y * usableH,
+    y: centerY + (s.y - 0.5) * usableH,
     index: i,
     connected: false,
-    size: 11
+    size: 18
   }));
   S.connections = [];
   S.selectedStar = null;
@@ -415,7 +415,7 @@ function draw() {
   // Draw constellation stars
   S.stars.forEach((star, i) => {
     // Glow
-    const glowSize = star.connected ? 24 : 18;
+    const glowSize = star.connected ? 38 : 30;
     const gradient = ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, glowSize);
     gradient.addColorStop(0, star.connected ? 'rgba(212,168,67,0.5)' : 'rgba(255,250,234,0.3)');
     gradient.addColorStop(1, 'rgba(255,250,234,0)');
@@ -426,7 +426,7 @@ function draw() {
     
     // Star
     ctx.beginPath();
-    ctx.arc(star.x, star.y, star.connected ? 10 : 8, 0, Math.PI * 2);
+    ctx.arc(star.x, star.y, star.connected ? 16 : 14, 0, Math.PI * 2);
     ctx.fillStyle = star.connected ? '#D4A843' : '#FFFAEA';
     ctx.fill();
     
@@ -435,7 +435,7 @@ function draw() {
       ctx.strokeStyle = 'rgba(212,168,67,0.8)';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(star.x, star.y, 18, 0, Math.PI * 2);
+      ctx.arc(star.x, star.y, 26, 0, Math.PI * 2);
       ctx.stroke();
     }
   });
@@ -445,7 +445,7 @@ function handleTap(x, y) {
   if (S.awaitingAck) return;
   // Find closest star
   let closest = null;
-  let closestDist = 78;
+  let closestDist = 170;
   
   S.stars.forEach((star, i) => {
     const dist = Math.hypot(x - star.x, y - star.y);
@@ -494,7 +494,9 @@ function completeConstellation() {
   S.completedConstellations++;
 
   const c = CONSTELLATIONS[S.currentConstellation];
-  showSignal(`${c.name} came into view. Shared meaning grows when the two of you keep linking one small truth to the next.`, 'soft', true, () => {
+  showSignal(`${c.name} came into view. Shared meaning grows when the two of you keep linking one small truth to the next.`, 'soft', false);
+  setTimeout(() => {
+    S.selectedStar = null;
     if (S.currentConstellation < CONSTELLATIONS.length - 1) {
       S.currentConstellation++;
       loadConstellation(S.currentConstellation);
@@ -502,7 +504,7 @@ function completeConstellation() {
     } else {
       completeGame();
     }
-  });
+  }, 1800);
 }
 
 // Touch/click handlers
@@ -551,7 +553,7 @@ function begin() {
   document.getElementById('panel').classList.add('panel-hidden');
 
   S.gameLoop = setInterval(() => draw(), 50);
-  showSignal('Connect the stars one by one. Shared meaning appears when the two of you keep linking one small truth to the next.', 'soft', true);
+  showSignal('Connect the stars one by one. Shared meaning appears when the two of you keep linking one small truth to the next.', 'soft', false);
 }
 
 function completeGame() {
@@ -565,7 +567,7 @@ function completeGame() {
   document.getElementById('controls').style.display = 'none';
   document.getElementById('seed-btn').style.display = 'flex';
 
-  showSignal('You stayed with the pattern long enough to see it. That is how shared meaning is built in a relationship.', 'soft', true);
+  showSignal('You stayed with the pattern long enough to see it. That is how shared meaning is built in a relationship.', 'soft', false);
 }
 
 function fadeD(sym, text) {
@@ -616,7 +618,7 @@ function showSignal(text, tone = 'soft', requireAck = false, onAck = null) {
     };
   }
   requestAnimationFrame(() => el.classList.add('show'));
-  if (!requireAck) setTimeout(() => hideSignal(), 2400);
+  if (!requireAck) setTimeout(() => hideSignal(), 3200);
 }
 
 // Practice

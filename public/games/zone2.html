@@ -214,7 +214,8 @@ html,body{
 }
 @media (max-width:420px){
   #panel{max-height:min(25vh,250px) !important;}
-  .dlg-text{font-size:clamp(18px,4.9vw,24px) !important;}
+  .dlg-text{font-size:clamp(16px,4.2vw,21px) !important; line-height:1.46 !important;}
+  .oi-desc,.ps-body,.done-bo,.ps-carry{font-size:clamp(16px,4vw,19px) !important; line-height:1.56 !important;}
 }
 .web-embed .exit-x{display:none !important;}
 </style>
@@ -258,10 +259,10 @@ html,body{
     </div>
     <div id="controls">
       <div class="ctrl-row">
-        <button class="ctrl-btn up" onclick="moveUp()">ACTIVATE</button>
-        <button class="ctrl-btn down" onclick="moveDown()">CALM</button>
+        <button class="ctrl-btn up" onclick="moveUp()">WAKE UP</button>
+        <button class="ctrl-btn down" onclick="moveDown()">SETTLE</button>
       </div>
-      <button class="ctrl-btn center" onclick="findCenter()">FIND YOUR CENTER AND BREATHE</button>
+      <button class="ctrl-btn center" onclick="findCenter()">RETURN TO CENTER</button>
     </div>
     <div id="seed-btn">
       <button onclick="openPractice()">PICK UP THE SEED</button>
@@ -290,7 +291,7 @@ html,body{
 </svg>
   <div class="oi-big">The Window</div>
   <div class="oi-sub">Trust the relational field</div>
-  <div class="oi-desc">Your nervous system has a window — a range where you can stay present, connected, and responsive.<br><br>Outside that window, everything becomes harder. Learn to find your way back.</div>
+  <div class="oi-desc">Your nervous system has a steady middle. When you drift above it or below it, connection gets harder. This step helps you feel your way back.</div>
   <div class="oi-note">Move slowly and let the lesson land</div>
 <button class="oi-btn" onclick="begin()">ENTER THE FIELD</button>
 </div>
@@ -366,10 +367,13 @@ function begin() {
   el.style.pointerEvents = 'none';
   setTimeout(() => el.style.display = 'none', 700);
   S.running = true;
-  S.phase = 'dialogue';
   addParticles();
-  setTimeout(() => showLine(0), 500);
+  setTimeout(() => {
+    startGame();
+    fadeD('+', 'You are above your window now. Tap the buttons to settle, wake up, and return to center.', null);
+  }, 420);
 }
+
 
 function addParticles() {
   const terrain = document.getElementById('terrain');
@@ -451,8 +455,8 @@ function findCenter() {
   setTimeout(() => {
     avatar.classList.remove('breathing');
     checkZone();
-  }, 2000);
-  fadeD('+', 'Breathe. The center is where you can stay present.', null);
+  }, 1200);
+  fadeD('+', 'Breathe. Let your body feel the middle again.', null);
 }
 
 function updateAvatar() {
@@ -475,8 +479,8 @@ function updateAvatar() {
 }
 
 function checkZone() {
-  if (S.position >= 35 && S.position <= 65 && S.breathCount >= 2) {
-    setTimeout(completeGame, 1200);
+  if (S.position >= 35 && S.position <= 65 && S.breathCount >= 1) {
+    setTimeout(completeGame, 900);
   } else if (S.position < 25) {
     fadeD('↑', 'Too high. Your system is activated.\nCalm, or find your center.', null);
   } else if (S.position > 75) {
@@ -493,6 +497,9 @@ function completeGame() {
   document.getElementById('state-meter').style.display = 'none';
   document.getElementById('seed-btn').style.display = 'flex';
   fadeD('+', 'You found it.\n\nThis is your window of tolerance.\nRemember what steadiness feels like.', null);
+  setTimeout(() => {
+    if (S.phase === 'done') document.getElementById('o-done').classList.add('on');
+  }, 1400);
 }
 
 let P = { step: 0 };
