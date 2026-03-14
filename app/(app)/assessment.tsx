@@ -229,6 +229,16 @@ export default function AssessmentScreen() {
     try {
       const scores = config.scoringFn(responses);
 
+      // Determine instrument version for this assessment type
+      const INSTRUMENT_VERSIONS: Record<string, string> = {
+        'ecr-r': 'original',
+        'dutch': 'tender-ip-v1',
+        'sseit': 'tender-ip-v1',
+        'values': 'tender-ip-v1',
+        'dsi-r': 'trimmed-v1',
+        'ipip-neo-120': 'trimmed-v1',
+      };
+
       // Always save to assessments table (backward compat + individual record)
       const { error } = await supabase.from('assessments').insert({
         user_id: user!.id,
@@ -236,6 +246,7 @@ export default function AssessmentScreen() {
         responses,
         scores,
         completed_at: new Date().toISOString(),
+        instrument_version: INSTRUMENT_VERSIONS[config.type] ?? null,
       });
 
       if (error) {

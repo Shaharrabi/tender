@@ -174,7 +174,7 @@ export default function ConflictRose({ dutchScores, size: sizeProp }: ConflictRo
           {/* Center dot */}
           <Circle cx={cx} cy={cy} r={4} fill={Colors.text} fillOpacity={0.2} />
 
-          {/* Petal labels */}
+          {/* Petal labels — show both style name and relational label */}
           {PETALS.map((petal, i) => {
             const isPrimary = petal.key === primaryStyle;
             const angle = (2 * Math.PI * i) / N - Math.PI / 2;
@@ -182,18 +182,30 @@ export default function ConflictRose({ dutchScores, size: sizeProp }: ConflictRo
             const x = cx + labelR * Math.cos(angle);
             const y = cy + labelR * Math.sin(angle);
             return (
-              <SvgText
-                key={`label-${i}`}
-                x={x}
-                y={y + 4}
-                fill={isPrimary ? petal.color : Colors.textSecondary}
-                fontSize={isPrimary ? 12 : 11}
-                fontFamily={FontFamilies.body}
-                fontWeight={isPrimary ? '700' : '500'}
-                textAnchor="middle"
-              >
-                {petal.relationalLabel}
-              </SvgText>
+              <G key={`label-${i}`}>
+                <SvgText
+                  x={x}
+                  y={y - 2}
+                  fill={isPrimary ? petal.color : Colors.text}
+                  fontSize={isPrimary ? 12 : 11}
+                  fontFamily={FontFamilies.body}
+                  fontWeight={isPrimary ? '700' : '600'}
+                  textAnchor="middle"
+                >
+                  {petal.relationalLabel}
+                </SvgText>
+                <SvgText
+                  x={x}
+                  y={y + 12}
+                  fill={isPrimary ? petal.color : Colors.textMuted}
+                  fontSize={9}
+                  fontFamily={FontFamilies.body}
+                  fontWeight="400"
+                  textAnchor="middle"
+                >
+                  {petal.label}
+                </SvgText>
+              </G>
             );
           })}
         </AnimatedSvg>

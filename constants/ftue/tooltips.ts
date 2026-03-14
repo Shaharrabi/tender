@@ -4,8 +4,8 @@
  * Each tooltip shows once, then is tracked as "seen" in FirstTimeContext.
  * Tooltips are managed per-screen by the TooltipManager component.
  *
- * Home screen: Only 4 tooltips for key features (assessment, courses,
- * journal, community). The app auto-scrolls to each target.
+ * Home screen: 8 tooltips — assessment, 12 steps, portal, couple portal,
+ * then tabs (journal, nuance AI, courses, community). The app auto-scrolls to each target.
  */
 
 export type TooltipPosition = 'top' | 'bottom';
@@ -39,10 +39,40 @@ export const TOOLTIP_CONFIGS: TooltipConfig[] = [
     screen: 'home',
     targetRef: 'home_assessmentCta',
     title: 'Start here',
-    body: 'The Tender Assessment takes about an hour \u2014 but you can pause anytime and pick up where you left off.',
+    body: 'The Tender Assessment takes about 30 minutes \u2014 but you can pause anytime and pick up where you left off.',
     ctaText: 'Got it',
     position: 'bottom',
     order: 1,
+  },
+  {
+    id: 'tooltip_home_12steps',
+    screen: 'home',
+    targetRef: 'home_journeyCard',
+    title: 'The 12 Steps',
+    body: 'Your growth is mapped across twelve steps \u2014 each one builds on the last. Practices, reflections, and exercises guide you through attachment, intimacy, and real change.',
+    ctaText: 'Got it',
+    position: 'bottom',
+    order: 2,
+  },
+  {
+    id: 'tooltip_home_portal',
+    screen: 'home',
+    targetRef: 'home_portraitCard',
+    title: 'Your Portal',
+    body: 'Complete the assessment to unlock your personal portrait \u2014 a map of how you attach, feel, and connect. Everything else builds from here.',
+    ctaText: 'Got it',
+    position: 'bottom',
+    order: 3,
+  },
+  {
+    id: 'tooltip_home_couple_portal',
+    screen: 'home',
+    targetRef: 'home_partnerSection',
+    title: 'Couple Portal',
+    body: 'Invite your partner to join. When you\u2019re both here, couple exercises, shared reflections, and your relationship portrait unlock automatically.',
+    ctaText: 'Got it',
+    position: 'bottom',
+    order: 4,
   },
   {
     id: 'tooltip_home_journal',
@@ -52,7 +82,7 @@ export const TOOLTIP_CONFIGS: TooltipConfig[] = [
     body: "Every practice and check-in lives here. Come back anytime to see how far you've come.",
     ctaText: 'Got it',
     position: 'bottom',
-    order: 2,
+    order: 5,
   },
   {
     id: 'tooltip_home_nuance',
@@ -62,7 +92,7 @@ export const TOOLTIP_CONFIGS: TooltipConfig[] = [
     body: 'Your relationship coach \u2014 here to help you make sense of patterns and practice something new.',
     ctaText: 'Got it',
     position: 'bottom',
-    order: 3,
+    order: 6,
   },
   {
     id: 'tooltip_home_courses',
@@ -72,7 +102,7 @@ export const TOOLTIP_CONFIGS: TooltipConfig[] = [
     body: 'Each course is 5 short lessons. Start with whatever calls to you.',
     ctaText: 'Got it',
     position: 'bottom',
-    order: 4,
+    order: 7,
   },
   {
     id: 'tooltip_home_community',
@@ -82,7 +112,7 @@ export const TOOLTIP_CONFIGS: TooltipConfig[] = [
     body: 'Anonymous stories from people on a similar path \u2014 filtered just for you.',
     ctaText: 'Got it',
     position: 'bottom',
-    order: 5,
+    order: 8,
   },
 
   // ═══════════════════════════════════════════════════════════

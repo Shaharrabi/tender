@@ -30,23 +30,56 @@ import { GamificationProvider } from '@/context/GamificationContext';
 import { FirstTimeProvider } from '@/context/FirstTimeContext';
 import { NetworkProvider } from '@/context/NetworkContext';
 import OfflineBanner from '@/components/ui/OfflineBanner';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SoundHaptics } from '@/services/SoundHapticsService';
 import { registerAllAppSounds } from '@/services/sounds';
-import { registerAndStorePushToken, refreshNotificationContent } from '@/services/notifications';
+import {
+  registerAndStorePushToken,
+  scheduleWeeklyCheckIn,
+  scheduleDailyReminder,
+  cancelWeeklyCheckIn,
+  cancelDailyReminder,
+} from '@/services/notifications';
 
 // Keep splash screen visible while loading fonts
 SplashScreen.preventAutoHideAsync();
 
-/** Registers push token + schedules local notifications once authed. */
+/** Registers push token + schedules local notifications once authed.
+ *  Respects user notification preferences from AsyncStorage. */
 function NotificationSetup() {
   const { session } = useAuth();
   const userId = session?.user?.id;
 
   useEffect(() => {
     if (!userId) return;
-    // Non-blocking: register token & refresh notification content with fresh prompts
+    // Non-blocking: register push token
     registerAndStorePushToken(userId).catch(() => {});
-    refreshNotificationContent(9, 0, 9, 0).catch(() => {});
+    // Schedule notifications only if user has them enabled
+    (async () => {
+      try {
+        const stored = await AsyncStorage.getItem('tender_notification_prefs');
+        const prefs = stored ? JSON.parse(stored) : null;
+        const timeHour = prefs?.reminderTime === 'afternoon' ? 13
+          : prefs?.reminderTime === 'evening' ? 19
+          : 8; // morning default
+
+        // Weekly check-in (dailyCheckInReminder controls the weekly check-in)
+        if (prefs?.dailyCheckInReminder === false) {
+          await cancelWeeklyCheckIn();
+        } else {
+          await scheduleWeeklyCheckIn(timeHour, 0);
+        }
+
+        // Daily practice reminder
+        if (prefs?.practiceReminders === false) {
+          await cancelDailyReminder();
+        } else {
+          await scheduleDailyReminder(timeHour, 0);
+        }
+      } catch {
+        // If we can't read prefs, don't schedule anything — safe default
+      }
+    })();
   }, [userId]);
 
   return null;

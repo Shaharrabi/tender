@@ -136,6 +136,7 @@ export default function TenderAssessmentScreen() {
   );
   const [completedSections, setCompletedSections] = useState<string[]>([]);
   const [showingSectionBreak, setShowingSectionBreak] = useState(false);
+  const [showingSectionIntro, setShowingSectionIntro] = useState(false);
   const [submittingSection, setSubmittingSection] = useState(false);
   const [showingCompletion, setShowingCompletion] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -388,7 +389,7 @@ export default function TenderAssessmentScreen() {
 
   // Scroll to top whenever the question changes — safety net for auto-advance timing
   useEffect(() => {
-    if (!showingIntro && !showingSectionBreak && !showingDomainBreak && !showingCompletion) {
+    if (!showingIntro && !showingSectionBreak && !showingSectionIntro && !showingDomainBreak && !showingCompletion) {
       scrollViewRef.current?.scrollTo({ y: 0, animated: false });
     }
   }, [qIndex, currentSectionIndex]);
@@ -626,6 +627,16 @@ export default function TenderAssessmentScreen() {
         return;
       }
 
+      // Determine instrument version for this assessment type
+      const INSTRUMENT_VERSIONS: Record<string, string> = {
+        'ecr-r': 'original',
+        'dutch': 'tender-ip-v1',
+        'sseit': 'tender-ip-v1',
+        'values': 'tender-ip-v1',
+        'dsi-r': 'trimmed-v1',
+        'ipip-neo-120': 'trimmed-v1',
+      };
+
       // Save to Supabase with the ORIGINAL assessment type
       const { error } = await supabase.from('assessments').insert({
         user_id: user.id,
@@ -633,6 +644,7 @@ export default function TenderAssessmentScreen() {
         responses: combined,
         scores,
         completed_at: new Date().toISOString(),
+        instrument_version: INSTRUMENT_VERSIONS[currentConfig.type] ?? null,
       });
 
       if (error) {
@@ -741,6 +753,10 @@ export default function TenderAssessmentScreen() {
 
     setCurrentSectionIndex(nextIdx);
     setShowingSectionBreak(false);
+    // Show section intro for the new section (unless resuming mid-section)
+    if (!states[nextIdx]?.responses?.some((r: any) => r != null)) {
+      setShowingSectionIntro(true);
+    }
     saveProgress(nextIdx, states, completed);
   };
 
@@ -843,6 +859,11 @@ export default function TenderAssessmentScreen() {
       // Not started or in-progress — jump directly
       setCurrentSectionIndex(idx);
       setShowingIntro(false);
+      // Show section intro if not yet started (no answers)
+      const hasAnswers = sectionStates[idx]?.responses?.some((r: any) => r != null);
+      if (!hasAnswers) {
+        setShowingSectionIntro(true);
+      }
     }
   };
 
@@ -858,8 +879,14 @@ export default function TenderAssessmentScreen() {
     const firstIncomplete = TENDER_SECTIONS.findIndex(
       (sec) => !completedSections.includes(sec.assessmentType),
     );
-    setCurrentSectionIndex(firstIncomplete >= 0 ? firstIncomplete : 0);
+    const idx = firstIncomplete >= 0 ? firstIncomplete : 0;
+    setCurrentSectionIndex(idx);
     setShowingIntro(false);
+    // Show section intro for fresh sections
+    const hasAnswers = sectionStates[idx]?.responses?.some((r: any) => r != null);
+    if (!hasAnswers) {
+      setShowingSectionIntro(true);
+    }
   };
 
   // ── Derived values for question flow (must be computed before conditional
@@ -1202,6 +1229,40 @@ export default function TenderAssessmentScreen() {
   // useEffect above triggers advanceToNextSection.
   if (currentSectionState.completed) {
     return null;
+  }
+
+  // ── Render: Section Intro ──
+  if (showingSectionIntro) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.sectionIntroCenter}>
+          <Text style={styles.sectionIntroLabel}>
+            SECTION {currentSection.sectionNumber} OF {TENDER_SECTIONS.length}
+          </Text>
+          <Text style={styles.sectionIntroTitle}>{currentSection.fieldName}</Text>
+          <Text style={styles.sectionIntroDesc}>{currentSection.fieldDescription}</Text>
+          <Text style={styles.sectionIntroTime}>
+            ~{currentSection.estimatedMinutes} minutes · {totalCombined} questions
+          </Text>
+        </View>
+        <View style={styles.sectionIntroActions}>
+          <TouchableOpacity
+            style={styles.sectionIntroCta}
+            onPress={() => setShowingSectionIntro(false)}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.sectionIntroCtaText}>Begin Section →</Text>
+          </TouchableOpacity>
+          <TenderButton
+            title="Save & Exit"
+            onPress={handleSaveAndExit}
+            variant="outline"
+            size="lg"
+            fullWidth
+          />
+        </View>
+      </SafeAreaView>
+    );
   }
 
   // ── Render: Question Flow ──
@@ -1699,6 +1760,59 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontWeight: '700',
     textAlign: 'center' as const,
+  },
+
+  // ── Section Intro ──
+  sectionIntroCenter: {
+    flex: 1,
+    paddingHorizontal: Spacing.xl,
+    justifyContent: 'center',
+    alignItems: 'center' as const,
+    gap: Spacing.md,
+  },
+  sectionIntroLabel: {
+    fontSize: 10,
+    letterSpacing: 2,
+    fontWeight: '600',
+    color: Colors.textMuted,
+    textTransform: 'uppercase' as const,
+    marginBottom: Spacing.sm,
+  },
+  sectionIntroTitle: {
+    fontSize: FontSizes.headingL,
+    fontWeight: '700',
+    fontFamily: FontFamilies.heading,
+    color: Colors.text,
+    textAlign: 'center' as const,
+  },
+  sectionIntroDesc: {
+    fontSize: FontSizes.body,
+    color: Colors.textSecondary,
+    textAlign: 'center' as const,
+    lineHeight: 24,
+    maxWidth: 340,
+  },
+  sectionIntroTime: {
+    fontSize: FontSizes.caption,
+    color: Colors.textMuted,
+    marginTop: Spacing.sm,
+  },
+  sectionIntroActions: {
+    paddingHorizontal: Spacing.xl,
+    paddingBottom: Spacing.xl,
+    gap: Spacing.sm,
+  },
+  sectionIntroCta: {
+    backgroundColor: Colors.primary,
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center' as const,
+  },
+  sectionIntroCtaText: {
+    fontSize: FontSizes.body,
+    fontWeight: '600',
+    color: Colors.textOnPrimary,
+    letterSpacing: 0.3,
   },
 
   // ── Internal Domain Break ──

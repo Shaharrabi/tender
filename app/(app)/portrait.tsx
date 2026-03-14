@@ -1516,7 +1516,7 @@ function ValuesCompassInfographic({
           );
         })}
         <View style={st.valuesCompassCenter}>
-          <StarIcon size={16} color={Colors.primary} />
+          <CompassIcon size={18} color={Colors.primary} />
         </View>
       </View>
 

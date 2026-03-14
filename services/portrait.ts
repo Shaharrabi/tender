@@ -21,13 +21,30 @@ export async function checkCanGeneratePortrait(
   return { canGenerate: missing.length === 0, missingAssessments: missing };
 }
 
-/** Fetch the most recent scores for each of the 6 assessments. */
-export async function fetchAllScores(userId: string) {
+/**
+ * Fetch only scores for assessment types the partner has shared.
+ * Used when loading partner data — respects sharing_preferences.
+ */
+export async function fetchSharedScores(
+  userId: string,
+  sharedTypes: string[],
+) {
+  if (sharedTypes.length === 0) return {};
+  const validTypes = sharedTypes.filter((t) =>
+    REQUIRED_ASSESSMENTS.includes(t as AssessmentType),
+  );
+  if (validTypes.length === 0) return {};
+  return fetchAllScores(userId, validTypes);
+}
+
+/** Fetch the most recent scores for each of the 6 assessments (or a filtered subset). */
+export async function fetchAllScores(userId: string, typeFilter?: string[]) {
+  const types = typeFilter ?? REQUIRED_ASSESSMENTS;
   const { data, error } = await supabase
     .from('assessments')
     .select('id, type, scores')
     .eq('user_id', userId)
-    .in('type', REQUIRED_ASSESSMENTS)
+    .in('type', types)
     .order('completed_at', { ascending: false });
 
   if (error) throw error;

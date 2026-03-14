@@ -18,7 +18,8 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
 // ─── CORS — restrict to your domains only ────────────
 const PRODUCTION_ORIGINS = [
-  'https://couples-app-demo.netlify.app',
+  'https://tender-app.netlify.app',
+  // TODO: Add your production domain here before launch
 ];
 
 function isAllowedOrigin(origin: string): boolean {
@@ -171,7 +172,7 @@ serve(async (req: Request) => {
     const { data: profileRow } = await supabase
       .from('user_profiles')
       .select('relationship_mode, demo_partner_id')
-      .eq('id', userId)
+      .eq('user_id', userId)
       .single();
 
     const relationshipMode = profileRow?.relationship_mode || 'solo';

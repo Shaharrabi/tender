@@ -26,7 +26,8 @@ import type { CompositeScores, SupplementScores } from '@/types/portrait';
 import type { Couple } from '@/types/couples';
 
 import { getPortrait } from '@/services/portrait';
-import { fetchAllScores, extractSupplementScores } from '@/services/portrait';
+import { fetchAllScores, fetchSharedScores, extractSupplementScores } from '@/services/portrait';
+import { getPartnerSharedAssessments } from '@/services/consent';
 import { getMyCouple, getLatestDyadicScores } from '@/services/couples';
 import { getStreakData } from '@/services/streaks';
 import { getCurrentStepNumber } from '@/services/steps';
@@ -50,7 +51,10 @@ export async function collectWEAREData(
     ? couple.partner_b_id
     : couple.partner_a_id;
 
-  // Phase 2: Parallel fetch all data sources
+  // Phase 2: Fetch partner's sharing preferences so we only access shared data
+  const partnerSharedTypes = await getPartnerSharedAssessments(partnerId, couple.id);
+
+  // Phase 3: Parallel fetch all data sources
   const [
     partnerAData,
     partnerBData,
@@ -60,8 +64,8 @@ export async function collectWEAREData(
     behavioral,
     previousProfile,
   ] = await Promise.all([
-    collectPartnerData(userId),
-    collectPartnerData(partnerId).catch(() => null),
+    collectPartnerData(userId),                                     // own data — full access
+    collectPartnerData(partnerId, partnerSharedTypes).catch(() => null), // partner — shared only
     fetchRelationalFieldScores(couple.id),
     fetchCoupleFieldScores(couple.id),
     getCoupleWeeklyCheckIns(couple.id, couple.partner_a_id, couple.partner_b_id),
@@ -92,11 +96,18 @@ export async function collectWEAREData(
 
 async function collectPartnerData(
   userId: string,
+  sharedTypes?: string[],
 ): Promise<WEAREPartnerData | null> {
   try {
+    // If sharedTypes is provided, only fetch those assessment types (partner access)
+    // If not provided, fetch all (own data)
+    const scoresFetcher = sharedTypes !== undefined
+      ? fetchSharedScores(userId, sharedTypes)
+      : fetchAllScores(userId);
+
     const [portrait, allScoresMap] = await Promise.all([
       getPortrait(userId),
-      fetchAllScores(userId),
+      scoresFetcher,
     ]);
 
     if (!portrait) return null;
