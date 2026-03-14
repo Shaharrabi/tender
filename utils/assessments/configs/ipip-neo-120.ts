@@ -76,7 +76,7 @@ const FACETS: FacetDef[] = [
   { key: 'A1_trust', label: 'Trust', domain: 'agreeableness', items: [36, 37] },
   { key: 'A2_morality', label: 'Morality', domain: 'agreeableness', items: [38, 39] },
   { key: 'A3_altruism', label: 'Altruism', domain: 'agreeableness', items: [40, 41] },
-  { key: 'A4_cooperation', label: 'Cooperation', domain: 'agreeableness', items: [42, 43] },
+  { key: 'A4_Cooperation', label: 'Cooperation', domain: 'agreeableness', items: [42, 43] },
   { key: 'A5_modesty', label: 'Modesty', domain: 'agreeableness', items: [44, 45] },
   { key: 'A6_sympathy', label: 'Sympathy', domain: 'agreeableness', items: [46, 47] },
   // Conscientiousness (2 items each)
@@ -174,8 +174,8 @@ const QUESTIONS: GenericQuestion[] = [
   { id: 41, text: 'Am concerned about others.', inputType: 'likert', subscale: 'A3_altruism' },
   { id: 42, text: 'Am indifferent to the feelings of others.', inputType: 'likert', subscale: 'A3_altruism', reverseScored: true },
   // A4: Cooperation (orig items 85R, 86R) — MUST have 2+ items (used in synthesis)
-  { id: 43, text: 'Love a good fight.', inputType: 'likert', subscale: 'A4_cooperation', reverseScored: true },
-  { id: 44, text: 'Yell at people.', inputType: 'likert', subscale: 'A4_cooperation', reverseScored: true },
+  { id: 43, text: 'Love a good fight.', inputType: 'likert', subscale: 'A4_Cooperation', reverseScored: true },
+  { id: 44, text: 'Yell at people.', inputType: 'likert', subscale: 'A4_Cooperation', reverseScored: true },
   // A5: Modesty (orig items 89R, 90R)
   { id: 45, text: 'Believe that I am better than others.', inputType: 'likert', subscale: 'A5_modesty', reverseScored: true },
   { id: 46, text: 'Think highly of myself.', inputType: 'likert', subscale: 'A5_modesty', reverseScored: true },

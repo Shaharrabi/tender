@@ -627,6 +627,16 @@ export default function TenderAssessmentScreen() {
         return;
       }
 
+      // Determine instrument version for this assessment type
+      const INSTRUMENT_VERSIONS: Record<string, string> = {
+        'ecr-r': 'original',
+        'dutch': 'tender-ip-v1',
+        'sseit': 'tender-ip-v1',
+        'values': 'tender-ip-v1',
+        'dsi-r': 'trimmed-v1',
+        'ipip-neo-120': 'trimmed-v1',
+      };
+
       // Save to Supabase with the ORIGINAL assessment type
       const { error } = await supabase.from('assessments').insert({
         user_id: user.id,
@@ -634,6 +644,7 @@ export default function TenderAssessmentScreen() {
         responses: combined,
         scores,
         completed_at: new Date().toISOString(),
+        instrument_version: INSTRUMENT_VERSIONS[currentConfig.type] ?? null,
       });
 
       if (error) {
