@@ -29,7 +29,7 @@ import { useAuth } from '@/context/AuthContext';
 import { TooltipManager } from '@/components/ftue/TooltipManager';
 import { WelcomeAudio } from '@/components/ftue/WelcomeAudio';
 import QuickLinksBar from '@/components/QuickLinksBar';
-import { getPortrait, savePortrait, extractSupplementScores, fetchPreviousScores } from '@/services/portrait';
+import { getPortrait, savePortrait, extractSupplementScores, fetchPreviousScores, getPortraitHistory, type PortraitHistoryEntry } from '@/services/portrait';
 import { fetchGrowthBoostData } from '@/services/growth-boost';
 import { getGrowthBoostedScore, calculatePerScoreBoosts, type GrowthBoostedResult } from '@/utils/portrait/growth-boost';
 import type { CompositeScores } from '@/types/portrait';
@@ -109,6 +109,7 @@ import GrowthEdgeSummaryCard from '@/components/portrait-enhancements/GrowthEdge
 import AnchorQuickAccess from '@/components/portrait-enhancements/AnchorQuickAccess';
 import MatrixTab from '@/components/portrait/MatrixTab';
 import AudioLibrary from '@/components/audio/AudioLibrary';
+import PortraitHistoryChart from '@/components/portrait/PortraitHistoryChart';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -561,6 +562,7 @@ export default function PortraitScreen() {
   const [isViewAndErase, setIsViewAndErase] = useState(false);
   const [growthBoostResult, setGrowthBoostResult] = useState<GrowthBoostedResult | null>(null);
   const [perScoreBoosts, setPerScoreBoosts] = useState<Partial<Record<keyof CompositeScores, number>>>({});
+  const [portraitHistory, setPortraitHistory] = useState<PortraitHistoryEntry[]>([]);
   const [journeyData, setJourneyData] = useState<{
     stepsCompleted: number;
     totalSteps: number;
@@ -739,6 +741,15 @@ export default function PortraitScreen() {
     // Scroll content to top when switching tabs
     contentScrollRef.current?.scrollTo({ y: 0, animated: true });
   };
+
+  // Load portrait history when scores tab becomes active
+  useEffect(() => {
+    if (activeTab === 'scores' && user && portraitHistory.length === 0) {
+      getPortraitHistory(user.id)
+        .then(setPortraitHistory)
+        .catch(() => setPortraitHistory([]));
+    }
+  }, [activeTab, user]);
 
   // Full portrait export — renders all tabs and triggers browser print
   const handleExportAll = async () => {
@@ -999,7 +1010,7 @@ export default function PortraitScreen() {
           )}
           {activeTab === 'scores' && (
             <>
-              <ScoresTab portrait={portrait} overallScore={overallScore} rawScores={rawScores} scoreViewMode={scoreViewMode} setScoreViewMode={setScoreViewMode} perScoreBoosts={perScoreBoosts} />
+              <ScoresTab portrait={portrait} overallScore={overallScore} rawScores={rawScores} scoreViewMode={scoreViewMode} setScoreViewMode={setScoreViewMode} perScoreBoosts={perScoreBoosts} history={portraitHistory} />
               {previousCompositeScores && (
                 <ReassessmentDelta
                   previous={previousCompositeScores}
@@ -1844,6 +1855,21 @@ function CycleDiagramInfographic({
 
 // ─── SCORES TAB ─────────────────────────────────────
 
+const PROGRESS_SCORE_OPTIONS: { key: keyof CompositeScores; label: string }[] = [
+  { key: 'accessibility', label: 'Accessibility' },
+  { key: 'responsiveness', label: 'Responsiveness' },
+  { key: 'engagement', label: 'Engagement' },
+  { key: 'regulationScore', label: 'Regulation' },
+  { key: 'windowWidth', label: 'Window Width' },
+  { key: 'selfLeadership', label: 'Self-Leadership' },
+  { key: 'valuesCongruence', label: 'Values Congruence' },
+  { key: 'attachmentSecurity', label: 'Attachment Security' },
+  { key: 'emotionalIntelligence', label: 'Emotional Intelligence' },
+  { key: 'differentiation', label: 'Differentiation' },
+  { key: 'conflictFlexibility', label: 'Conflict Flexibility' },
+  { key: 'relationalAwareness', label: 'Relational Awareness' },
+];
+
 function ScoresTab({
   portrait,
   overallScore,
@@ -1851,6 +1877,7 @@ function ScoresTab({
   scoreViewMode,
   setScoreViewMode,
   perScoreBoosts = {},
+  history = [],
 }: {
   portrait: IndividualPortrait;
   overallScore: number;
@@ -1858,9 +1885,11 @@ function ScoresTab({
   scoreViewMode: 'numbers' | 'story';
   setScoreViewMode: (mode: 'numbers' | 'story') => void;
   perScoreBoosts?: Partial<Record<keyof CompositeScores, number>>;
+  history?: PortraitHistoryEntry[];
 }) {
   const cs = portrait.compositeScores;
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const [selectedScoreKey, setSelectedScoreKey] = useState<keyof CompositeScores>('accessibility');
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -2014,6 +2043,58 @@ function ScoresTab({
         }
         triggers={portrait.negativeCycle.primaryTriggers.slice(0, 3)}
       />
+
+      {/* Progress Over Time */}
+      <View style={st.progressSection}>
+        <TenderText variant="label" color={Colors.primary} style={{ letterSpacing: 1.2, marginBottom: 4 }}>
+          YOUR SCORES OVER TIME
+        </TenderText>
+        {history.length === 0 ? (
+          <TenderText variant="body" color={Colors.textSecondary} style={{ marginTop: 8, lineHeight: 22 }}>
+            Retake your assessment after working on your growth edges to see your scores change over time.
+          </TenderText>
+        ) : (
+          <>
+            <TenderText variant="body" color={Colors.textSecondary} style={{ marginBottom: 12 }}>
+              Select a score to track your progress across retakes.
+            </TenderText>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{ marginBottom: 12 }}
+              contentContainerStyle={{ gap: 8 }}
+            >
+              {PROGRESS_SCORE_OPTIONS.map((opt) => (
+                <TouchableOpacity
+                  key={opt.key}
+                  style={[
+                    st.scorePickerChip,
+                    selectedScoreKey === opt.key && st.scorePickerChipActive,
+                  ]}
+                  onPress={() => setSelectedScoreKey(opt.key)}
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Track ${opt.label}`}
+                  accessibilityState={{ selected: selectedScoreKey === opt.key }}
+                >
+                  <TenderText
+                    variant="caption"
+                    color={selectedScoreKey === opt.key ? Colors.textOnPrimary : Colors.text}
+                    style={{ fontWeight: selectedScoreKey === opt.key ? '700' : '500' }}
+                  >
+                    {opt.label}
+                  </TenderText>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+            <PortraitHistoryChart
+              history={history}
+              currentScores={cs}
+              scoreKey={selectedScoreKey}
+            />
+          </>
+        )}
+      </View>
     </Animated.View>
   );
 }
@@ -3718,5 +3799,25 @@ const st = StyleSheet.create({
   reframeItem: {
     paddingTop: Spacing.sm,
     marginTop: Spacing.sm,
+  },
+
+  // ── Progress Over Time ──
+  progressSection: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    marginTop: Spacing.md,
+  },
+  scorePickerChip: {
+    paddingHorizontal: Spacing.sm + 2,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.pill,
+    backgroundColor: Colors.borderLight,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  scorePickerChipActive: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
   },
 });

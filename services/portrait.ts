@@ -1,6 +1,42 @@
 import { supabase } from './supabase';
 import type { IndividualPortrait, AssessmentType } from '@/types';
-import type { SupplementScores } from '@/types/portrait';
+import type { SupplementScores, CompositeScores } from '@/types/portrait';
+
+// ─── Portrait History ────────────────────────────────────
+
+export interface PortraitHistoryEntry {
+  archivedAt: string;
+  version: number;
+  compositeScores: CompositeScores;
+  reason: string;
+}
+
+export async function getPortraitHistory(userId: string): Promise<PortraitHistoryEntry[]> {
+  try {
+    const { data, error } = await supabase
+      .from('portraits_history')
+      .select('archived_at, version, portrait_snapshot, reason')
+      .eq('user_id', userId)
+      .order('archived_at', { ascending: true })
+      .limit(10);
+
+    if (error) {
+      // Gracefully handle missing table or other errors
+      console.warn('[getPortraitHistory] Non-blocking error:', error.message);
+      return [];
+    }
+
+    return (data ?? []).map((row: any) => ({
+      archivedAt: row.archived_at,
+      version: row.version ?? 1,
+      compositeScores: row.portrait_snapshot?.composite_scores ?? row.portrait_snapshot?.compositeScores ?? {} as CompositeScores,
+      reason: row.reason ?? 'retake',
+    }));
+  } catch (err) {
+    console.warn('[getPortraitHistory] Unexpected error:', err);
+    return [];
+  }
+}
 
 const REQUIRED_ASSESSMENTS: AssessmentType[] = [
   'ecr-r', 'dutch', 'sseit', 'dsi-r', 'ipip-neo-120', 'values',

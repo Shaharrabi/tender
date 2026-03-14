@@ -10,7 +10,7 @@
  * 6. Anchors — Couple anchors, repair starters
  */
 
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   View,
   TouchableOpacity,
@@ -21,6 +21,7 @@ import {
   Dimensions,
   Platform,
   Alert,
+  Animated,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -170,6 +171,9 @@ function CouplePortalScreen() {
   const [weareProfile, setWeareProfile] = useState<WEAREProfile | null>(null);
   const [weeklyCheckIn, setWeeklyCheckIn] = useState<WeeklyCheckIn | null>(null);
   const [assessViewMode, setAssessViewMode] = useState<'numbers' | 'story'>('numbers');
+  const [showCheckInCelebration, setShowCheckInCelebration] = useState(false);
+  const celebrationOpacity = useRef(new Animated.Value(0)).current;
+  const checkInCardRef = useRef<View>(null);
 
   const loadData = useCallback(async () => {
     if (!user) return;
@@ -526,6 +530,28 @@ function CouplePortalScreen() {
   }, [user]);
 
   useFocusEffect(useCallback(() => { loadData(); }, [loadData]));
+
+  // ─── Celebration animation ────────────────────────────
+  useEffect(() => {
+    if (showCheckInCelebration) {
+      celebrationOpacity.setValue(0);
+      Animated.sequence([
+        Animated.timing(celebrationOpacity, { toValue: 1, duration: 300, useNativeDriver: true }),
+        Animated.delay(2500),
+        Animated.timing(celebrationOpacity, { toValue: 0, duration: 500, useNativeDriver: true }),
+      ]).start(() => setShowCheckInCelebration(false));
+    }
+  }, [showCheckInCelebration]);
+
+  // ─── Next Monday helper ───────────────────────────────
+  function getNextMonday(): string {
+    const today = new Date();
+    const day = today.getDay(); // 0 = Sunday
+    const daysUntilMonday = day === 0 ? 1 : 8 - day;
+    const next = new Date(today);
+    next.setDate(today.getDate() + daysUntilMonday);
+    return next.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  }
 
   // Deep portrait is generated during loadData and stored in state
   const dp = deepPortrait;
@@ -887,16 +913,46 @@ function CouplePortalScreen() {
 
       {/* WEARE Check-In */}
       {couple && weareProfile && (
-        <WeeklyCheckInCard
-          existingCheckIn={weeklyCheckIn}
-          onSubmit={async (stress, support, satisfaction, highlight) => {
-            if (!user || !couple) return;
-            const saved = await saveWeeklyCheckIn(
-              user.id, couple.id, stress, support, satisfaction, highlight
-            );
-            setWeeklyCheckIn(saved);
-          }}
-        />
+        <>
+          {/* Reminder banner — shown when check-in not done this week */}
+          {weeklyCheckIn === null && (
+            <View style={styles.weareBanner}>
+              <TenderText variant="body" color={Colors.calmDark} style={{ lineHeight: 20 }}>
+                {'📊 Your weekly check-in feeds the WEARE engine — it\'s how your couple score updates. Takes 2 minutes.'}
+              </TenderText>
+            </View>
+          )}
+
+          {/* Celebration banner — shown briefly after submission */}
+          {showCheckInCelebration && (
+            <Animated.View style={[styles.weareCelebration, { opacity: celebrationOpacity }]}>
+              <TenderText variant="body" color={Colors.successDark}>
+                {'✓ Check-in saved — your WEARE score will update shortly.'}
+              </TenderText>
+            </Animated.View>
+          )}
+
+          <View ref={checkInCardRef}>
+            <WeeklyCheckInCard
+              existingCheckIn={weeklyCheckIn}
+              onSubmit={async (stress, support, satisfaction, highlight) => {
+                if (!user || !couple) return;
+                const saved = await saveWeeklyCheckIn(
+                  user.id, couple.id, stress, support, satisfaction, highlight
+                );
+                setWeeklyCheckIn(saved);
+                setShowCheckInCelebration(true);
+              }}
+            />
+          </View>
+
+          {/* Next check-in date — shown after completing this week's check-in */}
+          {weeklyCheckIn !== null && (
+            <TenderText variant="caption" color={Colors.textMuted} align="center" style={{ marginTop: 6 }}>
+              {`Next check-in: Monday, ${getNextMonday()}`}
+            </TenderText>
+          )}
+        </>
       )}
 
       {/* Tonight, Try This — daily micro-action */}
@@ -2033,6 +2089,25 @@ const styles = StyleSheet.create({
   },
   exportBtnText: {
     letterSpacing: 0.5,
+  },
+
+  // ── WEARE enhancements ────────────────────────────────
+  weareBanner: {
+    backgroundColor: Colors.calm + '26',
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    borderColor: Colors.calm + '40',
+    padding: Spacing.sm + 2,
+    marginBottom: Spacing.sm,
+  },
+  weareCelebration: {
+    backgroundColor: Colors.successLight,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    borderColor: Colors.success + '40',
+    padding: Spacing.sm + 2,
+    marginBottom: Spacing.sm,
+    alignItems: 'center' as const,
   },
 });
 
