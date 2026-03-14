@@ -37,67 +37,67 @@ export const DEMO_ECRR: ECRRScores = {
 
 export const DEMO_DUTCH: DUTCHScores = {
   subscaleScores: {
-    yielding: { sum: 18, mean: 3.6 },
-    compromising: { sum: 19, mean: 3.8 },
-    forcing: { sum: 12, mean: 2.4 },
-    avoiding: { sum: 17, mean: 3.4 },
-    problemSolving: { sum: 20, mean: 4.0 },
+    yielding: { sum: 11, mean: 3.67 },
+    compromising: { sum: 11, mean: 3.67 },
+    forcing: { sum: 7, mean: 2.33 },
+    avoiding: { sum: 10, mean: 3.33 },
+    problemSolving: { sum: 12, mean: 4.0 },
   },
   primaryStyle: 'problemSolving',
-  secondaryStyle: 'compromising',
+  secondaryStyle: 'yielding',
 };
 
 export const DEMO_SSEIT: SSEITScores = {
-  totalScore: 118,
-  totalMean: 3.6,
-  totalNormalized: 64,
+  totalScore: 52,
+  totalMean: 3.25,
+  totalNormalized: 65,
   subscaleScores: {
-    perception: { sum: 38, mean: 3.8, itemCount: 10 },
-    managingOwn: { sum: 28, mean: 3.5, itemCount: 8 },
-    managingOthers: { sum: 30, mean: 3.75, itemCount: 8 },
-    utilization: { sum: 22, mean: 3.67, itemCount: 6 },
+    perception: { sum: 14, mean: 3.5, itemCount: 4 },
+    managingOwn: { sum: 9, mean: 3.0, itemCount: 3 },
+    managingOthers: { sum: 13, mean: 3.25, itemCount: 4 },
+    utilization: { sum: 16, mean: 3.2, itemCount: 5 },
   },
   subscaleNormalized: {
     perception: 70,
-    managingOwn: 52,
-    managingOthers: 62,
-    utilization: 58,
+    managingOwn: 60,
+    managingOthers: 65,
+    utilization: 64,
   },
 };
 
 export const DEMO_DSIR: DSIRScores = {
-  totalMean: 3.4,
-  totalNormalized: 48,
+  totalMean: 3.1,
+  totalNormalized: 42,
   subscaleScores: {
     emotionalReactivity: {
-      sum: 55, rawMean: 3.1, reversedMean: 3.1, normalized: 42, itemCount: 11,
+      sum: 20, rawMean: 4.0, reversedMean: 3.0, normalized: 40, itemCount: 5,
     },
     iPosition: {
-      sum: 42, rawMean: 3.5, reversedMean: 3.5, normalized: 50, itemCount: 11,
+      sum: 18, rawMean: 3.6, reversedMean: 3.4, normalized: 48, itemCount: 5,
     },
     emotionalCutoff: {
-      sum: 48, rawMean: 3.2, reversedMean: 3.2, normalized: 44, itemCount: 11,
+      sum: 19, rawMean: 3.8, reversedMean: 3.2, normalized: 44, itemCount: 5,
     },
     fusionWithOthers: {
-      sum: 40, rawMean: 2.9, reversedMean: 2.9, normalized: 38, itemCount: 11,
+      sum: 21, rawMean: 4.2, reversedMean: 2.8, normalized: 36, itemCount: 5,
     },
   },
 };
 
 export const DEMO_IPIP: IPIPScores = {
   domainScores: {
-    neuroticism: { sum: 80, mean: 3.3 },
-    extraversion: { sum: 78, mean: 3.25 },
-    openness: { sum: 85, mean: 3.54 },
-    agreeableness: { sum: 90, mean: 3.75 },
-    conscientiousness: { sum: 82, mean: 3.42 },
+    neuroticism: { sum: 40, mean: 3.33 },
+    extraversion: { sum: 39, mean: 3.25 },
+    openness: { sum: 42, mean: 3.5 },
+    agreeableness: { sum: 45, mean: 3.75 },
+    conscientiousness: { sum: 41, mean: 3.42 },
   },
   domainPercentiles: {
-    neuroticism: 65,
-    extraversion: 55,
-    openness: 60,
-    agreeableness: 70,
-    conscientiousness: 58,
+    neuroticism: 70,
+    extraversion: 65,
+    openness: 78,
+    agreeableness: 87,
+    conscientiousness: 74,
   },
   facetScores: {},
   facetPercentiles: {},

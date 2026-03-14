@@ -5,6 +5,11 @@
  * break points, and supplement assignments.
  *
  * Section 7 "The Space Between" uses the Relational Field Awareness Scale (RFAS).
+ *
+ * Post-migration item counts:
+ *   ECR-R: 36 (unchanged) | IPIP: 60 (was 120) | SSEIT: 16 (was 33)
+ *   DSI-R: 20 (was 46) | DUTCH: 15 (was 20) | VALUES: 28 (was 32)
+ *   RFAS: 20 (unchanged) | Supplements: 17 (unchanged)
  */
 
 import type { TenderSection } from '@/types';
@@ -12,7 +17,7 @@ import type { TenderSection } from '@/types';
 export const TENDER_SECTIONS: TenderSection[] = [
   {
     sectionNumber: 1,
-    fieldName: 'How You Connect',
+    fieldName: 'How You Seek Closeness',
     fieldDescription: 'Understanding your attachment patterns and how you reach for closeness or create distance.',
     assessmentType: 'ecr-r',
     supplementGroup: 'ecr-r-supplement',
@@ -22,20 +27,20 @@ export const TENDER_SECTIONS: TenderSection[] = [
   },
   {
     sectionNumber: 2,
-    fieldName: 'Who You Are',
+    fieldName: 'Who You Are in Love',
     fieldDescription: 'Your personality and how it shapes the way you show up in your relationship.',
     assessmentType: 'ipip-neo-120',
-    estimatedMinutes: 20,
+    estimatedMinutes: 12,
     breakAfter: true,
     breakMessage: 'Great work. Take a stretch. You are building something important.',
   },
   {
     sectionNumber: 3,
-    fieldName: 'How You Feel',
-    fieldDescription: 'Your emotional world \u2014 how you sense, name, and navigate what you feel.',
+    fieldName: 'How You Read the Room',
+    fieldDescription: 'Your emotional world — how you sense, name, and navigate what you feel.',
     assessmentType: 'sseit',
     supplementGroup: 'sseit-supplement',
-    estimatedMinutes: 10,
+    estimatedMinutes: 5,
     breakAfter: true,
     breakMessage: 'Well done. You are learning to see the emotional currents beneath the surface.',
   },
@@ -45,33 +50,33 @@ export const TENDER_SECTIONS: TenderSection[] = [
     fieldDescription: 'Your boundaries, autonomy, and ability to stay yourself while staying close.',
     assessmentType: 'dsi-r',
     supplementGroup: 'dsi-r-supplement',
-    estimatedMinutes: 15,
+    estimatedMinutes: 6,
     breakAfter: true,
     breakMessage: 'You are more than halfway through. The depth you are bringing matters.',
   },
   {
     sectionNumber: 5,
-    fieldName: 'How You Fight',
-    fieldDescription: 'Your approach to conflict and disagreement \u2014 what you do when things get hard.',
+    fieldName: 'How You Navigate Conflict',
+    fieldDescription: 'Your approach to conflict and disagreement — what you do when things get hard.',
     assessmentType: 'dutch',
-    estimatedMinutes: 5,
+    estimatedMinutes: 4,
     breakAfter: true,
     breakMessage: 'Conflict takes courage to face. You are doing the work.',
   },
   {
     sectionNumber: 6,
-    fieldName: 'What Matters to You',
+    fieldName: 'What Matters Most',
     fieldDescription: 'Your values and what you want to move toward together.',
     assessmentType: 'values',
     supplementGroup: 'values-supplement',
-    estimatedMinutes: 8,
+    estimatedMinutes: 10,
     breakAfter: true,
-    breakMessage: 'Almost there. One more section \u2014 the most relational one of all.',
+    breakMessage: 'Almost there. One more section — the most relational one of all.',
   },
   {
     sectionNumber: 7,
     fieldName: 'The Space Between',
-    fieldDescription: 'How you sense, hold, and co-create the relational field \u2014 the living space between you and your partner.',
+    fieldDescription: 'How you sense, hold, and co-create the relational field — the living space between you and your partner.',
     assessmentType: 'relational-field',
     estimatedMinutes: 8,
     breakAfter: false, // Last section — ends with completion screen
@@ -84,8 +89,13 @@ export const TOTAL_ESTIMATED_MINUTES = TENDER_SECTIONS.reduce(
   0,
 );
 
-/** Total question count including supplements: 287 original + 20 RFAS + 17 supplement = 324. */
-export const TOTAL_QUESTIONS = 324;
+/**
+ * Total question count including supplements.
+ * Base: 36 + 60 + 16 + 20 + 15 + 28 + 20 = 195
+ * Supplements: 5 (ECR-R) + 3 (SSEIT) + 4 (DSI-R) + 5 (Values) = 17
+ * Total: 212
+ */
+export const TOTAL_QUESTIONS = 212;
 
 /** Get section by assessment type. */
 export function getSectionByType(assessmentType: string): TenderSection | undefined {

@@ -1,7 +1,7 @@
 /**
  * Values Supplement: "Relational Tension Questions" (5 items)
  *
- * Added after the standard 32 Values items.
+ * Added after the 28 base Values items (was 32 pre-migration).
  * Mixed types: choice, text, likert.
  * Scored separately — does not affect original Values scoring.
  */
@@ -30,7 +30,7 @@ const SLIDER_RIGHT_VS_PRESENT: LikertOption[] = [
 
 export const VALUES_SUPPLEMENT_QUESTIONS: GenericQuestion[] = [
   {
-    id: 33,
+    id: 29,
     text: "When your values and your partner's values diverge, how do you experience it?",
     inputType: 'choice',
     subscale: 'values-divergence',
@@ -42,7 +42,7 @@ export const VALUES_SUPPLEMENT_QUESTIONS: GenericQuestion[] = [
     ],
   },
   {
-    id: 34,
+    id: 30,
     text: "Think of a value you hold that your partner doesn't share. Can you see how that difference might serve the relationship?",
     inputType: 'text',
     subscale: 'difference-as-resource',
@@ -50,14 +50,14 @@ export const VALUES_SUPPLEMENT_QUESTIONS: GenericQuestion[] = [
     placeholder: 'Describe how this difference might serve your relationship...',
   },
   {
-    id: 35,
+    id: 31,
     text: 'Which matters more to you right now: being right about your values, or being present with your partner?',
     inputType: 'likert',
     subscale: 'right-vs-present',
     likertScale: SLIDER_RIGHT_VS_PRESENT,
   },
   {
-    id: 36,
+    id: 32,
     text: 'Name a value you and your partner share that you couldn\u2019t fully live without each other.',
     inputType: 'text',
     subscale: 'shared-value',
@@ -65,7 +65,7 @@ export const VALUES_SUPPLEMENT_QUESTIONS: GenericQuestion[] = [
     placeholder: 'Name the shared value...',
   },
   {
-    id: 37,
+    id: 33,
     text: 'I am willing to let this relationship change what I value.',
     inputType: 'likert',
     subscale: 'willingness-to-change',
