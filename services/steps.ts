@@ -55,7 +55,10 @@ export async function ensureStepProgress(userId: string): Promise<StepProgress[]
 export async function getCurrentStepNumber(userId: string): Promise<number> {
   const progress = await ensureStepProgress(userId);
   const activeStep = progress.find((p) => p.status === 'active');
-  return activeStep?.stepNumber ?? 1;
+  if (activeStep) return activeStep.stepNumber;
+  // No active step — return highest completed, or 1 if none
+  const completed = progress.filter((p) => p.status === 'completed');
+  return completed.length > 0 ? Math.max(...completed.map((p) => p.stepNumber)) : 1;
 }
 
 /** Advance a step to 'completed' and unlock the next step.

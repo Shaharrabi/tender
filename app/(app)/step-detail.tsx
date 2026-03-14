@@ -472,7 +472,7 @@ function StepDetailScreenInner() {
           const freshActiveSteps = freshProgress.filter((sp) => sp.status === 'active');
           const freshCurrent = freshActiveSteps.length > 0
             ? Math.max(...freshActiveSteps.map((sp) => sp.stepNumber))
-            : stepNumber + 1;
+            : Math.min(stepNumber + 1, 12);
           setCurrentStepNumber(freshCurrent);
         } catch (recoverErr) {
           console.warn('[StepDetail] Recovery completion failed:', recoverErr);
