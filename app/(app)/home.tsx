@@ -1076,7 +1076,33 @@ export default function HomeScreen() {
           />
         )}
 
-        {/* ═══ 2. TODAY'S FOCUS — removed to reduce home screen clutter ═══ */}
+        {/* ═══ NEWCOMER ENCOURAGEMENT — warm nudge for early users ═══ */}
+        {!hasPortrait && tenderStatus.state !== 'completed' && (
+          <View style={styles.newcomerCard}>
+            <View style={styles.newcomerIconRow}>
+              <SeedlingIcon size={20} color={Colors.success} />
+              <Text style={styles.newcomerTitle}>
+                {tenderStatus.state === 'in_progress'
+                  ? "You're on your way"
+                  : 'Your journey starts here'}
+              </Text>
+            </View>
+            <Text style={styles.newcomerBody}>
+              {tenderStatus.state === 'in_progress'
+                ? `${tenderStatus.completedSections} of ${TENDER_SECTIONS.length} sections done. Each one brings you closer to your personal portrait \u2014 a map of how you connect, feel, and grow.`
+                : 'Take the Tender Assessment to discover your attachment style, emotional patterns, and relational strengths. It takes about 30 minutes and you can pause anytime.'}
+            </Text>
+            <TouchableOpacity
+              style={styles.newcomerCta}
+              onPress={() => router.push('/(app)/tender-assessment' as any)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.newcomerCtaText}>
+                {tenderStatus.state === 'in_progress' ? 'Continue Assessment \u2192' : 'Begin Assessment \u2192'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* ═══ PARTNER SECTION — demo partner, connect prompt, or solo nudge ═══ */}
         <View ref={(r) => RefRegistry.register('home_partnerSection', r)}>
@@ -1427,30 +1453,35 @@ export default function HomeScreen() {
               progressDetail: tenderStatus.state === 'in_progress'
                 ? `${tenderStatus.completedSections} of ${TENDER_SECTIONS.length}`
                 : undefined,
+              route: '/(app)/tender-assessment' as const,
             },
             {
               name: 'Portrait',
               desc: 'A complete relational profile from your results',
               done: false,
               inProgress: discoverDone,
+              route: '/(app)/portrait' as const,
             },
             {
               name: 'Journey',
               desc: '12 steps with practices, courses, and growth pathways',
               done: false,
               inProgress: false,
+              route: '/(app)/step-detail?step=1' as const,
             },
             {
               name: 'Practice',
               desc: 'Exercises, micro-courses, and AI coaching',
               done: false,
               inProgress: false,
+              route: '/(app)/growth' as const,
             },
             {
               name: 'Progress',
               desc: 'Track milestones and personal growth',
               done: false,
               inProgress: false,
+              route: '/(app)/growth' as const,
             },
           ];
 
@@ -1459,7 +1490,14 @@ export default function HomeScreen() {
               <Text style={styles.journeyMapTitle}>Your Journey Ahead</Text>
               <View style={styles.journeyStepsColumn}>
                 {milestones.map((m, index) => (
-                  <View key={m.name} style={styles.journeyStepRow}>
+                  <TouchableOpacity
+                    key={m.name}
+                    style={styles.journeyStepRow}
+                    onPress={() => router.push(m.route as any)}
+                    activeOpacity={0.7}
+                    accessibilityRole="link"
+                    accessibilityLabel={`${m.name}: ${m.desc}`}
+                  >
                     <View style={[
                       styles.journeyStepNumber,
                       m.done && styles.journeyStepNumberDone,
@@ -1478,15 +1516,17 @@ export default function HomeScreen() {
                       <Text style={[
                         styles.journeyStepName,
                         m.done && styles.journeyStepNameDone,
+                        { color: Colors.primary },
                       ]}>
                         {m.name}
                         {m.progressDetail ? ` (${m.progressDetail})` : ''}
+                        {' \u2192'}
                       </Text>
                       {!m.done && (
                         <Text style={styles.journeyStepDesc}>{m.desc}</Text>
                       )}
                     </View>
-                  </View>
+                  </TouchableOpacity>
                 ))}
               </View>
             </View>
@@ -3247,6 +3287,47 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.bodySmall,
     color: Colors.primary,
     fontWeight: '500',
+  },
+
+  // ── Newcomer Encouragement ──
+  newcomerCard: {
+    marginHorizontal: Spacing.lg,
+    marginBottom: Spacing.md,
+    backgroundColor: Colors.success + '08',
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    borderWidth: 1,
+    borderColor: Colors.success + '25',
+    gap: Spacing.sm,
+  },
+  newcomerIconRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: Spacing.sm,
+  },
+  newcomerTitle: {
+    fontSize: FontSizes.body,
+    fontWeight: '700',
+    fontFamily: FontFamilies.heading,
+    color: Colors.text,
+  },
+  newcomerBody: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    lineHeight: 22,
+  },
+  newcomerCta: {
+    backgroundColor: Colors.primary,
+    borderRadius: BorderRadius.lg,
+    paddingVertical: 12,
+    alignItems: 'center' as const,
+    marginTop: Spacing.xs,
+  },
+  newcomerCtaText: {
+    fontSize: FontSizes.body,
+    fontWeight: '600',
+    color: Colors.textOnPrimary,
+    letterSpacing: 0.3,
   },
 
   // ── Journey Value Map ──

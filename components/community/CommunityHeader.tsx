@@ -84,9 +84,9 @@ export function CommunityHeader({ alias, onBack, onRotateAlias }: CommunityHeade
 const st = StyleSheet.create({
   container: {
     paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.md,
-    paddingBottom: Spacing.sm,
-    gap: Spacing.sm,
+    paddingTop: Spacing.sm,
+    paddingBottom: Spacing.xs,
+    gap: Spacing.xs,
   },
   backRow: {
     flexDirection: 'row',

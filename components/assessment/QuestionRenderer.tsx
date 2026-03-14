@@ -12,6 +12,7 @@ import {
   TextInput as RNTextInput,
   TouchableOpacity,
   StyleSheet,
+  Platform,
 } from 'react-native';
 import { Colors, Spacing, FontSizes } from '@/constants/theme';
 import type { GenericQuestion, LikertOption } from '@/types';
@@ -35,11 +36,12 @@ export default function QuestionRenderer({
   return (
     <View>
       {/* Likert */}
-      {question.inputType === 'likert' && (question.likertScale || defaultLikertScale) && (
+      {question.inputType === 'likert' && (question.likertScale || defaultLikertScale) && (() => {
+        const scale = question.likertScale || defaultLikertScale!;
+        const showScrollHint = Platform.OS === 'web' && scale.length >= 5 && currentAnswer == null;
+        return (
         <View style={styles.likertSection} accessibilityRole="radiogroup" accessibilityLabel={question.text || 'Likert scale question'}>
-          {(question.likertScale || defaultLikertScale!).map((item) => {
-            const scale = question.likertScale || defaultLikertScale!;
-            return (
+          {scale.map((item) => (
             <TouchableOpacity
               key={item.value}
               style={[
@@ -68,10 +70,13 @@ export default function QuestionRenderer({
                 {item.value} — {item.label}
               </Text>
             </TouchableOpacity>
-            );
-          })}
+          ))}
+          {showScrollHint && (
+            <Text style={styles.scrollHint}>Scroll down to see all {scale.length} options</Text>
+          )}
         </View>
-      )}
+        );
+      })()}
 
       {/* Text */}
       {question.inputType === 'text' && (
@@ -228,6 +233,13 @@ const styles = StyleSheet.create({
   },
   likertLabel: { fontSize: FontSizes.bodySmall, color: Colors.text },
   likertLabelSelected: { color: Colors.primary, fontWeight: '600' },
+  scrollHint: {
+    fontSize: FontSizes.caption,
+    color: Colors.textMuted,
+    textAlign: 'center' as const,
+    paddingTop: Spacing.xs,
+    fontStyle: 'italic' as const,
+  },
 
   // Text input
   textInputSection: { gap: Spacing.xs },

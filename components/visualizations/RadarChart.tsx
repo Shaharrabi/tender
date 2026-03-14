@@ -306,16 +306,18 @@ export default function RadarChart({
             const labelR = maxRadius + 28;
             const [x, y] = getVertex(i, labelR, cx, cy);
             const lines = dim.label.split('\n');
+            const val = scoreValues[i];
             return (
               <G key={`label-${i}`}>
                 {lines.map((line, li) => (
                   <SvgText
                     key={`label-${i}-${li}`}
                     x={x}
-                    y={y + li * 12 - ((lines.length - 1) * 6)}
-                    fill={Colors.textSecondary}
-                    fontSize={9}
+                    y={y + li * 13 - ((lines.length - 1) * 6)}
+                    fill={val >= 65 ? Colors.text : Colors.textSecondary}
+                    fontSize={10}
                     fontFamily={FontFamilies.body}
+                    fontWeight={val >= 65 ? '600' : '500'}
                     textAnchor="middle"
                   >
                     {line}

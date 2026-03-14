@@ -407,6 +407,20 @@ function findProtectiveFactors(
     );
   }
 
+  // Always show at least one strength — find the highest composite score
+  if (factors.length === 0) {
+    const scoreMap: [string, number, string][] = [
+      ['engagement', scores.engagement, 'Relational investment — you show genuine commitment to your connections. Even when relationships feel hard, you stay present and keep showing up.'],
+      ['accessibility', scores.accessibility, 'Emotional openness — you have the capacity to let others in emotionally, creating space for real connection.'],
+      ['responsiveness', scores.responsiveness, 'Attunement to others — you can be moved by your partner\'s experience, which is the foundation of trust and repair.'],
+      ['regulationScore', scores.regulationScore, 'Emotional steadiness — you have a developing capacity to return to balance after intense moments.'],
+      ['selfLeadership', scores.selfLeadership, 'Self-awareness — you can observe your patterns, which is the gateway to making different choices in the moments that matter.'],
+      ['valuesCongruence', scores.valuesCongruence, 'Values clarity — you have a sense of what matters most to you, which provides direction for your growth.'],
+    ];
+    scoreMap.sort((a, b) => b[1] - a[1]);
+    factors.push(scoreMap[0][2]);
+  }
+
   // Return top 4 to avoid overwhelming
   return factors.slice(0, 4);
 }
@@ -454,6 +468,19 @@ function findGrowthEdges(
     edges.push(
       'Reclaiming your voice in relationship — multiple assessments suggest you lose yourself to maintain peace. The cost is invisible but cumulative.'
     );
+  }
+
+  // Always show at least one growth edge — find the lowest composite score
+  if (edges.length === 0) {
+    const scoreMap: [string, number, string][] = [
+      ['windowWidth', scores.windowWidth, 'Widening your capacity for emotional intensity — building a larger container for the full range of relational experience.'],
+      ['selfLeadership', scores.selfLeadership, 'Deepening self-leadership — strengthening your ability to choose your response rather than react from old patterns.'],
+      ['accessibility', scores.accessibility, 'Opening to emotional accessibility — letting your partner find you when they reach for connection.'],
+      ['responsiveness', scores.responsiveness, 'Growing emotional responsiveness — letting yourself be moved by your partner\'s experience.'],
+      ['regulationScore', scores.regulationScore, 'Building regulation capacity — developing your nervous system\'s ability to stay engaged during difficult moments.'],
+    ];
+    scoreMap.sort((a, b) => a[1] - b[1]);
+    edges.push(scoreMap[0][2]);
   }
 
   // Apply attachment tailoring to all growth edges
