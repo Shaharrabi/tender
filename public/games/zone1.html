@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>THE FIELD — Zone I: The Fog Field</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;600&family=Josefin+Sans:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;600&family=Josefin+Sans:wght@300;400;600&family=Playfair+Display:wght@400;700&display=swap');
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
 :root {
@@ -39,7 +39,7 @@ html, body {
 
 /* WORLD */
 #world {
-  flex: 1; min-height: 45vh;
+  flex: 1; min-height: 60vh;
   position: relative; overflow: hidden;
   margin: 0 6px; border-radius: 12px;
   background: linear-gradient(180deg,
@@ -133,13 +133,13 @@ html, body {
 @keyframes float { 0%,100%{transform:scale(1) translateY(0)} 50%{transform:scale(1.1) translateY(-8px)} }
 
 /* zone label */
-.zone-label { position: absolute; top: clamp(10px,2.5vw,16px); left: clamp(12px,3vw,18px); z-index:20; }
-.zone-num { font-family:'Josefin Sans',sans-serif; font-size: clamp(7px,1.8vw,9px); letter-spacing:2.5px; text-transform:uppercase; color:rgba(45,34,38,.38); margin-bottom:2px; }
-.zone-name { font-family:'Jost',sans-serif; font-weight:600; font-size: clamp(10px,2.5vw,13px); letter-spacing:2px; text-transform:uppercase; color:rgba(45,34,38,.55); }
+.zone-label { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 10px); left: clamp(12px,3vw,18px); z-index:20; }
+.zone-num { font-family:'Josefin Sans',sans-serif; font-size:clamp(10px,2.5vw,12px); letter-spacing:2.5px; text-transform:uppercase; color:rgba(45,34,38,.38); margin-bottom:2px; }
+.zone-name { font-family:'Jost',sans-serif; font-weight:600; font-size:clamp(15px,4vw,19px); letter-spacing:2px; text-transform:uppercase; color:rgba(45,34,38,.55); }
 
 /* HUD */
 .hud {
-  position: absolute; top: clamp(10px,2.5vw,16px); right: clamp(10px,2.5vw,16px); z-index:20;
+  position: absolute; top: calc(env(safe-area-inset-top, 0px) + 10px); right: clamp(10px,2.5vw,16px); z-index:20;
   background: rgba(28,18,22,.87); border: 1px solid rgba(212,168,67,.28);
   border-radius: 8px; padding: clamp(7px,2vw,10px) clamp(8px,2vw,12px) clamp(5px,1.5vw,8px);
 }
@@ -159,8 +159,8 @@ html, body {
   white-space:nowrap;
 }
 
-.exit-x{position:absolute;top:calc(env(safe-area-inset-top, 0px) + 10px);right:10px;z-index:70;width:28px;height:28px;border-radius:14px;border:none;background:rgba(0,0,0,.25);color:rgba(255,255,255,.7);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
-.exit-x:active{background:rgba(0,0,0,.4);}
+.exit-x{font-family:'Jost',sans-serif;font-weight:600;position:absolute;top:calc(env(safe-area-inset-top, 0px) + 10px);right:10px;z-index:220;width:42px;height:42px;border-radius:21px;border:none;background:rgba(12,10,14,.5);color:rgba(255,255,255,.92);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);box-shadow:0 10px 26px rgba(0,0,0,.24);pointer-events:auto;}
+.exit-x:active{background:rgba(12,10,14,.68);transform:scale(.985);}
 
 /* PANEL */
 #panel {
@@ -169,9 +169,10 @@ html, body {
   flex-shrink: 0; z-index: 25;
   display: flex; flex-direction: column;
   padding-bottom: env(safe-area-inset-bottom, 8px);
-  max-height: 42vh;
+  max-height: min(30vh, 240px);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  box-shadow: 0 -10px 26px rgba(20,12,16,.08);
 }
 
 /* dialogue */
@@ -189,7 +190,7 @@ html, body {
 }
 .dlg-text {
   font-family:'Playfair Display',serif; 
-  font-size: clamp(13px, 3.2vw, 16px);
+  font-size:clamp(16px,4vw,20px);
   line-height: 1.72; color:var(--ink);
   white-space: pre-wrap;
   transition: opacity .3s ease;
@@ -294,7 +295,7 @@ html, body {
 .seed-glyph { font-size: 20px; line-height:1; }
 .seed-note {
   font-family: 'Playfair Display', serif; 
-  font-size: clamp(10px,2.5vw,12px); color: rgba(107,91,94,.45); text-align: center;
+  font-size:clamp(12px,3vw,14px); color: rgba(107,91,94,.45); text-align: center;
 }
 
 /* OVERLAYS */
@@ -313,7 +314,7 @@ html, body {
 #o-intro { background: linear-gradient(180deg,#3E3438,#4A4044); z-index: 60; }
 .oi-sub {
   font-family:'Josefin Sans',sans-serif;
-  font-size: clamp(8px, 2vw, 10px); letter-spacing:3px; text-transform:uppercase;
+  font-size:clamp(16px,4vw,20px); letter-spacing:3px; text-transform:uppercase;
   color:rgba(212,168,67,.55); margin-bottom: clamp(6px,1.5vh,12px);
 }
 .oi-big {
@@ -336,18 +337,18 @@ html, body {
 }
 .oi-note{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.6vw,9px);letter-spacing:2px;text-transform:uppercase;color:rgba(253,246,240,.25);margin-bottom:clamp(14px,3vh,20px);}
 .oi-btn {
-  width: clamp(160px, 50vw, 200px); height: clamp(46px, 11vw, 54px);
+  width: clamp(160px, 50vw, 200px); height:clamp(48px,12vw,56px);
   border-radius: 27px; border: 1.5px solid rgba(196,97,110,.5);
   background: transparent;
   font-family:'Jost',sans-serif; font-weight:600;
-  font-size: clamp(9px, 2.2vw, 11px); letter-spacing:3px; text-transform:uppercase;
+  font-size:clamp(10px,2.5vw,12px); letter-spacing:3px; text-transform:uppercase;
   color: rgba(196,97,110,.85); cursor: pointer;
   transition: all .3s;
 }
 .oi-btn:hover, .oi-btn:active { background:rgba(196,97,110,.15); border-color:var(--rose); }
 
-@keyframes gentle-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
-@keyframes slow-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.08); opacity: 0.85; } }
+@keyframes gentle-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+@keyframes slow-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.04); opacity: 0.92; } }
 .oi-sticker { margin-bottom: clamp(10px,2.5vh,16px); }
 
 /* COMPLETE */
@@ -365,8 +366,8 @@ html, body {
 }
 .done-body {
   font-family:'Playfair Display',serif; 
-  font-size: clamp(12px, 3vw, 14px); line-height:1.9;
-  color:rgba(253,246,240,.45); margin-bottom: clamp(24px,6vh,40px);
+  font-size:clamp(15px,3.6vw,18px); line-height:1.9;
+  color:rgba(253,246,240,.74); margin-bottom: clamp(24px,6vh,40px);
   max-width: 280px;
 }
 .done-btn {
@@ -479,11 +480,94 @@ html, body {
   text-align: left;
 }
 .pr-carry em { color: var(--deep-rose); font-style: normal; font-weight: 600; }
+
+
+/* Tender clarity pass */
+html,body{
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+.phone{
+  background:linear-gradient(180deg,#120D11 0%,#24191D 100%) !important;
+}
+.phone #game-area{
+  border-radius:24px 24px 0 0 !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.15),0 24px 44px rgba(12,8,10,.22) !important;
+}
+#panel{
+  background:linear-gradient(180deg,rgba(253,246,240,.992),rgba(248,239,231,.99)) !important;
+  max-height:min(24vh,240px) !important;
+  box-shadow:0 -18px 40px rgba(20,12,16,.16) !important;
+}
+#dialogue{
+  padding:clamp(18px,3.2vh,22px) clamp(22px,6vw,28px) clamp(18px,3.2vh,22px) !important;
+}
+.dlg-row{gap:12px !important;}
+.dlg-text{
+  font-style:normal !important;
+  font-size:clamp(21px,5.5vw,28px) !important;
+  line-height:1.76 !important;
+  color:rgba(37,30,34,.98) !important;
+  overflow-wrap:anywhere;
+}
+.dlg-sym{
+  font-size:clamp(11px,2.7vw,13px) !important;
+  color:rgba(139,58,74,.72) !important;
+}
+.zone-num,.pieces-lbl,.progress-lbl,.watch-lbl,.awareness-lbl,.speed-lbl,.build-status-label,.ps-eyebrow,.done-ey,.oi-b,.path-title,.wc-lbl,.hlbl,.oi-note,.seed-note,.dlg-cue,.jc-sub,.const-sub{
+  font-size:clamp(10px,2.3vw,12px) !important;
+  letter-spacing:2.35px !important;
+}
+.zone-name{
+  font-size:clamp(17px,4.4vw,22px) !important;
+  color:rgba(255,255,255,.94) !important;
+}
+.oi-desc,.ps-body,.done-bo,.ps-carry,.ctrl-info,.action-text,.build-status-text,.path-desc,.practice-note,.ms-story,.ms-defuse,.ms-q,.jc-body,.const-text,.meet-text,.seed-note,.ps-defuse-out,.sc-text,.path-desc{
+  font-style:normal !important;
+  font-size:clamp(17px,4.5vw,21px) !important;
+  line-height:1.76 !important;
+}
+.oi-desc,.done-bo,.ps-body,.ps-carry,.seed-note,.ctrl-info,.ms-story,.ms-defuse,.ms-q,.jc-body,.ps-defuse-out{
+  text-wrap:pretty;
+}
+.ctrl-row,.build-status,.ctrl-info,.action-text{
+  box-shadow:0 16px 34px rgba(20,12,16,.18) !important;
+}
+.action-text{
+  min-width:min(90vw,400px) !important;
+}
+.exit-x{
+  z-index:260 !important;
+  width:48px !important;
+  height:48px !important;
+  border-radius:24px !important;
+  border:1px solid rgba(253,246,240,.22) !important;
+  background:rgba(16,12,16,.78) !important;
+  box-shadow:0 16px 34px rgba(0,0,0,.28) !important;
+}
+.exit-x:active{transform:scale(.97) !important;}
+.ps-x{font-family:'Jost',sans-serif;font-weight:600;
+  width:34px !important;
+  height:34px !important;
+  border-radius:17px !important;
+}
+.oi-btn,.ps-btn,.done-btn,#seed-btn button,#continue-btn button{
+  box-shadow:0 10px 28px rgba(88,72,54,.18) !important;
+}
+.overlay,.overlay.on,#practice-overlay,#o-done,#meet-moment{
+  backdrop-filter:blur(2px);
+  -webkit-backdrop-filter:blur(2px);
+}
+@media (max-width:420px){
+  #panel{max-height:min(25vh,250px) !important;}
+  .dlg-text{font-size:clamp(21px,5.8vw,28px) !important;}
+}
+.web-embed .exit-x{display:none !important;}
 </style>
 </head>
 <body>
 <div class="phone">
-<button class="exit-x" onclick="notifyApp('close',{zone:1})" aria-label="Exit game">&#x2715;</button>
+<button class="exit-x" onclick="notifyApp('close',{zone:1})" aria-label="Exit game">X</button>
 
   <!-- WORLD -->
   <div id="world" onclick="worldTap()">
@@ -575,7 +659,7 @@ html, body {
     <!-- breathe section -->
     <div id="breathe-section">
       <div class="b-label" id="b-label">
-        <em>Hold the circle</em> to breathe · 3 seconds
+        <span class="emphasis">Hold the circle</span> to breathe · 3 seconds
       </div>
       <div id="b-circle">
         <svg id="b-svg" viewBox="0 0 100 100">
@@ -626,7 +710,7 @@ html, body {
   <div class="oi-ital">A journey through the space between you</div>
   <div class="divider"><div class="div-line"></div><div class="div-sym">✦</div><div class="div-line"></div></div>
   <div class="oi-zone">Zone I · Step 1</div>
-  <div class="oi-note">Best experienced in the Tender app</div>
+  <div class="oi-note">Move slowly and let the lesson land</div>
 <button class="oi-btn" onclick="startGame(event)">ENTER THE FIELD</button>
 </div>
 
@@ -634,11 +718,11 @@ html, body {
 <div class="overlay" id="o-seed">
   <div class="pr-shell">
     <div class="pr-prog"><div class="pr-prog-fill" id="pr-prog-fill"></div></div>
-    <button class="pr-x" onclick="closeModal(event)">✕</button>
+    <button class="pr-x" onclick="closeModal(event)">X</button>
 
     <!-- Step 0: Opening -->
     <div class="pr-step active" id="pr-step-0">
-      <div class="pr-eyebrow">✦ Practice · Knowing Your Dance</div>
+      <div class="pr-eyebrow">Practice · Knowing Your Dance</div>
       <div class="pr-h">Before We Begin</div>
       <div class="pr-body">This practice works best when you're inside your window of tolerance — present, grounded, able to notice without being overwhelmed.</div>
       <div class="pr-opts">
@@ -651,7 +735,7 @@ html, body {
     <div class="pr-step" id="pr-step-1">
       <div class="pr-eyebrow">Framing</div>
       <div class="pr-h">The Dance</div>
-      <div class="pr-body">Every couple has a pattern — a dance they do when things get hard. One reaches, one retreats. Or both escalate. Or both withdraw.<br><br>This isn't about who's right. It's about <em>seeing the dance itself</em>.</div>
+      <div class="pr-body">Every couple has a pattern — a dance they do when things get hard. One reaches, one retreats. Or both escalate. Or both withdraw.<br><br>This isn't about who's right. It's about <span class="emphasis">seeing the dance itself</span>.</div>
       <button class="pr-btn" onclick="prNext(event)">CONTINUE</button>
     </div>
 
@@ -659,7 +743,7 @@ html, body {
     <div class="pr-step" id="pr-step-2">
       <div class="pr-eyebrow">The Work</div>
       <div class="pr-h">Your Move</div>
-      <div class="pr-body">Think of a recent moment when tension arose between you. What did <em>you</em> do?</div>
+      <div class="pr-body">Think of a recent moment when tension arose between you. What did <span class="emphasis">you</span> do?</div>
       <div class="pr-input-box">
         <div class="pr-input-label">WHEN IT STARTED, I...</div>
         <textarea class="pr-input" id="pr-input-2" rows="2" placeholder="got louder... asked for reassurance... went quiet..."></textarea>
@@ -712,10 +796,10 @@ html, body {
       <div class="pr-h">Carry This</div>
       <div class="pr-carry">
         Today, when the pattern starts — just notice.<br><br>
-        Say to yourself: <em>"There's our thing."</em><br><br>
+        Say to yourself: <span class="emphasis">"There's our thing."</span><br><br>
         That's it. Noticing is the first step.
       </div>
-      <button class="pr-btn sage" onclick="plantSeed(event)">PLANT THIS SEED ✦</button>
+      <button class="pr-btn sage" onclick="plantSeed(event)">PLANT THIS SEED</button>
     </div>
   </div>
 </div>
@@ -725,7 +809,7 @@ html, body {
   <div class="done-glyph">🌿</div>
   <div class="done-ey">Zone I Complete</div>
   <div class="done-title">The Fog Field</div>
-  <div class="done-body">You saw the pattern.<br>You breathed through it.<br>You planted a seed.<br><br>The work has begun.</div>
+  <div class="done-body">You noticed the pattern.<br>You stayed with yourself.<br>You planted something gentler.<br><br>This is how change begins.</div>
   <button class="done-btn" onclick="returnField(event)">RETURN TO THE FIELD</button>
 </div>
 
@@ -985,7 +1069,7 @@ function onBreatheDone() {
   // Update label
   const lbl = document.getElementById('b-label');
   if (S.breatheCount < 3) {
-    lbl.innerHTML = '<em>' + (3 - S.breatheCount) + ' more breath' + (3 - S.breatheCount > 1 ? 's' : '') + '</em> — hold again';
+    lbl.innerHTML = '<span class="emphasis">' + (3 - S.breatheCount) + ' more breath' + (3 - S.breatheCount > 1 ? 's' : '') + '</span> — hold again';
   } else {
     lbl.innerHTML = 'Three breaths. Something shifted.';
   }
@@ -1103,7 +1187,7 @@ function plantSeed(e) {
     document.getElementById('o-seed').classList.remove('on');
 
     const sb = document.getElementById('seed-btn');
-    sb.innerHTML = '<div style="font-family:Playfair Display,serif;font-size:14px;color:var(--sage);text-align:center;padding:12px 0">🌱 Seed planted. The work begins.</div>';
+    sb.innerHTML = '<div style="font-family:Playfair Display,serif;font-size:16px;color:var(--sage);text-align:center;padding:12px 0">Seed planted. The work begins.</div>';
 
     // Update HUD
     document.querySelectorAll('.hbu').forEach((el, i) => { if (i < 6) el.classList.add('on'); });
@@ -1131,6 +1215,8 @@ function returnField(e) {
     null
   );
 }
+
+document.documentElement.classList.toggle('web-embed', window.parent !== window && !window.ReactNativeWebView);
 
 // REACT NATIVE BRIDGE
 function notifyApp(event, data) {

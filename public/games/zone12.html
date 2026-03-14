@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>THE FIELD — Zone XII: The Crossroads</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;600&family=Josefin+Sans:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;600&family=Josefin+Sans:wght@300;400;600&family=Playfair+Display:wght@400;700&display=swap');
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+.emphasis{font-weight:600;}
 
 :root {
   --parchment:#FDF6F0;--terracotta:#D8A499;--deep-rose:#8B3A4A;
@@ -18,99 +19,193 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;touch-action
 
 .phone{width:100%;height:100%;background:var(--ink);border-radius:0;overflow:hidden;position:relative;display:flex;flex-direction:column;}
 
-#game-area{flex:1;min-height:45vh;margin:0 6px;border-radius:12px;position:relative;overflow:hidden;background:linear-gradient(180deg,#D4A870 0%,#E8C8A0 20%,#F0D8B8 40%,#98B898 70%,#78A078 100%);}
+.phone #game-area{flex:1;min-height:60vh!important;margin:0 8px;border-radius:18px 18px 0 0;position:relative;overflow:hidden;background:linear-gradient(180deg,#D4A870 0%,#E8C8A0 20%,#F0D8B8 40%,#98B898 70%,#78A078 100%);}
 
 canvas{position:absolute;inset:0;}
 
 /* Light rays */
-.light-ray{position:absolute;top:0;left:50%;width:2px;height:40%;background:linear-gradient(180deg,rgba(255,240,200,.4),transparent);transform-origin:top center;pointer-events:none;}
+.light-ray{position:absolute;top:0;left:50%;width:2px;height:40%;background:linear-gradient(180deg,rgba(255,240,200,.4),transparent);transform-origin:top center;pointer-events:auto;}
 
-.zone-label{position:absolute;top:14px;left:14px;z-index:5;}
-.zone-num{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:2.5px;text-transform:uppercase;color:rgba(45,34,38,.4);}
-.zone-name{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(10px,2.5vw,13px);letter-spacing:2px;text-transform:uppercase;color:rgba(45,34,38,.6);}
+.zone-label{position:absolute;top:calc(env(safe-area-inset-top, 0px) + 14px);left:14px;z-index:5;}
+.zone-num{font-family:'Josefin Sans',sans-serif;font-size:clamp(10px,2.5vw,12px);letter-spacing:3px;text-transform:uppercase;color:rgba(45,34,38,.4);text-shadow:0 1px 6px rgba(0,0,0,.18);}
+.zone-name{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(15px,4vw,19px);letter-spacing:2.4px;text-transform:uppercase;color:rgba(45,34,38,.6);text-shadow:0 1px 8px rgba(0,0,0,.18);}
 
-.exit-x{position:absolute;top:calc(env(safe-area-inset-top, 0px) + 10px);right:10px;z-index:70;width:28px;height:28px;border-radius:14px;border:none;background:rgba(0,0,0,.25);color:rgba(255,255,255,.7);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
-.exit-x:active{background:rgba(0,0,0,.4);}
+.exit-x{position:absolute;top:calc(env(safe-area-inset-top, 0px) + 10px);right:10px;z-index:220;width:42px;height:42px;border-radius:21px;border:none;background:rgba(12,10,14,.5);color:rgba(255,255,255,.92);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);box-shadow:0 10px 26px rgba(0,0,0,.24);pointer-events:auto;}
+.exit-x:active{background:rgba(12,10,14,.68);transform:scale(.985);}
 
-#panel{background:var(--parchment);border-top:1px solid rgba(216,164,153,.35);flex-shrink:0;z-index:25;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,8px);max-height:42vh;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+#panel{background:linear-gradient(180deg,rgba(253,246,240,.985),rgba(248,239,231,.985));border-top:1px solid rgba(216,164,153,.35);flex-shrink:0;z-index:25;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,8px);max-height:min(24vh,190px);overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:0 -16px 40px rgba(20,12,16,.14);}
 
 #dialogue{padding:clamp(10px,2vh,16px) clamp(14px,4vw,22px) clamp(6px,1.5vh,10px);flex-shrink:0;}
 .dlg-row{display:flex;gap:10px;align-items:flex-start;}
 .dlg-sym{font-family:'Josefin Sans',sans-serif;font-size:clamp(10px,2.5vw,12px);color:var(--terracotta);flex-shrink:0;margin-top:2px;width:14px;}
-.dlg-text{font-family:'Playfair Display',serif;font-size:clamp(12px,3vw,15px);line-height:1.65;color:var(--ink);white-space:pre-wrap;transition:opacity .25s;}
+.dlg-text{font-family:'Playfair Display',serif;font-size:clamp(17px,4.2vw,22px);line-height:1.82;color:var(--ink);white-space:pre-wrap;transition:opacity .35s;}
 
 #path-choice{display:none;padding:clamp(8px,2vh,12px) clamp(14px,4vw,22px) clamp(14px,3vh,20px);gap:10px;flex-direction:column;}
-.path-btn{width:100%;padding:clamp(14px,3.5vw,18px);border:1.5px solid rgba(107,144,128,.3);border-radius:16px;background:rgba(107,144,128,.05);cursor:pointer;text-align:left;transition:all .2s;-webkit-tap-highlight-color:transparent;}
+.path-btn{width:100%;padding:clamp(16px,4vw,20px);border:1.5px solid rgba(107,123,155,.24);border-radius:24px;background:rgba(255,255,255,.76);cursor:pointer;text-align:left;transition:all .2s;-webkit-tap-highlight-color:transparent;box-shadow:0 12px 28px rgba(45,34,38,.08);}
 .path-btn:active{background:rgba(107,144,128,.15);border-color:var(--sage);}
-.path-btn.selected{background:rgba(107,144,128,.15);border-color:var(--sage);}
-.path-title{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(11px,2.8vw,13px);letter-spacing:2px;text-transform:uppercase;color:var(--sage);margin-bottom:4px;}
-.path-desc{font-family:'Playfair Display',serif;font-size:clamp(11px,2.8vw,13px);color:var(--warm-gray);line-height:1.5;}
+.path-btn.selected{background:rgba(107,123,155,.12);border-color:#6B7B9B;}
+.path-title{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(14px,3.4vw,16px);letter-spacing:1.6px;text-transform:uppercase;color:#2D2226;margin-bottom:6px;}
+.path-desc{font-family:'Playfair Display',serif;font-size:clamp(15px,3.6vw,17px);color:#6B5B5E;line-height:1.62;}
 
 #continue-btn{display:none;padding:clamp(8px,2vh,12px) clamp(14px,4vw,22px) clamp(14px,3vh,20px);}
 #continue-btn button{width:100%;height:clamp(52px,14vw,62px);border:none;border-radius:31px;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(11px,2.8vw,13px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;box-shadow:0 6px 24px rgba(107,144,128,.45);}
 
+
+.panel-hidden{display:none !important;}
+#signal-pop{position:absolute;left:16px;right:16px;top:calc(env(safe-area-inset-top, 0px) + 96px);display:flex;flex-direction:column;align-items:center;gap:10px;pointer-events:auto;z-index:30;}
+.signal-card{max-width:min(88vw,380px);background:rgba(253,246,240,.97);border:1px solid rgba(216,164,153,.34);border-radius:22px;padding:18px 18px;box-shadow:0 16px 30px rgba(20,12,16,.18);font-family:'Playfair Display',serif;font-size:clamp(18px,4.6vw,22px);line-height:1.7;color:#2D2226;text-align:center;opacity:0;transform:translateY(-8px);transition:opacity .22s ease,transform .22s ease;}
+.signal-card.show{opacity:1;transform:translateY(0);}
+.signal-card.soft{background:rgba(253,246,240,.97);}
+.signal-card.warn{background:rgba(255,243,236,.97);border-color:rgba(216,164,153,.44);}
+.signal-btn{display:none;min-width:180px;height:46px;padding:0 20px;border:none;border-radius:999px;background:linear-gradient(135deg,var(--sage),#4A8A6E);color:#fff;font-family:'Jost',sans-serif;font-weight:600;font-size:12px;letter-spacing:2.5px;text-transform:uppercase;box-shadow:0 10px 24px rgba(74,111,168,.22);pointer-events:auto;cursor:pointer;}
+.signal-btn.show{display:inline-flex;align-items:center;justify-content:center;}
+.signal-btn{display:none !important;}
+
 #seed-btn{display:none;flex-direction:column;align-items:center;padding:clamp(8px,2vh,12px) clamp(22px,6vw,32px) clamp(14px,3vh,20px);gap:8px;}
-#seed-btn button{width:100%;height:clamp(52px,14vw,62px);border:none;border-radius:31px;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(11px,2.8vw,13px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 24px rgba(107,144,128,.45);animation:seedpulse 2.2s ease-in-out infinite;}
-@keyframes seedpulse{0%,100%{box-shadow:0 6px 24px rgba(107,144,128,.4);}50%{box-shadow:0 6px 36px rgba(107,144,128,.7);}}
-.seed-note{font-family:'Playfair Display',serif;font-size:clamp(10px,2.5vw,12px);color:rgba(107,91,94,.45);text-align:center;}
+#seed-btn button{width:100%;height:clamp(52px,14vw,62px);border:none;border-radius:31px;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(11px,2.8vw,13px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 24px rgba(107,144,128,.45);animation:seedpulse 3.4s ease-in-out infinite;}
+@keyframes seedpulse{0%,100%{box-shadow:0 6px 20px rgba(107,144,128,.26);}50%{box-shadow:0 6px 28px rgba(107,144,128,.42);}}
+.seed-note{font-family:'Playfair Display',serif;font-size:clamp(13px,3.2vw,15px);color:rgba(107,91,94,.62);text-align:center;}
 
 .overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(28px,6vw,48px);opacity:0;pointer-events:none;transition:opacity .7s ease;z-index:50;}
 .overlay.on{opacity:1;pointer-events:all;}
 
 #o-intro{background:linear-gradient(180deg,#D4B880,#E0C898);z-index:60;}
-.oi-b{font-family:'Josefin Sans',sans-serif;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:rgba(45,34,38,.5);margin-bottom:clamp(12px,3vh,18px);}
+.oi-b{font-family:'Josefin Sans',sans-serif;font-size:clamp(10px,2.4vw,12px);letter-spacing:3px;text-transform:uppercase;color:rgba(45,34,38,.62);margin-bottom:clamp(12px,3vh,18px);}
 .oi-ic{font-size:clamp(36px,10vw,48px);margin-bottom:clamp(10px,2.5vh,16px);}
 .oi-sticker { margin-bottom: clamp(10px,2.5vh,16px); }
-@keyframes gentle-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
-@keyframes slow-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.08); opacity: 0.85; } }
-.oi-big{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(28px,8vw,40px);letter-spacing:4px;text-transform:uppercase;color:var(--ink);line-height:1.1;margin-bottom:8px;}
-.oi-sub{font-family:'Playfair Display',serif;font-size:clamp(12px,3.2vw,15px);color:rgba(45,34,38,.6);margin-bottom:clamp(18px,4vh,28px);}
-.oi-desc{font-family:'Playfair Display',serif;font-size:clamp(11px,2.8vw,13px);line-height:1.85;color:rgba(45,34,38,.45);margin-bottom:clamp(26px,6vh,40px);max-width:280px;}
-.oi-note{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.6vw,9px);letter-spacing:2px;text-transform:uppercase;color:rgba(253,246,240,.25);margin-bottom:clamp(14px,3vh,20px);}
-.oi-btn{width:clamp(160px,48vw,190px);height:clamp(44px,11vw,52px);border-radius:26px;border:1.5px solid rgba(45,34,38,.4);background:transparent;font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(9px,2.2vw,11px);letter-spacing:3px;text-transform:uppercase;color:rgba(45,34,38,.8);cursor:pointer;transition:all .3s;}
+@keyframes gentle-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+@keyframes slow-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.04); opacity: 0.92; } }
+.oi-big{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(34px,9vw,46px);letter-spacing:4px;text-transform:uppercase;color:var(--ink);line-height:1.05;margin-bottom:10px;text-shadow:0 8px 22px rgba(0,0,0,.18);}
+.oi-sub{font-family:'Playfair Display',serif;font-size:clamp(19px,4.4vw,22px);color:rgba(45,34,38,.72);margin-bottom:clamp(16px,3.5vh,24px);}
+.oi-desc{font-family:'Playfair Display',serif;font-size:clamp(19px,4.5vw,24px);line-height:1.8;color:rgba(45,34,38,.92);margin-bottom:clamp(24px,5vh,34px);max-width:360px;}
+.oi-note{font-family:'Josefin Sans',sans-serif;font-size:clamp(10px,2.3vw,12px);letter-spacing:2px;text-transform:uppercase;color:rgba(45,34,38,.42);margin-bottom:clamp(14px,3vh,20px);}
+.oi-btn{width:clamp(160px,48vw,190px);height:clamp(48px,12vw,56px);border-radius:26px;border:1.5px solid rgba(45,34,38,.4);background:transparent;font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(10px,2.5vw,12px);letter-spacing:3px;text-transform:uppercase;color:rgba(45,34,38,.8);cursor:pointer;transition:all .3s;}
 .oi-btn:active{background:rgba(45,34,38,.1);}
 
 #practice-overlay{position:absolute;inset:0;z-index:70;background:rgba(196,160,96,.96);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .4s;}
 #practice-overlay.on{opacity:1;pointer-events:all;}
-.ps-inner{width:min(340px,90vw);background:var(--parchment);border-radius:20px;overflow:hidden;position:relative;max-height:85vh;overflow-y:auto;}
+.ps-inner{width:min(360px,92vw);background:linear-gradient(180deg,rgba(253,246,240,1),rgba(247,238,230,1));border-radius:24px;overflow:hidden;position:relative;max-height:85vh;overflow-y:auto;box-shadow:0 24px 60px rgba(10,8,12,.28);}
 .ps-bar{height:4px;background:rgba(107,91,94,.12);}
 .ps-fill{height:100%;width:0;background:var(--sage);transition:width .4s;}
-.ps-x{position:absolute;top:12px;right:14px;width:28px;height:28px;border-radius:14px;border:none;background:rgba(107,91,94,.08);font-size:14px;color:var(--warm-gray);cursor:pointer;z-index:2;}
+.ps-x{position:absolute;top:12px;right:14px;width:28px;height:28px;border-radius:14px;border:none;background:rgba(107,91,94,.08);font-size:16px;color:var(--warm-gray);cursor:pointer;z-index:2;}
 .ps-step{display:none;padding:clamp(28px,6vw,40px) clamp(18px,5vw,26px) clamp(20px,4vh,28px);flex-direction:column;text-align:center;}
 .ps-step.active{display:flex;animation:fadeUp .4s ease;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .ps-eyebrow{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:3px;text-transform:uppercase;color:var(--terracotta);margin-bottom:clamp(10px,2.5vh,16px);}
 .ps-h{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(20px,5.5vw,26px);letter-spacing:2px;text-transform:uppercase;color:var(--ink);line-height:1.15;margin-bottom:clamp(14px,3.5vh,22px);}
-.ps-body{font-family:'Playfair Display',serif;font-size:clamp(12px,3vw,14px);line-height:1.85;color:rgba(45,34,38,.65);margin-bottom:clamp(18px,4.5vh,28px);}
-.ps-btn{width:100%;height:clamp(44px,11vw,52px);border:none;border-radius:26px;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(9px,2.2vw,11px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;}
+.ps-body{font-family:'Playfair Display',serif;font-size:clamp(16px,3.9vw,19px);line-height:1.84;color:rgba(45,34,38,.84);margin-bottom:clamp(18px,4.5vh,28px);}
+.ps-btn{width:100%;height:clamp(48px,12vw,56px);border:none;border-radius:26px;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(10px,2.5vw,12px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;}
 .ps-box{background:rgba(107,91,94,.04);border-radius:12px;padding:clamp(12px,3vw,18px);margin-bottom:clamp(14px,3.5vh,22px);text-align:left;}
 .ps-lbl{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:2px;text-transform:uppercase;color:var(--warm-gray);margin-bottom:8px;}
-.ps-ta{width:100%;border:none;background:transparent;font-family:'Playfair Display',serif;font-size:clamp(13px,3.2vw,15px);color:var(--ink);line-height:1.6;resize:none;outline:none;}
+.ps-ta{width:100%;border:none;background:transparent;font-family:'Playfair Display',serif;font-size:clamp(15px,3.6vw,17px);color:var(--ink);line-height:1.6;resize:none;outline:none;}
 .ps-ta::placeholder{color:rgba(107,91,94,.35);}
-.ps-carry{background:rgba(107,144,128,.1);border-radius:12px;padding:clamp(12px,3vw,18px);margin-bottom:clamp(18px,4.5vh,26px);font-family:'Playfair Display',serif;font-size:clamp(11px,2.8vw,13px);line-height:1.75;color:var(--sage);text-align:left;}
-.ps-carry em{color:var(--deep-rose);font-style:normal;font-weight:600;}
+.ps-carry{background:rgba(107,144,128,.1);border-radius:12px;padding:clamp(12px,3vw,18px);margin-bottom:clamp(18px,4.5vh,26px);font-family:'Playfair Display',serif;font-size:clamp(13px,3.2vw,15px);line-height:1.82;color:var(--sage);text-align:left;}
+.ps-carry .emphasis{color:var(--deep-rose);font-style:normal;font-weight:600;}
 
 #o-done{position:absolute;inset:0;z-index:80;background:linear-gradient(180deg,#D4B888,#E8D0A8);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(28px,6vw,48px);opacity:0;pointer-events:none;transition:opacity .8s;}
 #o-done.on{opacity:1;pointer-events:all;}
-.done-g{font-size:clamp(36px,10vw,48px);margin-bottom:clamp(12px,3vh,20px);}
+.done-g{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(18px,4.6vw,24px);letter-spacing:3px;text-transform:uppercase;color:var(--ink);margin-bottom:clamp(12px,3vh,20px);}
 .done-ey{font-family:'Josefin Sans',sans-serif;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:rgba(45,34,38,.5);margin-bottom:clamp(6px,1.5vh,10px);}
 .done-ti{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(26px,8vw,36px);letter-spacing:4px;text-transform:uppercase;color:var(--ink);line-height:1.1;margin-bottom:clamp(14px,3.5vh,24px);}
-.done-bo{font-family:'Playfair Display',serif;font-size:clamp(12px,3vw,14px);line-height:1.9;color:rgba(45,34,38,.6);margin-bottom:clamp(24px,6vh,40px);max-width:280px;}
+.done-bo{font-family:'Playfair Display',serif;font-size:clamp(18px,4.3vw,21px);line-height:1.78;color:rgba(45,34,38,.8);margin-bottom:clamp(22px,5vh,34px);max-width:320px;}
 .done-btn{width:clamp(200px,60vw,240px);height:clamp(46px,11vw,54px);border-radius:27px;border:none;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;}
 
 /* Journey complete special */
 #journey-complete{position:absolute;inset:0;z-index:90;background:radial-gradient(ellipse at 50% 50%,#F8F0E0,#E8D8C0);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(28px,6vw,48px);opacity:0;pointer-events:none;transition:opacity 1.5s;}
 #journey-complete.on{opacity:1;pointer-events:all;}
-.jc-icon{font-size:clamp(48px,14vw,64px);margin-bottom:clamp(16px,4vh,28px);}
+.jc-icon{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(20px,5vw,28px);letter-spacing:4px;text-transform:uppercase;color:#6B7B9B;margin-bottom:clamp(16px,4vh,28px);}
 .jc-title{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(28px,8vw,40px);letter-spacing:5px;text-transform:uppercase;color:var(--ink);line-height:1.1;margin-bottom:clamp(8px,2vh,14px);}
 .jc-sub{font-family:'Playfair Display',serif;font-size:clamp(14px,4vw,18px);color:var(--sage);margin-bottom:clamp(20px,5vh,36px);}
 .jc-body{font-family:'Playfair Display',serif;font-size:clamp(12px,3vw,14px);line-height:2;color:rgba(45,34,38,.6);max-width:280px;margin-bottom:clamp(28px,7vh,48px);}
 .jc-btn{width:clamp(220px,65vw,260px);height:clamp(50px,13vw,60px);border-radius:30px;border:none;background:linear-gradient(135deg,var(--gold),#C49838);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(9px,2.2vw,11px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;box-shadow:0 8px 30px rgba(212,168,67,.4);}
+
+
+/* Tender clarity pass */
+html,body{
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+.phone{
+  background:linear-gradient(180deg,#120D11 0%,#24191D 100%) !important;
+}
+.phone #game-area{
+  border-radius:24px 24px 0 0 !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.15),0 24px 44px rgba(12,8,10,.22) !important;
+}
+#panel{
+  background:linear-gradient(180deg,rgba(253,246,240,.992),rgba(248,239,231,.99)) !important;
+  max-height:min(24vh,240px) !important;
+  box-shadow:0 -18px 40px rgba(20,12,16,.16) !important;
+}
+#dialogue{
+  padding:clamp(18px,3.2vh,22px) clamp(22px,6vw,28px) clamp(18px,3.2vh,22px) !important;
+}
+.dlg-row{gap:12px !important;}
+.dlg-text{
+  font-style:normal !important;
+  font-size:clamp(21px,5.5vw,28px) !important;
+  line-height:1.76 !important;
+  color:rgba(37,30,34,.98) !important;
+  overflow-wrap:anywhere;
+}
+.dlg-sym{
+  font-size:clamp(11px,2.7vw,13px) !important;
+  color:rgba(139,58,74,.72) !important;
+}
+.zone-num,.pieces-lbl,.progress-lbl,.watch-lbl,.awareness-lbl,.speed-lbl,.build-status-label,.ps-eyebrow,.done-ey,.oi-b,.path-title,.wc-lbl,.hlbl,.oi-note,.seed-note,.dlg-cue,.jc-sub,.const-sub{
+  font-size:clamp(10px,2.3vw,12px) !important;
+  letter-spacing:2.35px !important;
+}
+.zone-name{
+  font-size:clamp(17px,4.4vw,22px) !important;
+  color:rgba(255,255,255,.94) !important;
+}
+.oi-desc,.ps-body,.done-bo,.ps-carry,.ctrl-info,.action-text,.build-status-text,.path-desc,.practice-note,.ms-story,.ms-defuse,.ms-q,.jc-body,.const-text,.meet-text,.seed-note,.ps-defuse-out,.sc-text,.path-desc{
+  font-style:normal !important;
+  font-size:clamp(17px,4.5vw,21px) !important;
+  line-height:1.76 !important;
+}
+.oi-desc,.done-bo,.ps-body,.ps-carry,.seed-note,.ctrl-info,.ms-story,.ms-defuse,.ms-q,.jc-body,.ps-defuse-out{
+  text-wrap:pretty;
+}
+.ctrl-row,.build-status,.ctrl-info,.action-text{
+  box-shadow:0 16px 34px rgba(20,12,16,.18) !important;
+}
+.action-text{
+  min-width:min(90vw,400px) !important;
+}
+.exit-x{
+  z-index:260 !important;
+  width:48px !important;
+  height:48px !important;
+  border-radius:24px !important;
+  border:1px solid rgba(253,246,240,.22) !important;
+  background:rgba(16,12,16,.78) !important;
+  box-shadow:0 16px 34px rgba(0,0,0,.28) !important;
+}
+.exit-x:active{transform:scale(.97) !important;}
+.ps-x{
+  width:34px !important;
+  height:34px !important;
+  border-radius:17px !important;
+}
+.oi-btn,.ps-btn,.done-btn,#seed-btn button,#continue-btn button{
+  box-shadow:0 10px 28px rgba(88,72,54,.18) !important;
+}
+.overlay,.overlay.on,#practice-overlay,#o-done,#meet-moment{
+  backdrop-filter:blur(2px);
+  -webkit-backdrop-filter:blur(2px);
+}
+@media (max-width:420px){
+  #panel{max-height:min(25vh,250px) !important;}
+  .dlg-text{font-size:clamp(21px,5.8vw,28px) !important;}
+}
+.web-embed .exit-x{display:none !important;}
 </style>
 </head>
 <body>
 <div class="phone">
-<button class="exit-x" onclick="notifyApp('close',{zone:12})" aria-label="Exit game">&#x2715;</button>
+<button class="exit-x" onclick="notifyApp('close',{zone:12})" aria-label="Exit game">X</button>
 
   <div id="game-area">
     <!-- Light rays -->
@@ -121,6 +216,11 @@ canvas{position:absolute;inset:0;}
     <div class="light-ray" style="transform:rotate(30deg);left:70%"></div>
     
     <canvas id="canvas"></canvas>
+    <div id="signal-pop">
+      <div class="signal-card soft" id="signal-card"></div>
+      <button class="signal-btn" id="signal-ack">Tap when ready</button>
+    </div>
+
     
     <div class="zone-label"><div class="zone-num">Zone XII · Step 12</div><div class="zone-name">The Crossroads</div></div>
   </div>
@@ -135,31 +235,27 @@ canvas{position:absolute;inset:0;}
     
     <div id="path-choice">
       <div class="path-btn" id="path-1" data-path="1">
-        <div class="path-title">🌱 Tend the Garden</div>
+        <div class="path-title">Tend the Garden</div>
         <div class="path-desc">Return to the practices. Keep growing what you planted.</div>
       </div>
       <div class="path-btn" id="path-2" data-path="2">
-        <div class="path-title">🌉 Rebuild the Bridge</div>
+      <div class="path-title">Rebuild the Bridge</div>
         <div class="path-desc">Continue the repair. Trust takes time and showing up.</div>
       </div>
       <div class="path-btn" id="path-3" data-path="3">
-        <div class="path-title">✨ Share the Light</div>
+      <div class="path-title">Share the Light</div>
         <div class="path-desc">Carry what you learned to others who are walking this path.</div>
       </div>
     </div>
     
-    <div id="continue-btn">
-      <button id="continue-tap">WALK THIS PATH</button>
-    </div>
-    
-    <div id="seed-btn">
-      <button id="seed-tap">🌱 PICK UP THE FINAL SEED</button>
+      <div id="seed-btn">
+      <button id="seed-tap">PICK UP THE FINAL SEED</button>
       <div class="seed-note">A practice for carrying the message</div>
     </div>
   </div>
 
   <div class="overlay on" id="o-intro">
-    <div class="oi-b">✦ Zone XII · Step 12 ✦</div>
+    <div class="oi-b">Zone XII · Step 12</div>
     <svg class="oi-sticker" viewBox="0 0 100 100" width="80" height="80">
       <path d="M25,48 Q25,28 50,48 Q75,68 75,48 Q75,28 50,48 Q25,68 25,48" fill="none" stroke="#D4A843" stroke-width="1.2">
         <animateTransform attributeName="transform" type="translate" values="0,0;0,-3;0,0" dur="3s" repeatCount="indefinite"/>
@@ -181,18 +277,18 @@ canvas{position:absolute;inset:0;}
       </line>
     </svg>
     <div class="oi-big">The Crossroads</div>
-    <div class="oi-sub">Carry the message</div>
-    <div class="oi-desc">You stand where many paths meet. Behind you: the field you have walked. Before you: the world waiting for what you have learned.<br><br>Choose how you will carry this forward.</div>
-    <div class="oi-note">Best experienced in the Tender app</div>
+    <div class="oi-sub">Carry the message forward</div>
+    <div class="oi-desc">You stand where many paths meet. Behind you is the field you have walked. Before you is the world waiting for what you have learned.<br>Choose how you will carry this forward.</div>
+    <div class="oi-note">Move slowly and let the lesson land</div>
 <button class="oi-btn" id="intro-btn">ENTER THE FIELD</button>
   </div>
 
   <div id="practice-overlay">
     <div class="ps-inner">
       <div class="ps-bar"><div class="ps-fill" id="ps-fill"></div></div>
-      <button class="ps-x" id="ps-close">✕</button>
+      <button class="ps-x" id="ps-close">X</button>
       <div class="ps-step active" id="ps-0">
-        <div class="ps-eyebrow">✦ Practice · Carrying the Message</div>
+        <div class="ps-eyebrow">Practice · Carrying the Message</div>
         <div class="ps-h">What You<br>Now Know</div>
         <div class="ps-body">You have walked through fog and mirrors, caves and ruins. You have built bridges and planted gardens.<br><br>What do you know now that you did not know before?</div>
         <button class="ps-btn" id="ps-next-0">CONTINUE</button>
@@ -222,16 +318,16 @@ canvas{position:absolute;inset:0;}
         <div class="ps-h">The Journey Continues</div>
         <div class="ps-carry">
           This is not the end. This is where the real work begins.<br><br>
-          <em>You have walked the field. Now you carry it with you.</em><br><br>
+          <span class="emphasis">You have walked the field. Now you carry it with you.</span><br><br>
           Every relationship you touch. Every moment of awareness. Every choice to show up differently. This is how the message spreads.
         </div>
-        <button class="ps-btn" id="ps-plant">PLANT THE FINAL SEED ✦</button>
+        <button class="ps-btn" id="ps-plant">PLANT THE FINAL SEED</button>
       </div>
     </div>
   </div>
 
   <div id="o-done">
-    <div class="done-g">🌅</div>
+    <div class="done-g">Carry Forward</div>
     <div class="done-ey">Zone XII Complete</div>
     <div class="done-ti">The Crossroads</div>
     <div class="done-bo">You chose your path.<br>The journey continues beyond this field.<br>Carry it well.</div>
@@ -239,7 +335,7 @@ canvas{position:absolute;inset:0;}
   </div>
 
   <div id="journey-complete">
-    <div class="jc-icon">🌿</div>
+    <div class="jc-icon">Tender</div>
     <div class="jc-title">Journey Complete</div>
     <div class="jc-sub">You have walked The Field</div>
     <div class="jc-body">
@@ -249,7 +345,7 @@ canvas{position:absolute;inset:0;}
       The field is always here.<br>
       Return whenever you need to remember.
     </div>
-    <button class="jc-btn" id="jc-btn">BEGIN AGAIN ✦</button>
+    <button class="jc-btn" id="jc-btn">BEGIN AGAIN</button>
   </div>
 
 </div>
@@ -263,7 +359,10 @@ let S = {
   phase: 'intro',
   selectedPath: null,
   avatarY: 0,
-  pathsDrawn: false
+  partnerY: 0,
+  pathsDrawn: false,
+  walkingPath: false,
+  walkProgress: 0
 };
 
 function initCanvas() {
@@ -326,55 +425,78 @@ function draw() {
   ctx.arc(centerX, crossY, 25, 0, Math.PI * 2);
   ctx.fill();
   
-  // Avatar
-  const avatarX = centerX;
-  const avatarY = crossY + 60 - S.avatarY;
-  
-  // Shadow
+  const entryAvatar = { x: centerX, y: crossY + 60 - S.avatarY };
+  const entryPartner = { x: centerX + 20, y: crossY + 75 - S.partnerY };
+
+  const avatarPoint = S.walkingPath ? getPathPoint(S.selectedPath, S.walkProgress, 0) : entryAvatar;
+  const partnerPoint = S.walkingPath ? getPathPoint(S.selectedPath, Math.max(0, S.walkProgress - 0.12), 12) : entryPartner;
+
+  drawWalker(avatarPoint.x, avatarPoint.y, '#A84858', '#C4616E', 1);
+  drawWalker(partnerPoint.x, partnerPoint.y, '#5274A4', '#7294D4', 0.92);
+}
+
+function drawWalker(x, y, body, head, scale) {
   ctx.beginPath();
-  ctx.ellipse(avatarX, avatarY + 22, 12, 4, 0, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(0,0,0,0.15)';
+  ctx.ellipse(x, y + 22 * scale, 12 * scale, 4 * scale, 0, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(0,0,0,0.12)';
   ctx.fill();
-  
-  // Body
-  ctx.fillStyle = '#A84858';
+
+  ctx.fillStyle = body;
   ctx.beginPath();
-  ctx.roundRect(avatarX - 10, avatarY - 5, 20, 24, 6);
+  ctx.roundRect(x - 10 * scale, y - 5 * scale, 20 * scale, 24 * scale, 6 * scale);
   ctx.fill();
-  
-  // Head
-  ctx.fillStyle = '#C4616E';
+
+  ctx.fillStyle = head;
   ctx.beginPath();
-  ctx.arc(avatarX, avatarY - 12, 12, 0, Math.PI * 2);
+  ctx.arc(x, y - 12 * scale, 12 * scale, 0, Math.PI * 2);
   ctx.fill();
-  
-  // Partner avatar (slightly behind)
-  const partnerX = centerX + 20;
-  const partnerY = avatarY + 15;
-  
-  ctx.beginPath();
-  ctx.ellipse(partnerX, partnerY + 20, 10, 3, 0, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(0,0,0,0.1)';
-  ctx.fill();
-  
-  ctx.fillStyle = '#5274A4';
-  ctx.beginPath();
-  ctx.roundRect(partnerX - 8, partnerY - 3, 16, 20, 5);
-  ctx.fill();
-  
-  ctx.fillStyle = '#7294D4';
-  ctx.beginPath();
-  ctx.arc(partnerX, partnerY - 10, 10, 0, Math.PI * 2);
-  ctx.fill();
+}
+
+function getPathPoint(pathNum, progress, trailOffset) {
+  const centerX = W / 2;
+  const crossY = H * 0.55;
+  const t = Math.max(0, Math.min(1, progress));
+  const startX = centerX;
+  const startY = crossY;
+
+  if (pathNum === 1) {
+    const endX = W * 0.15 + trailOffset * 0.2;
+    const endY = 18 + trailOffset * 0.3;
+    const ctrlX = centerX - 72;
+    const ctrlY = crossY - 96;
+    return {
+      x: (1 - t) * (1 - t) * startX + 2 * (1 - t) * t * ctrlX + t * t * endX,
+      y: (1 - t) * (1 - t) * startY + 2 * (1 - t) * t * ctrlY + t * t * endY
+    };
+  }
+
+  if (pathNum === 3) {
+    const endX = W * 0.85 - trailOffset * 0.2;
+    const endY = 18 + trailOffset * 0.3;
+    const ctrlX = centerX + 72;
+    const ctrlY = crossY - 96;
+    return {
+      x: (1 - t) * (1 - t) * startX + 2 * (1 - t) * t * ctrlX + t * t * endX,
+      y: (1 - t) * (1 - t) * startY + 2 * (1 - t) * t * ctrlY + t * t * endY
+    };
+  }
+
+  return {
+    x: centerX + trailOffset * 0.12,
+    y: crossY - (crossY - 18) * t
+  };
 }
 
 function animateWalk() {
   S.avatarY += 2;
+  S.partnerY += 2;
   if (S.avatarY >= 60) {
     S.avatarY = 60;
+    S.partnerY = 45;
     S.pathsDrawn = true;
-    document.getElementById('path-choice').style.display = 'flex';
-    fadeD('—', 'Three paths lie before you.\n\nWhich will you walk?');
+    showSignal('Which path do you want to walk together from here? Choose gently, then watch the next step take shape.', 'soft', true, () => {
+      document.getElementById('path-choice').style.display = 'flex';
+    });
   }
   draw();
   if (S.avatarY < 60) {
@@ -383,23 +505,42 @@ function animateWalk() {
 }
 
 function selectPath(pathNum) {
+  if (S.awaitingAck || S.walkingPath) return;
   S.selectedPath = pathNum;
   document.querySelectorAll('.path-btn').forEach(b => b.classList.remove('selected'));
   document.getElementById('path-' + pathNum).classList.add('selected');
-  document.getElementById('continue-btn').style.display = 'block';
   draw();
+  setTimeout(walkPath, 180);
 }
 
 function walkPath() {
   document.getElementById('path-choice').style.display = 'none';
-  document.getElementById('continue-btn').style.display = 'none';
-  
+  S.walkingPath = true;
+  S.walkProgress = 0;
+
   const pathNames = ['', 'Tend the Garden', 'Rebuild the Bridge', 'Share the Light'];
-  fadeD('✦', `You chose: ${pathNames[S.selectedPath]}\n\nThis path is yours to walk.`);
-  
-  setTimeout(() => {
-    document.getElementById('seed-btn').style.display = 'flex';
-  }, 2000);
+  const reflections = {
+    1: 'You are choosing steady care. Relationships deepen when love becomes something you practice on ordinary days.',
+    2: 'You are choosing repair. Trust returns when both of you keep walking back toward each other.',
+    3: 'You are choosing to carry the light forward. What you learned can become shelter for other people too.'
+  };
+
+  const step = () => {
+    S.walkProgress += 0.016;
+    draw();
+    if (S.walkProgress < 1) {
+      requestAnimationFrame(step);
+      return;
+    }
+    S.walkProgress = 1;
+    S.walkingPath = false;
+    draw();
+    showSignal(`${pathNames[S.selectedPath]}. ${reflections[S.selectedPath]}`, 'soft', true, () => {
+      document.getElementById('seed-btn').style.display = 'flex';
+    });
+  };
+
+  requestAnimationFrame(step);
 }
 
 // Path selection
@@ -407,22 +548,24 @@ document.querySelectorAll('.path-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     selectPath(parseInt(btn.dataset.path));
   });
+  btn.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    selectPath(parseInt(btn.dataset.path));
+  }, { passive: false });
 });
 
-document.getElementById('continue-tap').addEventListener('click', walkPath);
 
 function begin() {
   document.getElementById('o-intro').classList.remove('on');
   S.phase = 'game';
-  
+
   initCanvas();
   draw();
-  
-  fadeD('—', 'You have walked all twelve zones.\n\nNow you stand at the crossroads.');
-  
-  setTimeout(() => {
+  document.getElementById('dialogue').style.display = 'none';
+
+  showSignal('You have walked all twelve zones. Take one breath here before you choose how to carry the work forward.', 'soft', true, () => {
     animateWalk();
-  }, 2000);
+  });
 }
 
 function completeGame() {
@@ -439,6 +582,48 @@ function fadeD(sym, text) {
     el.textContent = text;
     el.style.opacity = '1';
   }, 200);
+}
+
+
+function hideSignal() {
+  const el = document.getElementById('signal-card');
+  const btn = document.getElementById('signal-ack');
+  el.classList.remove('show');
+  el.style.pointerEvents = 'none';
+  el.style.cursor = 'default';
+  el.onclick = null;
+  if (btn) {
+    btn.classList.remove('show');
+    btn.style.display = 'none';
+    btn.onclick = null;
+  }
+}
+
+function showSignal(text, tone = 'soft', requireAck = false, onAck = null) {
+  const el = document.getElementById('signal-card');
+  const btn = document.getElementById('signal-ack');
+  el.textContent = text;
+  el.className = 'signal-card ' + tone;
+  el.onclick = null;
+  el.style.pointerEvents = requireAck ? 'auto' : 'none';
+  el.style.cursor = requireAck ? 'pointer' : 'default';
+  S.awaitingAck = !!requireAck;
+  if (btn) {
+    btn.style.display = 'none';
+    btn.classList.remove('show');
+    btn.onclick = null;
+  }
+  if (requireAck) {
+    el.onclick = () => {
+      hideSignal();
+      S.awaitingAck = false;
+      const next = onAck;
+      onAck = null;
+      if (typeof next === 'function') next();
+    };
+  }
+  requestAnimationFrame(() => el.classList.add('show'));
+  if (!requireAck) setTimeout(() => hideSignal(), 2400);
 }
 
 // Practice
@@ -471,7 +656,7 @@ function psPlant() {
   setTimeout(() => {
     document.getElementById('practice-overlay').classList.remove('on');
     const sb = document.getElementById('seed-btn');
-    sb.innerHTML = '<div style="font-family:Playfair Display,serif;font-size:14px;color:var(--sage);text-align:center;padding:12px 0">🌿 All seeds planted. The garden is yours.</div>';
+    sb.innerHTML = '<div style="font-family:Playfair Display,serif;font-size:16px;color:var(--sage);text-align:center;padding:12px 0">All seeds planted. The garden is yours.</div>';
     setTimeout(() => document.getElementById('o-done').classList.add('on'), 800);
   }, 400);
 }
@@ -484,7 +669,7 @@ function finish() {
 function beginAgain() {
   notifyApp('close', { zone: 12 });
   document.getElementById('journey-complete').classList.remove('on');
-  fadeD('✦', 'The field awaits.\nReturn whenever you need.');
+  fadeD('+', 'The field awaits.\nReturn whenever you need to remember what matters.');
 }
 
 // Event listeners
@@ -502,6 +687,8 @@ window.addEventListener('resize', () => {
   initCanvas();
   draw();
 });
+
+document.documentElement.classList.toggle('web-embed', window.parent !== window && !window.ReactNativeWebView);
 
 // REACT NATIVE BRIDGE
 function notifyApp(event, data) {

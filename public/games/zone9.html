@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>THE FIELD — Zone IX: The Bridge</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;600&family=Josefin+Sans:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;600&family=Josefin+Sans:wght@300;400;600&family=Playfair+Display:wght@400;700&display=swap');
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+.emphasis{font-weight:600;}
 
 :root {
   --parchment:#FDF6F0;--terracotta:#D8A499;--deep-rose:#8B3A4A;
@@ -19,7 +20,11 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;touch-action
 
 .phone{width:100%;height:100%;background:var(--ink);border-radius:0;overflow:hidden;position:relative;display:flex;flex-direction:column;}
 
-#game-area{flex:1;min-height:58vh;margin:0 6px;border-radius:12px;position:relative;overflow:hidden;background:linear-gradient(180deg,#6A8AAA 0%,#8AAACA 30%,#AACAEA 50%,#88AA88 75%,#668866 100%);}
+.phone #game-area{flex:1;min-height:69vh!important;margin:0 8px;border-radius:22px 22px 0 0;position:relative;overflow:hidden;background:
+radial-gradient(circle at 50% 38%, rgba(255,255,255,.16), transparent 24%),
+radial-gradient(circle at 18% 22%, rgba(255,255,255,.08), transparent 24%),
+linear-gradient(180deg,#6486A3 0%,#84A8C2 28%,#B7D4E8 52%,#97B597 76%,#738C6F 100%);
+border:1px solid rgba(255,255,255,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 18px 42px rgba(12,8,10,.18);}
 
 canvas{position:absolute;inset:0;}
 
@@ -28,42 +33,44 @@ canvas{position:absolute;inset:0;}
 .water-shimmer::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 100 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 10 Q25 5 50 10 T100 10 V20 H0Z' fill='rgba(255,255,255,0.05)'/%3E%3C/svg%3E");background-size:100px 20px;animation:wave 3s linear infinite;}
 @keyframes wave{from{background-position:0 0}to{background-position:100px 0}}
 
-.zone-label{position:absolute;top:14px;left:14px;z-index:5;}
-.zone-num{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.45);}
-.zone-name{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(10px,2.5vw,13px);letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.65);}
+.zone-label{position:absolute;top:calc(env(safe-area-inset-top, 0px) + 14px);left:14px;z-index:5;}
+.zone-num{font-family:'Josefin Sans',sans-serif;font-size:clamp(10px,2.5vw,12px);letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.68);text-shadow:0 2px 10px rgba(0,0,0,.22);}
+.zone-name{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(15px,4vw,19px);letter-spacing:2.4px;text-transform:uppercase;color:rgba(255,255,255,.92);text-shadow:0 4px 14px rgba(0,0,0,.25);}
 
-#progress-display{position:absolute;top:14px;right:14px;z-index:5;background:rgba(10,6,8,.5);border:1px solid rgba(138,106,74,.3);border-radius:8px;padding:8px 12px;text-align:center;}
-.progress-bar{width:60px;height:8px;background:rgba(255,255,255,.15);border-radius:4px;overflow:hidden;}
+#progress-display{position:absolute;top:calc(env(safe-area-inset-top, 0px) + 14px);right:14px;z-index:5;background:linear-gradient(180deg,rgba(13,10,14,.72),rgba(26,19,20,.56));border:1px solid rgba(138,106,74,.3);border-radius:14px;padding:10px 14px;text-align:center;box-shadow:0 8px 26px rgba(0,0,0,.18);}
+.progress-bar{width:74px;height:10px;background:rgba(255,255,255,.15);border-radius:5px;overflow:hidden;}
 .progress-fill{height:100%;background:linear-gradient(90deg,var(--you),var(--them));border-radius:4px;transition:width .3s;}
-.progress-lbl{font-family:'Josefin Sans',sans-serif;font-size:7px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-top:4px;}
+.progress-lbl{font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:2.2px;text-transform:uppercase;color:rgba(255,255,255,.8);margin-top:5px;}
 
 /* Action labels */
-#action-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10;opacity:0;transition:opacity .3s;pointer-events:none;}
-.action-text{font-family:'Playfair Display',serif;font-size:clamp(14px,4vw,18px);color:var(--parchment);text-shadow:0 2px 10px rgba(0,0,0,.5);text-align:center;background:rgba(0,0,0,.3);padding:8px 16px;border-radius:8px;}
+#action-label{position:absolute;top:36%;left:50%;transform:translate(-50%,-50%);z-index:10;opacity:0;transition:opacity .3s;pointer-events:none;}
+.action-text{font-family:'Playfair Display',serif;font-size:clamp(18px,4.6vw,22px);color:var(--parchment);text-shadow:0 2px 10px rgba(0,0,0,.3);text-align:center;background:linear-gradient(180deg,rgba(21,20,24,.76),rgba(21,20,24,.58));padding:12px 20px;border-radius:14px;border:1px solid rgba(255,255,255,.18);min-width:min(80vw,340px);box-shadow:0 16px 34px rgba(0,0,0,.2);}
 
-.exit-x{position:absolute;top:calc(env(safe-area-inset-top, 0px) + 10px);right:10px;z-index:70;width:28px;height:28px;border-radius:14px;border:none;background:rgba(0,0,0,.25);color:rgba(255,255,255,.7);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
-.exit-x:active{background:rgba(0,0,0,.4);}
+.exit-x{position:absolute;top:calc(env(safe-area-inset-top, 0px) + 10px);right:10px;z-index:220;width:42px;height:42px;border-radius:21px;border:none;background:rgba(12,10,14,.5);color:rgba(255,255,255,.92);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);box-shadow:0 10px 26px rgba(0,0,0,.24);pointer-events:auto;}
+.exit-x:active{background:rgba(12,10,14,.68);transform:scale(.985);}
 
-#panel{background:var(--parchment);border-top:1px solid rgba(216,164,153,.35);flex-shrink:0;z-index:25;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,8px);max-height:30vh;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+#panel{background:linear-gradient(180deg,rgba(253,246,240,.98),rgba(250,242,235,.98));border-top:1px solid rgba(216,164,153,.35);flex-shrink:0;z-index:25;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,8px);max-height:min(18vh,150px);overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:0 -12px 30px rgba(20,12,16,.12);}
 
-#dialogue{padding:clamp(10px,2vh,16px) clamp(14px,4vw,22px) clamp(6px,1.5vh,10px);flex-shrink:0;}
+#dialogue{padding:clamp(12px,2.4vh,16px) clamp(16px,4.8vw,22px) clamp(12px,2.4vh,16px);flex-shrink:0;}
 .dlg-row{display:flex;gap:10px;align-items:flex-start;}
 .dlg-sym{font-family:'Josefin Sans',sans-serif;font-size:clamp(10px,2.5vw,12px);color:var(--terracotta);flex-shrink:0;margin-top:2px;width:14px;}
-.dlg-text{font-family:'Playfair Display',serif;font-size:clamp(12px,3vw,15px);line-height:1.65;color:var(--ink);white-space:pre-wrap;transition:opacity .25s;}
+.dlg-text{font-family:'Playfair Display',serif;font-size:clamp(16px,3.9vw,20px);line-height:1.54;color:var(--ink);white-space:pre-wrap;transition:opacity .35s;}
 
-#controls{display:none;padding:clamp(6px,1.5vh,10px) clamp(14px,4vw,22px) clamp(12px,2.5vh,18px);}
-.ctrl-row{display:flex;gap:clamp(10px,3vw,16px);justify-content:center;}
-.build-btn{flex:1;max-width:140px;height:clamp(52px,14vw,64px);border:none;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;font-family:'Josefin Sans',sans-serif;font-size:clamp(8px,2vw,10px);letter-spacing:1.5px;text-transform:uppercase;transition:all .15s;-webkit-tap-highlight-color:transparent;}
+#controls{display:none;position:absolute;left:12px;right:12px;bottom:max(12px, env(safe-area-inset-bottom, 0px));padding:0;z-index:18;pointer-events:none;}
+.ctrl-row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:12px;justify-content:center;align-items:stretch;background:rgba(253,246,240,.94);border:1px solid rgba(216,164,153,.32);border-radius:22px;padding:12px;box-shadow:0 12px 30px rgba(20,12,16,.18);pointer-events:auto;}
+.build-btn{flex:1;min-height:74px;border:none;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;font-family:'Josefin Sans',sans-serif;font-size:clamp(10px,2.5vw,12px);letter-spacing:1.7px;text-transform:uppercase;transition:all .15s;-webkit-tap-highlight-color:transparent;}
 .build-btn:active{transform:scale(.96);}
 .build-btn.you{background:linear-gradient(135deg,rgba(196,97,110,.2),rgba(196,97,110,.1));border:2px solid rgba(196,97,110,.4);color:var(--you);}
-.build-btn.them{background:linear-gradient(135deg,rgba(114,148,212,.2),rgba(114,148,212,.1));border:2px solid rgba(114,148,212,.4);color:var(--them);}
-.build-btn:disabled{opacity:.4;transform:none;}
-.build-icon{font-size:clamp(18px,5vw,24px);}
+.build-btn:disabled{opacity:.5;transform:none;filter:saturate(.8);}
+.build-icon{font-size:clamp(20px,5.5vw,28px);}
+.build-status{border-radius:18px;padding:12px 14px;background:linear-gradient(135deg,rgba(114,148,212,.18),rgba(114,148,212,.08));border:2px solid rgba(114,148,212,.24);display:flex;flex-direction:column;justify-content:center;gap:6px;}
+.build-status-label{font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:2.1px;text-transform:uppercase;color:rgba(82,116,164,.78);}
+.build-status-text{font-family:'Playfair Display',serif;font-size:clamp(14px,3.2vw,16px);line-height:1.6;color:#334460;}
 
 #seed-btn{display:none;flex-direction:column;align-items:center;padding:clamp(8px,2vh,12px) clamp(22px,6vw,32px) clamp(14px,3vh,20px);gap:8px;}
-#seed-btn button{width:100%;height:clamp(52px,14vw,62px);border:none;border-radius:31px;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(11px,2.8vw,13px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 24px rgba(107,144,128,.45);animation:seedpulse 2.2s ease-in-out infinite;}
-@keyframes seedpulse{0%,100%{box-shadow:0 6px 24px rgba(107,144,128,.4);}50%{box-shadow:0 6px 36px rgba(107,144,128,.7);}}
-.seed-note{font-family:'Playfair Display',serif;font-size:clamp(10px,2.5vw,12px);color:rgba(107,91,94,.45);text-align:center;}
+#seed-btn button{width:100%;height:clamp(52px,14vw,62px);border:none;border-radius:31px;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(11px,2.8vw,13px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 24px rgba(107,144,128,.45);animation:seedpulse 3.4s ease-in-out infinite;}
+@keyframes seedpulse{0%,100%{box-shadow:0 6px 20px rgba(107,144,128,.26);}50%{box-shadow:0 6px 28px rgba(107,144,128,.42);}}
+.seed-note{font-family:'Playfair Display',serif;font-size:clamp(13px,3.2vw,15px);color:rgba(107,91,94,.62);text-align:center;}
 
 .overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(28px,6vw,48px);opacity:0;pointer-events:none;transition:opacity .7s ease;z-index:50;}
 .overlay.on{opacity:1;pointer-events:all;}
@@ -72,41 +79,41 @@ canvas{position:absolute;inset:0;}
 .oi-b{font-family:'Josefin Sans',sans-serif;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:clamp(12px,3vh,18px);}
 .oi-ic{font-size:clamp(36px,10vw,48px);margin-bottom:clamp(10px,2.5vh,16px);}
 .oi-sticker { margin-bottom: clamp(10px,2.5vh,16px); }
-@keyframes gentle-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
-@keyframes slow-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.08); opacity: 0.85; } }
-.oi-big{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(32px,9vw,44px);letter-spacing:4px;text-transform:uppercase;color:var(--parchment);line-height:1.1;margin-bottom:8px;}
-.oi-sub{font-family:'Playfair Display',serif;font-size:clamp(12px,3.2vw,15px);color:rgba(255,255,255,.6);margin-bottom:clamp(18px,4vh,28px);}
-.oi-desc{font-family:'Playfair Display',serif;font-size:clamp(11px,2.8vw,13px);line-height:1.85;color:rgba(253,246,240,.35);margin-bottom:clamp(26px,6vh,40px);max-width:280px;}
+@keyframes gentle-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+@keyframes slow-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.04); opacity: 0.92; } }
+.oi-big{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(34px,9vw,46px);letter-spacing:4px;text-transform:uppercase;color:var(--parchment);line-height:1.05;margin-bottom:10px;text-shadow:0 8px 22px rgba(0,0,0,.18);}
+.oi-sub{font-family:'Playfair Display',serif;font-size:clamp(16px,4vw,20px);color:rgba(255,255,255,.6);margin-bottom:clamp(16px,3.5vh,24px);}
+.oi-desc{font-family:'Playfair Display',serif;font-size:clamp(16px,4vw,20px);line-height:1.88;color:rgba(253,246,240,.88);margin-bottom:clamp(24px,5vh,34px);max-width:320px;}
 .oi-note{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.6vw,9px);letter-spacing:2px;text-transform:uppercase;color:rgba(253,246,240,.25);margin-bottom:clamp(14px,3vh,20px);}
-.oi-btn{width:clamp(160px,48vw,190px);height:clamp(44px,11vw,52px);border-radius:26px;border:1.5px solid rgba(255,255,255,.4);background:transparent;font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(9px,2.2vw,11px);letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.8);cursor:pointer;transition:all .3s;}
+.oi-btn{width:clamp(160px,48vw,190px);height:clamp(48px,12vw,56px);border-radius:26px;border:1.5px solid rgba(255,255,255,.4);background:transparent;font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(10px,2.5vw,12px);letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.8);cursor:pointer;transition:all .3s;}
 .oi-btn:active{background:rgba(255,255,255,.1);}
 
 #practice-overlay{position:absolute;inset:0;z-index:70;background:rgba(74,106,138,.96);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .4s;}
 #practice-overlay.on{opacity:1;pointer-events:all;}
-.ps-inner{width:min(340px,90vw);background:var(--parchment);border-radius:20px;overflow:hidden;position:relative;max-height:85vh;overflow-y:auto;}
+.ps-inner{width:min(360px,92vw);background:linear-gradient(180deg,rgba(253,246,240,1),rgba(247,238,230,1));border-radius:24px;overflow:hidden;position:relative;max-height:85vh;overflow-y:auto;box-shadow:0 24px 60px rgba(10,8,12,.28);}
 .ps-bar{height:4px;background:rgba(107,91,94,.12);}
 .ps-fill{height:100%;width:0;background:var(--sage);transition:width .4s;}
-.ps-x{position:absolute;top:12px;right:14px;width:28px;height:28px;border-radius:14px;border:none;background:rgba(107,91,94,.08);font-size:14px;color:var(--warm-gray);cursor:pointer;z-index:2;}
+.ps-x{position:absolute;top:12px;right:14px;width:28px;height:28px;border-radius:14px;border:none;background:rgba(107,91,94,.08);font-size:16px;color:var(--warm-gray);cursor:pointer;z-index:2;}
 .ps-step{display:none;padding:clamp(28px,6vw,40px) clamp(18px,5vw,26px) clamp(20px,4vh,28px);flex-direction:column;text-align:center;}
 .ps-step.active{display:flex;animation:fadeUp .4s ease;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .ps-eyebrow{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:3px;text-transform:uppercase;color:var(--terracotta);margin-bottom:clamp(10px,2.5vh,16px);}
 .ps-h{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(20px,5.5vw,26px);letter-spacing:2px;text-transform:uppercase;color:var(--ink);line-height:1.15;margin-bottom:clamp(14px,3.5vh,22px);}
-.ps-body{font-family:'Playfair Display',serif;font-size:clamp(12px,3vw,14px);line-height:1.85;color:rgba(45,34,38,.65);margin-bottom:clamp(18px,4.5vh,28px);}
-.ps-btn{width:100%;height:clamp(44px,11vw,52px);border:none;border-radius:26px;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(9px,2.2vw,11px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;}
+.ps-body{font-family:'Playfair Display',serif;font-size:clamp(16px,3.9vw,19px);line-height:1.84;color:rgba(45,34,38,.84);margin-bottom:clamp(18px,4.5vh,28px);}
+.ps-btn{width:100%;height:clamp(48px,12vw,56px);border:none;border-radius:26px;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(10px,2.5vw,12px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;}
 .ps-box{background:rgba(107,91,94,.04);border-radius:12px;padding:clamp(12px,3vw,18px);margin-bottom:clamp(14px,3.5vh,22px);text-align:left;}
 .ps-lbl{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:2px;text-transform:uppercase;color:var(--warm-gray);margin-bottom:8px;}
-.ps-ta{width:100%;border:none;background:transparent;font-family:'Playfair Display',serif;font-size:clamp(13px,3.2vw,15px);color:var(--ink);line-height:1.6;resize:none;outline:none;}
+.ps-ta{width:100%;border:none;background:transparent;font-family:'Playfair Display',serif;font-size:clamp(15px,3.6vw,17px);color:var(--ink);line-height:1.6;resize:none;outline:none;}
 .ps-ta::placeholder{color:rgba(107,91,94,.35);}
-.ps-carry{background:rgba(107,144,128,.1);border-radius:12px;padding:clamp(12px,3vw,18px);margin-bottom:clamp(18px,4.5vh,26px);font-family:'Playfair Display',serif;font-size:clamp(11px,2.8vw,13px);line-height:1.75;color:var(--sage);text-align:left;}
-.ps-carry em{color:var(--deep-rose);font-style:normal;font-weight:600;}
+.ps-carry{background:rgba(107,144,128,.1);border-radius:12px;padding:clamp(12px,3vw,18px);margin-bottom:clamp(18px,4.5vh,26px);font-family:'Playfair Display',serif;font-size:clamp(13px,3.2vw,15px);line-height:1.82;color:var(--sage);text-align:left;}
+.ps-carry .emphasis{color:var(--deep-rose);font-style:normal;font-weight:600;}
 
 #o-done{position:absolute;inset:0;z-index:80;background:rgba(74,106,138,.97);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(28px,6vw,48px);opacity:0;pointer-events:none;transition:opacity .8s;}
 #o-done.on{opacity:1;pointer-events:all;}
-.done-g{font-size:clamp(36px,10vw,48px);margin-bottom:clamp(12px,3vh,20px);}
+.done-g{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(18px,4.6vw,24px);letter-spacing:3px;text-transform:uppercase;color:var(--parchment);margin-bottom:clamp(12px,3vh,20px);}
 .done-ey{font-family:'Josefin Sans',sans-serif;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:clamp(6px,1.5vh,10px);}
 .done-ti{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(26px,8vw,36px);letter-spacing:4px;text-transform:uppercase;color:var(--parchment);line-height:1.1;margin-bottom:clamp(14px,3.5vh,24px);}
-.done-bo{font-family:'Playfair Display',serif;font-size:clamp(12px,3vw,14px);line-height:1.9;color:rgba(253,246,240,.5);margin-bottom:clamp(24px,6vh,40px);max-width:280px;}
+.done-bo{font-family:'Playfair Display',serif;font-size:clamp(16px,3.9vw,19px);line-height:1.84;color:rgba(253,246,240,.5);margin-bottom:clamp(22px,5vh,34px);max-width:300px;}
 .done-btn{width:clamp(200px,60vw,240px);height:clamp(46px,11vw,54px);border-radius:27px;border:none;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;}
 
 /* Meet moment */
@@ -122,11 +129,94 @@ canvas{position:absolute;inset:0;}
 .meet-av.them .meet-av-body{background:#5274A4;}
 .meet-bridge{width:clamp(60px,18vw,80px);height:8px;background:linear-gradient(90deg,var(--you),var(--them));margin-bottom:-8px;}
 .meet-text{font-family:'Playfair Display',serif;font-size:clamp(16px,4.5vw,20px);color:var(--parchment);text-align:center;line-height:1.6;max-width:260px;}
+
+
+/* Tender clarity pass */
+html,body{
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+.phone{
+  background:linear-gradient(180deg,#120D11 0%,#24191D 100%) !important;
+}
+.phone #game-area{
+  border-radius:24px 24px 0 0 !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.15),0 24px 44px rgba(12,8,10,.22) !important;
+}
+#panel{
+  background:linear-gradient(180deg,rgba(253,246,240,.992),rgba(248,239,231,.99)) !important;
+  max-height:min(24vh,240px) !important;
+  box-shadow:0 -18px 40px rgba(20,12,16,.16) !important;
+}
+#dialogue{
+  padding:clamp(18px,3.2vh,22px) clamp(22px,6vw,28px) clamp(18px,3.2vh,22px) !important;
+}
+.dlg-row{gap:12px !important;}
+.dlg-text{
+  font-style:normal !important;
+  font-size:clamp(18px,4.8vw,24px) !important;
+  line-height:1.52 !important;
+  color:rgba(37,30,34,.98) !important;
+  overflow-wrap:anywhere;
+}
+.dlg-sym{
+  font-size:clamp(11px,2.7vw,13px) !important;
+  color:rgba(139,58,74,.72) !important;
+}
+.zone-num,.pieces-lbl,.progress-lbl,.watch-lbl,.awareness-lbl,.speed-lbl,.build-status-label,.ps-eyebrow,.done-ey,.oi-b,.path-title,.wc-lbl,.hlbl,.oi-note,.seed-note,.dlg-cue,.jc-sub,.const-sub{
+  font-size:clamp(10px,2.3vw,12px) !important;
+  letter-spacing:2.35px !important;
+}
+.zone-name{
+  font-size:clamp(17px,4.4vw,22px) !important;
+  color:rgba(255,255,255,.94) !important;
+}
+.oi-desc,.ps-body,.done-bo,.ps-carry,.ctrl-info,.action-text,.build-status-text,.path-desc,.practice-note,.ms-story,.ms-defuse,.ms-q,.jc-body,.const-text,.meet-text,.seed-note,.ps-defuse-out,.sc-text,.path-desc{
+  font-style:normal !important;
+  font-size:clamp(17px,4.5vw,21px) !important;
+  line-height:1.76 !important;
+}
+.oi-desc,.done-bo,.ps-body,.ps-carry,.seed-note,.ctrl-info,.ms-story,.ms-defuse,.ms-q,.jc-body,.ps-defuse-out{
+  text-wrap:pretty;
+}
+.ctrl-row,.build-status,.ctrl-info,.action-text{
+  box-shadow:0 16px 34px rgba(20,12,16,.18) !important;
+}
+.action-text{
+  min-width:min(90vw,400px) !important;
+}
+.exit-x{
+  z-index:260 !important;
+  width:48px !important;
+  height:48px !important;
+  border-radius:24px !important;
+  border:1px solid rgba(253,246,240,.22) !important;
+  background:rgba(16,12,16,.78) !important;
+  box-shadow:0 16px 34px rgba(0,0,0,.28) !important;
+}
+.exit-x:active{transform:scale(.97) !important;}
+.ps-x{
+  width:34px !important;
+  height:34px !important;
+  border-radius:17px !important;
+}
+.oi-btn,.ps-btn,.done-btn,#seed-btn button,#continue-btn button{
+  box-shadow:0 10px 28px rgba(88,72,54,.18) !important;
+}
+.overlay,.overlay.on,#practice-overlay,#o-done,#meet-moment{
+  backdrop-filter:blur(2px);
+  -webkit-backdrop-filter:blur(2px);
+}
+@media (max-width:420px){
+  #panel{max-height:min(25vh,250px) !important;}
+  .dlg-text{font-size:clamp(21px,5.8vw,28px) !important;}
+}
+.web-embed .exit-x{display:none !important;}
 </style>
 </head>
 <body>
 <div class="phone">
-<button class="exit-x" onclick="notifyApp('close',{zone:9})" aria-label="Exit game">&#x2715;</button>
+<button class="exit-x" onclick="notifyApp('close',{zone:9})" aria-label="Exit game">X</button>
 
   <div id="game-area">
     <div class="water-shimmer"></div>
@@ -141,6 +231,19 @@ canvas{position:absolute;inset:0;}
       <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
       <div class="progress-lbl">PROGRESS</div>
     </div>
+
+    <div id="controls">
+      <div class="ctrl-row">
+        <button class="build-btn you" id="btn-you">
+          <span class="build-icon">+</span>
+          ADD YOUR SIDE
+        </button>
+        <div class="build-status" id="partner-status">
+          <div class="build-status-label">Partner</div>
+          <div class="build-status-text">They answer in a moment. Let the bridge form slowly.</div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div id="panel">
@@ -150,28 +253,15 @@ canvas{position:absolute;inset:0;}
         <div class="dlg-text" id="dlg-text">The gap between you must be bridged.</div>
       </div>
     </div>
-    
-    <div id="controls">
-      <div class="ctrl-row">
-        <button class="build-btn you" id="btn-you">
-          <span class="build-icon">🪵</span>
-          YOUR PIECE
-        </button>
-        <button class="build-btn them" id="btn-them">
-          <span class="build-icon">🪵</span>
-          THEIR PIECE
-        </button>
-      </div>
-    </div>
-    
+
     <div id="seed-btn">
-      <button id="seed-tap">🌱 PICK UP THE SEED</button>
+      <button id="seed-tap">PICK UP THE SEED</button>
       <div class="seed-note">A practice for rebuilding trust</div>
     </div>
   </div>
 
   <div class="overlay on" id="o-intro">
-    <div class="oi-b">✦ Zone IX · Step 9 ✦</div>
+    <div class="oi-b">Zone IX · Step 9</div>
     <svg class="oi-sticker" viewBox="0 0 100 100" width="80" height="80">
       <rect x="24" y="28" width="24" height="30" rx="2" fill="none" stroke="#E8B4B8" stroke-width="0.8"/>
       <rect x="52" y="32" width="24" height="30" rx="2" fill="none" stroke="#8BA4B8" stroke-width="0.8"/>
@@ -185,8 +275,8 @@ canvas{position:absolute;inset:0;}
     </svg>
     <div class="oi-big">The Bridge</div>
     <div class="oi-sub">Act to rebuild trust</div>
-    <div class="oi-desc">You stand on one side. They stand on the other.<br><br>Trust is rebuilt plank by plank, from both sides, meeting in the middle. Neither can do it alone.</div>
-    <div class="oi-note">Best experienced in the Tender app</div>
+    <div class="oi-desc">You stand on one side. They stand on the other.<br><br>Tap <strong>Lay Your Plank</strong> once. Then pause. Your partner answers from the far side. Trust is rebuilt through visible, repeated care.</div>
+    <div class="oi-note">Move slowly and let the lesson land</div>
 <button class="oi-btn" id="intro-btn">ENTER THE FIELD</button>
   </div>
 
@@ -202,11 +292,11 @@ canvas{position:absolute;inset:0;}
   <div id="practice-overlay">
     <div class="ps-inner">
       <div class="ps-bar"><div class="ps-fill" id="ps-fill"></div></div>
-      <button class="ps-x" id="ps-close">✕</button>
+      <button class="ps-x" id="ps-close">X</button>
       <div class="ps-step active" id="ps-0">
-        <div class="ps-eyebrow">✦ Practice · Rebuilding Trust</div>
+        <div class="ps-eyebrow">Practice · Rebuilding Trust</div>
         <div class="ps-h">Plank<br>by Plank</div>
-        <div class="ps-body">Trust is not rebuilt with grand gestures. It is rebuilt with consistent, small actions over time.<br><br>Each plank is a kept promise, a moment of presence, a choice to show up.</div>
+        <div class="ps-body">Trust rarely returns through one big promise. It returns through consistent, visible care.<br><br>Each plank is a kept word, a returned call, a steady act your partner can feel.</div>
         <button class="ps-btn" id="ps-next-0">CONTINUE</button>
       </div>
       <div class="ps-step" id="ps-1">
@@ -222,7 +312,7 @@ canvas{position:absolute;inset:0;}
       <div class="ps-step" id="ps-2">
         <div class="ps-eyebrow">Their Part</div>
         <div class="ps-h">What You Need</div>
-        <div class="ps-body">What do you need from them to feel safe rebuilding? Not a demand — but an honest ask.</div>
+        <div class="ps-body">What do you need from them to keep rebuilding safely? Not a demand. A clear, honest request.</div>
         <div class="ps-box">
           <div class="ps-lbl">I NEED THEM TO...</div>
           <textarea class="ps-ta" placeholder="Be patient with me... Show me they are trying... Tell me when they are struggling..." rows="3"></textarea>
@@ -233,20 +323,20 @@ canvas{position:absolute;inset:0;}
         <div class="ps-eyebrow">Integration</div>
         <div class="ps-h">The Long Road</div>
         <div class="ps-carry">
-          Trust takes longer to rebuild than to break.<br><br>
-          <em>Do not measure by how far you have come. Measure by whether you are still walking.</em><br><br>
-          Every plank matters. Keep building.
+          Trust takes longer to rebuild than to damage.<br><br>
+          <span class="emphasis">Measure the work by steadiness, not speed.</span><br><br>
+          Each small action teaches the bond whether it is safe to believe again.
         </div>
-        <button class="ps-btn" id="ps-plant">PLANT THIS SEED ✦</button>
+        <button class="ps-btn" id="ps-plant">PLANT THIS SEED</button>
       </div>
     </div>
   </div>
 
   <div id="o-done">
-    <div class="done-g">🌉</div>
+    <div class="done-g">Trust</div>
     <div class="done-ey">Zone IX Complete</div>
     <div class="done-ti">The Bridge</div>
-    <div class="done-bo">You built it together.<br>You can cross now.<br>The way between you is open.</div>
+    <div class="done-bo">You built it together.<br>Trust can hold your weight again.<br>Keep walking it with care.</div>
     <button class="done-btn" id="done-btn">CONTINUE THE JOURNEY</button>
   </div>
 
@@ -269,7 +359,7 @@ const ACTIONS_THEM = [
   "They will believe in us"
 ];
 
-const TOTAL_PLANKS = 10;
+const TOTAL_PLANKS = 8;
 
 let S = {
   phase: 'intro',
@@ -297,36 +387,72 @@ function initCanvas() {
 function draw() {
   ctx.clearRect(0, 0, W, H);
   
-  const bridgeY = H * 0.55;
-  const gapWidth = W * 0.5;
+  const bridgeY = Math.min(H * 0.42, H - 156);
+  const gapWidth = W * 0.48;
   const plankWidth = gapWidth / (TOTAL_PLANKS / 2);
-  const plankHeight = 16;
+  const plankHeight = 18;
+  const leftCliffW = W * 0.26;
+  const rightCliffX = W * 0.74;
+
+  const mist = ctx.createLinearGradient(0, H * 0.4, 0, H);
+  mist.addColorStop(0, 'rgba(255,255,255,0)');
+  mist.addColorStop(1, 'rgba(39,67,71,0.16)');
+  ctx.fillStyle = mist;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.fillStyle = 'rgba(57,83,97,0.18)';
+  ctx.beginPath();
+  ctx.ellipse(W * 0.3, H * 0.5, W * 0.28, H * 0.12, 0, 0, Math.PI * 2);
+  ctx.ellipse(W * 0.7, H * 0.54, W * 0.32, H * 0.14, 0, 0, Math.PI * 2);
+  ctx.fill();
   
   // Cliffs
   ctx.fillStyle = '#5A7A5A';
-  ctx.fillRect(0, bridgeY, W * 0.25, H - bridgeY);
-  ctx.fillRect(W * 0.75, bridgeY, W * 0.25, H - bridgeY);
+  ctx.fillRect(0, bridgeY, leftCliffW, H - bridgeY);
+  ctx.fillRect(rightCliffX, bridgeY, W - rightCliffX, H - bridgeY);
   
   // Cliff tops
   ctx.fillStyle = '#7A9A7A';
-  ctx.fillRect(0, bridgeY - 8, W * 0.25, 8);
-  ctx.fillRect(W * 0.75, bridgeY - 8, W * 0.25, 8);
+  ctx.fillRect(0, bridgeY - 8, leftCliffW, 8);
+  ctx.fillRect(rightCliffX, bridgeY - 8, W - rightCliffX, 8);
+
+  ctx.fillStyle = 'rgba(255,255,255,0.09)';
+  for (let i = 0; i < 4; i++) {
+    const y = bridgeY + 22 + i * 24;
+    ctx.fillRect(0, y, leftCliffW, 3);
+    ctx.fillRect(rightCliffX, y, W - rightCliffX, 3);
+  }
+
+  ctx.strokeStyle = 'rgba(255,243,225,.22)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(leftCliffW - 10, bridgeY - 14);
+  ctx.lineTo(leftCliffW - 10, bridgeY - 64);
+  ctx.moveTo(rightCliffX + 10, bridgeY - 14);
+  ctx.lineTo(rightCliffX + 10, bridgeY - 64);
+  ctx.stroke();
+
+  ctx.strokeStyle = 'rgba(255,243,225,.18)';
+  ctx.beginPath();
+  ctx.moveTo(leftCliffW - 10, bridgeY - 62);
+  ctx.quadraticCurveTo(W / 2, bridgeY - 78, rightCliffX + 10, bridgeY - 62);
+  ctx.stroke();
   
   // Draw your planks (from left)
   for (let i = 0; i < S.yourPlanks; i++) {
-    const x = W * 0.25 + i * plankWidth;
+    const x = leftCliffW + i * plankWidth;
     drawPlank(x, bridgeY - 4, plankWidth - 2, plankHeight, '#AA8A6A', '#8A6A4A');
   }
   
   // Draw their planks (from right)
   for (let i = 0; i < S.theirPlanks; i++) {
-    const x = W * 0.75 - (i + 1) * plankWidth;
+    const x = rightCliffX - (i + 1) * plankWidth;
     drawPlank(x + 2, bridgeY - 4, plankWidth - 2, plankHeight, '#8A9AAA', '#6A7A8A');
   }
   
   // Avatars
-  const youX = W * 0.15;
-  const themX = W * 0.85;
+  const youX = W * 0.14;
+  const themX = W * 0.86;
   
   // Your avatar (left)
   drawAvatar(youX, bridgeY - 30, '#C4616E', '#A84858');
@@ -393,6 +519,7 @@ function buildYou() {
   S.actionIndex++;
   
   draw();
+  fadeD('*', 'You laid one steady plank.\n\nPause, breathe, and wait for their answer.');
   
   checkComplete();
   
@@ -400,7 +527,7 @@ function buildYou() {
   if (S.theirPlanks < TOTAL_PLANKS / 2) {
     setTimeout(() => {
       buildThem(true);
-    }, 1200);
+    }, 3800);
   }
 }
 
@@ -416,6 +543,7 @@ function buildThem(auto = false) {
     S.actionIndex++;
     
     draw();
+    fadeD('+', 'They answered from the other side.\n\nTrust returns through repeated, visible care.');
     checkComplete();
   }
 }
@@ -424,17 +552,27 @@ function showAction(text, from) {
   const el = document.getElementById('action-text');
   const container = document.getElementById('action-label');
   el.textContent = text;
-  el.style.color = from === 'you' ? 'var(--you)' : 'var(--them)';
+  el.style.color = 'var(--ink)';
+  el.style.background = from === 'you' ? 'linear-gradient(180deg,rgba(253,246,240,.96),rgba(249,233,236,.95))' : 'linear-gradient(180deg,rgba(253,246,240,.96),rgba(234,241,249,.95))';
+  el.style.borderColor = from === 'you' ? 'rgba(196,97,110,.34)' : 'rgba(114,148,212,.34)';
   container.style.opacity = '1';
   
   setTimeout(() => {
     container.style.opacity = '0';
-  }, 1000);
+  }, 2200);
 }
 
 function updateButtons() {
   document.getElementById('btn-you').disabled = !S.canBuildYou || S.yourPlanks >= TOTAL_PLANKS / 2;
-  document.getElementById('btn-them').disabled = true; // Partner builds automatically
+  const status = document.getElementById('partner-status');
+  const statusText = status.querySelector('.build-status-text');
+  if (S.yourPlanks + S.theirPlanks >= TOTAL_PLANKS) {
+    statusText.textContent = 'The bridge is holding. You reached each other.';
+  } else if (S.canBuildYou) {
+    statusText.textContent = 'Your turn. Add one more steady, visible step.';
+  } else {
+    statusText.textContent = 'Pause. Give them a little more time to answer.';
+  }
 }
 
 function updateProgress() {
@@ -465,7 +603,7 @@ function begin() {
   updateButtons();
   draw();
   
-  fadeD('—', 'Build your side. They will build theirs.\n\nTrust is rebuilt together.');
+  fadeD('-', 'Lay one plank. Then pause.\n\nYour partner answers, and the bridge grows through steady turns.');
 }
 
 function completeGame() {
@@ -475,7 +613,7 @@ function completeGame() {
   document.getElementById('controls').style.display = 'none';
   document.getElementById('seed-btn').style.display = 'flex';
   
-  fadeD('✦', 'The bridge is complete.\n\nYou can reach each other now.');
+  fadeD('*', 'The bridge is holding.\n\nKeep crossing it with visible care.');
 }
 
 function fadeD(sym, text) {
@@ -518,7 +656,7 @@ function psPlant() {
   setTimeout(() => {
     document.getElementById('practice-overlay').classList.remove('on');
     const sb = document.getElementById('seed-btn');
-    sb.innerHTML = '<div style="font-family:Playfair Display,serif;font-size:14px;color:var(--sage);text-align:center;padding:12px 0">🌱 Seed planted. The bridge awaits.</div>';
+    sb.innerHTML = '<div style="font-family:Playfair Display,serif;font-size:16px;color:var(--sage);text-align:center;padding:12px 0">Seed planted. Keep building the bridge in daily life.</div>';
     setTimeout(() => document.getElementById('o-done').classList.add('on'), 800);
   }, 400);
 }
@@ -526,13 +664,13 @@ function psPlant() {
 function finish() {
   notifyApp('close', { zone: 9 });
   document.getElementById('o-done').classList.remove('on');
-  fadeD('✦', 'The bridge stands.\nKeep crossing it — together.');
+  fadeD('*', 'The bridge stands.\nCross it again with honesty, patience, and follow-through.');
 }
 
 // Event listeners
 document.getElementById('intro-btn').addEventListener('click', begin);
 document.getElementById('btn-you').addEventListener('click', buildYou);
-document.getElementById('btn-them').addEventListener('click', () => {}); // Partner auto-builds
+document.getElementById('btn-you').addEventListener('touchstart', (e) => { e.preventDefault(); buildYou(); }, { passive: false });
 document.getElementById('seed-tap').addEventListener('click', openPractice);
 document.getElementById('ps-close').addEventListener('click', closePractice);
 document.getElementById('ps-next-0').addEventListener('click', () => psGo(1));
@@ -547,6 +685,8 @@ window.addEventListener('resize', () => {
     draw();
   }
 });
+
+document.documentElement.classList.toggle('web-embed', window.parent !== window && !window.ReactNativeWebView);
 
 // REACT NATIVE BRIDGE
 function notifyApp(event, data) {

@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>THE FIELD — Zone XI: The Observatory</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;600&family=Josefin+Sans:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;600&family=Josefin+Sans:wght@300;400;600&family=Playfair+Display:wght@400;700&display=swap');
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+.emphasis{font-weight:600;}
 
 :root {
   --parchment:#FDF6F0;--terracotta:#D8A499;--deep-rose:#8B3A4A;
@@ -19,7 +20,7 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;touch-action
 
 .phone{width:100%;height:100%;background:var(--night);border-radius:0;overflow:hidden;position:relative;display:flex;flex-direction:column;}
 
-#game-area{flex:1;min-height:45vh;margin:0 6px;border-radius:12px;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 100%,#1A1A3A 0%,#0A0A1A 50%,#050510 100%);}
+.phone #game-area{flex:1;min-height:60vh!important;margin:0 8px;border-radius:18px 18px 0 0;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 100%,#1A1A3A 0%,#0A0A1A 50%,#050510 100%);}
 
 canvas{position:absolute;inset:0;}
 
@@ -27,31 +28,38 @@ canvas{position:absolute;inset:0;}
 .shooting-star{position:absolute;width:2px;height:2px;background:white;border-radius:50%;opacity:0;}
 @keyframes shoot{0%{transform:translateX(0) translateY(0);opacity:1}100%{transform:translateX(100px) translateY(100px);opacity:0}}
 
-.zone-label{position:absolute;top:14px;left:14px;z-index:5;}
-.zone-num{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,250,234,.3);}
-.zone-name{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(10px,2.5vw,13px);letter-spacing:2px;text-transform:uppercase;color:rgba(255,250,234,.5);}
+.zone-label{position:absolute;top:calc(env(safe-area-inset-top, 0px) + 14px);left:14px;z-index:5;}
+.zone-num{font-family:'Josefin Sans',sans-serif;font-size:clamp(10px,2.5vw,12px);letter-spacing:3px;text-transform:uppercase;color:rgba(255,250,234,.3);text-shadow:0 1px 6px rgba(0,0,0,.18);}
+.zone-name{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(15px,4vw,19px);letter-spacing:2.4px;text-transform:uppercase;color:rgba(255,250,234,.5);text-shadow:0 1px 8px rgba(0,0,0,.18);}
 
-#constellation-name{position:absolute;top:14px;right:14px;z-index:5;background:rgba(10,10,26,.6);border:1px solid rgba(255,250,234,.15);border-radius:8px;padding:8px 12px;text-align:center;}
+#constellation-name{position:absolute;top:calc(env(safe-area-inset-top, 0px) + 14px);left:50%;transform:translateX(-50%);z-index:5;background:rgba(10,10,26,.64);border:1px solid rgba(255,250,234,.14);border-radius:16px;padding:10px 16px;text-align:center;min-width:min(60vw,250px);box-shadow:0 10px 24px rgba(0,0,0,.18);}
 .const-text{font-family:'Playfair Display',serif;font-size:clamp(11px,2.8vw,13px);color:rgba(255,250,234,.7);}
 .const-sub{font-family:'Josefin Sans',sans-serif;font-size:7px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,250,234,.35);margin-top:4px;}
 
-.exit-x{position:absolute;top:calc(env(safe-area-inset-top, 0px) + 10px);right:10px;z-index:70;width:28px;height:28px;border-radius:14px;border:none;background:rgba(0,0,0,.25);color:rgba(255,255,255,.7);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
-.exit-x:active{background:rgba(0,0,0,.4);}
+.exit-x{position:absolute;top:calc(env(safe-area-inset-top, 0px) + 10px);right:10px;z-index:220;width:42px;height:42px;border-radius:21px;border:none;background:rgba(12,10,14,.5);color:rgba(255,255,255,.92);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);box-shadow:0 10px 26px rgba(0,0,0,.24);pointer-events:auto;}
+.exit-x:active{background:rgba(12,10,14,.68);transform:scale(.985);}
 
-#panel{background:var(--parchment);border-top:1px solid rgba(216,164,153,.35);flex-shrink:0;z-index:25;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,8px);max-height:42vh;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+#panel{background:linear-gradient(180deg,rgba(253,246,240,.985),rgba(248,239,231,.985));border-top:1px solid rgba(216,164,153,.35);flex-shrink:0;z-index:25;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,8px);max-height:min(24vh,190px);overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:0 -16px 40px rgba(20,12,16,.14);}
 
 #dialogue{padding:clamp(10px,2vh,16px) clamp(14px,4vw,22px) clamp(6px,1.5vh,10px);flex-shrink:0;}
 .dlg-row{display:flex;gap:10px;align-items:flex-start;}
 .dlg-sym{font-family:'Josefin Sans',sans-serif;font-size:clamp(10px,2.5vw,12px);color:var(--terracotta);flex-shrink:0;margin-top:2px;width:14px;}
-.dlg-text{font-family:'Playfair Display',serif;font-size:clamp(12px,3vw,15px);line-height:1.65;color:var(--ink);white-space:pre-wrap;transition:opacity .25s;}
+.dlg-text{font-family:'Playfair Display',serif;font-size:clamp(17px,4.2vw,22px);line-height:1.82;color:var(--ink);white-space:pre-wrap;transition:opacity .35s;}
 
 #controls{display:none;padding:clamp(8px,2vh,12px) clamp(14px,4vw,22px) clamp(12px,2.5vh,18px);}
 .ctrl-info{font-family:'Playfair Display',serif;font-size:clamp(11px,2.8vw,13px);color:var(--warm-gray);text-align:center;}
+#signal-pop{position:absolute;left:16px;right:16px;top:calc(env(safe-area-inset-top, 0px) + 96px);display:flex;flex-direction:column;align-items:center;gap:10px;pointer-events:auto;z-index:24;}
+.signal-card{max-width:min(88vw,400px);background:rgba(253,246,240,.97);border:1px solid rgba(216,164,153,.34);border-radius:22px;padding:18px 18px;box-shadow:0 16px 30px rgba(20,12,16,.18);font-family:'Playfair Display',serif;font-size:clamp(19px,4.8vw,24px);line-height:1.72;color:#2D2226;text-align:center;opacity:0;transform:translateY(-8px);transition:opacity .22s ease,transform .22s ease;}
+.signal-card.show{opacity:1;transform:translateY(0);}
+.signal-btn{display:none;min-width:170px;height:44px;padding:0 18px;border:none;border-radius:999px;background:linear-gradient(135deg,var(--sage),#4A8A6E);color:#fff;font-family:'Jost',sans-serif;font-weight:600;font-size:12px;letter-spacing:2.5px;text-transform:uppercase;pointer-events:auto;box-shadow:0 10px 24px rgba(74,111,168,.22);cursor:pointer;}
+.signal-btn.show{display:inline-flex;align-items:center;justify-content:center;}
+.signal-btn{display:none !important;}
+.panel-hidden{display:none !important;}
 
 #seed-btn{display:none;flex-direction:column;align-items:center;padding:clamp(8px,2vh,12px) clamp(22px,6vw,32px) clamp(14px,3vh,20px);gap:8px;}
-#seed-btn button{width:100%;height:clamp(52px,14vw,62px);border:none;border-radius:31px;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(11px,2.8vw,13px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 24px rgba(107,144,128,.45);animation:seedpulse 2.2s ease-in-out infinite;}
-@keyframes seedpulse{0%,100%{box-shadow:0 6px 24px rgba(107,144,128,.4);}50%{box-shadow:0 6px 36px rgba(107,144,128,.7);}}
-.seed-note{font-family:'Playfair Display',serif;font-size:clamp(10px,2.5vw,12px);color:rgba(107,91,94,.45);text-align:center;}
+#seed-btn button{width:100%;height:clamp(52px,14vw,62px);border:none;border-radius:31px;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(11px,2.8vw,13px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 24px rgba(107,144,128,.45);animation:seedpulse 3.4s ease-in-out infinite;}
+@keyframes seedpulse{0%,100%{box-shadow:0 6px 20px rgba(107,144,128,.26);}50%{box-shadow:0 6px 28px rgba(107,144,128,.42);}}
+.seed-note{font-family:'Playfair Display',serif;font-size:clamp(13px,3.2vw,15px);color:rgba(107,91,94,.62);text-align:center;}
 
 .overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(28px,6vw,48px);opacity:0;pointer-events:none;transition:opacity .7s ease;z-index:50;}
 .overlay.on{opacity:1;pointer-events:all;}
@@ -60,54 +68,138 @@ canvas{position:absolute;inset:0;}
 .oi-b{font-family:'Josefin Sans',sans-serif;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:rgba(255,250,234,.4);margin-bottom:clamp(12px,3vh,18px);}
 .oi-ic{font-size:clamp(36px,10vw,48px);margin-bottom:clamp(10px,2.5vh,16px);}
 .oi-sticker { margin-bottom: clamp(10px,2.5vh,16px); }
-@keyframes gentle-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
-@keyframes slow-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.08); opacity: 0.85; } }
-.oi-big{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(26px,7.5vw,38px);letter-spacing:4px;text-transform:uppercase;color:var(--parchment);line-height:1.1;margin-bottom:8px;}
-.oi-sub{font-family:'Playfair Display',serif;font-size:clamp(12px,3.2vw,15px);color:rgba(255,250,234,.5);margin-bottom:clamp(18px,4vh,28px);}
-.oi-desc{font-family:'Playfair Display',serif;font-size:clamp(11px,2.8vw,13px);line-height:1.85;color:rgba(255,250,234,.3);margin-bottom:clamp(26px,6vh,40px);max-width:280px;}
+@keyframes gentle-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+@keyframes slow-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.04); opacity: 0.92; } }
+.oi-big{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(34px,9vw,46px);letter-spacing:4px;text-transform:uppercase;color:var(--parchment);line-height:1.05;margin-bottom:10px;text-shadow:0 8px 22px rgba(0,0,0,.18);}
+.oi-sub{font-family:'Playfair Display',serif;font-size:clamp(16px,4vw,20px);color:rgba(255,250,234,.5);margin-bottom:clamp(16px,3.5vh,24px);}
+.oi-desc{font-family:'Playfair Display',serif;font-size:clamp(16px,4vw,20px);line-height:1.88;color:rgba(255,250,234,.84);margin-bottom:clamp(24px,5vh,34px);max-width:320px;}
 .oi-note{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.6vw,9px);letter-spacing:2px;text-transform:uppercase;color:rgba(253,246,240,.25);margin-bottom:clamp(14px,3vh,20px);}
-.oi-btn{width:clamp(160px,48vw,190px);height:clamp(44px,11vw,52px);border-radius:26px;border:1.5px solid rgba(255,250,234,.3);background:transparent;font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(9px,2.2vw,11px);letter-spacing:3px;text-transform:uppercase;color:rgba(255,250,234,.7);cursor:pointer;transition:all .3s;}
+.oi-btn{width:clamp(160px,48vw,190px);height:clamp(48px,12vw,56px);border-radius:26px;border:1.5px solid rgba(255,250,234,.3);background:transparent;font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(10px,2.5vw,12px);letter-spacing:3px;text-transform:uppercase;color:rgba(255,250,234,.7);cursor:pointer;transition:all .3s;}
 .oi-btn:active{background:rgba(255,250,234,.1);}
 
 #practice-overlay{position:absolute;inset:0;z-index:70;background:rgba(10,10,26,.96);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .4s;}
 #practice-overlay.on{opacity:1;pointer-events:all;}
-.ps-inner{width:min(340px,90vw);background:var(--parchment);border-radius:20px;overflow:hidden;position:relative;max-height:85vh;overflow-y:auto;}
+.ps-inner{width:min(360px,92vw);background:linear-gradient(180deg,rgba(253,246,240,1),rgba(247,238,230,1));border-radius:24px;overflow:hidden;position:relative;max-height:85vh;overflow-y:auto;box-shadow:0 24px 60px rgba(10,8,12,.28);}
 .ps-bar{height:4px;background:rgba(107,91,94,.12);}
 .ps-fill{height:100%;width:0;background:var(--sage);transition:width .4s;}
-.ps-x{position:absolute;top:12px;right:14px;width:28px;height:28px;border-radius:14px;border:none;background:rgba(107,91,94,.08);font-size:14px;color:var(--warm-gray);cursor:pointer;z-index:2;}
+.ps-x{position:absolute;top:12px;right:14px;width:28px;height:28px;border-radius:14px;border:none;background:rgba(107,91,94,.08);font-size:16px;color:var(--warm-gray);cursor:pointer;z-index:2;}
 .ps-step{display:none;padding:clamp(28px,6vw,40px) clamp(18px,5vw,26px) clamp(20px,4vh,28px);flex-direction:column;text-align:center;}
 .ps-step.active{display:flex;animation:fadeUp .4s ease;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .ps-eyebrow{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:3px;text-transform:uppercase;color:var(--terracotta);margin-bottom:clamp(10px,2.5vh,16px);}
 .ps-h{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(20px,5.5vw,26px);letter-spacing:2px;text-transform:uppercase;color:var(--ink);line-height:1.15;margin-bottom:clamp(14px,3.5vh,22px);}
-.ps-body{font-family:'Playfair Display',serif;font-size:clamp(12px,3vw,14px);line-height:1.85;color:rgba(45,34,38,.65);margin-bottom:clamp(18px,4.5vh,28px);}
-.ps-btn{width:100%;height:clamp(44px,11vw,52px);border:none;border-radius:26px;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(9px,2.2vw,11px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;}
+.ps-body{font-family:'Playfair Display',serif;font-size:clamp(16px,3.9vw,19px);line-height:1.84;color:rgba(45,34,38,.84);margin-bottom:clamp(18px,4.5vh,28px);}
+.ps-btn{width:100%;height:clamp(48px,12vw,56px);border:none;border-radius:26px;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(10px,2.5vw,12px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;}
 .ps-box{background:rgba(107,91,94,.04);border-radius:12px;padding:clamp(12px,3vw,18px);margin-bottom:clamp(14px,3.5vh,22px);text-align:left;}
 .ps-lbl{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:2px;text-transform:uppercase;color:var(--warm-gray);margin-bottom:8px;}
-.ps-ta{width:100%;border:none;background:transparent;font-family:'Playfair Display',serif;font-size:clamp(13px,3.2vw,15px);color:var(--ink);line-height:1.6;resize:none;outline:none;}
+.ps-ta{width:100%;border:none;background:transparent;font-family:'Playfair Display',serif;font-size:clamp(15px,3.6vw,17px);color:var(--ink);line-height:1.6;resize:none;outline:none;}
 .ps-ta::placeholder{color:rgba(107,91,94,.35);}
-.ps-carry{background:rgba(107,144,128,.1);border-radius:12px;padding:clamp(12px,3vw,18px);margin-bottom:clamp(18px,4.5vh,26px);font-family:'Playfair Display',serif;font-size:clamp(11px,2.8vw,13px);line-height:1.75;color:var(--sage);text-align:left;}
-.ps-carry em{color:var(--deep-rose);font-style:normal;font-weight:600;}
+.ps-carry{background:rgba(107,144,128,.1);border-radius:12px;padding:clamp(12px,3vw,18px);margin-bottom:clamp(18px,4.5vh,26px);font-family:'Playfair Display',serif;font-size:clamp(13px,3.2vw,15px);line-height:1.82;color:var(--sage);text-align:left;}
+.ps-carry .emphasis{color:var(--deep-rose);font-style:normal;font-weight:600;}
 
 #o-done{position:absolute;inset:0;z-index:80;background:radial-gradient(ellipse at 50% 50%,#1A1A3A,#0A0A1A);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(28px,6vw,48px);opacity:0;pointer-events:none;transition:opacity .8s;}
 #o-done.on{opacity:1;pointer-events:all;}
-.done-g{font-size:clamp(36px,10vw,48px);margin-bottom:clamp(12px,3vh,20px);}
+.done-g{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(18px,4.6vw,24px);letter-spacing:3px;text-transform:uppercase;color:var(--parchment);margin-bottom:clamp(12px,3vh,20px);}
 .done-ey{font-family:'Josefin Sans',sans-serif;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:rgba(255,250,234,.4);margin-bottom:clamp(6px,1.5vh,10px);}
 .done-ti{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(26px,8vw,36px);letter-spacing:4px;text-transform:uppercase;color:var(--parchment);line-height:1.1;margin-bottom:clamp(14px,3.5vh,24px);}
-.done-bo{font-family:'Playfair Display',serif;font-size:clamp(12px,3vw,14px);line-height:1.9;color:rgba(255,250,234,.45);margin-bottom:clamp(24px,6vh,40px);max-width:280px;}
+.done-bo{font-family:'Playfair Display',serif;font-size:clamp(16px,3.9vw,19px);line-height:1.84;color:rgba(255,250,234,.45);margin-bottom:clamp(22px,5vh,34px);max-width:300px;}
 .done-btn{width:clamp(200px,60vw,240px);height:clamp(46px,11vw,54px);border-radius:27px;border:none;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;}
+
+
+/* Tender clarity pass */
+html,body{
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+.phone{
+  background:linear-gradient(180deg,#120D11 0%,#24191D 100%) !important;
+}
+.phone #game-area{
+  border-radius:24px 24px 0 0 !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.15),0 24px 44px rgba(12,8,10,.22) !important;
+}
+#panel{
+  background:linear-gradient(180deg,rgba(253,246,240,.992),rgba(248,239,231,.99)) !important;
+  max-height:min(24vh,240px) !important;
+  box-shadow:0 -18px 40px rgba(20,12,16,.16) !important;
+}
+#dialogue{
+  padding:clamp(18px,3.2vh,22px) clamp(22px,6vw,28px) clamp(18px,3.2vh,22px) !important;
+}
+.dlg-row{gap:12px !important;}
+.dlg-text{
+  font-style:normal !important;
+  font-size:clamp(21px,5.5vw,28px) !important;
+  line-height:1.76 !important;
+  color:rgba(37,30,34,.98) !important;
+  overflow-wrap:anywhere;
+}
+.dlg-sym{
+  font-size:clamp(11px,2.7vw,13px) !important;
+  color:rgba(139,58,74,.72) !important;
+}
+.zone-num,.pieces-lbl,.progress-lbl,.watch-lbl,.awareness-lbl,.speed-lbl,.build-status-label,.ps-eyebrow,.done-ey,.oi-b,.path-title,.wc-lbl,.hlbl,.oi-note,.seed-note,.dlg-cue,.jc-sub,.const-sub{
+  font-size:clamp(10px,2.3vw,12px) !important;
+  letter-spacing:2.35px !important;
+}
+.zone-name{
+  font-size:clamp(17px,4.4vw,22px) !important;
+  color:rgba(255,255,255,.94) !important;
+}
+.oi-desc,.ps-body,.done-bo,.ps-carry,.ctrl-info,.action-text,.build-status-text,.path-desc,.practice-note,.ms-story,.ms-defuse,.ms-q,.jc-body,.const-text,.meet-text,.seed-note,.ps-defuse-out,.sc-text,.path-desc{
+  font-style:normal !important;
+  font-size:clamp(17px,4.5vw,21px) !important;
+  line-height:1.76 !important;
+}
+.oi-desc,.done-bo,.ps-body,.ps-carry,.seed-note,.ctrl-info,.ms-story,.ms-defuse,.ms-q,.jc-body,.ps-defuse-out{
+  text-wrap:pretty;
+}
+.ctrl-row,.build-status,.ctrl-info,.action-text{
+  box-shadow:0 16px 34px rgba(20,12,16,.18) !important;
+}
+.action-text{
+  min-width:min(90vw,400px) !important;
+}
+.exit-x{
+  z-index:260 !important;
+  width:48px !important;
+  height:48px !important;
+  border-radius:24px !important;
+  border:1px solid rgba(253,246,240,.22) !important;
+  background:rgba(16,12,16,.78) !important;
+  box-shadow:0 16px 34px rgba(0,0,0,.28) !important;
+}
+.exit-x:active{transform:scale(.97) !important;}
+.ps-x{
+  width:34px !important;
+  height:34px !important;
+  border-radius:17px !important;
+}
+.oi-btn,.ps-btn,.done-btn,#seed-btn button,#continue-btn button{
+  box-shadow:0 10px 28px rgba(88,72,54,.18) !important;
+}
+.overlay,.overlay.on,#practice-overlay,#o-done,#meet-moment{
+  backdrop-filter:blur(2px);
+  -webkit-backdrop-filter:blur(2px);
+}
+@media (max-width:420px){
+  #panel{max-height:min(25vh,250px) !important;}
+  .dlg-text{font-size:clamp(21px,5.8vw,28px) !important;}
+}
+.web-embed .exit-x{display:none !important;}
 </style>
 </head>
 <body>
 <div class="phone">
-<button class="exit-x" onclick="notifyApp('close',{zone:11})" aria-label="Exit game">&#x2715;</button>
+<button class="exit-x" onclick="notifyApp('close',{zone:11})" aria-label="Exit game">X</button>
 
   <div id="game-area">
     <canvas id="canvas"></canvas>
+    <div id="signal-pop"><div class="signal-card" id="signal-card"></div><button class="signal-btn" id="signal-ack">Tap when ready</button></div>
     
     <div class="zone-label"><div class="zone-num">Zone XI · Step 11</div><div class="zone-name">The Observatory</div></div>
     <div id="constellation-name">
-      <div class="const-text" id="const-text">—</div>
+      <div class="const-text" id="const-text">Shared meaning</div>
       <div class="const-sub" id="const-sub">CONNECT THE STARS</div>
     </div>
   </div>
@@ -125,13 +217,13 @@ canvas{position:absolute;inset:0;}
     </div>
     
     <div id="seed-btn">
-      <button id="seed-tap">🌱 PICK UP THE SEED</button>
+      <button id="seed-tap">PICK UP THE SEED</button>
       <div class="seed-note">A practice for shared meaning</div>
     </div>
   </div>
 
   <div class="overlay on" id="o-intro">
-    <div class="oi-b">✦ Zone XI · Step 11 ✦</div>
+    <div class="oi-b">Zone XI · Step 11</div>
     <svg class="oi-sticker" viewBox="0 0 100 100" width="80" height="80">
       <circle cx="36" cy="30" r="12" fill="#A8B5A2" opacity="0.15">
         <animate attributeName="r" values="12;13;12" dur="3s" repeatCount="indefinite"/>
@@ -154,16 +246,16 @@ canvas{position:absolute;inset:0;}
     <div class="oi-big">The Observatory</div>
     <div class="oi-sub">Seek shared insight</div>
     <div class="oi-desc">In the night sky, scattered stars become constellations when you connect them.<br><br>Your relationship has the same scattered lights. Together, you will find the patterns that give them meaning.</div>
-    <div class="oi-note">Best experienced in the Tender app</div>
+    <div class="oi-note">Move slowly and let the lesson land</div>
 <button class="oi-btn" id="intro-btn">ENTER THE FIELD</button>
   </div>
 
   <div id="practice-overlay">
     <div class="ps-inner">
       <div class="ps-bar"><div class="ps-fill" id="ps-fill"></div></div>
-      <button class="ps-x" id="ps-close">✕</button>
+      <button class="ps-x" id="ps-close">X</button>
       <div class="ps-step active" id="ps-0">
-        <div class="ps-eyebrow">✦ Practice · Seeking Shared Insight</div>
+        <div class="ps-eyebrow">Practice · Seeking Shared Insight</div>
         <div class="ps-h">Finding<br>Meaning Together</div>
         <div class="ps-body">Insight does not come from thinking alone. It comes from wondering together — asking questions neither of you can answer yet.</div>
         <button class="ps-btn" id="ps-next-0">CONTINUE</button>
@@ -193,16 +285,16 @@ canvas{position:absolute;inset:0;}
         <div class="ps-h">Look Together</div>
         <div class="ps-carry">
           The stars are always there. You just have to look up.<br><br>
-          <em>Set aside time to wonder together.</em><br><br>
+          <span class="emphasis">Set aside time to wonder together.</span><br><br>
           Not to solve problems — but to ask questions that open you both to something larger than the daily details.
         </div>
-        <button class="ps-btn" id="ps-plant">PLANT THIS SEED ✦</button>
+        <button class="ps-btn" id="ps-plant">PLANT THIS SEED</button>
       </div>
     </div>
   </div>
 
   <div id="o-done">
-    <div class="done-g">✨</div>
+    <div class="done-g">Meaning</div>
     <div class="done-ey">Zone XI Complete</div>
     <div class="done-ti">The Observatory</div>
     <div class="done-bo">You found the patterns.<br>You connected the lights.<br>The sky holds your story.</div>
@@ -215,19 +307,19 @@ canvas{position:absolute;inset:0;}
 const CONSTELLATIONS = [
   {
     name: "Trust",
-    stars: [{x:0.3,y:0.2},{x:0.4,y:0.15},{x:0.5,y:0.2},{x:0.55,y:0.3},{x:0.45,y:0.35},{x:0.35,y:0.3}]
+    stars: [{x:0.18,y:0.3},{x:0.34,y:0.16},{x:0.5,y:0.24},{x:0.66,y:0.14},{x:0.82,y:0.28},{x:0.64,y:0.42},{x:0.38,y:0.44}]
   },
   {
-    name: "Connection", 
-    stars: [{x:0.2,y:0.4},{x:0.3,y:0.35},{x:0.45,y:0.4},{x:0.55,y:0.35},{x:0.7,y:0.4}]
+    name: "Connection",
+    stars: [{x:0.16,y:0.46},{x:0.3,y:0.32},{x:0.46,y:0.4},{x:0.56,y:0.26},{x:0.72,y:0.38},{x:0.84,y:0.22}]
   },
   {
     name: "Growth",
-    stars: [{x:0.4,y:0.55},{x:0.45,y:0.45},{x:0.5,y:0.55},{x:0.55,y:0.48},{x:0.6,y:0.58},{x:0.5,y:0.65}]
+    stars: [{x:0.22,y:0.66},{x:0.34,y:0.54},{x:0.46,y:0.42},{x:0.56,y:0.3},{x:0.68,y:0.44},{x:0.78,y:0.22},{x:0.62,y:0.64}]
   },
   {
     name: "Home",
-    stars: [{x:0.35,y:0.75},{x:0.5,y:0.65},{x:0.65,y:0.75},{x:0.55,y:0.8},{x:0.45,y:0.8}]
+    stars: [{x:0.22,y:0.68},{x:0.38,y:0.48},{x:0.5,y:0.32},{x:0.62,y:0.48},{x:0.78,y:0.68},{x:0.62,y:0.78},{x:0.38,y:0.78}]
   }
 ];
 
@@ -239,7 +331,8 @@ let S = {
   selectedStar: null,
   completedConstellations: 0,
   backgroundStars: [],
-  gameLoop: null
+  gameLoop: null,
+  awaitingAck: false
 };
 
 const canvas = document.getElementById('canvas');
@@ -268,12 +361,15 @@ function initCanvas() {
 
 function loadConstellation(index) {
   const c = CONSTELLATIONS[index];
+  const usableW = W * 0.66;
+  const usableH = H * 0.46;
+  const topOffset = H * 0.2;
   S.stars = c.stars.map((s, i) => ({
-    x: s.x * W,
-    y: s.y * H,
+    x: W * 0.5 + (s.x - 0.5) * usableW,
+    y: topOffset + s.y * usableH,
     index: i,
     connected: false,
-    size: 6
+    size: 11
   }));
   S.connections = [];
   S.selectedStar = null;
@@ -319,7 +415,7 @@ function draw() {
   // Draw constellation stars
   S.stars.forEach((star, i) => {
     // Glow
-    const glowSize = star.connected ? 20 : 15;
+    const glowSize = star.connected ? 24 : 18;
     const gradient = ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, glowSize);
     gradient.addColorStop(0, star.connected ? 'rgba(212,168,67,0.5)' : 'rgba(255,250,234,0.3)');
     gradient.addColorStop(1, 'rgba(255,250,234,0)');
@@ -330,7 +426,7 @@ function draw() {
     
     // Star
     ctx.beginPath();
-    ctx.arc(star.x, star.y, star.connected ? 8 : 6, 0, Math.PI * 2);
+    ctx.arc(star.x, star.y, star.connected ? 10 : 8, 0, Math.PI * 2);
     ctx.fillStyle = star.connected ? '#D4A843' : '#FFFAEA';
     ctx.fill();
     
@@ -339,16 +435,17 @@ function draw() {
       ctx.strokeStyle = 'rgba(212,168,67,0.8)';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(star.x, star.y, 14, 0, Math.PI * 2);
+      ctx.arc(star.x, star.y, 18, 0, Math.PI * 2);
       ctx.stroke();
     }
   });
 }
 
 function handleTap(x, y) {
+  if (S.awaitingAck) return;
   // Find closest star
   let closest = null;
-  let closestDist = 40;
+  let closestDist = 78;
   
   S.stars.forEach((star, i) => {
     const dist = Math.hypot(x - star.x, y - star.y);
@@ -395,11 +492,9 @@ function handleTap(x, y) {
 
 function completeConstellation() {
   S.completedConstellations++;
-  
+
   const c = CONSTELLATIONS[S.currentConstellation];
-  fadeD('✦', `"${c.name}"\n\nYou found the pattern in the stars.`);
-  
-  setTimeout(() => {
+  showSignal(`${c.name} came into view. Shared meaning grows when the two of you keep linking one small truth to the next.`, 'soft', true, () => {
     if (S.currentConstellation < CONSTELLATIONS.length - 1) {
       S.currentConstellation++;
       loadConstellation(S.currentConstellation);
@@ -407,11 +502,17 @@ function completeConstellation() {
     } else {
       completeGame();
     }
-  }, 2000);
+  });
 }
 
 // Touch/click handlers
 canvas.addEventListener('click', (e) => {
+  if (S.phase !== 'game') return;
+  const rect = canvas.getBoundingClientRect();
+  handleTap(e.clientX - rect.left, e.clientY - rect.top);
+});
+
+canvas.addEventListener('pointerdown', (e) => {
   if (S.phase !== 'game') return;
   const rect = canvas.getBoundingClientRect();
   handleTap(e.clientX - rect.left, e.clientY - rect.top);
@@ -442,28 +543,29 @@ canvas.addEventListener('touchend', (e) => {
 function begin() {
   document.getElementById('o-intro').classList.remove('on');
   S.phase = 'game';
-  
+
   initCanvas();
   S.currentConstellation = 0;
   S.completedConstellations = 0;
   loadConstellation(0);
-  
-  document.getElementById('controls').style.display = 'block';
-  
-  fadeD('—', 'Tap stars to connect them.\n\nFind the constellation hidden in the sky.');
-  
+  document.getElementById('panel').classList.add('panel-hidden');
+
   S.gameLoop = setInterval(() => draw(), 50);
+  showSignal('Connect the stars one by one. Shared meaning appears when the two of you keep linking one small truth to the next.', 'soft', true);
 }
 
 function completeGame() {
   notifyApp('gameComplete', { zone: 11 });
   clearInterval(S.gameLoop);
   S.phase = 'done';
-  
+
+  const panel = document.getElementById('panel');
+  panel.classList.remove('panel-hidden');
+  document.getElementById('dialogue').style.display = 'none';
   document.getElementById('controls').style.display = 'none';
   document.getElementById('seed-btn').style.display = 'flex';
-  
-  fadeD('✦', 'All constellations found.\n\nThe sky tells your story now.');
+
+  showSignal('You stayed with the pattern long enough to see it. That is how shared meaning is built in a relationship.', 'soft', true);
 }
 
 function fadeD(sym, text) {
@@ -474,6 +576,47 @@ function fadeD(sym, text) {
     el.textContent = text;
     el.style.opacity = '1';
   }, 200);
+}
+
+function hideSignal() {
+  const el = document.getElementById('signal-card');
+  const btn = document.getElementById('signal-ack');
+  el.classList.remove('show');
+  el.style.pointerEvents = 'none';
+  el.style.cursor = 'default';
+  el.onclick = null;
+  if (btn) {
+    btn.classList.remove('show');
+    btn.style.display = 'none';
+    btn.onclick = null;
+  }
+}
+
+function showSignal(text, tone = 'soft', requireAck = false, onAck = null) {
+  const el = document.getElementById('signal-card');
+  const btn = document.getElementById('signal-ack');
+  el.textContent = text;
+  el.className = 'signal-card ' + tone;
+  el.onclick = null;
+  el.style.pointerEvents = requireAck ? 'auto' : 'none';
+  el.style.cursor = requireAck ? 'pointer' : 'default';
+  S.awaitingAck = !!requireAck;
+  if (btn) {
+    btn.style.display = 'none';
+    btn.classList.remove('show');
+    btn.onclick = null;
+  }
+  if (requireAck) {
+    el.onclick = () => {
+      hideSignal();
+      S.awaitingAck = false;
+      const next = onAck;
+      onAck = null;
+      if (typeof next === 'function') next();
+    };
+  }
+  requestAnimationFrame(() => el.classList.add('show'));
+  if (!requireAck) setTimeout(() => hideSignal(), 2400);
 }
 
 // Practice
@@ -506,7 +649,7 @@ function psPlant() {
   setTimeout(() => {
     document.getElementById('practice-overlay').classList.remove('on');
     const sb = document.getElementById('seed-btn');
-    sb.innerHTML = '<div style="font-family:Playfair Display,serif;font-size:14px;color:var(--sage);text-align:center;padding:12px 0">🌱 Seed planted. Look up together.</div>';
+    sb.innerHTML = '<div style="font-family:Playfair Display,serif;font-size:16px;color:var(--sage);text-align:center;padding:12px 0">Seed planted. Look up together.</div>';
     setTimeout(() => document.getElementById('o-done').classList.add('on'), 800);
   }, 400);
 }
@@ -514,7 +657,7 @@ function psPlant() {
 function finish() {
   notifyApp('close', { zone: 11 });
   document.getElementById('o-done').classList.remove('on');
-  fadeD('✦', 'The constellations are yours now.\nThey will guide you home.');
+  fadeD('+', 'The constellations are yours now.\nThey can guide your next conversation home.');
 }
 
 // Event listeners
@@ -534,6 +677,8 @@ window.addEventListener('resize', () => {
     draw();
   }
 });
+
+document.documentElement.classList.toggle('web-embed', window.parent !== window && !window.ReactNativeWebView);
 
 // REACT NATIVE BRIDGE
 function notifyApp(event, data) {

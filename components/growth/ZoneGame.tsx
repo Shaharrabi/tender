@@ -20,8 +20,6 @@ import {
   Dimensions,
   TouchableOpacity,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/theme';
 
 interface ZoneGameProps {
@@ -32,7 +30,6 @@ interface ZoneGameProps {
 }
 
 export default function ZoneGame({ zoneNumber, visible, onComplete, onClose }: ZoneGameProps) {
-  const insets = useSafeAreaInsets();
   const completedRef = useRef(false);
 
   const handleMessage = useCallback(
@@ -79,20 +76,8 @@ export default function ZoneGame({ zoneNumber, visible, onComplete, onClose }: Z
     >
       <StatusBar barStyle="light-content" backgroundColor="#0A0608" />
       <View style={styles.container}>
-        {/* Native close button — always available even if game HTML hasn't loaded */}
-        <TouchableOpacity
-          onPress={onClose}
-          activeOpacity={0.7}
-          style={[styles.nativeCloseButton, { top: insets.top + 10 }]}
-          accessibilityRole="button"
-          accessibilityLabel="Close game"
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-        >
-          <Ionicons name="close" size={20} color="rgba(255,255,255,0.85)" />
-        </TouchableOpacity>
-
         {Platform.OS === 'web' ? (
-          <WebIframe src={gameSrc} onMessage={handleMessage} />
+          <WebIframe src={gameSrc} onMessage={handleMessage} onClose={onClose} />
         ) : (
           <NativeWebView src={gameSrc} onMessage={handleMessage} />
         )}
@@ -102,8 +87,21 @@ export default function ZoneGame({ zoneNumber, visible, onComplete, onClose }: Z
 }
 
 /* ─── Web: iframe ─── */
-function WebIframe({ src, onMessage }: { src: string; onMessage: (data: string) => void }) {
+function WebIframe({
+  src,
+  onMessage,
+  onClose,
+}: {
+  src: string;
+  onMessage: (data: string) => void;
+  onClose: () => void;
+}) {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const [status, setStatus] = React.useState<'loading' | 'loaded' | 'failed'>('loading');
+  const [attempt, setAttempt] = React.useState(0);
+
+  const markLoaded = useCallback(() => setStatus('loaded'), []);
+  const markFailed = useCallback(() => setStatus('failed'), []);
 
   React.useEffect(() => {
     const handler = (e: MessageEvent) => {
@@ -115,13 +113,49 @@ function WebIframe({ src, onMessage }: { src: string; onMessage: (data: string) 
     return () => window.removeEventListener('message', handler);
   }, [onMessage]);
 
+  React.useEffect(() => {
+    setStatus('loading');
+  }, [src, attempt]);
+
+  React.useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const iframe = iframeRef.current;
+      if (!iframe) {
+        markFailed();
+        return;
+      }
+
+      try {
+        const href = iframe.contentWindow?.location?.href ?? '';
+        const body = iframe.contentDocument?.body;
+        const isBlank = href === 'about:blank' || href === '';
+        const isEmpty = !body || body.childElementCount === 0;
+        if (isBlank || isEmpty) {
+          markFailed();
+        }
+      } catch {
+        // If the browser blocks inspection or the frame has not resolved,
+        // show the fallback instead of a blank modal.
+        markFailed();
+      }
+    }, 3200);
+
+    return () => window.clearTimeout(timer);
+  }, [src, attempt, markFailed]);
+
+  const retry = useCallback(() => {
+    setAttempt((value) => value + 1);
+  }, []);
+
   // iframe needs position: absolute to fill a flex parent — CSS flex: 1 doesn't
   // work on iframes the same way it does on divs.
   return (
     <View style={styles.iframeWrapper}>
       <iframe
         ref={iframeRef as any}
+        key={`${src}-${attempt}`}
         src={src}
+        title={`Zone ${src.split('zone').pop()?.replace('.html', '') ?? ''} game`}
         style={{
           position: 'absolute',
           top: 0,
@@ -132,9 +166,66 @@ function WebIframe({ src, onMessage }: { src: string; onMessage: (data: string) 
           height: '100%',
           border: 'none',
           backgroundColor: '#0A0608',
+          opacity: status === 'failed' ? 0 : 1,
+          transition: 'opacity 180ms ease',
         } as any}
         allow="autoplay"
+        onLoad={() => {
+          const iframe = iframeRef.current;
+          if (!iframe) {
+            markFailed();
+            return;
+          }
+
+          try {
+            const href = iframe.contentWindow?.location?.href ?? '';
+            const body = iframe.contentDocument?.body;
+            const isBlank = href === 'about:blank' || href === '';
+            const isEmpty = !body || body.childElementCount === 0;
+            if (isBlank || isEmpty) {
+              markFailed();
+              return;
+            }
+            markLoaded();
+          } catch {
+            markFailed();
+          }
+        }}
+        onError={markFailed}
       />
+
+      {status !== 'loaded' ? (
+        <View style={styles.webOverlay}>
+          {status === 'loading' ? (
+            <>
+              <Text style={styles.webEyebrow}>Tender Zone</Text>
+              <Text style={styles.webTitle}>Loading the practice</Text>
+              <Text style={styles.webBody}>
+                We&apos;re opening the interactive field. If it takes more than a moment,
+                we&apos;ll offer a web-safe fallback.
+              </Text>
+            </>
+          ) : (
+            <>
+              <Text style={styles.webEyebrow}>Tender Zone</Text>
+              <Text style={styles.webTitle}>This practice is not opening on web yet</Text>
+              <Text style={styles.webBody}>
+                The game is available in the app, and we&apos;re also restoring the web
+                version. You can try again now, or keep moving in the app for the
+                full experience.
+              </Text>
+              <View style={styles.webActions}>
+                <TouchableOpacity style={styles.retryButton} onPress={retry} activeOpacity={0.85}>
+                  <Text style={styles.retryButtonText}>Try Again</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.dismissButton} onPress={onClose} activeOpacity={0.85}>
+                  <Text style={styles.dismissButtonText}>Close</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -287,20 +378,89 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#0A0608',
   },
-  nativeCloseButton: {
-    position: 'absolute',
-    right: 12,
-    zIndex: 100,
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   iframeWrapper: {
     flex: 1,
     position: 'relative' as any,
+  },
+  webOverlay: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    bottom: 20,
+    left: 20,
+    borderRadius: 28,
+    backgroundColor: 'rgba(253, 246, 240, 0.96)',
+    borderWidth: 1,
+    borderColor: 'rgba(216,164,153,0.35)',
+    paddingHorizontal: 28,
+    paddingVertical: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#130E11',
+    shadowOpacity: 0.18,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 12 },
+  },
+  webEyebrow: {
+    fontSize: 12,
+    letterSpacing: 2.4,
+    textTransform: 'uppercase',
+    color: '#8B3A4A',
+    marginBottom: 10,
+  },
+  webTitle: {
+    fontSize: 28,
+    lineHeight: 34,
+    textAlign: 'center',
+    color: '#2D2226',
+    marginBottom: 14,
+    fontWeight: '600',
+  },
+  webBody: {
+    fontSize: 17,
+    lineHeight: 27,
+    textAlign: 'center',
+    color: '#54484B',
+    maxWidth: 420,
+  },
+  webActions: {
+    marginTop: 22,
+    flexDirection: 'row',
+    gap: 12,
+  },
+  retryButton: {
+    minWidth: 180,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#6B9080',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+  },
+  retryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    letterSpacing: 2.5,
+    textTransform: 'uppercase',
+    fontWeight: '600',
+  },
+  dismissButton: {
+    minWidth: 120,
+    height: 50,
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: 'rgba(45,34,38,0.16)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    backgroundColor: 'rgba(255,255,255,0.76)',
+  },
+  dismissButtonText: {
+    color: '#2D2226',
+    fontSize: 13,
+    letterSpacing: 2.2,
+    textTransform: 'uppercase',
+    fontWeight: '600',
   },
   webview: {
     flex: 1,

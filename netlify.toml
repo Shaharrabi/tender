@@ -20,6 +20,16 @@ npx expo export --platform web
 # ─── Security Headers ───────────────────────────────────
 # Protects against common web attacks (XSS, clickjacking, MIME sniffing)
 [[headers]]
+  for = "/games/*"
+  [headers.values]
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.anthropic.com; img-src 'self' data: blob: https:; font-src 'self' data: https://fonts.gstatic.com; media-src 'self' data: blob:; frame-ancestors 'self';"
+
+[[headers]]
   for = "/*"
   [headers.values]
     # Force HTTPS for 1 year (including subdomains)

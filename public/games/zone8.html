@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>THE FIELD — Zone VIII: The Ruins</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;600&family=Josefin+Sans:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;600&family=Josefin+Sans:wght@300;400;600&family=Playfair+Display:wght@400;700&display=swap');
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+.emphasis{font-weight:600;}
 
 :root {
   --parchment:#FDF6F0;--terracotta:#D8A499;--deep-rose:#8B3A4A;
@@ -19,51 +20,66 @@ html,body{height:100%;width:100%;margin:0;padding:0;overflow:hidden;touch-action
 
 .phone{width:100%;height:100%;background:var(--ink);border-radius:0;overflow:hidden;position:relative;display:flex;flex-direction:column;}
 
-#game-area{flex:1;min-height:58vh;margin:0 6px;border-radius:12px;position:relative;overflow:hidden;background:linear-gradient(180deg,#4A4A5A 0%,#5A5A6A 30%,#6A6A7A 60%,#5A5040 80%,#4A4030 100%);}
+.phone #game-area{flex:1;min-height:70vh!important;margin:0 8px;border-radius:22px 22px 0 0;position:relative;overflow:hidden;background:
+radial-gradient(circle at 50% 68%, rgba(234,191,103,.18), transparent 30%),
+radial-gradient(circle at 20% 18%, rgba(255,255,255,.08), transparent 24%),
+linear-gradient(180deg,#54566C 0%,#62667D 28%,#736E79 54%,#645543 76%,#46382B 100%);
+border:1px solid rgba(255,255,255,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 18px 42px rgba(12,8,10,.22);}
 
 canvas{position:absolute;inset:0;}
 
 /* Dust particles */
-.dust{position:absolute;width:2px;height:2px;background:rgba(168,154,138,.4);border-radius:50%;animation:dustFloat 8s ease-in-out infinite;pointer-events:none;}
+.dust{position:absolute;width:2px;height:2px;background:rgba(168,154,138,.4);border-radius:50%;animation:dustFloat 8s ease-in-out infinite;pointer-events:auto;}
 @keyframes dustFloat{0%,100%{transform:translateY(0) translateX(0)}25%{transform:translateY(-20px) translateX(10px)}50%{transform:translateY(-10px) translateX(-5px)}75%{transform:translateY(-30px) translateX(15px)}}
 
-.zone-label{position:absolute;top:14px;left:14px;z-index:5;}
-.zone-num{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,.35);}
-.zone-name{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(10px,2.5vw,13px);letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.55);}
+.zone-label{position:absolute;top:calc(env(safe-area-inset-top, 0px) + 14px);left:14px;z-index:5;}
+.zone-num{font-family:'Josefin Sans',sans-serif;font-size:clamp(10px,2.5vw,12px);letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.62);text-shadow:0 2px 10px rgba(0,0,0,.24);}
+.zone-name{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(15px,4vw,19px);letter-spacing:2.4px;text-transform:uppercase;color:rgba(255,255,255,.9);text-shadow:0 4px 14px rgba(0,0,0,.28);}
 
-#pieces-counter{position:absolute;top:14px;right:14px;z-index:5;background:rgba(10,6,8,.6);border:1px solid rgba(212,168,67,.25);border-radius:8px;padding:8px 12px;text-align:center;}
-.pieces-num{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(16px,4.5vw,22px);color:var(--parchment);line-height:1;}
-.pieces-lbl{font-family:'Josefin Sans',sans-serif;font-size:7px;letter-spacing:2px;text-transform:uppercase;color:rgba(212,168,67,.45);margin-top:2px;}
+#pieces-counter{position:absolute;top:calc(env(safe-area-inset-top, 0px) + 14px);right:14px;z-index:5;background:linear-gradient(180deg,rgba(10,8,12,.84),rgba(34,24,26,.68));border:1px solid rgba(234,191,103,.3);border-radius:16px;padding:11px 15px;text-align:center;box-shadow:0 12px 30px rgba(0,0,0,.24);}
+.pieces-num{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(18px,5vw,26px);color:var(--parchment);line-height:1;}
+.pieces-lbl{font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:2.2px;text-transform:uppercase;color:rgba(234,191,103,.78);margin-top:3px;}
 
 /* Warning flash */
 #warning{position:absolute;inset:0;background:rgba(196,97,110,.3);opacity:0;pointer-events:none;transition:opacity .1s;}
 #warning.flash{opacity:1;}
 
-.exit-x{position:absolute;top:calc(env(safe-area-inset-top, 0px) + 10px);right:10px;z-index:70;width:28px;height:28px;border-radius:14px;border:none;background:rgba(0,0,0,.25);color:rgba(255,255,255,.7);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
-.exit-x:active{background:rgba(0,0,0,.4);}
+.exit-x{position:absolute;top:calc(env(safe-area-inset-top, 0px) + 10px);right:10px;z-index:220;width:42px;height:42px;border-radius:21px;border:none;background:rgba(12,10,14,.5);color:rgba(255,255,255,.92);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);box-shadow:0 10px 26px rgba(0,0,0,.24);pointer-events:auto;}
+.exit-x:active{background:rgba(12,10,14,.68);transform:scale(.985);}
 
-#panel{background:var(--parchment);border-top:1px solid rgba(216,164,153,.35);flex-shrink:0;z-index:25;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,8px);max-height:30vh;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+#panel{background:linear-gradient(180deg,rgba(253,246,240,.98),rgba(250,242,235,.98));border-top:1px solid rgba(216,164,153,.35);flex-shrink:0;z-index:25;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom,8px);max-height:min(18vh,148px);overflow-y:auto;-webkit-overflow-scrolling:touch;box-shadow:0 -12px 30px rgba(20,12,16,.12);}
 
-#dialogue{padding:clamp(10px,2vh,16px) clamp(14px,4vw,22px) clamp(6px,1.5vh,10px);flex-shrink:0;}
+#dialogue{padding:clamp(12px,2.4vh,16px) clamp(16px,4.8vw,22px) clamp(12px,2.4vh,16px);flex-shrink:0;}
 .dlg-row{display:flex;gap:10px;align-items:flex-start;}
 .dlg-sym{font-family:'Josefin Sans',sans-serif;font-size:clamp(10px,2.5vw,12px);color:var(--terracotta);flex-shrink:0;margin-top:2px;width:14px;}
-.dlg-text{font-family:'Playfair Display',serif;font-size:clamp(12px,3vw,15px);line-height:1.65;color:var(--ink);white-space:pre-wrap;transition:opacity .25s;}
+.dlg-text{font-family:'Playfair Display',serif;font-size:clamp(17px,4.2vw,22px);line-height:1.82;color:var(--ink);white-space:pre-wrap;transition:opacity .35s;}
 
-#controls{display:none;padding:clamp(6px,1.5vh,10px) clamp(14px,4vw,22px) clamp(12px,2.5vh,18px);}
-.ctrl-row{display:flex;gap:clamp(10px,3vw,16px);justify-content:center;align-items:center;}
-.ctrl-btn{width:clamp(60px,17vw,76px);height:clamp(48px,13vw,60px);border:none;border-radius:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:clamp(20px,6vw,28px);transition:all .15s;-webkit-tap-highlight-color:transparent;}
+#controls{display:none;position:absolute;left:10px;right:10px;bottom:max(10px, env(safe-area-inset-bottom, 0px));padding:0;z-index:18;pointer-events:none;}
+.ctrl-row{display:flex;gap:clamp(8px,2.5vw,14px);justify-content:center;align-items:center;background:rgba(250,243,236,.92);border:1px solid rgba(216,164,153,.28);border-radius:22px;padding:10px 10px;box-shadow:0 14px 34px rgba(20,12,16,.22);pointer-events:auto;}
+.ctrl-btn{width:clamp(58px,16vw,72px);height:clamp(46px,12vw,56px);border:none;border-radius:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:clamp(20px,6vw,28px);transition:all .15s;-webkit-tap-highlight-color:transparent;}
 .ctrl-btn:active{transform:scale(.94);}
 .ctrl-btn.move{background:linear-gradient(135deg,rgba(90,74,58,.2),rgba(90,74,58,.1));border:2px solid rgba(90,74,58,.4);}
 .ctrl-btn.jump{background:linear-gradient(135deg,rgba(212,168,67,.25),rgba(212,168,67,.15));border:2px solid rgba(212,168,67,.5);color:var(--gold);}
-.ctrl-speed{display:flex;flex-direction:column;align-items:center;gap:4px;padding:0 8px;}
-.speed-lbl{font-family:'Josefin Sans',sans-serif;font-size:7px;letter-spacing:1.5px;text-transform:uppercase;color:var(--warm-gray);}
-.speed-bar{width:40px;height:6px;background:rgba(107,91,94,.15);border-radius:3px;overflow:hidden;}
+.ctrl-speed{display:flex;flex-direction:column;align-items:center;gap:5px;padding:0 4px 0 2px;min-width:68px;}
+.speed-lbl{font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--warm-gray);}
+.speed-bar{width:58px;height:8px;background:rgba(107,91,94,.15);border-radius:4px;overflow:hidden;}
 .speed-fill{height:100%;background:var(--gold);border-radius:3px;transition:width .1s;}
 
+
+.panel-hidden{display:none !important;}
+#signal-pop{position:absolute;left:16px;right:16px;top:calc(env(safe-area-inset-top, 0px) + 96px);display:flex;flex-direction:column;align-items:center;gap:10px;pointer-events:auto;z-index:30;}
+.signal-card{max-width:min(88vw,380px);background:rgba(253,246,240,.97);border:1px solid rgba(216,164,153,.34);border-radius:22px;padding:18px 18px;box-shadow:0 16px 30px rgba(20,12,16,.18);font-family:'Playfair Display',serif;font-size:clamp(18px,4.6vw,22px);line-height:1.7;color:#2D2226;text-align:center;opacity:0;transform:translateY(-8px);transition:opacity .22s ease,transform .22s ease;}
+.signal-card.show{opacity:1;transform:translateY(0);}
+.signal-card.soft{background:rgba(253,246,240,.97);}
+.signal-card.warn{background:rgba(255,243,236,.97);border-color:rgba(216,164,153,.44);}
+.signal-btn{display:none;min-width:180px;height:46px;padding:0 20px;border:none;border-radius:999px;background:linear-gradient(135deg,var(--sage),#4A8A6E);color:#fff;font-family:'Jost',sans-serif;font-weight:600;font-size:12px;letter-spacing:2.5px;text-transform:uppercase;box-shadow:0 10px 24px rgba(74,111,168,.22);pointer-events:auto;cursor:pointer;}
+.signal-btn.show{display:inline-flex;align-items:center;justify-content:center;}
+.signal-btn{display:none !important;}
+
 #seed-btn{display:none;flex-direction:column;align-items:center;padding:clamp(8px,2vh,12px) clamp(22px,6vw,32px) clamp(14px,3vh,20px);gap:8px;}
-#seed-btn button{width:100%;height:clamp(52px,14vw,62px);border:none;border-radius:31px;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(11px,2.8vw,13px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 24px rgba(107,144,128,.45);animation:seedpulse 2.2s ease-in-out infinite;}
-@keyframes seedpulse{0%,100%{box-shadow:0 6px 24px rgba(107,144,128,.4);}50%{box-shadow:0 6px 36px rgba(107,144,128,.7);}}
-.seed-note{font-family:'Playfair Display',serif;font-size:clamp(10px,2.5vw,12px);color:rgba(107,91,94,.45);text-align:center;}
+#seed-btn button{width:100%;height:clamp(52px,14vw,62px);border:none;border-radius:31px;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(11px,2.8vw,13px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 6px 24px rgba(107,144,128,.45);animation:seedpulse 3.4s ease-in-out infinite;}
+@keyframes seedpulse{0%,100%{box-shadow:0 6px 20px rgba(107,144,128,.26);}50%{box-shadow:0 6px 28px rgba(107,144,128,.42);}}
+.seed-note{font-family:'Playfair Display',serif;font-size:clamp(13px,3.2vw,15px);color:rgba(107,91,94,.62);text-align:center;}
 
 .overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(28px,6vw,48px);opacity:0;pointer-events:none;transition:opacity .7s ease;z-index:50;}
 .overlay.on{opacity:1;pointer-events:all;}
@@ -71,48 +87,131 @@ canvas{position:absolute;inset:0;}
 #o-intro{background:linear-gradient(180deg,#525258,#606066);z-index:60;}
 .oi-b{font-family:'Josefin Sans',sans-serif;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:rgba(168,154,138,.6);margin-bottom:clamp(12px,3vh,18px);}
 .oi-ic{font-size:clamp(36px,10vw,48px);margin-bottom:clamp(10px,2.5vh,16px);}
-.oi-big{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(32px,9vw,44px);letter-spacing:4px;text-transform:uppercase;color:var(--parchment);line-height:1.1;margin-bottom:8px;}
-.oi-sub{font-family:'Playfair Display',serif;font-size:clamp(12px,3.2vw,15px);color:rgba(168,154,138,.7);margin-bottom:clamp(18px,4vh,28px);}
-.oi-desc{font-family:'Playfair Display',serif;font-size:clamp(11px,2.8vw,13px);line-height:1.85;color:rgba(253,246,240,.32);margin-bottom:clamp(26px,6vh,40px);max-width:280px;}
+.oi-big{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(34px,9vw,46px);letter-spacing:4px;text-transform:uppercase;color:var(--parchment);line-height:1.05;margin-bottom:10px;text-shadow:0 8px 22px rgba(0,0,0,.18);}
+.oi-sub{font-family:'Playfair Display',serif;font-size:clamp(16px,4vw,20px);color:rgba(168,154,138,.7);margin-bottom:clamp(16px,3.5vh,24px);}
+.oi-desc{font-family:'Playfair Display',serif;font-size:clamp(16px,4vw,20px);line-height:1.88;color:rgba(253,246,240,.84);margin-bottom:clamp(24px,5vh,34px);max-width:320px;}
 .oi-note{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.6vw,9px);letter-spacing:2px;text-transform:uppercase;color:rgba(253,246,240,.25);margin-bottom:clamp(14px,3vh,20px);}
-.oi-btn{width:clamp(160px,48vw,190px);height:clamp(44px,11vw,52px);border-radius:26px;border:1.5px solid rgba(168,154,138,.5);background:transparent;font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(9px,2.2vw,11px);letter-spacing:3px;text-transform:uppercase;color:rgba(168,154,138,.85);cursor:pointer;transition:all .3s;}
+.oi-btn{width:clamp(160px,48vw,190px);height:clamp(48px,12vw,56px);border-radius:26px;border:1.5px solid rgba(168,154,138,.5);background:transparent;font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(10px,2.5vw,12px);letter-spacing:3px;text-transform:uppercase;color:rgba(168,154,138,.85);cursor:pointer;transition:all .3s;}
 .oi-btn:active{background:rgba(168,154,138,.15);}
-@keyframes gentle-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
-@keyframes slow-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.08); opacity: 0.85; } }
+@keyframes gentle-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+@keyframes slow-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.04); opacity: 0.92; } }
 .oi-sticker { margin-bottom: clamp(10px,2.5vh,16px); }
 
 #practice-overlay{position:absolute;inset:0;z-index:70;background:rgba(58,58,74,.96);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .4s;}
 #practice-overlay.on{opacity:1;pointer-events:all;}
-.ps-inner{width:min(340px,90vw);background:var(--parchment);border-radius:20px;overflow:hidden;position:relative;max-height:85vh;overflow-y:auto;}
+.ps-inner{width:min(360px,92vw);background:linear-gradient(180deg,rgba(253,246,240,1),rgba(247,238,230,1));border-radius:24px;overflow:hidden;position:relative;max-height:85vh;overflow-y:auto;box-shadow:0 24px 60px rgba(10,8,12,.28);}
 .ps-bar{height:4px;background:rgba(107,91,94,.12);}
 .ps-fill{height:100%;width:0;background:var(--sage);transition:width .4s;}
-.ps-x{position:absolute;top:12px;right:14px;width:28px;height:28px;border-radius:14px;border:none;background:rgba(107,91,94,.08);font-size:14px;color:var(--warm-gray);cursor:pointer;z-index:2;}
+.ps-x{position:absolute;top:12px;right:14px;width:28px;height:28px;border-radius:14px;border:none;background:rgba(107,91,94,.08);font-size:16px;color:var(--warm-gray);cursor:pointer;z-index:2;}
 .ps-step{display:none;padding:clamp(28px,6vw,40px) clamp(18px,5vw,26px) clamp(20px,4vh,28px);flex-direction:column;text-align:center;}
 .ps-step.active{display:flex;animation:fadeUp .4s ease;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .ps-eyebrow{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:3px;text-transform:uppercase;color:var(--terracotta);margin-bottom:clamp(10px,2.5vh,16px);}
 .ps-h{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(20px,5.5vw,26px);letter-spacing:2px;text-transform:uppercase;color:var(--ink);line-height:1.15;margin-bottom:clamp(14px,3.5vh,22px);}
-.ps-body{font-family:'Playfair Display',serif;font-size:clamp(12px,3vw,14px);line-height:1.85;color:rgba(45,34,38,.65);margin-bottom:clamp(18px,4.5vh,28px);}
-.ps-btn{width:100%;height:clamp(44px,11vw,52px);border:none;border-radius:26px;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(9px,2.2vw,11px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;}
+.ps-body{font-family:'Playfair Display',serif;font-size:clamp(16px,3.9vw,19px);line-height:1.84;color:rgba(45,34,38,.84);margin-bottom:clamp(18px,4.5vh,28px);}
+.ps-btn{width:100%;height:clamp(48px,12vw,56px);border:none;border-radius:26px;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(10px,2.5vw,12px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;}
 .ps-box{background:rgba(107,91,94,.04);border-radius:12px;padding:clamp(12px,3vw,18px);margin-bottom:clamp(14px,3.5vh,22px);text-align:left;}
 .ps-lbl{font-family:'Josefin Sans',sans-serif;font-size:clamp(7px,1.8vw,9px);letter-spacing:2px;text-transform:uppercase;color:var(--warm-gray);margin-bottom:8px;}
-.ps-ta{width:100%;border:none;background:transparent;font-family:'Playfair Display',serif;font-size:clamp(13px,3.2vw,15px);color:var(--ink);line-height:1.6;resize:none;outline:none;}
+.ps-ta{width:100%;border:none;background:transparent;font-family:'Playfair Display',serif;font-size:clamp(15px,3.6vw,17px);color:var(--ink);line-height:1.6;resize:none;outline:none;}
 .ps-ta::placeholder{color:rgba(107,91,94,.35);}
-.ps-carry{background:rgba(168,154,138,.12);border-radius:12px;padding:clamp(12px,3vw,18px);margin-bottom:clamp(18px,4.5vh,26px);font-family:'Playfair Display',serif;font-size:clamp(11px,2.8vw,13px);line-height:1.75;color:var(--ruin);text-align:left;}
-.ps-carry em{color:var(--deep-rose);font-style:normal;font-weight:600;}
+.ps-carry{background:rgba(168,154,138,.12);border-radius:12px;padding:clamp(12px,3vw,18px);margin-bottom:clamp(18px,4.5vh,26px);font-family:'Playfair Display',serif;font-size:clamp(13px,3.2vw,15px);line-height:1.82;color:var(--ruin);text-align:left;}
+.ps-carry .emphasis{color:var(--deep-rose);font-style:normal;font-weight:600;}
 
 #o-done{position:absolute;inset:0;z-index:80;background:rgba(58,58,74,.97);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:clamp(28px,6vw,48px);opacity:0;pointer-events:none;transition:opacity .8s;}
 #o-done.on{opacity:1;pointer-events:all;}
-.done-g{font-size:clamp(36px,10vw,48px);margin-bottom:clamp(12px,3vh,20px);}
+.done-g{font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(18px,4.6vw,24px);letter-spacing:3px;text-transform:uppercase;color:var(--parchment);margin-bottom:clamp(12px,3vh,20px);}
 .done-ey{font-family:'Josefin Sans',sans-serif;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:rgba(168,154,138,.6);margin-bottom:clamp(6px,1.5vh,10px);}
 .done-ti{font-family:'Jost',sans-serif;font-weight:300;font-size:clamp(26px,8vw,36px);letter-spacing:4px;text-transform:uppercase;color:var(--parchment);line-height:1.1;margin-bottom:clamp(14px,3.5vh,24px);}
-.done-bo{font-family:'Playfair Display',serif;font-size:clamp(12px,3vw,14px);line-height:1.9;color:rgba(253,246,240,.45);margin-bottom:clamp(24px,6vh,40px);max-width:280px;}
+.done-bo{font-family:'Playfair Display',serif;font-size:clamp(16px,3.9vw,19px);line-height:1.84;color:rgba(253,246,240,.74);margin-bottom:clamp(22px,5vh,34px);max-width:300px;}
 .done-btn{width:clamp(200px,60vw,240px);height:clamp(46px,11vw,54px);border-radius:27px;border:none;background:linear-gradient(135deg,var(--sage),#4A8A6E);font-family:'Jost',sans-serif;font-weight:600;font-size:clamp(8px,2vw,10px);letter-spacing:3px;text-transform:uppercase;color:white;cursor:pointer;}
+
+
+/* Tender clarity pass */
+html,body{
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+.phone{
+  background:linear-gradient(180deg,#120D11 0%,#24191D 100%) !important;
+}
+.phone #game-area{
+  border-radius:24px 24px 0 0 !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.15),0 24px 44px rgba(12,8,10,.22) !important;
+}
+#panel{
+  background:linear-gradient(180deg,rgba(253,246,240,.992),rgba(248,239,231,.99)) !important;
+  max-height:min(24vh,240px) !important;
+  box-shadow:0 -18px 40px rgba(20,12,16,.16) !important;
+}
+#dialogue{
+  padding:clamp(18px,3.2vh,22px) clamp(22px,6vw,28px) clamp(18px,3.2vh,22px) !important;
+}
+.dlg-row{gap:12px !important;}
+.dlg-text{
+  font-style:normal !important;
+  font-size:clamp(21px,5.5vw,28px) !important;
+  line-height:1.76 !important;
+  color:rgba(37,30,34,.98) !important;
+  overflow-wrap:anywhere;
+}
+.dlg-sym{
+  font-size:clamp(11px,2.7vw,13px) !important;
+  color:rgba(139,58,74,.72) !important;
+}
+.zone-num,.pieces-lbl,.progress-lbl,.watch-lbl,.awareness-lbl,.speed-lbl,.build-status-label,.ps-eyebrow,.done-ey,.oi-b,.path-title,.wc-lbl,.hlbl,.oi-note,.seed-note,.dlg-cue,.jc-sub,.const-sub{
+  font-size:clamp(10px,2.3vw,12px) !important;
+  letter-spacing:2.35px !important;
+}
+.zone-name{
+  font-size:clamp(17px,4.4vw,22px) !important;
+  color:rgba(255,255,255,.94) !important;
+}
+.oi-desc,.ps-body,.done-bo,.ps-carry,.ctrl-info,.action-text,.build-status-text,.path-desc,.practice-note,.ms-story,.ms-defuse,.ms-q,.jc-body,.const-text,.meet-text,.seed-note,.ps-defuse-out,.sc-text,.path-desc{
+  font-style:normal !important;
+  font-size:clamp(17px,4.5vw,21px) !important;
+  line-height:1.76 !important;
+}
+.oi-desc,.done-bo,.ps-body,.ps-carry,.seed-note,.ctrl-info,.ms-story,.ms-defuse,.ms-q,.jc-body,.ps-defuse-out{
+  text-wrap:pretty;
+}
+.ctrl-row,.build-status,.ctrl-info,.action-text{
+  box-shadow:0 16px 34px rgba(20,12,16,.18) !important;
+}
+.action-text{
+  min-width:min(90vw,400px) !important;
+}
+.exit-x{
+  z-index:260 !important;
+  width:48px !important;
+  height:48px !important;
+  border-radius:24px !important;
+  border:1px solid rgba(253,246,240,.22) !important;
+  background:rgba(16,12,16,.78) !important;
+  box-shadow:0 16px 34px rgba(0,0,0,.28) !important;
+}
+.exit-x:active{transform:scale(.97) !important;}
+.ps-x{
+  width:34px !important;
+  height:34px !important;
+  border-radius:17px !important;
+}
+.oi-btn,.ps-btn,.done-btn,#seed-btn button,#continue-btn button{
+  box-shadow:0 10px 28px rgba(88,72,54,.18) !important;
+}
+.overlay,.overlay.on,#practice-overlay,#o-done,#meet-moment{
+  backdrop-filter:blur(2px);
+  -webkit-backdrop-filter:blur(2px);
+}
+@media (max-width:420px){
+  #panel{max-height:min(25vh,250px) !important;}
+  .dlg-text{font-size:clamp(21px,5.8vw,28px) !important;}
+}
+.web-embed .exit-x{display:none !important;}
 </style>
 </head>
 <body>
 <div class="phone">
-<button class="exit-x" onclick="notifyApp('close',{zone:8})" aria-label="Exit game">&#x2715;</button>
+<button class="exit-x" onclick="notifyApp('close',{zone:8})" aria-label="Exit game">X</button>
 
   <div id="game-area">
     <!-- Dust particles -->
@@ -123,20 +222,16 @@ canvas{position:absolute;inset:0;}
     <div class="dust" style="left:85%;top:25%;animation-delay:3s"></div>
     
     <canvas id="canvas"></canvas>
+    <div id="signal-pop">
+      <div class="signal-card soft" id="signal-card"></div>
+      <button class="signal-btn" id="signal-ack">Tap when ready</button>
+    </div>
+
     <div id="warning"></div>
     
     <div class="zone-label"><div class="zone-num">Zone VIII · Step 8</div><div class="zone-name">The Ruins</div></div>
     <div id="pieces-counter"><div class="pieces-num" id="pieces">0</div><div class="pieces-lbl">GATHERED</div></div>
-  </div>
 
-  <div id="panel">
-    <div id="dialogue">
-      <div class="dlg-row">
-        <div class="dlg-sym" id="dlg-sym">—</div>
-        <div class="dlg-text" id="dlg-text">Something was broken here.</div>
-      </div>
-    </div>
-    
     <div id="controls">
       <div class="ctrl-row">
         <button class="ctrl-btn move" id="btn-left">←</button>
@@ -148,15 +243,23 @@ canvas{position:absolute;inset:0;}
         </div>
       </div>
     </div>
-    
+  </div>
+
+  <div id="panel">
+    <div id="dialogue">
+      <div class="dlg-row">
+        <div class="dlg-sym" id="dlg-sym">—</div>
+        <div class="dlg-text" id="dlg-text">Something was broken here.</div>
+      </div>
+    </div>
     <div id="seed-btn">
-      <button id="seed-tap">🌱 PICK UP THE SEED</button>
+      <button id="seed-tap">PICK UP THE SEED</button>
       <div class="seed-note">A practice for preparing repair</div>
     </div>
   </div>
 
   <div class="overlay on" id="o-intro">
-    <div class="oi-b">✦ Zone VIII · Step 8 ✦</div>
+    <div class="oi-b">Zone VIII · Step 8</div>
     <svg class="oi-sticker" viewBox="0 0 100 100" width="80" height="80">
   <path d="M26,52 Q32,28 50,36 Q62,40 58,52 Q54,62 46,58" fill="none" stroke="#E8B4B8" stroke-width="1.2">
     <animateTransform attributeName="transform" type="translate" values="0,0;0,-2;0,0" dur="3s" repeatCount="indefinite"/>
@@ -170,25 +273,25 @@ canvas{position:absolute;inset:0;}
 </svg>
     <div class="oi-big">The Ruins</div>
     <div class="oi-sub">Prepare to repair harm</div>
-    <div class="oi-desc">Here lie the broken pieces — trust that crumbled, words that wounded, moments that fractured.<br><br>Move carefully. Collect what was lost. Rushing makes things worse.</div>
-    <div class="oi-note">Best experienced in the Tender app</div>
+    <div class="oi-desc">Here lie the broken pieces — trust that crumbled, words that wounded, moments that fractured.<br><br>Trust was damaged here. Gather the six pieces with gentle steps. Repair asks for care more than speed.</div>
+    <div class="oi-note">Move slowly and let the lesson land</div>
 <button class="oi-btn" id="intro-btn">ENTER THE FIELD</button>
   </div>
 
   <div id="practice-overlay">
     <div class="ps-inner">
       <div class="ps-bar"><div class="ps-fill" id="ps-fill"></div></div>
-      <button class="ps-x" id="ps-close">✕</button>
+      <button class="ps-x" id="ps-close">X</button>
       <div class="ps-step active" id="ps-0">
-        <div class="ps-eyebrow">✦ Practice · Preparing to Repair</div>
+        <div class="ps-eyebrow">Practice · Preparing to Repair</div>
         <div class="ps-h">Before<br>You Begin</div>
-        <div class="ps-body">Repair cannot be rushed. Before you try to fix what was broken, you must understand what you broke — and why.</div>
+        <div class="ps-body">Repair begins by slowing down. Before you try to mend the bond, name what was harmed and how your partner felt it.</div>
         <button class="ps-btn" id="ps-next-0">CONTINUE</button>
       </div>
       <div class="ps-step" id="ps-1">
         <div class="ps-eyebrow">Honesty</div>
         <div class="ps-h">What You Did</div>
-        <div class="ps-body">Name the harm specifically. Not "I messed up" — but exactly what you did and how it affected them.</div>
+        <div class="ps-body">Name the harm clearly. Skip the vague apology. Say what happened and how it landed in their body, trust, or sense of safety.</div>
         <div class="ps-box">
           <div class="ps-lbl">THE HARM I CAUSED WAS...</div>
           <textarea class="ps-ta" placeholder="When I... they felt... It damaged..." rows="3"></textarea>
@@ -198,7 +301,7 @@ canvas{position:absolute;inset:0;}
       <div class="ps-step" id="ps-2">
         <div class="ps-eyebrow">Understanding</div>
         <div class="ps-h">Why It Happened</div>
-        <div class="ps-body">Not an excuse — but an understanding. What was going on inside you?</div>
+        <div class="ps-body">Not an excuse. A truthful understanding. What fear, story, or overwhelm was moving through you when it happened?</div>
         <div class="ps-box">
           <div class="ps-lbl">I DID IT BECAUSE I WAS FEELING...</div>
           <textarea class="ps-ta" placeholder="Scared... Overwhelmed... Defensive... Disconnected..." rows="3"></textarea>
@@ -209,20 +312,20 @@ canvas{position:absolute;inset:0;}
         <div class="ps-eyebrow">Integration</div>
         <div class="ps-h">Ready to Repair</div>
         <div class="ps-carry">
-          Repair is not about being forgiven.<br><br>
-          It is about <em>showing up differently</em> — taking responsibility without defensiveness, listening without explaining.<br><br>
-          You are preparing your heart, not your argument.
+          Repair is not a performance for instant forgiveness.<br><br>
+          It is about <span class="emphasis">showing up differently</span> — owning the impact, staying soft enough to listen, and returning without excuse.<br><br>
+          You are preparing your nervous system to stay present.
         </div>
-        <button class="ps-btn" id="ps-plant">PLANT THIS SEED ✦</button>
+        <button class="ps-btn" id="ps-plant">PLANT THIS SEED</button>
       </div>
     </div>
   </div>
 
   <div id="o-done">
-    <div class="done-g">🔧</div>
+    <div class="done-g">Repair</div>
     <div class="done-ey">Zone VIII Complete</div>
     <div class="done-ti">The Ruins</div>
-    <div class="done-bo">You gathered the pieces.<br>You moved with care.<br>Now you are ready to rebuild.</div>
+    <div class="done-bo">You gathered what was scattered.<br>You practiced gentle repair.<br>Now rebuild with steady hands.</div>
     <button class="done-btn" id="done-btn">CONTINUE THE JOURNEY</button>
   </div>
 
@@ -244,7 +347,10 @@ let S = {
   collected: 0,
   speed: 0,
   moving: {left: false, right: false},
-  gameLoop: null
+  playBottom: 0,
+  playHeight: 0,
+  gameLoop: null,
+  awaitingAck: false
 };
 
 const canvas = document.getElementById('canvas');
@@ -263,15 +369,20 @@ function initCanvas() {
 function createLevel() {
   S.platforms = [];
   S.pieces = [];
+  const playableTop = Math.max(76, H * 0.12);
+  const playableBottom = H - Math.max(176, H * 0.33);
+  const playableHeight = Math.max(250, playableBottom - playableTop);
+  S.playBottom = playableBottom;
+  S.playHeight = playableHeight;
 
   // Scale positions proportionally to available height.
   // Original design assumed H=500. We scale all vertical offsets so
   // platforms are always reachable regardless of actual game-area height.
   var REF_H = 500;
-  function sy(offset) { return H - (offset / REF_H) * (H - 40); }
+  function sy(offset) { return playableBottom - (offset / REF_H) * playableHeight; }
 
   // Ground
-  S.platforms.push({x: 0, y: H - 30, w: W, h: 30, stable: true});
+  S.platforms.push({x: 0, y: playableBottom, w: W, h: Math.max(40, H - playableBottom), stable: true});
 
   // Platforms at various heights (offsets relative to REF_H)
   var platformData = [
@@ -286,7 +397,7 @@ function createLevel() {
 
   platformData.forEach(function(p) {
     S.platforms.push({
-      x: p.xFn(), y: sy(p.off), w: p.w, h: 16,
+      x: p.xFn(), y: sy(p.off), w: p.w + 6, h: 18,
       stable: !p.fragile,
       fragile: p.fragile,
       crumble: 0
@@ -312,11 +423,28 @@ function createLevel() {
   });
 
   // Player start
-  S.player = {x: 50, y: sy(60), vx: 0, vy: 0, grounded: false};
+  S.player = {x: 56, y: sy(92), vx: 0, vy: 0, grounded: false};
 }
 
 function draw() {
   ctx.clearRect(0, 0, W, H);
+
+  // Atmospheric ruins backdrop
+  const haze = ctx.createLinearGradient(0, H * 0.45, 0, H);
+  haze.addColorStop(0, 'rgba(255,220,170,0)');
+  haze.addColorStop(1, 'rgba(105,75,38,0.28)');
+  ctx.fillStyle = haze;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.fillStyle = 'rgba(48,38,34,0.18)';
+  [0.08, 0.32, 0.58, 0.82].forEach((p, i) => {
+    const bw = 26 + i * 4;
+    const bh = 50 + i * 18;
+    const bx = W * p;
+    const by = H * 0.2 + i * 26;
+    ctx.fillRect(bx, by, bw, bh);
+    ctx.fillRect(bx - 6, by + 12, bw + 12, 8);
+  });
   
   // Draw platforms
   S.platforms.forEach(p => {
@@ -367,10 +495,16 @@ function draw() {
     ctx.fill();
     
     // Label
-    ctx.font = '8px "Josefin Sans"';
-    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.font = '600 16px "Josefin Sans"';
+    ctx.fillStyle = 'rgba(255,246,232,0.92)';
     ctx.textAlign = 'center';
-    ctx.fillText(p.label.toUpperCase(), p.x, p.y + 24);
+    ctx.shadowColor = 'rgba(22,15,11,0.45)';
+    ctx.shadowBlur = 8;
+    ctx.strokeStyle = 'rgba(24,17,13,0.58)';
+    ctx.lineWidth = 4;
+    ctx.strokeText(p.label.toUpperCase(), p.x, p.y + 28);
+    ctx.fillText(p.label.toUpperCase(), p.x, p.y + 28);
+    ctx.shadowBlur = 0;
   });
   
   // Draw player
@@ -384,19 +518,36 @@ function draw() {
   ctx.fill();
   
   // Body
-  ctx.fillStyle = '#C4616E';
+  ctx.fillStyle = 'rgba(253,246,240,0.34)';
   ctx.beginPath();
-  ctx.roundRect(px - 8, py - 5, 16, 20, 4);
+  ctx.arc(px, py - 2, 28, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#2B1E24';
+  ctx.beginPath();
+  ctx.roundRect(px - 11, py - 10, 22, 28, 7);
+  ctx.fill();
+
+  ctx.fillStyle = '#E8A8AE';
+  ctx.beginPath();
+  ctx.roundRect(px - 10, py - 9, 20, 26, 6);
   ctx.fill();
   
   // Head
-  ctx.fillStyle = '#D8A499';
+  ctx.fillStyle = '#F1C2AE';
   ctx.beginPath();
-  ctx.arc(px, py - 12, 10, 0, Math.PI * 2);
+  ctx.arc(px, py - 15, 11, 0, Math.PI * 2);
   ctx.fill();
+
+  ctx.strokeStyle = 'rgba(255,255,255,.32)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(px, py - 2, 28, 0, Math.PI * 2);
+  ctx.stroke();
 }
 
 function update() {
+  if (S.awaitingAck) { draw(); return; }
   const p = S.player;
   
   // Speed tracking
@@ -404,13 +555,13 @@ function update() {
   document.getElementById('speed-fill').style.width = Math.min(100, S.speed * 500) + '%';
   
   // Movement
-  if (S.moving.left) p.vx = Math.max(p.vx - 0.3, -3);
-  else if (S.moving.right) p.vx = Math.min(p.vx + 0.3, 3);
-  else p.vx *= 0.85;
+  if (S.moving.left) p.vx = Math.max(p.vx - 0.12, -1.45);
+  else if (S.moving.right) p.vx = Math.min(p.vx + 0.12, 1.45);
+  else p.vx *= 0.86;
   
   // Gravity
-  p.vy += 0.5;
-  if (p.vy > 10) p.vy = 10;
+  p.vy += 0.42;
+  if (p.vy > 8.4) p.vy = 8.4;
   
   // Apply velocity
   p.x += p.vx;
@@ -434,11 +585,11 @@ function update() {
       
       // Fragile platforms crumble when moving too fast
       if (plat.fragile) {
-        if (S.speed > 1.5) {
+        if (S.speed > 1.08) {
           plat.crumble += 0.05;
           flashWarning();
           if (plat.crumble >= 1) {
-            fadeD('—', 'Too fast. The ground crumbles.\n\nSlow down.');
+            showSignal('Too fast. Slow down so the ground can hold your next step.', 'warn', false);
           }
         }
       }
@@ -448,10 +599,10 @@ function update() {
   // Fall reset — respawn just above ground
   if (p.y > H + 50) {
     p.x = 50;
-    p.y = H - (60 / 500) * (H - 40);
+    p.y = S.playBottom - (60 / 500) * S.playHeight;
     p.vx = 0;
     p.vy = 0;
-    fadeD('—', 'You fell. Begin again.\n\nPatience is part of the practice.');
+    showSignal('You fell. Begin again with patience. Repair asks for steadiness more than speed.', 'warn', false);
   }
   
   // Piece collection
@@ -463,7 +614,7 @@ function update() {
       S.collected++;
       document.getElementById('pieces').textContent = S.collected;
       
-      fadeD('✦', `"${piece.label}"\n\nYou gathered a piece of what was broken.`);
+      showSignal(`You gathered ${piece.label.toLowerCase()}. Keep going gently. Repair is built one careful piece at a time.`, 'soft', false);
       
       if (S.collected >= TARGET_PIECES) {
         completeGame();
@@ -485,7 +636,7 @@ function jump() {
     // Scale jump strength so player can always reach the next platform tier.
     // At REF_H (500) the original -10 works; at smaller H we need proportionally
     // less because platforms are closer together.
-    var jumpV = -10 * Math.max(H / 500, 0.7);
+    var jumpV = -8.2 * Math.max(H / 500, 0.74);
     S.player.vy = jumpV;
     S.player.grounded = false;
   }
@@ -494,17 +645,20 @@ function jump() {
 // Controls
 document.getElementById('btn-left').addEventListener('touchstart', (e) => { e.preventDefault(); S.moving.left = true; });
 document.getElementById('btn-left').addEventListener('touchend', () => S.moving.left = false);
+document.getElementById('btn-left').addEventListener('touchcancel', () => S.moving.left = false);
 document.getElementById('btn-left').addEventListener('mousedown', () => S.moving.left = true);
 document.getElementById('btn-left').addEventListener('mouseup', () => S.moving.left = false);
 document.getElementById('btn-left').addEventListener('mouseleave', () => S.moving.left = false);
 
 document.getElementById('btn-right').addEventListener('touchstart', (e) => { e.preventDefault(); S.moving.right = true; });
 document.getElementById('btn-right').addEventListener('touchend', () => S.moving.right = false);
+document.getElementById('btn-right').addEventListener('touchcancel', () => S.moving.right = false);
 document.getElementById('btn-right').addEventListener('mousedown', () => S.moving.right = true);
 document.getElementById('btn-right').addEventListener('mouseup', () => S.moving.right = false);
 document.getElementById('btn-right').addEventListener('mouseleave', () => S.moving.right = false);
 
 document.getElementById('btn-jump').addEventListener('click', jump);
+document.getElementById('btn-jump').addEventListener('touchstart', (e) => { e.preventDefault(); jump(); }, { passive: false });
 
 document.addEventListener('keydown', (e) => {
   if (S.phase !== 'game') return;
@@ -522,14 +676,13 @@ document.addEventListener('keyup', (e) => {
 function begin() {
   document.getElementById('o-intro').classList.remove('on');
   S.phase = 'game';
-  
+
   initCanvas();
   createLevel();
-  
+  hidePanelForPlay();
   document.getElementById('controls').style.display = 'block';
-  
-  fadeD('—', 'Move carefully. Fragile platforms crumble if you rush.\n\nCollect the pieces.');
-  
+
+  showSignal('Move with care. Gather the six pieces, breathe between jumps, and do not rush the fragile ground.', 'soft', false);
   S.gameLoop = setInterval(update, 16);
 }
 
@@ -537,11 +690,12 @@ function completeGame() {
   notifyApp('gameComplete', { zone: 8 });
   clearInterval(S.gameLoop);
   S.phase = 'done';
-  
+
   document.getElementById('controls').style.display = 'none';
+  showPanelForNextStep();
   document.getElementById('seed-btn').style.display = 'flex';
-  
-  fadeD('✦', 'You gathered all the pieces.\n\nNow you are ready to repair.');
+
+  showSignal('You gathered all the pieces. Now you can come to repair with more honesty, care, and steadiness.', 'soft', true);
 }
 
 function fadeD(sym, text) {
@@ -552,6 +706,61 @@ function fadeD(sym, text) {
     el.textContent = text;
     el.style.opacity = '1';
   }, 200);
+}
+
+
+function hidePanelForPlay() {
+  document.getElementById('panel').classList.add('panel-hidden');
+}
+
+function showPanelForNextStep() {
+  const panel = document.getElementById('panel');
+  panel.classList.remove('panel-hidden');
+  const dialogue = document.getElementById('dialogue');
+  if (dialogue) dialogue.style.display = 'none';
+}
+
+function hideSignal() {
+  const card = document.getElementById('signal-card');
+  const btn = document.getElementById('signal-ack');
+  card.classList.remove('show');
+  card.style.pointerEvents = 'none';
+  card.style.cursor = 'default';
+  card.onclick = null;
+  if (btn) {
+    btn.classList.remove('show');
+    btn.style.display = 'none';
+    btn.onclick = null;
+  }
+}
+
+function showSignal(text, tone = 'soft', requireAck = false, onAck = null) {
+  const card = document.getElementById('signal-card');
+  const btn = document.getElementById('signal-ack');
+  card.textContent = text;
+  card.className = 'signal-card ' + tone;
+  card.onclick = null;
+  card.style.pointerEvents = requireAck ? 'auto' : 'none';
+  card.style.cursor = requireAck ? 'pointer' : 'default';
+  if (S) S.awaitingAck = !!requireAck;
+  if (btn) {
+    btn.style.display = 'none';
+    btn.classList.remove('show');
+    btn.onclick = null;
+  }
+  if (requireAck) {
+    card.onclick = () => {
+      hideSignal();
+      if (S) S.awaitingAck = false;
+      const next = onAck;
+      onAck = null;
+      if (typeof next === 'function') next();
+    };
+  }
+  requestAnimationFrame(() => card.classList.add('show'));
+  if (!requireAck) {
+    setTimeout(() => hideSignal(), 2400);
+  }
 }
 
 // Practice
@@ -584,7 +793,7 @@ function psPlant() {
   setTimeout(() => {
     document.getElementById('practice-overlay').classList.remove('on');
     const sb = document.getElementById('seed-btn');
-    sb.innerHTML = '<div style="font-family:Playfair Display,serif;font-size:14px;color:var(--sage);text-align:center;padding:12px 0">🌱 Seed planted. You are ready to repair.</div>';
+    sb.innerHTML = '<div style="font-family:Playfair Display,serif;font-size:16px;color:var(--sage);text-align:center;padding:12px 0">Seed planted. Carry this steadiness into repair.</div>';
     setTimeout(() => document.getElementById('o-done').classList.add('on'), 800);
   }, 400);
 }
@@ -592,7 +801,7 @@ function psPlant() {
 function finish() {
   notifyApp('close', { zone: 8 });
   document.getElementById('o-done').classList.remove('on');
-  fadeD('✦', 'The pieces are gathered.\nThe heart is prepared.\nNow: rebuild.');
+  fadeD('+', 'The pieces are gathered.\nThe heart is prepared.\nNow: rebuild.');
 }
 
 // Event listeners
@@ -632,6 +841,8 @@ window.addEventListener('resize', function() {
     draw();
   }
 });
+
+document.documentElement.classList.toggle('web-embed', window.parent !== window && !window.ReactNativeWebView);
 
 // REACT NATIVE BRIDGE
 function notifyApp(event, data) {
