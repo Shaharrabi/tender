@@ -111,7 +111,18 @@ export default function GrowthScreen() {
 
       // Find the current active step
       const activeStep = stepData.find((sp) => sp.status === 'active');
-      setCurrentStepNumber(activeStep?.stepNumber ?? 1);
+      if (activeStep) {
+        setCurrentStepNumber(activeStep.stepNumber);
+      } else {
+        // No active step — either all completed or first visit
+        const completedSteps = stepData.filter((sp) => sp.status === 'completed');
+        if (completedSteps.length > 0) {
+          // All steps completed — show the highest completed step
+          setCurrentStepNumber(Math.max(...completedSteps.map((sp) => sp.stepNumber)));
+        } else {
+          setCurrentStepNumber(1);
+        }
+      }
 
       // Load couple (non-blocking)
       try {
@@ -165,7 +176,9 @@ export default function GrowthScreen() {
   const completedCount = stepProgress.filter((sp) => sp.status === 'completed').length;
   const activePhase = (() => {
     const activeStep = stepProgress.find((sp) => sp.status === 'active');
-    const sn = activeStep?.stepNumber ?? 1;
+    const completedSteps = stepProgress.filter((sp) => sp.status === 'completed');
+    const sn = activeStep?.stepNumber
+      ?? (completedSteps.length > 0 ? Math.max(...completedSteps.map((sp) => sp.stepNumber)) : 1);
     if (sn <= 2) return 'SEEING';
     if (sn <= 4) return 'FEELING';
     if (sn <= 7) return 'SHIFTING';
