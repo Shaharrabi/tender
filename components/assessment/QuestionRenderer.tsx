@@ -41,6 +41,9 @@ export default function QuestionRenderer({
         const showScrollHint = Platform.OS === 'web' && scale.length >= 5 && currentAnswer == null;
         return (
         <View style={styles.likertSection} accessibilityRole="radiogroup" accessibilityLabel={question.text || 'Likert scale question'}>
+          {showScrollHint && (
+            <Text style={styles.scrollHint}>Scroll down to see all {scale.length} options</Text>
+          )}
           {scale.map((item) => (
             <TouchableOpacity
               key={item.value}
@@ -71,9 +74,6 @@ export default function QuestionRenderer({
               </Text>
             </TouchableOpacity>
           ))}
-          {showScrollHint && (
-            <Text style={styles.scrollHint}>Scroll down to see all {scale.length} options</Text>
-          )}
         </View>
         );
       })()}
