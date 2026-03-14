@@ -14,6 +14,7 @@ import {
   Animated,
   Dimensions,
   Modal,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -147,14 +148,18 @@ export const Tooltip: React.FC<TooltipProps> = ({ config, onDismiss }) => {
   // Final clamp: ensure tooltip stays within viewport
   tooltipTop = Math.max(40, Math.min(tooltipTop, screenHeight - estimatedTooltipHeight - 20));
 
-  // Horizontal centering relative to target, clamped to screen
-  const tooltipLeft = Math.max(
-    16,
-    Math.min(
-      targetLayout.x + targetLayout.width / 2 - tooltipWidth / 2,
-      screenWidth - tooltipWidth - 16
-    )
-  );
+  // Horizontal centering — on web, always centre on screen (app renders in a
+  // narrow column; measureInWindow returns browser-window coords which offset
+  // the target's x by the column's left margin, throwing off the calculation).
+  const tooltipLeft = Platform.OS === 'web'
+    ? (screenWidth - tooltipWidth) / 2
+    : Math.max(
+        16,
+        Math.min(
+          targetLayout.x + targetLayout.width / 2 - tooltipWidth / 2,
+          screenWidth - tooltipWidth - 16
+        )
+      );
 
   // Pointer horizontal position (relative to tooltip left edge)
   const pointerLeft = Math.max(
