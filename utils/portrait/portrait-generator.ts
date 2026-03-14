@@ -11,6 +11,7 @@ import { generateAnchorPoints } from './anchor-points';
 import { generatePartnerGuide } from './partner-guide';
 import { generateBigFiveReframes } from './big-five-reframes';
 import { buildTailoringContext } from './attachment-tailoring';
+import { generateIntegratedNarratives } from './assessment-synthesis';
 import type { AllAssessmentScores, IndividualPortrait } from '@/types';
 import type { SupplementScores } from '@/types/portrait';
 
@@ -107,6 +108,9 @@ export function generatePortrait(
   // Step 7: Partner guide — now uses emotionalStructure for whatToSay and deepestLonging
   const partnerGuide = generatePartnerGuide(ecrr, compositeScores, attachment.emotionalStructure);
 
+  // Step 8: Cross-instrument integrated narratives
+  const integrated = generateIntegratedNarratives(scores);
+
   return {
     userId,
     assessmentIds,
@@ -121,5 +125,8 @@ export function generatePortrait(
     // Phase 3 additions
     bigFiveReframes: bigFiveReframes.length > 0 ? bigFiveReframes : undefined,
     supplementData: supplements,
+    // Portrait Intelligence Upgrade
+    integratedNarratives: integrated.narratives.length > 0 ? integrated.narratives : undefined,
+    oneThingSentence: integrated.oneThingSentence,
   };
 }

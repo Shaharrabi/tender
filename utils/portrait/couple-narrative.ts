@@ -353,3 +353,150 @@ function buildRepairStarters(cycle: CombinedCycle): string[] {
 
   return starters;
 }
+
+// ─── Portrait Intelligence Upgrade: Attachment-Based Couple Narratives ────────
+//
+// These are NEW functions added for the Portrait Intelligence Upgrade.
+// They provide a richer, more personal couple narrative by weaving attachment
+// patterns together — separate from the existing detailed CoupleNarrative above.
+
+export type AttachmentCategory = 'anxious' | 'avoidant' | 'secure';
+
+/** Classify a portrait's attachment category for narrative purposes */
+export function classifyAttachmentCategory(portrait: IndividualPortrait): AttachmentCategory {
+  const cs = portrait.compositeScores;
+  if (typeof cs.anxietyNorm === 'number' && typeof cs.avoidanceNorm === 'number') {
+    const anxiety = cs.anxietyNorm;
+    const avoidance = cs.avoidanceNorm;
+    if (anxiety > 55 && avoidance <= 55) return 'anxious';
+    if (avoidance > 55 && anxiety <= 55) return 'avoidant';
+    if (anxiety > 55 && avoidance > 55) return 'anxious'; // fearful — treat as anxious
+    return 'secure';
+  }
+  // Fallback: use protective strategy text
+  const strategy = portrait.fourLens?.attachment?.protectiveStrategy ?? '';
+  if (/pursue|reach|anxious/i.test(strategy)) return 'anxious';
+  if (/withdraw|distance|avoidant/i.test(strategy)) return 'avoidant';
+  return 'secure';
+}
+
+/** Generate an opening paragraph based on the attachment pairing of both partners */
+export function generateCoupleOpeningParagraph(
+  p1Portrait: IndividualPortrait,
+  p2Portrait: IndividualPortrait,
+): string {
+  const p1Style = classifyAttachmentCategory(p1Portrait);
+  const p2Style = classifyAttachmentCategory(p2Portrait);
+  const pair = `${p1Style}×${p2Style}`;
+
+  switch (pair) {
+    case 'anxious×anxious':
+      return "Two hearts that reach for each other with the same urgency — you understand each other's longing, and that understanding is both your gift and your challenge.";
+    case 'anxious×avoidant':
+    case 'avoidant×anxious':
+      return "One of you reaches, the other retreats — not because of different amounts of caring, but because of different nervous system strategies for the same fear.";
+    case 'avoidant×avoidant':
+      return "You've both built walls that work — until they don't. The space between you is quiet, but quiet isn't the same as peaceful.";
+    case 'secure×anxious':
+    case 'anxious×secure':
+      return "One of you provides the ground, the other provides the urgency. When it works, it's beautiful — steady presence meeting passionate care.";
+    case 'secure×avoidant':
+    case 'avoidant×secure':
+      return "One of you stays open, the other stays protected. Your work is in the quality of the invitations — and the patience to wait for the door to open from the inside.";
+    case 'secure×secure':
+      return "You have a foundation most couples build toward. Your edge is in depth — can you go from good to profound?";
+    default:
+      return "You bring different relational histories to this partnership. Understanding how your patterns interact is the beginning of something profound.";
+  }
+}
+
+/** Generate a specific shared strength narrative (replaces generic "X is a shared strength") */
+export function generateSharedStrengthNarrative(strengthType: string): string {
+  const narratives: Record<string, string> = {
+    'Emotional Intelligence': "You both carry strong emotional awareness — you can sense what the other is feeling, often before words arrive. The gift: deep understanding. The risk: you may both feel so much that regulation becomes the bottleneck.",
+    'Conflict Flexibility': "Neither of you is locked into one conflict posture. You can yield, push, collaborate, or step back depending on what the moment requires. This range means you don't get trapped in the same fight over and over — you have options.",
+    'Values Alignment': "You agree on what matters. This might sound simple, but it's the most underrated resource in a relationship — when values align, disagreements are about HOW, not WHY.",
+    'Differentiation': "You can both be close without losing yourselves. This means conflict doesn't threaten your identity — you can disagree and still feel connected.",
+    'Attachment Security': "The foundation is solid. You both operate from a place of basic trust — not perfection, but the belief that the other person is reliably there.",
+  };
+  return narratives[strengthType] ?? `You share real strength in ${strengthType.toLowerCase()} — this is a resource the relationship has built together.`;
+}
+
+/** Generate a couple "one thing" sentence based on attachment pairing */
+export function generateCoupleOneThingSentence(p1Style: AttachmentCategory, p2Style: AttachmentCategory): string {
+  const pair = `${p1Style}×${p2Style}`;
+  switch (pair) {
+    case 'anxious×avoidant':
+    case 'avoidant×anxious':
+      return "Your one invitation as a couple: the pursuer practices stillness. The withdrawer practices one step forward. Meet in the middle — literally.";
+    case 'anxious×anxious':
+      return "Your one invitation: take turns being the steady one. You can't both reach at the same time.";
+    case 'avoidant×avoidant':
+      return "Your one invitation: one of you has to go first. Vulnerability can't wait for the other person to be vulnerable first.";
+    case 'secure×anxious':
+    case 'anxious×secure':
+      return "Your one invitation: the secure partner models stillness without withdrawing. The anxious partner practices trusting what's actually there.";
+    default:
+      return "Your one invitation: say the thing that's hardest to say. That's where the growth is.";
+  }
+}
+
+// ─── Conflict Interaction Generator ────────────────────────────────────────────
+
+export interface ConflictInteractionResult {
+  type: string;
+  narrative: string;
+  practice: string;
+}
+
+/**
+ * Generate conflict interaction analysis from each partner's primary DUTCH style.
+ * p1Dutch and p2Dutch are the primaryStyle strings from DUTCHScores (e.g. "forcing", "avoiding").
+ */
+export function generateConflictInteraction(
+  p1Dutch: string,
+  p2Dutch: string,
+): ConflictInteractionResult {
+  const pair = `${p1Dutch}×${p2Dutch}`;
+
+  switch (pair) {
+    case 'forcing×avoiding':
+    case 'avoiding×forcing':
+      return {
+        type: 'Escalation-Withdrawal',
+        narrative: "When conflict arises, one of you pushes harder while the other pulls away. The pusher feels ignored, the withdrawer feels overwhelmed. Both are trying to regulate — just in opposite directions.",
+        practice: "The pursuer practices softening the approach. The withdrawer practices staying in the room for 60 more seconds than feels comfortable.",
+      };
+    case 'forcing×forcing':
+      return {
+        type: 'Escalation-Escalation',
+        narrative: "You both hold your ground fiercely. Conflicts are intense but rarely avoided. The risk isn't distance — it's damage. Things get said that are hard to un-say.",
+        practice: "Agree on a pause signal. When either partner uses it, both stop for 20 minutes. No exceptions.",
+      };
+    case 'avoiding×avoiding':
+      return {
+        type: 'Mutual Withdrawal',
+        narrative: "You both sidestep conflict. The surface stays calm but nothing gets resolved. Issues accumulate silently until something breaks through — usually at the worst possible moment.",
+        practice: "Schedule a weekly 15-minute 'temperature check.' Not to solve anything — just to name what's been unsaid.",
+      };
+    case 'problemSolving×yielding':
+    case 'yielding×problemSolving':
+      return {
+        type: 'Leader-Accommodator',
+        narrative: "One of you drives toward solutions while the other goes along. The risk: the accommodator's real feelings go underground, and the problem-solver doesn't realize they're solving for one person, not two.",
+        practice: "Before solving, the problem-solver asks: 'What do YOU need here?' The yielder practices answering honestly, even when it's uncomfortable.",
+      };
+    case 'compromising×compromising':
+      return {
+        type: 'Natural Negotiators',
+        narrative: "You both instinctively look for middle ground. This is efficient and respectful — but watch for chronic 'good enough.' Sometimes the relationship needs one of you to say 'this matters too much to split the difference.'",
+        practice: "Once a month, pick one issue where you DON'T compromise — where one person fully wins and the other fully supports.",
+      };
+    default:
+      return {
+        type: 'Mixed Strategies',
+        narrative: "You bring different approaches to conflict. Neither is wrong — but they need translation. Your differences can become a resource if you understand what each style is protecting.",
+        practice: "Before your next difficult conversation, each of you names your default: 'When things get hard, I tend to...' That naming alone shifts the dynamic.",
+      };
+  }
+}

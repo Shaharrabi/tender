@@ -41,6 +41,13 @@ import { generatePortrait, isPortraitStale } from '@/utils/portrait/portrait-gen
 import { generateRelationshipPortrait } from '@/utils/portrait/relationship-portrait-generator';
 import { generateDeepCouplePortrait } from '@/utils/portrait/couple-portrait-generator';
 import {
+  classifyAttachmentCategory,
+  generateCoupleOpeningParagraph,
+  generateSharedStrengthNarrative,
+  generateCoupleOneThingSentence,
+  generateConflictInteraction,
+} from '@/utils/portrait/couple-narrative';
+import {
   Colors,
   Spacing,
   FontFamilies,
@@ -654,6 +661,56 @@ function CouplePortalScreen() {
         </View>
       )}
 
+      {/* Your Story Together — attachment-based couple narrative */}
+      {myPortrait && partnerPortrait && (() => {
+        const p1Style = classifyAttachmentCategory(myPortrait);
+        const p2Style = classifyAttachmentCategory(partnerPortrait);
+        const opening = generateCoupleOpeningParagraph(myPortrait, partnerPortrait);
+        const oneThingSentence = generateCoupleOneThingSentence(p1Style, p2Style);
+        return (
+          <View style={styles.synthesisCard}>
+            <TenderText variant="label" color={Colors.depth} style={{ letterSpacing: 1.5, marginBottom: Spacing.sm }}>YOUR STORY TOGETHER</TenderText>
+            <TenderText variant="body" color={Colors.textSecondary} style={{ lineHeight: 24, marginBottom: Spacing.lg }}>
+              {opening}
+            </TenderText>
+            <TenderText
+              variant="headingS"
+              color={Colors.primary}
+              align="center"
+              style={{ lineHeight: 26, fontStyle: 'italic' }}
+            >
+              {oneThingSentence}
+            </TenderText>
+          </View>
+        );
+      })()}
+
+      {/* How You Navigate Conflict — DUTCH interaction */}
+      {myPortrait && partnerPortrait && dp && (() => {
+        const cycleA = dp.patternInterlock.combinedCycle.partnerAPosition;
+        const cycleB = dp.patternInterlock.combinedCycle.partnerBPosition;
+        const dutchA = cycleA === 'pursuer' ? 'forcing' : cycleA === 'withdrawer' ? 'avoiding' : 'compromising';
+        const dutchB = cycleB === 'pursuer' ? 'forcing' : cycleB === 'withdrawer' ? 'avoiding' : 'compromising';
+        const conflict = generateConflictInteraction(dutchA, dutchB);
+        return (
+          <View style={styles.synthesisCard}>
+            <TenderText variant="label" color={Colors.depth} style={{ letterSpacing: 1.5, marginBottom: Spacing.sm }}>HOW YOU NAVIGATE CONFLICT</TenderText>
+            <TenderText variant="headingS" color={Colors.secondary} style={{ marginBottom: Spacing.sm }}>
+              {conflict.type}
+            </TenderText>
+            <TenderText variant="body" color={Colors.textSecondary} style={{ lineHeight: 24, marginBottom: Spacing.lg }}>
+              {conflict.narrative}
+            </TenderText>
+            <View style={{ backgroundColor: Colors.primaryFaded, borderRadius: 10, padding: Spacing.md }}>
+              <TenderText variant="label" color={Colors.primary} style={{ marginBottom: 4 }}>TRY THIS</TenderText>
+              <TenderText variant="body" color={Colors.textSecondary} style={{ lineHeight: 22 }}>
+                {conflict.practice}
+              </TenderText>
+            </View>
+          </View>
+        );
+      })()}
+
       {/* ─── Fallback content when deep portrait isn't available ─── */}
       {!dp && portrait && (
         <View style={styles.overviewInsights}>
@@ -936,13 +993,23 @@ function CouplePortalScreen() {
           {dp.patternInterlock.attachmentDynamic.narrative}
         </TenderText>
 
-        {/* Shared Strengths */}
+        {/* Shared Strengths — with richer narratives */}
         {dp.convergenceDivergence.sharedStrengths.length > 0 && (
           <>
             <TenderText variant="headingM" style={[styles.sectionTitle, { marginTop: Spacing.lg }]}>Shared Strengths</TenderText>
-            {dp.convergenceDivergence.sharedStrengths.map((s, i) => (
-              <SharedStrengthCard key={i} item={s} />
-            ))}
+            {dp.convergenceDivergence.sharedStrengths.map((s, i) => {
+              const richNarrative = generateSharedStrengthNarrative(s.dimensionLabel);
+              return (
+                <View key={i} style={styles.synthesisCard}>
+                  <TenderText variant="headingS" color={Colors.success} style={{ marginBottom: Spacing.sm }}>
+                    {s.dimensionLabel}
+                  </TenderText>
+                  <TenderText variant="body" color={Colors.textSecondary} style={{ lineHeight: 22 }}>
+                    {richNarrative}
+                  </TenderText>
+                </View>
+              );
+            })}
           </>
         )}
 

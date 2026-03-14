@@ -830,6 +830,39 @@ Attune your responses to where this person is in their journey. The phase name t
     prompt += `\n\n## SAFETY ALERT\nThe user's message may contain ${safety.category} content. Follow safety protocols. Provide warmth AND resources. Do not deeply process crisis content.`;
   }
 
+  // Add cross-instrument portrait intelligence context
+  const integratedNarratives = row.integrated_narratives ?? [];
+  const oneThingSentence = row.one_thing_sentence ?? null;
+  const primaryConflictStyle = row.patterns?.find?.((p: any) => p.category === 'attachment-conflict')?.description ?? null;
+
+  // Extract top values gap
+  const valuesGaps = fl.values?.significantGaps ?? [];
+  const topValuesGap = valuesGaps.length > 0
+    ? `${valuesGaps[0].value} (importance: ${valuesGaps[0].importance}/10, gap: ${valuesGaps[0].gap.toFixed(1)})`
+    : null;
+
+  // Top growth edge
+  const topGrowthEdge = (ge ?? [])[0]?.title ?? null;
+
+  if (integratedNarratives.length > 0 || oneThingSentence || topValuesGap || topGrowthEdge) {
+    prompt += `\n\n## Cross-Instrument Portrait Intelligence\n`;
+    if (integratedNarratives.length > 0) {
+      prompt += `\n### Key Patterns Across Assessments\n`;
+      integratedNarratives.slice(0, 2).forEach((narrative: string, i: number) => {
+        prompt += `${i + 1}. ${narrative}\n`;
+      });
+    }
+    if (oneThingSentence) {
+      prompt += `\n### Their One Invitation\n${oneThingSentence}\n`;
+    }
+    if (topValuesGap) {
+      prompt += `\n### Biggest Values Gap\n${topValuesGap}\n`;
+    }
+    if (topGrowthEdge) {
+      prompt += `\n### Current Growth Edge\n${topGrowthEdge}\n`;
+    }
+  }
+
   prompt += `\n\n## Exercise Suggestions
 When it feels appropriate, you can suggest a specific exercise by including this exact marker in your response:
 [EXERCISE:exercise-id:Exercise Title]

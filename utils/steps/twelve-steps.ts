@@ -1323,3 +1323,99 @@ export const STEP_ASSESSMENT_GATES: Record<number, StepAssessmentGate> = {
 export function getStepAssessmentGate(stepNumber: number): StepAssessmentGate | null {
   return STEP_ASSESSMENT_GATES[stepNumber] ?? null;
 }
+
+// ─── Dynamic Step Intro ─────────────────────────────────
+//
+// Returns a personalized paragraph for key steps based on the user's
+// assessment profile. Weaves attachment, conflict style, and
+// differentiation data into step-specific language.
+
+interface DynamicStepScores {
+  /** ECR-R attachment style */
+  attachmentStyle?: string;
+  /** ECR-R anxiety score (1-7 scale) */
+  ecrAnxiety?: number;
+  /** ECR-R avoidance score (1-7 scale) */
+  ecrAvoidance?: number;
+  /** DUTCH primary conflict style */
+  dutchPrimaryStyle?: string;
+  /** DSI-R fusionWithOthers subscale normalized (0-100) */
+  dsirFusionWithOthers?: number;
+  /** DSI-R emotionalCutoff subscale normalized (0-100) */
+  dsirEmotionalCutoff?: number;
+  /** Cycle position from negative cycle */
+  cyclePosition?: string;
+}
+
+/**
+ * Get a personalized paragraph for the given step based on the user's scores.
+ * Returns null for steps without personalization, or when scores are missing.
+ *
+ * Use this to enhance step intro text with person-specific context.
+ */
+export function getDynamicStepIntro(
+  stepNumber: number,
+  userScores: DynamicStepScores
+): string | null {
+  const {
+    attachmentStyle,
+    ecrAnxiety = 4.0,
+    ecrAvoidance = 4.0,
+    dutchPrimaryStyle,
+    dsirFusionWithOthers = 50,
+    dsirEmotionalCutoff = 50,
+    cyclePosition,
+  } = userScores;
+
+  const isAnxious  = ecrAnxiety > 4.0
+    || attachmentStyle === 'anxious-preoccupied'
+    || cyclePosition === 'pursuer';
+  const isAvoidant = ecrAvoidance > 4.0
+    || attachmentStyle === 'dismissive-avoidant'
+    || attachmentStyle === 'fearful-avoidant'
+    || cyclePosition === 'withdrawer';
+
+  switch (stepNumber) {
+    case 1: // Acknowledge the Strain
+      if (isAnxious) {
+        return "Presence is harder when your nervous system is scanning for distance. This step is about learning to feel safe in the present moment — not by eliminating your anxiety, but by giving it something solid to rest on.";
+      }
+      if (isAvoidant) {
+        return "Presence is harder when closeness feels like too much. This step isn't about forcing openness — it's about expanding your window of comfort, one degree at a time.";
+      }
+      return null;
+
+    case 4: // Examine Our Part — based on DUTCH style
+      if (dutchPrimaryStyle === 'avoiding') {
+        return "Your default is to step away from conflict. In this step, we'll practice staying — not to fight, but to be present with what's uncomfortable.";
+      }
+      if (dutchPrimaryStyle === 'forcing') {
+        return "Your default is to press your point. In this step, we'll practice softening — not to lose your voice, but to make room for another voice alongside it.";
+      }
+      if (dutchPrimaryStyle === 'yielding') {
+        return "You give in to keep the peace. In this step, we'll practice finding and expressing your actual position — not to create conflict, but to be fully present in it.";
+      }
+      return null;
+
+    case 6: // Release Enemy Story — based on DSI-R differentiation
+      if (dsirFusionWithOthers > 70) {
+        return "Your boundaries tend to dissolve in closeness. That's not weakness — it's love without a container. This step builds the container.";
+      }
+      if (dsirEmotionalCutoff > 70) {
+        return "Your boundaries are strong — maybe too strong. This step isn't about building walls higher. It's about adding doors.";
+      }
+      return null;
+
+    case 8: // Prepare to Repair — based on attachment + conflict combo
+      if (isAnxious && dutchPrimaryStyle === 'forcing') {
+        return "Your repair instinct is to pursue harder. In this step, you'll learn to repair by stepping back — which feels wrong to your system but is exactly what creates the space for your partner to come toward you.";
+      }
+      if (isAvoidant && (dutchPrimaryStyle === 'avoiding' || !dutchPrimaryStyle)) {
+        return "Repair requires re-engagement — the very thing your system wants to avoid. In this step, you'll practice making small moves toward reconnection, even when it feels unnecessary.";
+      }
+      return null;
+
+    default:
+      return null;
+  }
+}

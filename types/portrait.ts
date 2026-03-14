@@ -250,6 +250,9 @@ export interface IndividualPortrait {
   // Phase 3 additions (optional — backward compatible)
   bigFiveReframes?: string[];
   supplementData?: SupplementScores;
+  // Portrait Intelligence Upgrade — cross-instrument narratives
+  integratedNarratives?: string[];
+  oneThingSentence?: string;
 }
 
 // ─── Helper: All assessment scores grouped ───────────────

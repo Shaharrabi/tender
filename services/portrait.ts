@@ -145,9 +145,11 @@ export async function savePortrait(
     version: portrait.version,
   };
 
-  // Try with Phase 3 columns first, fall back without them
+  // Try with Phase 3 + Intelligence Upgrade columns first, fall back without them
   row.big_five_reframes = portrait.bigFiveReframes ?? null;
   row.supplement_data = portrait.supplementData ?? null;
+  row.integrated_narratives = portrait.integratedNarratives ?? null;
+  row.one_thing_sentence = portrait.oneThingSentence ?? null;
 
   let { data, error } = await supabase
     .from('portraits')
@@ -155,15 +157,19 @@ export async function savePortrait(
     .select()
     .single();
 
-  // If Phase 3 columns don't exist, retry without them
+  // If Phase 3 or Intelligence Upgrade columns don't exist, retry without them
   if (error && (
     error.message?.includes('big_five_reframes') ||
     error.message?.includes('supplement_data') ||
+    error.message?.includes('integrated_narratives') ||
+    error.message?.includes('one_thing_sentence') ||
     error.code === '42703' // undefined_column
   )) {
-    console.warn('[savePortrait] Phase 3 columns missing, retrying without them');
+    console.warn('[savePortrait] Optional columns missing, retrying without them');
     delete row.big_five_reframes;
     delete row.supplement_data;
+    delete row.integrated_narratives;
+    delete row.one_thing_sentence;
 
     const retry = await supabase
       .from('portraits')
@@ -219,5 +225,8 @@ function mapRow(row: any): IndividualPortrait {
     // Phase 3 additions (may be undefined for v1.0.0 portraits)
     bigFiveReframes: row.big_five_reframes ?? undefined,
     supplementData: row.supplement_data ?? undefined,
+    // Portrait Intelligence Upgrade (may be undefined for older portraits)
+    integratedNarratives: row.integrated_narratives ?? undefined,
+    oneThingSentence: row.one_thing_sentence ?? undefined,
   };
 }

@@ -1115,6 +1115,14 @@ function OverviewTab({
       {/* Cross-Assessment Synthesis */}
       <SynthesisCard synthesis={synthesis} />
 
+      {/* What the Data Reveals — cross-instrument integrated narratives */}
+      {(portrait.integratedNarratives && portrait.integratedNarratives.length > 0) && (
+        <IntegratedNarrativesCard
+          narratives={portrait.integratedNarratives}
+          oneThingSentence={portrait.oneThingSentence}
+        />
+      )}
+
       {/* Field Awareness — Phase 3 (only if supplement data present) */}
       {portrait.fourLens.fieldAwareness && (
         <FieldAwarenessCard fieldAwareness={portrait.fourLens.fieldAwareness} />
@@ -1449,6 +1457,56 @@ function SynthesisCard({ synthesis }: { synthesis: AssessmentSynthesis }) {
           {synthesis.recommendedStepRationale}
         </TenderText>
       </View>
+    </Animated.View>
+  );
+}
+
+// ─── INTEGRATED NARRATIVES CARD ─────────────────────
+
+function IntegratedNarrativesCard({
+  narratives,
+  oneThingSentence,
+}: {
+  narratives: string[];
+  oneThingSentence?: string;
+}) {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      delay: 200,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  return (
+    <Animated.View style={[st.synthesisCard, { opacity: fadeAnim }]}>
+      <TenderText variant="label" color={Colors.depth} style={{ letterSpacing: 1.5 }}>WHAT THE DATA REVEALS</TenderText>
+      <View style={st.scoreGroupDivider} />
+
+      {narratives.map((narrative, i) => (
+        <View key={i} style={[st.synthesisListItem, { marginBottom: Spacing.md }]}>
+          <View style={[st.synthesisListDot, { backgroundColor: Colors.primary, marginTop: 6 }]} />
+          <TenderText variant="body" color={Colors.textSecondary} style={{ flex: 1, lineHeight: 22 }}>
+            {narrative}
+          </TenderText>
+        </View>
+      ))}
+
+      {oneThingSentence && (
+        <View style={[st.synthesisPatternBox, { marginTop: Spacing.lg, alignItems: 'center' }]}>
+          <TenderText
+            variant="headingS"
+            color={Colors.primary}
+            align="center"
+            style={{ lineHeight: 26, fontStyle: 'italic' }}
+          >
+            {oneThingSentence}
+          </TenderText>
+        </View>
+      )}
     </Animated.View>
   );
 }

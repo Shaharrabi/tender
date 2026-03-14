@@ -21,8 +21,7 @@
  * See: utils/steps/twelve-steps.ts for step definitions
  */
 
-import type { IndividualPortrait } from '@/types/portrait';
-import type { SupplementScores } from '@/types/portrait';
+import type { IndividualPortrait, SupplementScores, AllAssessmentScores } from '@/types/portrait';
 import { matchProtocol, assessFourMovements, generateJourneyMap } from '@/utils/steps/intervention-protocols';
 import type { InterventionProtocol, JourneyMap, FourMovements } from '@/utils/steps/intervention-protocols';
 import {
@@ -49,13 +48,170 @@ export interface AssessmentSynthesis {
   movements: FourMovements;
   /** User-facing journey map — plain language growth plan */
   journeyMap: JourneyMap;
+  /** Cross-instrument narrative paragraphs — weaving 2-3 assessments together */
+  integratedNarratives: string[];
+  /** Single "one thing" invitation sentence */
+  oneThingSentence: string;
+}
+
+// ─── Integrated Narratives Output ───────────────────────
+export interface IntegratedNarrativesResult {
+  narratives: string[];
+  oneThingSentence: string;
+}
+
+/**
+ * Generate cross-instrument narratives — the core of the portrait intelligence upgrade.
+ * Each narrative weaves 2-3 assessment instruments together to reveal how they interact.
+ *
+ * Scoring conventions:
+ * - ECR-R: 1–7 scale (anxietyScore, avoidanceScore)
+ * - SSEIT: subscaleNormalized values are 0–100
+ * - DUTCH: subscaleScores[key].mean is 1–5 scale
+ * - DSI-R: subscaleScores[key].normalized is 0–100
+ * - IPIP: domainPercentiles[key] is 0–100
+ * - Values: domainScores[key].gap is 0–10 (importance minus accordance)
+ */
+export function generateIntegratedNarratives(scores: AllAssessmentScores): IntegratedNarrativesResult {
+  const { ecrr, sseit, dutch, dsir, ipip, values } = scores;
+
+  const narratives: string[] = [];
+
+  // ── Helper accessors ──────────────────────────────────
+  const ecrAnxiety = ecrr.anxietyScore ?? 4.0;
+  const ecrAvoidance = ecrr.avoidanceScore ?? 4.0;
+
+  // SSEIT: subscaleNormalized is 0-100; fall back to mean * 20 (1-5 scale → 0-100)
+  const sseitPerceptionRaw = sseit.subscaleNormalized?.['perception']
+    ?? (sseit.subscaleScores?.['perception']?.mean != null
+      ? sseit.subscaleScores['perception'].mean * 20
+      : 50);
+  const sseitPerception = sseitPerceptionRaw;
+
+  // DUTCH: subscaleScores[key].mean is on 1-5 scale
+  const dutchYielding     = dutch.subscaleScores?.['yielding']?.mean ?? 3.0;
+  const dutchAvoiding     = dutch.subscaleScores?.['avoiding']?.mean ?? 3.0;
+  const dutchForcing      = dutch.subscaleScores?.['forcing']?.mean ?? 3.0;
+
+  // DSI-R: subscaleScores[key].normalized is 0-100
+  const dsirFusionWithOthers = dsir.subscaleScores?.['fusionWithOthers']?.normalized ?? 50;
+  const dsirIPosition        = dsir.subscaleScores?.['iPosition']?.normalized ?? 50;
+  const dsirEmotionalCutoff  = dsir.subscaleScores?.['emotionalCutoff']?.normalized ?? 50;
+
+  // IPIP: domainPercentiles is 0-100
+  const ipipNeuroticismScore    = ipip.domainPercentiles?.['neuroticism'] ?? 50;
+  const ipipAgreeablenessScore  = ipip.domainPercentiles?.['agreeableness'] ?? 50;
+
+  // Values: find gap for specific domains
+  const valuesHonestyGap  = values.domainScores?.['honesty']?.gap ?? 0;
+  const valuesIntimacyGap = values.domainScores?.['intimacy']?.gap ?? values.domainScores?.['connection']?.gap ?? 0;
+
+  // ── Attachment × EQ (ECR-R × SSEIT) ─────────────────
+
+  if (ecrAnxiety > 4.0 && sseitPerception > 70) {
+    narratives.push(
+      "You feel everything in the relational field — your emotional radar is remarkably sensitive. But that sensitivity feeds your anxiety rather than informing it. You're often right that something shifted, but the story your anxiety tells about WHY is usually the wound talking, not the current reality."
+    );
+  } else if (ecrAvoidance > 4.0 && sseitPerception < 40) {
+    narratives.push(
+      "You create distance partly because the emotional field is overwhelming when you're close. It's not that you don't care — it's that caring feels like too much information coming in at once, with no way to process it."
+    );
+  } else if (ecrAnxiety < 3.5 && ecrAvoidance < 3.5 && sseitPerception > 60) {
+    narratives.push(
+      "Your emotional radar is strong AND you can hold what you sense without flooding. This is secure functioning — you notice, you interpret, you respond. Not perfectly, but with enough range to stay present."
+    );
+  }
+
+  // ── Attachment × Conflict Style (ECR-R × DUTCH) ──────
+
+  if (ecrAnxiety > 4.0 && dutchYielding > 3.5) {
+    narratives.push(
+      "You accommodate to maintain connection. Yielding feels safer than the risk of conflict pushing your partner away. Over time, this means your partner is in a relationship with someone who's editing themselves — and they don't even know it."
+    );
+  } else if (ecrAvoidance > 4.0 && dutchAvoiding > 3.5) {
+    narratives.push(
+      "You avoid conflict AND you avoid closeness — a double withdrawal. Your partner may experience this as a wall. The wall isn't anger — it's protection. But protection from what? Usually from the vulnerability that real engagement requires."
+    );
+  } else if (ecrAnxiety > 4.0 && dutchForcing > 3.5) {
+    narratives.push(
+      "You pursue AND you push. When distance triggers your anxiety, you don't retreat — you escalate. Your partner feels pressured, which makes them pull back, which confirms your fear. It's a self-fulfilling cycle. The intensity of your care is real — but the delivery lands as demand."
+    );
+  }
+
+  // ── EQ × Differentiation (SSEIT × DSI-R) ─────────────
+
+  if (sseitPerception > 70 && dsirFusionWithOthers > 70) {
+    narratives.push(
+      "You're a strong emotional reader, but you absorb everything. You can't always tell if the anxiety is yours, your partner's, or the relationship's. This leads to flooding — you sense the field clearly but merge with it instead of observing it."
+    );
+  } else if (sseitPerception > 70 && dsirIPosition > 70) {
+    narratives.push(
+      "You sense the field AND you can hold your own ground within it. This is a powerful combination — you're attuned without being consumed. Your challenge is patience: you may see things your partner isn't ready to see yet."
+    );
+  }
+
+  // ── Values × Conflict Style (Values × DUTCH) ─────────
+
+  if (valuesHonestyGap > 2.0 && dutchAvoiding > 3.5) {
+    narratives.push(
+      "You value honesty deeply but your default in conflict is avoidance. This creates a specific kind of suffering: you know what's true, but you can't bring yourself to say it when it matters. The gap between your values and your behavior is where the growth edge lives."
+    );
+  } else if (valuesIntimacyGap > 2.0 && dutchYielding > 3.5) {
+    narratives.push(
+      "You crave deep intimacy but you yield to keep the peace. The problem: yielding creates surface harmony at the cost of the depth you actually want. Every time you accommodate instead of expressing what's real, you move further from the intimacy you're seeking."
+    );
+  }
+
+  // ── Personality × Attachment (IPIP × ECR-R) ──────────
+
+  if (ipipNeuroticismScore > 70 && ecrAnxiety > 4.0) {
+    narratives.push(
+      "Your nervous system is set to high sensitivity — it reads emotional cues quickly and intensely. In this relationship, that means you rarely miss a signal. The challenge is that your system also generates false alarms, and it's hard to tell the difference between 'something is wrong' and 'my nervous system is doing what it always does.'"
+    );
+  } else if (ipipAgreeablenessScore > 70 && dsirFusionWithOthers > 70) {
+    narratives.push(
+      "You're warm, accommodating, and deeply attuned to others' needs. The risk: you've learned to locate yourself through your partner rather than alongside them. Your kindness is real — but it can become a way of disappearing."
+    );
+  }
+
+  // Keep to 3-5 narratives max
+  const trimmedNarratives = narratives.slice(0, 5);
+
+  // ── One Thing Sentence ────────────────────────────────
+
+  const isAnxious    = ecrAnxiety > 4.0;
+  const isAvoidant   = ecrAvoidance > 4.0;
+  const isHighEQ     = sseitPerception > 60;
+  const isYielding   = dutchYielding > 3.5;
+  const isForcing    = dutchForcing > 3.5;
+  const isAvoiding   = dutchAvoiding > 3.5;
+  const isLowDiff    = dsirFusionWithOthers > 65;
+  const isHighDiff   = dsirIPosition > 65;
+  const isHighN      = ipipNeuroticismScore > 70;
+
+  let oneThingSentence: string;
+
+  if (isAnxious && isHighEQ && isYielding && isLowDiff) {
+    oneThingSentence = "Your one invitation: let what you feel become information, not instruction.";
+  } else if (isAvoidant && !isHighEQ && isAvoiding && isHighDiff) {
+    oneThingSentence = "Your one invitation: risk being known. The wall keeps you safe AND alone.";
+  } else if (!isAnxious && !isAvoidant && isHighEQ && !isAvoiding && isHighDiff) {
+    oneThingSentence = "Your one invitation: go from good to profound. You have the foundation — now go deeper.";
+  } else if (isAnxious && isHighN && isForcing) {
+    oneThingSentence = "Your one invitation: soften the approach without softening the truth.";
+  } else {
+    oneThingSentence = "Your one invitation: stay present with what's alive between you — even when it's uncomfortable.";
+  }
+
+  return { narratives: trimmedNarratives, oneThingSentence };
 }
 
 // ─── Synthesize Function ────────────────────────────────
 
 export function synthesizeAssessments(
   portrait: IndividualPortrait,
-  supplements?: SupplementScores
+  supplements?: SupplementScores,
+  rawScores?: AllAssessmentScores
 ): AssessmentSynthesis {
   const { compositeScores, fourLens, patterns, growthEdges, negativeCycle } = portrait;
 
@@ -122,6 +278,11 @@ export function synthesizeAssessments(
     supplements
   );
 
+  // ── Generate integrated cross-instrument narratives ──
+  const integrated = rawScores
+    ? generateIntegratedNarratives(rawScores)
+    : { narratives: [], oneThingSentence: "Your one invitation: stay present with what's alive between you — even when it's uncomfortable." };
+
   return {
     coreNarrative,
     primaryPattern,
@@ -134,6 +295,8 @@ export function synthesizeAssessments(
     protocol,
     movements,
     journeyMap,
+    integratedNarratives: integrated.narratives,
+    oneThingSentence: integrated.oneThingSentence,
   };
 }
 
