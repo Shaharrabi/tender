@@ -25,7 +25,9 @@ export type JournalEntryType =
   | 'card_game'
   | 'reflection'
   | 'weare_checkin'
-  | 'course_lesson';
+  | 'course_lesson'
+  | 'community_share'
+  | 'community_letter';
 
 export interface JournalEntry {
   id: string;
@@ -114,6 +116,8 @@ export async function getJournalEntriesForDate(
     cardGameResult,
     stepReflectionsResult,
     weareCheckInsResult,
+    communityPostsResult,
+    communityLettersResult,
   ] = await Promise.allSettled([
     // 1. Daily check-ins (uses DATE type — exact match)
     supabase
@@ -212,6 +216,24 @@ export async function getJournalEntriesForDate(
       .eq('user_id', userId)
       .gte('created_at', dayStart)
       .lt('created_at', dayEnd),
+
+    // 12. Community posts authored by this user (TIMESTAMPTZ — range)
+    supabase
+      .from('community_posts')
+      .select('id, content, category, created_at')
+      .eq('author_id', userId)
+      .gte('created_at', dayStart)
+      .lt('created_at', dayEnd)
+      .order('created_at', { ascending: true }),
+
+    // 13. Community letters authored by this user (TIMESTAMPTZ — range)
+    supabase
+      .from('community_letters')
+      .select('id, content, created_at')
+      .eq('author_id', userId)
+      .gte('created_at', dayStart)
+      .lt('created_at', dayEnd)
+      .order('created_at', { ascending: true }),
   ]);
 
   // Process check-ins
@@ -506,6 +528,42 @@ export async function getJournalEntriesForDate(
     }
   }
 
+  // Process community posts
+  if (communityPostsResult.status === 'fulfilled' && communityPostsResult.value.data) {
+    for (const row of communityPostsResult.value.data) {
+      const categoryLabel = (row.category as string)
+        .replace(/-/g, ' ')
+        .replace(/\b\w/g, (c: string) => c.toUpperCase());
+      entries.push({
+        id: row.id,
+        type: 'community_share',
+        timestamp: row.created_at,
+        title: 'Shared a Story',
+        subtitle: categoryLabel,
+        data: {
+          content: row.content,
+          category: row.category,
+        },
+      });
+    }
+  }
+
+  // Process community letters
+  if (communityLettersResult.status === 'fulfilled' && communityLettersResult.value.data) {
+    for (const row of communityLettersResult.value.data) {
+      entries.push({
+        id: row.id,
+        type: 'community_letter',
+        timestamp: row.created_at,
+        title: 'Wrote a Letter',
+        subtitle: undefined,
+        data: {
+          content: row.content,
+        },
+      });
+    }
+  }
+
   // Sort by timestamp
   entries.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
@@ -546,6 +604,8 @@ export async function getJournalCalendarData(
     cardGameCalResult,
     stepReflectionsCalResult,
     weareCalResult,
+    communityPostsCalResult,
+    communityLettersCalResult,
   ] = await Promise.allSettled([
     supabase
       .from('daily_check_ins')
@@ -617,6 +677,22 @@ export async function getJournalCalendarData(
       .from('weekly_check_ins')
       .select('created_at')
       .eq('user_id', userId)
+      .gte('created_at', startISO)
+      .lt('created_at', endISO),
+
+    // 11. Community posts authored by this user
+    supabase
+      .from('community_posts')
+      .select('created_at')
+      .eq('author_id', userId)
+      .gte('created_at', startISO)
+      .lt('created_at', endISO),
+
+    // 12. Community letters authored by this user
+    supabase
+      .from('community_letters')
+      .select('created_at')
+      .eq('author_id', userId)
       .gte('created_at', startISO)
       .lt('created_at', endISO),
   ]);
@@ -697,6 +773,20 @@ export async function getJournalCalendarData(
   if (weareCalResult.status === 'fulfilled' && weareCalResult.value.data) {
     for (const row of weareCalResult.value.data) {
       addDay(dateFromTimestamp(row.created_at), 'weare_checkin');
+    }
+  }
+
+  // Map community posts
+  if (communityPostsCalResult.status === 'fulfilled' && communityPostsCalResult.value.data) {
+    for (const row of communityPostsCalResult.value.data) {
+      addDay(dateFromTimestamp(row.created_at), 'community_share');
+    }
+  }
+
+  // Map community letters
+  if (communityLettersCalResult.status === 'fulfilled' && communityLettersCalResult.value.data) {
+    for (const row of communityLettersCalResult.value.data) {
+      addDay(dateFromTimestamp(row.created_at), 'community_letter');
     }
   }
 

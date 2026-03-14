@@ -44,6 +44,8 @@ const TYPE_COLORS: Record<JournalEntryType, string> = {
   reflection: Colors.primary,       // Dusty Rose (Step reflections)
   weare_checkin: Colors.calm,       // Soft Teal (WEARE weekly)
   course_lesson: Colors.secondary,  // Lobby Blue (Micro-course lessons)
+  community_share: Colors.primary,  // Dusty Rose (Community story)
+  community_letter: Colors.calm,    // Soft Teal (Community letter)
 };
 
 // Ordered for consistent dot layout

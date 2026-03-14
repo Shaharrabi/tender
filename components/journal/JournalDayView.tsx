@@ -27,6 +27,7 @@ import {
   RainbowIcon,
   NotepadIcon,
   CommunityIcon,
+  MailboxIcon,
 } from '@/assets/graphics/icons';
 import type { IconProps } from '@/assets/graphics/icons';
 
@@ -115,6 +116,18 @@ const TYPE_CONFIG: Record<JournalEntryType, {
     bg: Colors.secondaryLight,
     label: 'Course Lesson',
     Icon: BookOpenIcon,
+  },
+  community_share: {
+    color: Colors.primary,
+    bg: Colors.primaryFaded,
+    label: 'Story Shared',
+    Icon: CommunityIcon,
+  },
+  community_letter: {
+    color: Colors.calm,
+    bg: Colors.calmLight,
+    label: 'Letter Written',
+    Icon: MailboxIcon,
   },
 };
 
@@ -574,6 +587,31 @@ function StepReflectionCard({ entry }: { entry: JournalEntry }) {
   );
 }
 
+// ─── Community Share Card ────────────────────────────────
+
+function CommunityShareCard({ entry }: { entry: JournalEntry }) {
+  const content = entry.data.content as string | undefined;
+  if (!content) return null;
+  return (
+    <View style={cardStyles.reflectionBlock}>
+      <Text style={cardStyles.noteFullText}>{content}</Text>
+    </View>
+  );
+}
+
+// ─── Community Letter Card ───────────────────────────────
+
+function CommunityLetterCard({ entry }: { entry: JournalEntry }) {
+  const content = entry.data.content as string | undefined;
+  if (!content) return null;
+  return (
+    <View style={cardStyles.reflectionBlock}>
+      <Text style={cardStyles.stepPrompt}>Your letter</Text>
+      <Text style={cardStyles.noteFullText}>{content}</Text>
+    </View>
+  );
+}
+
 // ─── Entry Card Router ──────────────────────────────────
 
 function EntryCardContent({ entry }: { entry: JournalEntry }) {
@@ -595,6 +633,10 @@ function EntryCardContent({ entry }: { entry: JournalEntry }) {
       return <CardGameCard entry={entry} />;
     case 'reflection':
       return <StepReflectionCard entry={entry} />;
+    case 'community_share':
+      return <CommunityShareCard entry={entry} />;
+    case 'community_letter':
+      return <CommunityLetterCard entry={entry} />;
     default:
       return null;
   }
