@@ -243,6 +243,7 @@ export async function seedSingleAssessment(
       responses: [],  // Demo mode — no raw responses
       scores,
       completed_at: new Date().toISOString(),
+      instrument_version: 'tender-v1',
     })
     .select('id')
     .single();

@@ -911,8 +911,8 @@ function CouplePortalScreen() {
         </View>
       )}
 
-      {/* WEARE Check-In */}
-      {couple && weareProfile && (
+      {/* WEARE Check-In — hidden for demo/self-couple since it's meaningless */}
+      {couple && weareProfile && !isSelfCouple(couple) && (
         <>
           {/* Reminder banner — shown when check-in not done this week */}
           {weeklyCheckIn === null && (

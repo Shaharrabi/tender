@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Animated } from 'react-native';
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView } from 'react-native';
 import { AssessmentSection } from '@/types';
 import { Colors, Spacing, FontSizes, FontFamilies, ButtonSizes, BorderRadius } from '@/constants/theme';
 import {
@@ -56,33 +56,6 @@ function SectionBreak({
   miniResult,
 }: SectionBreakProps) {
   const percent = Math.round((questionsCompleted / totalQuestions) * 100);
-  const AUTO_ADVANCE_DELAY = 3500; // ms before auto-continuing
-  const [countdown, setCountdown] = useState(Math.ceil(AUTO_ADVANCE_DELAY / 1000));
-  const progressAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    // Animate progress bar filling over AUTO_ADVANCE_DELAY
-    Animated.timing(progressAnim, {
-      toValue: 1,
-      duration: AUTO_ADVANCE_DELAY,
-      useNativeDriver: false,
-    }).start();
-
-    // Countdown display
-    const interval = setInterval(() => {
-      setCountdown((prev) => Math.max(0, prev - 1));
-    }, 1000);
-
-    // Auto-advance
-    const timer = setTimeout(() => {
-      onContinue();
-    }, AUTO_ADVANCE_DELAY);
-
-    return () => {
-      clearTimeout(timer);
-      clearInterval(interval);
-    };
-  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -129,16 +102,6 @@ function SectionBreak({
           ) : null}
         </View>
 
-        {/* Auto-advance progress bar */}
-        <View style={styles.autoProgressTrack}>
-          <Animated.View
-            style={[
-              styles.autoProgressFill,
-              { width: progressAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) },
-            ]}
-          />
-        </View>
-
         <View style={styles.actions}>
           <TouchableOpacity
             style={styles.continueButton}
@@ -146,9 +109,7 @@ function SectionBreak({
             accessibilityRole="button"
             accessibilityLabel={`Continue to ${section.title}`}
           >
-            <Text style={styles.continueButtonText}>
-              Continue {countdown > 0 ? `(${countdown})` : ''}
-            </Text>
+            <Text style={styles.continueButtonText}>Continue</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -281,17 +242,5 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     fontSize: FontSizes.body,
     fontWeight: '600',
-  },
-  autoProgressTrack: {
-    height: 3,
-    backgroundColor: Colors.borderLight,
-    borderRadius: 2,
-    overflow: 'hidden',
-    marginBottom: Spacing.sm,
-  },
-  autoProgressFill: {
-    height: '100%',
-    backgroundColor: Colors.primary,
-    borderRadius: 2,
   },
 });
