@@ -64,7 +64,7 @@ export default function ZoneGame({ zoneNumber, visible, onComplete, onClose }: Z
   // aren't accessible via URI in a WebView.
   const gameSrc = Platform.OS === 'web'
     ? `/games/zone${zoneNumber}.html`
-    : `https://couples-app-demo.netlify.app/games/zone${zoneNumber}.html`;
+    : `https://tender-science.netlify.app/games/zone${zoneNumber}.html`;
 
   return (
     <Modal

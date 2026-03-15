@@ -230,22 +230,23 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
     setSessionExpired(false);
 
     try {
-      // Get auth token — refreshSession FIRST for a guaranteed-fresh JWT,
-      // then fall back to getSession (cached) if refresh fails.
+      // Get auth token — use cached session first (fast), only refresh on 401.
+      // Calling refreshSession() aggressively on every send can cause refresh
+      // token rotation issues where the second call invalidates the first.
       let token: string | undefined;
 
-      // Try refreshSession first — this gives us a guaranteed-fresh JWT
-      const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-      token = refreshData.session?.access_token;
+      // Step 1: Try cached session (instant, no network call)
+      const { data: authData, error: sessionError } = await supabase.auth.getSession();
+      token = authData.session?.access_token;
 
-      if (__DEV__) console.log('[Chat] refreshSession result:', !!refreshData.session, refreshError?.message || 'no error');
+      if (__DEV__) console.log('[Chat] getSession result:', !!authData.session, sessionError?.message || 'no error');
 
-      // Fallback: if refresh fails, use getSession which returns the cached token
+      // Step 2: If no cached token, try refreshing
       if (!token) {
-        if (__DEV__) console.log('[Chat] No token from refresh, trying cached session...');
-        const { data: authData, error: sessionError } = await supabase.auth.getSession();
-        token = authData.session?.access_token;
-        if (__DEV__) console.log('[Chat] getSession fallback:', !!authData.session, sessionError?.message || 'no error');
+        if (__DEV__) console.log('[Chat] No cached token, trying refreshSession...');
+        const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+        token = refreshData.session?.access_token;
+        if (__DEV__) console.log('[Chat] refreshSession result:', !!refreshData.session, refreshError?.message || 'no error');
       }
 
       // If still no token, the user truly isn't authenticated

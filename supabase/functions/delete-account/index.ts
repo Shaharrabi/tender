@@ -21,7 +21,7 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
 // ─── CORS ────────────────────────────────────────────
 const ALLOWED_ORIGINS = [
-  'https://couples-app-demo.netlify.app',
+  'https://tender-science.netlify.app',
   'http://localhost:8081',
   'http://localhost:8082',
   'http://localhost:8083',
