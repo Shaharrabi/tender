@@ -14,6 +14,7 @@ import {
   StyleSheet,
   ScrollView,
   Dimensions,
+  Platform,
 } from 'react-native';
 import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { Colors, Spacing, FontSizes, FontFamilies, BorderRadius, Shadows, Typography } from '@/constants/theme';
@@ -407,17 +408,31 @@ export default function MyHorseman({ onComplete, onSkip, phaseColor }: MiniGameC
           <Text style={styles.reframeText}>{info.reframe}</Text>
         </Animated.View>
 
-        <Animated.View entering={FadeInUp.duration(400).delay(1300)}>
-          <TouchableOpacity
-            style={[styles.primaryButton, { backgroundColor: phaseColor }]}
-            onPress={handleFinish}
-            activeOpacity={0.8}
-            accessibilityRole="button"
-            accessibilityLabel="Continue"
-          >
-            <Text style={styles.primaryButtonText}>CONTINUE</Text>
-          </TouchableOpacity>
-        </Animated.View>
+        {Platform.OS === 'web' ? (
+          <View>
+            <TouchableOpacity
+              style={[styles.primaryButton, { backgroundColor: phaseColor }]}
+              onPress={handleFinish}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Continue"
+            >
+              <Text style={styles.primaryButtonText}>CONTINUE</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <Animated.View entering={FadeInUp.duration(400).delay(1300)}>
+            <TouchableOpacity
+              style={[styles.primaryButton, { backgroundColor: phaseColor }]}
+              onPress={handleFinish}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Continue"
+            >
+              <Text style={styles.primaryButtonText}>CONTINUE</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        )}
       </ScrollView>
     </View>
   );

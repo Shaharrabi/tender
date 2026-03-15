@@ -481,7 +481,10 @@ export default function ExerciseFlow({
 
           <TouchableOpacity
             style={styles.skipButton}
-            onPress={() => onComplete(undefined, undefined)}
+            onPress={() => {
+              const stepResponses = getAllStepResponses();
+              onComplete(undefined, undefined, stepResponses.length > 0 ? stepResponses : undefined);
+            }}
             activeOpacity={0.7}
             accessibilityRole="button"
             accessibilityLabel="Skip reflection and close exercise"

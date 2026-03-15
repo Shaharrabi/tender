@@ -312,17 +312,31 @@ export default function RelationshipManifesto({ onComplete, onSkip, phaseColor }
           </Text>
         </Animated.View>
 
-        <Animated.View entering={FadeInUp.duration(400).delay(2200)}>
-          <TouchableOpacity
-            style={[styles.finishButton, { backgroundColor: phaseColor }]}
-            onPress={handleFinish}
-            activeOpacity={0.8}
-            accessibilityRole="button"
-            accessibilityLabel="Complete the journey"
-          >
-            <Text style={styles.finishButtonText}>COMPLETE THE JOURNEY</Text>
-          </TouchableOpacity>
-        </Animated.View>
+        {Platform.OS === 'web' ? (
+          <View>
+            <TouchableOpacity
+              style={[styles.finishButton, { backgroundColor: phaseColor }]}
+              onPress={handleFinish}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Complete the journey"
+            >
+              <Text style={styles.finishButtonText}>COMPLETE THE JOURNEY</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <Animated.View entering={FadeInUp.duration(400).delay(2200)}>
+            <TouchableOpacity
+              style={[styles.finishButton, { backgroundColor: phaseColor }]}
+              onPress={handleFinish}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Complete the journey"
+            >
+              <Text style={styles.finishButtonText}>COMPLETE THE JOURNEY</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        )}
       </ScrollView>
     </View>
   );

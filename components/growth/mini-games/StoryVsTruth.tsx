@@ -523,17 +523,31 @@ export default function StoryVsTruth({ onComplete, onSkip, phaseColor }: MiniGam
           </Text>
         </Animated.View>
 
-        <Animated.View entering={FadeInUp.duration(400).delay(900)}>
-          <TouchableOpacity
-            style={[styles.primaryButton, { backgroundColor: phaseColor }]}
-            onPress={handleFinish}
-            activeOpacity={0.8}
-            accessibilityRole="button"
-            accessibilityLabel="Continue"
-          >
-            <Text style={styles.primaryButtonText}>CONTINUE</Text>
-          </TouchableOpacity>
-        </Animated.View>
+        {Platform.OS === 'web' ? (
+          <View>
+            <TouchableOpacity
+              style={[styles.primaryButton, { backgroundColor: phaseColor }]}
+              onPress={handleFinish}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Continue"
+            >
+              <Text style={styles.primaryButtonText}>CONTINUE</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <Animated.View entering={FadeInUp.duration(400).delay(900)}>
+            <TouchableOpacity
+              style={[styles.primaryButton, { backgroundColor: phaseColor }]}
+              onPress={handleFinish}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Continue"
+            >
+              <Text style={styles.primaryButtonText}>CONTINUE</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        )}
       </ScrollView>
     </View>
   );
