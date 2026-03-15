@@ -61,7 +61,7 @@ interface ChatProviderProps {
 }
 
 export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderProps) {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [activeSession, setActiveSession] = useState<ChatSession | null>(null);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -257,12 +257,23 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
         const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
         token = refreshData.session?.access_token;
         if (__DEV__) console.log('[Chat] refreshSession result:', !!refreshData.session, refreshError?.message || 'no error');
+
+        // If the refresh token itself is dead (deleted/rotated/expired), auto-sign-out.
+        // This is unrecoverable — the user MUST re-authenticate.
+        if (refreshError && /refresh token|not found|invalid/i.test(refreshError.message)) {
+          console.warn('[Chat] Refresh token is dead — signing out automatically');
+          setSessionExpired(true);
+          try { await signOut(); } catch {}
+          throw new Error('__SESSION_EXPIRED__:Your session expired. Signing you out — please sign back in.');
+        }
       }
 
       // If still no token, the user truly isn't authenticated
       if (!token) {
         setSessionExpired(true);
-        throw new Error('__SESSION_EXPIRED__:Your session has expired. Please sign out and back in to chat with Nuance.');
+        // Auto-sign-out so the user doesn't get stuck in a limbo state
+        try { await signOut(); } catch {}
+        throw new Error('__SESSION_EXPIRED__:Your session has expired. Please sign back in.');
       }
 
       if (__DEV__) {
@@ -366,10 +377,11 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
               // Retry succeeded — replace `response` and continue normal processing
               response = retryResponse;
             } else if (retryResponse.status === 401) {
-              // Still 401 after refresh — session is truly expired
-              if (__DEV__) console.log('[Chat] Retry still 401 — session truly expired');
+              // Still 401 after refresh — session is truly expired, auto-sign-out
+              if (__DEV__) console.log('[Chat] Retry still 401 — session truly expired, signing out');
               setSessionExpired(true);
-              throw new Error('__SESSION_EXPIRED__:Your session has expired. Please sign out and sign back in.');
+              try { await signOut(); } catch {}
+              throw new Error('__SESSION_EXPIRED__:Your session expired. Signing you out — please sign back in.');
             } else {
               // Some other error on retry
               response = retryResponse;
@@ -377,7 +389,8 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
           } else {
             if (__DEV__) console.log('[Chat] Could not refresh session token:', retryRefreshError?.message);
             setSessionExpired(true);
-            throw new Error('__SESSION_EXPIRED__:Your session has expired. Please sign out and sign back in.');
+            try { await signOut(); } catch {}
+            throw new Error('__SESSION_EXPIRED__:Your session expired. Signing you out — please sign back in.');
           }
         }
 
