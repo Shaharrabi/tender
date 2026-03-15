@@ -828,10 +828,23 @@ Attune your responses to where this person is in their journey. The phase name t
     prompt += `\n\n## SAFETY ALERT\nThe user's message may contain ${safety.category} content. Follow safety protocols. Provide warmth AND resources. Do not deeply process crisis content.`;
   }
 
-  // Add cross-instrument portrait intelligence context
+  // ── Cross-Instrument Portrait Intelligence (enriched for Flow 4) ──
   const integratedNarratives = row.integrated_narratives ?? [];
   const oneThingSentence = row.one_thing_sentence ?? null;
-  const primaryConflictStyle = row.patterns?.find?.((p: any) => p.category === 'attachment-conflict')?.description ?? null;
+
+  // Derive attachment label from ECR-R norms
+  const anxNorm = cs.anxietyNorm ?? 50;
+  const avdNorm = cs.avoidanceNorm ?? 50;
+  let attachmentLabel = 'secure';
+  if (anxNorm > 55 && avdNorm > 55) attachmentLabel = 'fearful-avoidant';
+  else if (anxNorm > 55) attachmentLabel = 'anxious-preoccupied';
+  else if (avdNorm > 55) attachmentLabel = 'dismissive-avoidant';
+
+  // Extract DUTCH primary conflict style from patterns
+  const attachConflictPattern = (patterns || []).find((p: any) => p.category === 'attachment-conflict');
+  const dutchStyleFromPattern = attachConflictPattern?.description ?? null;
+  // Also try to extract the style label from negative cycle position
+  const cyclePosition = nc.position || '';
 
   // Extract top values gap
   const valuesGaps = fl.values?.significantGaps ?? [];
@@ -842,24 +855,80 @@ Attune your responses to where this person is in their journey. The phase name t
   // Top growth edge
   const topGrowthEdge = (ge ?? [])[0]?.title ?? null;
 
-  if (integratedNarratives.length > 0 || oneThingSentence || topValuesGap || topGrowthEdge) {
-    prompt += `\n\n## Cross-Instrument Portrait Intelligence\n`;
-    if (integratedNarratives.length > 0) {
-      prompt += `\n### Key Patterns Across Assessments\n`;
-      integratedNarratives.slice(0, 2).forEach((narrative: string, i: number) => {
-        prompt += `${i + 1}. ${narrative}\n`;
-      });
-    }
-    if (oneThingSentence) {
-      prompt += `\n### Their One Invitation\n${oneThingSentence}\n`;
-    }
-    if (topValuesGap) {
-      prompt += `\n### Biggest Values Gap\n${topValuesGap}\n`;
-    }
-    if (topGrowthEdge) {
-      prompt += `\n### Current Growth Edge\n${topGrowthEdge}\n`;
-    }
+  // Build the enriched cross-instrument section
+  prompt += `\n\n## Cross-Instrument Portrait Intelligence\n`;
+
+  // Attachment style (always available from composite scores)
+  prompt += `\n### Attachment Style: ${attachmentLabel}`;
+  prompt += `\nAnxiety: ${anxNorm}/100, Avoidance: ${avdNorm}/100`;
+  if (attachmentLabel === 'anxious-preoccupied') {
+    prompt += `\nThis person monitors connection closely. Distance = danger. They may pursue harder when scared.`;
+  } else if (attachmentLabel === 'dismissive-avoidant') {
+    prompt += `\nThis person equates closeness with losing themselves. They withdraw to self-regulate.`;
+  } else if (attachmentLabel === 'fearful-avoidant') {
+    prompt += `\nThis person wants closeness AND fears it. They oscillate between reaching and retreating.`;
+  } else {
+    prompt += `\nThis person has a relatively secure base. They can tolerate discomfort in connection.`;
   }
+
+  // Conflict style (from patterns or negative cycle)
+  if (dutchStyleFromPattern) {
+    prompt += `\n\n### Conflict Pattern\n${dutchStyleFromPattern}`;
+  }
+  if (cyclePosition) {
+    prompt += `\nCycle Position: ${cyclePosition}`;
+  }
+
+  // Regulation-conflict interaction — this is the "secret sauce" insight
+  const regScore = cs.regulationScore ?? 50;
+  const windowW = cs.windowWidth ?? 50;
+  if (regScore < 45 && cyclePosition === 'pursuer') {
+    prompt += `\n\n### Key Interaction: Regulation × Pursuit`;
+    prompt += `\nWhen activated, their narrow window (${windowW}/100) combines with pursuit energy — they escalate before they realize they've left their window. Coach regulation FIRST, then communication.`;
+  } else if (regScore < 45 && cyclePosition === 'withdrawer') {
+    prompt += `\n\n### Key Interaction: Regulation × Withdrawal`;
+    prompt += `\nTheir narrow window (${windowW}/100) triggers shutdown. They go from "present" to "gone" quickly. Don't push for engagement when they're flooded — help them widen the window first.`;
+  } else if (windowW > 60 && attachmentLabel === 'anxious-preoccupied') {
+    prompt += `\n\n### Key Interaction: Wide Window × Anxious Attachment`;
+    prompt += `\nThey can hold a lot emotionally — but their anxiety still runs the show. They have the capacity for deep work; the invitation is to use that capacity for sitting with uncertainty instead of pursuing reassurance.`;
+  }
+
+  // Differentiation profile
+  const diffScore = cs.differentiation ?? 50;
+  const selfLead = cs.selfLeadership ?? 50;
+  if (diffScore < 45 || selfLead < 45) {
+    prompt += `\n\n### Differentiation: Developing (${diffScore}/100)`;
+    prompt += `\nSelf-leadership: ${selfLead}/100. They may lose themselves in relationships or react from old patterns rather than choosing responses. Support "I-position" — helping them know what they think/feel separate from their partner.`;
+  } else if (diffScore > 60 && selfLead > 60) {
+    prompt += `\n\n### Differentiation: Strong (${diffScore}/100)`;
+    prompt += `\nSelf-leadership: ${selfLead}/100. They know who they are. The growth edge is using that clarity to make room for difference, not to wall off.`;
+  }
+
+  // Cross-assessment narratives from synthesis engine
+  if (integratedNarratives.length > 0) {
+    prompt += `\n\n### Patterns Across Assessments\n`;
+    integratedNarratives.slice(0, 3).forEach((narrative: string, i: number) => {
+      prompt += `${i + 1}. ${narrative}\n`;
+    });
+  }
+
+  if (oneThingSentence) {
+    prompt += `\n### Their One Invitation\n${oneThingSentence}\n`;
+  }
+  if (topValuesGap) {
+    prompt += `\n### Biggest Values Gap\n${topValuesGap}\n`;
+  }
+  if (topGrowthEdge) {
+    prompt += `\n### Current Growth Edge\n${topGrowthEdge}\n`;
+  }
+
+  // Coaching instruction for using cross-instrument data
+  prompt += `\n### How to Use This Intelligence
+- Reference their attachment style when they describe relationship dynamics (e.g., "Given how you track connection, it makes sense that silence feels threatening")
+- Name their conflict pattern when they describe a fight (e.g., "That sounds like your yield-to-keep-peace pattern — what would happen if you said what you actually wanted?")
+- Connect their values gap to daily choices when relevant
+- Use their growth edge as a through-line across conversations
+- NEVER cite scores or assessment names. Translate into relational language`;
 
   prompt += `\n\n## Exercise Suggestions
 When it feels appropriate, you can suggest a specific exercise by including this exact marker in your response:
