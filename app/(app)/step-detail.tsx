@@ -87,6 +87,7 @@ import { getStepTeaching } from '@/utils/steps/step-teachings';
 import { getStepBridge } from '@/utils/steps/step-bridges';
 import { getEarlyInsight } from '@/utils/steps/early-insights';
 import { getPartnerExchange, getExchangePhase } from '@/utils/steps/partner-exchanges';
+import { getPersonalizedStepIntro } from '@/utils/steps/personalized-step-intro';
 import { getStepCallback } from '@/utils/steps/step-callbacks';
 import { getCouplePlay } from '@/utils/steps/couple-play';
 import { getGrowthPulse } from '@/utils/steps/growth-pulse';
@@ -1012,6 +1013,16 @@ function StepDetailScreenInner() {
 
         {/* ═══ TAB 1 — EXPLORE ═══ */}
         {activeTab === 1 && (<>
+        {/* Personalized Intro — assessment-aware paragraph */}
+        {(() => {
+          const personalIntro = getPersonalizedStepIntro(stepNumber, portrait);
+          return personalIntro ? (
+            <Animated.View entering={FadeIn.delay(50).duration(600)} style={[styles.introTextCard, { borderLeftWidth: 3, borderLeftColor: phase.color }]}>
+              <Text style={[styles.introText, { fontStyle: 'italic' }]}>{personalIntro}</Text>
+            </Animated.View>
+          ) : null;
+        })()}
+
         {/* Intro Text */}
         {step.introText && (
           <Animated.View entering={FadeIn.delay(100).duration(600)} style={styles.introTextCard}>

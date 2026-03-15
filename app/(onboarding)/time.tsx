@@ -33,7 +33,7 @@ export default function TimeScreen() {
     setTimeCommitment(id);
     setTimeout(() => {
       router.push('/(onboarding)/ready' as any);
-    }, 200);
+    }, 500);
   };
 
   return (

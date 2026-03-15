@@ -29,7 +29,7 @@ export default function StatusScreen() {
     SoundHaptics.tap();
     setSelected(id);
     setStatus(id);
-    // Brief delay so the user sees the selection highlight, then next question
+    // Let the selection highlight settle before navigating
     setTimeout(() => {
       if (id === 'single') {
         // Singles skip duration, go straight to mode selection
@@ -38,7 +38,7 @@ export default function StatusScreen() {
         // In-relationship / complicated / prefer-not-to-say → duration
         router.push('/(onboarding)/duration' as any);
       }
-    }, 200);
+    }, 500);
   };
 
   return (

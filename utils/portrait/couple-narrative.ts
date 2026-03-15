@@ -238,7 +238,25 @@ function buildEdgeNarrative(growthEdges: CoupleGrowthEdge[]): string {
 // ─── Closing ──────────────────────────────────────────────
 
 function buildClosing(nameA: string, nameB: string, dynamic: AttachmentDynamic): string {
-  return `${nameA} and ${nameB} — this portrait is a snapshot, not a sentence. What you see here will shift as you grow, as you practice, as you come back to each other after the hard moments.\n\nThe fact that you are both here, looking at this together, says something important: you are willing to see yourselves and each other honestly. That willingness is not a small thing. Research shows it is the single strongest predictor of relationship growth — not perfection, not how alike you are, not how few arguments you have. Just the willingness to look and keep showing up.\n\nYou have it. Now use it. Come back to this portrait when you need a reminder of what you are building together.`;
+  // Build a closing paragraph unique to this couple's attachment dynamic
+  let attachmentClosing = '';
+
+  const label = dynamic.dynamicLabel?.toLowerCase() ?? '';
+  const distance = dynamic.distance ?? 50;
+
+  if (/anxious.*avoidant|avoidant.*anxious|pursue.*withdraw/i.test(label)) {
+    attachmentClosing = `Your particular pattern — one reaching, one retreating — is the most common dance in love. It exists because both of you care deeply and protect differently. ${nameA} and ${nameB}, the way forward is not for one of you to change and the other to stay the same. It is for the pursuer to soften the approach and the withdrawer to shorten the distance. Even by inches.`;
+  } else if (/anxious.*anxious|mutual.*pursuit/i.test(label)) {
+    attachmentClosing = `You both bring intensity to this relationship — two hearts that refuse to let disconnection go unnamed. That fire is rare and valuable. The practice is not to dim it but to take turns holding it. ${nameA} and ${nameB}, when you can alternate between reaching and receiving, the urgency transforms into depth.`;
+  } else if (/avoidant.*avoidant|mutual.*withdraw/i.test(label)) {
+    attachmentClosing = `The space between you is comfortable — maybe too comfortable. ${nameA} and ${nameB}, your growth is not in maintaining distance but in crossing it. One small reach, one vulnerable sentence, one moment of choosing closeness over calm — that is where your relationship comes alive.`;
+  } else if (/secure/i.test(label) && distance < 30) {
+    attachmentClosing = `You have something most couples are still building toward: a foundation of basic trust and emotional accessibility. ${nameA} and ${nameB}, your invitation is not to fix what is broken — it is to deepen what already works. Go from good to profound.`;
+  } else {
+    attachmentClosing = `${nameA} and ${nameB}, your attachment patterns create a unique dance that belongs only to you. Understanding it — really seeing it — is the first step toward choosing it consciously rather than falling into it automatically.`;
+  }
+
+  return `${attachmentClosing}\n\nThis portrait is a snapshot, not a sentence. What you see here will shift as you grow, as you practice, as you come back to each other after the hard moments.\n\nThe fact that you are both here, looking at this together, says something important: you are willing to see yourselves and each other honestly. That willingness is the single strongest predictor of relationship growth — not perfection, not compatibility scores, not how few arguments you have. Just the willingness to look and keep showing up.\n\nYou have it. Now use it.`;
 }
 
 // ─── Couple Anchors ──────────────────────────────────────
@@ -416,8 +434,17 @@ export function generateSharedStrengthNarrative(strengthType: string): string {
     'Emotional Intelligence': "You both carry strong emotional awareness — you can sense what the other is feeling, often before words arrive. The gift: deep understanding. The risk: you may both feel so much that regulation becomes the bottleneck.",
     'Conflict Flexibility': "Neither of you is locked into one conflict posture. You can yield, push, collaborate, or step back depending on what the moment requires. This range means you don't get trapped in the same fight over and over — you have options.",
     'Values Alignment': "You agree on what matters. This might sound simple, but it's the most underrated resource in a relationship — when values align, disagreements are about HOW, not WHY.",
+    'Values Congruence': "You agree on what matters. This might sound simple, but it's the most underrated resource in a relationship — when values align, disagreements are about HOW, not WHY.",
     'Differentiation': "You can both be close without losing yourselves. This means conflict doesn't threaten your identity — you can disagree and still feel connected.",
     'Attachment Security': "The foundation is solid. You both operate from a place of basic trust — not perfection, but the belief that the other person is reliably there.",
+    'Relational Awareness': "You both notice the field between you. When something shifts, neither of you is blindsided. This shared awareness is rare — most couples have one partner who senses more than the other.",
+    'Regulation': "You both have the capacity to stay in the window when things get intense. This means conflict can happen without flooding — you can disagree and still think clearly. That's a superpower most couples are still building.",
+    'Regulation Score': "You both have the capacity to stay in the window when things get intense. This means conflict can happen without flooding — you can disagree and still think clearly.",
+    'Window Width': "Your windows of tolerance are both wide — you can hold emotional intensity without shutting down or blowing up. This gives your conversations room to go deep.",
+    'Accessibility': "You're both accessible — emotionally available and reachable. When one of you calls, the other answers. That responsiveness is the heartbeat of secure connection.",
+    'Responsiveness': "You both respond to emotional bids. When one of you reaches, the other turns toward. This is the most researched predictor of relationship success — and you both do it.",
+    'Engagement': "You're both engaged — present, invested, willing to show up. The relationship has energy because both of you are putting energy in.",
+    'Self-Leadership': "You both lead yourselves well — you can regulate, hold your ground, and take ownership of your part. This means repair is faster and blame is rarer.",
   };
   return narratives[strengthType] ?? `You share real strength in ${strengthType.toLowerCase()} — this is a resource the relationship has built together.`;
 }

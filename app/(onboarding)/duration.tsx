@@ -33,7 +33,7 @@ export default function DurationScreen() {
     setDuration(id);
     setTimeout(() => {
       router.push('/(onboarding)/mode-select' as any);
-    }, 200);
+    }, 500);
   };
 
   return (

@@ -227,9 +227,9 @@ function getOverallScore(cs: IndividualPortrait['compositeScores']): number {
 }
 
 function getTierInfo(value: number): { label: string; color: string } {
-  if (value >= 75) return { label: 'Strength', color: Colors.success };
-  if (value >= 55) return { label: 'Developing', color: Colors.calm };
-  if (value >= 35) return { label: 'Emerging', color: Colors.warning };
+  if (value >= 65) return { label: 'Strength', color: Colors.success };
+  if (value >= 45) return { label: 'Developing', color: Colors.calm };
+  if (value >= 28) return { label: 'Emerging', color: Colors.warning };
   return { label: 'Focus Area', color: Colors.error };
 }
 

@@ -374,27 +374,27 @@ export default function ReadyScreen() {
           </Text>
         </Animated.View>
 
-        {/* Audio indicator */}
-        {isPlaying && (
-          <Animated.View entering={FadeIn.duration(800)} style={styles.audioIndicator}>
-            <View style={styles.audioPulse} />
-            <Text style={styles.audioText}>Listening...</Text>
-          </Animated.View>
-        )}
+        {/* Audio indicator — always rendered to prevent layout bounce */}
+        <View style={[styles.audioIndicator, { opacity: isPlaying ? 1 : 0 }]}>
+          <View style={styles.audioPulse} />
+          <Text style={styles.audioText}>Listening...</Text>
+        </View>
       </View>
 
       {/* Skip — top right, subtle */}
-      <Animated.View entering={FadeIn.duration(1000).delay(3000)}>
-        <TouchableOpacity
-          style={styles.skipButton}
-          onPress={async () => { await stopAudio(); }}
-          activeOpacity={0.6}
-          accessibilityRole="button"
-          accessibilityLabel="Skip audio"
-        >
-          {isPlaying && <Text style={styles.skipText}>Skip</Text>}
-        </TouchableOpacity>
-      </Animated.View>
+      {isPlaying && (
+        <Animated.View entering={FadeIn.duration(1000)}>
+          <TouchableOpacity
+            style={styles.skipButton}
+            onPress={async () => { await stopAudio(); }}
+            activeOpacity={0.6}
+            accessibilityRole="button"
+            accessibilityLabel="Skip audio"
+          >
+            <Text style={styles.skipText}>Skip</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      )}
 
       {/* Bottom section */}
       <Animated.View entering={FadeIn.duration(1000).delay(2500)} style={styles.bottomSection}>
