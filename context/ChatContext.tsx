@@ -230,20 +230,30 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
     setSessionExpired(false);
 
     try {
-      // Get auth token — use cached session first (fast), only refresh on 401.
-      // Calling refreshSession() aggressively on every send can cause refresh
-      // token rotation issues where the second call invalidates the first.
+      // Get auth token — validate first, then fall back to cache + refresh.
       let token: string | undefined;
 
-      // Step 1: Try cached session (instant, no network call)
-      const { data: authData, error: sessionError } = await supabase.auth.getSession();
-      token = authData.session?.access_token;
+      // Step 1: Try getUser() — this validates the token server-side and
+      // triggers auto-refresh if the access token is expired but the
+      // refresh token is still valid. This is more reliable than getSession()
+      // which only returns the cached (potentially expired) token.
+      try {
+        const { data: userData, error: userError } = await supabase.auth.getUser();
+        if (!userError && userData.user) {
+          // getUser succeeded — the session is valid, grab the (possibly refreshed) token
+          const { data: sessionData } = await supabase.auth.getSession();
+          token = sessionData.session?.access_token;
+          if (__DEV__) console.log('[Chat] getUser+getSession succeeded, token length:', token?.length);
+        } else {
+          if (__DEV__) console.log('[Chat] getUser failed:', userError?.message);
+        }
+      } catch (e: any) {
+        if (__DEV__) console.log('[Chat] getUser threw:', e.message);
+      }
 
-      if (__DEV__) console.log('[Chat] getSession result:', !!authData.session, sessionError?.message || 'no error');
-
-      // Step 2: If no cached token, try refreshing
+      // Step 2: If getUser path didn't yield a token, try explicit refresh
       if (!token) {
-        if (__DEV__) console.log('[Chat] No cached token, trying refreshSession...');
+        if (__DEV__) console.log('[Chat] No token from getUser path, trying refreshSession...');
         const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
         token = refreshData.session?.access_token;
         if (__DEV__) console.log('[Chat] refreshSession result:', !!refreshData.session, refreshError?.message || 'no error');

@@ -80,14 +80,12 @@ serve(async (req: Request) => {
 
     const jwt = authHeader.replace('Bearer ', '');
 
-    // Create a user-context client to verify the token.
-    // Use the SERVICE ROLE KEY for verification — it has full access to validate any JWT.
-    // The ANON KEY format may vary across projects; service role is guaranteed to work.
-    const supabaseAuth = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!, {
-      global: { headers: { Authorization: `Bearer ${jwt}` } },
-    });
+    // Create a service-role client and pass the JWT directly to getUser().
+    // This is more reliable than setting the JWT via global headers, which
+    // can be ignored by some supabase-js versions or overridden internally.
+    const supabaseAuth = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-    const { data: { user: authUser }, error: authError } = await supabaseAuth.auth.getUser();
+    const { data: { user: authUser }, error: authError } = await supabaseAuth.auth.getUser(jwt);
     if (authError || !authUser) {
       const debugInfo = {
         authError: authError?.message || 'no user returned',
