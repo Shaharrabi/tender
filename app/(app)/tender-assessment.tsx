@@ -512,21 +512,26 @@ export default function TenderAssessmentScreen() {
     // Cancel any pending timer (e.g. user taps twice quickly)
     if (autoAdvanceTimer.current) clearTimeout(autoAdvanceTimer.current);
 
+    const nativeDriver = Platform.OS !== 'web';
+
     autoAdvanceTimer.current = setTimeout(() => {
-      // Fade out
+      // Fade out (visual only — don't gate advancement on animation callback)
       Animated.timing(questionOpacity, {
         toValue: 0,
         duration: 150,
-        useNativeDriver: true,
-      }).start(() => {
+        useNativeDriver: nativeDriver,
+      }).start();
+
+      // Advance after the fade-out duration, regardless of animation callback
+      setTimeout(() => {
         handleNext();
         // Fade in
         Animated.timing(questionOpacity, {
           toValue: 1,
           duration: 200,
-          useNativeDriver: true,
+          useNativeDriver: nativeDriver,
         }).start();
-      });
+      }, 160);
     }, 350);
   }, [isLastQuestionInSection, qIndex, totalCombined]);
 
