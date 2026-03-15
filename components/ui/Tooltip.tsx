@@ -89,13 +89,13 @@ export const Tooltip: React.FC<TooltipProps> = ({ config, onDismiss }) => {
         Animated.timing(fadeAnim, {
           toValue: 1,
           duration: FTUETiming.tooltipFadeIn,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== 'web',
         }),
         Animated.spring(scaleAnim, {
           toValue: 1,
           friction: 8,
           tension: 100,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== 'web',
         }),
       ]).start();
     }
@@ -106,12 +106,12 @@ export const Tooltip: React.FC<TooltipProps> = ({ config, onDismiss }) => {
       Animated.timing(fadeAnim, {
         toValue: 0,
         duration: FTUETiming.tooltipFadeOut,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }),
       Animated.timing(scaleAnim, {
         toValue: 0.95,
         duration: FTUETiming.tooltipFadeOut,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }),
     ]).start(() => {
       setVisible(false);

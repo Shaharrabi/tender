@@ -12,7 +12,7 @@
  *   const layout = await RefRegistry.measure('assessmentCta');
  */
 
-import { View } from 'react-native';
+import { Platform, View } from 'react-native';
 
 export interface TargetMeasurement {
   x: number;
@@ -39,11 +39,37 @@ class RefRegistryClass {
   /**
    * Measure a registered element's position on screen.
    * Returns null if the ref is not registered or measurement fails.
-   * Includes a timeout to prevent hanging if measureInWindow callback never fires (web).
+   *
+   * On web: uses getBoundingClientRect for reliable viewport-relative
+   * coordinates (measureInWindow returns stale/wrong values after scrolling).
+   * On native: uses measureInWindow with a timeout guard.
    */
   measure(key: string): Promise<TargetMeasurement | null> {
     const ref = this.refs.get(key);
     if (!ref) return Promise.resolve(null);
+
+    // Web: use getBoundingClientRect — always correct, even after scroll
+    if (Platform.OS === 'web') {
+      try {
+        const node = ref as any;
+        // React Native Web: ref IS the DOM node, or has _nativeTag/getNode()
+        const domNode: HTMLElement | null =
+          (typeof node.getBoundingClientRect === 'function') ? node :
+          node?._nativeTag ?? node?.getNode?.() ?? null;
+        if (domNode && typeof domNode.getBoundingClientRect === 'function') {
+          const rect = domNode.getBoundingClientRect();
+          if (rect.width === 0 && rect.height === 0) return Promise.resolve(null);
+          return Promise.resolve({
+            x: rect.left,
+            y: rect.top,
+            width: rect.width,
+            height: rect.height,
+          });
+        }
+      } catch {
+        // Fall through to measureInWindow
+      }
+    }
 
     const measurePromise = new Promise<TargetMeasurement | null>((resolve) => {
       try {
