@@ -118,7 +118,10 @@ export default function QuestionRenderer({
               accessibilityLabel={`${choice.text}, option ${choiceIndex + 1} of ${question.choices!.length}`}
               accessibilityState={{ selected: currentAnswer === choice.key }}
             >
-              <View style={styles.choiceKeyBadge}>
+              <View style={[
+                styles.choiceKeyBadge,
+                currentAnswer === choice.key && styles.choiceKeyBadgeSelected,
+              ]}>
                 <Text
                   style={[
                     styles.choiceKey,
@@ -278,16 +281,22 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: Colors.surface,
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: Colors.border,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  choiceKeyBadgeSelected: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
   },
   choiceKey: {
     fontSize: FontSizes.bodySmall,
     fontWeight: '700',
     color: Colors.textSecondary,
   },
-  choiceKeySelected: { color: Colors.primary },
+  choiceKeySelected: { color: Colors.white },
   choiceText: {
     flex: 1,
     fontSize: FontSizes.bodySmall,
