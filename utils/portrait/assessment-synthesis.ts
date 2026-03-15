@@ -82,95 +82,199 @@ export function generateIntegratedNarratives(scores: AllAssessmentScores): Integ
   const ecrAvoidance = ecrr.avoidanceScore ?? 4.0;
 
   // SSEIT: subscaleNormalized is 0-100; fall back to mean * 20 (1-5 scale → 0-100)
-  const sseitPerceptionRaw = sseit.subscaleNormalized?.['perception']
+  const sseitPerception = sseit.subscaleNormalized?.['perception']
     ?? (sseit.subscaleScores?.['perception']?.mean != null
       ? sseit.subscaleScores['perception'].mean * 20
       : 50);
-  const sseitPerception = sseitPerceptionRaw;
+  const sseitManagingOwn = sseit.subscaleNormalized?.['managingOwn']
+    ?? (sseit.subscaleScores?.['managingOwn']?.mean != null
+      ? sseit.subscaleScores['managingOwn'].mean * 20
+      : 50);
+  const sseitManagingOthers = sseit.subscaleNormalized?.['managingOthers']
+    ?? (sseit.subscaleScores?.['managingOthers']?.mean != null
+      ? sseit.subscaleScores['managingOthers'].mean * 20
+      : 50);
 
   // DUTCH: subscaleScores[key].mean is on 1-5 scale
-  const dutchYielding     = dutch.subscaleScores?.['yielding']?.mean ?? 3.0;
-  const dutchAvoiding     = dutch.subscaleScores?.['avoiding']?.mean ?? 3.0;
-  const dutchForcing      = dutch.subscaleScores?.['forcing']?.mean ?? 3.0;
+  const dutchYielding       = dutch.subscaleScores?.['yielding']?.mean ?? 3.0;
+  const dutchAvoiding       = dutch.subscaleScores?.['avoiding']?.mean ?? 3.0;
+  const dutchForcing        = dutch.subscaleScores?.['forcing']?.mean ?? 3.0;
+  const dutchProblemSolving = dutch.subscaleScores?.['problemSolving']?.mean ?? 3.0;
+  const dutchCompromising   = dutch.subscaleScores?.['compromising']?.mean ?? 3.0;
 
   // DSI-R: subscaleScores[key].normalized is 0-100
-  const dsirFusionWithOthers = dsir.subscaleScores?.['fusionWithOthers']?.normalized ?? 50;
-  const dsirIPosition        = dsir.subscaleScores?.['iPosition']?.normalized ?? 50;
-  const dsirEmotionalCutoff  = dsir.subscaleScores?.['emotionalCutoff']?.normalized ?? 50;
+  const dsirFusionWithOthers  = dsir.subscaleScores?.['fusionWithOthers']?.normalized ?? 50;
+  const dsirIPosition         = dsir.subscaleScores?.['iPosition']?.normalized ?? 50;
+  const dsirEmotionalCutoff   = dsir.subscaleScores?.['emotionalCutoff']?.normalized ?? 50;
+  const dsirEmotionalReactivity = dsir.subscaleScores?.['emotionalReactivity']?.normalized ?? 50;
 
   // IPIP: domainPercentiles is 0-100
-  const ipipNeuroticismScore    = ipip.domainPercentiles?.['neuroticism'] ?? 50;
-  const ipipAgreeablenessScore  = ipip.domainPercentiles?.['agreeableness'] ?? 50;
+  const ipipN = ipip.domainPercentiles?.['neuroticism'] ?? 50;
+  const ipipA = ipip.domainPercentiles?.['agreeableness'] ?? 50;
+  const ipipC = ipip.domainPercentiles?.['conscientiousness'] ?? 50;
+  const ipipO = ipip.domainPercentiles?.['openness'] ?? 50;
+  const ipipE = ipip.domainPercentiles?.['extraversion'] ?? 50;
 
   // Values: find gap for specific domains
-  const valuesHonestyGap  = values.domainScores?.['honesty']?.gap ?? 0;
-  const valuesIntimacyGap = values.domainScores?.['intimacy']?.gap ?? values.domainScores?.['connection']?.gap ?? 0;
+  const valuesHonestyGap    = values.domainScores?.['honesty']?.gap ?? 0;
+  const valuesIntimacyGap   = values.domainScores?.['intimacy']?.gap ?? values.domainScores?.['connection']?.gap ?? 0;
+  const valuesRespectGap    = values.domainScores?.['respect']?.gap ?? 0;
+  const valuesAutonomyGap   = values.domainScores?.['autonomy']?.gap ?? values.domainScores?.['independence']?.gap ?? 0;
 
-  // ── Attachment × EQ (ECR-R × SSEIT) ─────────────────
+  // Find the largest values gap for interpolation
+  const allGaps = Object.entries(values.domainScores ?? {})
+    .map(([k, v]: [string, any]) => ({ domain: k, gap: v?.gap ?? 0 }))
+    .sort((a, b) => b.gap - a.gap);
+  const biggestGap = allGaps[0] ?? { domain: 'connection', gap: 0 };
+
+  // ── Helper: human-readable score labels ───────────────
+  const anxietyLabel = ecrAnxiety > 5.0 ? 'very high' : ecrAnxiety > 4.0 ? 'elevated' : ecrAnxiety > 3.0 ? 'moderate' : 'low';
+  const avoidanceLabel = ecrAvoidance > 5.0 ? 'very high' : ecrAvoidance > 4.0 ? 'elevated' : ecrAvoidance > 3.0 ? 'moderate' : 'low';
+  const perceptionLabel = sseitPerception > 80 ? 'remarkably high' : sseitPerception > 65 ? 'strong' : sseitPerception > 45 ? 'moderate' : 'developing';
+
+  // ── PAIR 1: Attachment × EQ (ECR-R × SSEIT) ──────────
 
   if (ecrAnxiety > 4.0 && sseitPerception > 70) {
     narratives.push(
-      "You feel everything in the relational field — your emotional radar is remarkably sensitive. But that sensitivity feeds your anxiety rather than informing it. You're often right that something shifted, but the story your anxiety tells about WHY is usually the wound talking, not the current reality."
+      `You feel everything in the relational field — your emotional perception is ${perceptionLabel}, which means your radar picks up shifts others miss. But with attachment anxiety at ${ecrAnxiety.toFixed(1)}/7, that sensitivity feeds your alarm system rather than informing it. You're often right that something shifted, but the story your anxiety tells about WHY is usually the wound talking, not the current reality.`
+    );
+  } else if (ecrAnxiety > 4.0 && sseitPerception > 45 && sseitPerception <= 70) {
+    narratives.push(
+      `Your anxiety is tuned to connection — you notice distance quickly. Your emotional perception is ${perceptionLabel}, which means you sometimes catch the shift and sometimes miss it entirely. When you miss it, the anxiety fills in the blanks with worst-case stories. The work isn't sharper radar — it's learning to pause between sensing and storytelling.`
     );
   } else if (ecrAvoidance > 4.0 && sseitPerception < 40) {
     narratives.push(
-      "You create distance partly because the emotional field is overwhelming when you're close. It's not that you don't care — it's that caring feels like too much information coming in at once, with no way to process it."
+      `You create distance partly because the emotional field is overwhelming when you're close. With perception at ${Math.round(sseitPerception)}%, your system doesn't have a strong filter for emotional data — it's not that you don't care, it's that caring feels like too much information coming in at once, with no way to process it.`
+    );
+  } else if (ecrAvoidance > 4.0 && sseitPerception >= 40) {
+    narratives.push(
+      `Here's the tension: you can actually read the emotional field well (perception at ${Math.round(sseitPerception)}%), but your avoidance strategy (${avoidanceLabel}) means you often choose not to. You see what's there and step back from it — not from lack of skill, but from a learned belief that closeness costs too much.`
     );
   } else if (ecrAnxiety < 3.5 && ecrAvoidance < 3.5 && sseitPerception > 60) {
     narratives.push(
-      "Your emotional radar is strong AND you can hold what you sense without flooding. This is secure functioning — you notice, you interpret, you respond. Not perfectly, but with enough range to stay present."
+      `Your emotional radar is ${perceptionLabel} AND you can hold what you sense without flooding. This is secure functioning at work — you notice, you interpret, you respond. Not perfectly, but with enough range to stay present even when the emotional data is complex.`
+    );
+  } else if (ecrAnxiety < 3.5 && ecrAvoidance < 3.5 && sseitPerception <= 60) {
+    narratives.push(
+      `Your attachment foundation is secure — you don't get pulled into anxiety or avoidance easily. Your emotional perception is still developing (${Math.round(sseitPerception)}%), which means you may sometimes miss subtle shifts in the field between you. The good news: you have the relational stability to build that awareness without it destabilizing you.`
     );
   }
 
-  // ── Attachment × Conflict Style (ECR-R × DUTCH) ──────
+  // ── PAIR 2: Attachment × Conflict Style (ECR-R × DUTCH) ──
 
   if (ecrAnxiety > 4.0 && dutchYielding > 3.5) {
     narratives.push(
-      "You accommodate to maintain connection. Yielding feels safer than the risk of conflict pushing your partner away. Over time, this means your partner is in a relationship with someone who's editing themselves — and they don't even know it."
+      `You accommodate to maintain connection — your yielding score (${dutchYielding.toFixed(1)}/5) reflects a pattern of giving ground to avoid rupture. Over time, this means your partner is in a relationship with someone who's editing themselves. They may not even know it's happening.`
     );
   } else if (ecrAvoidance > 4.0 && dutchAvoiding > 3.5) {
     narratives.push(
-      "You avoid conflict AND you avoid closeness — a double withdrawal. Your partner may experience this as a wall. The wall isn't anger — it's protection. But protection from what? Usually from the vulnerability that real engagement requires."
+      `You avoid conflict AND you avoid closeness — a double withdrawal. With avoidance at ${ecrAvoidance.toFixed(1)}/7 and conflict avoidance at ${dutchAvoiding.toFixed(1)}/5, your partner may experience this as a wall. The wall isn't anger — it's protection. But protection from what? Usually from the vulnerability that real engagement requires.`
     );
   } else if (ecrAnxiety > 4.0 && dutchForcing > 3.5) {
     narratives.push(
-      "You pursue AND you push. When distance triggers your anxiety, you don't retreat — you escalate. Your partner feels pressured, which makes them pull back, which confirms your fear. It's a self-fulfilling cycle. The intensity of your care is real — but the delivery lands as demand."
+      `You pursue AND you push — forcing at ${dutchForcing.toFixed(1)}/5 combined with attachment anxiety at ${ecrAnxiety.toFixed(1)}/7. When distance triggers your alarm, you don't retreat — you escalate. Your partner feels pressured, pulls back, which confirms your fear. The intensity of your care is real — but the delivery lands as demand.`
+    );
+  } else if (ecrAvoidance > 4.0 && dutchYielding > 3.5) {
+    narratives.push(
+      `An unexpected combination: you pull away emotionally but yield when conflict arises. This means you don't engage deeply AND you don't fight for what you need — a quiet erosion. Your partner gets compliance without connection. The accommodation isn't peace; it's disengagement wearing the mask of agreeableness.`
+    );
+  } else if (ecrAnxiety < 3.5 && ecrAvoidance < 3.5 && dutchProblemSolving > 3.5) {
+    narratives.push(
+      `Your secure attachment base gives you the safety to approach conflict as a puzzle rather than a threat. With problem-solving at ${dutchProblemSolving.toFixed(1)}/5, you naturally look for solutions — which is a real strength, as long as you remember that sometimes your partner needs to feel heard before they need a fix.`
     );
   }
 
-  // ── EQ × Differentiation (SSEIT × DSI-R) ─────────────
+  // ── PAIR 3: EQ × Differentiation (SSEIT × DSI-R) ─────
 
   if (sseitPerception > 70 && dsirFusionWithOthers > 70) {
     narratives.push(
-      "You're a strong emotional reader, but you absorb everything. You can't always tell if the anxiety is yours, your partner's, or the relationship's. This leads to flooding — you sense the field clearly but merge with it instead of observing it."
+      `You're a strong emotional reader (perception: ${Math.round(sseitPerception)}%), but you absorb everything — your fusion score is ${Math.round(dsirFusionWithOthers)}%. You can't always tell if the anxiety is yours, your partner's, or the relationship's. You sense the field clearly but merge with it instead of observing it.`
     );
   } else if (sseitPerception > 70 && dsirIPosition > 70) {
     narratives.push(
-      "You sense the field AND you can hold your own ground within it. This is a powerful combination — you're attuned without being consumed. Your challenge is patience: you may see things your partner isn't ready to see yet."
+      `You sense the field clearly AND you can hold your own ground within it — I-position at ${Math.round(dsirIPosition)}%. This is a powerful combination: you're attuned without being consumed. Your challenge is patience — you may see things your partner isn't ready to see yet.`
+    );
+  } else if (sseitPerception < 45 && dsirFusionWithOthers > 65) {
+    narratives.push(
+      `Your emotional perception is still developing, but your boundaries are already porous — fusion at ${Math.round(dsirFusionWithOthers)}%. This means you absorb your partner's emotional state without always realizing it. You may feel overwhelmed without knowing why, because the signal is getting in but your system can't label it clearly.`
+    );
+  } else if (sseitPerception > 55 && dsirEmotionalCutoff > 70) {
+    narratives.push(
+      `You can read emotions well, but your system's response is to cut off rather than engage — emotional cutoff at ${Math.round(dsirEmotionalCutoff)}%. You perceive the field, then build a wall between you and it. This protects you from overwhelm but leaves your partner feeling shut out at exactly the moment they need you most.`
     );
   }
 
-  // ── Values × Conflict Style (Values × DUTCH) ─────────
+  // ── PAIR 4: Values × Conflict Style (Values × DUTCH) ──
 
   if (valuesHonestyGap > 2.0 && dutchAvoiding > 3.5) {
     narratives.push(
-      "You value honesty deeply but your default in conflict is avoidance. This creates a specific kind of suffering: you know what's true, but you can't bring yourself to say it when it matters. The gap between your values and your behavior is where the growth edge lives."
+      `You value honesty deeply but your default in conflict is avoidance (${dutchAvoiding.toFixed(1)}/5). This creates a specific kind of suffering: you know what's true, but you can't bring yourself to say it when it matters. That gap of ${valuesHonestyGap.toFixed(1)} points between how much honesty matters and how much you practice it — that's where the growth edge lives.`
     );
   } else if (valuesIntimacyGap > 2.0 && dutchYielding > 3.5) {
     narratives.push(
-      "You crave deep intimacy but you yield to keep the peace. The problem: yielding creates surface harmony at the cost of the depth you actually want. Every time you accommodate instead of expressing what's real, you move further from the intimacy you're seeking."
+      `You crave deep intimacy (gap: ${valuesIntimacyGap.toFixed(1)} points between desire and reality) but you yield to keep the peace. Yielding creates surface harmony at the cost of the depth you actually want. Every time you accommodate instead of expressing what's real, you move further from the intimacy you're seeking.`
+    );
+  } else if (valuesRespectGap > 2.0 && dutchForcing > 3.5) {
+    narratives.push(
+      `You value respect — but your dominant conflict mode is forcing (${dutchForcing.toFixed(1)}/5). When you push hard in disagreements, your partner may not feel the respect you genuinely hold. The gap isn't in your values — it's in the delivery. You care about respect and you fight hard; the work is making those two things feel congruent to the person across from you.`
+    );
+  } else if (biggestGap.gap > 2.5) {
+    narratives.push(
+      `Your biggest values gap is in ${biggestGap.domain} — a ${biggestGap.gap.toFixed(1)}-point spread between how much it matters to you and how consistently you live it. That gap creates a low-level tension that shows up in moments when you feel like the relationship isn't reflecting what you actually care about most.`
     );
   }
 
-  // ── Personality × Attachment (IPIP × ECR-R) ──────────
+  // ── PAIR 5: Personality × Attachment (IPIP × ECR-R) ───
 
-  if (ipipNeuroticismScore > 70 && ecrAnxiety > 4.0) {
+  if (ipipN > 70 && ecrAnxiety > 4.0) {
     narratives.push(
-      "Your nervous system is set to high sensitivity — it reads emotional cues quickly and intensely. In this relationship, that means you rarely miss a signal. The challenge is that your system also generates false alarms, and it's hard to tell the difference between 'something is wrong' and 'my nervous system is doing what it always does.'"
+      `Your nervous system runs hot — neuroticism at the ${Math.round(ipipN)}th percentile means emotional signals arrive fast and loud. Combined with attachment anxiety at ${ecrAnxiety.toFixed(1)}/7, you rarely miss a signal. The challenge: your system also generates false alarms, and it's hard to tell 'something is wrong' from 'my system is doing what it always does.'`
     );
-  } else if (ipipAgreeablenessScore > 70 && dsirFusionWithOthers > 70) {
+  } else if (ipipA > 70 && dsirFusionWithOthers > 70) {
     narratives.push(
-      "You're warm, accommodating, and deeply attuned to others' needs. The risk: you've learned to locate yourself through your partner rather than alongside them. Your kindness is real — but it can become a way of disappearing."
+      `You're warm, accommodating (agreeableness: ${Math.round(ipipA)}th percentile), and deeply attuned to others' needs. With fusion at ${Math.round(dsirFusionWithOthers)}%, you've learned to locate yourself through your partner rather than alongside them. Your kindness is real — but it can become a way of disappearing.`
+    );
+  } else if (ipipC > 70 && ipipN > 65) {
+    narratives.push(
+      `You're highly conscientious (${Math.round(ipipC)}th percentile) AND emotionally reactive (neuroticism: ${Math.round(ipipN)}th percentile). This means you hold yourself to exacting standards while your emotional landscape is intense. You likely feel like you should be able to manage your feelings better — and that self-judgment becomes its own source of distress.`
+    );
+  } else if (ipipO < 35 && ecrAvoidance > 4.0) {
+    narratives.push(
+      `Low openness (${Math.round(ipipO)}th percentile) combined with avoidant attachment reinforces a preference for the known over the vulnerable. New emotional territory feels unnecessary, not just uncomfortable. Your partner's invitations to go deeper may feel like disruption rather than growth — not because you're unwilling, but because your system genuinely doesn't see the value yet.`
+    );
+  } else if (ipipE < 35 && ecrAnxiety > 4.0) {
+    narratives.push(
+      `You're introverted (extraversion: ${Math.round(ipipE)}th percentile) but anxiously attached — you need connection deeply but find the social energy to pursue it exhausting. This creates a push-pull: you want closeness, but the effort to seek it depletes you, which reads as withdrawal to your partner even though it's not.`
+    );
+  }
+
+  // ── TRIPLE-INSTRUMENT NARRATIVES (3 assessments woven) ──
+
+  // Anxiety + High EQ + Low Differentiation → the empathic merger
+  if (ecrAnxiety > 4.0 && sseitPerception > 65 && dsirFusionWithOthers > 65) {
+    narratives.push(
+      `Three patterns converge here: your anxiety draws you toward connection, your emotional intelligence lets you read the field with precision, and your low differentiation means you absorb what you sense. The result is a specific kind of relational overwhelm — you feel everything, interpret it accurately, and then lose yourself in it. You don't need less sensitivity. You need a container for it.`
+    );
+  }
+
+  // Avoidant + High Conscientiousness + Problem-solving → the functional avoider
+  if (ecrAvoidance > 4.0 && ipipC > 65 && dutchProblemSolving > 3.5) {
+    narratives.push(
+      `You've built a functional system: high conscientiousness keeps everything running, problem-solving handles conflicts efficiently, and avoidance keeps the emotional temperature low. It works — until it doesn't. What's missing isn't competence; it's access. Your partner gets your reliability, your solutions, your steadiness — but not your heart. That's the locked room in an otherwise well-organized house.`
+    );
+  }
+
+  // High N + Forcing + Low I-Position → the reactive escalator
+  if (ipipN > 65 && dutchForcing > 3.5 && dsirIPosition < 40) {
+    narratives.push(
+      `Your emotional reactivity is high, your conflict style is confrontational, and your sense of self in relationships is still forming. This means disagreements quickly become identity threats — you fight not just about the issue but about who you are. The escalation isn't really about winning; it's about not disappearing.`
+    );
+  }
+
+  // Secure + High EQ + High Differentiation → the integrated partner
+  if (ecrAnxiety < 3.5 && ecrAvoidance < 3.5 && sseitPerception > 60 && dsirIPosition > 60) {
+    narratives.push(
+      `Secure attachment, strong perception, and solid differentiation — you have the relational trifecta. You sense the field, hold your ground, and stay open. This doesn't mean conflict is easy, but it means you have the internal architecture to handle it without losing yourself or your partner. Your growth edge isn't building capacity — it's going deeper.`
     );
   }
 
@@ -182,23 +286,40 @@ export function generateIntegratedNarratives(scores: AllAssessmentScores): Integ
   const isAnxious    = ecrAnxiety > 4.0;
   const isAvoidant   = ecrAvoidance > 4.0;
   const isHighEQ     = sseitPerception > 60;
+  const isLowEQ      = sseitPerception < 45;
   const isYielding   = dutchYielding > 3.5;
   const isForcing    = dutchForcing > 3.5;
   const isAvoiding   = dutchAvoiding > 3.5;
   const isLowDiff    = dsirFusionWithOthers > 65;
   const isHighDiff   = dsirIPosition > 65;
-  const isHighN      = ipipNeuroticismScore > 70;
+  const isHighCutoff = dsirEmotionalCutoff > 65;
+  const isHighN      = ipipN > 70;
+  const isHighA      = ipipA > 70;
 
   let oneThingSentence: string;
 
   if (isAnxious && isHighEQ && isYielding && isLowDiff) {
     oneThingSentence = "Your one invitation: let what you feel become information, not instruction.";
-  } else if (isAvoidant && !isHighEQ && isAvoiding && isHighDiff) {
+  } else if (isAvoidant && isLowEQ && isAvoiding && isHighDiff) {
     oneThingSentence = "Your one invitation: risk being known. The wall keeps you safe AND alone.";
-  } else if (!isAnxious && !isAvoidant && isHighEQ && !isAvoiding && isHighDiff) {
+  } else if (isAvoidant && isHighEQ && isAvoiding) {
+    oneThingSentence = "Your one invitation: you already see what's there — now stay with it instead of stepping back.";
+  } else if (!isAnxious && !isAvoidant && isHighEQ && isHighDiff) {
     oneThingSentence = "Your one invitation: go from good to profound. You have the foundation — now go deeper.";
   } else if (isAnxious && isHighN && isForcing) {
     oneThingSentence = "Your one invitation: soften the approach without softening the truth.";
+  } else if (isAnxious && isForcing && isLowDiff) {
+    oneThingSentence = "Your one invitation: the connection you're fighting for requires the vulnerability you're fighting against.";
+  } else if (isAvoidant && isHighCutoff && isYielding) {
+    oneThingSentence = "Your one invitation: compliance isn't connection. Say what's actually true, even if your voice shakes.";
+  } else if (isAnxious && isYielding && !isHighEQ) {
+    oneThingSentence = "Your one invitation: before you say yes, check if it's love or fear doing the talking.";
+  } else if (isHighA && isLowDiff) {
+    oneThingSentence = "Your one invitation: kindness that costs you yourself isn't kindness — it's sacrifice. Find the difference.";
+  } else if (isAvoidant && !isAvoiding && isForcing) {
+    oneThingSentence = "Your one invitation: you fight to keep control, not connection. What happens if you let someone in without conditions?";
+  } else if (biggestGap.gap > 3.0) {
+    oneThingSentence = `Your one invitation: close the gap in ${biggestGap.domain}. You already know what matters — now live it.`;
   } else {
     oneThingSentence = "Your one invitation: stay present with what's alive between you — even when it's uncomfortable.";
   }
