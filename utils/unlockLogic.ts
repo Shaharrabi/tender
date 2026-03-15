@@ -302,7 +302,7 @@ export function getUnlockState(
     valuesProfile: completed.has('values'),
 
     // Composite
-    fullPortrait: hasPortrait || completedCount >= 6,
+    fullPortrait: hasPortrait || completedCount >= 7,
     couplesPortal: completedCount >= 4,
     aiCoach: completedCount >= 1,
     practices: true,
@@ -316,8 +316,8 @@ export function getUnlockState(
 
     // Counts
     completedCount,
-    totalRequired: 6,
-    progressPercent: Math.round((completedCount / 6) * 100),
+    totalRequired: 7,
+    progressPercent: Math.round((completedCount / 7) * 100),
   };
 }
 
@@ -325,7 +325,7 @@ export function getUnlockState(
  * Get the next recommended assessment to take.
  */
 export function getNextAssessment(completedAssessments: AssessmentType[]): AssessmentType | null {
-  const order: AssessmentType[] = ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'values', 'ipip-neo-120'];
+  const order: AssessmentType[] = ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'values', 'ipip-neo-120', 'relational-field'];
   const completed = new Set(completedAssessments);
   return order.find((t) => !completed.has(t)) ?? null;
 }

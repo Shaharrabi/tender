@@ -467,7 +467,7 @@ export default function HomeScreen() {
         loadedPortrait = await getPortrait(user.id);
 
         // Auto-regenerate portrait if assessments have been updated OR code version is newer
-        if (loadedPortrait && completedAssessmentTypes.length >= 6) {
+        if (loadedPortrait && completedAssessmentTypes.length >= 7) {
           const latestScoresMap = await fetchAllScores(user.id);
           const currentIds = new Set(Object.values(latestScoresMap).map((r) => r.id));
           const portraitIds = new Set(loadedPortrait.assessmentIds || []);
@@ -502,7 +502,7 @@ export default function HomeScreen() {
         }
 
         // Auto-generate portrait if all assessments complete but no portrait yet
-        if (!loadedPortrait && completedAssessmentTypes.length >= 6) {
+        if (!loadedPortrait && completedAssessmentTypes.length >= 7) {
           let step = 'init';
           let localError = '';
           try {
@@ -511,7 +511,7 @@ export default function HomeScreen() {
             const fetchedTypes = Object.keys(latestScoresMap);
 
             step = 'checkRequired';
-            const required = ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'ipip-neo-120', 'values'];
+            const required = ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'ipip-neo-120', 'values', 'relational-field'];
             const missing = required.filter((t) => !latestScoresMap[t]);
             if (missing.length > 0) {
               localError = `MISSING: ${missing.join(',')}, fetched: ${fetchedTypes.join(',')}`;
@@ -632,7 +632,7 @@ export default function HomeScreen() {
       setUnlockState(unlock);
 
       // Schedule assessment reminder (native only) if assessments are incomplete
-      if (Platform.OS !== 'web' && unlock.completedCount < 6) {
+      if (Platform.OS !== 'web' && unlock.completedCount < 7) {
         try {
           const ASSESSMENT_NAMES: Record<string, string> = {
             'ecr-r': 'How You Connect',
@@ -1230,8 +1230,8 @@ export default function HomeScreen() {
             </Text>
           </TouchableOpacity>
         )}
-        {/* ═══ CONSENT BANNER (all 6 assessments done, no consent yet) ═══ */}
-        {completedCount >= 6 && !consentGiven && (
+        {/* ═══ CONSENT BANNER (all 7 assessments done, no consent yet) ═══ */}
+        {completedCount >= 7 && !consentGiven && (
           <TouchableOpacity
             style={styles.consentBanner}
             onPress={() => router.push('/(app)/consent-waiver' as any)}
