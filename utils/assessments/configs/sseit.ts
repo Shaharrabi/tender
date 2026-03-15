@@ -63,7 +63,7 @@ function scoreSSEIT(responses: (number | string | string[] | null)[]): SSEITScor
       mean: Math.round((sum / itemCount) * 100) / 100,
       itemCount,
     };
-    subscaleNormalized[scale] = Math.round((sum / (5 * itemCount)) * 100);
+    subscaleNormalized[scale] = Math.round(((sum - itemCount) / (4 * itemCount)) * 100);
   }
 
   const totalSum = scored.reduce((s, r) => s + r, 0);
@@ -71,7 +71,7 @@ function scoreSSEIT(responses: (number | string | string[] | null)[]): SSEITScor
   return {
     totalScore: totalSum,
     totalMean: Math.round((totalSum / 16) * 100) / 100,
-    totalNormalized: Math.round((totalSum / (5 * 16)) * 100),
+    totalNormalized: Math.round(((totalSum - 16) / (4 * 16)) * 100),
     subscaleScores,
     subscaleNormalized,
   };

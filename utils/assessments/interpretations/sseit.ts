@@ -8,7 +8,7 @@ export interface SSEITLevelInfo {
 }
 
 export function getSSEITLevel(normalized: number): SSEITLevelInfo {
-  if (normalized >= 91) {
+  if (normalized >= 89) {
     return {
       level: 'High',
       warmLabel: 'Deep Attunement',
@@ -22,7 +22,7 @@ export function getSSEITLevel(normalized: number): SSEITLevelInfo {
         'When you sense a shift in the relational field, where does that information arrive first in your body? That location is your attunement center. Learn to trust it.',
     };
   }
-  if (normalized >= 76) {
+  if (normalized >= 70) {
     return {
       level: 'Above Average',
       warmLabel: 'Growing Sensitivity',
@@ -36,7 +36,7 @@ export function getSSEITLevel(normalized: number): SSEITLevelInfo {
         'Notice the difference between calm attunement and stressed attunement. Where does your emotional reading happen when things are easy? Where does it go when things get hard?',
     };
   }
-  if (normalized >= 61) {
+  if (normalized >= 51) {
     return {
       level: 'Average',
       warmLabel: 'Finding Your Frequency',
@@ -50,7 +50,7 @@ export function getSSEITLevel(normalized: number): SSEITLevelInfo {
         'Start with the basics: before your next conversation with your partner, take three breaths and ask yourself, "What am I feeling right now?" That simple question is the beginning of everything.',
     };
   }
-  if (normalized >= 41) {
+  if (normalized >= 26) {
     return {
       level: 'Below Average',
       warmLabel: 'Awakening Awareness',

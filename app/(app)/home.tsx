@@ -511,7 +511,7 @@ export default function HomeScreen() {
             const fetchedTypes = Object.keys(latestScoresMap);
 
             step = 'checkRequired';
-            const required = ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'ipip-neo-120', 'values', 'relational-field'];
+            const required = ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'ipip-neo-120', 'values'];
             const missing = required.filter((t) => !latestScoresMap[t]);
             if (missing.length > 0) {
               localError = `MISSING: ${missing.join(',')}, fetched: ${fetchedTypes.join(',')}`;

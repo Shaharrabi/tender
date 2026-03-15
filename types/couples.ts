@@ -79,15 +79,15 @@ export interface DCIScores {
   totalPositive: number;
   stressCommunicationBySelf: number;    // 4-20
   stressCommunicationByPartner: number; // 4-20
-  supportiveBySelf: number;             // 5-25
-  supportiveByPartner: number;          // 5-25
-  delegatedBySelf: number;              // 2-10
-  delegatedByPartner: number;           // 2-10
-  negativeBySelf: number;               // 4-20
-  negativeByPartner: number;            // 4-20
+  supportiveBySelf: number;             // 4-20
+  supportiveByPartner: number;          // 4-20
+  delegatedBySelf: number;              // 1-5
+  delegatedByPartner: number;           // 1-5
+  negativeBySelf: number;               // 6-30
+  negativeByPartner: number;            // 6-30
   commonCoping: number;                 // 5-25
-  evaluationBySelf: number;             // 2-10
-  evaluationByPartner: number;          // 2-10
+  evaluationBySelf: number;             // 1-5
+  evaluationByPartner: number;          // 1-5
   copingQuality: 'strong' | 'adequate' | 'weak';
 }
 
