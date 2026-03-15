@@ -80,20 +80,57 @@ serve(async (req: Request) => {
 
     const jwt = authHeader.replace('Bearer ', '');
 
-    // Create a service-role client and pass the JWT directly to getUser().
-    // This is more reliable than setting the JWT via global headers, which
-    // can be ignored by some supabase-js versions or overridden internally.
-    const supabaseAuth = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+    // ── Strategy: try multiple auth approaches in order ──
+    // Some supabase-js@2 versions have bugs with getUser(jwt) on service-role
+    // clients. We try the officially documented pattern first, then fallbacks.
+    const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
 
-    const { data: { user: authUser }, error: authError } = await supabaseAuth.auth.getUser(jwt);
-    if (authError || !authUser) {
+    let authUser: any = null;
+    let authError: any = null;
+
+    // Approach 1 (Supabase docs recommended): ANON key client + JWT in global headers
+    try {
+      const client1 = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY ?? SUPABASE_SERVICE_ROLE_KEY!, {
+        global: { headers: { Authorization: `Bearer ${jwt}` } },
+      });
+      const { data, error } = await client1.auth.getUser();
+      if (!error && data?.user) {
+        authUser = data.user;
+      } else {
+        authError = error;
+        console.warn('[chat] Auth approach 1 failed:', error?.message);
+      }
+    } catch (e) {
+      console.warn('[chat] Auth approach 1 threw:', e.message);
+    }
+
+    // Approach 2 (fallback): Service-role client + getUser(jwt)
+    if (!authUser && SUPABASE_SERVICE_ROLE_KEY) {
+      try {
+        const client2 = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY);
+        const { data, error } = await client2.auth.getUser(jwt);
+        if (!error && data?.user) {
+          authUser = data.user;
+          authError = null;
+        } else {
+          authError = error;
+          console.warn('[chat] Auth approach 2 failed:', error?.message);
+        }
+      } catch (e) {
+        console.warn('[chat] Auth approach 2 threw:', e.message);
+      }
+    }
+
+    if (!authUser) {
       const debugInfo = {
-        authError: authError?.message || 'no user returned',
+        authError: authError?.message || 'no user returned from any approach',
         hasUrl: !!SUPABASE_URL,
+        hasAnonKey: !!SUPABASE_ANON_KEY,
         hasServiceKey: !!SUPABASE_SERVICE_ROLE_KEY,
+        jwtLength: jwt.length,
         jwtPrefix: jwt.substring(0, 20) + '...',
       };
-      console.error('[chat] Auth failed:', JSON.stringify(debugInfo));
+      console.error('[chat] Auth failed (all approaches):', JSON.stringify(debugInfo));
       return new Response(
         JSON.stringify({
           error: 'Invalid or expired session. Please sign in again.',
