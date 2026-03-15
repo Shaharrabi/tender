@@ -463,6 +463,11 @@ export function generateCoupleOneThingSentence(p1Style: AttachmentCategory, p2St
     case 'secure×anxious':
     case 'anxious×secure':
       return "Your one invitation: the secure partner models stillness without withdrawing. The anxious partner practices trusting what's actually there.";
+    case 'secure×avoidant':
+    case 'avoidant×secure':
+      return "Your one invitation: the secure partner keeps the door open without forcing it. The avoidant partner practices walking through it, one small step at a time.";
+    case 'secure×secure':
+      return "Your one invitation: go deeper. You have the safety — now use it to say the things you've never said out loud, even to yourselves.";
     default:
       return "Your one invitation: say the thing that's hardest to say. That's where the growth is.";
   }
@@ -487,6 +492,7 @@ export function generateConflictInteraction(
   const pair = `${p1Dutch}×${p2Dutch}`;
 
   switch (pair) {
+    // ─── Original pairings ────────────────────────────────
     case 'forcing×avoiding':
     case 'avoiding×forcing':
       return {
@@ -519,6 +525,77 @@ export function generateConflictInteraction(
         narrative: "You both instinctively look for middle ground. This is efficient and respectful — but watch for chronic 'good enough.' Sometimes the relationship needs one of you to say 'this matters too much to split the difference.'",
         practice: "Once a month, pick one issue where you DON'T compromise — where one person fully wins and the other fully supports.",
       };
+
+    // ─── Expanded pairings (covers all 25 DUTCH combinations) ──
+    case 'problemSolving×problemSolving':
+      return {
+        type: 'Dual Problem-Solvers',
+        narrative: "You both go straight to fixing mode when conflict arises. Issues get addressed quickly — but sometimes feelings get skipped. The problem gets solved, but one of you walks away feeling unseen.",
+        practice: "Before jumping to solutions, take 3 minutes to name the feeling underneath the problem. 'I feel...' before 'We should...'",
+      };
+    case 'yielding×yielding':
+      return {
+        type: 'Mutual Accommodation',
+        narrative: "You both tend to give in to keep the peace. On the surface this looks harmonious, but underneath, resentment can quietly build when neither partner ever fully gets what they need.",
+        practice: "Take turns practicing the sentence: 'What I actually want is...' Not as a demand — as an honest offering. Your relationship can hold more honesty than you think.",
+      };
+    case 'forcing×compromising':
+    case 'compromising×forcing':
+      return {
+        type: 'Push-Negotiate',
+        narrative: "One of you comes in strong, the other tries to find middle ground. The compromiser softens the forceful partner's edges. The risk is that compromise becomes a way to manage intensity rather than a genuine meeting.",
+        practice: "The forceful partner practices opening with curiosity instead of a position. The compromiser practices saying what they really want before offering the middle ground.",
+      };
+    case 'forcing×yielding':
+    case 'yielding×forcing':
+      return {
+        type: 'Assert-Accommodate',
+        narrative: "One of you asserts strongly, the other accommodates. This can feel efficient, but over time the yielding partner's voice gets quieter. The relationship risks losing access to half its wisdom.",
+        practice: "The assertive partner practices asking 'What would you choose?' and genuinely waiting. The yielding partner practices the phrase 'Actually, I see it differently.'",
+      };
+    case 'forcing×problemSolving':
+    case 'problemSolving×forcing':
+      return {
+        type: 'Intensity Meets Strategy',
+        narrative: "One of you brings fire, the other brings logic. Under pressure, the forceful partner escalates while the problem-solver tries to stay rational. When it works, you combine passion and pragmatism. When it doesn't, one feels dismissed and the other feels attacked.",
+        practice: "Name the mode you're in: 'I'm in my feelings right now' or 'I'm in solving mode.' Then ask: 'What mode do you need me in?'",
+      };
+    case 'avoiding×compromising':
+    case 'compromising×avoiding':
+      return {
+        type: 'Sidestep-Negotiate',
+        narrative: "One of you avoids the hard conversations, the other tries to broker deals. The compromiser can end up negotiating with silence, proposing solutions to problems the other won't name.",
+        practice: "The avoider practices naming one small thing that's been on their mind. The compromiser practices sitting with the discomfort of not having a plan yet.",
+      };
+    case 'avoiding×yielding':
+    case 'yielding×avoiding':
+      return {
+        type: 'Quiet Standoff',
+        narrative: "One avoids, the other gives in. Conflicts seem to disappear — but they don't. They go underground. The relationship feels calm, but the calm can mask unspoken needs on both sides.",
+        practice: "Try a 'clearing' ritual: once a week, each of you shares one thing that's been unsaid. No solving. Just naming.",
+      };
+    case 'avoiding×problemSolving':
+    case 'problemSolving×avoiding':
+      return {
+        type: 'Fix-Flee Pattern',
+        narrative: "One of you moves toward solutions while the other moves away from the problem entirely. The solver feels stonewalled; the avoider feels pressured. Both are managing the same anxiety differently.",
+        practice: "The problem-solver offers a time: 'Can we talk about this for 10 minutes tonight?' The avoider agrees to show up — not to solve, just to be present.",
+      };
+    case 'compromising×yielding':
+    case 'yielding×compromising':
+      return {
+        type: 'Gentle Negotiation',
+        narrative: "One of you seeks fair middle ground while the other tends to go along. This feels harmonious, but the compromiser may unknowingly set all the terms while the yielder quietly agrees to things they don't fully want.",
+        practice: "The compromiser practices checking: 'Is this genuinely okay with you, or are you just going along?' The yielder practices pausing before saying yes.",
+      };
+    case 'problemSolving×compromising':
+    case 'compromising×problemSolving':
+      return {
+        type: 'Strategic Collaboration',
+        narrative: "One of you drives toward the best solution while the other looks for the fairest deal. Together you cover both quality and equity — a powerful combination when both feel heard.",
+        practice: "Check whose lens is leading: 'Are we solving for the best answer or the fairest one?' Sometimes you need one, sometimes the other.",
+      };
+
     default:
       return {
         type: 'Mixed Strategies',

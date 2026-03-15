@@ -44,7 +44,7 @@ const STEPS: Step[] = [
   {
     emoji: '🧬',
     title: 'Start with Your Assessment',
-    body: "Six short assessments map how you attach, feel, fight, and connect. About 30 minutes total — and they unlock your personal portrait. Everything else builds from there.",
+    body: "Seven short assessments map how you attach, feel, fight, and connect. About 45 minutes total — and they unlock your personal portrait. Everything else builds from there.",
   },
   {
     emoji: '💑',

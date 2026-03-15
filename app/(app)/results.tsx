@@ -13,6 +13,7 @@ import RDASResults from '@/components/results/RDASResults';
 import CSI16Results from '@/components/results/CSI16Results';
 import DCIResults from '@/components/results/DCIResults';
 import RFASResults from '@/components/results/RFASResults';
+import CoupleFieldResults from '@/components/results/CoupleFieldResults';
 
 export default function ResultsScreen() {
   const router = useRouter();
@@ -62,6 +63,8 @@ export default function ResultsScreen() {
       return <DCIResults scores={scores} />;
     case 'relational-field':
       return <RFASResults scores={scores} />;
+    case 'couple-field':
+      return <CoupleFieldResults scores={scores} />;
     default:
       return (
         <SafeAreaView style={styles.container}>

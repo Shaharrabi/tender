@@ -37,6 +37,7 @@ import {
 } from '@/services/couples';
 import { getDyadicAssessments } from '@/utils/assessments/registry';
 import { getGatedDyadicTypes } from '@/utils/unlockLogic';
+import { getPortrait } from '@/services/portrait';
 import {
   Colors,
   Spacing,
@@ -72,6 +73,7 @@ export default function PartnerScreen() {
   const [processing, setProcessing] = useState(false);
   const [displayName, setDisplayName] = useState('');
   const [showNameInput, setShowNameInput] = useState(false);
+  const [bothHavePortraits, setBothHavePortraits] = useState(false);
 
   const handleBack = () => {
     if (router.canGoBack()) {
@@ -110,6 +112,16 @@ export default function PartnerScreen() {
         setPartnerProfile(partner);
         const status = await checkDyadicCompletion(existingCouple.id, user.id);
         setDyadicStatus(status);
+
+        // Check if both partners have individual portraits (required for couple portal)
+        const partnerId = existingCouple.partner_a_id === user.id
+          ? existingCouple.partner_b_id
+          : existingCouple.partner_a_id;
+        const [myPortrait, partnerPortrait] = await Promise.all([
+          getPortrait(user.id),
+          getPortrait(partnerId),
+        ]);
+        setBothHavePortraits(!!(myPortrait && partnerPortrait));
       } else {
         // Load existing invites
         console.log('[Partner] Loading invites...');
@@ -389,7 +401,7 @@ export default function PartnerScreen() {
           })}
 
           {/* Couple Portal Entry */}
-          {dyadicStatus.allDone ? (
+          {dyadicStatus.allDone && bothHavePortraits ? (
             <View>
               <View style={styles.celebrationBanner}>
                 <SparkleIcon size={16} color={Colors.secondary} />
@@ -412,6 +424,15 @@ export default function PartnerScreen() {
                 </Text>
                 <Text style={styles.portalCta}>Enter Portal {'\u2192'}</Text>
               </TouchableOpacity>
+            </View>
+          ) : dyadicStatus.allDone && !bothHavePortraits ? (
+            <View style={[styles.card, styles.portalLocked]}>
+              <Text style={styles.portalLockedTitle}>Couple Portal</Text>
+              <Text style={styles.portalLockedDesc}>
+                Great work on the relationship assessments! Both partners still need
+                to complete their individual assessments and generate their personal
+                portrait before the couple portal can open.
+              </Text>
             </View>
           ) : (
             <View style={[styles.card, styles.portalLocked]}>
