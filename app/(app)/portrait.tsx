@@ -31,6 +31,7 @@ import { WelcomeAudio } from '@/components/ftue/WelcomeAudio';
 import QuickLinksBar from '@/components/QuickLinksBar';
 import { useScrollHideBar } from '@/hooks/useScrollHideBar';
 import ReAnimated from 'react-native-reanimated';
+import Svg, { Path, Circle as SvgCircle, Line as SvgLine, G, Defs, LinearGradient as SvgGradient, Stop as SvgStop, Ellipse, Text as SvgText } from 'react-native-svg';
 import { getPortrait, savePortrait, extractSupplementScores, fetchPreviousScores, getPortraitHistory, type PortraitHistoryEntry } from '@/services/portrait';
 import { fetchGrowthBoostData } from '@/services/growth-boost';
 import { getGrowthBoostedScore, calculatePerScoreBoosts, type GrowthBoostedResult } from '@/utils/portrait/growth-boost';
@@ -1793,92 +1794,125 @@ function CycleDiagramInfographic({
 }: {
   negativeCycle: IndividualPortrait['negativeCycle'];
 }) {
-  const rotateAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const pulseAnim = useRef(new Animated.Value(0.3)).current;
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
-      Animated.loop(
-        Animated.timing(rotateAnim, {
-          toValue: 1,
-          duration: 8000,
-          useNativeDriver: true,
-        })
-      ),
-    ]).start();
+    Animated.timing(fadeAnim, { toValue: 1, duration: 800, useNativeDriver: true }).start();
+    // Gentle pulse on the connection field
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 0.6, duration: 3000, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 0.3, duration: 3000, useNativeDriver: true }),
+      ])
+    ).start();
   }, []);
 
   const isPursuer = negativeCycle.position === 'pursuer';
 
-  const spin = rotateAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
+  // Soft Tender palette for cycle
+  const youColor = '#D4909A';       // dusty rose (like anxious illustration body)
+  const partnerColor = '#8BA4B8';   // dusty blue (like hypo zone)
+  const fieldColor = '#7A9E8E';     // sage (relational field)
+  const ink = '#3D3530';
+  const muted = '#9B8E84';
 
   return (
     <Animated.View style={[st.cycleDiagramContainer, { opacity: fadeAnim }]}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-        <RefreshIcon size={13} color={Colors.textMuted} />
-        <TenderText variant="label" color={Colors.primary} style={{ fontSize: FontSizes.micro, letterSpacing: 1.0 }}>YOUR CYCLE POSITION</TenderText>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+        <RefreshIcon size={12} color={fieldColor} />
+        <TenderText variant="label" color={fieldColor} style={{ fontSize: 9, letterSpacing: 2, opacity: 0.8 }}>YOUR CYCLE POSITION</TenderText>
       </View>
       <View style={st.scoreGroupDivider} />
 
-      {/* Animated cycle diagram */}
-      <View style={st.cycleDiagramVisual}>
-        {/* Rotating arrows */}
-        <Animated.View style={[st.cycleDiagramArrowRing, { transform: [{ rotate: spin }] }]}>
-          <TenderText variant="body">{'↻'}</TenderText>
-        </Animated.View>
+      {/* SVG Organic cycle diagram */}
+      <View style={{ alignItems: 'center', paddingVertical: Spacing.sm }}>
+        <Svg width={280} height={180} viewBox="0 0 280 180">
+          <Defs>
+            <SvgGradient id="cycleYouGrad" x1="0" y1="0" x2="0" y2="1">
+              <SvgStop offset="0" stopColor={youColor} stopOpacity="0.85" />
+              <SvgStop offset="1" stopColor={youColor} stopOpacity="0.7" />
+            </SvgGradient>
+            <SvgGradient id="cyclePartnerGrad" x1="0" y1="0" x2="0" y2="1">
+              <SvgStop offset="0" stopColor={partnerColor} stopOpacity="0.55" />
+              <SvgStop offset="1" stopColor={partnerColor} stopOpacity="0.4" />
+            </SvgGradient>
+          </Defs>
 
-        {/* Your position */}
-        <View
-          style={[
-            st.cycleDiagramYouBadge,
-            { backgroundColor: isPursuer ? Colors.secondary : Colors.depth },
-          ]}
-          accessibilityRole="text"
-          accessibilityLabel={`You: ${isPursuer ? 'Pursuer' : negativeCycle.position === 'withdrawer' ? 'Withdrawer' : 'Mixed'}`}
-        >
-          <TenderText variant="bodyS" color={Colors.white} style={st.cycleDiagramYouText}>You</TenderText>
-          <TenderText variant="bodyS" color={Colors.white} style={{ fontWeight: '600' }}>
+          {/* Field glow — soft ellipse in the middle */}
+          <Ellipse cx={140} cy={90} rx={45} ry={40} fill={fieldColor} opacity={0.06} />
+          <Ellipse cx={140} cy={90} rx={30} ry={28} fill={fieldColor} opacity={0.08} />
+
+          {/* Connection arcs — flowing Bézier curves */}
+          {/* Top arc: pursue direction */}
+          <Path
+            d={isPursuer ? 'M80 65 Q140 20 200 65' : 'M200 65 Q140 20 80 65'}
+            fill="none" stroke={isPursuer ? youColor : partnerColor}
+            strokeWidth={0.8} strokeDasharray="4 3" opacity={0.5}
+          />
+          {/* Arrow hint at end of top arc */}
+          <SvgText
+            x={140} y={35}
+            fill={muted} fontSize={10} fontFamily="Georgia,serif" fontStyle="italic"
+            textAnchor="middle" opacity={0.55}
+          >
+            {isPursuer ? 'you pursue →' : '← partner pursues'}
+          </SvgText>
+
+          {/* Bottom arc: withdraw direction */}
+          <Path
+            d={isPursuer ? 'M200 115 Q140 160 80 115' : 'M80 115 Q140 160 200 115'}
+            fill="none" stroke={isPursuer ? partnerColor : youColor}
+            strokeWidth={0.8} strokeDasharray="4 3" opacity={0.5}
+          />
+          <SvgText
+            x={140} y={158}
+            fill={muted} fontSize={10} fontFamily="Georgia,serif" fontStyle="italic"
+            textAnchor="middle" opacity={0.55}
+          >
+            {isPursuer ? '← partner withdraws' : 'you withdraw →'}
+          </SvgText>
+
+          {/* You — organic body shape (like illustrations) */}
+          <Path
+            d="M55 108 Q38 96 36 80 Q34 64 44 54 Q54 44 66 46 Q78 48 82 62 Q86 76 82 92 Q78 104 68 112Z"
+            fill="url(#cycleYouGrad)"
+          />
+          {/* Head */}
+          <Ellipse cx={60} cy={42} rx={11} ry={12} fill="none" stroke={ink} strokeWidth={0.8} opacity={0.4} />
+          {/* Label */}
+          <SvgText x={60} y={80} fill="#FFF" fontSize={8} fontFamily="Georgia,serif" textAnchor="middle" fontWeight="500" opacity={0.95}>You</SvgText>
+          <SvgText x={60} y={92} fill="#FFF" fontSize={7.5} fontFamily="Georgia,serif" textAnchor="middle" fontWeight="600" opacity={0.95}>
             {isPursuer ? 'Pursuer' : negativeCycle.position === 'withdrawer' ? 'Withdrawer' : 'Mixed'}
-          </TenderText>
-        </View>
+          </SvgText>
 
-        {/* Partner position */}
-        <View style={[
-          st.cycleDiagramPartnerBadge,
-          { backgroundColor: isPursuer ? Colors.depth + '60' : Colors.secondary + '60' },
-        ]}>
-          <TenderText variant="bodyS" color={Colors.white} style={st.cycleDiagramPartnerText}>Partner</TenderText>
-          <TenderText variant="bodyS" color={Colors.white} style={{ fontWeight: '600' }}>
+          {/* Partner — organic body shape */}
+          <Path
+            d="M225 108 Q242 96 244 80 Q246 64 236 54 Q226 44 214 46 Q202 48 198 62 Q194 76 198 92 Q202 104 212 112Z"
+            fill="url(#cyclePartnerGrad)"
+          />
+          <Ellipse cx={220} cy={42} rx={11} ry={12} fill="none" stroke={ink} strokeWidth={0.8} opacity={0.4} />
+          <SvgText x={220} y={80} fill="#FFF" fontSize={8} fontFamily="Georgia,serif" textAnchor="middle" fontWeight="500" opacity={0.95}>Partner</SvgText>
+          <SvgText x={220} y={92} fill="#FFF" fontSize={7.5} fontFamily="Georgia,serif" textAnchor="middle" fontWeight="600" opacity={0.95}>
             {isPursuer ? 'Withdrawer' : 'Pursuer'}
-          </TenderText>
-        </View>
+          </SvgText>
 
-        {/* Connection lines */}
-        <View style={st.cycleDiagramLineTop}>
-          <TenderText variant="bodyS" color={Colors.textMuted}>
-            {isPursuer ? 'You pursue →' : '← Partner pursues'}
-          </TenderText>
-        </View>
-        <View style={st.cycleDiagramLineBottom}>
-          <TenderText variant="bodyS" color={Colors.textMuted}>
-            {isPursuer ? '← Partner withdraws' : 'You withdraw →'}
-          </TenderText>
-        </View>
+          {/* Center annotation */}
+          <SvgText x={140} y={93} fill={fieldColor} fontSize={6.5} fontFamily="Georgia,serif" fontStyle="italic" textAnchor="middle" opacity={0.45}>
+            the dance
+          </SvgText>
+        </Svg>
       </View>
 
       {/* Key insight */}
       <View style={st.cycleDiagramInsight}>
-        <TenderText variant="body">
+        <TenderText variant="body" style={{ fontFamily: 'Georgia', fontStyle: 'italic', fontSize: 13, lineHeight: 20, color: '#6B5E56' }}>
           {isPursuer
             ? 'The more you pursue, the more they withdraw. The more they withdraw, the more you pursue.'
             : 'The more you withdraw, the more they pursue. The more they pursue, the more you withdraw.'}
         </TenderText>
-        <TenderText variant="caption" color={Colors.textMuted} style={{ marginTop: 4 }}>
-          Neither of you is "wrong" — you're both caught in the dance.
+        <TenderText variant="caption" color={muted} style={{ marginTop: 6, fontFamily: 'Georgia', fontStyle: 'italic', fontSize: 11 }}>
+          Neither of you is wrong — you're both caught in the dance.
         </TenderText>
       </View>
     </Animated.View>
@@ -3554,79 +3588,25 @@ const st = StyleSheet.create({
   // ── Cycle Diagram Infographic ──
   cycleDiagramContainer: {
     backgroundColor: Colors.surfaceElevated,
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.lg,
-    gap: Spacing.md,
-    marginBottom: Spacing.lg,
-    ...Shadows.card,
-  },
-  cycleDiagramVisual: {
-    height: 200,
-    position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cycleDiagramArrowRing: {
-    position: 'absolute',
-    width: 130,
-    height: 130,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  // cycleDiagramArrow — pure text, moved to TenderText
-  cycleDiagramYouBadge: {
-    position: 'absolute',
-    left: 12,
-    top: '50%',
-    marginTop: -32,
-    width: 88,
-    height: 64,
-    borderRadius: BorderRadius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...Shadows.elevated,
-  },
-  cycleDiagramYouText: {
-    letterSpacing: 0.6,
-  },
-  // cycleDiagramYouRole — pure text, moved to TenderText
-  cycleDiagramPartnerBadge: {
-    position: 'absolute',
-    right: 12,
-    top: '50%',
-    marginTop: -32,
-    width: 88,
-    height: 64,
-    borderRadius: BorderRadius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cycleDiagramPartnerText: {
-    letterSpacing: 0.6,
-  },
-  // cycleDiagramPartnerRole — pure text, moved to TenderText
-  cycleDiagramLineTop: {
-    position: 'absolute',
-    top: 10,
-    alignItems: 'center',
-  },
-  cycleDiagramLineBottom: {
-    position: 'absolute',
-    bottom: 10,
-    alignItems: 'center',
-  },
-  // cycleDiagramLineLabel — pure text, moved to TenderText
-  cycleDiagramInsight: {
-    backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.sm,
+    borderRadius: BorderRadius.xl,
     padding: Spacing.lg,
     gap: Spacing.sm,
-    borderLeftWidth: 3,
-    borderLeftColor: Colors.secondary,
+    marginBottom: Spacing.lg,
+    borderWidth: 0.5,
+    borderColor: Colors.borderLight,
+    shadowColor: '#2D2226',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 3,
   },
-  // cycleDiagramInsightText — pure text, moved to TenderText
-  cycleDiagramInsightSub: {
-    marginTop: 4,
+  cycleDiagramInsight: {
+    backgroundColor: '#FAF7F2',
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
+    gap: Spacing.xs,
+    borderLeftWidth: 2.5,
+    borderLeftColor: '#7A9E8E',
   },
 
   // ── CTA Buttons ──
