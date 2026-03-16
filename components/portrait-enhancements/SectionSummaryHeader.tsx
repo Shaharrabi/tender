@@ -61,21 +61,17 @@ export const TAB_SUMMARIES: Record<string, { summary: string; readMinutes: numbe
     summary: 'Four perspectives that together form your complete relational picture: how you attach, your inner parts, your regulation capacity, and what you value most.',
     readMinutes: 6,
   },
-  cycle: {
-    summary: 'Your negative cycle \u2014 the dance you fall into under stress. Seeing it clearly is the first step to choosing differently.',
-    readMinutes: 4,
+  stress: {
+    summary: 'Your negative cycle under stress and your anchoring phrases \u2014 the dance you fall into, and the words that bring you back.',
+    readMinutes: 6,
   },
   growth: {
     summary: 'Your personalized growth plan \u2014 prioritized edges, recommended practices, and a phased pathway forward.',
     readMinutes: 5,
   },
-  anchors: {
-    summary: 'Phrases for difficult moments, a guide for your partner, and the words you need when you forget everything else.',
-    readMinutes: 4,
-  },
-  matrix: {
-    summary: 'Your interactive assessment map \u2014 see how attachment, personality, regulation, conflict style, values, and differentiation all connect.',
-    readMinutes: 5,
+  map: {
+    summary: 'Your integrated map \u2014 see how attachment, personality, regulation, conflict style, values, and differentiation all connect into one picture.',
+    readMinutes: 8,
   },
 };
 

@@ -3,11 +3,11 @@
  *
  * Deep Couple Portrait with 6 tabs:
  * 1. Overview — Twin Orbs, narrative opening, quick stats
- * 2. Your Dance — Combined cycle, exit points, repair pathway
- * 3. Together — Dual radar, convergence/divergence, attachment matrix
- * 4. Insights — Dyadic synthesis, discrepancies
+ * 2. Your Pattern — Combined cycle, exit points, repair pathway + Anchors
+ * 3. Connection Map — Dual radar, convergence/divergence + Our Matrix
+ * 4. Insights — Dyadic synthesis, discrepancies + Assessments
  * 5. Growth — Couple growth edges, practices
- * 6. Anchors — Couple anchors, repair starters
+ * 6. Field — Relational field
  */
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
@@ -117,7 +117,7 @@ import {
   IllustrationAttachSecure,
 } from '@/assets/graphics/illustrations';
 
-type TabKey = 'overview' | 'dance' | 'together' | 'matrix' | 'assessments' | 'insights' | 'growth' | 'anchors' | 'field';
+type TabKey = 'overview' | 'pattern' | 'connection' | 'insights' | 'growth' | 'field';
 
 interface CoupleTabDef {
   key: TabKey;
@@ -127,15 +127,12 @@ interface CoupleTabDef {
 }
 
 const TABS: CoupleTabDef[] = [
-  { key: 'overview',    label: 'Overview',    Icon: HeartPulseIcon, color: Colors.couplePartnerA },
-  { key: 'dance',       label: 'Your Dance',  Icon: LightningIcon,  color: Colors.couplePartnerB },
-  { key: 'together',    label: 'Together',    Icon: LinkIcon,        color: Colors.calm },
-  { key: 'matrix',      label: 'Our Key',    Icon: CompassIcon,     color: Colors.overlapPurple },
-  { key: 'assessments', label: 'Assessments', Icon: CompassIcon,     color: Colors.depth },
-  { key: 'insights',    label: 'Insights',    Icon: SparkleIcon,     color: Colors.accent },
-  { key: 'growth',      label: 'Growth',      Icon: SeedlingIcon,    color: Colors.warning },
-  { key: 'anchors',     label: 'Anchors',     Icon: LeafIcon,        color: Colors.calm },
-  { key: 'field',       label: 'Our Field',   Icon: SparkleIcon,     color: Colors.accentGold },
+  { key: 'overview',    label: 'Overview',        Icon: HeartPulseIcon, color: Colors.couplePartnerA },
+  { key: 'pattern',     label: 'Your Pattern',    Icon: LightningIcon,  color: Colors.couplePartnerB },
+  { key: 'connection',  label: 'Connection Map',  Icon: LinkIcon,       color: Colors.calm },
+  { key: 'insights',    label: 'Insights',        Icon: SparkleIcon,    color: Colors.accent },
+  { key: 'growth',      label: 'Growth',          Icon: SeedlingIcon,   color: Colors.warning },
+  { key: 'field',       label: 'Field',           Icon: SparkleIcon,    color: Colors.accentGold },
 ];
 
 export default function CouplePortalScreenWithBoundary() {
@@ -1703,40 +1700,25 @@ function CouplePortalScreen() {
       readMinutes: 3,
       color: Colors.couplePartnerA,
     },
-    dance: {
-      summary: 'Your combined cycle \u2014 the dance you fall into under stress, with exit points and repair steps.',
-      readMinutes: 4,
+    pattern: {
+      summary: 'Your combined cycle \u2014 the dance you fall into under stress, with exit points, repair steps, and anchor phrases.',
+      readMinutes: 5,
       color: Colors.couplePartnerB,
     },
-    together: {
-      summary: 'Profiles overlaid \u2014 where you converge, complement, and create friction.',
-      readMinutes: 5,
+    connection: {
+      summary: 'Profiles overlaid \u2014 where you converge, complement, and create friction, plus your integrated couple matrix.',
+      readMinutes: 6,
       color: Colors.calm,
     },
-    assessments: {
-      summary: 'Side-by-side assessment scores \u2014 satisfaction, adjustment, and coping.',
-      readMinutes: 4,
-      color: Colors.depth,
-    },
     insights: {
-      summary: 'The deeper story \u2014 narrative synthesis and where data tells a different tale.',
-      readMinutes: 5,
+      summary: 'The deeper story \u2014 narrative synthesis, assessment scores, and where data tells a different tale.',
+      readMinutes: 6,
       color: Colors.accent,
     },
     growth: {
       summary: 'Where your relationship is asking to evolve \u2014 protection, cost, and invitation.',
       readMinutes: 4,
       color: Colors.warning,
-    },
-    anchors: {
-      summary: 'Phrases for difficult moments \u2014 personalized to your cycle and attachment dynamics.',
-      readMinutes: 3,
-      color: Colors.calm,
-    },
-    matrix: {
-      summary: 'Your integrated couple matrix \u2014 how your two profiles create the dance between you.',
-      readMinutes: 4,
-      color: Colors.overlapPurple,
     },
     field: {
       summary: 'Your relational field \u2014 what you\u2019re creating together, what needs care, and what to try next.',
@@ -1817,16 +1799,43 @@ function CouplePortalScreen() {
   };
 
   /** Render the active tab content — one section at a time, like personal portrait */
+  /** Merged render: Dance + Anchors */
+  const renderPattern = () => (
+    <>
+      {renderDance()}
+      <View style={{ marginTop: Spacing.lg }}>
+        {renderAnchors()}
+      </View>
+    </>
+  );
+
+  /** Merged render: Together + Our Matrix */
+  const renderConnection = () => (
+    <>
+      {renderTogether()}
+      <View style={{ marginTop: Spacing.lg }}>
+        {renderOurMatrix()}
+      </View>
+    </>
+  );
+
+  /** Merged render: Insights + Assessments */
+  const renderCombinedInsights = () => (
+    <>
+      {renderInsights()}
+      <View style={{ marginTop: Spacing.lg }}>
+        {renderAssessments()}
+      </View>
+    </>
+  );
+
   const renderTabContent = () => {
     switch (activeTab) {
       case 'overview':   return renderOverview();
-      case 'dance':      return renderDance();
-      case 'together':   return renderTogether();
-      case 'matrix':     return renderOurMatrix();
-      case 'assessments': return renderAssessments();
-      case 'insights':   return renderInsights();
+      case 'pattern':    return renderPattern();
+      case 'connection': return renderConnection();
+      case 'insights':   return renderCombinedInsights();
       case 'growth':     return renderGrowth();
-      case 'anchors':    return renderAnchors();
       case 'field':      return <OurFieldTab coupleId={couple!.id} userId={user!.id} compositeScores={myPortrait?.compositeScores} />;
       default:           return renderOverview();
     }

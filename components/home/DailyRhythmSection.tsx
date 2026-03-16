@@ -17,11 +17,13 @@ import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
+  TextInput,
   TouchableOpacity,
   StyleSheet,
   LayoutAnimation,
   Platform,
   UIManager,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
@@ -62,6 +64,14 @@ interface DailyRhythmSectionProps {
   weekDots: boolean[];
   /** Step-specific journal prompt text */
   journalPrompt: string;
+  /** Daily question — inline micro-moment for couples */
+  dailyQuestion?: { questionText: string } | null;
+  hasAnsweredDaily?: boolean;
+  partnerAnsweredDaily?: boolean;
+  partnerName?: string;
+  myResponseText?: string;
+  partnerResponseText?: string;
+  onSubmitDailyAnswer?: (text: string) => Promise<void>;
 }
 
 export default function DailyRhythmSection({
@@ -72,10 +82,19 @@ export default function DailyRhythmSection({
   isSolo,
   weekDots,
   journalPrompt,
+  dailyQuestion,
+  hasAnsweredDaily = false,
+  partnerAnsweredDaily = false,
+  partnerName = 'your partner',
+  myResponseText,
+  partnerResponseText,
+  onSubmitDailyAnswer,
 }: DailyRhythmSectionProps) {
   const router = useRouter();
   // Always start collapsed — user opens when ready
   const [isExpanded, setIsExpanded] = useState(false);
+  const [dailyAnswerText, setDailyAnswerText] = useState('');
+  const [dailySubmitting, setDailySubmitting] = useState(false);
 
   const rhythmCount = weekDots.filter(Boolean).length;
 
@@ -83,6 +102,20 @@ export default function DailyRhythmSection({
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setIsExpanded((prev) => !prev);
   }, []);
+
+  const handleDailySubmit = useCallback(async () => {
+    if (!dailyAnswerText.trim() || !onSubmitDailyAnswer) return;
+    setDailySubmitting(true);
+    try {
+      await onSubmitDailyAnswer(dailyAnswerText.trim());
+      setDailyAnswerText('');
+      SoundHaptics.success();
+    } catch (err) {
+      console.warn('[DailyRhythm] daily answer submit error:', err);
+    } finally {
+      setDailySubmitting(false);
+    }
+  }, [dailyAnswerText, onSubmitDailyAnswer]);
 
   const handlePracticeFromWoT = useCallback((practiceId: string) => {
     SoundHaptics.tapSoft();
@@ -185,7 +218,75 @@ export default function DailyRhythmSection({
         </View>
       )}
 
-      {/* 4. Check-in Rhythm */}
+      {/* 4. Daily Question — inline micro-moment */}
+      {dailyQuestion && (
+        <View style={styles.toolSection}>
+          <View style={styles.dailyQuestionCard}>
+            <Text style={styles.dailyQuestionEyebrow}>TODAY'S QUESTION</Text>
+            <Text style={styles.dailyQuestionText}>
+              {dailyQuestion.questionText}
+            </Text>
+
+            {/* Not yet answered — show input */}
+            {!hasAnsweredDaily && (
+              <View style={styles.dailyAnswerSection}>
+                <TextInput
+                  style={styles.dailyInput}
+                  value={dailyAnswerText}
+                  onChangeText={setDailyAnswerText}
+                  placeholder="Your answer..."
+                  placeholderTextColor={Colors.textMuted}
+                  multiline
+                  numberOfLines={3}
+                  textAlignVertical="top"
+                />
+                <TouchableOpacity
+                  style={[
+                    styles.dailySubmitButton,
+                    (!dailyAnswerText.trim() || dailySubmitting) && styles.dailySubmitDisabled,
+                  ]}
+                  onPress={handleDailySubmit}
+                  disabled={!dailyAnswerText.trim() || dailySubmitting}
+                  activeOpacity={0.7}
+                >
+                  {dailySubmitting ? (
+                    <ActivityIndicator size="small" color={Colors.textOnPrimary} />
+                  ) : (
+                    <Text style={styles.dailySubmitText}>Share</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* Answered — show my response */}
+            {hasAnsweredDaily && myResponseText && (
+              <View style={styles.dailyResponseSection}>
+                <View style={styles.dailyResponseCard}>
+                  <Text style={styles.dailyResponseLabel}>You</Text>
+                  <Text style={styles.dailyResponseText}>{myResponseText}</Text>
+                </View>
+
+                {/* Both answered — show partner too */}
+                {partnerAnsweredDaily && partnerResponseText ? (
+                  <View style={[styles.dailyResponseCard, styles.dailyPartnerCard]}>
+                    <Text style={styles.dailyResponseLabel}>{partnerName}</Text>
+                    <Text style={styles.dailyResponseText}>{partnerResponseText}</Text>
+                  </View>
+                ) : (
+                  <View style={styles.dailyWaitingRow}>
+                    <View style={styles.dailyWaitingDot} />
+                    <Text style={styles.dailyWaitingText}>
+                      Waiting for {partnerName} to answer...
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
+          </View>
+        </View>
+      )}
+
+      {/* 5. Check-in Rhythm */}
       <CheckInRhythm weekDots={weekDots} />
     </View>
   );
@@ -305,5 +406,105 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontWeight: '600',
     marginTop: Spacing.xs,
+  },
+
+  // Daily Question inline
+  dailyQuestionCard: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    gap: Spacing.sm,
+    borderLeftWidth: 3,
+    borderLeftColor: Colors.calm,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+  },
+  dailyQuestionEyebrow: {
+    fontFamily: FontFamilies.heading,
+    fontSize: FontSizes.micro,
+    color: Colors.textMuted,
+    letterSpacing: 1.5,
+  },
+  dailyQuestionText: {
+    fontFamily: 'PlayfairDisplay_400Regular_Italic',
+    fontSize: FontSizes.body,
+    color: Colors.text,
+    lineHeight: 24,
+  },
+  dailyAnswerSection: {
+    gap: Spacing.sm,
+  },
+  dailyInput: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.sm,
+    minHeight: 80,
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.bodySmall,
+    color: Colors.text,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+  },
+  dailySubmitButton: {
+    backgroundColor: Colors.primary,
+    borderRadius: BorderRadius.pill,
+    paddingVertical: 8,
+    paddingHorizontal: Spacing.md,
+    alignSelf: 'flex-end',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 72,
+  },
+  dailySubmitDisabled: {
+    opacity: 0.4,
+  },
+  dailySubmitText: {
+    fontFamily: FontFamilies.heading,
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textOnPrimary,
+    fontWeight: '600',
+  },
+  dailyResponseSection: {
+    gap: Spacing.sm,
+  },
+  dailyResponseCard: {
+    backgroundColor: Colors.primaryFaded,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.sm,
+  },
+  dailyPartnerCard: {
+    backgroundColor: Colors.secondaryLight,
+  },
+  dailyResponseLabel: {
+    fontFamily: FontFamilies.heading,
+    fontSize: FontSizes.micro,
+    color: Colors.textMuted,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginBottom: 2,
+  },
+  dailyResponseText: {
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.bodySmall,
+    color: Colors.text,
+    lineHeight: 20,
+  },
+  dailyWaitingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    paddingTop: 2,
+  },
+  dailyWaitingDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.textMuted,
+  },
+  dailyWaitingText: {
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.xs,
+    color: Colors.textMuted,
+    fontStyle: 'italic',
   },
 });

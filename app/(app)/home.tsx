@@ -101,7 +101,7 @@ import DailyQuestionCard from '@/components/home/DailyQuestionCard';
 import SpaceChangedCard from '@/components/home/SpaceChangedCard';
 import WeeklyChallengeCard from '@/components/home/WeeklyChallengeCard';
 import { getPendingActivities, markActivitySeen, type PartnerActivity } from '@/services/partner-activity';
-import { getTodaysQuestion, getMyResponseToday, getPartnerResponse, type DailyQuestion } from '@/services/daily-questions';
+import { getTodaysQuestion, getMyResponseToday, getPartnerResponse, submitDailyResponse, type DailyQuestion } from '@/services/daily-questions';
 import { getThisWeeksChallenge, generateWeeklyChallenge, type CoupleChallenge } from '@/services/couple-challenges';
 import { canSendRelationalNudge } from '@/services/emotional-safety';
 import TenderText from '@/components/ui/TenderText';
@@ -256,6 +256,8 @@ export default function HomeScreen() {
   const [dailyQuestion, setDailyQuestion] = useState<DailyQuestion | null>(null);
   const [hasAnsweredDaily, setHasAnsweredDaily] = useState(false);
   const [partnerAnsweredDaily, setPartnerAnsweredDaily] = useState(false);
+  const [myDailyResponseText, setMyDailyResponseText] = useState<string | undefined>(undefined);
+  const [partnerDailyResponseText, setPartnerDailyResponseText] = useState<string | undefined>(undefined);
   const [weeklyChallenge, setWeeklyChallenge] = useState<CoupleChallenge | null>(null);
   const [spaceChangedNarrative, setSpaceChangedNarrative] = useState<string | null>(null);
   const [spaceChangedDelta, setSpaceChangedDelta] = useState<number>(0);
@@ -841,9 +843,11 @@ export default function HomeScreen() {
           if (dq) {
             const myResp = await getMyResponseToday(loadedCouple.id, dq.id, user.id);
             setHasAnsweredDaily(!!myResp);
+            setMyDailyResponseText(myResp?.responseText);
             if (myResp) {
               const { data: pResp } = await getPartnerResponse(loadedCouple.id, dq.id, user.id);
               setPartnerAnsweredDaily(!!pResp);
+              setPartnerDailyResponseText(pResp?.responseText);
             }
           }
 
@@ -1052,6 +1056,20 @@ export default function HomeScreen() {
         'Could not save check-in',
         'Please try again. If this keeps happening, try logging out and back in.',
       );
+    }
+  };
+
+  // ─── Daily Question Submit ─────────────────────────────
+  const handleDailyAnswerSubmit = async (text: string) => {
+    if (!user?.id || !couple?.id || !dailyQuestion) return;
+    const response = await submitDailyResponse(couple.id, dailyQuestion.id, user.id, text);
+    if (response) {
+      setHasAnsweredDaily(true);
+      setMyDailyResponseText(response.responseText);
+      // Check if partner already answered
+      const { data: pResp } = await getPartnerResponse(couple.id, dailyQuestion.id, user.id);
+      setPartnerAnsweredDaily(!!pResp);
+      setPartnerDailyResponseText(pResp?.responseText);
     }
   };
 
@@ -1447,7 +1465,7 @@ export default function HomeScreen() {
                   </TouchableOpacity>
                   <Text style={styles.dualStripLinkDot}>{'\u00B7'}</Text>
                   <TouchableOpacity
-                    onPress={(e) => { e.stopPropagation(); SoundHaptics.tapSoft(); router.push({ pathname: '/(app)/portrait' as any, params: { tab: 'key' } }); }}
+                    onPress={(e) => { e.stopPropagation(); SoundHaptics.tapSoft(); router.push({ pathname: '/(app)/portrait' as any, params: { tab: 'map' } }); }}
                     activeOpacity={0.7}
                   >
                     <Text style={styles.dualStripLinkText}>Integrated Map</Text>
@@ -1523,7 +1541,7 @@ export default function HomeScreen() {
                     </TouchableOpacity>
                     <Text style={styles.dualStripLinkDot}>{'\u00B7'}</Text>
                     <TouchableOpacity
-                      onPress={(e) => { e.stopPropagation(); SoundHaptics.tapSoft(); router.push({ pathname: '/(app)/portrait' as any, params: { tab: 'key' } }); }}
+                      onPress={(e) => { e.stopPropagation(); SoundHaptics.tapSoft(); router.push({ pathname: '/(app)/portrait' as any, params: { tab: 'map' } }); }}
                       activeOpacity={0.7}
                     >
                       <Text style={styles.dualStripLinkText}>Integrated Map</Text>
@@ -1959,19 +1977,6 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* Daily Question Card */}
-        {hasCoupleLinked && dailyQuestion && (
-          <View style={styles.section}>
-            <DailyQuestionCard
-              questionText={dailyQuestion.questionText}
-              hasAnswered={hasAnsweredDaily}
-              partnerHasAnswered={partnerAnsweredDaily}
-              partnerName={partnerDisplayName}
-              onPress={() => router.push('/(app)/daily-question' as any)}
-            />
-          </View>
-        )}
-
         {/* Space Changed Card — WEARE delta */}
         {spaceChangedNarrative && (
           <View style={styles.section}>
@@ -2014,6 +2019,13 @@ export default function HomeScreen() {
               isSolo={relationshipMode === 'solo'}
               weekDots={weekDots}
               journalPrompt={getJournalPromptForStep(currentStepNum, relationshipMode === 'solo')}
+              dailyQuestion={hasCoupleLinked ? dailyQuestion : null}
+              hasAnsweredDaily={hasAnsweredDaily}
+              partnerAnsweredDaily={partnerAnsweredDaily}
+              partnerName={partnerDisplayName}
+              myResponseText={myDailyResponseText}
+              partnerResponseText={partnerDailyResponseText}
+              onSubmitDailyAnswer={handleDailyAnswerSubmit}
             />
           </View>
         )}

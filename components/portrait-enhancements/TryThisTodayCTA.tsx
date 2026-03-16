@@ -48,10 +48,9 @@ export const PORTRAIT_TAB_ACTIONS: Record<string, { Icon: React.ComponentType<Ic
   overview: { Icon: LeafIcon,       label: 'Start Step 1',              sublabel: 'Begin your relational journey',          route: '/(app)/step-detail', params: { step: '1' } },
   scores:   { Icon: MeditationIcon, label: 'Window of Tolerance Check', sublabel: '5 min \u00B7 Your #1 leverage point',   route: '/(app)/exercise', params: { id: 'window-check' } },
   lenses:   { Icon: MirrorIcon,     label: 'Parts Check-In',            sublabel: '8 min \u00B7 Meet your protector parts', route: '/(app)/exercise', params: { id: 'parts-check-in' } },
-  cycle:    { Icon: SwirlyIcon,     label: 'Recognize Your Cycle',      sublabel: '15 min \u00B7 Map the dance between you', route: '/(app)/exercise', params: { id: 'recognize-cycle' } },
+  stress:   { Icon: SwirlyIcon,     label: 'Recognize Your Cycle',      sublabel: '15 min \u00B7 Map the dance between you', route: '/(app)/exercise', params: { id: 'recognize-cycle' } },
   growth:   { Icon: SeedlingIcon,   label: 'Begin Your Growth Edge',    sublabel: 'Personalized to your top edge',          route: '/(app)/growth' },
-  anchors:  { Icon: ChatBubbleIcon, label: 'Talk to Nuance AI',         sublabel: 'Explore your portrait with your AI guide', route: '/(app)/chat' },
-  matrix:   { Icon: MirrorIcon,     label: 'Explore Attachment',       sublabel: 'See how your patterns connect',           route: '/(app)/portrait', params: { tab: 'matrix' } },
+  map:      { Icon: MirrorIcon,     label: 'Explore Your Map',          sublabel: 'See how all your patterns connect',       route: '/(app)/portrait', params: { tab: 'map' } },
 };
 
 const styles = StyleSheet.create({

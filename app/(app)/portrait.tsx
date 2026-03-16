@@ -1,7 +1,7 @@
 /**
  * Portrait Screen — Tabbed Report with Animated Reveals
  *
- * Tabs: Overview | Scores | Lenses | Cycle | Growth | Anchors
+ * Tabs: Overview | Scores | Lenses | Under Stress | Growth | Integrated Map
  *
  * Each tab is a self-contained section with smooth animated reveals,
  * color-coded visuals, and a warm, polished aesthetic.
@@ -139,7 +139,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 // ─── Tab definitions ────────────────────────────────────
 
-type TabKey = 'overview' | 'scores' | 'lenses' | 'cycle' | 'growth' | 'anchors' | 'matrix' | 'key' | 'field';
+type TabKey = 'overview' | 'scores' | 'lenses' | 'stress' | 'growth' | 'map';
 
 interface TabDef {
   key: TabKey;
@@ -152,12 +152,9 @@ const TABS: TabDef[] = [
   { key: 'overview', label: 'Overview', Icon: STAT_ICONS.overview, color: Colors.primary },
   { key: 'scores', label: 'Scores', Icon: STAT_ICONS.scores, color: Colors.calm },
   { key: 'lenses', label: 'Lenses', Icon: STAT_ICONS.lenses, color: Colors.depth },
-  { key: 'cycle', label: 'Cycle', Icon: STAT_ICONS.cycle, color: Colors.secondary },
+  { key: 'stress', label: 'Under Stress', Icon: STAT_ICONS.cycle, color: Colors.secondary },
   { key: 'growth', label: 'Growth', Icon: STAT_ICONS.growth, color: Colors.warning },
-  { key: 'anchors', label: 'Anchors', Icon: STAT_ICONS.anchor, color: Colors.calm },
-  { key: 'matrix', label: 'Matrix', Icon: LinkIcon, color: Colors.depth },
-  { key: 'key', label: 'Your Key', Icon: CompassIcon, color: Colors.overlapPurple ?? Colors.secondary },
-  { key: 'field', label: 'Your Field', Icon: SparkleIcon, color: Colors.accentGold },
+  { key: 'map', label: 'Integrated Map', Icon: LinkIcon, color: Colors.depth },
 ];
 
 // ─── Narrative generator ────────────────────────────────
@@ -1059,19 +1056,25 @@ export default function PortraitScreen() {
             </>
           )}
           {activeTab === 'lenses' && <LensesTab portrait={portrait} rawScores={rawScores} />}
-          {activeTab === 'cycle' && <CycleTab portrait={portrait} rawScores={rawScores} />}
+          {activeTab === 'stress' && (
+            <>
+              <CycleTab portrait={portrait} rawScores={rawScores} />
+              <View style={{ marginTop: Spacing.lg }}>
+                <AnchorsTab portrait={portrait} router={router} />
+              </View>
+            </>
+          )}
           {activeTab === 'growth' && <GrowthTab portrait={portrait} router={router} />}
-          {activeTab === 'anchors' && (
-            <AnchorsTab portrait={portrait} router={router} />
-          )}
-          {activeTab === 'matrix' && (
-            <MatrixTab allScores={allScoresMap} portrait={portrait} />
-          )}
-          {activeTab === 'key' && (
-            <TenderMatrix allScores={allScoresMap} portrait={portrait} />
-          )}
-          {activeTab === 'field' && (
-            <YourFieldTab compositeScores={portrait.compositeScores} />
+          {activeTab === 'map' && (
+            <>
+              <MatrixTab allScores={allScoresMap} portrait={portrait} />
+              <View style={{ marginTop: Spacing.lg }}>
+                <TenderMatrix allScores={allScoresMap} portrait={portrait} />
+              </View>
+              <View style={{ marginTop: Spacing.lg }}>
+                <YourFieldTab compositeScores={portrait.compositeScores} />
+              </View>
+            </>
           )}
 
           {/* Portrait Audio Library — at bottom for non-overview tabs (overview has it inline) */}
@@ -1096,8 +1099,8 @@ export default function PortraitScreen() {
                 sublabel = 'Pick up where you left off';
               }
               params = { step: String(nextStep) };
-            } else if (tab === 'matrix') {
-              // Don't navigate back to portrait/matrix — go to growth instead
+            } else if (tab === 'map') {
+              // Don't navigate back to portrait/map — go to growth instead
               label = 'Explore Your Growth Edge';
               sublabel = 'Turn insight into practice';
               route = '/(app)/growth';
