@@ -492,6 +492,8 @@ export default function TenderAssessmentScreen() {
   const handleDomainBreakContinue = () => {
     if (!domainBreakInfo) return;
     const nextIndex = domainBreakInfo.nextQuestionIndex;
+    // Reset question opacity — it may be stuck at 0 from auto-advance fade-out
+    questionOpacity.setValue(1);
     setShowingDomainBreak(false);
     setDomainBreakInfo(null);
     setSectionStates((prev) => {
