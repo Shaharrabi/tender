@@ -490,6 +490,31 @@ export function generateCouplePortraitHTML(
       </div>`).join('')
     : '';
 
+  // Radar overlap dimension insights (gap interpretation per dimension)
+  const radarInsightsHTML = conv.radarOverlap && conv.radarOverlap.length > 0
+    ? conv.radarOverlap.map((ol) => {
+        const gapColor = ol.gapInterpretation === 'aligned' ? 'var(--sage)' :
+          ol.gapInterpretation === 'complementary' ? 'var(--gold)' :
+          ol.gapInterpretation === 'tension' ? 'var(--rose)' : 'var(--rose)';
+        const gapLabel = ol.gapInterpretation === 'aligned' ? 'Aligned' :
+          ol.gapInterpretation === 'complementary' ? 'Complementary' :
+          ol.gapInterpretation === 'tension' ? 'Tension' : 'Significant Gap';
+        return `
+        <div class="score-gap-row" style="break-inside:avoid;page-break-inside:avoid;margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+            <span style="font-family:'Jost',Poppins,'Liberation Sans',sans-serif;font-weight:500;font-size:10pt">${esc(ol.dimensionLabel)}</span>
+            <span style="font-size:8pt;color:${gapColor};letter-spacing:0.5px;text-transform:uppercase">${esc(gapLabel)}</span>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">
+            <span style="font-size:9pt;color:var(--rose)">${esc(nameA)}: <strong>${Math.round(ol.partnerAScore)}</strong></span>
+            <span style="flex:1;height:1px;background:var(--border-light)"></span>
+            <span style="font-size:9pt;color:var(--blue)">${esc(nameB)}: <strong>${Math.round(ol.partnerBScore)}</strong></span>
+          </div>
+          ${ol.insight ? `<p style="font-size:9pt;color:var(--text-secondary);font-style:italic;margin:0">${esc(ol.insight)}</p>` : ''}
+        </div>`;
+      }).join('')
+    : '';
+
   const convergenceHTML = `
     <div class="page-break"></div>
     <div class="section">
@@ -502,6 +527,12 @@ export function generateCouplePortraitHTML(
       <p style="text-align:center;font-size:9pt;color:var(--text-muted);margin-top:4px;margin-bottom:16px">
         <span style="color:#C4616E">\u25CF</span> ${esc(nameA)} &nbsp; <span style="color:#7294D4">\u25CF</span> ${esc(nameB)}
       </p>` : ''}
+
+      ${radarInsightsHTML ? `
+      <div class="card card-muted" style="break-inside:avoid;page-break-inside:avoid">
+        <div class="card-title">Dimension by Dimension</div>
+        ${radarInsightsHTML}
+      </div>` : ''}
 
       ${sharedStrengthsHTML ? `
       <p class="section-label" style="margin-top:20px">SHARED STRENGTHS</p>
@@ -647,36 +678,51 @@ export function generateCouplePortraitHTML(
     <div class="section">
       <div class="section-divider"></div>
       <p class="section-label">YOUR STORY</p>
-      <div class="section-title">The Space Between You</div>
+      <div class="section-title">A Portrait in Words</div>
 
-      ${narr.opening ? `<p style="font-family:'Playfair Display',Lora,Georgia,serif;font-style:italic;font-size:11pt;color:var(--text-secondary);line-height:1.8;margin-bottom:16px">${esc(narr.opening)}</p>` : ''}
+      ${narr.opening ? `
+      <div class="narrative-opening" style="break-inside:avoid;page-break-inside:avoid">
+        <p style="font-family:'Playfair Display',Lora,Georgia,serif;font-style:italic;font-size:11.5pt;color:var(--text-secondary);line-height:1.9;margin-bottom:0">${esc(narr.opening)}</p>
+      </div>` : ''}
 
       ${narr.theField ? `
-      <p class="section-label">THE FIELD</p>
-      <p>${esc(narr.theField)}</p>` : ''}
+      <div class="card card-muted" style="break-inside:avoid;page-break-inside:avoid;margin-top:16px">
+        <p class="section-label" style="margin-bottom:6px">THE FIELD</p>
+        <p style="margin-bottom:0">${esc(narr.theField)}</p>
+      </div>` : ''}
 
       ${narr.theDance ? `
-      <p class="section-label" style="margin-top:16px">THE DANCE</p>
-      <p>${esc(narr.theDance)}</p>` : ''}
+      <div class="card" style="break-inside:avoid;page-break-inside:avoid">
+        <p class="section-label" style="margin-bottom:6px">THE DANCE</p>
+        <p style="margin-bottom:0">${esc(narr.theDance)}</p>
+      </div>` : ''}
 
       ${narr.whatYouBring ? `
-      <p class="section-label" style="margin-top:16px">WHAT YOU BRING</p>
-      <p>${esc(narr.whatYouBring)}</p>` : ''}
+      <div class="card card-rose" style="break-inside:avoid;page-break-inside:avoid">
+        <p class="section-label" style="margin-bottom:6px">WHAT YOU BRING</p>
+        <p style="margin-bottom:0">${esc(narr.whatYouBring)}</p>
+      </div>` : ''}
 
       ${narr.whereYouMeet ? `
-      <p class="section-label" style="margin-top:16px">WHERE YOU MEET</p>
-      <p>${esc(narr.whereYouMeet)}</p>` : ''}
+      <div class="card card-sage" style="break-inside:avoid;page-break-inside:avoid">
+        <p class="section-label" style="margin-bottom:6px">WHERE YOU MEET</p>
+        <p style="margin-bottom:0">${esc(narr.whereYouMeet)}</p>
+      </div>` : ''}
 
       ${narr.whereYouDiverge ? `
-      <p class="section-label" style="margin-top:16px">WHERE YOU DIVERGE</p>
-      <p>${esc(narr.whereYouDiverge)}</p>` : ''}
+      <div class="card card-gold" style="break-inside:avoid;page-break-inside:avoid">
+        <p class="section-label" style="margin-bottom:6px">WHERE YOU DIVERGE</p>
+        <p style="margin-bottom:0">${esc(narr.whereYouDiverge)}</p>
+      </div>` : ''}
 
       ${narr.theEdge ? `
-      <p class="section-label" style="margin-top:16px">THE EDGE</p>
-      <p>${esc(narr.theEdge)}</p>` : ''}
+      <div class="card card-blue" style="break-inside:avoid;page-break-inside:avoid">
+        <p class="section-label" style="margin-bottom:6px">THE EDGE</p>
+        <p style="margin-bottom:0">${esc(narr.theEdge)}</p>
+      </div>` : ''}
 
       ${narr.closing ? `
-      <div class="insight-callout" style="margin-top:20px">${esc(narr.closing)}</div>` : ''}
+      <div class="insight-callout" style="margin-top:20px;break-inside:avoid;page-break-inside:avoid">${esc(narr.closing)}</div>` : ''}
     </div>`;
 
   /* ── Section: Couple Anchors ── */

@@ -369,6 +369,82 @@ export function generatePortraitHTML(portrait: IndividualPortrait, userName?: st
        </div>`
     : '';
 
+  // One-thing sentence — the single most important sentence about this person
+  const oneThingHTML = portrait.oneThingSentence
+    ? `<div class="one-thing-hero" style="break-inside:avoid;page-break-inside:avoid">
+         <p class="section-label" style="text-align:center;margin-bottom:8px">THE HEART OF YOUR PORTRAIT</p>
+         <blockquote class="one-thing-quote">${esc(portrait.oneThingSentence)}</blockquote>
+       </div>`
+    : '';
+
+  // Integrated narratives — cross-instrument insights
+  const integratedNarrativesHTML = portrait.integratedNarratives && portrait.integratedNarratives.length > 0
+    ? portrait.integratedNarratives.map((narrative, i) => `
+        <div class="narrative-callout" style="break-inside:avoid;page-break-inside:avoid">
+          <span class="narrative-index">${i + 1}</span>
+          <p class="narrative-text">${esc(narrative)}</p>
+        </div>`).join('')
+    : '';
+
+  // Supplement data section
+  function supplementScoreItem(label: string, value: number, max: number, color: string): string {
+    const pct = Math.round((value / max) * 100);
+    return scoreBar(label, pct, color);
+  }
+
+  const suppData = portrait.supplementData;
+  const supplementHTML = suppData
+    ? (() => {
+        const parts: string[] = [];
+        if (suppData.ecrr) {
+          const e = suppData.ecrr;
+          parts.push(`
+            <div class="card card-rose" style="break-inside:avoid;page-break-inside:avoid">
+              <div class="card-title">Attachment Supplement (ECR-R)</div>
+              ${supplementScoreItem('Somatic Awareness', e.somaticAwareness, 7, '#C4616E')}
+              ${supplementScoreItem('Fixed Story (inv.)', e.fixedStory, 7, '#D4A843')}
+              ${supplementScoreItem('Cycle Awareness', e.cycleAwareness, 7, '#6B7B9B')}
+              ${supplementScoreItem('Certainty vs Curiosity (inv.)', e.certaintyVsCuriosity, 7, '#6B9080')}
+              ${supplementScoreItem('Needs as Information', e.needsAsInformation, 7, '#4A6FA8')}
+            </div>`);
+        }
+        if (suppData.sseit) {
+          const s = suppData.sseit;
+          parts.push(`
+            <div class="card card-gold" style="break-inside:avoid;page-break-inside:avoid">
+              <div class="card-title">Field Sensitivity Supplement (SSEIT)</div>
+              ${supplementScoreItem('Room Sensing', s.roomSensing, 5, '#D4A843')}
+              ${supplementScoreItem('Relational Shift Awareness', s.relationalShiftAwareness, 5, '#6B7B9B')}
+              ${supplementScoreItem('Emotion Differentiation', s.emotionDifferentiation, 5, '#6B9080')}
+            </div>`);
+        }
+        if (suppData.dsir) {
+          const d = suppData.dsir;
+          parts.push(`
+            <div class="card card-blue" style="break-inside:avoid;page-break-inside:avoid">
+              <div class="card-title">Boundary Clarity Supplement (DSI-R)</div>
+              ${supplementScoreItem('Closeness With Identity', d.closenessWithIdentity, 6, '#4A6FA8')}
+              ${supplementScoreItem('Disagreement With Connection', d.disagreementWithConnection, 6, '#6B7B9B')}
+              ${supplementScoreItem('Emotional Boundary Clarity', d.emotionalBoundaryClarity, 6, '#D4A843')}
+              ${supplementScoreItem('Boundary Without Guilt', d.boundaryWithoutGuilt, 6, '#6B9080')}
+            </div>`);
+        }
+        if (suppData.values) {
+          const v = suppData.values;
+          parts.push(`
+            <div class="card card-sage" style="break-inside:avoid;page-break-inside:avoid">
+              <div class="card-title">Values Supplement</div>
+              <p><strong>Divergence Response:</strong> ${esc(v.valuesDivergenceResponse.replace(/-/g, ' '))}</p>
+              ${v.differenceAsResource ? `<p><strong>Difference as Resource:</strong> ${esc(v.differenceAsResource)}</p>` : ''}
+              ${supplementScoreItem('Right vs Present Moment', v.rightVsPresent, 7, '#6B9080')}
+              ${supplementScoreItem('Willingness to Change', v.willingnessToChange, 7, '#D4A843')}
+              ${v.sharedValue ? `<p style="font-style:italic;color:var(--text-secondary);margin-top:8px">"${esc(v.sharedValue)}"</p>` : ''}
+            </div>`);
+        }
+        return parts.join('');
+      })()
+    : '';
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -782,6 +858,41 @@ p { margin-bottom: 8px; line-height: 1.7; }
   font-size: 8.5pt; padding: 3px 10px; border-radius: 20px;
 }
 
+/* ── ONE-THING HERO QUOTE ────────────── */
+.one-thing-hero {
+  text-align: center; margin: 28px 0 32px; padding: 24px 32px;
+  background: var(--bg-alt); border-radius: 12px;
+  border: 1px solid var(--border-light);
+  break-inside: avoid; page-break-inside: avoid;
+}
+.one-thing-quote {
+  font-family: 'Playfair Display', Lora, Georgia, serif;
+  font-style: italic; font-size: 14pt; color: var(--text);
+  line-height: 1.8; margin: 0; border: none; padding: 0;
+  quotes: "\u201C" "\u201D";
+}
+.one-thing-quote::before { content: open-quote; color: var(--rose); font-size: 20pt; line-height: 0; vertical-align: -0.4em; margin-right: 4px; }
+.one-thing-quote::after  { content: close-quote; color: var(--rose); font-size: 20pt; line-height: 0; vertical-align: -0.4em; margin-left: 4px; }
+
+/* ── INTEGRATED NARRATIVES ───────────── */
+.narrative-callout {
+  display: flex; gap: 14px; align-items: flex-start;
+  background: var(--surface); border-radius: 8px;
+  border: 1px solid var(--border-light);
+  padding: 16px 20px; margin-bottom: 12px;
+  break-inside: avoid; page-break-inside: avoid;
+}
+.narrative-index {
+  font-family: 'Playfair Display', Lora, Georgia, serif;
+  font-weight: 700; font-size: 18pt; color: var(--rose-light);
+  min-width: 28px; text-align: center; line-height: 1.2; flex-shrink: 0;
+}
+.narrative-text {
+  font-family: 'Playfair Display', Lora, Georgia, serif;
+  font-style: italic; font-size: 10pt; color: var(--text-secondary);
+  line-height: 1.7; margin: 0;
+}
+
 /* ── PRINT HELPERS ───────────────────── */
 .page-break { page-break-before: always; break-before: page; }
 .avoid-break { page-break-inside: avoid; break-inside: avoid; }
@@ -818,6 +929,8 @@ p { margin-bottom: 8px; line-height: 1.7; }
   <div class="cover-line"></div>
   <p class="cover-footer">Tender \u00B7 The Science of Relationships</p>
 </div>
+
+${oneThingHTML ? `<!-- ONE-THING SENTENCE -->\n${oneThingHTML}` : ''}
 
 <!-- RELATIONAL PROFILE -->
 <div class="section">
@@ -985,6 +1098,16 @@ ${bigFiveHTML ? `
   ${bigFiveHTML}
 </div>` : ''}
 
+${supplementHTML ? `
+<!-- SUPPLEMENT SCORES -->
+<div class="section-divider"></div>
+<div class="section">
+  <p class="section-label">SUPPLEMENT SCORES</p>
+  <div class="section-title">Deeper Dimensions</div>
+  <p style="font-style:italic;color:var(--text-muted);font-size:9.5pt;margin-bottom:16px">These fine-grained scores come from the optional supplement questions appended to each assessment. They illuminate dimensions not captured by the main instruments.</p>
+  ${supplementHTML}
+</div>` : ''}
+
 <!-- NEGATIVE CYCLE -->
 <div class="page-break"></div>
 <div class="section">
@@ -1018,6 +1141,16 @@ ${patternsHTML ? `
   <p class="section-label">PATTERN DETECTION</p>
   <div class="section-title">What the Data Reveals</div>
   ${patternsHTML}
+</div>` : ''}
+
+${integratedNarrativesHTML ? `
+<!-- CROSS-ASSESSMENT INSIGHTS -->
+<div class="section-divider"></div>
+<div class="section">
+  <p class="section-label">CROSS-ASSESSMENT INSIGHTS</p>
+  <div class="section-title">Connecting the Threads</div>
+  <p style="font-style:italic;color:var(--text-muted);font-size:9.5pt;margin-bottom:16px">These insights emerge from reading all your assessments together — patterns visible only when the full picture is held at once.</p>
+  ${integratedNarrativesHTML}
 </div>` : ''}
 
 <!-- GROWTH EDGES -->
