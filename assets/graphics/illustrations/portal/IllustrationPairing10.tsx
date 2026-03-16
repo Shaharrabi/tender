@@ -32,13 +32,13 @@ export function IllustrationPairing10({ width = 460, height, animated = true, st
         <Ellipse cx="290" cy="66" rx="20" ry="24" fill="none" stroke="#2C2C2A" strokeWidth="1"/>
         <Path d="M278 54 Q286 44 292 42 Q298 40 302 48" fill="none" stroke="#2C2C2A" strokeWidth=".9" strokeLinecap="round" opacity={.6}/>
         <Ellipse cx="193" cy="138" rx="28" ry="34" fill="none" stroke="#C8923A" strokeWidth=".6" strokeDasharray="3 5" opacity={.4}/>
-        <SvgText x="193" y="134" textAnchor="middle" fontSize="7" fill="#8B7355" opacity={.45} fontFamily="Georgia,serif">want closeness</SvgText>
-        <SvgText x="193" y="146" textAnchor="middle" fontSize="7" fill="#8B7355" opacity={.4} fontFamily="Georgia,serif">fear closeness</SvgText>
-        <SvgText x="370" y="26" fontSize="7.5" fill="#8B7355" opacity={.4} fontFamily="Georgia,serif">{"14 of 16 pairings available →"}</SvgText>
-        <Rect x="370" y="32" width="68" height="4" rx="2" fill="#D6CEBF"/><Rect x="370" y="32" width="60" height="4" rx="2" fill="#6E4E6E" opacity={.5}/>
-        <Rect x="130" y="18" width="126" height="15" rx="5" fill="#6E4E6E" opacity={.15}/>
-        <SvgText x="193" y="28" textAnchor="middle" fontSize="7.5" fill="#6E4E6E" opacity={.7} fontFamily="Georgia,serif">fearful-avoidant + fearful-avoidant</SvgText>
-        <SvgText x="230" y="230" textAnchor="middle" fontFamily="Georgia,serif" fontSize="7.5" letterSpacing="2" fill="#2C2C2A" opacity={.4}>{"PAIRING 10 · SHARED VOLATILITY"}</SvgText>
+        <SvgText x="193" y="132" textAnchor="middle" fontSize="15" fill="#8B7355" opacity={.55} fontFamily="Georgia,serif">want closeness</SvgText>
+        <SvgText x="193" y="150" textAnchor="middle" fontSize="15" fill="#8B7355" opacity={.5} fontFamily="Georgia,serif">fear closeness</SvgText>
+        <SvgText x="370" y="26" fontSize="14" fill="#8B7355" opacity={.5} fontFamily="Georgia,serif">{"14 of 16 pairings →"}</SvgText>
+        <Rect x="370" y="34" width="68" height="5" rx="2" fill="#D6CEBF"/><Rect x="370" y="34" width="60" height="5" rx="2" fill="#6E4E6E" opacity={.5}/>
+        <Rect x="100" y="14" width="186" height="22" rx="5" fill="#6E4E6E" opacity={.15}/>
+        <SvgText x="193" y="30" textAnchor="middle" fontSize="15" fill="#6E4E6E" opacity={.8} fontFamily="Georgia,serif">fearful-avoidant + fearful-avoidant</SvgText>
+        <SvgText x="230" y="232" textAnchor="middle" fontFamily="Georgia,serif" fontSize="16" letterSpacing="2" fill="#2C2C2A" opacity={.5}>{"PAIRING 10 · SHARED VOLATILITY"}</SvgText>
       </Svg>
     </View>
   );

@@ -107,12 +107,12 @@ export function IllustrationPairing06({ width = 300, height, animated = true, st
       <G opacity={.2} stroke="#F2EDE4" strokeWidth="2.2" strokeLinecap="round"><Path d="M186 124 Q210 118 262 122"/><Path d="M184 138 Q209 133 263 136"/><Path d="M185 152 Q209 147 262 150"/></G>
       <Ellipse cx="224" cy="78" rx="20" ry="24" fill="none" stroke="#2C2C2A" strokeWidth="1" rotation={-6} origin="224, 78"/>
       <Path d="M148 150 Q166 140 184 150" fill="none" stroke="#D6CEBF" strokeWidth=".8" strokeDasharray="2 4" opacity={.45}/>
-      <SvgText x="166" y="164" textAnchor="middle" fontSize="6.5" fill="#8B7355" opacity={.4} fontFamily="Georgia,serif">the classic dance</SvgText>
+      <SvgText x="166" y="168" textAnchor="middle" fontSize="14" fill="#8B7355" opacity={.5} fontFamily="Georgia,serif">the classic dance</SvgText>
       <Path d="M128 118 Q150 108 172 118" fill="none" stroke="#8B7355" strokeWidth=".7" strokeDasharray="2 3" opacity={.4}/>
       <Path d="M172 158 Q150 168 128 158" fill="none" stroke="#8B7355" strokeWidth=".7" strokeDasharray="2 3" opacity={.4}/>
-      <Rect x="96" y="16" width="108" height="16" rx="5" fill="#D4909A" opacity={.15}/>
-      <SvgText x="150" y="27" textAnchor="middle" fontSize="7.5" fill="#B5593A" opacity={.7} fontFamily="Georgia,serif">anxious-preoccupied + dismissive-avoidant</SvgText>
-      <SvgText x="150" y="230" textAnchor="middle" fontFamily="Georgia,serif" fontSize="7.5" letterSpacing="2" fill="#2C2C2A" opacity={.4}>{"PAIRING 6 \u00B7 PURSUER-DISTANCER"}</SvgText>
+      <Rect x="16" y="12" width="268" height="22" rx="5" fill="#D4909A" opacity={.15}/>
+      <SvgText x="150" y="29" textAnchor="middle" fontSize="14" fill="#B5593A" opacity={.8} fontFamily="Georgia,serif">anxious + dismissive-avoidant</SvgText>
+      <SvgText x="150" y="232" textAnchor="middle" fontFamily="Georgia,serif" fontSize="15" letterSpacing="2" fill="#2C2C2A" opacity={.5}>{"PAIRING 6 · PURSUER-DISTANCER"}</SvgText>
     </Svg>
   );
 }

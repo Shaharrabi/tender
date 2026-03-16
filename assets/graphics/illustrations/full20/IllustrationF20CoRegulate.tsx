@@ -101,12 +101,12 @@ export function IllustrationF20CoRegulate({ width = 480, height, animated = true
       </G>
       <Ellipse cx="198" cy="100" rx="22" ry="26" fill="none" stroke="#2C2C2A" strokeWidth="1.1"/>
       <Path d="M180 86 Q192 74 200 72 Q208 70 214 80" fill="none" stroke="#2C2C2A" strokeWidth="1" strokeLinecap="round" opacity={0.6}/>
-      <G><Circle cx="310" cy="110" r="6" fill="none" stroke="#C8923A" strokeWidth="0.9"/><SvgText x="310" y="126" textAnchor="middle" fontSize="13" fill="#C8923A" opacity={0.85} fontFamily="Georgia,serif">see</SvgText></G>
-      <G><Path d="M338 144 Q342 138 346 144 Q342 150 338 144Z" fill="#7A9E8E" opacity={0.75}/><SvgText x="342" y="168" textAnchor="middle" fontSize="13" fill="#7A9E8E" opacity={0.8} fontFamily="Georgia,serif">touch</SvgText></G>
-      <G><Path d="M355 90 Q362 84 368 90" fill="none" stroke="#7CA4B8" strokeWidth="1.1" strokeLinecap="round"/><SvgText x="362" y="110" textAnchor="middle" fontSize="13" fill="#7CA4B8" opacity={0.8} fontFamily="Georgia,serif">hear</SvgText></G>
-      <G><Ellipse cx="388" cy="128" rx="7" ry="5" fill="#8B7355" opacity={0.3}/><SvgText x="388" y="150" textAnchor="middle" fontSize="13" fill="#8B7355" opacity={0.75} fontFamily="Georgia,serif">smell</SvgText></G>
-      <G><Circle cx="378" cy="168" r="4" fill="#D4909A" opacity={0.55}/><SvgText x="378" y="190" textAnchor="middle" fontSize="13" fill="#D4909A" opacity={0.8} fontFamily="Georgia,serif">taste</SvgText></G>
-      <SvgText x="240" y="326" textAnchor="middle" fontFamily="Georgia,serif" fontSize="14" letterSpacing="4" fill="#2C2C2A" opacity={0.55}>{"GROUNDING \u00B7 5-4-3-2-1"}</SvgText>
+      <G><Circle cx="310" cy="110" r="6" fill="none" stroke="#C8923A" strokeWidth="0.9"/><SvgText x="310" y="130" textAnchor="middle" fontSize="20" fill="#C8923A" opacity={0.85} fontFamily="Georgia,serif">see</SvgText></G>
+      <G><Path d="M338 144 Q342 138 346 144 Q342 150 338 144Z" fill="#7A9E8E" opacity={0.75}/><SvgText x="342" y="170" textAnchor="middle" fontSize="20" fill="#7A9E8E" opacity={0.8} fontFamily="Georgia,serif">touch</SvgText></G>
+      <G><Path d="M355 90 Q362 84 368 90" fill="none" stroke="#7CA4B8" strokeWidth="1.1" strokeLinecap="round"/><SvgText x="362" y="112" textAnchor="middle" fontSize="20" fill="#7CA4B8" opacity={0.8} fontFamily="Georgia,serif">hear</SvgText></G>
+      <G><Ellipse cx="388" cy="128" rx="7" ry="5" fill="#8B7355" opacity={0.3}/><SvgText x="388" y="152" textAnchor="middle" fontSize="20" fill="#8B7355" opacity={0.75} fontFamily="Georgia,serif">smell</SvgText></G>
+      <G><Circle cx="378" cy="168" r="4" fill="#D4909A" opacity={0.55}/><SvgText x="378" y="192" textAnchor="middle" fontSize="20" fill="#D4909A" opacity={0.8} fontFamily="Georgia,serif">taste</SvgText></G>
+      <SvgText x="240" y="326" textAnchor="middle" fontFamily="Georgia,serif" fontSize="20" letterSpacing="3" fill="#2C2C2A" opacity={0.55}>{"GROUNDING \u00B7 5-4-3-2-1"}</SvgText>
     </Svg>
   );
 }

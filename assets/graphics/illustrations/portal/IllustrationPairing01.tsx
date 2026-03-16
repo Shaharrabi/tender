@@ -38,9 +38,9 @@ export function IllustrationPairing01({ width = 300, height, animated = true, st
           <Path d="M146 86 Q138 82 136 88 Q142 90 146 86Z" fill="#7A9E8E" opacity={.4}/>
           <Path d="M154 82 Q162 78 164 84 Q158 86 154 82Z" fill="#7A9E8E" opacity={.38}/>
         </G>
-        <Rect x="90" y="18" width="120" height="16" rx="5" fill="#7A9E8E" opacity={.2}/>
-        <SvgText x="150" y="29" textAnchor="middle" fontSize="7.5" fill="#2A5040" opacity={.7} fontFamily="Georgia,serif">{"secure + secure · grounded resonance"}</SvgText>
-        <SvgText x="150" y="232" textAnchor="middle" fontFamily="Georgia,serif" fontSize="7.5" letterSpacing="2" fill="#2C2C2A" opacity={.4}>{"PAIRING 1 · GROUNDED RESONANCE"}</SvgText>
+        <Rect x="30" y="14" width="240" height="22" rx="5" fill="#7A9E8E" opacity={.2}/>
+        <SvgText x="150" y="31" textAnchor="middle" fontSize="16" fill="#2A5040" opacity={.8} fontFamily="Georgia,serif">{"secure + secure · grounded resonance"}</SvgText>
+        <SvgText x="150" y="232" textAnchor="middle" fontFamily="Georgia,serif" fontSize="15" letterSpacing="2" fill="#2C2C2A" opacity={.5}>{"PAIRING 1 · GROUNDED RESONANCE"}</SvgText>
       </Svg>
     </View>
   );

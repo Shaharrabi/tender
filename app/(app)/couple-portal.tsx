@@ -650,7 +650,7 @@ function CouplePortalScreen() {
     <View style={styles.tabContent}>
       {/* Hero illustration */}
       <View style={{ alignItems: 'center', marginBottom: Spacing.md }}>
-        <IllustrationPortalHero width={280} animated />
+        <IllustrationPortalHero width={Math.min(Dimensions.get('window').width - 32, 380)} animated />
       </View>
 
       {/* Stale partner portrait nudge */}
@@ -884,7 +884,7 @@ function CouplePortalScreen() {
       {dp && (
         <View style={styles.overviewInsights}>
           <View style={{ alignItems: 'center', marginBottom: Spacing.sm }}>
-            <IllustrationPortalSnapshot width={200} animated />
+            <IllustrationPortalSnapshot width={Math.min(Dimensions.get('window').width - 64, 320)} animated />
           </View>
           <TenderText variant="headingS" style={styles.insightsHeading}>Relationship Snapshot</TenderText>
 
@@ -912,7 +912,7 @@ function CouplePortalScreen() {
           </View>
           <View style={styles.miniMatrixContainer}>
             <View style={{ alignItems: 'center', marginBottom: Spacing.xs }}>
-              <IllustrationAttachSecure width={120} animated />
+              <IllustrationAttachSecure width={180} animated />
             </View>
             <TenderText variant="caption" color={Colors.textSecondary} align="center" style={styles.miniMatrixCaption}>
               {dp.patternInterlock.attachmentDynamic.dynamicLabel}
