@@ -4,6 +4,11 @@
  * Side-by-side comparison of both partners' matrix data with
  * a center column showing the relationship dynamic.
  * Full WEARE data shows here (not in individual mode per Addendum 1).
+ *
+ * Tier 3 support: when a domain has `tier3` data, the expanded panel
+ * renders a LensPicker + lens narrative + couple arc (4-step flow) +
+ * structured practice card + pull-quote invitation.
+ * Non-Tier-3 domains fall back to the original narrative + practice display.
  */
 
 import React, { useState, useMemo, useCallback } from 'react';
@@ -17,6 +22,7 @@ import {
 } from 'react-native';
 import TenderText from '@/components/ui/TenderText';
 import MatrixInvitation from './MatrixInvitation';
+import LensPicker from './LensPicker';
 import { MATRIX_COLORS, CONFIDENCE_COLORS, type MatrixColorKey, type ConfidenceLevel } from './constants/matrix-colors';
 import * as Labels from './constants/matrix-labels';
 import {
@@ -25,7 +31,15 @@ import {
   generateCoupleInvitation,
 } from './narratives/couple-narratives';
 import { generateFieldNarrative } from './narratives/field';
-import { Colors, Spacing, BorderRadius, Shadows } from '@/constants/theme';
+import {
+  routeAttachmentDynamic,
+  routeConflictDynamic,
+  routeValuesDynamic,
+  interpolateCouple,
+  type CoupleNarrativeEntry,
+} from '@/utils/integration-engine/narratives/tier3-couple-dynamics';
+import { Colors, Spacing, BorderRadius, Shadows, FontFamilies } from '@/constants/theme';
+import type { LensType } from '@/utils/integration-engine';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -62,6 +76,33 @@ interface CoupleMatrixProps {
   };
 }
 
+/** Tier 3 couple arc — four universal steps shown as a visual flow */
+interface CoupleArc {
+  pattern: string;
+  eachPartnersWound: string;
+  theCost: string;
+  theInvitation: string;
+}
+
+/** Structured practice card — supports solo (bothPartners: true) or split-task layout */
+interface CouplePractice {
+  name: string;
+  description: string;
+  frequency: string;
+  bothPartners: boolean;
+  partnerATask?: string;
+  partnerBTask?: string;
+}
+
+/** Full Tier 3 payload for a domain — injected by the couple router */
+interface Tier3DomainData {
+  dynamicName: string;
+  lenses: Record<string, string>; // LensType → narrative string
+  coupleArc: CoupleArc;
+  couplePractice: CouplePractice;
+  coupleInvitation: string;
+}
+
 interface CoupleDomain {
   id: string;
   title: string;
@@ -73,6 +114,205 @@ interface CoupleDomain {
   narrative: string;
   practice?: string;
   instruments: string[];
+  tier3?: Tier3DomainData;
+}
+
+// ─── Arc step definitions ────────────────────────────
+
+const ARC_STEPS: Array<{ key: keyof CoupleArc; label: string; color: string }> = [
+  { key: 'pattern',           label: 'Pattern',    color: Colors.primary },
+  { key: 'eachPartnersWound', label: 'History',    color: Colors.accent },
+  { key: 'theCost',           label: 'Cost',       color: Colors.error },
+  { key: 'theInvitation',     label: 'Invitation', color: Colors.calm },
+];
+
+// ─── Sub-components ──────────────────────────────────
+
+interface CoupleArcFlowProps {
+  arc: CoupleArc;
+  palette: { bg: string; text: string; accent: string; label: string };
+}
+
+function CoupleArcFlow({ arc, palette }: CoupleArcFlowProps) {
+  const [activeStep, setActiveStep] = useState<number>(0);
+
+  return (
+    <View style={arcStyles.wrapper}>
+      {/* Step selector row */}
+      <View style={arcStyles.stepRow}>
+        {ARC_STEPS.map((step, idx) => {
+          const isActive = idx === activeStep;
+          return (
+            <React.Fragment key={step.key}>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => setActiveStep(idx)}
+                style={arcStyles.stepButton}
+              >
+                <View
+                  style={[
+                    arcStyles.stepDot,
+                    {
+                      backgroundColor: isActive ? step.color : step.color + '30',
+                      borderColor: isActive ? step.color : step.color + '60',
+                    },
+                  ]}
+                />
+                <TenderText
+                  variant="caption"
+                  style={[
+                    arcStyles.stepLabel,
+                    { color: isActive ? step.color : Colors.textMuted },
+                  ]}
+                >
+                  {step.label}
+                </TenderText>
+              </TouchableOpacity>
+              {idx < ARC_STEPS.length - 1 && (
+                <View
+                  style={[
+                    arcStyles.connector,
+                    { backgroundColor: Colors.primary + '25' },
+                  ]}
+                />
+              )}
+            </React.Fragment>
+          );
+        })}
+      </View>
+
+      {/* Active step content */}
+      <View
+        style={[
+          arcStyles.stepContent,
+          { backgroundColor: ARC_STEPS[activeStep].color + '10', borderColor: ARC_STEPS[activeStep].color + '30' },
+        ]}
+      >
+        <View style={arcStyles.stepContentHeader}>
+          <View
+            style={[
+              arcStyles.stepContentDot,
+              { backgroundColor: ARC_STEPS[activeStep].color },
+            ]}
+          />
+          <TenderText
+            variant="caption"
+            style={[arcStyles.stepContentLabel, { color: ARC_STEPS[activeStep].color }]}
+          >
+            {ARC_STEPS[activeStep].label.toUpperCase()}
+          </TenderText>
+        </View>
+        <TenderText variant="body" style={arcStyles.stepContentText}>
+          {arc[ARC_STEPS[activeStep].key]}
+        </TenderText>
+      </View>
+    </View>
+  );
+}
+
+interface PracticeCardProps {
+  practice: CouplePractice;
+  partner1Name: string;
+  partner2Name: string;
+  palette: { bg: string; text: string; accent: string; label: string };
+}
+
+function PracticeCard({ practice, partner1Name, partner2Name, palette }: PracticeCardProps) {
+  return (
+    <View style={[practiceStyles.card, { backgroundColor: palette.bg + '30', borderColor: palette.accent + '30' }]}>
+      {/* Header */}
+      <View style={practiceStyles.header}>
+        <TenderText variant="caption" style={[practiceStyles.eyebrow, { color: palette.label }]}>
+          PRACTICE
+        </TenderText>
+        <TenderText variant="headingS" style={[practiceStyles.name, { color: palette.text }]}>
+          {practice.name}
+        </TenderText>
+        <TenderText variant="caption" style={practiceStyles.frequency}>
+          {practice.frequency}
+        </TenderText>
+      </View>
+
+      {practice.bothPartners ? (
+        /* Shared practice — single centered description */
+        <TenderText variant="bodySmall" style={practiceStyles.sharedDescription}>
+          {practice.description}
+        </TenderText>
+      ) : (
+        /* Split tasks — two columns with partner names as headers */
+        <View>
+          <TenderText variant="bodySmall" style={practiceStyles.sharedDescription}>
+            {practice.description}
+          </TenderText>
+          <View style={practiceStyles.splitRow}>
+            <View style={[practiceStyles.splitCol, { backgroundColor: Colors.couplePartnerALight + '60', borderColor: Colors.couplePartnerA + '30' }]}>
+              <TenderText variant="caption" style={[practiceStyles.splitHeader, { color: Colors.couplePartnerA }]}>
+                {partner1Name.toUpperCase()}
+              </TenderText>
+              <TenderText variant="bodySmall" style={practiceStyles.splitTask}>
+                {practice.partnerATask ?? ''}
+              </TenderText>
+            </View>
+            <View style={[practiceStyles.splitCol, { backgroundColor: Colors.couplePartnerBLight + '60', borderColor: Colors.couplePartnerB + '30' }]}>
+              <TenderText variant="caption" style={[practiceStyles.splitHeader, { color: Colors.couplePartnerB }]}>
+                {partner2Name.toUpperCase()}
+              </TenderText>
+              <TenderText variant="bodySmall" style={practiceStyles.splitTask}>
+                {practice.partnerBTask ?? ''}
+              </TenderText>
+            </View>
+          </View>
+        </View>
+      )}
+    </View>
+  );
+}
+
+interface PullQuoteProps {
+  text: string;
+  accentColor: string;
+}
+
+function PullQuote({ text, accentColor }: PullQuoteProps) {
+  return (
+    <View style={[pullQuoteStyles.wrapper, { borderLeftColor: accentColor }]}>
+      <TenderText style={[pullQuoteStyles.text, { color: Colors.text }]}>
+        {text}
+      </TenderText>
+    </View>
+  );
+}
+
+// ─── Tier 3 helper ──────────────────────────────────
+
+/** Convert a CoupleNarrativeEntry into a Tier3DomainData, interpolating partner names */
+function toTier3(entry: CoupleNarrativeEntry, aName: string, bName: string): Tier3DomainData {
+  const interp = (s: string) => interpolateCouple(s, aName, bName);
+  return {
+    dynamicName: entry.dynamicName,
+    lenses: Object.fromEntries(
+      Object.entries(entry.lenses).map(([k, v]) => [k, interp(v)])
+    ) as Record<string, string>,
+    coupleArc: {
+      pattern:             interp(entry.coupleArc.pattern),
+      eachPartnersWound:   interp(entry.coupleArc.eachPartnersWound),
+      theCost:             interp(entry.coupleArc.theCost),
+      theInvitation:       interp(entry.coupleArc.theInvitation),
+    },
+    couplePractice: {
+      name:         entry.couplePractice.name,
+      description:  interp(entry.couplePractice.description),
+      frequency:    entry.couplePractice.frequency,
+      bothPartners: entry.couplePractice.bothPartners,
+      partnerATask: entry.couplePractice.partnerATask
+        ? interp(entry.couplePractice.partnerATask)
+        : undefined,
+      partnerBTask: entry.couplePractice.partnerBTask
+        ? interp(entry.couplePractice.partnerBTask)
+        : undefined,
+    },
+    coupleInvitation: interp(entry.coupleInvitation),
+  };
 }
 
 // ─── Component ──────────────────────────────────────
@@ -86,16 +326,24 @@ export default function CoupleMatrix({
   rfasData,
 }: CoupleMatrixProps) {
   const [expandedDomain, setExpandedDomain] = useState<string | null>(null);
+  const [activeLens, setActiveLens] = useState<LensType>('soulful');
 
   const handleToggle = useCallback((id: string) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setExpandedDomain(prev => prev === id ? null : id);
+    setExpandedDomain(prev => {
+      if (prev === id) return null;
+      // Reset lens to soulful when opening a new domain
+      setActiveLens('soulful');
+      return id;
+    });
   }, []);
 
   const domains = useMemo<CoupleDomain[]>(() => {
     const result: CoupleDomain[] = [];
     const a = partner1;
     const b = partner2;
+    const aName = partner1Name;
+    const bName = partner2Name;
 
     // DOMAIN 1: Attachment
     if (a.ecrr && b.ecrr) {
@@ -107,6 +355,7 @@ export default function CoupleMatrix({
         aAvoidance: a.ecrr.avoidanceScore,
         bAvoidance: b.ecrr.avoidanceScore,
       });
+      const attachEntry = routeAttachmentDynamic(a, b);
       result.push({
         id: 'attachment',
         title: 'How you seek closeness \u2014 together',
@@ -124,6 +373,7 @@ export default function CoupleMatrix({
         narrative: pairing.narrative,
         practice: pairing.practice,
         instruments: ['ECR-R'],
+        tier3: attachEntry ? toTier3(attachEntry, aName, bName) : undefined,
       });
     }
 
@@ -131,7 +381,6 @@ export default function CoupleMatrix({
     if (a.ipip && b.ipip) {
       const adp = a.ipip.domainPercentiles || {};
       const bdp = b.ipip.domainPercentiles || {};
-      // Find shared trait or biggest difference
       const traits = ['N', 'E', 'O', 'A', 'C'];
       const traitNames: Record<string, string> = { N: 'Sensitivity', E: 'Social energy', O: 'Openness', A: 'Warmth', C: 'Structure' };
       let biggestDiff = 0;
@@ -241,6 +490,7 @@ export default function CoupleMatrix({
         aProblemSolving: aSub.problemSolving?.mean ?? 2.5,
         bProblemSolving: bSub.problemSolving?.mean ?? 2.5,
       });
+      const conflictEntry = routeConflictDynamic(a, b);
       result.push({
         id: 'conflict',
         title: 'How you navigate conflict \u2014 together',
@@ -258,6 +508,7 @@ export default function CoupleMatrix({
         narrative: pairing.narrative,
         practice: pairing.practice,
         instruments: ['DUTCH'],
+        tier3: conflictEntry ? toTier3(conflictEntry, aName, bName) : undefined,
       });
     }
 
@@ -269,6 +520,7 @@ export default function CoupleMatrix({
         (v: string) => (b.values.top5Values || []).includes(v)
       );
 
+      const valuesEntry = routeValuesDynamic(a, b);
       result.push({
         id: 'values',
         title: 'What matters most \u2014 together',
@@ -289,6 +541,7 @@ export default function CoupleMatrix({
             ? `You share one core value: ${sharedValues[0]}. This is your common ground. The differences aren't problems \u2014 they're invitations to understand what makes your partner tick at the deepest level.`
             : 'Your top values are different. This isn\'t incompatibility \u2014 it\'s creative tension. The question isn\'t "do we value the same things?" but "can we honor what each of us values?"',
         instruments: ['Values'],
+        tier3: valuesEntry ? toTier3(valuesEntry, aName, bName) : undefined,
       });
     }
 
@@ -325,7 +578,7 @@ export default function CoupleMatrix({
     }
 
     return result;
-  }, [partner1, partner2, weareData, rfasData]);
+  }, [partner1, partner2, partner1Name, partner2Name, weareData, rfasData]);
 
   // Couple invitation
   const invitation = useMemo(() => {
@@ -384,6 +637,7 @@ export default function CoupleMatrix({
         const palette = MATRIX_COLORS[domain.color];
         const isExpanded = expandedDomain === domain.id;
         const confStyle = CONFIDENCE_COLORS[domain.confidence];
+        const hasTier3 = Boolean(domain.tier3);
 
         return (
           <TouchableOpacity
@@ -398,6 +652,13 @@ export default function CoupleMatrix({
               <TenderText variant="headingS" style={{ color: palette.text, flex: 1 }}>
                 {domain.title}
               </TenderText>
+              {hasTier3 && (
+                <View style={[styles.tier3Badge, { backgroundColor: Colors.accentGold + '20', borderColor: Colors.accentGold + '50' }]}>
+                  <TenderText variant="caption" style={{ color: Colors.accentGold, fontSize: 8, letterSpacing: 1 }}>
+                    DEEP
+                  </TenderText>
+                </View>
+              )}
               <View style={[styles.confBadge, { backgroundColor: confStyle.bg }]}>
                 <TenderText variant="caption" style={{ color: confStyle.text, fontSize: 9 }}>
                   {confStyle.label}
@@ -422,7 +683,7 @@ export default function CoupleMatrix({
               {/* Center dynamic label */}
               <View style={[styles.centerCol, { backgroundColor: palette.bg + '40' }]}>
                 <TenderText variant="caption" style={[styles.centerText, { color: palette.text }]}>
-                  {domain.centerLabel}
+                  {hasTier3 ? domain.tier3!.dynamicName : domain.centerLabel}
                 </TenderText>
               </View>
 
@@ -439,29 +700,46 @@ export default function CoupleMatrix({
               </View>
             </View>
 
-            {/* Expanded narrative */}
+            {/* ── Expanded panel ── */}
             {isExpanded && (
               <View style={[styles.narrativePanel, { backgroundColor: palette.bg + '20', borderTopColor: palette.accent + '30' }]}>
-                <TenderText variant="body" style={{ color: Colors.text, lineHeight: 24 }}>
-                  {domain.narrative}
-                </TenderText>
-                {domain.practice && (
-                  <View style={[styles.practiceBox, { backgroundColor: palette.bg + '50' }]}>
-                    <TenderText variant="caption" style={{ color: palette.label, fontSize: 9, letterSpacing: 1.5 }}>
-                      PRACTICE
+
+                {hasTier3 ? (
+                  /* ── Tier 3 expanded content ── */
+                  <Tier3Panel
+                    tier3={domain.tier3!}
+                    palette={palette}
+                    activeLens={activeLens}
+                    onLensChange={setActiveLens}
+                    partner1Name={partner1Name}
+                    partner2Name={partner2Name}
+                    instruments={domain.instruments}
+                  />
+                ) : (
+                  /* ── Legacy narrative + optional practice ── */
+                  <>
+                    <TenderText variant="body" style={{ color: Colors.text, lineHeight: 24 }}>
+                      {domain.narrative}
                     </TenderText>
-                    <TenderText variant="bodySmall" style={{ color: palette.text, fontStyle: 'italic', lineHeight: 20 }}>
-                      {domain.practice}
-                    </TenderText>
-                  </View>
-                )}
-                <View style={styles.instRow}>
-                  {domain.instruments.map((inst, i) => (
-                    <View key={i} style={[styles.instChip, { backgroundColor: palette.bg + '60' }]}>
-                      <TenderText variant="caption" style={{ color: palette.text, fontSize: 9 }}>{inst}</TenderText>
+                    {domain.practice && (
+                      <View style={[styles.practiceBox, { backgroundColor: palette.bg + '50' }]}>
+                        <TenderText variant="caption" style={{ color: palette.label, fontSize: 9, letterSpacing: 1.5 }}>
+                          PRACTICE
+                        </TenderText>
+                        <TenderText variant="bodySmall" style={{ color: palette.text, fontStyle: 'italic', lineHeight: 20 }}>
+                          {domain.practice}
+                        </TenderText>
+                      </View>
+                    )}
+                    <View style={styles.instRow}>
+                      {domain.instruments.map((inst, i) => (
+                        <View key={i} style={[styles.instChip, { backgroundColor: palette.bg + '60' }]}>
+                          <TenderText variant="caption" style={{ color: palette.text, fontSize: 9 }}>{inst}</TenderText>
+                        </View>
+                      ))}
                     </View>
-                  ))}
-                </View>
+                  </>
+                )}
               </View>
             )}
           </TouchableOpacity>
@@ -472,6 +750,92 @@ export default function CoupleMatrix({
       {invitation && (
         <MatrixInvitation text={invitation} label="Your couple invitation" />
       )}
+    </View>
+  );
+}
+
+// ─── Tier3Panel ──────────────────────────────────────
+
+interface Tier3PanelProps {
+  tier3: Tier3DomainData;
+  palette: { bg: string; text: string; accent: string; label: string };
+  activeLens: LensType;
+  onLensChange: (lens: LensType) => void;
+  partner1Name: string;
+  partner2Name: string;
+  instruments: string[];
+}
+
+function Tier3Panel({
+  tier3,
+  palette,
+  activeLens,
+  onLensChange,
+  partner1Name,
+  partner2Name,
+  instruments,
+}: Tier3PanelProps) {
+  const lensNarrative = tier3.lenses[activeLens] ?? tier3.lenses['soulful'] ?? '';
+
+  return (
+    <View style={tier3Styles.container}>
+
+      {/* Lens picker */}
+      <View style={tier3Styles.lensSection}>
+        <TenderText variant="caption" style={[tier3Styles.sectionEyebrow, { color: palette.label }]}>
+          VIEW THROUGH A LENS
+        </TenderText>
+        <LensPicker activeLens={activeLens} onLensChange={onLensChange} />
+      </View>
+
+      {/* Lens narrative */}
+      <TenderText variant="body" style={tier3Styles.lensNarrative}>
+        {lensNarrative}
+      </TenderText>
+
+      {/* Divider */}
+      <View style={[tier3Styles.divider, { backgroundColor: palette.accent + '25' }]} />
+
+      {/* Couple arc */}
+      <View style={tier3Styles.section}>
+        <TenderText variant="caption" style={[tier3Styles.sectionEyebrow, { color: palette.label }]}>
+          THE ARC
+        </TenderText>
+        <CoupleArcFlow arc={tier3.coupleArc} palette={palette} />
+      </View>
+
+      {/* Divider */}
+      <View style={[tier3Styles.divider, { backgroundColor: palette.accent + '25' }]} />
+
+      {/* Practice card */}
+      <View style={tier3Styles.section}>
+        <PracticeCard
+          practice={tier3.couplePractice}
+          partner1Name={partner1Name}
+          partner2Name={partner2Name}
+          palette={palette}
+        />
+      </View>
+
+      {/* Divider */}
+      <View style={[tier3Styles.divider, { backgroundColor: palette.accent + '25' }]} />
+
+      {/* Invitation pull quote */}
+      <View style={tier3Styles.section}>
+        <TenderText variant="caption" style={[tier3Styles.sectionEyebrow, { color: palette.label }]}>
+          YOUR INVITATION
+        </TenderText>
+        <PullQuote text={tier3.coupleInvitation} accentColor={palette.accent} />
+      </View>
+
+      {/* Instruments */}
+      <View style={styles.instRow}>
+        {instruments.map((inst, i) => (
+          <View key={i} style={[styles.instChip, { backgroundColor: palette.bg + '60' }]}>
+            <TenderText variant="caption" style={{ color: palette.text, fontSize: 9 }}>{inst}</TenderText>
+          </View>
+        ))}
+      </View>
     </View>
   );
 }
@@ -528,6 +892,12 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
+  },
+  tier3Badge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: BorderRadius.pill,
+    borderWidth: 1,
   },
   confBadge: {
     paddingHorizontal: Spacing.sm,
@@ -592,5 +962,165 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.sm,
     paddingVertical: 2,
     borderRadius: BorderRadius.pill,
+  },
+});
+
+// ─── Tier 3 panel styles ─────────────────────────────
+
+const tier3Styles = StyleSheet.create({
+  container: {
+    gap: Spacing.md,
+  },
+  lensSection: {
+    gap: Spacing.xs,
+  },
+  sectionEyebrow: {
+    fontSize: 9,
+    letterSpacing: 1.8,
+    fontFamily: 'JosefinSans_500Medium',
+  },
+  lensNarrative: {
+    color: Colors.text,
+    lineHeight: 24,
+  },
+  divider: {
+    height: 1,
+    marginHorizontal: -Spacing.md,
+  },
+  section: {
+    gap: Spacing.sm,
+  },
+});
+
+// ─── Arc flow styles ─────────────────────────────────
+
+const arcStyles = StyleSheet.create({
+  wrapper: {
+    gap: Spacing.sm,
+  },
+  stepRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  stepButton: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: Spacing.xs,
+  },
+  stepDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    borderWidth: 1.5,
+  },
+  stepLabel: {
+    fontSize: 9,
+    fontFamily: 'JosefinSans_500Medium',
+    letterSpacing: 0.8,
+    textAlign: 'center',
+  },
+  connector: {
+    height: 1.5,
+    width: 16,
+    marginBottom: 14, // vertically align with dot center
+  },
+  stepContent: {
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    padding: Spacing.sm,
+    gap: Spacing.xs,
+  },
+  stepContentHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  stepContentDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  stepContentLabel: {
+    fontSize: 9,
+    fontFamily: 'JosefinSans_500Medium',
+    letterSpacing: 1.5,
+  },
+  stepContentText: {
+    color: Colors.text,
+    lineHeight: 22,
+  },
+});
+
+// ─── Practice card styles ────────────────────────────
+
+const practiceStyles = StyleSheet.create({
+  card: {
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    padding: Spacing.md,
+    gap: Spacing.sm,
+  },
+  header: {
+    gap: 3,
+  },
+  eyebrow: {
+    fontSize: 9,
+    letterSpacing: 1.8,
+    fontFamily: 'JosefinSans_500Medium',
+  },
+  name: {
+    fontFamily: 'PlayfairDisplay_600SemiBold',
+    fontSize: 16,
+  },
+  frequency: {
+    fontSize: 11,
+    color: Colors.textMuted,
+    fontFamily: 'JosefinSans_300Light',
+    letterSpacing: 0.3,
+  },
+  sharedDescription: {
+    color: Colors.text,
+    lineHeight: 20,
+    fontStyle: 'italic',
+  },
+  splitRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    marginTop: Spacing.sm,
+  },
+  splitCol: {
+    flex: 1,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    padding: Spacing.sm,
+    gap: 4,
+  },
+  splitHeader: {
+    fontSize: 9,
+    fontFamily: 'JosefinSans_500Medium',
+    letterSpacing: 1,
+  },
+  splitTask: {
+    color: Colors.text,
+    lineHeight: 18,
+  },
+});
+
+// ─── Pull quote styles ───────────────────────────────
+
+const pullQuoteStyles = StyleSheet.create({
+  wrapper: {
+    borderLeftWidth: 3,
+    paddingLeft: Spacing.md,
+    paddingVertical: Spacing.xs,
+  },
+  text: {
+    fontFamily: 'PlayfairDisplay_400Regular_Italic',
+    fontSize: 17,
+    lineHeight: 26,
+    fontStyle: 'italic',
+    letterSpacing: 0.2,
+    textAlign: 'center',
   },
 });
