@@ -1,14 +1,12 @@
 /**
- * MatrixTab — Assessment Matrix integrated as a portrait tab.
+ * MatrixTab V2 — Evolved from the original assessment-matrix tab.
  *
- * Three sub-segments (styled as pill selector):
- *   Matrix — Attachment scatter plot + explore mode
- *   Connections — Cross-assessment connection map
- *   Profile — All dimensions with charts
+ * Default view: TenderMatrix — the integrated relational overview.
+ * Sub-segments: Overview (TenderMatrix) | Explore | Connections | Profile
  *
- * Extracted from assessment-matrix.tsx for embedding in the portrait screen.
- * Uses shared data from the portrait screen (allScores, portrait) to avoid
- * duplicate data fetching.
+ * The TenderMatrix replaces the old attachment-only matrix as the
+ * primary view, providing cross-instrument narratives organized by
+ * relational architecture rather than individual assessments.
  */
 
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
@@ -21,6 +19,7 @@ import {
   Shadows,
 } from '@/constants/theme';
 import { LockIcon } from '@/assets/graphics/icons';
+import TenderMatrix from '@/components/matrix/TenderMatrix';
 import { AttachmentMatrix } from '@/components/visualizations/AttachmentMatrix';
 import { ExploreMode } from '@/components/visualizations/ExploreMode';
 import { ConnectionMap } from '@/components/visualizations/ConnectionMap';
@@ -38,10 +37,11 @@ import type { ECRRScores, AttachmentStyle } from '@/types';
 
 // ─── Sub-segment definitions ─────────────────────────
 
-type Segment = 'matrix' | 'connections' | 'profile';
+type Segment = 'overview' | 'explore' | 'connections' | 'profile';
 
 const SEGMENTS: { key: Segment; label: string; minAssessments: number }[] = [
-  { key: 'matrix', label: 'Matrix', minAssessments: 1 },
+  { key: 'overview', label: 'Overview', minAssessments: 1 },
+  { key: 'explore', label: 'Explore', minAssessments: 1 },
   { key: 'connections', label: 'Connections', minAssessments: 2 },
   { key: 'profile', label: 'Profile', minAssessments: 3 },
 ];
@@ -140,7 +140,7 @@ export default function MatrixTab({ allScores, portrait }: MatrixTabProps) {
   }, []);
 
   // ── UI state ──
-  const [activeSegment, setActiveSegment] = useState<Segment>('matrix');
+  const [activeSegment, setActiveSegment] = useState<Segment>('overview');
   const [isExploring, setIsExploring] = useState(false);
   const [exploredAnxiety, setExploredAnxiety] = useState<number | null>(null);
   const [exploredAvoidance, setExploredAvoidance] = useState<number | null>(null);
@@ -203,13 +203,13 @@ export default function MatrixTab({ allScores, portrait }: MatrixTabProps) {
     setExploredAvoidance(null);
   }, []);
 
-  // ── No ECR-R data — show a message ──
-  if (!ecrScores) {
+  // ── No data at all ──
+  if (completedCount < 1) {
     return (
       <Animated.View style={{ opacity: fadeAnim }}>
         <View style={styles.emptyState}>
           <TenderText variant="body" color={Colors.textSecondary} align="center">
-            Complete the "How You Connect" assessment to unlock the Attachment Matrix.
+            Complete at least one assessment to unlock the Matrix.
           </TenderText>
         </View>
       </Animated.View>
@@ -218,11 +218,7 @@ export default function MatrixTab({ allScores, portrait }: MatrixTabProps) {
 
   return (
     <Animated.View style={{ opacity: fadeAnim }}>
-      <TenderText variant="body" color={Colors.textSecondary} style={styles.tabIntro}>
-        Interactive map of your assessment dimensions. Tap a segment to explore how your patterns connect.
-      </TenderText>
-
-      {/* Sub-segment pills — matching portrait tab style */}
+      {/* Sub-segment pills */}
       <View style={styles.segmentRow}>
         {SEGMENTS.map((seg) => {
           const isActive = activeSegment === seg.key;
@@ -253,8 +249,13 @@ export default function MatrixTab({ allScores, portrait }: MatrixTabProps) {
         })}
       </View>
 
-      {/* ═══ MATRIX SEGMENT ═══ */}
-      {activeSegment === 'matrix' && (
+      {/* ═══ OVERVIEW — TenderMatrix ═══ */}
+      {activeSegment === 'overview' && portrait && (
+        <TenderMatrix allScores={allScores} portrait={portrait} />
+      )}
+
+      {/* ═══ EXPLORE — Attachment scatter plot + explore mode ═══ */}
+      {activeSegment === 'explore' && ecrScores && (
         <View style={styles.segmentContent}>
           {interpretation && (
             <View style={styles.styleHeader}>
@@ -403,11 +404,6 @@ export default function MatrixTab({ allScores, portrait }: MatrixTabProps) {
 // ─── Styles ──────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  tabIntro: {
-    lineHeight: 24,
-    paddingHorizontal: Spacing.lg,
-    marginBottom: Spacing.sm,
-  },
   emptyState: {
     padding: Spacing.xl,
     alignItems: 'center',
