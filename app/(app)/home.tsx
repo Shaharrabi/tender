@@ -2089,7 +2089,7 @@ export default function HomeScreen() {
               <SparkleIcon size={22} color={Colors.primary} />
             </View>
             <View style={styles.gatewayCardContent}>
-              <Text style={styles.gatewayCardTitle}>✨ Your Portrait</Text>
+              <Text style={styles.gatewayCardTitle}>🪷 Your Portrait</Text>
               <Text style={styles.gatewayCardSubtitle} numberOfLines={1}>
                 {hasPortrait && portrait
                   ? `${portrait.negativeCycle?.position ? portrait.negativeCycle.position.charAt(0).toUpperCase() + portrait.negativeCycle.position.slice(1) : 'Your'} \u00B7 ${portrait.growthEdges?.[0]?.title ?? 'Growth insights'}`
@@ -2112,7 +2112,7 @@ export default function HomeScreen() {
                 <HeartDoubleIcon size={22} color={Colors.primary} />
               </View>
               <View style={styles.gatewayCardContent}>
-              <Text style={styles.gatewayCardTitle}>💕 Your Couple Portrait</Text>
+              <Text style={styles.gatewayCardTitle}>🌿 Your Couple Portrait</Text>
                 <Text style={styles.gatewayCardSubtitle} numberOfLines={1}>
                   {weareProfile
                     ? `${weareProfile.warmSummary} \u00B7 ${weareProfile.bottleneck?.label ?? ''}`
@@ -2136,7 +2136,7 @@ export default function HomeScreen() {
                 <RainbowIcon size={22} color={Colors.accent} />
               </View>
               <View style={styles.gatewayCardContent}>
-                <Text style={styles.gatewayCardTitle}>🌉 Building Bridges</Text>
+                <Text style={styles.gatewayCardTitle}>🌊 Building Bridges</Text>
                 <Text style={styles.gatewayCardSubtitle} numberOfLines={1}>
                   Card game for deeper connection
                 </Text>
@@ -2158,7 +2158,7 @@ export default function HomeScreen() {
                 <SparkleIcon size={22} color={Colors.accent} />
               </View>
               <View style={styles.gatewayCardContent}>
-                <Text style={styles.gatewayCardTitle}>🦋 Dating Well</Text>
+                <Text style={styles.gatewayCardTitle}>✨ Dating Well</Text>
                 <Text style={styles.gatewayCardSubtitle} numberOfLines={1}>
                   Navigate new relationships with awareness
                 </Text>
