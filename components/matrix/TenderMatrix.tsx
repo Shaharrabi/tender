@@ -102,22 +102,8 @@ export default function TenderMatrix({ allScores, portrait, scrollViewRef }: Ten
   }, []);
 
   const handleToggle = useCallback((id: string) => {
-    if (integrateMode) {
-      // In integrate mode, domain header toggles all cells in domain
-      setSelectedBoxes(prev => {
-        const domainCells = prev.filter(k => k.startsWith(`${id}:`));
-        if (domainCells.length > 0) {
-          // Deselect all cells in this domain
-          return prev.filter(k => !k.startsWith(`${id}:`));
-        }
-        // We can't select all cells from header without knowing cell labels,
-        // so just toggle the domain as a whole — no-op, user should tap cells
-        return prev;
-      });
-    } else {
-      setExpandedDomain(prev => prev === id ? null : id);
-    }
-  }, [integrateMode]);
+    setExpandedDomain(prev => prev === id ? null : id);
+  }, []);
 
   const toggleIntegrateMode = useCallback(() => {
     setIntegrateMode(prev => {
@@ -466,7 +452,7 @@ export default function TenderMatrix({ allScores, portrait, scrollViewRef }: Ten
           <MatrixDomain
             key={domain.id}
             domain={domain}
-            isExpanded={!integrateMode && expandedDomain === domain.id}
+            isExpanded={expandedDomain === domain.id}
             onToggle={handleToggle}
             selectable={integrateMode}
             selected={selectedDomains.includes(domain.id as DomainId)}
