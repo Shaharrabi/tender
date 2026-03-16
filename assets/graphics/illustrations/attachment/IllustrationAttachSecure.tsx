@@ -76,8 +76,8 @@ export function IllustrationAttachSecure({ width = 200, height, animated = true,
         <Ellipse cx="90" cy="140" rx="60" ry="72" fill="none" stroke="#7A9E8E" strokeWidth=".4" opacity={0.15}/>
       )}
       {/* behavioral annotation */}
-      <SvgText x="100" y="228" textAnchor="middle" fontSize="7.5" fill="#2A5040" opacity={0.75} fontFamily="Georgia,serif" fontStyle="italic">{"\u00B7 settled \u00B7 present \u00B7 radiating \u00B7"}</SvgText>
-      <SvgText x="100" y="215" textAnchor="middle" fontSize="9" fill="#7A9E8E" opacity={0.9} fontFamily="Georgia,serif" fontWeight="500">secure</SvgText>
+      <SvgText x="100" y="232" textAnchor="middle" fontSize="12" fill="#2A5040" opacity={0.8} fontFamily="Georgia,serif" fontStyle="italic">{"\u00B7 settled \u00B7 present \u00B7 radiating \u00B7"}</SvgText>
+      <SvgText x="100" y="216" textAnchor="middle" fontSize="14" fill="#7A9E8E" opacity={0.9} fontFamily="Georgia,serif" fontWeight="500">secure</SvgText>
     </Svg>
   );
 

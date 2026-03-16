@@ -267,17 +267,17 @@ export function IllustrationPortalHero({ width = 520, height, animated = true, s
       )}
       {/* Report score zones */}
       <G opacity={0.55}>
-      <SvgText x="350" y="300" fontSize="7.5" fill="#8B7355" fontFamily="Georgia,serif" letterSpacing="1">BOND</SvgText>
+      <SvgText x="350" y="300" fontSize="13" fill="#8B7355" opacity={0.85} fontFamily="Georgia,serif" letterSpacing="1">BOND</SvgText>
       <Rect x="350" y="305" width="60" height="3" rx="1.5" fill="#D6CEBF"/>
       <Rect x="350" y="305" width="48" height="3" rx="1.5" fill="#B5593A" opacity={0.7}/>
-      <SvgText x="350" y="318" fontSize="7.5" fill="#8B7355" fontFamily="Georgia,serif" letterSpacing="1">SAFETY</SvgText>
+      <SvgText x="350" y="320" fontSize="13" fill="#8B7355" opacity={0.85} fontFamily="Georgia,serif" letterSpacing="1">SAFETY</SvgText>
       <Rect x="350" y="323" width="60" height="3" rx="1.5" fill="#D6CEBF"/>
       <Rect x="350" y="323" width="38" height="3" rx="1.5" fill="#1E3A52" opacity={0.7}/>
-      <SvgText x="350" y="336" fontSize="7.5" fill="#8B7355" fontFamily="Georgia,serif" letterSpacing="1">REPAIR</SvgText>
+      <SvgText x="350" y="340" fontSize="13" fill="#8B7355" opacity={0.85} fontFamily="Georgia,serif" letterSpacing="1">REPAIR</SvgText>
       <Rect x="350" y="341" width="60" height="3" rx="1.5" fill="#D6CEBF"/>
       <Rect x="350" y="341" width="52" height="3" rx="1.5" fill="#7A9E8E" opacity={0.7}/>
       </G>
-      <SvgText x="260" y="368" textAnchor="middle" fontFamily="Georgia,serif" fontSize="11" letterSpacing="5" fill="#2C2C2A" opacity={0.55}>{"PORTAL \u00B7 THE FIELD BETWEEN"}</SvgText>
+      <SvgText x="260" y="368" textAnchor="middle" fontFamily="Georgia,serif" fontSize="15" letterSpacing="5" fill="#2C2C2A" opacity={0.6}>{"PORTAL \u00B7 THE FIELD BETWEEN"}</SvgText>
     </Svg>
   );
 
