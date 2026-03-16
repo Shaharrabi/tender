@@ -44,6 +44,7 @@ import { useSoundHaptics } from '@/services/SoundHapticsService';
 import { generateMiniTeaser } from '@/utils/assessments/mini-teaser';
 import type { MiniTeaser } from '@/utils/assessments/mini-teaser';
 import type { AssessmentConfig, GenericQuestion, AssessmentSection } from '@/types';
+import { notifyPartner } from '@/services/partner-activity-hooks';
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -661,6 +662,9 @@ export default function TenderAssessmentScreen() {
       }
 
       console.log('[Assessment] Saved successfully:', currentConfig.type, 'for user', user.id);
+
+      // Notify partner (non-blocking)
+      notifyPartner(user.id, 'assessment_complete', { assessmentType: currentConfig.type });
 
       // Mark section complete — build updated state synchronously so
       // auto-advance (breakAfter: false) saves correct progress.

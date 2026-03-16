@@ -9,6 +9,8 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import QuickLinksBar from '@/components/QuickLinksBar';
+import { useScrollHideBar } from '@/hooks/useScrollHideBar';
+import ReAnimated from 'react-native-reanimated';
 import {
   View,
   Text,
@@ -144,6 +146,7 @@ export default function AssessmentMatrixScreen() {
   const { user } = useAuth();
   const { isGuest } = useGuest();
   const router = useRouter();
+  const { handleScroll: handleScrollBar, animatedStyle: quickLinksAnimStyle } = useScrollHideBar();
 
   // Data state
   const [loading, setLoading] = useState(true);
@@ -399,6 +402,8 @@ export default function AssessmentMatrixScreen() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        onScroll={handleScrollBar}
+        scrollEventThrottle={16}
       >
         {/* ═══ MATRIX SEGMENT ═══ */}
         {activeSegment === 'matrix' && (
@@ -738,9 +743,21 @@ const styles = StyleSheet.create({
     color: Colors.textMuted,
   },
 
+  quickLinksWrapper: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+    backgroundColor: Colors.background,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderLight,
+  },
+
   // Content
   scrollView: {
     flex: 1,
+    zIndex: 1,
   },
   scrollContent: {
     paddingBottom: Spacing.scrollPadBottom,

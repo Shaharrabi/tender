@@ -70,16 +70,16 @@ export default function QuickLinksBar({ showHome = true, currentScreen, isSingle
           </TouchableOpacity>
         )}
 
-        {currentScreen !== 'practices' && (
+        {currentScreen !== 'home' && (
           <TouchableOpacity
             style={styles.linkButton}
-            onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/exercises' as any); }}
+            onPress={() => { SoundHaptics.tapSoft(); router.replace('/(app)/home' as any); }}
             activeOpacity={0.7}
             accessibilityRole="button"
-            accessibilityLabel="Practices"
+            accessibilityLabel="Home"
           >
-            <TargetIcon size={20} color={Colors.secondary} />
-            <Text style={styles.linkLabel}>Practices</Text>
+            <HomeIcon size={20} color={Colors.secondary} />
+            <Text style={styles.linkLabel}>Home</Text>
           </TouchableOpacity>
         )}
 
@@ -141,18 +141,7 @@ export default function QuickLinksBar({ showHome = true, currentScreen, isSingle
         )}
       </View>
 
-      {showHome && currentScreen !== 'home' && (
-        <TouchableOpacity
-          style={styles.homeButton}
-          onPress={() => { SoundHaptics.tapSoft(); router.replace('/(app)/home' as any); }}
-          activeOpacity={0.7}
-          accessibilityRole="button"
-          accessibilityLabel="Go to home screen"
-        >
-          <HomeIcon size={16} color={Colors.textSecondary} />
-          <Text style={styles.homeLabel}>Home</Text>
-        </TouchableOpacity>
-      )}
+      {/* Home is now in the main tab row — no separate home button needed */}
     </View>
   );
 }

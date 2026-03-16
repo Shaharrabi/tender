@@ -71,6 +71,7 @@ import { recordDailyEngagement, getStreakData, type StreakData } from '@/service
 import { SoundHaptics } from '@/services/SoundHapticsService';
 import { IllustrationHomeHero, IllustrationCommunityHero, IllustrationPortalHero, IllustrationJournalHero, IllustrationF20Onboarding } from '@/assets/graphics/illustrations';
 import { XPProgressBar } from '@/components/gamification/XPProgressBar';
+import { SuccessCard } from '@/components/gamification/SuccessCard';
 import StreakBanner from '@/components/StreakBanner';
 import { useFirstTime } from '@/context/FirstTimeContext';
 import AdminPanel from '@/components/admin/AdminPanel';
@@ -95,6 +96,7 @@ import DailyPatternCard from '@/components/today/DailyPatternCard';
 import PatternReset from '@/components/emergency/PatternReset';
 import MicroRitualCard from '@/components/couples/MicroRitualCard';
 import PartnerActivityCard from '@/components/home/PartnerActivityCard';
+import { PartnerActivityToast } from '@/components/gamification/PartnerActivityToast';
 import DailyQuestionCard from '@/components/home/DailyQuestionCard';
 import SpaceChangedCard from '@/components/home/SpaceChangedCard';
 import WeeklyChallengeCard from '@/components/home/WeeklyChallengeCard';
@@ -1185,12 +1187,16 @@ export default function HomeScreen() {
           dayNumber={Math.max(streakData?.totalDays ?? 1, 1)}
         />
 
-        {/* ═══ XP & LEVEL PROGRESS ═══════════════════════════ */}
+        {/* ═══ SUCCESS CARD (replaces XP bar — tap to flip for stats) ═══ */}
         {!isGuest && (
           <View
             style={{ paddingHorizontal: Spacing.lg, marginBottom: Spacing.sm }}
           >
-            <XPProgressBar />
+            <SuccessCard
+              currentStep={currentStepNum}
+              streakDays={streakData?.currentStreak}
+              totalDaysEngaged={streakData?.totalDays}
+            />
           </View>
         )}
 
@@ -1383,137 +1389,154 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* ═══ YOUR PORTRAIT SUMMARY (if portrait exists) ══════ */}
+        {/* ═══ PORTRAIT + COUPLE SIDE-BY-SIDE ═══════════════════ */}
         {hasPortrait && portrait && (() => {
           const cs = portrait.compositeScores;
           const scores = [cs.regulationScore, cs.windowWidth, cs.accessibility, cs.responsiveness, cs.engagement, cs.selfLeadership, cs.valuesCongruence];
           const rawScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
           const overallScore = growthBoostResult?.boostedScore ?? rawScore;
-
-          // Find top strength
-          const scoreLabels: Record<string, string> = {
-            regulationScore: 'Regulation',
-            windowWidth: 'Window of Tolerance',
-            accessibility: 'Accessibility',
-            responsiveness: 'Responsiveness',
-            engagement: 'Engagement',
-            selfLeadership: 'Self-Leadership',
-            valuesCongruence: 'Values Alignment',
-          };
-          const topKey = (Object.keys(scoreLabels) as Array<keyof typeof cs>)
-            .reduce((best, key) => ((cs[key] ?? 0) > (cs[best] ?? 0) ? key : best));
-          const topStrength = scoreLabels[topKey];
-
           const cyclePosition = portrait.negativeCycle?.position
             ? portrait.negativeCycle.position.charAt(0).toUpperCase() + portrait.negativeCycle.position.slice(1)
             : null;
-          const growthEdge = portrait.growthEdges?.[0]?.title;
-          const coreValues = portrait.fourLens?.values?.coreValues?.slice(0, 3).join(', ');
+
+          const showCoupleStrip = hasCoupleLinked;
 
           return (
-            <TouchableOpacity
-              ref={(r) => RefRegistry.register('home_portraitSummary', r)}
-              style={styles.portraitSummaryCard}
-              onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/portrait' as any); }}
-              activeOpacity={0.8}
-              accessibilityRole="button"
-              accessibilityLabel="YOUR PORTRAIT"
-            >
-              <View style={styles.portraitSummaryHeader}>
-                <Text style={styles.portraitSummaryEyebrow}>YOUR PORTRAIT</Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <View style={styles.dualStripRow}>
+              {/* ── Portrait Strip (left) ── */}
+              <TouchableOpacity
+                ref={(r) => RefRegistry.register('home_portraitSummary', r)}
+                style={[styles.dualStripCard, !showCoupleStrip && styles.dualStripCardFull]}
+                onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/portrait' as any); }}
+                activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel="YOUR PORTRAIT"
+              >
+                <View style={styles.dualStripHeader}>
+                  <SparkleIcon size={14} color={Colors.secondary} />
+                  <Text style={styles.dualStripEyebrow}>YOUR PORTRAIT</Text>
+                </View>
+
+                {cyclePosition && (
+                  <View style={styles.dualStripStat}>
+                    <Text style={styles.dualStripStatLabel}>Cycle Position</Text>
+                    <Text style={styles.dualStripStatValue}>{cyclePosition}</Text>
+                  </View>
+                )}
+
+                <View style={styles.dualStripScoreRow}>
                   <View style={styles.portraitScoreBadge}>
                     <Text style={styles.portraitScoreBadgeText}>{overallScore}</Text>
                   </View>
                   {growthBoostResult && growthBoostResult.growthBoost > 0 && (
                     <Text style={{ fontSize: FontSizes.tiny, color: Colors.success, fontWeight: '600' }}>
-                      +{growthBoostResult.growthBoost} growth
+                      +{growthBoostResult.growthBoost}
                     </Text>
                   )}
                 </View>
-              </View>
 
-              <View style={styles.portraitStatsRow}>
-                {cyclePosition && (
-                  <View style={styles.portraitStatItem}>
-                    <Text style={styles.portraitStatLabel}>Cycle Position</Text>
-                    <Text style={styles.portraitStatValue}>{cyclePosition}</Text>
-                  </View>
-                )}
-                <View style={styles.portraitStatItem}>
-                  <Text style={styles.portraitStatLabel}>Top Strength</Text>
-                  <Text style={styles.portraitStatValue}>{topStrength}</Text>
+                <Text style={styles.dualStripCta}>See Full Portrait {'\u2192'}</Text>
+
+                {/* Compact quick links: Retake + Matrix */}
+                <View style={styles.dualStripLinks}>
+                  <TouchableOpacity
+                    onPress={(e) => { e.stopPropagation(); SoundHaptics.tapSoft(); router.push('/(app)/tender-assessment' as any); }}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.dualStripLinkText}>Retake</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.dualStripLinkDot}>{'\u00B7'}</Text>
+                  <TouchableOpacity
+                    onPress={(e) => { e.stopPropagation(); SoundHaptics.tapSoft(); router.push({ pathname: '/(app)/portrait' as any, params: { tab: 'key' } }); }}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.dualStripLinkText}>Integrated Map</Text>
+                  </TouchableOpacity>
                 </View>
-                {growthEdge && (
-                  <View style={styles.portraitStatItem}>
-                    <Text style={styles.portraitStatLabel}>Growth Edge</Text>
-                    <Text style={styles.portraitStatValue} numberOfLines={1}>{growthEdge}</Text>
+              </TouchableOpacity>
+
+              {/* ── Couple Strip (right) — shows when coupled ── */}
+              {showCoupleStrip && (
+                <TouchableOpacity
+                  style={styles.dualStripCard}
+                  onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/couple-portal' as any); }}
+                  activeOpacity={0.8}
+                  accessibilityRole="button"
+                >
+                  <View style={styles.dualStripHeader}>
+                    <HeartPulseIcon size={14} color={Colors.secondary} />
+                    <Text style={styles.dualStripEyebrow} numberOfLines={1}>SPACE BETWEEN</Text>
                   </View>
-                )}
-              </View>
 
-              {coreValues ? (
-                <Text style={styles.portraitValues}>
-                  Core Values: {coreValues}
-                </Text>
-              ) : null}
+                  {weareProfile ? (
+                    <>
+                      {/* Resonance Pulse Circle */}
+                      <View style={[
+                        styles.dualStripPulse,
+                        weareProfile.layers.resonancePulse >= 60
+                          ? { borderColor: Colors.primary }
+                          : weareProfile.layers.resonancePulse >= 40
+                            ? { borderColor: Colors.secondary }
+                            : { borderColor: Colors.textMuted },
+                      ]}>
+                        {weareProfile.warmSummary === 'Deeply alive'
+                          ? <SparkleIcon size={16} color={Colors.primary} />
+                          : weareProfile.warmSummary === 'Growing stronger'
+                            ? <SeedlingIcon size={16} color={Colors.primary} />
+                            : weareProfile.warmSummary === 'Finding its way'
+                              ? <SearchIcon size={16} color={Colors.textSecondary} />
+                              : <LeafIcon size={16} color={Colors.textSecondary} />}
+                      </View>
 
-              <View style={styles.portraitActionsRow}>
-                <Text style={styles.portraitCta}>
-                  See Full Portrait {'\u2192'}
-                </Text>
-              </View>
+                      <Text style={styles.dualStripWearePhrase} numberOfLines={1}>
+                        {weareProfile.warmSummary}
+                      </Text>
 
-              {/* Retake / View Results links */}
-              <View style={styles.portraitQuickLinks}>
-                <TouchableOpacity
-                  style={styles.portraitQuickLink}
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    SoundHaptics.tapSoft();
-                    router.push('/(app)/tender-assessment' as any);
-                  }}
-                  activeOpacity={0.7}
-                  accessibilityRole="button"
-                  accessibilityLabel="Retake Assessment"
-                >
-                  <Text style={styles.portraitQuickLinkText}>Retake Assessment</Text>
+                      <Text style={styles.dualStripWeareDirection}>
+                        {weareProfile.layers.emergenceDirection > 1 ? 'Growing'
+                          : weareProfile.layers.emergenceDirection < -1 ? 'Contracting'
+                          : 'Steady'}
+                      </Text>
+                    </>
+                  ) : (
+                    <>
+                      <View style={[styles.dualStripPulse, { borderColor: Colors.secondary }]}>
+                        <HeartPulseIcon size={16} color={Colors.secondary} />
+                      </View>
+                      <Text style={styles.dualStripWearePhrase} numberOfLines={2}>
+                        The Space Between You
+                      </Text>
+                    </>
+                  )}
+
+                  <Text style={styles.dualStripCta}>
+                    {weareProfile ? 'See full picture' : 'View Portal'} {'\u2192'}
+                  </Text>
+
+                  {/* Matching quick links: Retake + Matrix for couple */}
+                  <View style={styles.dualStripLinks}>
+                    <TouchableOpacity
+                      onPress={(e) => { e.stopPropagation(); SoundHaptics.tapSoft(); router.push('/(app)/tender-assessment' as any); }}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.dualStripLinkText}>Retake</Text>
+                    </TouchableOpacity>
+                    <Text style={styles.dualStripLinkDot}>{'\u00B7'}</Text>
+                    <TouchableOpacity
+                      onPress={(e) => { e.stopPropagation(); SoundHaptics.tapSoft(); router.push({ pathname: '/(app)/portrait' as any, params: { tab: 'key' } }); }}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.dualStripLinkText}>Integrated Map</Text>
+                    </TouchableOpacity>
+                  </View>
                 </TouchableOpacity>
-                <View style={styles.portraitQuickLinkDivider} />
-                <TouchableOpacity
-                  style={styles.portraitQuickLink}
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    SoundHaptics.tapSoft();
-                    router.push('/(app)/portrait' as any);
-                  }}
-                  activeOpacity={0.7}
-                  accessibilityRole="button"
-                  accessibilityLabel="View Results"
-                >
-                  <Text style={styles.portraitQuickLinkText}>View Results</Text>
-                </TouchableOpacity>
-                <View style={styles.portraitQuickLinkDivider} />
-                <TouchableOpacity
-                  style={styles.portraitQuickLink}
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    SoundHaptics.tapSoft();
-                    router.push({ pathname: '/(app)/portrait' as any, params: { tab: 'matrix' } });
-                  }}
-                  activeOpacity={0.7}
-                  accessibilityRole="button"
-                  accessibilityLabel="Matrix"
-                >
-                  <Text style={styles.portraitQuickLinkText}>Matrix</Text>
-                </TouchableOpacity>
-              </View>
-            </TouchableOpacity>
+              )}
+            </View>
           );
         })()}
 
-        {/* ═══ WEARE SUMMARY (The Space Between You) ═══════ */}
-        {weareProfile && couple && (
+        {/* ═══ WEARE SUMMARY (standalone — only if portrait doesn't exist but couple does) ═══ */}
+        {(!hasPortrait || !portrait) && weareProfile && couple && (
           <TouchableOpacity
             style={styles.weareSummaryCard}
             onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/couple-portal' as any); }}
@@ -1534,7 +1557,6 @@ export default function HomeScreen() {
             </View>
 
             <View style={styles.weareSummaryBody}>
-              {/* Resonance Pulse Circle */}
               <View style={[
                 styles.wearePulseCircle,
                 weareProfile.layers.resonancePulse >= 60
@@ -1556,16 +1578,12 @@ export default function HomeScreen() {
                 <Text style={styles.weareSummaryPhrase}>
                   {weareProfile.warmSummary}
                 </Text>
-
-                {/* Direction indicator */}
                 <Text style={styles.weareSummaryDirection}>
                   {weareProfile.layers.emergenceDirection > 1 ? 'Growing'
                     : weareProfile.layers.emergenceDirection < -1 ? 'Contracting'
                     : 'Steady'}
                   {weareProfile.trend ? ` \u00B7 ${weareProfile.trend.periodLabel}` : ''}
                 </Text>
-
-                {/* Bottleneck nudge */}
                 <Text style={styles.weareSummaryNudge}>
                   Where the invitation is: {weareProfile.bottleneck.label}
                 </Text>
@@ -1789,8 +1807,8 @@ export default function HomeScreen() {
             </View>
           )}
 
-          {/* ═══ COUPLE PORTAL PREVIEW ═══════════════════════ */}
-          {hasCoupleLinked && (
+          {/* ═══ COUPLE PORTAL PREVIEW (hidden when dual strip is active) ═══ */}
+          {hasCoupleLinked && !(hasPortrait && portrait) && (
             <TouchableOpacity
               style={styles.couplePreviewCard}
               onPress={() => {
@@ -2171,6 +2189,7 @@ export default function HomeScreen() {
         <WelcomeTour onComplete={handleTourComplete} />
       )}
       <TooltipManager screen="home" scrollRef={scrollRef} scrollOffset={scrollOffset} />
+      {hasCoupleLinked && <PartnerActivityToast />}
     </SafeAreaView>
   );
 }
@@ -3039,7 +3058,112 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 
-  // ── Portrait Summary Card ──
+  // ── Dual Strip (Portrait + Couple side-by-side) ──
+  dualStripRow: {
+    flexDirection: 'row' as const,
+    gap: Spacing.sm,
+    marginHorizontal: Spacing.lg,
+    marginBottom: Spacing.lg,
+  },
+  dualStripCard: {
+    flex: 1,
+    backgroundColor: Colors.white,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
+    ...Shadows.card,
+    alignItems: 'center' as const,
+    gap: Spacing.xs,
+  },
+  dualStripCardFull: {
+    // When no couple data, portrait takes full width
+    flex: 1,
+  },
+  dualStripHeader: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 5,
+    alignSelf: 'flex-start' as const,
+    marginBottom: 2,
+  },
+  dualStripEyebrow: {
+    fontSize: FontSizes.micro,
+    fontWeight: '700' as const,
+    color: Colors.secondary,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 1,
+  },
+  dualStripStat: {
+    alignItems: 'center' as const,
+    gap: 1,
+    marginVertical: 2,
+  },
+  dualStripStatLabel: {
+    fontSize: FontSizes.micro,
+    fontWeight: '600' as const,
+    color: Colors.textMuted,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 0.5,
+  },
+  dualStripStatValue: {
+    fontSize: FontSizes.caption,
+    fontWeight: '700' as const,
+    color: Colors.text,
+  },
+  dualStripScoreRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 4,
+  },
+  dualStripCta: {
+    fontSize: FontSizes.caption,
+    fontWeight: '600' as const,
+    color: Colors.secondary,
+    marginTop: 2,
+  },
+  dualStripLinks: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 4,
+    paddingTop: Spacing.xs,
+    marginTop: 2,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderLight,
+    alignSelf: 'stretch' as const,
+    justifyContent: 'center' as const,
+  },
+  dualStripLinkText: {
+    fontSize: 10,
+    fontFamily: 'JosefinSans_400Regular',
+    color: Colors.textMuted,
+  },
+  dualStripLinkDot: {
+    fontSize: 10,
+    color: Colors.borderLight,
+  },
+  dualStripPulse: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 3,
+    backgroundColor: Colors.surfaceElevated,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    marginVertical: 2,
+  },
+  dualStripWearePhrase: {
+    fontSize: FontSizes.caption,
+    fontWeight: '700' as const,
+    fontFamily: FontFamilies.heading,
+    color: Colors.text,
+    textAlign: 'center' as const,
+  },
+  dualStripWeareDirection: {
+    fontSize: FontSizes.micro,
+    color: Colors.textMuted,
+    fontFamily: 'JosefinSans_400Regular',
+  },
+
+  // ── Portrait Summary Card (legacy — kept for non-side-by-side fallback) ──
   portraitSummaryCard: {
     marginHorizontal: Spacing.xl,
     marginBottom: Spacing.lg,

@@ -1,6 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { AppState } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import {
@@ -40,6 +41,7 @@ import {
   cancelWeeklyCheckIn,
   cancelDailyReminder,
 } from '@/services/notifications';
+import { startSession, endSession } from '@/services/session-time';
 
 // Keep splash screen visible while loading fonts
 SplashScreen.preventAutoHideAsync();
@@ -81,6 +83,32 @@ function NotificationSetup() {
       }
     })();
   }, [userId]);
+
+  return null;
+}
+
+/** Tracks time spent in the app via AppState foreground/background transitions. */
+function SessionTracker() {
+  const appState = useRef(AppState.currentState);
+
+  useEffect(() => {
+    // Start session on mount
+    startSession();
+
+    const sub = AppState.addEventListener('change', (nextState) => {
+      if (appState.current.match(/inactive|background/) && nextState === 'active') {
+        startSession();
+      } else if (appState.current === 'active' && nextState.match(/inactive|background/)) {
+        endSession();
+      }
+      appState.current = nextState;
+    });
+
+    return () => {
+      endSession();
+      sub.remove();
+    };
+  }, []);
 
   return null;
 }
@@ -129,6 +157,7 @@ export default function RootLayout() {
       <NetworkProvider>
         <AuthProvider>
           <NotificationSetup />
+          <SessionTracker />
           <GamificationProvider>
             <GuestProvider>
               <FirstTimeProvider>

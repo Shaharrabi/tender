@@ -11,6 +11,7 @@ import type {
   WeeklyCheckInRow,
   WEAREDataMode,
 } from '@/types/weare';
+import { notifyPartner } from './partner-activity-hooks';
 
 // ─── Date Helpers ───────────────────────────────────────
 
@@ -157,6 +158,10 @@ export async function saveWeeklyCheckIn(
     .single();
 
   if (error) throw error;
+
+  // Notify partner (non-blocking)
+  notifyPartner(userId, 'checkin', { satisfaction, weekOf });
+
   return mapCheckIn(data);
 }
 

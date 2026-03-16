@@ -1119,9 +1119,7 @@ export default function PortraitScreen() {
       {/* FTUE Overlays */}
       <TooltipManager screen="portrait" />
       <WelcomeAudio screenKey="portrait" />
-      <ReAnimated.View style={[{ position: 'absolute', bottom: 0, left: 0, right: 0 }, quickLinksAnimStyle]}>
-        <QuickLinksBar />
-      </ReAnimated.View>
+      <QuickLinksBar />
     </SafeAreaView>
     </ErrorBoundary>
   );
@@ -2773,6 +2771,16 @@ const CIRCLE_BORDER = 6;
 
 const st = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
+  quickLinksWrapper: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+    backgroundColor: Colors.background,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderLight,
+  },
   viewAndEraseBanner: {
     backgroundColor: Colors.warning + '20',
     borderWidth: 1,
@@ -2863,6 +2871,7 @@ const st = StyleSheet.create({
   // ── Content ──
   contentScroll: {
     flex: 1,
+    zIndex: 1,
   },
   contentContainer: {
     padding: Spacing.lg,

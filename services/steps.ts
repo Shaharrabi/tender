@@ -7,6 +7,7 @@
 
 import { supabase } from './supabase';
 import type { StepProgress, PracticeCompletion, StepStatus } from '@/types/growth';
+import { notifyPartner } from './partner-activity-hooks';
 
 // ─── Step Progress ──────────────────────────────────────
 
@@ -88,6 +89,9 @@ export async function completeStep(
       .eq('step_number', stepNumber + 1)
       .eq('status', 'locked');  // ← only unlock if currently locked
   }
+
+  // Notify partner (non-blocking)
+  notifyPartner(userId, 'step_reflection', { stepNumber });
 }
 
 /** Update the status of a specific step. */
@@ -170,6 +174,10 @@ export async function recordPracticeCompletion(
     .single();
 
   if (error) throw error;
+
+  // Notify partner (non-blocking)
+  notifyPartner(userId, 'practice_complete', { practiceId, stepNumber, completedBy });
+
   return mapPracticeCompletion(data);
 }
 
