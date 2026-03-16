@@ -997,6 +997,16 @@ export default function PortraitScreen() {
             <TenderText variant="headingM" color={Colors.primary} style={st.exportSectionLabel}>Assessment Matrix</TenderText>
             <MatrixTab allScores={allScoresMap} portrait={portrait} />
           </View>
+
+          <View style={st.exportSection}>
+            <TenderText variant="headingM" color={Colors.primary} style={st.exportSectionLabel}>Tender Integrated Map</TenderText>
+            <TenderMatrix allScores={allScoresMap} portrait={portrait} />
+          </View>
+
+          <View style={st.exportSection}>
+            <TenderText variant="headingM" color={Colors.primary} style={st.exportSectionLabel}>Your Field</TenderText>
+            <YourFieldTab compositeScores={portrait.compositeScores} />
+          </View>
         </ScrollView>
       ) : (
         /* Normal mode: show active tab only */
@@ -1163,8 +1173,18 @@ function OverviewTab({
 
   return (
     <Animated.View style={{ opacity: fadeAnim }}>
-      {/* Portrait Illustration — hero image */}
-      <View style={{ alignItems: 'center', marginBottom: 16 }}>
+      {/* Name — top of the overview */}
+      <View style={st.heroSection}>
+        <TenderText variant="headingXL" style={st.heroTitle}>{userName}</TenderText>
+        {/* Three-Layer Dashboard */}
+        <ThreeLayerDashboard
+          compositeScores={cs}
+          onSeeDetails={() => onNavigate('scores')}
+        />
+      </View>
+
+      {/* Portrait Illustration */}
+      <View style={{ alignItems: 'center', marginBottom: Spacing.md }}>
         <IllustrationPortraitAttachment width={Math.min(SCREEN_WIDTH - 48, 340)} animated={true} />
       </View>
 
@@ -1180,17 +1200,6 @@ function OverviewTab({
 
       {/* Audio Library — expanded by default on overview */}
       <AudioLibrary portrait={portrait} defaultExpanded />
-
-      {/* Landing hero */}
-      <View style={st.heroSection}>
-        <TenderText variant="label" color={Colors.primary} style={{ letterSpacing: 2 }}>YOUR RELATIONAL PORTRAIT</TenderText>
-        <TenderText variant="headingXL" style={st.heroTitle}>{userName}</TenderText>
-        {/* Three-Layer Dashboard replaces the single score circle */}
-        <ThreeLayerDashboard
-          compositeScores={cs}
-          onSeeDetails={() => onNavigate('scores')}
-        />
-      </View>
 
       {/* Radar Chart — The Shape of You */}
       <RadarChart scores={cs} onDimensionTap={() => onNavigate('scores')} />
