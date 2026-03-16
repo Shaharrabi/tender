@@ -1,7 +1,7 @@
 /**
  * Demo Data Seeder — Generates realistic assessment scores for demo mode.
  *
- * Seeds all 6 individual assessments into Supabase so the full app
+ * Seeds all 7 individual assessments into Supabase so the full app
  * experience (results, portrait, growth plan, unlock states) is visible.
  *
  * Profile: Anxious-preoccupied attachment, moderate regulation,
@@ -209,6 +209,17 @@ export const DEMO_WEEKLY_CHECKIN: Omit<WeeklyCheckIn, 'id' | 'createdAt'> = {
   practiceHighlight: 'The grounding exercise helped me stay present during a difficult conversation.',
 };
 
+// ─── RFAS Demo Scores (Section 7: The Space Between) ─────
+
+export const DEMO_RFAS = {
+  totalScore: 78,
+  totalMean: 3.9,
+  fieldRecognition:      { sum: 20, mean: 4.0 },
+  creativeTension:       { sum: 18, mean: 3.6 },
+  presenceAttunement:    { sum: 21, mean: 4.2 },
+  emergentOrientation:   { sum: 19, mean: 3.8 },
+};
+
 // ─── Assessment Type → Demo Scores Map ───────────────────
 
 const DEMO_SCORES_MAP: Record<string, any> = {
@@ -217,6 +228,7 @@ const DEMO_SCORES_MAP: Record<string, any> = {
   'sseit': DEMO_SSEIT,
   'dsi-r': DEMO_DSIR,
   'ipip-neo-120': DEMO_IPIP,
+  'relational-field': DEMO_RFAS,
   'values': DEMO_VALUES,
 };
 
@@ -256,7 +268,7 @@ export async function seedSingleAssessment(
 }
 
 /**
- * Seeds all 6 demo assessment records into Supabase for the given user.
+ * Seeds all 7 demo assessment records into Supabase for the given user.
  * Returns the IDs of the created records.
  */
 export async function seedDemoAssessments(userId: string): Promise<string[]> {
