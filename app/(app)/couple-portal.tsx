@@ -1852,7 +1852,11 @@ function CouplePortalScreen() {
                 const { generateCouplePortraitPDF } = await import('@/services/pdf-export');
                 const nameA = dp.partnerAName || 'Partner A';
                 const nameB = dp.partnerBName || partnerName || 'Partner B';
-                await generateCouplePortraitPDF(dp, nameA, nameB);
+                const rawScores = myRawScores && partnerRawScores ? {
+                  partner1: myRawScores,
+                  partner2: partnerRawScores,
+                } : undefined;
+                await generateCouplePortraitPDF(dp, nameA, nameB, rawScores);
               } catch (err) {
                 if (__DEV__) console.warn('[CouplePortal] PDF export failed:', err);
                 if (Platform.OS !== 'web') {

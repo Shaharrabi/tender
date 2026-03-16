@@ -84,8 +84,9 @@ export async function generateCouplePortraitPDF(
   portrait: DeepCouplePortrait,
   partnerAName?: string,
   partnerBName?: string,
+  rawScores?: { partner1: Record<string, any>; partner2: Record<string, any> },
 ): Promise<void> {
-  const html = generateCouplePortraitHTML(portrait, partnerAName, partnerBName);
+  const html = generateCouplePortraitHTML(portrait, partnerAName, partnerBName, rawScores);
   await presentPDF(html, 'Share Couple Portrait Report');
 }
 

@@ -256,6 +256,7 @@ export function generateCouplePortraitHTML(
   portrait: DeepCouplePortrait,
   partnerAName?: string,
   partnerBName?: string,
+  rawScores?: { partner1: Record<string, any>; partner2: Record<string, any> },
 ): string {
   const nameA = partnerAName || portrait.partnerAName || 'Partner A';
   const nameB = partnerBName || portrait.partnerBName || 'Partner B';
@@ -1081,6 +1082,48 @@ p { margin-bottom: 8px; line-height: 1.7; }
   <p class="cover-date">${esc(date)}</p>
   <div class="cover-line"></div>
   <p class="cover-footer">Tender \u00B7 The Science of Relationships</p>
+</div>
+
+<!-- RELATIONSHIP OVERVIEW -->
+<div class="section">
+  <div class="section-divider"></div>
+  <p class="section-label">YOUR RELATIONSHIP IN 60 SECONDS</p>
+  <div class="section-title">Overview</div>
+  <div class="insight-callout" style="font-size:11pt;line-height:1.9">
+    ${esc((() => {
+      const parts: string[] = [];
+      const dynamic = cycle.dynamic.replace(/-/g, ' ');
+      parts.push(`Your relational dance is a ${dynamic} pattern \u2014 ${nameA} tends to ${cycle.partnerAPosition}, while ${nameB} tends to ${cycle.partnerBPosition}.`);
+      parts.push(`In the attachment landscape, you\u2019re a ${attachment.dynamicLabel} pairing.`);
+      if (conv.sharedStrengths.length > 0) {
+        const top = conv.sharedStrengths.slice(0, 2).map(s => s.dimensionLabel).join(' and ');
+        parts.push(`Your shared strengths include ${top}.`);
+      }
+      if (edges.length > 0) {
+        parts.push(`Your top growth edge: ${edges[0].title}.`);
+      }
+      if (field?.vitality > 0) {
+        const vLabel = field.qualitativeLabel || Math.round(field.vitality) + '%';
+        parts.push(`Field vitality: ${vLabel}.`);
+      }
+      return parts.join(' ');
+    })())}
+  </div>
+
+  ${conv.sharedStrengths.length > 0 ? `
+  <div class="two-col" style="margin-top:16px">
+    <div class="card card-sage">
+      <div class="card-title">Shared Strengths</div>
+      <p>${conv.sharedStrengths.slice(0, 3).map(s => esc(s.dimensionLabel)).join(', ')}</p>
+    </div>
+    ${conv.frictionZones.length > 0 ? `
+    <div class="card card-rose">
+      <div class="card-title">Friction Zones</div>
+      <p>${conv.frictionZones.slice(0, 3).map(f => esc(f.area)).join(', ')}</p>
+    </div>` : ''}
+  </div>` : ''}
+
+  ${narr.opening ? `<p style="font-family:'Playfair Display',Lora,Georgia,serif;font-style:italic;font-size:10.5pt;color:var(--text-secondary);line-height:1.8;margin-top:16px">${esc(narr.opening)}</p>` : ''}
 </div>
 
 <!-- RELATIONAL FIELD -->
