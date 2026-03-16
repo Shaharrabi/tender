@@ -94,6 +94,14 @@ import MicroCourseCard from '@/components/microcourse/MicroCourseCard';
 import DailyPatternCard from '@/components/today/DailyPatternCard';
 import PatternReset from '@/components/emergency/PatternReset';
 import MicroRitualCard from '@/components/couples/MicroRitualCard';
+import PartnerActivityCard from '@/components/home/PartnerActivityCard';
+import DailyQuestionCard from '@/components/home/DailyQuestionCard';
+import SpaceChangedCard from '@/components/home/SpaceChangedCard';
+import WeeklyChallengeCard from '@/components/home/WeeklyChallengeCard';
+import { getPendingActivities, markActivitySeen, type PartnerActivity } from '@/services/partner-activity';
+import { getTodaysQuestion, getMyResponseToday, getPartnerResponse, type DailyQuestion } from '@/services/daily-questions';
+import { getThisWeeksChallenge, generateWeeklyChallenge, type CoupleChallenge } from '@/services/couple-challenges';
+import { canSendRelationalNudge } from '@/services/emotional-safety';
 import TenderText from '@/components/ui/TenderText';
 import { TENDER_SECTIONS, TOTAL_QUESTIONS, TOTAL_ESTIMATED_MINUTES } from '@/utils/assessments/tender-sections';
 import {
@@ -240,6 +248,16 @@ export default function HomeScreen() {
 
   // Consent state
   const [consentGiven, setConsentGiven] = useState(false);
+
+  // Retention engine state
+  const [partnerActivities, setPartnerActivities] = useState<PartnerActivity[]>([]);
+  const [dailyQuestion, setDailyQuestion] = useState<DailyQuestion | null>(null);
+  const [hasAnsweredDaily, setHasAnsweredDaily] = useState(false);
+  const [partnerAnsweredDaily, setPartnerAnsweredDaily] = useState(false);
+  const [weeklyChallenge, setWeeklyChallenge] = useState<CoupleChallenge | null>(null);
+  const [spaceChangedNarrative, setSpaceChangedNarrative] = useState<string | null>(null);
+  const [spaceChangedDelta, setSpaceChangedDelta] = useState<number>(0);
+  const [partnerDisplayName, setPartnerDisplayName] = useState<string>('your partner');
 
   // WEARE profile state (Phase 4)
   const [weareProfile, setWeareProfile] = useState<WEAREProfile | null>(null);
@@ -796,6 +814,63 @@ export default function HomeScreen() {
       } catch {
         setActiveCourse(null);
       }
+      // 10. Load retention engine data (partner activity, daily question, challenge, WEARE delta)
+      if (loadedCouple && loadedCouple.status === 'active') {
+        try {
+          const partnerId = loadedCouple.partner_a_id === user.id
+            ? loadedCouple.partner_b_id
+            : loadedCouple.partner_a_id;
+
+          // Partner display name
+          const { data: partnerProfile } = await supabase
+            .from('user_profiles')
+            .select('display_name')
+            .eq('user_id', partnerId)
+            .maybeSingle();
+          if (partnerProfile?.display_name) setPartnerDisplayName(partnerProfile.display_name);
+
+          // Partner activities
+          const activities = await getPendingActivities(user.id);
+          setPartnerActivities(activities);
+
+          // Daily question
+          const dq = await getTodaysQuestion(loadedCouple.id);
+          setDailyQuestion(dq);
+          if (dq) {
+            const myResp = await getMyResponseToday(loadedCouple.id, dq.id, user.id);
+            setHasAnsweredDaily(!!myResp);
+            if (myResp) {
+              const { data: pResp } = await getPartnerResponse(loadedCouple.id, dq.id, user.id);
+              setPartnerAnsweredDaily(!!pResp);
+            }
+          }
+
+          // Weekly challenge
+          let challenge = await getThisWeeksChallenge(loadedCouple.id);
+          if (!challenge) {
+            challenge = await generateWeeklyChallenge(loadedCouple.id, loadedCouple.partner_a_id, partnerId);
+          }
+          setWeeklyChallenge(challenge);
+
+          // WEARE delta ("The Space Changed")
+          const { data: latestWeare } = await supabase
+            .from('weare_scores')
+            .select('notable_change, change_narrative, resonance_delta')
+            .eq('couple_id', loadedCouple.id)
+            .order('calculated_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (latestWeare?.notable_change && latestWeare.change_narrative) {
+            setSpaceChangedNarrative(latestWeare.change_narrative);
+            setSpaceChangedDelta(latestWeare.resonance_delta ?? 0);
+          } else {
+            setSpaceChangedNarrative(null);
+          }
+        } catch (retentionErr) {
+          if (__DEV__) console.warn('[Home] Retention engine load error:', retentionErr);
+        }
+      }
+
     } finally {
       setLoading(false);
     }
@@ -1841,6 +1916,66 @@ export default function HomeScreen() {
             </View>
           );
         })()}
+
+        {/* ═══ RETENTION ENGINE CARDS ════════════════════ */}
+        {/* Partner Activity — "Your partner answered" */}
+        {partnerActivities.length > 0 && (
+          <View style={styles.section}>
+            {partnerActivities.map(activity => (
+              <PartnerActivityCard
+                key={activity.id}
+                activity={activity}
+                partnerName={partnerDisplayName}
+                onPress={() => {
+                  markActivitySeen(activity.id);
+                  if (activity.activityType === 'portrait_update') {
+                    router.push('/(app)/couple-portal' as any);
+                  } else if (activity.activityType === 'checkin') {
+                    router.push('/(app)/couple-portal' as any);
+                  } else {
+                    router.push('/(app)/growth' as any);
+                  }
+                }}
+              />
+            ))}
+          </View>
+        )}
+
+        {/* Daily Question Card */}
+        {hasCoupleLinked && dailyQuestion && (
+          <View style={styles.section}>
+            <DailyQuestionCard
+              questionText={dailyQuestion.questionText}
+              hasAnswered={hasAnsweredDaily}
+              partnerHasAnswered={partnerAnsweredDaily}
+              partnerName={partnerDisplayName}
+              onPress={() => router.push('/(app)/daily-question' as any)}
+            />
+          </View>
+        )}
+
+        {/* Space Changed Card — WEARE delta */}
+        {spaceChangedNarrative && (
+          <View style={styles.section}>
+            <SpaceChangedCard
+              narrative={spaceChangedNarrative}
+              resonanceDelta={spaceChangedDelta}
+              onPress={() => router.push('/(app)/couple-portal' as any)}
+            />
+          </View>
+        )}
+
+        {/* Weekly Couple Challenge */}
+        {hasCoupleLinked && weeklyChallenge && couple && (
+          <View style={styles.section}>
+            <WeeklyChallengeCard
+              challenge={weeklyChallenge}
+              isPartner1={couple.partner_a_id === user?.id}
+              partnerName={partnerDisplayName}
+              onPress={() => router.push('/(app)/challenge' as any)}
+            />
+          </View>
+        )}
 
         {!hasPortrait && completedCount > 0 && (
           <LockedPortraitPreview

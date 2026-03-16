@@ -162,6 +162,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: Spacing.md,
     paddingBottom: Spacing.lg,
+    backgroundColor: Colors.background,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: Colors.borderLight,
   },
   row: {
     flexDirection: 'row',

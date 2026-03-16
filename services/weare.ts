@@ -38,6 +38,41 @@ export async function saveWEAREProfile(
   userId: string,
   profile: WEAREProfile,
 ): Promise<void> {
+  // Fetch previous score for delta tracking
+  const { data: previousScore } = await supabase
+    .from('weare_scores')
+    .select('layers')
+    .eq('couple_id', coupleId)
+    .order('calculated_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const prevResonance = previousScore?.layers?.resonancePulse ?? null;
+  const prevEmergence = previousScore?.layers?.emergenceDirection ?? null;
+  const resonanceDelta = prevResonance != null
+    ? profile.layers.resonancePulse - prevResonance
+    : 0;
+  const emergenceDelta = prevEmergence != null
+    ? profile.layers.emergenceDirection - prevEmergence
+    : 0;
+  const notableChange = Math.abs(resonanceDelta) > 1 || Math.abs(emergenceDelta) > 1;
+
+  // Generate change narrative
+  let changeNarrative: string | null = null;
+  if (notableChange) {
+    if (resonanceDelta > 2) {
+      changeNarrative = "Your resonance grew this week. Something you're doing is feeding the field.";
+    } else if (resonanceDelta < -2) {
+      changeNarrative = "The resonance between you quieted this week. Not wrong — just a signal to tend the field.";
+    } else if (emergenceDelta > 2) {
+      changeNarrative = "Movement is happening. The direction between you shifted toward growth.";
+    } else if (emergenceDelta < -2) {
+      changeNarrative = "There's more resistance than movement right now. That's information, not a verdict.";
+    } else {
+      changeNarrative = "The space between you shifted slightly. Small changes matter.";
+    }
+  }
+
   const { error } = await supabase
     .from('weare_scores')
     .insert({
@@ -51,6 +86,12 @@ export async function saveWEAREProfile(
       movement_narrative: profile.movementNarrative,
       warm_summary: profile.warmSummary,
       calculated_at: profile.calculatedAt,
+      previous_resonance: prevResonance,
+      previous_emergence: prevEmergence,
+      resonance_delta: resonanceDelta,
+      emergence_delta: emergenceDelta,
+      notable_change: notableChange,
+      change_narrative: changeNarrative,
     });
 
   if (error) throw error;
