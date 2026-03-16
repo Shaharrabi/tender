@@ -617,23 +617,6 @@ export default function TenderAssessmentScreen() {
         return;
       }
 
-      // Mark any previous records for this assessment type as non-current
-      // (preserves history for longitudinal analysis instead of deleting)
-      const { error: archiveError } = await supabase
-        .from('assessments')
-        .update({ is_current: false })
-        .eq('user_id', user.id)
-        .eq('type', currentConfig.type)
-        .eq('is_current', true);
-
-      if (archiveError) {
-        console.error('[Assessment] Archive failed:', archiveError.message, archiveError.code);
-        const msg = `Failed to save: ${archiveError.message}. Please try again.`;
-        typeof window !== 'undefined' ? window.alert(msg) : Alert.alert('Error', msg);
-        setSubmittingSection(false);
-        return;
-      }
-
       // Determine instrument version for this assessment type
       const INSTRUMENT_VERSIONS: Record<string, string> = {
         'ecr-r': 'original',
@@ -652,7 +635,6 @@ export default function TenderAssessmentScreen() {
         scores,
         completed_at: new Date().toISOString(),
         instrument_version: INSTRUMENT_VERSIONS[currentConfig.type] ?? null,
-        is_current: true,
       });
 
       if (error) {

@@ -50,7 +50,8 @@ export async function checkCanGeneratePortrait(
     .from('assessments')
     .select('type')
     .eq('user_id', userId)
-    .eq('is_current', true);
+    .in('type', REQUIRED_ASSESSMENTS)
+    .order('completed_at', { ascending: false });
 
   const completed = new Set((data ?? []).map((a: { type: string }) => a.type));
   const missing = REQUIRED_ASSESSMENTS.filter((t) => !completed.has(t));
@@ -81,7 +82,6 @@ export async function fetchAllScores(userId: string, typeFilter?: string[]) {
     .from('assessments')
     .select('id, type, scores')
     .eq('user_id', userId)
-    .eq('is_current', true)
     .in('type', types)
     .order('completed_at', { ascending: false });
 
@@ -141,17 +141,20 @@ export function extractSupplementScores(
 export async function fetchPreviousScores(userId: string): Promise<Record<string, { id: string; scores: any }> | null> {
   const { data, error } = await supabase
     .from('assessments')
-    .select('id, type, scores, completed_at, is_current')
+    .select('id, type, scores, completed_at')
     .eq('user_id', userId)
     .in('type', REQUIRED_ASSESSMENTS)
     .order('completed_at', { ascending: false });
 
   if (error || !data) return null;
 
-  // Find the most recent archived (non-current) row per type
+  // Find the second-most-recent row per type (the previous attempt)
+  const seen: Record<string, number> = {};
   const previous: Record<string, { id: string; scores: any }> = {};
   for (const row of data) {
-    if (row.is_current === false && !previous[row.type]) {
+    seen[row.type] = (seen[row.type] ?? 0) + 1;
+    // Second occurrence per type = previous score
+    if (seen[row.type] === 2 && !previous[row.type]) {
       previous[row.type] = { id: row.id, scores: row.scores };
     }
   }
