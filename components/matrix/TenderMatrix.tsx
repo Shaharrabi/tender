@@ -353,7 +353,7 @@ export default function TenderMatrix({ allScores, portrait }: TenderMatrixProps)
       {/* Header */}
       <View style={styles.header}>
         <TenderText variant="caption" style={styles.headerLabel}>
-          YOUR TENDER MATRIX
+          TENDER INTEGRATED MAP
         </TenderText>
         <TenderText variant="bodySmall" color={Colors.textSecondary} align="center" style={styles.headerSubtitle}>
           Tap any domain to reveal the cross-instrument insight underneath
@@ -405,7 +405,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     letterSpacing: 2.5,
     color: Colors.textMuted,
-    fontFamily: 'JosefinSans_500Medium',
+    fontFamily: 'Jost_500Medium',
   },
   headerSubtitle: {
     lineHeight: 20,

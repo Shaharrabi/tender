@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
   confidenceText: {
     fontSize: 9,
     letterSpacing: 0.5,
-    fontFamily: 'JosefinSans_500Medium',
+    fontFamily: 'Jost_500Medium',
   },
   cellRow: {
     flexDirection: 'row',

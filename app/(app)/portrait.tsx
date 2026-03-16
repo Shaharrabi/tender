@@ -962,6 +962,7 @@ export default function PortraitScreen() {
               overallScore={overallScore}
               onNavigate={() => {}}
               rawScores={rawScores}
+              allScores={allScoresMap}
               growthBoostResult={growthBoostResult}
               journeyData={journeyData}
             />
@@ -1027,6 +1028,7 @@ export default function PortraitScreen() {
                 overallScore={overallScore}
                 onNavigate={handleTabChange}
                 rawScores={rawScores}
+                allScores={allScoresMap}
                 growthBoostResult={growthBoostResult}
                 journeyData={journeyData}
               />
@@ -1127,6 +1129,7 @@ function OverviewTab({
   overallScore,
   onNavigate,
   rawScores,
+  allScores,
   growthBoostResult: gbr,
   journeyData: jd,
 }: {
@@ -1135,6 +1138,7 @@ function OverviewTab({
   overallScore: number;
   onNavigate: (tab: TabKey) => void;
   rawScores: AllAssessmentScores | null;
+  allScores: Record<string, { id: string; scores: any }>;
   growthBoostResult?: GrowthBoostedResult | null;
   journeyData?: {
     stepsCompleted: number;
@@ -1166,6 +1170,13 @@ function OverviewTab({
 
       {/* Portrait Digest — 60 second summary */}
       <PortraitDigest portrait={portrait} />
+
+      {/* Tender Integrated Map — cross-assessment overview */}
+      {Object.keys(allScores).length > 0 && (
+        <View style={{ marginTop: Spacing.md }}>
+          <TenderMatrix allScores={allScores} portrait={portrait} />
+        </View>
+      )}
 
       {/* Audio Library — expanded by default on overview */}
       <AudioLibrary portrait={portrait} defaultExpanded />

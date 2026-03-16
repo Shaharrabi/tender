@@ -113,6 +113,8 @@ import {
   IllustrationPortalConflict,
   IllustrationPortalSnapshot,
   IllustrationPortalHero,
+  IllustrationF20CoRegulate,
+  IllustrationAttachSecure,
 } from '@/assets/graphics/illustrations';
 
 type TabKey = 'overview' | 'dance' | 'together' | 'matrix' | 'assessments' | 'insights' | 'growth' | 'anchors' | 'field';
@@ -680,6 +682,37 @@ function CouplePortalScreen() {
         );
       })()}
 
+      {/* Couple Integrated Map — cross-assessment overview */}
+      {dp && myRawScores && partnerRawScores && (() => {
+        const toScores = (raw: Record<string, { id: string; scores: any }>) => ({
+          ecrr: raw?.['ecr-r']?.scores,
+          ipip: raw?.['ipip-neo-120']?.scores,
+          sseit: raw?.['sseit']?.scores,
+          dsir: raw?.['dsi-r']?.scores,
+          dutch: raw?.['dutch']?.scores,
+          values: raw?.['values']?.scores,
+        });
+        const nameA = dp.partnerAName || 'You';
+        const nameB = dp.partnerBName || partnerName || 'Partner';
+        const weare = weareProfile ? {
+          resonance: weareProfile.layers?.resonancePulse,
+          emergenceDirection: weareProfile.layers?.emergenceDirection,
+          bottleneck: (weareProfile.bottleneck as unknown as string) ?? null,
+          movementPhase: weareProfile.movementPhase as string,
+        } : undefined;
+        return (
+          <View style={{ marginTop: Spacing.md }}>
+            <CoupleMatrix
+              partner1={toScores(myRawScores)}
+              partner2={toScores(partnerRawScores)}
+              partner1Name={nameA}
+              partner2Name={nameB}
+              weareData={weare}
+            />
+          </View>
+        );
+      })()}
+
       {/* Fallback: show what's missing when deep portrait can't generate */}
       {!dp && (
         <View style={styles.synthesisCard}>
@@ -704,13 +737,11 @@ function CouplePortalScreen() {
         </View>
       )}
 
-      {/* Twin Orbs + Field */}
+      {/* The Space Between You — co-regulation illustration */}
       {dp && (
-        <TwinOrbsField
-          field={dp.relationalField}
-          partnerAName={dp.partnerAName}
-          partnerBName={dp.partnerBName}
-        />
+        <View style={{ alignItems: 'center', marginVertical: Spacing.md }}>
+          <IllustrationF20CoRegulate width={Math.min(Dimensions.get('window').width - 48, 260)} animated />
+        </View>
       )}
 
       {/* Literary Narrative Snapshot */}
@@ -880,13 +911,14 @@ function CouplePortalScreen() {
             </View>
           </View>
           <View style={styles.miniMatrixContainer}>
-            <AttachmentMatrixPlot
-              attachmentDynamic={dp.patternInterlock.attachmentDynamic}
-              partnerAName={dp.partnerAName}
-              partnerBName={dp.partnerBName}
-            />
+            <View style={{ alignItems: 'center', marginBottom: Spacing.xs }}>
+              <IllustrationAttachSecure width={120} animated />
+            </View>
             <TenderText variant="caption" color={Colors.textSecondary} align="center" style={styles.miniMatrixCaption}>
               {dp.patternInterlock.attachmentDynamic.dynamicLabel}
+            </TenderText>
+            <TenderText variant="bodySmall" color={Colors.textSecondary} align="center" style={{ marginTop: 4, lineHeight: 18 }}>
+              {dp.patternInterlock.attachmentDynamic.narrative?.substring(0, 120)}...
             </TenderText>
           </View>
 
@@ -1084,13 +1116,14 @@ function CouplePortalScreen() {
           partnerBName={dp.partnerBName}
         />
 
-        {/* Attachment Matrix */}
+        {/* Attachment Landscape — softened with illustration */}
         <TenderText variant="headingM" style={[styles.sectionTitle, { marginTop: Spacing.lg }]}>Attachment Landscape</TenderText>
-        <AttachmentMatrixPlot
-          attachmentDynamic={dp.patternInterlock.attachmentDynamic}
-          partnerAName={dp.partnerAName}
-          partnerBName={dp.partnerBName}
-        />
+        <View style={{ alignItems: 'center', marginBottom: Spacing.sm }}>
+          <IllustrationAttachSecure width={160} animated />
+        </View>
+        <TenderText variant="headingS" color={Colors.couplePartnerB} align="center" style={{ marginBottom: Spacing.xs }}>
+          {dp.patternInterlock.attachmentDynamic.dynamicLabel}
+        </TenderText>
         <TenderText variant="body" color={Colors.textSecondary} style={styles.narrativeSmall}>
           {dp.patternInterlock.attachmentDynamic.narrative}
         </TenderText>
