@@ -26,6 +26,8 @@ import {
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import QuickLinksBar from '@/components/QuickLinksBar';
+import { useScrollHideBar } from '@/hooks/useScrollHideBar';
+import ReAnimated from 'react-native-reanimated';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '@/context/AuthContext';
 import { useGuest } from '@/context/GuestContext';
@@ -90,6 +92,7 @@ export default function JournalScreen() {
   const router = useRouter();
   const { session } = useAuth();
   const { isGuest } = useGuest();
+  const { handleScroll: handleScrollBar, animatedStyle: quickLinksAnimStyle, BAR_HEIGHT: barH } = useScrollHideBar();
   const user = session?.user;
 
   // State
@@ -450,8 +453,10 @@ export default function JournalScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: barH + 20 }]}
         showsVerticalScrollIndicator={false}
+        onScroll={handleScrollBar}
+        scrollEventThrottle={16}
       >
         {/* 1. Cover */}
         <JournalCover
@@ -496,14 +501,14 @@ export default function JournalScreen() {
           loading={dayLoading}
         />
 
-        {/* Bottom spacer */}
-        <View style={{ height: Spacing.xxl }} />
       </ScrollView>
 
       {/* FTUE Overlays */}
       <TooltipManager screen="journal" />
       <WelcomeAudio screenKey="journal" />
-      <QuickLinksBar currentScreen="journal" />
+      <ReAnimated.View style={[{ position: 'absolute', bottom: 0, left: 0, right: 0 }, quickLinksAnimStyle]}>
+        <QuickLinksBar currentScreen="journal" />
+      </ReAnimated.View>
     </SafeAreaView>
   );
 }

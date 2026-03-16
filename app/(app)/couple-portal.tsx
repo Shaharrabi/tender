@@ -70,6 +70,8 @@ import {
   RefreshIcon,
 } from '@/assets/graphics/icons';
 import QuickLinksBar from '@/components/QuickLinksBar';
+import { useScrollHideBar } from '@/hooks/useScrollHideBar';
+import ReAnimated from 'react-native-reanimated';
 import TenderText from '@/components/ui/TenderText';
 import type { IconComponent } from '@/constants/icons';
 import type { Couple, UserProfile, RelationshipPortrait, DeepCouplePortrait } from '@/types/couples';
@@ -103,6 +105,14 @@ import SectionSummaryHeader from '@/components/portrait-enhancements/SectionSumm
 import AudioLibrary from '@/components/audio/AudioLibrary';
 import ResetLibrary from '@/components/emergency/ResetLibrary';
 import { HourglassIcon } from '@/assets/graphics/icons';
+import {
+  IllustrationPairing01,
+  IllustrationPairing06,
+  IllustrationPairing10,
+  IllustrationPortalConflict,
+  IllustrationPortalSnapshot,
+  IllustrationPortalHero,
+} from '@/assets/graphics/illustrations';
 
 type TabKey = 'overview' | 'dance' | 'together' | 'assessments' | 'insights' | 'growth' | 'anchors' | 'field';
 
@@ -135,6 +145,7 @@ export default function CouplePortalScreenWithBoundary() {
 function CouplePortalScreen() {
   const { user } = useAuth();
   const router = useRouter();
+  const { handleScroll: handleScrollBar, animatedStyle: quickLinksAnimStyle, BAR_HEIGHT: barH } = useScrollHideBar();
 
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
@@ -616,6 +627,11 @@ function CouplePortalScreen() {
 
   const renderOverview = () => (
     <View style={styles.tabContent}>
+      {/* Hero illustration */}
+      <View style={{ alignItems: 'center', marginBottom: Spacing.md }}>
+        <IllustrationPortalHero width={280} animated />
+      </View>
+
       {/* Stale partner portrait nudge */}
       {partnerPortraitStale && (
         <View style={styles.staleBanner}>
@@ -695,6 +711,9 @@ function CouplePortalScreen() {
         const oneThingSentence = generateCoupleOneThingSentence(p1Style, p2Style);
         return (
           <View style={styles.synthesisCard}>
+            <View style={{ alignItems: 'center', marginBottom: Spacing.sm }}>
+              <IllustrationPairing01 width={200} animated />
+            </View>
             <TenderText variant="label" color={Colors.depth} style={{ letterSpacing: 1.5, marginBottom: Spacing.sm }}>YOUR STORY TOGETHER</TenderText>
             <TenderText variant="body" color={Colors.textSecondary} style={{ lineHeight: 24, marginBottom: Spacing.lg }}>
               {opening}
@@ -814,6 +833,9 @@ function CouplePortalScreen() {
       {/* ─── Key Insights Snapshot ─── */}
       {dp && (
         <View style={styles.overviewInsights}>
+          <View style={{ alignItems: 'center', marginBottom: Spacing.sm }}>
+            <IllustrationPortalSnapshot width={200} animated />
+          </View>
           <TenderText variant="headingS" style={styles.insightsHeading}>Relationship Snapshot</TenderText>
 
           {/* Your Dance */}
@@ -990,6 +1012,11 @@ function CouplePortalScreen() {
 
     return (
       <View style={styles.tabContent}>
+        {/* Conflict illustration */}
+        <View style={{ alignItems: 'center', marginBottom: Spacing.md }}>
+          <IllustrationPortalConflict width={240} animated />
+        </View>
+
         {/* Combined Cycle */}
         <CombinedCycleVisualization
           cycle={dp.patternInterlock.combinedCycle}
@@ -1052,7 +1079,10 @@ function CouplePortalScreen() {
         {/* Shared Strengths — with richer narratives */}
         {dp.convergenceDivergence.sharedStrengths.length > 0 && (
           <>
-            <TenderText variant="headingM" style={[styles.sectionTitle, { marginTop: Spacing.lg }]}>Shared Strengths</TenderText>
+            <View style={{ alignItems: 'center', marginTop: Spacing.lg, marginBottom: Spacing.sm }}>
+              <IllustrationPairing06 width={200} animated />
+            </View>
+            <TenderText variant="headingM" style={styles.sectionTitle}>Shared Strengths</TenderText>
             {dp.convergenceDivergence.sharedStrengths.map((s, i) => {
               const richNarrative = generateSharedStrengthNarrative(s.dimensionLabel);
               return (
@@ -1550,6 +1580,9 @@ function CouplePortalScreen() {
 
     return (
       <View style={styles.tabContent}>
+        <View style={{ alignItems: 'center', marginBottom: Spacing.md }}>
+          <IllustrationPairing10 width={220} animated />
+        </View>
         <TenderText variant="headingM" style={styles.sectionTitle}>Your Growth Edges</TenderText>
         <TenderText variant="body" color={Colors.textSecondary} style={styles.sectionDesc}>
           Prioritized areas where your relationship is asking to evolve. Each edge names
@@ -1706,7 +1739,7 @@ function CouplePortalScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView ref={scrollRef} contentContainerStyle={styles.scroll}>
+      <ScrollView ref={scrollRef} contentContainerStyle={[styles.scroll, { paddingBottom: barH + 20 }]} onScroll={handleScrollBar} scrollEventThrottle={16}>
         {/* Header Row */}
         <View style={styles.headerRow}>
           <TouchableOpacity onPress={() => router.replace('/(app)/partner' as any)} style={styles.backBtn} accessibilityRole="button" accessibilityLabel="Return to partner screen">
@@ -1809,7 +1842,9 @@ function CouplePortalScreen() {
         <View style={{ height: 160 }} />
       </ScrollView>
       {dp?.coupleAnchors && <AnchorSOSButton anchors={dp.coupleAnchors} />}
-      <QuickLinksBar />
+      <ReAnimated.View style={[{ position: 'absolute', bottom: 0, left: 0, right: 0 }, quickLinksAnimStyle]}>
+        <QuickLinksBar />
+      </ReAnimated.View>
     </SafeAreaView>
   );
 }

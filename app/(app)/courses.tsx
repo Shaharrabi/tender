@@ -7,6 +7,8 @@
 
 import React, { useState, useCallback, useMemo } from 'react';
 import QuickLinksBar from '@/components/QuickLinksBar';
+import { useScrollHideBar } from '@/hooks/useScrollHideBar';
+import ReAnimated from 'react-native-reanimated';
 import {
   View,
   Text,
@@ -41,6 +43,7 @@ import { supabase } from '@/services/supabase';
 export default function CoursesScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const { handleScroll: handleScrollBar, animatedStyle: quickLinksAnimStyle, BAR_HEIGHT: barH } = useScrollHideBar();
 
   const [courseProgressMap, setCourseProgressMap] = useState<
     Record<string, CourseProgress>
@@ -186,8 +189,10 @@ export default function CoursesScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: barH + 20 }]}
         showsVerticalScrollIndicator={false}
+        onScroll={handleScrollBar}
+        scrollEventThrottle={16}
       >
         {/* Intro section */}
         <View style={styles.introSection}>
@@ -252,10 +257,11 @@ export default function CoursesScreen() {
           </Text>
         </View>
 
-        <View style={{ height: Spacing.xxxl }} />
       </ScrollView>
 
-      <QuickLinksBar currentScreen="courses" />
+      <ReAnimated.View style={[{ position: 'absolute', bottom: 0, left: 0, right: 0 }, quickLinksAnimStyle]}>
+        <QuickLinksBar currentScreen="courses" />
+      </ReAnimated.View>
 
       {/* FTUE Overlays */}
       <TooltipManager screen="courses" />

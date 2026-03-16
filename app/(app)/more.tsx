@@ -27,6 +27,8 @@ import { useGuest } from '@/context/GuestContext';
 import { supabase } from '@/services/supabase';
 import { getAllAssessments } from '@/utils/assessments/registry';
 import QuickLinksBar from '@/components/QuickLinksBar';
+import { useScrollHideBar } from '@/hooks/useScrollHideBar';
+import ReAnimated from 'react-native-reanimated';
 import TenderButton from '@/components/ui/TenderButton';
 import {
   Colors,
@@ -58,6 +60,7 @@ export default function MoreScreen() {
   const { user, signOut } = useAuth();
   const { isGuest, clearGuestData } = useGuest();
   const router = useRouter();
+  const { handleScroll: handleScrollBar, animatedStyle: quickLinksAnimStyle, BAR_HEIGHT: barH } = useScrollHideBar();
 
   const [relationshipMode, setRelationshipMode] = useState<string>('solo');
   const [demoPartnerId, setDemoPartnerId] = useState<string | null>(null);
@@ -106,7 +109,7 @@ export default function MoreScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: barH + 20 }]} showsVerticalScrollIndicator={false} onScroll={handleScrollBar} scrollEventThrottle={16}>
 
         {/* Header */}
         <View style={styles.header}>
@@ -198,8 +201,10 @@ export default function MoreScreen() {
           />
         </View>
 
-        <QuickLinksBar />
       </ScrollView>
+      <ReAnimated.View style={[{ position: 'absolute', bottom: 0, left: 0, right: 0 }, quickLinksAnimStyle]}>
+        <QuickLinksBar />
+      </ReAnimated.View>
     </SafeAreaView>
   );
 }

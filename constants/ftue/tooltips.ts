@@ -31,9 +31,19 @@ export interface TooltipConfig {
 
 export const TOOLTIP_CONFIGS: TooltipConfig[] = [
   // ═══════════════════════════════════════════════════════════
-  // HOME SCREEN — follows visual top-to-bottom layout order
-  // Assessment → Journal → Nuance AI → Courses → Community
+  // HOME SCREEN — strict visual top-to-bottom layout order
+  // Partner → Assessment → Field/Journey → Explore → Quick Links
   // ═══════════════════════════════════════════════════════════
+  {
+    id: 'tooltip_home_couple_portal',
+    screen: 'home',
+    targetRef: 'home_partnerSection',
+    title: 'Couple Portal',
+    body: 'Invite your partner to join. When you\u2019re both here, couple exercises, shared reflections, and your relationship portrait unlock automatically.',
+    ctaText: 'Got it',
+    position: 'bottom',
+    order: 1,
+  },
   {
     id: 'tooltip_home_assessment',
     screen: 'home',
@@ -42,7 +52,7 @@ export const TOOLTIP_CONFIGS: TooltipConfig[] = [
     body: 'The Tender Assessment takes about 30 minutes \u2014 but you can pause anytime and pick up where you left off.',
     ctaText: 'Got it',
     position: 'bottom',
-    order: 1,
+    order: 2,
   },
   {
     id: 'tooltip_home_12steps',
@@ -52,37 +62,17 @@ export const TOOLTIP_CONFIGS: TooltipConfig[] = [
     body: 'Your growth is mapped across twelve steps \u2014 each one builds on the last. Practices, reflections, and exercises guide you through attachment, intimacy, and real change.',
     ctaText: 'Got it',
     position: 'bottom',
-    order: 2,
+    order: 3,
   },
   {
     id: 'tooltip_home_portal',
     screen: 'home',
     targetRef: 'home_portraitCard',
-    title: 'Your Portal',
+    title: 'Your Portrait',
     body: 'Complete the assessment to unlock your personal portrait \u2014 a map of how you attach, feel, and connect. Everything else builds from here.',
     ctaText: 'Got it',
     position: 'bottom',
-    order: 3,
-  },
-  {
-    id: 'tooltip_home_couple_portal',
-    screen: 'home',
-    targetRef: 'home_partnerSection',
-    title: 'Couple Portal',
-    body: 'Invite your partner to join. When you\u2019re both here, couple exercises, shared reflections, and your relationship portrait unlock automatically.',
-    ctaText: 'Got it',
-    position: 'bottom',
     order: 4,
-  },
-  {
-    id: 'tooltip_home_journal',
-    screen: 'home',
-    targetRef: 'home_journalCard',
-    title: 'Your memory bank',
-    body: "Every practice and check-in lives here. Come back anytime to see how far you've come.",
-    ctaText: 'Got it',
-    position: 'bottom',
-    order: 5,
   },
   {
     id: 'tooltip_home_nuance',
@@ -91,28 +81,18 @@ export const TOOLTIP_CONFIGS: TooltipConfig[] = [
     title: 'Meet Nuance AI',
     body: 'Your relationship coach \u2014 here to help you make sense of patterns and practice something new.',
     ctaText: 'Got it',
-    position: 'bottom',
+    position: 'top',
+    order: 5,
+  },
+  {
+    id: 'tooltip_home_journal',
+    screen: 'home',
+    targetRef: 'home_journalCard',
+    title: 'Your memory bank',
+    body: "Every practice and check-in lives here. Come back anytime to see how far you've come.",
+    ctaText: 'Got it',
+    position: 'top',
     order: 6,
-  },
-  {
-    id: 'tooltip_home_courses',
-    screen: 'home',
-    targetRef: 'home_coursesCard',
-    title: 'Bite-sized growth',
-    body: 'Each course is 5 short lessons. Start with whatever calls to you.',
-    ctaText: 'Got it',
-    position: 'bottom',
-    order: 7,
-  },
-  {
-    id: 'tooltip_home_community',
-    screen: 'home',
-    targetRef: 'home_communityCard',
-    title: "You're not alone",
-    body: 'Anonymous stories from people on a similar path \u2014 filtered just for you.',
-    ctaText: 'Got it',
-    position: 'bottom',
-    order: 8,
   },
 
   // ═══════════════════════════════════════════════════════════

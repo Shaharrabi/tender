@@ -46,6 +46,8 @@ import {
   Shadows,
 } from '@/constants/theme';
 import QuickLinksBar from '@/components/QuickLinksBar';
+import { useScrollHideBar } from '@/hooks/useScrollHideBar';
+import ReAnimated from 'react-native-reanimated';
 import { ShieldIcon, SparkleIcon } from '@/assets/graphics/icons';
 import { UISticker } from '@/components/growth/stickers';
 import type { Couple, CoupleInvite, UserProfile } from '@/types/couples';
@@ -54,6 +56,7 @@ import type { DyadicAssessmentType } from '@/types';
 export default function PartnerScreen() {
   const { user } = useAuth();
   const router = useRouter();
+  const { handleScroll: handleScrollBar, animatedStyle: quickLinksAnimStyle, BAR_HEIGHT: barH } = useScrollHideBar();
 
   const [loading, setLoading] = useState(true);
   const [couple, setCouple] = useState<Couple | null>(null);
@@ -274,7 +277,7 @@ export default function PartnerScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={[styles.scroll, { paddingBottom: barH + 20 }]} keyboardShouldPersistTaps="handled" onScroll={handleScrollBar} scrollEventThrottle={16}>
           {/* Header */}
           <TouchableOpacity onPress={handleBack} style={styles.backBtn} accessibilityRole="button">
             <Text style={styles.backText}>{'< Back'}</Text>
@@ -424,7 +427,9 @@ export default function PartnerScreen() {
           )}
         </ScrollView>
         </KeyboardAvoidingView>
-        <QuickLinksBar />
+        <ReAnimated.View style={[{ position: 'absolute', bottom: 0, left: 0, right: 0 }, quickLinksAnimStyle]}>
+          <QuickLinksBar />
+        </ReAnimated.View>
       </SafeAreaView>
     );
   }
@@ -434,7 +439,7 @@ export default function PartnerScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={[styles.scroll, { paddingBottom: barH + 20 }]} keyboardShouldPersistTaps="handled" onScroll={handleScrollBar} scrollEventThrottle={16}>
         <TouchableOpacity onPress={handleBack} style={styles.backBtn} accessibilityRole="button">
           <Text style={styles.backText}>{'< Back'}</Text>
         </TouchableOpacity>
@@ -569,7 +574,9 @@ export default function PartnerScreen() {
         </View>
       </ScrollView>
       </KeyboardAvoidingView>
-      <QuickLinksBar />
+      <ReAnimated.View style={[{ position: 'absolute', bottom: 0, left: 0, right: 0 }, quickLinksAnimStyle]}>
+        <QuickLinksBar />
+      </ReAnimated.View>
     </SafeAreaView>
   );
 }

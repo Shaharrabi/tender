@@ -29,6 +29,7 @@ import {
   Animated,
   Alert,
   Platform,
+  Dimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -68,6 +69,7 @@ import { getNudges } from '@/utils/nudges';
 import { getUserConsent } from '@/services/consent';
 import { recordDailyEngagement, getStreakData, type StreakData } from '@/services/streaks';
 import { SoundHaptics } from '@/services/SoundHapticsService';
+import { IllustrationHomeHero, IllustrationCommunityHero, IllustrationPortalHero, IllustrationJournalHero, IllustrationF20Onboarding } from '@/assets/graphics/illustrations';
 import { XPProgressBar } from '@/components/gamification/XPProgressBar';
 import StreakBanner from '@/components/StreakBanner';
 import { useFirstTime } from '@/context/FirstTimeContext';
@@ -255,6 +257,21 @@ export default function HomeScreen() {
   // Step state
   const [currentStepNum, setCurrentStepNum] = useState<number>(1);
   const [stepTagline, setStepTagline] = useState<string>('');
+
+  // Hero illustration cycling
+  const HERO_ILLUSTRATIONS = [IllustrationHomeHero, IllustrationCommunityHero, IllustrationPortalHero, IllustrationJournalHero, IllustrationF20Onboarding];
+  const [heroIndex, setHeroIndex] = useState(0);
+  const heroFade = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      Animated.timing(heroFade, { toValue: 0, duration: 600, useNativeDriver: true }).start(() => {
+        setHeroIndex(prev => (prev + 1) % HERO_ILLUSTRATIONS.length);
+        Animated.timing(heroFade, { toValue: 1, duration: 600, useNativeDriver: true }).start();
+      });
+    }, 15000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Micro-course state
   const [activeCourse, setActiveCourse] = useState<{
@@ -837,10 +854,13 @@ export default function HomeScreen() {
       !ftueState.completedTours.includes('tour_home') &&
       !hasShownTourRef.current
     ) {
-      // If user already completed onboarding or any assessments, they're a
-      // returning user whose FTUE flag was lost (e.g. web storage cleared).
-      // Auto-complete tour AND all tooltips so they never replay.
-      if (completedCount > 0 || hasCompletedOnboarding) {
+      // If user has completed ANY assessments, they're a returning user whose
+      // FTUE flag was lost (e.g. web storage cleared). Auto-complete tour AND
+      // all tooltips so they never replay.
+      // NOTE: Do NOT check hasCompletedOnboarding here — fresh users who just
+      // finished onboarding already have onboarding_completed_at set in DB,
+      // but they should still see the tour on their first home visit.
+      if (completedCount > 0) {
         markTourCompleted('tour_home');
         markFirstLaunchComplete();
         // Mark all tooltips as seen to prevent bubbles replaying
@@ -852,7 +872,7 @@ export default function HomeScreen() {
       const timer = setTimeout(() => setShowTour(true), 800);
       return () => clearTimeout(timer);
     }
-  }, [loading, ftueLoading, ftueState.isFirstLaunch, ftueState.completedTours, completedCount, hasCompletedOnboarding]);
+  }, [loading, ftueLoading, ftueState.isFirstLaunch, ftueState.completedTours, completedCount]);
 
   const handleTourComplete = useCallback(() => {
     setShowTour(false);
@@ -1067,6 +1087,16 @@ export default function HomeScreen() {
               );
             })()}
           </View>
+
+          {/* Hero illustration — cycles between Home, Community, Portal heroes */}
+          {(() => {
+            const HeroIllustration = HERO_ILLUSTRATIONS[heroIndex];
+            return (
+              <Animated.View style={{ alignItems: 'center', marginTop: -4, marginBottom: -8, opacity: heroFade }}>
+                <HeroIllustration width={Math.min(Dimensions.get('window').width - 24, 340)} animated={true} />
+              </Animated.View>
+            );
+          })()}
 
           {/* Step progress dots removed — JourneySpiral replaces them */}
 

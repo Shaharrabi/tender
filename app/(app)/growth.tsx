@@ -20,6 +20,7 @@ import {
   StyleSheet,
   SafeAreaView,
   ActivityIndicator,
+  Dimensions,
 } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
@@ -44,8 +45,19 @@ import { ensureStepProgress } from '@/services/steps';
 import { getMyCouple, isSelfCouple } from '@/services/couples';
 import { getPortrait } from '@/services/portrait';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
+import {
+  IllustrationStep01, IllustrationStep02, IllustrationStep03, IllustrationStep04,
+  IllustrationStep05, IllustrationStep06, IllustrationStep07, IllustrationStep08,
+  IllustrationStep09, IllustrationStep10, IllustrationStep11, IllustrationStep12,
+} from '@/assets/graphics/illustrations';
 import type { StepProgress } from '@/types/growth';
 import type { Couple } from '@/types/couples';
+
+const STEP_ILLUSTRATIONS: Record<number, React.ComponentType<{ width?: number; height?: number; animated?: boolean }>> = {
+  1: IllustrationStep01, 2: IllustrationStep02, 3: IllustrationStep03, 4: IllustrationStep04,
+  5: IllustrationStep05, 6: IllustrationStep06, 7: IllustrationStep07, 8: IllustrationStep08,
+  9: IllustrationStep09, 10: IllustrationStep10, 11: IllustrationStep11, 12: IllustrationStep12,
+};
 
 export default function GrowthScreen() {
   const { user } = useAuth();
@@ -209,6 +221,16 @@ export default function GrowthScreen() {
         onScroll={handleScroll}
         scrollEventThrottle={16}
       >
+        {/* Current Step Illustration */}
+        {(() => {
+          const StepIllustration = STEP_ILLUSTRATIONS[currentStepNumber] || IllustrationStep01;
+          return (
+            <View style={{ alignItems: 'center', marginBottom: 4 }}>
+              <StepIllustration width={Math.min(Dimensions.get('window').width - 48, 260)} animated={true} />
+            </View>
+          );
+        })()}
+
         {/* Tagline + Progress Summary */}
         <View style={styles.introSection}>
           <Text style={styles.tagline}>Tending the field between you — in 12 steps</Text>

@@ -26,37 +26,48 @@ import {
   BorderRadius,
   FontFamilies,
 } from '@/constants/theme';
+import {
+  SeedlingIcon,
+  MirrorIcon,
+  HeartDoubleIcon,
+  CompassIcon,
+} from '@/assets/graphics/icons';
+import type { IconProps } from '@/assets/graphics/icons';
 
 interface Step {
-  emoji: string;
+  Icon: React.ComponentType<IconProps>;
+  iconColor: string;
   title: string;
   body: string;
-  ctaLabel?: string;
-  ctaRoute?: string;
+  /** If true, the last step shows multiple choice buttons instead of a single CTA */
+  isChoiceStep?: boolean;
 }
 
 const STEPS: Step[] = [
   {
-    emoji: '🌱',
+    Icon: SeedlingIcon,
+    iconColor: Colors.success,
     title: 'Welcome to Tender',
-    body: "You just took the bravest step — showing up. This is your space to understand yourself, grow in love, and build the relationship you deserve.",
+    body: "You just took the bravest step \u2014 showing up. This is your space to understand yourself, grow in love, and build the relationship you deserve.",
   },
   {
-    emoji: '🧬',
-    title: 'Start with Your Assessment',
-    body: "Six short assessments map how you attach, feel, fight, and connect. About 30 minutes total — and they unlock your personal portrait. Everything else builds from there.",
+    Icon: MirrorIcon,
+    iconColor: Colors.primary,
+    title: 'Discover Your Portrait',
+    body: "Seven short chapters map how you attach, feel, fight, and connect. About 30 minutes total \u2014 and they unlock your personal portrait. Everything else builds from there.",
   },
   {
-    emoji: '💑',
+    Icon: HeartDoubleIcon,
+    iconColor: Colors.accent,
     title: 'The Couple Portal',
-    body: "Invite your partner and a shared space opens — your relationship portrait, conflict map, Nuance AI couple coaching, and a 12-step growth journey together.",
+    body: "Invite your partner and a shared space opens \u2014 your relationship portrait, conflict map, Nuance AI couple coaching, and a 12-step growth journey together.",
   },
   {
-    emoji: '✨',
-    title: "You're Ready",
-    body: "Start your first assessment now. Your portrait unlocks as you go — every answer adds a layer of understanding.",
-    ctaLabel: 'Begin My First Assessment →',
-    ctaRoute: '/(app)/assessment',
+    Icon: CompassIcon,
+    iconColor: Colors.secondary,
+    title: "Where would you like to start?",
+    body: "Your portrait unlocks as you go \u2014 every answer adds a layer of understanding.",
+    isChoiceStep: true,
   },
 ];
 
@@ -85,12 +96,14 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({ onComplete }) => {
   const handleNext = () => {
     if (isLast) {
       onComplete();
-      if (step.ctaRoute) {
-        router.push(step.ctaRoute as any);
-      }
     } else {
       setStepIndex((i) => i + 1);
     }
+  };
+
+  const handleChoice = (route: string) => {
+    onComplete();
+    router.push(route as any);
   };
 
   const handleSkip = () => {
@@ -126,8 +139,10 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({ onComplete }) => {
             ))}
           </View>
 
-          {/* Emoji */}
-          <Text style={styles.emoji}>{step.emoji}</Text>
+          {/* Icon */}
+          <View style={styles.iconWrap}>
+            <step.Icon size={40} color={step.iconColor} />
+          </View>
 
           {/* Title */}
           <Text style={styles.title}>{step.title}</Text>
@@ -135,23 +150,51 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({ onComplete }) => {
           {/* Body */}
           <Text style={styles.body}>{step.body}</Text>
 
-          {/* CTA button */}
-          <Pressable
-            style={({ pressed }) => [styles.ctaButton, pressed && styles.ctaButtonPressed]}
-            onPress={handleNext}
-            accessibilityRole="button"
-            accessibilityLabel={step.ctaLabel ?? (isLast ? 'Finish' : 'Next')}
-          >
-            <Text style={styles.ctaText}>
-              {step.ctaLabel ?? (isLast ? 'Begin →' : 'Next →')}
-            </Text>
-          </Pressable>
+          {/* Choice buttons on last step */}
+          {step.isChoiceStep ? (
+            <View style={styles.choiceGroup}>
+              <Pressable
+                style={({ pressed }) => [styles.ctaButton, pressed && styles.ctaButtonPressed]}
+                onPress={() => handleChoice('/(app)/tender-assessment')}
+                accessibilityRole="button"
+                accessibilityLabel="Begin My Assessment"
+              >
+                <Text style={styles.ctaText}>Begin My Assessment</Text>
+              </Pressable>
+              <Pressable
+                style={({ pressed }) => [styles.secondaryButton, pressed && styles.ctaButtonPressed]}
+                onPress={() => handleChoice('/(app)/growth')}
+                accessibilityRole="button"
+                accessibilityLabel="Explore the 12 Steps"
+              >
+                <Text style={styles.secondaryText}>Explore the 12 Steps</Text>
+              </Pressable>
+              <Pressable
+                style={styles.skipButton}
+                onPress={handleSkip}
+                accessibilityRole="button"
+                accessibilityLabel="Just explore the home page"
+              >
+                <Text style={styles.skipText}>Just explore the home page</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <>
+              {/* CTA button */}
+              <Pressable
+                style={({ pressed }) => [styles.ctaButton, pressed && styles.ctaButtonPressed]}
+                onPress={handleNext}
+                accessibilityRole="button"
+                accessibilityLabel="Next"
+              >
+                <Text style={styles.ctaText}>{'Next \u2192'}</Text>
+              </Pressable>
 
-          {/* Skip */}
-          {!isLast && (
-            <Pressable onPress={handleSkip} style={styles.skipButton} accessibilityRole="button">
-              <Text style={styles.skipText}>Skip tour</Text>
-            </Pressable>
+              {/* Skip */}
+              <Pressable onPress={handleSkip} style={styles.skipButton} accessibilityRole="button">
+                <Text style={styles.skipText}>Skip tour</Text>
+              </Pressable>
+            </>
           )}
         </Animated.View>
       </View>
@@ -201,8 +244,13 @@ const styles = StyleSheet.create({
   dotDone: {
     backgroundColor: Colors.primaryFaded,
   },
-  emoji: {
-    fontSize: 48,
+  iconWrap: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: Colors.primaryFaded,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: Spacing.xs,
   },
   title: {
@@ -237,8 +285,29 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontWeight: '600',
   },
+  choiceGroup: {
+    width: '100%',
+    gap: Spacing.sm,
+  },
+  secondaryButton: {
+    backgroundColor: 'transparent',
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.pill,
+    width: '100%',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: Colors.primary,
+  },
+  secondaryText: {
+    fontFamily: FontFamilies.heading,
+    fontSize: FontSizes.body,
+    color: Colors.primary,
+    fontWeight: '600',
+  },
   skipButton: {
     paddingVertical: Spacing.xs,
+    alignItems: 'center',
   },
   skipText: {
     fontFamily: FontFamilies.body,

@@ -65,6 +65,11 @@ import {
   getStepAssessmentNudge,
   getStepAssessmentGate,
 } from '@/utils/steps/twelve-steps';
+import {
+  IllustrationStep01, IllustrationStep02, IllustrationStep03, IllustrationStep04,
+  IllustrationStep05, IllustrationStep06, IllustrationStep07, IllustrationStep08,
+  IllustrationStep09, IllustrationStep10, IllustrationStep11, IllustrationStep12,
+} from '@/assets/graphics/illustrations';
 import { getExerciseById } from '@/utils/interventions/registry';
 import { getCourseById } from '@/utils/microcourses/course-registry';
 import { getMiniGameOutput } from '@/services/minigames';
@@ -128,6 +133,12 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 
 /** Section IDs for collapsible accordion */
 type SectionId = 'course' | 'goals' | 'practices' | 'reflection' | 'partnerExchange' | 'partnerRound' | 'togetherPractices' | 'allCourses' | 'couplePlay' | 'growthPlan' | 'reading';
+
+const STEP_ILLUSTRATIONS: Record<number, React.ComponentType<{width?: number; height?: number; animated?: boolean; style?: any}>> = {
+  1: IllustrationStep01, 2: IllustrationStep02, 3: IllustrationStep03, 4: IllustrationStep04,
+  5: IllustrationStep05, 6: IllustrationStep06, 7: IllustrationStep07, 8: IllustrationStep08,
+  9: IllustrationStep09, 10: IllustrationStep10, 11: IllustrationStep11, 12: IllustrationStep12,
+};
 
 function StepDetailScreenInner() {
   const { user } = useAuth();
@@ -808,7 +819,14 @@ function StepDetailScreenInner() {
         {/* Centered sticker + title */}
         <Animated.View entering={FadeInDown.delay(100).duration(500)}>
           <View style={styles.stepStickerCentered}>
-            <StepSticker stepNumber={stepNumber} size={110} showLabel={false} />
+            {(() => {
+              const StepIllust = STEP_ILLUSTRATIONS[stepNumber];
+              if (StepIllust) {
+                const illustWidth = Math.min(Dimensions.get('window').width - 48, 300);
+                return <StepIllust width={illustWidth} height={Math.round(illustWidth * 0.73)} animated={true} />;
+              }
+              return <StepSticker stepNumber={stepNumber} size={110} showLabel={false} />;
+            })()}
           </View>
           <View style={styles.stepTitleCentered}>
             <Text style={styles.stepLabel}>STEP {step.stepNumber}</Text>

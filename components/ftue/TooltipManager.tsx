@@ -148,7 +148,7 @@ export const TooltipManager: React.FC<TooltipManagerProps> = ({
 
       try {
         scrollRef.current.scrollTo({ y: newOffset, animated: true });
-        setTimeout(() => setScrolledAndReady(true), 400);
+        setTimeout(() => setScrolledAndReady(true), 600);
       } catch {
         setScrolledAndReady(true);
       }
@@ -169,7 +169,7 @@ export const TooltipManager: React.FC<TooltipManagerProps> = ({
 
       try {
         scrollRef.current.scrollTo({ y: newOffset, animated: true });
-        setTimeout(() => setScrolledAndReady(true), 450);
+        setTimeout(() => setScrolledAndReady(true), 650);
       } catch {
         setScrolledAndReady(true);
       }

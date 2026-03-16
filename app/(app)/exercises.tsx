@@ -10,6 +10,8 @@
 
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import QuickLinksBar from '@/components/QuickLinksBar';
+import { useScrollHideBar } from '@/hooks/useScrollHideBar';
+import ReAnimated from 'react-native-reanimated';
 import {
   View,
   Text,
@@ -56,6 +58,7 @@ const FILTER_COLORS: Record<InterventionCategory, string> = {
 export default function ExercisesScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const { handleScroll: handleScrollBar, animatedStyle: quickLinksAnimStyle, BAR_HEIGHT: barH } = useScrollHideBar();
   const [activeFilter, setActiveFilter] = useState<
     InterventionCategory | 'all'
   >('all');
@@ -161,9 +164,11 @@ export default function ExercisesScreen() {
 
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: barH + 20 }]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        onScroll={handleScrollBar}
+        scrollEventThrottle={16}
       >
         {/* ─── Stats Row ──────────────────────────────────── */}
         <Animated.View
@@ -406,11 +411,11 @@ export default function ExercisesScreen() {
           </View>
         )}
 
-        {/* Bottom padding */}
-        <View style={{ height: Spacing.xxxl }} />
       </ScrollView>
       </KeyboardAvoidingView>
-      <QuickLinksBar currentScreen="practices" />
+      <ReAnimated.View style={[{ position: 'absolute', bottom: 0, left: 0, right: 0 }, quickLinksAnimStyle]}>
+        <QuickLinksBar currentScreen="practices" />
+      </ReAnimated.View>
     </SafeAreaView>
   );
 }

@@ -51,7 +51,7 @@ export default function TimeScreen() {
             <ArrowLeftIcon size={16} color={Colors.primary} />
             <Text style={styles.backText}>Back</Text>
           </TouchableOpacity>
-          <Text style={styles.stepIndicator}>5 of 6</Text>
+          <Text style={styles.stepIndicator}>{data.relationshipStatus === 'single' ? '4 of 4' : '5 of 5'}</Text>
           <View style={styles.headerSpacer} />
         </View>
       </Animated.View>

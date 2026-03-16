@@ -87,7 +87,7 @@ export default function ModeSelectScreen() {
             <ArrowLeftIcon size={16} color={Colors.primary} />
             <Text style={styles.backText}>Back</Text>
           </TouchableOpacity>
-          <Text style={styles.stepIndicator}>3 of 6</Text>
+          <Text style={styles.stepIndicator}>{data.relationshipStatus === 'single' ? '2 of 4' : '3 of 5'}</Text>
           <View style={styles.headerSpacer} />
         </View>
       </Animated.View>

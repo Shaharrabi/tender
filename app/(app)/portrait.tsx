@@ -29,6 +29,8 @@ import { useAuth } from '@/context/AuthContext';
 import { TooltipManager } from '@/components/ftue/TooltipManager';
 import { WelcomeAudio } from '@/components/ftue/WelcomeAudio';
 import QuickLinksBar from '@/components/QuickLinksBar';
+import { useScrollHideBar } from '@/hooks/useScrollHideBar';
+import ReAnimated from 'react-native-reanimated';
 import { getPortrait, savePortrait, extractSupplementScores, fetchPreviousScores, getPortraitHistory, type PortraitHistoryEntry } from '@/services/portrait';
 import { fetchGrowthBoostData } from '@/services/growth-boost';
 import { getGrowthBoostedScore, calculatePerScoreBoosts, type GrowthBoostedResult } from '@/utils/portrait/growth-boost';
@@ -110,6 +112,21 @@ import AnchorQuickAccess from '@/components/portrait-enhancements/AnchorQuickAcc
 import MatrixTab from '@/components/portrait/MatrixTab';
 import AudioLibrary from '@/components/audio/AudioLibrary';
 import PortraitHistoryChart from '@/components/portrait/PortraitHistoryChart';
+import {
+  IllustrationPortraitAttachment,
+  IllustrationPortraitRadar,
+  IllustrationAttachAnxious,
+  IllustrationAttachDismissive,
+  IllustrationAttachFearful,
+  IllustrationAttachSecure,
+  IllustrationWoTHyper,
+  IllustrationWoTHypo,
+  IllustrationWoTRegulated,
+  IllustrationIFSSelf,
+  IllustrationIFSManager,
+  IllustrationIFSFirefighter,
+  IllustrationPortalConflict,
+} from '@/assets/graphics/illustrations';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -550,6 +567,7 @@ export default function PortraitScreen() {
   const { user } = useAuth();
   const router = useRouter();
   const params = useLocalSearchParams<{ tab?: string }>();
+  const { handleScroll: handleScrollBar, animatedStyle: quickLinksAnimStyle, BAR_HEIGHT: barH } = useScrollHideBar();
   const [portrait, setPortrait] = useState<IndividualPortrait | null>(null);
   const [rawScores, setRawScores] = useState<AllAssessmentScores | null>(null);
   const [allScoresMap, setAllScoresMap] = useState<Record<string, { id: string; scores: any }>>({});
@@ -981,8 +999,10 @@ export default function PortraitScreen() {
         <ScrollView
           ref={contentScrollRef}
           style={st.contentScroll}
-          contentContainerStyle={st.contentContainer}
+          contentContainerStyle={[st.contentContainer, { paddingBottom: barH + 20 }]}
           showsVerticalScrollIndicator={false}
+          onScroll={handleScrollBar}
+          scrollEventThrottle={16}
         >
           {/* Section Summary Header — shows at top of every tab */}
           {(() => {
@@ -1081,7 +1101,9 @@ export default function PortraitScreen() {
       {/* FTUE Overlays */}
       <TooltipManager screen="portrait" />
       <WelcomeAudio screenKey="portrait" />
-      <QuickLinksBar />
+      <ReAnimated.View style={[{ position: 'absolute', bottom: 0, left: 0, right: 0 }, quickLinksAnimStyle]}>
+        <QuickLinksBar />
+      </ReAnimated.View>
     </SafeAreaView>
     </ErrorBoundary>
   );
@@ -1131,6 +1153,11 @@ function OverviewTab({
 
   return (
     <Animated.View style={{ opacity: fadeAnim }}>
+      {/* Portrait Illustration — hero image */}
+      <View style={{ alignItems: 'center', marginBottom: 16 }}>
+        <IllustrationPortraitAttachment width={Math.min(SCREEN_WIDTH - 48, 340)} animated={true} />
+      </View>
+
       {/* Portrait Digest — 60 second summary */}
       <PortraitDigest portrait={portrait} />
 
@@ -1686,20 +1713,24 @@ function PartsMapInfographic({
 
       {/* Self-Leadership Circle */}
       <View style={st.partsMapCenter}>
-        <View
-          style={[st.partsMapSelfCircle, { borderColor: selfTier.color }]}
-          accessibilityRole="text"
-          accessibilityLabel={`Self-leadership score: ${selfScore} out of 100, ${selfTier.label}`}
-        >
-          <TenderText variant="headingM" color={selfTier.color}>{selfScore}</TenderText>
-          <TenderText variant="caption" color={Colors.textMuted} align="center">Self{'\n'}Leadership</TenderText>
+        <IllustrationIFSSelf width={130} animated={false} />
+        <View style={{ marginTop: 8 }}>
+          <View
+            style={[st.partsMapSelfCircle, { borderColor: selfTier.color }]}
+            accessibilityRole="text"
+            accessibilityLabel={`Self-leadership score: ${selfScore} out of 100, ${selfTier.label}`}
+          >
+            <TenderText variant="headingL" color={selfTier.color}>{selfScore}</TenderText>
+          </View>
+          <TenderText variant="bodyS" color={Colors.textMuted} align="center" style={{ marginTop: 4 }}>Self Leadership</TenderText>
         </View>
       </View>
 
       {/* Manager Parts */}
       <View style={st.partsMapSection}>
-        <View style={[st.partsMapSectionHeader, { backgroundColor: Colors.warning + '15' }]}>
-          <View style={st.partsMapSectionIcon}><ShieldIcon size={16} color={Colors.warning} /></View>
+        <View style={[st.partsMapSectionHeader, { backgroundColor: Colors.backgroundAlt }]}>
+          <IllustrationIFSManager width={120} animated={false} />
+          <View style={st.partsMapSectionIcon}><ShieldIcon size={16} color="#8B7355" /></View>
           <TenderText variant="headingS">Manager Parts</TenderText>
           <TenderText variant="caption" color={Colors.textMuted} style={st.partsMapSectionHint}>Try to prevent pain</TenderText>
         </View>
@@ -1707,8 +1738,8 @@ function PartsMapInfographic({
           {parts.managerParts.map((p) => {
             const [title, desc] = p.includes(' — ') ? p.split(' — ') : [p, ''];
             return (
-              <View key={p} style={[st.partsMapCard, { borderLeftColor: Colors.warning }]}>
-                <TenderText variant="body" color={Colors.warning} style={st.partsMapCardTitle}>{title}</TenderText>
+              <View key={p} style={[st.partsMapCard, { borderLeftColor: '#8B7355' }]}>
+                <TenderText variant="body" color="#8B7355" style={st.partsMapCardTitle}>{title}</TenderText>
                 {desc ? <TenderText variant="caption" color={Colors.textSecondary}>{desc}</TenderText> : null}
               </View>
             );
@@ -1718,8 +1749,9 @@ function PartsMapInfographic({
 
       {/* Firefighter Parts */}
       <View style={st.partsMapSection}>
-        <View style={[st.partsMapSectionHeader, { backgroundColor: Colors.error + '12' }]}>
-          <View style={st.partsMapSectionIcon}><FireIcon size={16} color={Colors.error} /></View>
+        <View style={[st.partsMapSectionHeader, { backgroundColor: Colors.backgroundAlt }]}>
+          <IllustrationIFSFirefighter width={120} animated={false} />
+          <View style={st.partsMapSectionIcon}><FireIcon size={16} color="#A0846B" /></View>
           <TenderText variant="headingS">Firefighter Parts</TenderText>
           <TenderText variant="caption" color={Colors.textMuted} style={st.partsMapSectionHint}>React when pain breaks through</TenderText>
         </View>
@@ -1727,8 +1759,8 @@ function PartsMapInfographic({
           {parts.firefighterParts.map((p) => {
             const [title, desc] = p.includes(' — ') ? p.split(' — ') : [p, ''];
             return (
-              <View key={p} style={[st.partsMapCard, { borderLeftColor: Colors.error }]}>
-                <TenderText variant="body" color={Colors.error} style={st.partsMapCardTitle}>{title}</TenderText>
+              <View key={p} style={[st.partsMapCard, { borderLeftColor: '#A0846B' }]}>
+                <TenderText variant="body" color="#A0846B" style={st.partsMapCardTitle}>{title}</TenderText>
                 {desc ? <TenderText variant="caption" color={Colors.textSecondary}>{desc}</TenderText> : null}
               </View>
             );
@@ -1808,8 +1840,8 @@ function CycleDiagramInfographic({
           accessibilityRole="text"
           accessibilityLabel={`You: ${isPursuer ? 'Pursuer' : negativeCycle.position === 'withdrawer' ? 'Withdrawer' : 'Mixed'}`}
         >
-          <TenderText variant="caption" color={Colors.white} style={st.cycleDiagramYouText}>You</TenderText>
-          <TenderText variant="caption" color={Colors.white}>
+          <TenderText variant="bodyS" color={Colors.white} style={st.cycleDiagramYouText}>You</TenderText>
+          <TenderText variant="bodyS" color={Colors.white} style={{ fontWeight: '600' }}>
             {isPursuer ? 'Pursuer' : negativeCycle.position === 'withdrawer' ? 'Withdrawer' : 'Mixed'}
           </TenderText>
         </View>
@@ -1819,20 +1851,20 @@ function CycleDiagramInfographic({
           st.cycleDiagramPartnerBadge,
           { backgroundColor: isPursuer ? Colors.depth + '60' : Colors.secondary + '60' },
         ]}>
-          <TenderText variant="caption" color={Colors.white} style={st.cycleDiagramPartnerText}>Partner</TenderText>
-          <TenderText variant="caption" color={Colors.white}>
+          <TenderText variant="bodyS" color={Colors.white} style={st.cycleDiagramPartnerText}>Partner</TenderText>
+          <TenderText variant="bodyS" color={Colors.white} style={{ fontWeight: '600' }}>
             {isPursuer ? 'Withdrawer' : 'Pursuer'}
           </TenderText>
         </View>
 
         {/* Connection lines */}
         <View style={st.cycleDiagramLineTop}>
-          <TenderText variant="caption" color={Colors.textMuted}>
+          <TenderText variant="bodyS" color={Colors.textMuted}>
             {isPursuer ? 'You pursue →' : '← Partner pursues'}
           </TenderText>
         </View>
         <View style={st.cycleDiagramLineBottom}>
-          <TenderText variant="caption" color={Colors.textMuted}>
+          <TenderText variant="bodyS" color={Colors.textMuted}>
             {isPursuer ? '← Partner withdraws' : 'You withdraw →'}
           </TenderText>
         </View>
@@ -2034,11 +2066,35 @@ function ScoresTab({
       </>
       )}
 
-      {/* Window of Tolerance — always visible regardless of view mode */}
+      {/* Window of Tolerance — all 3 zones side by side */}
+      <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'flex-end', marginBottom: 12, gap: 8 }}>
+        <View style={{ alignItems: 'center', flex: 1 }}>
+          <IllustrationWoTHyper width={100} animated={false} />
+          <TenderText variant="caption" color="#8B7355" style={{ fontSize: 9, marginTop: 4 }}>Hyperarousal</TenderText>
+          {cs.regulationScore < 40 && cs.windowWidth < 35 && (
+            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#C4756B', marginTop: 4 }} />
+          )}
+        </View>
+        <View style={{ alignItems: 'center', flex: 1 }}>
+          <IllustrationWoTRegulated width={100} animated={false} />
+          <TenderText variant="caption" color="#8B7355" style={{ fontSize: 9, marginTop: 4 }}>Regulated</TenderText>
+          {cs.regulationScore >= 40 && (
+            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: cs.regulationScore > 60 ? '#6B9080' : '#C9A84C', marginTop: 4 }} />
+          )}
+        </View>
+        <View style={{ alignItems: 'center', flex: 1 }}>
+          <IllustrationWoTHypo width={100} animated={false} />
+          <TenderText variant="caption" color="#8B7355" style={{ fontSize: 9, marginTop: 4 }}>Hypoarousal</TenderText>
+          {cs.regulationScore < 40 && cs.windowWidth >= 35 && (
+            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#C4976B', marginTop: 4 }} />
+          )}
+        </View>
+      </View>
       <WindowOfTolerance
         compositeScores={cs}
         activationPattern={
           cs.regulationScore > 60 ? 'balanced' :
+          cs.regulationScore >= 40 ? 'balanced' :
           cs.windowWidth < 35 ? 'hyperarousal' : 'both'
         }
         triggers={portrait.negativeCycle.primaryTriggers.slice(0, 3)}
@@ -2121,6 +2177,30 @@ function LensesTab({ portrait, rawScores }: { portrait: IndividualPortrait; rawS
           ? 'Five distinct perspectives that together form a complete picture of how you relate.'
           : 'Four distinct perspectives that together form a complete picture of how you relate.'}
       </TenderText>
+
+      {/* Attachment style illustrations — 2x2 grid */}
+      <View style={{ alignItems: 'center', marginBottom: 12 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 16, marginBottom: 8 }}>
+          <View style={{ alignItems: 'center' }}>
+            <IllustrationAttachSecure width={140} animated={false} />
+            <TenderText variant="caption" color={Colors.textMuted} style={{ marginTop: 4 }}>Secure</TenderText>
+          </View>
+          <View style={{ alignItems: 'center' }}>
+            <IllustrationAttachAnxious width={140} animated={false} />
+            <TenderText variant="caption" color={Colors.textMuted} style={{ marginTop: 4 }}>Anxious</TenderText>
+          </View>
+        </View>
+        <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 16 }}>
+          <View style={{ alignItems: 'center' }}>
+            <IllustrationAttachDismissive width={140} animated={false} />
+            <TenderText variant="caption" color={Colors.textMuted} style={{ marginTop: 4 }}>Dismissive</TenderText>
+          </View>
+          <View style={{ alignItems: 'center' }}>
+            <IllustrationAttachFearful width={140} animated={false} />
+            <TenderText variant="caption" color={Colors.textMuted} style={{ marginTop: 4 }}>Fearful</TenderText>
+          </View>
+        </View>
+      </View>
 
       <PortraitLens
         title="Attachment & Protection"
@@ -2254,6 +2334,11 @@ function CycleTab({ portrait, rawScores }: { portrait: IndividualPortrait; rawSc
 
   return (
     <Animated.View style={{ opacity: fadeAnim }}>
+      {/* Cycle illustration */}
+      <View style={{ alignItems: 'center', marginBottom: 12, overflow: 'visible' }}>
+        <IllustrationPortalConflict width={SCREEN_WIDTH - 48} animated={false} />
+      </View>
+
       {/* Position Hero */}
       <View style={[st.cycleHero, { backgroundColor: positionColor + '12' }]}>
         <View
@@ -3398,10 +3483,10 @@ const st = StyleSheet.create({
     paddingVertical: Spacing.sm,
   },
   partsMapSelfCircle: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    borderWidth: 4,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    borderWidth: 3,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: Colors.surfaceElevated,
@@ -3476,7 +3561,7 @@ const st = StyleSheet.create({
     ...Shadows.card,
   },
   cycleDiagramVisual: {
-    height: 160,
+    height: 200,
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
@@ -3491,11 +3576,11 @@ const st = StyleSheet.create({
   // cycleDiagramArrow — pure text, moved to TenderText
   cycleDiagramYouBadge: {
     position: 'absolute',
-    left: 16,
+    left: 12,
     top: '50%',
-    marginTop: -28,
-    width: 78,
-    height: 56,
+    marginTop: -32,
+    width: 88,
+    height: 64,
     borderRadius: BorderRadius.md,
     alignItems: 'center',
     justifyContent: 'center',
@@ -3507,11 +3592,11 @@ const st = StyleSheet.create({
   // cycleDiagramYouRole — pure text, moved to TenderText
   cycleDiagramPartnerBadge: {
     position: 'absolute',
-    right: 16,
+    right: 12,
     top: '50%',
-    marginTop: -28,
-    width: 78,
-    height: 56,
+    marginTop: -32,
+    width: 88,
+    height: 64,
     borderRadius: BorderRadius.md,
     alignItems: 'center',
     justifyContent: 'center',
@@ -3534,8 +3619,8 @@ const st = StyleSheet.create({
   cycleDiagramInsight: {
     backgroundColor: Colors.surface,
     borderRadius: BorderRadius.sm,
-    padding: Spacing.md,
-    gap: Spacing.xs,
+    padding: Spacing.lg,
+    gap: Spacing.sm,
     borderLeftWidth: 3,
     borderLeftColor: Colors.secondary,
   },

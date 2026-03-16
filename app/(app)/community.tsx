@@ -27,6 +27,7 @@ import {
   Alert,
   ActivityIndicator,
   RefreshControl,
+  Dimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
@@ -80,6 +81,7 @@ import { LetterFlow } from '@/components/community/LetterFlow';
 import { ArticlesSection } from '@/components/community/ArticlesSection';
 import { ARTICLES } from '@/constants/articles';
 import { ThoughtBubbleIcon, LockIcon, SparkleIcon, FireIcon, PenIcon } from '@/assets/graphics/icons';
+import { IllustrationCommunityHero } from '@/assets/graphics/illustrations';
 
 // ─── FTUE ───────────────────────────────────────────────
 import { TooltipManager } from '@/components/ftue/TooltipManager';
@@ -468,6 +470,11 @@ export default function CommunityScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
       >
+        {/* Community Hero Illustration */}
+        <View style={{ alignItems: 'center', marginTop: -8, marginBottom: 0 }}>
+          <IllustrationCommunityHero width={Math.min(Dimensions.get('window').width - 48, 280)} animated={true} />
+        </View>
+
         {/* ═══ For You / All Stories ═══════════════ */}
         {isStoryTab && (
           <>

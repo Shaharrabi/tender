@@ -51,7 +51,7 @@ export default function DurationScreen() {
             <ArrowLeftIcon size={16} color={Colors.primary} />
             <Text style={styles.backText}>Back</Text>
           </TouchableOpacity>
-          <Text style={styles.stepIndicator}>2 of 6</Text>
+          <Text style={styles.stepIndicator}>2 of 5</Text>
           <View style={styles.headerSpacer} />
         </View>
       </Animated.View>

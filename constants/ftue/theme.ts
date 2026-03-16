@@ -93,7 +93,7 @@ export const FTUETiming = {
   audioAutoPlayDelay: 400,
 
   /** General */
-  measureDelay: 100, // delay before measuring (let layout settle)
+  measureDelay: 200, // delay before measuring (let scroll animation + layout settle)
 };
 
 // ─── FTUE Typography ──────────────────────────────────────────────────────
