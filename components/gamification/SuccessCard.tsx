@@ -20,7 +20,7 @@ import {
 } from 'react-native';
 import { useGamification } from '@/context/GamificationContext';
 import { xpToNextLevel } from '@/services/gamification';
-import { getTotalTimeMinutes, formatTimeSpent } from '@/services/session-time';
+import { getTotalTimeMinutes, getTodayTimeMinutes, formatTimeSpent } from '@/services/session-time';
 import {
   Colors,
   Spacing,
@@ -93,16 +93,19 @@ export function SuccessCard({
   const { gamification, progress, streak } = useGamification();
   const [isExpanded, setIsExpanded] = useState(true);
   const [timeSpent, setTimeSpent] = useState(0);
+  const [todayTime, setTodayTime] = useState(0);
   const expandAnim = useRef(new Animated.Value(1)).current;
   const timerInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Load time on mount and start a live counter
   useEffect(() => {
     getTotalTimeMinutes().then(setTimeSpent);
+    getTodayTimeMinutes().then(setTodayTime);
 
     // Update the timer every 60 seconds so it ticks up live
     timerInterval.current = setInterval(() => {
       getTotalTimeMinutes().then(setTimeSpent);
+      getTodayTimeMinutes().then(setTodayTime);
     }, 60_000);
 
     return () => {
@@ -115,7 +118,10 @@ export function SuccessCard({
     setIsExpanded(expanding);
 
     // Refresh time when expanding
-    if (expanding) getTotalTimeMinutes().then(setTimeSpent);
+    if (expanding) {
+      getTotalTimeMinutes().then(setTimeSpent);
+      getTodayTimeMinutes().then(setTodayTime);
+    }
 
     Animated.spring(expandAnim, {
       toValue: expanding ? 1 : 0,
@@ -158,9 +164,9 @@ export function SuccessCard({
         <View style={styles.frontRow}>
           <SparkleIcon size={14} color={Colors.accentGold} />
           <Text style={styles.timerText}>
-            {formatTimeSpent(timeSpent)}
+            {todayTime < 1 ? 'Just started' : `${todayTime} min`}
           </Text>
-          <Text style={styles.timerLabel}>invested in your growth today</Text>
+          <Text style={styles.timerLabel}>today</Text>
           <View style={styles.frontDivider} />
           <FireIcon size={14} color={Colors.accentGold} />
           <Text style={styles.frontStreakText}>{days}</Text>

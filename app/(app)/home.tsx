@@ -1522,7 +1522,7 @@ export default function HomeScreen() {
                         <HeartPulseIcon size={16} color={Colors.secondary} />
                       </View>
                       <Text style={styles.dualStripWearePhrase} numberOfLines={2}>
-                        The Space Between You
+                        Your Couple Portrait
                       </Text>
                     </>
                   )}
@@ -1563,7 +1563,7 @@ export default function HomeScreen() {
           >
             <View style={styles.weareSummaryHeader}>
               <Text style={styles.weareSummaryTitle}>
-                The Space Between You
+                Your Couple Portrait
               </Text>
               {weareProfile.dataMode !== 'full' && (
                 <View style={styles.weareModeBadge}>
@@ -1839,7 +1839,7 @@ export default function HomeScreen() {
             >
               <View style={styles.couplePreviewHeader}>
                 <HeartPulseIcon size={18} color={Colors.secondary} />
-                <TenderText variant="headingS" color={Colors.text}>The Space Between You</TenderText>
+                <TenderText variant="headingS" color={Colors.text}>Your Couple Portrait</TenderText>
               </View>
 
               {weareProfile ? (
@@ -2089,7 +2089,7 @@ export default function HomeScreen() {
               <SparkleIcon size={22} color={Colors.primary} />
             </View>
             <View style={styles.gatewayCardContent}>
-              <Text style={styles.gatewayCardTitle}>Your Portrait</Text>
+              <Text style={styles.gatewayCardTitle}>🪞 Your Portrait</Text>
               <Text style={styles.gatewayCardSubtitle} numberOfLines={1}>
                 {hasPortrait && portrait
                   ? `${portrait.negativeCycle?.position ? portrait.negativeCycle.position.charAt(0).toUpperCase() + portrait.negativeCycle.position.slice(1) : 'Your'} \u00B7 ${portrait.growthEdges?.[0]?.title ?? 'Growth insights'}`
@@ -2112,7 +2112,7 @@ export default function HomeScreen() {
                 <HeartDoubleIcon size={22} color={Colors.primary} />
               </View>
               <View style={styles.gatewayCardContent}>
-                <Text style={styles.gatewayCardTitle}>Your Relationship</Text>
+              <Text style={styles.gatewayCardTitle}>💞 Your Couple Portrait</Text>
                 <Text style={styles.gatewayCardSubtitle} numberOfLines={1}>
                   {weareProfile
                     ? `${weareProfile.warmSummary} \u00B7 ${weareProfile.bottleneck?.label ?? ''}`

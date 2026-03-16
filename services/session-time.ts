@@ -35,6 +35,13 @@ export async function endSession(): Promise<void> {
     const existingStr = await AsyncStorage.getItem(STORAGE_KEY);
     const existing = existingStr ? parseInt(existingStr, 10) : 0;
     await AsyncStorage.setItem(STORAGE_KEY, (existing + elapsed).toString());
+
+    // Also track today's time
+    const todayKey = `tender_session_today_${new Date().toISOString().slice(0, 10)}`;
+    const todayStr = await AsyncStorage.getItem(todayKey);
+    const todayTotal = todayStr ? parseInt(todayStr, 10) : 0;
+    await AsyncStorage.setItem(todayKey, (todayTotal + elapsed).toString());
+
     await AsyncStorage.removeItem(SESSION_START_KEY);
   } catch {
     // Silently fail — time tracking is best-effort
@@ -48,6 +55,23 @@ export async function getTotalTimeMinutes(): Promise<number> {
     const stored = storedStr ? parseInt(storedStr, 10) : 0;
 
     // Add current session if one is active
+    const startStr = await AsyncStorage.getItem(SESSION_START_KEY);
+    const currentSession = startStr ? Date.now() - parseInt(startStr, 10) : 0;
+
+    return Math.floor((stored + currentSession) / 60_000);
+  } catch {
+    return 0;
+  }
+}
+
+/** Get today's session time in minutes only. */
+export async function getTodayTimeMinutes(): Promise<number> {
+  try {
+    const todayKey = `tender_session_today_${new Date().toISOString().slice(0, 10)}`;
+    const storedStr = await AsyncStorage.getItem(todayKey);
+    const stored = storedStr ? parseInt(storedStr, 10) : 0;
+
+    // Add current session if active
     const startStr = await AsyncStorage.getItem(SESSION_START_KEY);
     const currentSession = startStr ? Date.now() - parseInt(startStr, 10) : 0;
 
