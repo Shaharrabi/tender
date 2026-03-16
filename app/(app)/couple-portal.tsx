@@ -1836,61 +1836,64 @@ function CouplePortalScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView ref={scrollRef} contentContainerStyle={[styles.scroll, { paddingBottom: barH + 20 }]} onScroll={handleScrollBar} scrollEventThrottle={16}>
-        {/* Header Row */}
-        <View style={styles.headerRow}>
-          <TouchableOpacity onPress={() => router.replace('/(app)/partner' as any)} style={styles.backBtn} accessibilityRole="button" accessibilityLabel="Return to partner screen">
-            <View style={styles.backRow}>
-              <ArrowLeftIcon size={16} color={Colors.primary} />
-              <TenderText variant="body" color={Colors.primary}>Back</TenderText>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={async () => {
-              if (!dp) return;
-              try {
-                const { generateCouplePortraitPDF } = await import('@/services/pdf-export');
-                const nameA = dp.partnerAName || 'Partner A';
-                const nameB = dp.partnerBName || partnerName || 'Partner B';
-                const rawScores = myRawScores && partnerRawScores ? {
-                  partner1: myRawScores,
-                  partner2: partnerRawScores,
-                } : undefined;
-                await generateCouplePortraitPDF(dp, nameA, nameB, rawScores);
-              } catch (err) {
-                if (__DEV__) console.warn('[CouplePortal] PDF export failed:', err);
-                if (Platform.OS !== 'web') {
-                  Alert.alert('Export Error', 'Could not generate PDF. Please try again.');
+      <ScrollView ref={scrollRef} contentContainerStyle={[styles.scroll, { paddingBottom: barH + 20 }]} onScroll={handleScrollBar} scrollEventThrottle={16} stickyHeaderIndices={[1]}>
+        {/* Header content — wraps into single child so tab bar is at index 1 for stickyHeaderIndices */}
+        <View>
+          {/* Header Row */}
+          <View style={styles.headerRow}>
+            <TouchableOpacity onPress={() => router.replace('/(app)/partner' as any)} style={styles.backBtn} accessibilityRole="button" accessibilityLabel="Return to partner screen">
+              <View style={styles.backRow}>
+                <ArrowLeftIcon size={16} color={Colors.primary} />
+                <TenderText variant="body" color={Colors.primary}>Back</TenderText>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={async () => {
+                if (!dp) return;
+                try {
+                  const { generateCouplePortraitPDF } = await import('@/services/pdf-export');
+                  const nameA = dp.partnerAName || 'Partner A';
+                  const nameB = dp.partnerBName || partnerName || 'Partner B';
+                  const rawScores = myRawScores && partnerRawScores ? {
+                    partner1: myRawScores,
+                    partner2: partnerRawScores,
+                  } : undefined;
+                  await generateCouplePortraitPDF(dp, nameA, nameB, rawScores);
+                } catch (err) {
+                  if (__DEV__) console.warn('[CouplePortal] PDF export failed:', err);
+                  if (Platform.OS !== 'web') {
+                    Alert.alert('Export Error', 'Could not generate PDF. Please try again.');
+                  }
                 }
-              }
-            }}
-            activeOpacity={0.7}
-            style={styles.exportBtn}
-            disabled={!dp}
-            accessibilityRole="button"
-            accessibilityLabel="Export your couple portrait as PDF"
-            accessibilityState={{ disabled: !dp }}
-          >
-            <TenderText variant="body" color={Colors.primary} style={[styles.exportBtnText, !dp && { opacity: 0.4 }]}>Export PDF</TenderText>
-          </TouchableOpacity>
+              }}
+              activeOpacity={0.7}
+              style={styles.exportBtn}
+              disabled={!dp}
+              accessibilityRole="button"
+              accessibilityLabel="Export your couple portrait as PDF"
+              accessibilityState={{ disabled: !dp }}
+            >
+              <TenderText variant="body" color={Colors.primary} style={[styles.exportBtnText, !dp && { opacity: 0.4 }]}>Export PDF</TenderText>
+            </TouchableOpacity>
+          </View>
+
+          <TenderText variant="headingXL" style={styles.heading}>The Space Between You</TenderText>
+          <TenderText variant="body" color={Colors.textSecondary} style={styles.subtitle}>
+            A living portrait of how you and {partnerName} move through the world together
+          </TenderText>
+
+          {/* Sharing Info */}
+          {partnerSharedAssessments.length > 0 && (
+            <View style={styles.sharingCard}>
+              <TenderText variant="label" color={Colors.calm} style={styles.sharingLabel}>SHARED WITH YOU</TenderText>
+              <TenderText variant="body" color={Colors.textSecondary}>
+                {partnerName} is sharing {Math.min(partnerSharedAssessments.length, INDIVIDUAL_ASSESSMENT_TYPES.length)} of {INDIVIDUAL_ASSESSMENT_TYPES.length} individual assessments with you.
+              </TenderText>
+            </View>
+          )}
         </View>
 
-        <TenderText variant="headingXL" style={styles.heading}>The Space Between You</TenderText>
-        <TenderText variant="body" color={Colors.textSecondary} style={styles.subtitle}>
-          A living portrait of how you and {partnerName} move through the world together
-        </TenderText>
-
-        {/* Sharing Info */}
-        {partnerSharedAssessments.length > 0 && (
-          <View style={styles.sharingCard}>
-            <TenderText variant="label" color={Colors.calm} style={styles.sharingLabel}>SHARED WITH YOU</TenderText>
-            <TenderText variant="body" color={Colors.textSecondary}>
-              {partnerName} is sharing {Math.min(partnerSharedAssessments.length, INDIVIDUAL_ASSESSMENT_TYPES.length)} of {INDIVIDUAL_ASSESSMENT_TYPES.length} individual assessments with you.
-            </TenderText>
-          </View>
-        )}
-
-        {/* Tab Bar — switch between sections */}
+        {/* Tab Bar — sticky (index 1 via stickyHeaderIndices) */}
         <View style={styles.tabBarWrapper} accessibilityRole="tablist" accessibilityLabel="Couple portrait sections">
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabBarContent}>
             {TABS.map((tab) => {
