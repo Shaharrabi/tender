@@ -469,7 +469,7 @@ export function getAvailableModes(
 
   switch (relationshipStatus) {
     case 'single':
-      return [solo, demo, random];
+      return [solo, random];
     case 'in-relationship':
     case 'complicated':
       return [real, solo, demo];

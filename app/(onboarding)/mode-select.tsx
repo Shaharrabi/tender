@@ -3,7 +3,7 @@
  *
  * Mode selection screen inserted after relationship status.
  * Available options depend on the user's relationship status.
- * Step 3 of 6 (or 2 of 6 for singles who skip duration).
+ * Step 3 of 5 (or 2 of 4 for singles who skip duration).
  */
 
 import React, { useState } from 'react';

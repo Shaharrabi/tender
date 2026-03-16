@@ -160,6 +160,7 @@ export default function ReadyScreen() {
   const { user } = useAuth();
   const { data: onboardingData } = useOnboarding();
   const soundRef = useRef<Audio.Sound | null>(null);
+  const mountedRef = useRef(true);
   const [isPlaying, setIsPlaying] = useState(false);
 
   const isSingle = onboardingData.relationshipStatus === 'single';
@@ -169,11 +170,16 @@ export default function ReadyScreen() {
     ? require('@/assets/audio/single.mp3')
     : require('@/assets/audio/welcome.mp3');
 
-  // Stop audio helper
+  // Stop and fully unload audio
   const stopAudio = useCallback(async () => {
     if (soundRef.current) {
-      await soundRef.current.stopAsync().catch(() => {});
+      try {
+        await soundRef.current.stopAsync().catch(() => {});
+        await soundRef.current.unloadAsync().catch(() => {});
+      } catch {}
+      soundRef.current = null;
     }
+    setIsPlaying(false);
     // Reset audio mode back to normal (native only)
     if (Platform.OS !== 'web') {
       Audio.setAudioModeAsync({
@@ -209,9 +215,13 @@ export default function ReadyScreen() {
         soundRef.current = sound;
 
         sound.setOnPlaybackStatusUpdate((status) => {
-          if (!isMounted) return;
+          if (!mountedRef.current) return;
           if (status.isLoaded) {
             setIsPlaying(status.isPlaying);
+            // Auto-clear when playback finishes
+            if (status.didJustFinish) {
+              setIsPlaying(false);
+            }
           }
         });
 
@@ -234,14 +244,18 @@ export default function ReadyScreen() {
 
     return () => {
       isMounted = false;
+      mountedRef.current = false;
       if (soundRef.current) {
-        soundRef.current.unloadAsync();
+        soundRef.current.stopAsync().catch(() => {});
+        soundRef.current.unloadAsync().catch(() => {});
+        soundRef.current = null;
       }
     };
   }, []);
 
   const handleLetsGo = async () => {
-    // Stop audio first
+    // Stop audio and prevent further state updates
+    mountedRef.current = false;
     await stopAudio();
 
     SoundHaptics.success();
@@ -381,21 +395,6 @@ export default function ReadyScreen() {
         </View>
       </View>
 
-      {/* Skip — top right, subtle */}
-      {isPlaying && (
-        <Animated.View entering={FadeIn.duration(1000)}>
-          <TouchableOpacity
-            style={styles.skipButton}
-            onPress={async () => { await stopAudio(); }}
-            activeOpacity={0.6}
-            accessibilityRole="button"
-            accessibilityLabel="Skip audio"
-          >
-            <Text style={styles.skipText}>Skip</Text>
-          </TouchableOpacity>
-        </Animated.View>
-      )}
-
       {/* Bottom section */}
       <Animated.View entering={FadeIn.duration(1000).delay(2500)} style={styles.bottomSection}>
         <Text style={styles.disclaimerNote}>
@@ -479,19 +478,6 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.caption,
     fontFamily: 'JosefinSans_400Regular',
     color: Colors.textSecondary,
-    letterSpacing: 0.5,
-  },
-  skipButton: {
-    position: 'absolute',
-    top: Platform.OS === 'ios' ? 60 : 40,
-    right: Spacing.xl,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-  },
-  skipText: {
-    fontSize: FontSizes.bodySmall,
-    fontFamily: 'JosefinSans_500Medium',
-    color: Colors.textMuted,
     letterSpacing: 0.5,
   },
   bottomSection: {
