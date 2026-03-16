@@ -17,12 +17,15 @@
  */
 
 import React from 'react';
-import { View, ViewStyle } from 'react-native';
+import { View, ViewStyle, Platform } from 'react-native';
 import Svg, {
   Path, Ellipse, Circle, Rect, Line, Polygon, G, Text as SvgText
 } from 'react-native-svg';
-import ReAnimated from 'react-native-reanimated';
-import { useBreathe, useWebSvgAnim } from '../hooks/useIllustrationAnimation';
+import ReAnimated, { useSharedValue, useAnimatedProps, withRepeat, withSequence, withTiming, withDelay, Easing } from 'react-native-reanimated';
+import { useWebSvgAnim } from '../hooks/useIllustrationAnimation';
+import { useEffect } from 'react';
+
+const AnimatedG = ReAnimated.createAnimatedComponent(G);
 
 interface Props {
   width?: number;
@@ -31,9 +34,66 @@ interface Props {
   style?: ViewStyle;
 }
 
+// Per-element native animation hooks (only run on native, CSS handles web)
+function useNativeBreathe(duration = 5000, delay = 0) {
+  const scale = useSharedValue(1);
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    scale.value = withDelay(delay,
+      withRepeat(withSequence(
+        withTiming(1.04, { duration: duration / 2, easing: Easing.inOut(Easing.ease) }),
+        withTiming(1.0,  { duration: duration / 2, easing: Easing.inOut(Easing.ease) }),
+      ), -1, false)
+    );
+  }, []);
+  return useAnimatedProps(() => ({ scale: scale.value }));
+}
+
+function useNativeFloat(duration = 4000, distance = 5, delay = 0) {
+  const ty = useSharedValue(0);
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    ty.value = withDelay(delay,
+      withRepeat(withSequence(
+        withTiming(-distance, { duration: duration / 2, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0,         { duration: duration / 2, easing: Easing.inOut(Easing.ease) }),
+      ), -1, false)
+    );
+  }, []);
+  return useAnimatedProps(() => ({ translateY: ty.value }));
+}
+
+function useNativePulse(min = 0.2, max = 0.6, duration = 3000, delay = 0) {
+  const op = useSharedValue(min);
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    op.value = withDelay(delay,
+      withRepeat(withSequence(
+        withTiming(max, { duration: duration / 2, easing: Easing.inOut(Easing.ease) }),
+        withTiming(min, { duration: duration / 2, easing: Easing.inOut(Easing.ease) }),
+      ), -1, false)
+    );
+  }, []);
+  return useAnimatedProps(() => ({ opacity: op.value }));
+}
+
 export function IllustrationCommunityHero({ width = 520, height, animated = true, style }: Props) {
   const resolvedHeight = height ?? Math.round(width * (380 / 520));
-  const animStyle = useBreathe(6000);
+
+  // Native: per-element Reanimated animations
+  // 7 figures breathing at different rates/delays (matching web CSS targets)
+  const figure1Props = useNativeBreathe(5000);           // terracotta left — path[fill="#B5593A"] 5s
+  const figure2Props = useNativeBreathe(4500, 1000);     // sage — path[fill="#7A9E8E"] 4.5s -1s
+  const figure3Props = useNativeBreathe(5500, 2000);     // navy — path[fill="#1E3A52"] 5.5s -2s
+  const figure4Props = useNativeBreathe(6000, 500);      // mustard — path[fill="#C8923A"] 6s -0.5s
+  const figure5Props = useNativeBreathe(5000, 3000);     // blush — path[fill="#D4909A"] 5s -3s
+  const figure6Props = useNativeBreathe(4000, 1500);     // plum — path[fill="#6E4E6E"] 4s -1.5s
+  const figure7Props = useNativeBreathe(5000);           // terracotta right — same as figure1
+  // Bubbles float
+  const bubble1Props = useNativeFloat(4000, 5, 0);
+  const bubble2Props = useNativeFloat(4000, 5, 500);
+  const bubble3Props = useNativeFloat(4000, 5, 1000);
+  const bubble4Props = useNativeFloat(4000, 5, 1500);
 
   // Web: apply CSS animations directly to SVG DOM elements
   // Each body figure has a unique fill — animate them all
@@ -46,6 +106,102 @@ export function IllustrationCommunityHero({ width = 520, height, animated = true
     { selector: 'path[fill="#6E4E6E"]', animation: 'tender-breathe 4s ease-in-out infinite -1.5s', origin: 'center' },
     { selector: 'circle[r="28"]', animation: 'tender-float 4s ease-in-out infinite', parent: true, all: true },
   ], animated);
+
+  // Content groups for each figure
+  const figure1Content = (
+    <>
+      <Path d="M52 312 Q44 290 47 264 Q50 240 62 232 Q74 224 80 236 Q86 248 82 274 Q78 300 68 316Z" fill="#B5593A" opacity={0.82}/>
+      <Line x1="48" y1="254" x2="82" y2="252" stroke="#F2EDE4" strokeWidth="2" opacity={0.2}/>
+      <Ellipse cx="64" cy="222" rx="16" ry="20" fill="none" stroke="#2C2C2A" strokeWidth="0.9"/>
+    </>
+  );
+
+  const figure2Content = (
+    <>
+      <Path d="M118 318 Q113 300 115 282 Q117 264 127 258 Q137 252 141 264 Q145 276 141 296 Q137 314 128 320Z" fill="#7A9E8E" opacity={0.78}/>
+      <Ellipse cx="128" cy="248" rx="13" ry="16" fill="none" stroke="#2C2C2A" strokeWidth="0.9"/>
+    </>
+  );
+
+  const figure3Content = (
+    <>
+      <Path d="M182 314 Q174 292 177 264 Q180 238 192 230 Q204 222 210 236 Q216 250 210 278 Q204 306 194 318Z" fill="#1E3A52" opacity={0.85}/>
+      <Line x1="178" y1="252" x2="210" y2="250" stroke="#F2EDE4" strokeWidth="1.5" opacity={0.2}/>
+      <Line x1="177" y1="266" x2="211" y2="264" stroke="#F2EDE4" strokeWidth="1.5" opacity={0.15}/>
+      <Ellipse cx="192" cy="220" rx="14" ry="18" fill="none" stroke="#2C2C2A" strokeWidth="0.9"/>
+    </>
+  );
+
+  const figure4Content = (
+    <>
+      <Path d="M256 308 Q246 282 249 252 Q252 224 266 214 Q280 204 286 220 Q292 236 286 266 Q280 296 268 312Z" fill="#C8923A" opacity={0.75}/>
+      <Ellipse cx="266" cy="202" rx="18" ry="22" fill="none" stroke="#2C2C2A" strokeWidth="1"/>
+      <Path d="M250 190 Q260 176 268 172 Q276 168 284 178" fill="none" stroke="#2C2C2A" strokeWidth="1" strokeLinecap="round" opacity={0.6}/>
+    </>
+  );
+
+  const figure5Content = (
+    <>
+      <Path d="M330 316 Q322 294 325 268 Q328 244 342 236 Q356 228 360 244 Q364 260 358 286 Q352 312 340 320Z" fill="#D4909A" opacity={0.72}/>
+      <Ellipse cx="340" cy="226" rx="16" ry="20" fill="none" stroke="#2C2C2A" strokeWidth="0.9"/>
+    </>
+  );
+
+  const figure6Content = (
+    <>
+      <Path d="M394 318 Q388 300 390 280 Q392 262 402 256 Q412 250 416 262 Q420 274 416 294 Q412 314 404 320Z" fill="#6E4E6E" opacity={0.7}/>
+      <Ellipse cx="402" cy="246" rx="12" ry="16" fill="none" stroke="#2C2C2A" strokeWidth="0.8"/>
+    </>
+  );
+
+  const figure7Content = (
+    <>
+      <Path d="M452 312 Q444 290 447 262 Q450 236 462 228 Q474 220 480 234 Q486 248 480 276 Q474 304 464 316Z" fill="#B5593A" opacity={0.8}/>
+      <Line x1="446" y1="248" x2="480" y2="246" stroke="#F2EDE4" strokeWidth="1.5" opacity={0.2}/>
+      <Ellipse cx="462" cy="218" rx="15" ry="18" fill="none" stroke="#2C2C2A" strokeWidth="0.9"/>
+    </>
+  );
+
+  const threadContent = (
+    <G opacity={0.35}>
+      <Line x1="80" y1="268" x2="118" y2="268" stroke="#C8923A" strokeWidth="0.7" strokeDasharray="3 4"/>
+      <Line x1="141" y1="264" x2="178" y2="264" stroke="#C8923A" strokeWidth="0.7" strokeDasharray="3 4"/>
+      <Line x1="210" y1="260" x2="252" y2="258" stroke="#C8923A" strokeWidth="0.7" strokeDasharray="3 4"/>
+      <Line x1="286" y1="256" x2="328" y2="258" stroke="#C8923A" strokeWidth="0.7" strokeDasharray="3 4"/>
+      <Line x1="360" y1="260" x2="392" y2="262" stroke="#C8923A" strokeWidth="0.7" strokeDasharray="3 4"/>
+      <Line x1="416" y1="262" x2="450" y2="262" stroke="#C8923A" strokeWidth="0.7" strokeDasharray="3 4"/>
+    </G>
+  );
+
+  const bubble1Content = (
+    <G>
+      <Circle cx="130" cy="100" r="28" fill="none" stroke="#B5593A" strokeWidth="0.8" opacity={0.4}/>
+      <SvgText x="130" y="104" textAnchor="middle" fontSize="8" fill="#B5593A" opacity={0.6} fontFamily="Georgia,serif">anxious</SvgText>
+    </G>
+  );
+
+  const bubble2Content = (
+    <G>
+      <Circle cx="230" cy="80" r="28" fill="none" stroke="#1E3A52" strokeWidth="0.8" opacity={0.4}/>
+      <SvgText x="230" y="84" textAnchor="middle" fontSize="8" fill="#1E3A52" opacity={0.6} fontFamily="Georgia,serif">avoidant</SvgText>
+    </G>
+  );
+
+  const bubble3Content = (
+    <G>
+      <Circle cx="330" cy="95" r="28" fill="none" stroke="#7A9E8E" strokeWidth="0.8" opacity={0.4}/>
+      <SvgText x="330" y="99" textAnchor="middle" fontSize="8" fill="#7A9E8E" opacity={0.6} fontFamily="Georgia,serif">secure</SvgText>
+    </G>
+  );
+
+  const bubble4Content = (
+    <G>
+      <Circle cx="430" cy="85" r="28" fill="none" stroke="#C8923A" strokeWidth="0.8" opacity={0.4}/>
+      <SvgText x="430" y="89" textAnchor="middle" fontSize="8" fill="#C8923A" opacity={0.6} fontFamily="Georgia,serif">disorganized</SvgText>
+    </G>
+  );
+
+  const isNativeAnimated = animated && Platform.OS !== 'web';
 
   const svgContent = (
     <Svg viewBox="0 0 520 380" width={width} height={resolvedHeight} style={style}>
@@ -67,68 +223,99 @@ export function IllustrationCommunityHero({ width = 520, height, animated = true
       <Path d="M0 340 Q80 330 162 336 Q244 342 324 332 Q404 322 480 327 Q504 330 520 328" fill="none" stroke="#7CA4B8" strokeWidth="0.8" strokeLinecap="round" opacity={0.45}/>
       </G>
       {/* Figure 1: terracotta left */}
-      <Path d="M52 312 Q44 290 47 264 Q50 240 62 232 Q74 224 80 236 Q86 248 82 274 Q78 300 68 316Z" fill="#B5593A" opacity={0.82}/>
-      <Line x1="48" y1="254" x2="82" y2="252" stroke="#F2EDE4" strokeWidth="2" opacity={0.2}/>
-      <Ellipse cx="64" cy="222" rx="16" ry="20" fill="none" stroke="#2C2C2A" strokeWidth="0.9"/>
+      {isNativeAnimated ? (
+        <AnimatedG animatedProps={figure1Props} origin="64, 270">
+          {figure1Content}
+        </AnimatedG>
+      ) : (
+        <G>{figure1Content}</G>
+      )}
       {/* Figure 2: sage */}
-      <Path d="M118 318 Q113 300 115 282 Q117 264 127 258 Q137 252 141 264 Q145 276 141 296 Q137 314 128 320Z" fill="#7A9E8E" opacity={0.78}/>
-      <Ellipse cx="128" cy="248" rx="13" ry="16" fill="none" stroke="#2C2C2A" strokeWidth="0.9"/>
+      {isNativeAnimated ? (
+        <AnimatedG animatedProps={figure2Props} origin="128, 285">
+          {figure2Content}
+        </AnimatedG>
+      ) : (
+        <G>{figure2Content}</G>
+      )}
       {/* Figure 3: navy */}
-      <Path d="M182 314 Q174 292 177 264 Q180 238 192 230 Q204 222 210 236 Q216 250 210 278 Q204 306 194 318Z" fill="#1E3A52" opacity={0.85}/>
-      <Line x1="178" y1="252" x2="210" y2="250" stroke="#F2EDE4" strokeWidth="1.5" opacity={0.2}/>
-      <Line x1="177" y1="266" x2="211" y2="264" stroke="#F2EDE4" strokeWidth="1.5" opacity={0.15}/>
-      <Ellipse cx="192" cy="220" rx="14" ry="18" fill="none" stroke="#2C2C2A" strokeWidth="0.9"/>
+      {isNativeAnimated ? (
+        <AnimatedG animatedProps={figure3Props} origin="192, 270">
+          {figure3Content}
+        </AnimatedG>
+      ) : (
+        <G>{figure3Content}</G>
+      )}
       {/* Figure 4: mustard center */}
-      <Path d="M256 308 Q246 282 249 252 Q252 224 266 214 Q280 204 286 220 Q292 236 286 266 Q280 296 268 312Z" fill="#C8923A" opacity={0.75}/>
-      <Ellipse cx="266" cy="202" rx="18" ry="22" fill="none" stroke="#2C2C2A" strokeWidth="1"/>
-      <Path d="M250 190 Q260 176 268 172 Q276 168 284 178" fill="none" stroke="#2C2C2A" strokeWidth="1" strokeLinecap="round" opacity={0.6}/>
+      {isNativeAnimated ? (
+        <AnimatedG animatedProps={figure4Props} origin="266, 260">
+          {figure4Content}
+        </AnimatedG>
+      ) : (
+        <G>{figure4Content}</G>
+      )}
       {/* Figure 5: blush/pink */}
-      <Path d="M330 316 Q322 294 325 268 Q328 244 342 236 Q356 228 360 244 Q364 260 358 286 Q352 312 340 320Z" fill="#D4909A" opacity={0.72}/>
-      <Ellipse cx="340" cy="226" rx="16" ry="20" fill="none" stroke="#2C2C2A" strokeWidth="0.9"/>
+      {isNativeAnimated ? (
+        <AnimatedG animatedProps={figure5Props} origin="340, 275">
+          {figure5Content}
+        </AnimatedG>
+      ) : (
+        <G>{figure5Content}</G>
+      )}
       {/* Figure 6: plum */}
-      <Path d="M394 318 Q388 300 390 280 Q392 262 402 256 Q412 250 416 262 Q420 274 416 294 Q412 314 404 320Z" fill="#6E4E6E" opacity={0.7}/>
-      <Ellipse cx="402" cy="246" rx="12" ry="16" fill="none" stroke="#2C2C2A" strokeWidth="0.8"/>
+      {isNativeAnimated ? (
+        <AnimatedG animatedProps={figure6Props} origin="402, 285">
+          {figure6Content}
+        </AnimatedG>
+      ) : (
+        <G>{figure6Content}</G>
+      )}
       {/* Figure 7: terracotta right */}
-      <Path d="M452 312 Q444 290 447 262 Q450 236 462 228 Q474 220 480 234 Q486 248 480 276 Q474 304 464 316Z" fill="#B5593A" opacity={0.8}/>
-      <Line x1="446" y1="248" x2="480" y2="246" stroke="#F2EDE4" strokeWidth="1.5" opacity={0.2}/>
-      <Ellipse cx="462" cy="218" rx="15" ry="18" fill="none" stroke="#2C2C2A" strokeWidth="0.9"/>
+      {isNativeAnimated ? (
+        <AnimatedG animatedProps={figure7Props} origin="462, 268">
+          {figure7Content}
+        </AnimatedG>
+      ) : (
+        <G>{figure7Content}</G>
+      )}
       {/* Connecting threads */}
-      <G opacity={0.35}>
-      <Line x1="80" y1="268" x2="118" y2="268" stroke="#C8923A" strokeWidth="0.7" strokeDasharray="3 4"/>
-      <Line x1="141" y1="264" x2="178" y2="264" stroke="#C8923A" strokeWidth="0.7" strokeDasharray="3 4"/>
-      <Line x1="210" y1="260" x2="252" y2="258" stroke="#C8923A" strokeWidth="0.7" strokeDasharray="3 4"/>
-      <Line x1="286" y1="256" x2="328" y2="258" stroke="#C8923A" strokeWidth="0.7" strokeDasharray="3 4"/>
-      <Line x1="360" y1="260" x2="392" y2="262" stroke="#C8923A" strokeWidth="0.7" strokeDasharray="3 4"/>
-      <Line x1="416" y1="262" x2="450" y2="262" stroke="#C8923A" strokeWidth="0.7" strokeDasharray="3 4"/>
-      </G>
+      {threadContent}
       {/* Attachment bubbles */}
-      <G>
-      <Circle cx="130" cy="100" r="28" fill="none" stroke="#B5593A" strokeWidth="0.8" opacity={0.4}/>
-      <SvgText x="130" y="104" textAnchor="middle" fontSize="8" fill="#B5593A" opacity={0.6} fontFamily="Georgia,serif">anxious</SvgText>
-      </G>
-      <G>
-      <Circle cx="230" cy="80" r="28" fill="none" stroke="#1E3A52" strokeWidth="0.8" opacity={0.4}/>
-      <SvgText x="230" y="84" textAnchor="middle" fontSize="8" fill="#1E3A52" opacity={0.6} fontFamily="Georgia,serif">avoidant</SvgText>
-      </G>
-      <G>
-      <Circle cx="330" cy="95" r="28" fill="none" stroke="#7A9E8E" strokeWidth="0.8" opacity={0.4}/>
-      <SvgText x="330" y="99" textAnchor="middle" fontSize="8" fill="#7A9E8E" opacity={0.6} fontFamily="Georgia,serif">secure</SvgText>
-      </G>
-      <G>
-      <Circle cx="430" cy="85" r="28" fill="none" stroke="#C8923A" strokeWidth="0.8" opacity={0.4}/>
-      <SvgText x="430" y="89" textAnchor="middle" fontSize="8" fill="#C8923A" opacity={0.6} fontFamily="Georgia,serif">disorganized</SvgText>
-      </G>
+      {isNativeAnimated ? (
+        <AnimatedG animatedProps={bubble1Props}>
+          {bubble1Content}
+        </AnimatedG>
+      ) : (
+        <G>{bubble1Content}</G>
+      )}
+      {isNativeAnimated ? (
+        <AnimatedG animatedProps={bubble2Props}>
+          {bubble2Content}
+        </AnimatedG>
+      ) : (
+        <G>{bubble2Content}</G>
+      )}
+      {isNativeAnimated ? (
+        <AnimatedG animatedProps={bubble3Props}>
+          {bubble3Content}
+        </AnimatedG>
+      ) : (
+        <G>{bubble3Content}</G>
+      )}
+      {isNativeAnimated ? (
+        <AnimatedG animatedProps={bubble4Props}>
+          {bubble4Content}
+        </AnimatedG>
+      ) : (
+        <G>{bubble4Content}</G>
+      )}
       <SvgText x="260" y="368" textAnchor="middle" fontFamily="Georgia,serif" fontSize="11" letterSpacing="5" fill="#2C2C2A" opacity={0.55}>{"COMMUNITY \u00B7 TOGETHER"}</SvgText>
     </Svg>
   );
 
   return (
     <View nativeID={containerId}>
-      {animated ? (
-        <ReAnimated.View style={animStyle}>
-          {svgContent}
-        </ReAnimated.View>
-      ) : svgContent}
+      {svgContent}
     </View>
   );
 }
