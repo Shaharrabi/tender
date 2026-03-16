@@ -304,22 +304,23 @@ export default function ReadyScreen() {
           await AsyncStorage.removeItem('pending_display_name').catch(() => {});
         }
 
-        // Solo mode: auto-create a virtual partner
+        // Demo partner mode: auto-create a virtual partner
         const mode = onboardingData.relationshipMode || 'solo';
-        if (mode === 'solo') {
+        if (mode === 'demo_partner') {
           try {
+            const partnerId = onboardingData.demoPartnerId || 'secure_explorer';
             await supabase
               .from('user_profiles')
-              .update({ demo_partner_id: 'secure_explorer' })
+              .update({ demo_partner_id: partnerId })
               .eq('user_id', user.id);
 
             const couple = await setupDemoPartnerCouple(user.id);
             if (couple) {
               await seedDyadicAssessments(couple.id, user.id, user.id);
-              console.log('[Ready] Solo mode: virtual partner connected (Casey)');
+              console.log('[Ready] Demo mode: virtual partner connected');
             }
-          } catch (soloErr) {
-            console.warn('[Ready] Solo partner setup failed (non-critical):', soloErr);
+          } catch (demoErr) {
+            console.warn('[Ready] Demo partner setup failed (non-critical):', demoErr);
           }
         }
       } catch (err) {
