@@ -16,8 +16,8 @@
  *   - low: 1 source or derived only
  */
 
-import React, { useState, useMemo, useCallback } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, findNodeHandle } from 'react-native';
 import TenderText from '@/components/ui/TenderText';
 import MatrixDomain, { type MatrixDomainData } from './MatrixDomain';
 import MatrixInvitation from './MatrixInvitation';
@@ -41,6 +41,7 @@ import { generateIntegration, toIntegrationScores, type DomainId } from '@/utils
 interface TenderMatrixProps {
   allScores: Record<string, { id: string; scores: any }>;
   portrait: IndividualPortrait;
+  scrollViewRef?: React.RefObject<ScrollView>;
 }
 
 // ─── Helpers ────────────────────────────────────────
@@ -73,20 +74,45 @@ function getConfidence(instruments: string[], allScores: Record<string, any>): C
 
 // ─── Component ──────────────────────────────────────
 
-export default function TenderMatrix({ allScores, portrait }: TenderMatrixProps) {
+export default function TenderMatrix({ allScores, portrait, scrollViewRef }: TenderMatrixProps) {
   const [expandedDomain, setExpandedDomain] = useState<string | null>(null);
   const [integrateMode, setIntegrateMode] = useState(false);
-  const [selectedDomains, setSelectedDomains] = useState<DomainId[]>([]);
+  const [selectedBoxes, setSelectedBoxes] = useState<string[]>([]); // "domainId:CellLabel"
+  const integrationPanelRef = useRef<View>(null);
+
+  // Derive selected domains from selected boxes
+  const selectedDomains = useMemo<DomainId[]>(() => {
+    const domainSet = new Set<DomainId>();
+    for (const box of selectedBoxes) {
+      const domainId = box.split(':')[0] as DomainId;
+      domainSet.add(domainId);
+    }
+    return Array.from(domainSet);
+  }, [selectedBoxes]);
+
+  const handleCellSelect = useCallback((domainId: string, cellLabel: string) => {
+    const key = `${domainId}:${cellLabel}`;
+    setSelectedBoxes(prev => {
+      if (prev.includes(key)) {
+        return prev.filter(k => k !== key);
+      }
+      if (prev.length >= 6) return prev; // max 6 cells
+      return [...prev, key];
+    });
+  }, []);
 
   const handleToggle = useCallback((id: string) => {
     if (integrateMode) {
-      // In integrate mode, toggle domain selection (max 4)
-      setSelectedDomains(prev => {
-        if (prev.includes(id as DomainId)) {
-          return prev.filter(d => d !== id);
+      // In integrate mode, domain header toggles all cells in domain
+      setSelectedBoxes(prev => {
+        const domainCells = prev.filter(k => k.startsWith(`${id}:`));
+        if (domainCells.length > 0) {
+          // Deselect all cells in this domain
+          return prev.filter(k => !k.startsWith(`${id}:`));
         }
-        if (prev.length >= 4) return prev; // max 4
-        return [...prev, id as DomainId];
+        // We can't select all cells from header without knowing cell labels,
+        // so just toggle the domain as a whole — no-op, user should tap cells
+        return prev;
       });
     } else {
       setExpandedDomain(prev => prev === id ? null : id);
@@ -97,7 +123,7 @@ export default function TenderMatrix({ allScores, portrait }: TenderMatrixProps)
     setIntegrateMode(prev => {
       if (prev) {
         // Exiting integrate mode — clear selections
-        setSelectedDomains([]);
+        setSelectedBoxes([]);
       } else {
         // Entering integrate mode — collapse any expanded domain
         setExpandedDomain(null);
@@ -106,12 +132,24 @@ export default function TenderMatrix({ allScores, portrait }: TenderMatrixProps)
     });
   }, []);
 
-  // Generate integration result when 2+ domains selected
+  // Generate integration result when 2+ boxes selected (from 2+ domains)
   const integrationScores = useMemo(() => toIntegrationScores(allScores), [allScores]);
   const integrationResult = useMemo(() => {
     if (selectedDomains.length < 2) return null;
-    return generateIntegration(selectedDomains, integrationScores);
-  }, [selectedDomains, integrationScores]);
+    return generateIntegration(selectedDomains, integrationScores, selectedBoxes);
+  }, [selectedDomains, integrationScores, selectedBoxes]);
+
+  // Auto-scroll to integration panel when results appear
+  useEffect(() => {
+    if (integrationResult && integrationPanelRef.current && scrollViewRef?.current) {
+      const timer = setTimeout(() => {
+        integrationPanelRef.current?.measureInWindow((_x: number, y: number) => {
+          scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 100), animated: true });
+        });
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [integrationResult, scrollViewRef]);
 
   // ── Extract raw scores ──
   const ecrr = allScores['ecr-r']?.scores;
@@ -392,7 +430,7 @@ export default function TenderMatrix({ allScores, portrait }: TenderMatrixProps)
         </TenderText>
         <TenderText variant="bodySmall" color={Colors.textSecondary} align="center" style={styles.headerSubtitle}>
           {integrateMode
-            ? `Select 2-4 domains to see what emerges at the intersection${selectedDomains.length > 0 ? ` (${selectedDomains.length} selected)` : ''}`
+            ? `Tap individual cells to see what emerges at the intersection${selectedBoxes.length > 0 ? ` (${selectedBoxes.length} selected from ${selectedDomains.length} domain${selectedDomains.length !== 1 ? 's' : ''})` : ''}`
             : 'Tap any domain to reveal the cross-instrument insight underneath'}
         </TenderText>
       </View>
@@ -414,9 +452,9 @@ export default function TenderMatrix({ allScores, portrait }: TenderMatrixProps)
               {integrateMode ? 'Exit Integrate' : 'Integrate'}
             </TenderText>
           </TouchableOpacity>
-          {integrateMode && selectedDomains.length > 0 && selectedDomains.length < 2 && (
+          {integrateMode && selectedBoxes.length > 0 && selectedDomains.length < 2 && (
             <TenderText variant="caption" color={Colors.textMuted} style={{ marginLeft: Spacing.sm }}>
-              Select at least 2
+              Select cells from at least 2 domains
             </TenderText>
           )}
         </View>
@@ -432,15 +470,22 @@ export default function TenderMatrix({ allScores, portrait }: TenderMatrixProps)
             onToggle={handleToggle}
             selectable={integrateMode}
             selected={selectedDomains.includes(domain.id as DomainId)}
+            cellSelectable={integrateMode}
+            selectedCells={selectedBoxes
+              .filter(k => k.startsWith(`${domain.id}:`))
+              .map(k => k.split(':')[1])}
+            onCellSelect={(cellLabel) => handleCellSelect(domain.id, cellLabel)}
           />
         ))}
       </View>
 
       {/* Integration result panel */}
-      <IntegrationPanel
-        result={integrationResult}
-        visible={integrateMode && selectedDomains.length >= 2}
-      />
+      <View ref={integrationPanelRef}>
+        <IntegrationPanel
+          result={integrationResult}
+          visible={integrateMode && selectedDomains.length >= 2}
+        />
+      </View>
 
       {/* The Invitation (hidden in integrate mode) */}
       {!integrateMode && invitation && (

@@ -415,11 +415,20 @@ export const ALL_COUPLE_DYNAMICS: CoupleNarrativeEntry[] = [
 
 // ─── ROUTER ──────────────────────────────────────────────────────────────────
 
+/** Result from couple dynamic routers — includes swap flag and extra interpolation vars */
+export interface CoupleRouteResult {
+  entry: CoupleNarrativeEntry;
+  /** When true, A_name and B_name should be swapped at render time */
+  swap: boolean;
+  /** Extra template variables for interpolation (e.g. {shared_values_count}) */
+  extras?: Record<string, string>;
+}
+
 /** Route attachment domain to the appropriate couple dynamic */
 export function routeAttachmentDynamic(
   aScores: PartnerScores,
   bScores: PartnerScores
-): CoupleNarrativeEntry | null {
+): CoupleRouteResult | null {
   const aAnxiety = aScores.ecrr?.anxietyScore ?? 3.5;
   const bAnxiety = bScores.ecrr?.anxietyScore ?? 3.5;
   const aAvoidance = aScores.ecrr?.avoidanceScore ?? 3.5;
@@ -432,16 +441,14 @@ export function routeAttachmentDynamic(
   const aSecure = !aAnxious && !aAvoidant;
   const bSecure = !bAnxious && !bAvoidant;
 
-  if ((aAnxious && bAvoidant) || (aAvoidant && bAnxious)) return pursueWithdraw;
-  if (aAnxious && bAnxious) return anxiousAnxious;
-  if (aAvoidant && bAvoidant) {
-    // Distinguish between avoidant-avoidant and mutual withdrawal
-    return avoidantAvoidant;
-  }
-  if (aSecure && bAnxious) return secureAnxious;
-  if (aSecure && bAvoidant) return secureAvoidant;
-  if (aAnxious && bSecure) return secureAnxious; // swap perspective at render time
-  if (aAvoidant && bSecure) return secureAvoidant; // swap perspective at render time
+  if ((aAnxious && bAvoidant) || (aAvoidant && bAnxious)) return { entry: pursueWithdraw, swap: false };
+  if (aAnxious && bAnxious) return { entry: anxiousAnxious, swap: false };
+  if (aAvoidant && bAvoidant) return { entry: avoidantAvoidant, swap: false };
+  if (aSecure && bAnxious) return { entry: secureAnxious, swap: false };
+  if (aSecure && bAvoidant) return { entry: secureAvoidant, swap: false };
+  // Partner A is insecure, B is secure — swap so narratives read correctly
+  if (aAnxious && bSecure) return { entry: secureAnxious, swap: true };
+  if (aAvoidant && bSecure) return { entry: secureAvoidant, swap: true };
   return null;
 }
 
@@ -449,7 +456,7 @@ export function routeAttachmentDynamic(
 export function routeConflictDynamic(
   aScores: PartnerScores,
   bScores: PartnerScores
-): CoupleNarrativeEntry | null {
+): CoupleRouteResult | null {
   const aSub = aScores.dutch?.subscaleScores ?? {};
   const bSub = bScores.dutch?.subscaleScores ?? {};
   const aForcing = aSub.forcing?.mean ?? 2.5;
@@ -463,10 +470,11 @@ export function routeConflictDynamic(
   const aCompromising = aSub.compromising?.mean ?? 2.5;
   const bCompromising = bSub.compromising?.mean ?? 2.5;
 
-  if (aForcing > 3.5 && bForcing > 3.5) return escalationEscalation;
-  if (aAvoiding > 3.5 && bAvoiding > 3.5) return mutualWithdrawal;
-  if ((aProblemSolving > 3.5 && bYielding > 3.5) || (bProblemSolving > 3.5 && aYielding > 3.5)) return leaderAccommodator;
-  if ((aCompromising > 3.5 && bCompromising > 3.5) || (aProblemSolving > 3.5 && bProblemSolving > 3.5)) return naturalNegotiators;
+  if (aForcing > 3.5 && bForcing > 3.5) return { entry: escalationEscalation, swap: false };
+  if (aAvoiding > 3.5 && bAvoiding > 3.5) return { entry: mutualWithdrawal, swap: false };
+  if (aProblemSolving > 3.5 && bYielding > 3.5) return { entry: leaderAccommodator, swap: false };
+  if (bProblemSolving > 3.5 && aYielding > 3.5) return { entry: leaderAccommodator, swap: true };
+  if ((aCompromising > 3.5 && bCompromising > 3.5) || (aProblemSolving > 3.5 && bProblemSolving > 3.5)) return { entry: naturalNegotiators, swap: false };
   return null;
 }
 
@@ -474,7 +482,7 @@ export function routeConflictDynamic(
 export function routeValuesDynamic(
   aScores: PartnerScores,
   bScores: PartnerScores
-): CoupleNarrativeEntry | null {
+): CoupleRouteResult | null {
   const aTop5 = aScores.values?.top5Values ?? [];
   const bTop5 = bScores.values?.top5Values ?? [];
   const sharedCount = aTop5.filter(v => bTop5.includes(v)).length;
@@ -488,6 +496,15 @@ export function routeValuesDynamic(
     return Math.abs(aGap - bGap) > 2.0;
   });
 
-  if (sharedCount < 2 && divergentDomains.length >= 2) return valuesCollision;
+  if (sharedCount < 2 && divergentDomains.length >= 2) {
+    return {
+      entry: valuesCollision,
+      swap: false,
+      extras: {
+        shared_values_count: String(sharedCount),
+        divergent_domains: divergentDomains.join(', ') || 'none identified',
+      },
+    };
+  }
   return null;
 }

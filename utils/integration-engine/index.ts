@@ -20,22 +20,26 @@ import { getTripleIntegration } from './triple';
 import { getQuadIntegration } from './quad';
 import { matchTier1Pattern } from './narratives/tier1-patterns';
 import { matchTier2Combo } from './narratives/tier2-combos';
+import { matchBoxCombination } from './narratives/box-combinations';
 
 /**
  * Main entry point: generate an integration for the selected domains.
  *
  * Routing priority:
- * 1. Check Tier 1 named patterns (requires enough assessment data)
+ * 1. Check Tier 1 named patterns (requires enough assessment data + domain overlap)
+ * 1.5. Check box-level combinations (when individual cells are selected)
  * 2. For pairwise selections, check Tier 2 combos
  * 3. Fall back to legacy integration functions
  *
  * @param domains - 2-4 selected domain IDs
  * @param scores - All available assessment scores
+ * @param selectedBoxes - Optional array of selected box keys (format: "domainId:CellLabel")
  * @returns IntegrationResult or null if the combination isn't supported
  */
 export function generateIntegration(
   domains: DomainId[],
   scores: IntegrationScores,
+  selectedBoxes?: string[],
 ): IntegrationResult | null {
   if (domains.length < 2 || domains.length > 4) return null;
 
@@ -43,10 +47,16 @@ export function generateIntegration(
   if (!allDomainsAvailable(scores, domains)) return null;
 
   // ── Layer 1: Check Tier 1 Named Patterns ──
-  // These are cross-domain archetypes that fire based on score thresholds
-  // regardless of which specific domains the user selected.
-  const tier1 = matchTier1Pattern(scores);
+  // Now respects selected domains — requires at least 2 domain overlap.
+  const tier1 = matchTier1Pattern(scores, domains);
   if (tier1) return tier1;
+
+  // ── Layer 1.5: Check Box-level Combinations ──
+  // When individual cells are selected, check for specific subscale×subscale narratives.
+  if (selectedBoxes && selectedBoxes.length >= 2) {
+    const boxResult = matchBoxCombination(selectedBoxes, scores);
+    if (boxResult) return boxResult;
+  }
 
   // ── Layer 2: Check Tier 2 Pairwise Combos ──
   // When exactly 2 domains are selected, check for enhanced pairwise narratives

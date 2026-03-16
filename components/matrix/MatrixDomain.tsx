@@ -53,9 +53,12 @@ interface MatrixDomainProps {
   onToggle: (id: string) => void;
   selectable?: boolean;
   selected?: boolean;
+  cellSelectable?: boolean;
+  selectedCells?: string[];
+  onCellSelect?: (cellLabel: string) => void;
 }
 
-export default function MatrixDomain({ domain, isExpanded, onToggle, selectable = false, selected = false }: MatrixDomainProps) {
+export default function MatrixDomain({ domain, isExpanded, onToggle, selectable = false, selected = false, cellSelectable = false, selectedCells = [], onCellSelect }: MatrixDomainProps) {
   const expandAnim = useRef(new Animated.Value(0)).current;
   const palette = MATRIX_COLORS[domain.color];
   const confidenceStyle = CONFIDENCE_COLORS[domain.confidence];
@@ -119,11 +122,25 @@ export default function MatrixDomain({ domain, isExpanded, onToggle, selectable 
         </View>
 
         {/* Cell grid */}
-        <View style={[styles.cellRow, isNarrow && styles.cellRowNarrow]}>
-          {domain.cells.map((cell, i) => (
-            <MatrixCell key={i} cell={cell} />
-          ))}
-        </View>
+        {cellSelectable ? (
+          <View style={[styles.cellRow, isNarrow && styles.cellRowNarrow]}>
+            {domain.cells.map((cell, i) => (
+              <MatrixCell
+                key={i}
+                cell={cell}
+                selectable
+                selected={selectedCells.includes(cell.label)}
+                onSelect={() => onCellSelect?.(cell.label)}
+              />
+            ))}
+          </View>
+        ) : (
+          <View style={[styles.cellRow, isNarrow && styles.cellRowNarrow]}>
+            {domain.cells.map((cell, i) => (
+              <MatrixCell key={i} cell={cell} />
+            ))}
+          </View>
+        )}
       </TouchableOpacity>
 
       {/* Expandable narrative */}

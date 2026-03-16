@@ -7,7 +7,7 @@
  */
 
 import React from 'react';
-import { View, StyleSheet, useWindowDimensions } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, useWindowDimensions } from 'react-native';
 import TenderText from '@/components/ui/TenderText';
 import { MATRIX_COLORS, type MatrixColorKey } from './constants/matrix-colors';
 import { Spacing, BorderRadius, FontFamilies } from '@/constants/theme';
@@ -22,16 +22,25 @@ export interface MatrixCellData {
 interface MatrixCellProps {
   cell: MatrixCellData;
   compact?: boolean;
+  selectable?: boolean;
+  selected?: boolean;
+  onSelect?: () => void;
 }
 
-export default function MatrixCell({ cell, compact }: MatrixCellProps) {
-  const palette = MATRIX_COLORS[cell.color];
+export default function MatrixCell({ cell, compact, selectable, selected, onSelect }: MatrixCellProps) {
+  const palette = MATRIX_COLORS[cell.color] as { bg: string; text: string; label: string; accent: string };
   const { width } = useWindowDimensions();
   const isNarrow = width < 400;
   const isTextScore = typeof cell.score === 'string' && isNaN(Number(cell.score));
 
-  return (
-    <View style={[styles.cell, { backgroundColor: palette.bg }, compact && styles.cellCompact, isNarrow && styles.cellNarrow]}>
+  const content = (
+    <View style={[
+      styles.cell,
+      { backgroundColor: palette.bg },
+      compact && styles.cellCompact,
+      isNarrow && styles.cellNarrow,
+      selectable && selected && { borderWidth: 2, borderColor: palette.accent || palette.text },
+    ]}>
       <TenderText
         variant="caption"
         style={[styles.label, { color: palette.label }, isNarrow && styles.labelNarrow]}
@@ -60,8 +69,23 @@ export default function MatrixCell({ cell, compact }: MatrixCellProps) {
           {cell.descriptor}
         </TenderText>
       ) : null}
+      {selectable && selected && (
+        <View style={[styles.checkOverlay, { backgroundColor: palette.accent || palette.text }]}>
+          <TenderText variant="caption" style={styles.checkText}>✓</TenderText>
+        </View>
+      )}
     </View>
   );
+
+  if (selectable && onSelect) {
+    return (
+      <TouchableOpacity style={{ flex: 1 }} onPress={onSelect} activeOpacity={0.7}>
+        {content}
+      </TouchableOpacity>
+    );
+  }
+
+  return content;
 }
 
 const styles = StyleSheet.create({
@@ -119,5 +143,21 @@ const styles = StyleSheet.create({
   descriptorNarrow: {
     fontSize: 8,
     lineHeight: 11,
+  },
+  checkOverlay: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkText: {
+    fontSize: 10,
+    color: '#fff',
+    fontWeight: '700',
+    lineHeight: 12,
   },
 });

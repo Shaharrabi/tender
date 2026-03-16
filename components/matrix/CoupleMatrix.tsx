@@ -37,6 +37,7 @@ import {
   routeValuesDynamic,
   interpolateCouple,
   type CoupleNarrativeEntry,
+  type CoupleRouteResult,
 } from '@/utils/integration-engine/narratives/tier3-couple-dynamics';
 import { Colors, Spacing, BorderRadius, Shadows, FontFamilies } from '@/constants/theme';
 import type { LensType } from '@/utils/integration-engine';
@@ -285,9 +286,14 @@ function PullQuote({ text, accentColor }: PullQuoteProps) {
 
 // ─── Tier 3 helper ──────────────────────────────────
 
-/** Convert a CoupleNarrativeEntry into a Tier3DomainData, interpolating partner names */
-function toTier3(entry: CoupleNarrativeEntry, aName: string, bName: string): Tier3DomainData {
-  const interp = (s: string) => interpolateCouple(s, aName, bName);
+/** Convert a CoupleRouteResult into a Tier3DomainData, interpolating partner names.
+ *  Handles swap (flips A/B names) and extras (template variables like {shared_values_count}). */
+function toTier3(route: CoupleRouteResult, aName: string, bName: string): Tier3DomainData {
+  const entry = route.entry;
+  // When swap is true, the narrative's {A_name} should map to partner B and vice versa
+  const effectiveA = route.swap ? bName : aName;
+  const effectiveB = route.swap ? aName : bName;
+  const interp = (s: string) => interpolateCouple(s, effectiveA, effectiveB, route.extras);
   return {
     dynamicName: entry.dynamicName,
     lenses: Object.fromEntries(
@@ -304,11 +310,12 @@ function toTier3(entry: CoupleNarrativeEntry, aName: string, bName: string): Tie
       description:  interp(entry.couplePractice.description),
       frequency:    entry.couplePractice.frequency,
       bothPartners: entry.couplePractice.bothPartners,
-      partnerATask: entry.couplePractice.partnerATask
-        ? interp(entry.couplePractice.partnerATask)
+      // When swapped, partner A's task should show under partner B's name and vice versa
+      partnerATask: (route.swap ? entry.couplePractice.partnerBTask : entry.couplePractice.partnerATask)
+        ? interp((route.swap ? entry.couplePractice.partnerBTask : entry.couplePractice.partnerATask)!)
         : undefined,
-      partnerBTask: entry.couplePractice.partnerBTask
-        ? interp(entry.couplePractice.partnerBTask)
+      partnerBTask: (route.swap ? entry.couplePractice.partnerATask : entry.couplePractice.partnerBTask)
+        ? interp((route.swap ? entry.couplePractice.partnerATask : entry.couplePractice.partnerBTask)!)
         : undefined,
     },
     coupleInvitation: interp(entry.coupleInvitation),
@@ -355,7 +362,7 @@ export default function CoupleMatrix({
         aAvoidance: a.ecrr.avoidanceScore,
         bAvoidance: b.ecrr.avoidanceScore,
       });
-      const attachEntry = routeAttachmentDynamic(a, b);
+      const attachRoute = routeAttachmentDynamic(a, b);
       result.push({
         id: 'attachment',
         title: 'How you seek closeness \u2014 together',
@@ -373,7 +380,7 @@ export default function CoupleMatrix({
         narrative: pairing.narrative,
         practice: pairing.practice,
         instruments: ['ECR-R'],
-        tier3: attachEntry ? toTier3(attachEntry, aName, bName) : undefined,
+        tier3: attachRoute ? toTier3(attachRoute, aName, bName) : undefined,
       });
     }
 
@@ -490,7 +497,7 @@ export default function CoupleMatrix({
         aProblemSolving: aSub.problemSolving?.mean ?? 2.5,
         bProblemSolving: bSub.problemSolving?.mean ?? 2.5,
       });
-      const conflictEntry = routeConflictDynamic(a, b);
+      const conflictRoute = routeConflictDynamic(a, b);
       result.push({
         id: 'conflict',
         title: 'How you navigate conflict \u2014 together',
@@ -508,7 +515,7 @@ export default function CoupleMatrix({
         narrative: pairing.narrative,
         practice: pairing.practice,
         instruments: ['DUTCH'],
-        tier3: conflictEntry ? toTier3(conflictEntry, aName, bName) : undefined,
+        tier3: conflictRoute ? toTier3(conflictRoute, aName, bName) : undefined,
       });
     }
 
@@ -520,7 +527,7 @@ export default function CoupleMatrix({
         (v: string) => (b.values.top5Values || []).includes(v)
       );
 
-      const valuesEntry = routeValuesDynamic(a, b);
+      const valuesRoute = routeValuesDynamic(a, b);
       result.push({
         id: 'values',
         title: 'What matters most \u2014 together',
@@ -541,7 +548,7 @@ export default function CoupleMatrix({
             ? `You share one core value: ${sharedValues[0]}. This is your common ground. The differences aren't problems \u2014 they're invitations to understand what makes your partner tick at the deepest level.`
             : 'Your top values are different. This isn\'t incompatibility \u2014 it\'s creative tension. The question isn\'t "do we value the same things?" but "can we honor what each of us values?"',
         instruments: ['Values'],
-        tier3: valuesEntry ? toTier3(valuesEntry, aName, bName) : undefined,
+        tier3: valuesRoute ? toTier3(valuesRoute, aName, bName) : undefined,
       });
     }
 

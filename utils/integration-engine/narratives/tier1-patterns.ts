@@ -18,6 +18,7 @@ import type {
   LensedNarrative,
   DevelopmentalArc,
   MatchedPractice,
+  DomainId,
 } from '../types';
 
 import {
@@ -832,16 +833,29 @@ Go.`,
 // MAIN MATCHER — checks all 8 patterns in priority order
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-export function matchTier1Pattern(scores: IntegrationScores): IntegrationResult | null {
-  return (
-    matchInvisiblePartner(scores) ??
-    matchFortress(scores) ??
-    matchFireAlarm(scores) ??
-    matchWiseHelper(scores) ??
-    matchRelationalPhilosopher(scores) ??
-    matchAnxiousAvoidant(scores) ??
-    matchValuesBehaviorSplit(scores) ??
-    matchUnlivedLife(scores) ??
-    null
-  );
+export function matchTier1Pattern(scores: IntegrationScores, selectedDomains?: DomainId[]): IntegrationResult | null {
+  const matchers = [
+    matchInvisiblePartner,
+    matchFortress,
+    matchFireAlarm,
+    matchWiseHelper,
+    matchRelationalPhilosopher,
+    matchAnxiousAvoidant,
+    matchValuesBehaviorSplit,
+    matchUnlivedLife,
+  ];
+
+  for (const matcher of matchers) {
+    const result = matcher(scores);
+    if (result) {
+      // If specific domains were selected, require at least 2 of the pattern's
+      // domains to overlap with the selection — otherwise the pattern is irrelevant.
+      if (selectedDomains && selectedDomains.length > 0) {
+        const overlap = result.domains.filter(d => selectedDomains.includes(d));
+        if (overlap.length < 2) continue;
+      }
+      return result;
+    }
+  }
+  return null;
 }
