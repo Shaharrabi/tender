@@ -17,10 +17,11 @@
  */
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import TenderText from '@/components/ui/TenderText';
 import MatrixDomain, { type MatrixDomainData } from './MatrixDomain';
 import MatrixInvitation from './MatrixInvitation';
+import IntegrationPanel from './IntegrationPanel';
 import { generateFoundationNarrative } from './narratives/foundation';
 import { generateInstrumentNarrative } from './narratives/instrument';
 import { generateNavigationNarrative } from './narratives/navigation';
@@ -31,8 +32,9 @@ import { generateFieldNarrative } from './narratives/field';
 import { generateOneInvitation } from './narratives/invitation';
 import * as Labels from './constants/matrix-labels';
 import type { ConfidenceLevel } from './constants/matrix-colors';
-import { Colors, Spacing } from '@/constants/theme';
+import { Colors, Spacing, BorderRadius, FontFamilies } from '@/constants/theme';
 import type { IndividualPortrait } from '@/types/portrait';
+import { generateIntegration, toIntegrationScores, type DomainId } from '@/utils/integration-engine';
 
 // ─── Props ──────────────────────────────────────────
 
@@ -73,10 +75,43 @@ function getConfidence(instruments: string[], allScores: Record<string, any>): C
 
 export default function TenderMatrix({ allScores, portrait }: TenderMatrixProps) {
   const [expandedDomain, setExpandedDomain] = useState<string | null>(null);
+  const [integrateMode, setIntegrateMode] = useState(false);
+  const [selectedDomains, setSelectedDomains] = useState<DomainId[]>([]);
 
   const handleToggle = useCallback((id: string) => {
-    setExpandedDomain(prev => prev === id ? null : id);
+    if (integrateMode) {
+      // In integrate mode, toggle domain selection (max 4)
+      setSelectedDomains(prev => {
+        if (prev.includes(id as DomainId)) {
+          return prev.filter(d => d !== id);
+        }
+        if (prev.length >= 4) return prev; // max 4
+        return [...prev, id as DomainId];
+      });
+    } else {
+      setExpandedDomain(prev => prev === id ? null : id);
+    }
+  }, [integrateMode]);
+
+  const toggleIntegrateMode = useCallback(() => {
+    setIntegrateMode(prev => {
+      if (prev) {
+        // Exiting integrate mode — clear selections
+        setSelectedDomains([]);
+      } else {
+        // Entering integrate mode — collapse any expanded domain
+        setExpandedDomain(null);
+      }
+      return !prev;
+    });
   }, []);
+
+  // Generate integration result when 2+ domains selected
+  const integrationScores = useMemo(() => toIntegrationScores(allScores), [allScores]);
+  const integrationResult = useMemo(() => {
+    if (selectedDomains.length < 2) return null;
+    return generateIntegration(selectedDomains, integrationScores);
+  }, [selectedDomains, integrationScores]);
 
   // ── Extract raw scores ──
   const ecrr = allScores['ecr-r']?.scores;
@@ -356,9 +391,36 @@ export default function TenderMatrix({ allScores, portrait }: TenderMatrixProps)
           TENDER INTEGRATED MAP
         </TenderText>
         <TenderText variant="bodySmall" color={Colors.textSecondary} align="center" style={styles.headerSubtitle}>
-          Tap any domain to reveal the cross-instrument insight underneath
+          {integrateMode
+            ? `Select 2-4 domains to see what emerges at the intersection${selectedDomains.length > 0 ? ` (${selectedDomains.length} selected)` : ''}`
+            : 'Tap any domain to reveal the cross-instrument insight underneath'}
         </TenderText>
       </View>
+
+      {/* Integrate mode toggle */}
+      {domains.length >= 2 && (
+        <View style={styles.integrateToggleRow}>
+          <TouchableOpacity
+            style={[styles.integrateButton, integrateMode && styles.integrateButtonActive]}
+            onPress={toggleIntegrateMode}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={integrateMode ? 'Exit integrate mode' : 'Enter integrate mode to select domains'}
+          >
+            <TenderText variant="caption" style={[
+              styles.integrateButtonText,
+              integrateMode && styles.integrateButtonTextActive,
+            ]}>
+              {integrateMode ? 'Exit Integrate' : 'Integrate'}
+            </TenderText>
+          </TouchableOpacity>
+          {integrateMode && selectedDomains.length > 0 && selectedDomains.length < 2 && (
+            <TenderText variant="caption" color={Colors.textMuted} style={{ marginLeft: Spacing.sm }}>
+              Select at least 2
+            </TenderText>
+          )}
+        </View>
+      )}
 
       {/* Domain rows */}
       <View style={styles.domainList}>
@@ -366,19 +428,27 @@ export default function TenderMatrix({ allScores, portrait }: TenderMatrixProps)
           <MatrixDomain
             key={domain.id}
             domain={domain}
-            isExpanded={expandedDomain === domain.id}
+            isExpanded={!integrateMode && expandedDomain === domain.id}
             onToggle={handleToggle}
+            selectable={integrateMode}
+            selected={selectedDomains.includes(domain.id as DomainId)}
           />
         ))}
       </View>
 
-      {/* The Invitation */}
-      {invitation && (
+      {/* Integration result panel */}
+      <IntegrationPanel
+        result={integrationResult}
+        visible={integrateMode && selectedDomains.length >= 2}
+      />
+
+      {/* The Invitation (hidden in integrate mode) */}
+      {!integrateMode && invitation && (
         <MatrixInvitation text={invitation} />
       )}
 
       {/* Incomplete assessments hint */}
-      {completedCount < 6 && (
+      {completedCount < 6 && !integrateMode && (
         <View style={styles.hintBox}>
           <TenderText variant="caption" color={Colors.textSecondary} align="center">
             {6 - completedCount} more assessment{6 - completedCount > 1 ? 's' : ''} will deepen your matrix
@@ -423,5 +493,32 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: Spacing.md,
     marginHorizontal: Spacing.md,
+  },
+  integrateToggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.md,
+  },
+  integrateButton: {
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.full,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+    backgroundColor: 'transparent',
+  },
+  integrateButtonActive: {
+    backgroundColor: Colors.primary,
+  },
+  integrateButtonText: {
+    fontFamily: FontFamilies.heading,
+    fontSize: 12,
+    letterSpacing: 1,
+    textTransform: 'uppercase' as const,
+    color: Colors.primary,
+  },
+  integrateButtonTextActive: {
+    color: Colors.textOnPrimary,
   },
 });

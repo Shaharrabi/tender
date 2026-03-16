@@ -636,7 +636,9 @@ export default function AssessmentMatrixScreen() {
           </View>
         )}
       </ScrollView>
-      <QuickLinksBar />
+      <ReAnimated.View style={[styles.quickLinksWrapper, quickLinksAnimStyle]}>
+        <QuickLinksBar />
+      </ReAnimated.View>
     </SafeAreaView>
   );
 }

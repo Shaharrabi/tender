@@ -50,9 +50,11 @@ interface MatrixDomainProps {
   domain: MatrixDomainData;
   isExpanded: boolean;
   onToggle: (id: string) => void;
+  selectable?: boolean;
+  selected?: boolean;
 }
 
-export default function MatrixDomain({ domain, isExpanded, onToggle }: MatrixDomainProps) {
+export default function MatrixDomain({ domain, isExpanded, onToggle, selectable = false, selected = false }: MatrixDomainProps) {
   const expandAnim = useRef(new Animated.Value(0)).current;
   const palette = MATRIX_COLORS[domain.color];
   const confidenceStyle = CONFIDENCE_COLORS[domain.confidence];
@@ -71,17 +73,30 @@ export default function MatrixDomain({ domain, isExpanded, onToggle }: MatrixDom
   };
 
   return (
-    <View style={[styles.container, { borderColor: palette.accent + '40' }]}>
+    <View style={[
+      styles.container,
+      { borderColor: palette.accent + '40' },
+      selectable && selected && styles.selectedContainer,
+      selectable && selected && { borderColor: palette.bg, borderWidth: 2 },
+    ]}>
       {/* Domain header */}
       <TouchableOpacity
         onPress={handlePress}
         activeOpacity={0.7}
         accessibilityRole="button"
-        accessibilityLabel={`${domain.title}. ${isExpanded ? 'Collapse' : 'Expand'} narrative.`}
+        accessibilityLabel={selectable
+          ? `${domain.title}. ${selected ? 'Selected. Tap to deselect.' : 'Tap to select for integration.'}`
+          : `${domain.title}. ${isExpanded ? 'Collapse' : 'Expand'} narrative.`}
       >
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <View style={[styles.colorDot, { backgroundColor: palette.bg }]} />
+            {selectable ? (
+              <View style={[styles.selectionIndicator, { borderColor: palette.bg }, selected && { backgroundColor: palette.bg }]}>
+                {selected && <TenderText variant="caption" style={styles.checkMark}>✓</TenderText>}
+              </View>
+            ) : (
+              <View style={[styles.colorDot, { backgroundColor: palette.bg }]} />
+            )}
             <View style={styles.headerText}>
               <TenderText variant="headingS" style={{ color: palette.text }}>
                 {domain.title}
@@ -224,5 +239,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.sm,
     paddingVertical: 2,
     borderRadius: BorderRadius.pill,
+  },
+  selectedContainer: {
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 4,
+  },
+  selectionIndicator: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkMark: {
+    fontSize: 12,
+    color: '#fff',
+    fontWeight: '700',
+    lineHeight: 14,
   },
 });

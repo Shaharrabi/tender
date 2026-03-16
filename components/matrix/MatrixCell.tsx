@@ -7,7 +7,7 @@
  */
 
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, useWindowDimensions } from 'react-native';
 import TenderText from '@/components/ui/TenderText';
 import { MATRIX_COLORS, type MatrixColorKey } from './constants/matrix-colors';
 import { Spacing, BorderRadius, FontFamilies } from '@/constants/theme';
@@ -26,27 +26,35 @@ interface MatrixCellProps {
 
 export default function MatrixCell({ cell, compact }: MatrixCellProps) {
   const palette = MATRIX_COLORS[cell.color];
+  const { width } = useWindowDimensions();
+  const isNarrow = width < 400;
+  const isTextScore = typeof cell.score === 'string' && isNaN(Number(cell.score));
 
   return (
-    <View style={[styles.cell, { backgroundColor: palette.bg }, compact && styles.cellCompact]}>
+    <View style={[styles.cell, { backgroundColor: palette.bg }, compact && styles.cellCompact, isNarrow && styles.cellNarrow]}>
       <TenderText
         variant="caption"
-        style={[styles.label, { color: palette.label }]}
+        style={[styles.label, { color: palette.label }, isNarrow && styles.labelNarrow]}
         numberOfLines={1}
       >
         {cell.label}
       </TenderText>
       <TenderText
         variant="headingS"
-        style={[styles.score, { color: palette.text }]}
-        numberOfLines={1}
+        style={[
+          styles.score,
+          { color: palette.text },
+          isNarrow && styles.scoreNarrow,
+          isNarrow && isTextScore && styles.scoreTextNarrow,
+        ]}
+        numberOfLines={isTextScore ? 2 : 1}
       >
         {typeof cell.score === 'number' ? Math.round(cell.score) : cell.score}
       </TenderText>
       {cell.descriptor ? (
         <TenderText
           variant="caption"
-          style={[styles.descriptor, { color: palette.label }]}
+          style={[styles.descriptor, { color: palette.label }, isNarrow && styles.descriptorNarrow]}
           numberOfLines={2}
         >
           {cell.descriptor}
@@ -89,5 +97,25 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 1,
     fontFamily: 'JosefinSans_300Light',
+  },
+  cellNarrow: {
+    paddingHorizontal: 2,
+  },
+  labelNarrow: {
+    fontSize: 8,
+    letterSpacing: 0.5,
+  },
+  scoreNarrow: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  scoreTextNarrow: {
+    fontSize: 10,
+    lineHeight: 14,
+    textAlign: 'center' as const,
+  },
+  descriptorNarrow: {
+    fontSize: 9,
+    lineHeight: 12,
   },
 });

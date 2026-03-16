@@ -42,6 +42,19 @@ export default function QuickLinksBar({ showHome = true, currentScreen, isSingle
   return (
     <View style={styles.wrapper}>
       <View style={styles.row}>
+        {currentScreen !== 'home' && (
+          <TouchableOpacity
+            style={styles.linkButton}
+            onPress={() => { SoundHaptics.tapSoft(); router.replace('/(app)/home' as any); }}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Home"
+          >
+            <HomeIcon size={20} color={Colors.secondary} />
+            <Text style={styles.linkLabel}>Home</Text>
+          </TouchableOpacity>
+        )}
+
         {currentScreen !== 'nuance' && (
           <TouchableOpacity
             ref={currentScreen === 'home' ? (r) => RefRegistry.register('home_nuanceCard', r) : undefined}
@@ -67,19 +80,6 @@ export default function QuickLinksBar({ showHome = true, currentScreen, isSingle
           >
             <BookOpenIcon size={20} color={Colors.secondary} />
             <Text style={styles.linkLabel}>Courses</Text>
-          </TouchableOpacity>
-        )}
-
-        {currentScreen !== 'home' && (
-          <TouchableOpacity
-            style={styles.linkButton}
-            onPress={() => { SoundHaptics.tapSoft(); router.replace('/(app)/home' as any); }}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel="Home"
-          >
-            <HomeIcon size={20} color={Colors.secondary} />
-            <Text style={styles.linkLabel}>Home</Text>
           </TouchableOpacity>
         )}
 

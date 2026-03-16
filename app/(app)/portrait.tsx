@@ -1119,7 +1119,9 @@ export default function PortraitScreen() {
       {/* FTUE Overlays */}
       <TooltipManager screen="portrait" />
       <WelcomeAudio screenKey="portrait" />
-      <QuickLinksBar />
+      <ReAnimated.View style={[st.quickLinksWrapper, quickLinksAnimStyle]}>
+        <QuickLinksBar />
+      </ReAnimated.View>
     </SafeAreaView>
     </ErrorBoundary>
   );
