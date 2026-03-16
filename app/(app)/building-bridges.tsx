@@ -43,6 +43,7 @@ import {
   StarIcon,
 } from '@/assets/graphics/icons';
 import QuickLinksBar from '@/components/QuickLinksBar';
+import { useScrollHideBar } from '@/hooks/useScrollHideBar';
 import FlippableCard from '@/components/card-game/FlippableCard';
 import CardFront from '@/components/card-game/CardFront';
 import CardBack from '@/components/card-game/CardBack';
@@ -82,6 +83,7 @@ export default function BuildingBridgesScreen() {
   const { session } = useAuth();
   const { awardXP: awardGamificationXP } = useGamification();
   const userId = session?.user?.id;
+  const { handleScroll, animatedStyle: quickLinksAnimStyle, BAR_HEIGHT } = useScrollHideBar();
 
   // State
   const [phase, setPhase] = useState<Phase>('home');
@@ -251,7 +253,7 @@ export default function BuildingBridgesScreen() {
 
       {/* Content */}
       {phase === 'home' && (
-        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView style={styles.scrollView} contentContainerStyle={[styles.scrollContent, { paddingBottom: BAR_HEIGHT + 20 }]} showsVerticalScrollIndicator={false} onScroll={handleScroll} scrollEventThrottle={16}>
           <HomeView
             homeTab={homeTab}
             setHomeTab={setHomeTab}
@@ -300,7 +302,9 @@ export default function BuildingBridgesScreen() {
         />
       )}
 
-      <QuickLinksBar currentScreen="bridges" />
+      <Animated.View style={[styles.quickLinksWrapper, quickLinksAnimStyle]}>
+        <QuickLinksBar currentScreen="bridges" />
+      </Animated.View>
     </SafeAreaView>
   );
 }
@@ -751,6 +755,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  quickLinksWrapper: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
   scrollView: {
     flex: 1,

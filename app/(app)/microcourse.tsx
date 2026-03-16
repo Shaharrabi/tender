@@ -40,6 +40,8 @@ import {
   CheckmarkIcon,
 } from '@/assets/graphics/icons';
 import QuickLinksBar from '@/components/QuickLinksBar';
+import { useScrollHideBar } from '@/hooks/useScrollHideBar';
+import Reanimated from 'react-native-reanimated';
 import { useAuth } from '@/context/AuthContext';
 import { useGamification } from '@/context/GamificationContext';
 import { saveCompletion, getCompletionByExerciseId } from '@/services/intervention';
@@ -102,6 +104,7 @@ export default function MicroCourseScreen() {
   }>();
   const { user } = useAuth();
   const { awardXP } = useGamification();
+  const { handleScroll, animatedStyle: quickLinksAnimStyle, BAR_HEIGHT } = useScrollHideBar();
 
   const [currentStep, setCurrentStep] = useState<LessonStep>('read');
   const [reflectionText, setReflectionText] = useState('');
@@ -718,9 +721,11 @@ export default function MicroCourseScreen() {
       >
         <ScrollView
           style={styles.scroll}
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[styles.scrollContent, { paddingBottom: BAR_HEIGHT + 20 }]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
         >
           {currentStep === 'read' && (
             <ReadStep
@@ -784,7 +789,9 @@ export default function MicroCourseScreen() {
           </Text>
         </TouchableOpacity>
       </View>
-      <QuickLinksBar />
+      <Reanimated.View style={[styles.quickLinksWrapper, quickLinksAnimStyle]}>
+        <QuickLinksBar />
+      </Reanimated.View>
     </SafeAreaView>
   );
 }
@@ -991,6 +998,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  quickLinksWrapper: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
   center: {
     flex: 1,

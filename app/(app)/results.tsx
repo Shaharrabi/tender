@@ -36,7 +36,9 @@ export default function ResultsScreen() {
             <Text style={styles.buttonText}>Back to Home</Text>
           </TouchableOpacity>
         </View>
-        <QuickLinksBar />
+        <View style={styles.quickLinksWrapper}>
+          <QuickLinksBar />
+        </View>
       </SafeAreaView>
     );
   }
@@ -86,6 +88,7 @@ export default function ResultsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
+  quickLinksWrapper: { position: 'absolute', bottom: 0, left: 0, right: 0 },
   center: {
     flex: 1,
     justifyContent: 'center',

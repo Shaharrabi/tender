@@ -730,7 +730,11 @@ export default function PortraitScreen() {
   }, [user]);
 
   // Refresh portrait data when screen gains focus (e.g. returning from assessment)
-  useFocusEffect(useCallback(() => { loadPortraitData(); }, [loadPortraitData]));
+  // Also scroll to top so the page doesn't start mid-scroll
+  useFocusEffect(useCallback(() => {
+    loadPortraitData();
+    contentScrollRef.current?.scrollTo({ y: 0, animated: false });
+  }, [loadPortraitData]));
 
   // View-and-erase: erase data when navigating away
   useEffect(() => {

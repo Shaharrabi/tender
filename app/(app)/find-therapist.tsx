@@ -7,6 +7,8 @@
 
 import React, { useEffect, useState } from 'react';
 import QuickLinksBar from '@/components/QuickLinksBar';
+import { useScrollHideBar } from '@/hooks/useScrollHideBar';
+import Animated from 'react-native-reanimated';
 import SupportGroupsCard from '@/components/support-groups/SupportGroupsCard';
 import { getRecommendedGroup } from '@/services/support-groups';
 import type { GroupRecommendation } from '@/types/support-groups';
@@ -224,6 +226,7 @@ const GENERAL_DIRECTORIES = [
 export default function FindTherapistScreen() {
   const { user } = useAuth();
   const router = useRouter();
+  const { handleScroll, animatedStyle: quickLinksAnimStyle, BAR_HEIGHT } = useScrollHideBar();
   const [portrait, setPortrait] = useState<IndividualPortrait | null>(null);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
@@ -257,8 +260,10 @@ export default function FindTherapistScreen() {
   return (
     <SafeAreaView style={s.container}>
       <ScrollView
-        contentContainerStyle={s.scrollContent}
+        contentContainerStyle={[s.scrollContent, { paddingBottom: BAR_HEIGHT + 20 }]}
         showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
       >
         {/* ── Header ──────────────────────── */}
         <View style={s.header}>
@@ -438,7 +443,9 @@ export default function FindTherapistScreen() {
 
         <View style={{ height: Spacing.xxl }} />
       </ScrollView>
-      <QuickLinksBar />
+      <Animated.View style={[s.quickLinksWrapper, quickLinksAnimStyle]}>
+        <QuickLinksBar />
+      </Animated.View>
     </SafeAreaView>
   );
 }
@@ -447,6 +454,7 @@ export default function FindTherapistScreen() {
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
+  quickLinksWrapper: { position: 'absolute', bottom: 0, left: 0, right: 0 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   scrollContent: { padding: Spacing.xl, paddingBottom: Spacing.scrollPadBottom },
 

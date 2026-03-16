@@ -71,7 +71,7 @@ export default function IntegrationPanel({ result, visible }: IntegrationPanelPr
       </View>
 
       {/* Title */}
-      <TenderText variant="heading" style={styles.title}>{result.title}</TenderText>
+      <TenderText variant="headingM" style={styles.title}>{result.title}</TenderText>
       <TenderText variant="caption" color={Colors.textSecondary} style={styles.subtitle}>
         {result.subtitle}
       </TenderText>

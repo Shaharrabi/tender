@@ -386,7 +386,9 @@ export default function SupportGroupsScreen() {
           </Animated.View>
         )}
       </View>
-      <QuickLinksBar />
+      <View style={styles.quickLinksWrapper}>
+        <QuickLinksBar />
+      </View>
     </SafeAreaView>
   );
 }
@@ -398,6 +400,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  quickLinksWrapper: { position: 'absolute', bottom: 0, left: 0, right: 0 },
   content: {
     flex: 1,
     padding: Spacing.xl,

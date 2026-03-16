@@ -7,6 +7,8 @@
  */
 
 import React, { useEffect, useState, useCallback } from 'react';
+import Animated from 'react-native-reanimated';
+import { useScrollHideBar } from '@/hooks/useScrollHideBar';
 import QuickLinksBar from '@/components/QuickLinksBar';
 import {
   View,
@@ -120,6 +122,7 @@ const PORTRAIT_ITEM: SharingItem = {
 export default function SharingSettingsScreen() {
   const { user } = useAuth();
   const router = useRouter();
+  const { handleScroll, animatedStyle: quickLinksAnimStyle, BAR_HEIGHT } = useScrollHideBar();
 
   const [preferences, setPreferences] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
@@ -217,8 +220,10 @@ export default function SharingSettingsScreen() {
   return (
     <SafeAreaView style={s.container}>
       <ScrollView
-        contentContainerStyle={s.scrollContent}
+        contentContainerStyle={[s.scrollContent, { paddingBottom: BAR_HEIGHT + 20 }]}
         showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
       >
         {/* ── Header ──────────────────── */}
         <View style={s.header}>
@@ -371,7 +376,9 @@ export default function SharingSettingsScreen() {
 
         <View style={{ height: Spacing.xxl }} />
       </ScrollView>
-      <QuickLinksBar />
+      <Animated.View style={[s.quickLinksWrapper, quickLinksAnimStyle]}>
+        <QuickLinksBar />
+      </Animated.View>
     </SafeAreaView>
   );
 }
@@ -383,6 +390,7 @@ const s = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  quickLinksWrapper: { position: 'absolute', bottom: 0, left: 0, right: 0 },
   scrollContent: {
     padding: Spacing.xl,
     paddingBottom: Spacing.scrollPadBottom,

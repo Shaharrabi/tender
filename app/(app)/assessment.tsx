@@ -19,6 +19,8 @@ import { supabase } from '@/services/supabase';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, FontSizes, ButtonSizes, FontFamilies, BorderRadius } from '@/constants/theme';
 import QuickLinksBar from '@/components/QuickLinksBar';
+import { useScrollHideBar } from '@/hooks/useScrollHideBar';
+import Reanimated from 'react-native-reanimated';
 import TenderButton from '@/components/ui/TenderButton';
 import SectionBreak from '@/components/assessment/SectionBreak';
 import QuestionRenderer from '@/components/assessment/QuestionRenderer';
@@ -30,6 +32,7 @@ export default function AssessmentScreen() {
   const params = useLocalSearchParams<{ type: string; coupleId?: string }>();
   const assessmentType = params.type || 'ecr-r';
   const coupleId = params.coupleId;
+  const { handleScroll: handleScrollBar, animatedStyle: quickLinksAnimStyle, BAR_HEIGHT } = useScrollHideBar();
 
   let config: AssessmentConfig;
   try {
@@ -402,7 +405,9 @@ export default function AssessmentScreen() {
         <ScrollView
           ref={scrollViewRef}
           style={styles.questionScroll}
-          contentContainerStyle={styles.questionScrollContent}
+          contentContainerStyle={[styles.questionScrollContent, { paddingBottom: BAR_HEIGHT + 20 }]}
+          onScroll={handleScrollBar}
+          scrollEventThrottle={16}
         >
           <Animated.View style={{ opacity: questionOpacity }}>
             <Text style={styles.questionText}>"{question.text}"</Text>
@@ -464,13 +469,16 @@ export default function AssessmentScreen() {
           ) : null}
         </View>
       </View>
-      <QuickLinksBar />
+      <Reanimated.View style={[styles.quickLinksWrapper, quickLinksAnimStyle]}>
+        <QuickLinksBar />
+      </Reanimated.View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
+  quickLinksWrapper: { position: 'absolute', bottom: 0, left: 0, right: 0 },
   content: { flex: 1, padding: Spacing.xl, justifyContent: 'space-between' },
 
   // Instructions

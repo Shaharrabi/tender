@@ -7,6 +7,8 @@
 
 import React, { useState, useEffect } from 'react';
 import QuickLinksBar from '@/components/QuickLinksBar';
+import { useScrollHideBar } from '@/hooks/useScrollHideBar';
+import Animated from 'react-native-reanimated';
 import {
   View,
   Text,
@@ -74,6 +76,7 @@ const ALL_MODES: { mode: RelationshipMode; label: string; description: string }[
 export default function RelationshipModeScreen() {
   const { user } = useAuth();
   const router = useRouter();
+  const { handleScroll, animatedStyle: quickLinksAnimStyle, BAR_HEIGHT } = useScrollHideBar();
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -194,8 +197,10 @@ export default function RelationshipModeScreen() {
 
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: BAR_HEIGHT + 20 }]}
         showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
       >
         {/* Mode Selection */}
         <Text style={styles.sectionLabel}>Choose Your Mode</Text>
@@ -278,7 +283,9 @@ export default function RelationshipModeScreen() {
         </View>
       </ScrollView>
 
-      <QuickLinksBar />
+      <Animated.View style={[styles.quickLinksWrapper, quickLinksAnimStyle]}>
+        <QuickLinksBar />
+      </Animated.View>
 
       {/* Save button */}
       {hasChanges && (
@@ -308,6 +315,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  quickLinksWrapper: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
   loadingContainer: {
     flex: 1,

@@ -6,6 +6,8 @@
  */
 
 import React, { useState } from 'react';
+import Animated from 'react-native-reanimated';
+import { useScrollHideBar } from '@/hooks/useScrollHideBar';
 import QuickLinksBar from '@/components/QuickLinksBar';
 import {
   View,
@@ -46,6 +48,7 @@ import {
 export default function PrivacyScreen() {
   const { user, signOut } = useAuth();
   const router = useRouter();
+  const { handleScroll, animatedStyle: quickLinksAnimStyle, BAR_HEIGHT } = useScrollHideBar();
   const [deleting, setDeleting] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
@@ -165,8 +168,10 @@ export default function PrivacyScreen() {
   return (
     <SafeAreaView style={s.container}>
       <ScrollView
-        contentContainerStyle={s.scrollContent}
+        contentContainerStyle={[s.scrollContent, { paddingBottom: BAR_HEIGHT + 20 }]}
         showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
       >
         {/* ── Header ──────────────────── */}
         <View style={s.header}>
@@ -317,7 +322,9 @@ export default function PrivacyScreen() {
 
         <View style={{ height: Spacing.xxl }} />
       </ScrollView>
-      <QuickLinksBar />
+      <Animated.View style={[s.quickLinksWrapper, quickLinksAnimStyle]}>
+        <QuickLinksBar />
+      </Animated.View>
     </SafeAreaView>
   );
 }
@@ -326,6 +333,7 @@ export default function PrivacyScreen() {
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
+  quickLinksWrapper: { position: 'absolute', bottom: 0, left: 0, right: 0 },
   scrollContent: { padding: Spacing.xl, paddingBottom: Spacing.scrollPadBottom },
 
   header: { marginBottom: Spacing.lg },

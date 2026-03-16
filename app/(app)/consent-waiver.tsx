@@ -11,6 +11,8 @@
 
 import React, { useState, useMemo } from 'react';
 import QuickLinksBar from '@/components/QuickLinksBar';
+import { useScrollHideBar } from '@/hooks/useScrollHideBar';
+import Animated from 'react-native-reanimated';
 import {
   View,
   Text,
@@ -149,6 +151,7 @@ const ERASE_BULLETS = [
 export default function ConsentWaiverScreen() {
   const { user } = useAuth();
   const router = useRouter();
+  const { handleScroll, animatedStyle: quickLinksAnimStyle, BAR_HEIGHT } = useScrollHideBar();
 
   const [selectedOption, setSelectedOption] = useState<ConsentType | null>(null);
   const [agreed, setAgreed] = useState(false);
@@ -347,7 +350,9 @@ export default function ConsentWaiverScreen() {
             </TouchableOpacity>
           </View>
         </ScrollView>
-        <QuickLinksBar />
+        <Animated.View style={[s.quickLinksWrapper, quickLinksAnimStyle]}>
+          <QuickLinksBar />
+        </Animated.View>
       </SafeAreaView>
     );
   }
@@ -358,9 +363,11 @@ export default function ConsentWaiverScreen() {
     <SafeAreaView style={s.container}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
       <ScrollView
-        contentContainerStyle={s.scrollContent}
+        contentContainerStyle={[s.scrollContent, { paddingBottom: BAR_HEIGHT + 20 }]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
       >
         {/* ── Back Button ───────────── */}
         <View style={s.header}>
@@ -508,7 +515,9 @@ export default function ConsentWaiverScreen() {
         <View style={{ height: Spacing.xxxl }} />
       </ScrollView>
       </KeyboardAvoidingView>
-      <QuickLinksBar />
+      <Animated.View style={[s.quickLinksWrapper, quickLinksAnimStyle]}>
+        <QuickLinksBar />
+      </Animated.View>
     </SafeAreaView>
   );
 }
@@ -519,6 +528,12 @@ const s = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  quickLinksWrapper: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
   scrollContent: {
     padding: Spacing.xl,

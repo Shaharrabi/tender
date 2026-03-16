@@ -11,6 +11,8 @@
  */
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import ReanimatedAnimated from 'react-native-reanimated';
+import { useScrollHideBar } from '@/hooks/useScrollHideBar';
 import QuickLinksBar from '@/components/QuickLinksBar';
 import {
   View,
@@ -614,6 +616,7 @@ function ExerciseCard({
 export default function TreatmentPlanScreen() {
   const { user } = useAuth();
   const router = useRouter();
+  const { handleScroll, animatedStyle: quickLinksAnimStyle, BAR_HEIGHT } = useScrollHideBar();
 
   const [loading, setLoading] = useState(true);
   const [portrait, setPortrait] = useState<IndividualPortrait | null>(null);
@@ -711,15 +714,19 @@ export default function TreatmentPlanScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={[styles.scrollContent, { padding: Spacing.lg }]}
+        contentContainerStyle={[styles.scrollContent, { padding: Spacing.lg, paddingBottom: BAR_HEIGHT + 20 }]}
         showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
       >
         <GrowthPlanContent portrait={portrait} router={router} />
 
         {/* Bottom spacer */}
         <View style={{ height: Spacing.xxl }} />
       </ScrollView>
-      <QuickLinksBar />
+      <ReanimatedAnimated.View style={[styles.quickLinksWrapper, quickLinksAnimStyle]}>
+        <QuickLinksBar />
+      </ReanimatedAnimated.View>
     </SafeAreaView>
   );
 }
@@ -833,6 +840,8 @@ const styles = StyleSheet.create({
   headerSpacer: {
     width: 48,
   },
+
+  quickLinksWrapper: { position: 'absolute', bottom: 0, left: 0, right: 0 },
 
   // Scroll
   scrollContent: {

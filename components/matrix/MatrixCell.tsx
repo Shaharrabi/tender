@@ -99,23 +99,25 @@ const styles = StyleSheet.create({
     fontFamily: 'JosefinSans_300Light',
   },
   cellNarrow: {
-    paddingHorizontal: 2,
+    paddingHorizontal: 1,
+    paddingVertical: Spacing.xs + 2,
+    minHeight: 64,
   },
   labelNarrow: {
-    fontSize: 8,
-    letterSpacing: 0.5,
+    fontSize: 6.5,
+    letterSpacing: 0.2,
   },
   scoreNarrow: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 13,
+    lineHeight: 18,
   },
   scoreTextNarrow: {
-    fontSize: 10,
-    lineHeight: 14,
+    fontSize: 9,
+    lineHeight: 13,
     textAlign: 'center' as const,
   },
   descriptorNarrow: {
-    fontSize: 9,
-    lineHeight: 12,
+    fontSize: 8,
+    lineHeight: 11,
   },
 });

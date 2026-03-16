@@ -18,6 +18,7 @@ import {
   LayoutAnimation,
   Platform,
   UIManager,
+  useWindowDimensions,
 } from 'react-native';
 import TenderText from '@/components/ui/TenderText';
 import MatrixCell, { type MatrixCellData } from './MatrixCell';
@@ -58,6 +59,8 @@ export default function MatrixDomain({ domain, isExpanded, onToggle, selectable 
   const expandAnim = useRef(new Animated.Value(0)).current;
   const palette = MATRIX_COLORS[domain.color];
   const confidenceStyle = CONFIDENCE_COLORS[domain.confidence];
+  const { width } = useWindowDimensions();
+  const isNarrow = width < 400;
 
   useEffect(() => {
     Animated.timing(expandAnim, {
@@ -116,7 +119,7 @@ export default function MatrixDomain({ domain, isExpanded, onToggle, selectable 
         </View>
 
         {/* Cell grid */}
-        <View style={styles.cellRow}>
+        <View style={[styles.cellRow, isNarrow && styles.cellRowNarrow]}>
           {domain.cells.map((cell, i) => (
             <MatrixCell key={i} cell={cell} />
           ))}
@@ -211,6 +214,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.sm,
     paddingBottom: Spacing.sm,
     paddingTop: Spacing.xs,
+  },
+  cellRowNarrow: {
+    gap: 2,
+    paddingHorizontal: Spacing.xs,
   },
   narrativePanel: {
     padding: Spacing.md,

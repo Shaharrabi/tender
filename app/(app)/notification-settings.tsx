@@ -8,6 +8,8 @@
  */
 
 import React, { useEffect, useState } from 'react';
+import Animated from 'react-native-reanimated';
+import { useScrollHideBar } from '@/hooks/useScrollHideBar';
 import QuickLinksBar from '@/components/QuickLinksBar';
 import {
   View,
@@ -92,6 +94,7 @@ const TIME_OPTIONS: { key: NotificationPreferences['reminderTime']; label: strin
 
 export default function NotificationSettingsScreen() {
   const router = useRouter();
+  const { handleScroll, animatedStyle: quickLinksAnimStyle, BAR_HEIGHT } = useScrollHideBar();
   const [prefs, setPrefs] = useState<NotificationPreferences>(DEFAULT_PREFS);
   const [engagementPrefs, setEngagementPrefs] = useState<EngagementNotificationPreferences>(DEFAULT_ENGAGEMENT_PREFS);
   const [loaded, setLoaded] = useState(false);
@@ -183,8 +186,10 @@ export default function NotificationSettingsScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: BAR_HEIGHT + 20 }]}
         showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
       >
         {/* Intro */}
         <Text style={styles.sectionDescription}>
@@ -363,7 +368,9 @@ export default function NotificationSettingsScreen() {
           </Text>
         </View>
       </ScrollView>
-      <QuickLinksBar />
+      <Animated.View style={[styles.quickLinksWrapper, quickLinksAnimStyle]}>
+        <QuickLinksBar />
+      </Animated.View>
     </SafeAreaView>
   );
 }
@@ -410,6 +417,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  quickLinksWrapper: { position: 'absolute', bottom: 0, left: 0, right: 0 },
 
   // Header
   header: {

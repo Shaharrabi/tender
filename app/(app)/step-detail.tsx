@@ -837,6 +837,9 @@ function StepDetailScreenInner() {
           </View>
         </Animated.View>
 
+        {/* Tab content wrapper — keyed to activeTab so it fades in on switch */}
+        <Animated.View key={`tab-${activeTab}`} entering={FadeIn.duration(300)}>
+
         {/* ═══ TAB 0 — READ ═══ */}
         {activeTab === 0 && (<>
         {/* Audio Player */}
@@ -1798,6 +1801,9 @@ function StepDetailScreenInner() {
           </View>
         )}
         </>)}
+
+        </Animated.View>
+        {/* End tab content wrapper */}
 
         {/* ── Full 12-Step Circle Strip — always visible ── */}
         <View style={styles.stepStripContainer}>
