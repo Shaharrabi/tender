@@ -95,7 +95,7 @@ export default function IntegrationPanel({ result, visible }: IntegrationPanelPr
             textTransform: 'uppercase',
             letterSpacing: 1,
           }}>
-            {result.confidence === 'high' ? 'Strong signal' : result.confidence === 'emerging' ? 'Pattern emerging' : 'Needs more data'}
+            {result.confidence === 'high' ? 'Strong signal' : result.confidence === 'emerging' ? 'Pattern emerging' : 'Still unfolding'}
           </TenderText>
         </View>
       </View>

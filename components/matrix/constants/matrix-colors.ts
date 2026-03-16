@@ -62,7 +62,7 @@ export type MatrixColorKey = keyof typeof MATRIX_COLORS;
 export const CONFIDENCE_COLORS = {
   high: { bg: '#E3EFE5', text: '#4A6F50', label: 'Strong signal' },
   emerging: { bg: '#FDF3E0', text: '#8B6914', label: 'Pattern emerging' },
-  low: { bg: '#F0E6E0', text: '#6B5E61', label: 'Needs more data' },
+  low: { bg: '#F0E6E0', text: '#6B5E61', label: 'Still unfolding' },
 } as const;
 
 export type ConfidenceLevel = keyof typeof CONFIDENCE_COLORS;

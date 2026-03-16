@@ -604,7 +604,7 @@ function CouplePortalScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.center}>
-          <TenderText variant="headingXL" style={styles.heading}>The Space Between You</TenderText>
+          <TenderText variant="headingXL" style={styles.heading}>Your Couple Portal</TenderText>
           {portraitError ? (
             <>
               <TenderText variant="body" color={Colors.textSecondary} style={styles.subtitle}>{portraitError}</TenderText>
@@ -1886,8 +1886,11 @@ function CouplePortalScreen() {
             </TouchableOpacity>
           </View>
 
-          <TenderText variant="headingXL" style={styles.heading}>The Space Between You</TenderText>
-          <TenderText variant="body" color={Colors.textSecondary} style={styles.subtitle}>
+          <TenderText variant="headingXL" style={styles.heading}>Your Couple Portal</TenderText>
+          <TenderText variant="headingS" color={Colors.textSecondary} style={[styles.subtitle, { fontStyle: 'italic', marginBottom: 4 }]}>
+            The Space Between You
+          </TenderText>
+          <TenderText variant="bodySmall" color={Colors.textMuted} style={styles.subtitle}>
             A living portrait of how you and {partnerName} move through the world together
           </TenderText>
 

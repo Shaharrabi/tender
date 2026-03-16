@@ -6,8 +6,8 @@
  * Soft, artsy Wes Anderson aesthetic — rounded corners, vintage warmth.
  */
 
-import React from 'react';
-import { View, TouchableOpacity, StyleSheet, useWindowDimensions } from 'react-native';
+import React, { useRef, useEffect } from 'react';
+import { View, TouchableOpacity, StyleSheet, useWindowDimensions, Animated } from 'react-native';
 import TenderText from '@/components/ui/TenderText';
 import { MATRIX_COLORS, type MatrixColorKey } from './constants/matrix-colors';
 import { Spacing, BorderRadius, FontFamilies } from '@/constants/theme';
@@ -32,6 +32,17 @@ export default function MatrixCell({ cell, compact, selectable, selected, onSele
   const { width } = useWindowDimensions();
   const isNarrow = width < 400;
   const isTextScore = typeof cell.score === 'string' && isNaN(Number(cell.score));
+
+  // Selection animation
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  useEffect(() => {
+    if (selectable) {
+      Animated.sequence([
+        Animated.timing(scaleAnim, { toValue: selected ? 0.92 : 1.04, duration: 100, useNativeDriver: true }),
+        Animated.timing(scaleAnim, { toValue: 1, duration: 150, useNativeDriver: true }),
+      ]).start();
+    }
+  }, [selected]);
 
   const content = (
     <View style={[
@@ -80,7 +91,9 @@ export default function MatrixCell({ cell, compact, selectable, selected, onSele
   if (selectable && onSelect) {
     return (
       <TouchableOpacity style={{ flex: 1 }} onPress={onSelect} activeOpacity={0.7}>
-        {content}
+        <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+          {content}
+        </Animated.View>
       </TouchableOpacity>
     );
   }
@@ -128,21 +141,21 @@ const styles = StyleSheet.create({
     minHeight: 64,
   },
   labelNarrow: {
-    fontSize: 6.5,
-    letterSpacing: 0.2,
+    fontSize: 8,
+    letterSpacing: 0.3,
   },
   scoreNarrow: {
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 14,
+    lineHeight: 19,
   },
   scoreTextNarrow: {
-    fontSize: 9,
-    lineHeight: 13,
+    fontSize: 10,
+    lineHeight: 14,
     textAlign: 'center' as const,
   },
   descriptorNarrow: {
-    fontSize: 8,
-    lineHeight: 11,
+    fontSize: 9,
+    lineHeight: 12,
   },
   checkOverlay: {
     position: 'absolute',

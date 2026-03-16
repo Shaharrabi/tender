@@ -416,8 +416,8 @@ export default function TenderMatrix({ allScores, portrait, scrollViewRef }: Ten
         </TenderText>
         <TenderText variant="bodySmall" color={Colors.textSecondary} align="center" style={styles.headerSubtitle}>
           {integrateMode
-            ? `Tap individual cells to see what emerges at the intersection${selectedBoxes.length > 0 ? ` (${selectedBoxes.length} selected from ${selectedDomains.length} domain${selectedDomains.length !== 1 ? 's' : ''})` : ''}`
-            : 'Tap any domain to reveal the cross-instrument insight underneath'}
+            ? `Tap cells across domains to discover what emerges at the intersection${selectedBoxes.length > 0 ? ` — ${selectedBoxes.length} selected from ${selectedDomains.length} domain${selectedDomains.length !== 1 ? 's' : ''}` : ''}`
+            : 'Each row holds a story. Tap any to open it — then try Integrate to see where they meet.'}
         </TenderText>
       </View>
 
@@ -464,6 +464,15 @@ export default function TenderMatrix({ allScores, portrait, scrollViewRef }: Ten
           />
         ))}
       </View>
+
+      {/* Integration result hint */}
+      {integrateMode && integrationResult && selectedDomains.length >= 2 && (
+        <View style={styles.resultReadyHint}>
+          <TenderText variant="bodySmall" color={Colors.primary} align="center" style={{ fontStyle: 'italic' }}>
+            Your integration is ready below — scroll down to explore 6 ways of seeing it
+          </TenderText>
+        </View>
+      )}
 
       {/* Integration result panel */}
       <View ref={integrationPanelRef}>
@@ -524,6 +533,15 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: Spacing.md,
     marginHorizontal: Spacing.md,
+  },
+  resultReadyHint: {
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    marginHorizontal: Spacing.md,
+    backgroundColor: Colors.primaryLight + '20',
+    borderRadius: BorderRadius.md,
+    borderLeftWidth: 3,
+    borderLeftColor: Colors.primary,
   },
   integrateToggleRow: {
     flexDirection: 'row',

@@ -1533,7 +1533,7 @@ export default function HomeScreen() {
                     {weareProfile ? 'See full picture' : 'View Portal'} {'\u2192'}
                   </Text>
 
-                  {/* Matching quick links: Retake + Matrix for couple */}
+                  {/* Matching quick links: Retake + Couple Matrix */}
                   <View style={styles.dualStripLinks}>
                     <TouchableOpacity
                       onPress={(e) => { e.stopPropagation(); SoundHaptics.tapSoft(); router.push('/(app)/tender-assessment' as any); }}
@@ -1543,10 +1543,10 @@ export default function HomeScreen() {
                     </TouchableOpacity>
                     <Text style={styles.dualStripLinkDot}>{'\u00B7'}</Text>
                     <TouchableOpacity
-                      onPress={(e) => { e.stopPropagation(); SoundHaptics.tapSoft(); router.push({ pathname: '/(app)/portrait' as any, params: { tab: 'map' } }); }}
+                      onPress={(e) => { e.stopPropagation(); SoundHaptics.tapSoft(); router.push({ pathname: '/(app)/couple-portal' as any, params: { tab: 'connection' } }); }}
                       activeOpacity={0.7}
                     >
-                      <Text style={styles.dualStripLinkText}>Integrated Map</Text>
+                      <Text style={styles.dualStripLinkText}>Couple Map</Text>
                     </TouchableOpacity>
                   </View>
                 </TouchableOpacity>
