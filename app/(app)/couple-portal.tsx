@@ -102,9 +102,10 @@ import { ScoreViewToggle } from '@/components/portrait-enhancements/ScoreStoryTo
 import SectionSummaryHeader from '@/components/portrait-enhancements/SectionSummaryHeader';
 import AudioLibrary from '@/components/audio/AudioLibrary';
 import ResetLibrary from '@/components/emergency/ResetLibrary';
+import CoupleMatrix from '@/components/matrix/CoupleMatrix';
 import { HourglassIcon } from '@/assets/graphics/icons';
 
-type TabKey = 'overview' | 'dance' | 'together' | 'assessments' | 'insights' | 'growth' | 'anchors' | 'field';
+type TabKey = 'overview' | 'dance' | 'together' | 'matrix' | 'assessments' | 'insights' | 'growth' | 'anchors' | 'field';
 
 interface CoupleTabDef {
   key: TabKey;
@@ -117,6 +118,7 @@ const TABS: CoupleTabDef[] = [
   { key: 'overview',    label: 'Overview',    Icon: HeartPulseIcon, color: Colors.couplePartnerA },
   { key: 'dance',       label: 'Your Dance',  Icon: LightningIcon,  color: Colors.couplePartnerB },
   { key: 'together',    label: 'Together',    Icon: LinkIcon,        color: Colors.calm },
+  { key: 'matrix',      label: 'Our Matrix', Icon: CompassIcon,     color: Colors.overlapPurple },
   { key: 'assessments', label: 'Assessments', Icon: CompassIcon,     color: Colors.depth },
   { key: 'insights',    label: 'Insights',    Icon: SparkleIcon,     color: Colors.accent },
   { key: 'growth',      label: 'Growth',      Icon: SeedlingIcon,    color: Colors.warning },
@@ -166,6 +168,10 @@ function CouplePortalScreen() {
     dci: { partnerA: any | null; partnerB: any | null };
     csi16: { partnerA: any | null; partnerB: any | null };
   } | null>(null);
+
+  // Raw individual scores for CoupleMatrix
+  const [myRawScores, setMyRawScores] = useState<Record<string, { id: string; scores: any }> | null>(null);
+  const [partnerRawScores, setPartnerRawScores] = useState<Record<string, { id: string; scores: any }> | null>(null);
 
   // WEARE state
   const [weareProfile, setWeareProfile] = useState<WEAREProfile | null>(null);
@@ -300,6 +306,19 @@ function CouplePortalScreen() {
       if (mp) setMyPortrait(mp as unknown as IndividualPortrait);
       if (pp) setPartnerPortrait(pp as unknown as IndividualPortrait);
       console.log('[CouplePortal] Final portraits:', { mine: !!mp, partner: !!pp });
+
+      // ─── 1b. Load Raw Individual Scores for Our Matrix ──
+      try {
+        const [myScoresMap, partnerScoresMap] = await Promise.all([
+          fetchAllScores(user.id).catch(() => null),
+          selfCouple ? Promise.resolve(null) : fetchAllScores(partnerId).catch(() => null),
+        ]);
+        if (myScoresMap) setMyRawScores(myScoresMap);
+        if (partnerScoresMap) setPartnerRawScores(partnerScoresMap);
+        else if (selfCouple && myScoresMap) setPartnerRawScores(myScoresMap);
+      } catch (rawErr) {
+        console.warn('[CouplePortal] Raw scores fetch failed (non-critical):', rawErr);
+      }
 
       // ─── 2. Load/Generate Relationship Portrait ──────────
       let rp = await getRelationshipPortrait(myCouple.id);
@@ -1648,6 +1667,11 @@ function CouplePortalScreen() {
       readMinutes: 3,
       color: Colors.calm,
     },
+    matrix: {
+      summary: 'Your integrated couple matrix \u2014 how your two profiles create the dance between you.',
+      readMinutes: 4,
+      color: Colors.overlapPurple,
+    },
     field: {
       summary: 'Your relational field \u2014 what you\u2019re creating together, what needs care, and what to try next.',
       readMinutes: 3,
@@ -1687,12 +1711,52 @@ function CouplePortalScreen() {
     return parts.join(' ');
   };
 
+  // ─── Our Matrix Tab ──────────────────────────────────
+  const renderOurMatrix = () => {
+    const nameA = dp?.partnerAName || 'You';
+    const nameB = dp?.partnerBName || partnerName || 'Partner';
+
+    // Build partner scores from raw fetched data
+    const toPartnerScores = (raw: Record<string, { id: string; scores: any }> | null) => ({
+      ecrr: raw?.['ecr-r']?.scores,
+      ipip: raw?.['ipip-neo-120']?.scores,
+      sseit: raw?.['sseit']?.scores,
+      dsir: raw?.['dsi-r']?.scores,
+      dutch: raw?.['dutch']?.scores,
+      values: raw?.['values']?.scores,
+    });
+
+    const p1 = toPartnerScores(myRawScores);
+    const p2 = toPartnerScores(partnerRawScores);
+
+    // WEARE data from the profile
+    const weare = weareProfile ? {
+      resonance: weareProfile.layers?.resonancePulse,
+      emergenceDirection: weareProfile.layers?.emergenceDirection,
+      bottleneck: (weareProfile.bottleneck as unknown as string) ?? null,
+      movementPhase: weareProfile.movementPhase as string,
+    } : undefined;
+
+    return (
+      <View style={styles.tabContent}>
+        <CoupleMatrix
+          partner1={p1}
+          partner2={p2}
+          partner1Name={nameA}
+          partner2Name={nameB}
+          weareData={weare}
+        />
+      </View>
+    );
+  };
+
   /** Render the active tab content — one section at a time, like personal portrait */
   const renderTabContent = () => {
     switch (activeTab) {
       case 'overview':   return renderOverview();
       case 'dance':      return renderDance();
       case 'together':   return renderTogether();
+      case 'matrix':     return renderOurMatrix();
       case 'assessments': return renderAssessments();
       case 'insights':   return renderInsights();
       case 'growth':     return renderGrowth();

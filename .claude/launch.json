@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "expo-web",
-      "runtimeExecutable": "node_modules/.bin/expo",
-      "runtimeArgs": ["start", "--web", "--port", "8082"],
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["expo", "start", "--web", "--port", "8082", "--clear"],
       "port": 8082,
       "autoPort": true
     },
