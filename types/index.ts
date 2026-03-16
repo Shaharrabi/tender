@@ -217,6 +217,11 @@ export interface TenderSection {
   estimatedMinutes: number;
   breakAfter: boolean;
   breakMessage?: string;
+  /**
+   * Optional sections (e.g. Section 7 — RFAS "The Space Between") enhance the
+   * experience but are not required for portrait generation or completion status.
+   */
+  optional?: boolean;
 }
 
 // ─── Couple Instrument Scores ────────────────────────────

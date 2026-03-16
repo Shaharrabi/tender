@@ -105,7 +105,7 @@ import { getTodaysQuestion, getMyResponseToday, getPartnerResponse, submitDailyR
 import { getThisWeeksChallenge, generateWeeklyChallenge, type CoupleChallenge } from '@/services/couple-challenges';
 import { canSendRelationalNudge } from '@/services/emotional-safety';
 import TenderText from '@/components/ui/TenderText';
-import { TENDER_SECTIONS, TOTAL_QUESTIONS, TOTAL_ESTIMATED_MINUTES } from '@/utils/assessments/tender-sections';
+import { TENDER_SECTIONS, REQUIRED_TENDER_SECTIONS, TOTAL_QUESTIONS, TOTAL_ESTIMATED_MINUTES } from '@/utils/assessments/tender-sections';
 import {
   Colors,
   Spacing,
@@ -450,7 +450,9 @@ export default function HomeScreen() {
       // Compute Tender Assessment status.
       // Supabase is the single source of truth for completed sections.
       // AsyncStorage is only used for in-progress question counts.
-      const individualTypes = TENDER_SECTIONS.map((s) => s.assessmentType);
+      // Only required (non-optional) sections count toward completion.
+      const requiredSections = TENDER_SECTIONS.filter((s) => !s.optional);
+      const individualTypes = requiredSections.map((s) => s.assessmentType);
       const doneIndividual = individualTypes.filter((t) => !!completionMap[t]);
       if (doneIndividual.length === individualTypes.length) {
         setTenderStatus({
@@ -483,9 +485,9 @@ export default function HomeScreen() {
           }
         } catch {}
 
-        // Find the first incomplete section for the label
+        // Find the first incomplete required section for the label
         if (!currentSecName && doneIndividual.length > 0) {
-          const firstIncomplete = TENDER_SECTIONS.find(
+          const firstIncomplete = requiredSections.find(
             (s) => !completionMap[s.assessmentType],
           );
           currentSecName = firstIncomplete?.fieldName;
@@ -1240,7 +1242,7 @@ export default function HomeScreen() {
             </View>
             <Text style={styles.newcomerBody}>
               {tenderStatus.state === 'in_progress'
-                ? `${tenderStatus.completedSections} of ${TENDER_SECTIONS.length} sections done. Each one brings you closer to your personal portrait \u2014 a map of how you connect, feel, and grow.`
+                ? `${tenderStatus.completedSections} of ${REQUIRED_TENDER_SECTIONS.length} sections done. Each one brings you closer to your personal portrait \u2014 a map of how you connect, feel, and grow.`
                 : 'Take the Tender Assessment to discover your attachment style, emotional patterns, and relational strengths. It takes about 30 minutes and you can pause anytime.'}
             </Text>
             <TouchableOpacity
@@ -1620,11 +1622,11 @@ export default function HomeScreen() {
           const milestones = [
             {
               name: 'Discover',
-              desc: '7 assessment sections about how you connect, feel, and fight',
+              desc: '6 assessment sections about how you connect, feel, and fight',
               done: discoverDone,
               inProgress: tenderStatus.state === 'in_progress',
               progressDetail: tenderStatus.state === 'in_progress'
-                ? `${tenderStatus.completedSections} of ${TENDER_SECTIONS.length}`
+                ? `${tenderStatus.completedSections} of ${REQUIRED_TENDER_SECTIONS.length}`
                 : undefined,
               route: '/(app)/tender-assessment' as const,
             },
@@ -1736,11 +1738,11 @@ export default function HomeScreen() {
                   <>
                     <Text style={styles.tenderCardTitle}>The Tender Assessment</Text>
                     <Text style={styles.tenderCardDescription}>
-                      7 sections covering how you connect, feel, fight, and what matters to you.
+                      6 sections covering how you connect, feel, fight, and what matters to you.
                       Take breaks between sections and come back anytime.
                     </Text>
                     <View style={styles.tenderSegmentBar}>
-                      {TENDER_SECTIONS.map((sec) => (
+                      {REQUIRED_TENDER_SECTIONS.map((sec) => (
                         <View
                           key={sec.assessmentType}
                           style={[
@@ -1769,7 +1771,7 @@ export default function HomeScreen() {
                   <>
                     <Text style={styles.tenderCardTitle}>The Tender Assessment</Text>
                     <View style={styles.tenderSegmentBar}>
-                      {TENDER_SECTIONS.map((sec) => (
+                      {REQUIRED_TENDER_SECTIONS.map((sec) => (
                         <View
                           key={sec.assessmentType}
                           style={[
@@ -1780,7 +1782,7 @@ export default function HomeScreen() {
                       ))}
                     </View>
                     <Text style={styles.tenderCardMeta}>
-                      {tenderStatus.completedSections} of {TENDER_SECTIONS.length} sections complete
+                      {tenderStatus.completedSections} of {REQUIRED_TENDER_SECTIONS.length} sections complete
                     </Text>
                     {tenderStatus.currentSectionName && (
                       <Text style={styles.tenderCurrentSection}>

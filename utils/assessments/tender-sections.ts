@@ -80,8 +80,12 @@ export const TENDER_SECTIONS: TenderSection[] = [
     assessmentType: 'relational-field',
     estimatedMinutes: 4,
     breakAfter: false, // Last section — ends with completion screen
+    optional: true,   // Relational/couple section — enhances experience, not required for portrait
   },
 ];
+
+/** Required sections only (excludes optional sections like RFAS). Used for completion tracking. */
+export const REQUIRED_TENDER_SECTIONS = TENDER_SECTIONS.filter((s) => !s.optional);
 
 /** Total estimated time across all sections. */
 export const TOTAL_ESTIMATED_MINUTES = TENDER_SECTIONS.reduce(
