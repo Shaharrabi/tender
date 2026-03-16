@@ -111,6 +111,7 @@ import CollapsibleNarrative from '@/components/portrait-enhancements/Collapsible
 import GrowthEdgeSummaryCard from '@/components/portrait-enhancements/GrowthEdgeSummaryCard';
 import AnchorQuickAccess from '@/components/portrait-enhancements/AnchorQuickAccess';
 import MatrixTab from '@/components/portrait/MatrixTab';
+import TenderMatrix from '@/components/matrix/TenderMatrix';
 import AudioLibrary from '@/components/audio/AudioLibrary';
 import PortraitHistoryChart from '@/components/portrait/PortraitHistoryChart';
 import {
@@ -138,7 +139,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 // ─── Tab definitions ────────────────────────────────────
 
-type TabKey = 'overview' | 'scores' | 'lenses' | 'cycle' | 'growth' | 'anchors' | 'matrix' | 'field';
+type TabKey = 'overview' | 'scores' | 'lenses' | 'cycle' | 'growth' | 'anchors' | 'matrix' | 'key' | 'field';
 
 interface TabDef {
   key: TabKey;
@@ -155,6 +156,7 @@ const TABS: TabDef[] = [
   { key: 'growth', label: 'Growth', Icon: STAT_ICONS.growth, color: Colors.warning },
   { key: 'anchors', label: 'Anchors', Icon: STAT_ICONS.anchor, color: Colors.calm },
   { key: 'matrix', label: 'Matrix', Icon: LinkIcon, color: Colors.depth },
+  { key: 'key', label: 'Your Key', Icon: CompassIcon, color: Colors.overlapPurple ?? Colors.secondary },
   { key: 'field', label: 'Your Field', Icon: SparkleIcon, color: Colors.accentGold },
 ];
 
@@ -1048,6 +1050,9 @@ export default function PortraitScreen() {
           )}
           {activeTab === 'matrix' && (
             <MatrixTab allScores={allScoresMap} portrait={portrait} />
+          )}
+          {activeTab === 'key' && (
+            <TenderMatrix allScores={allScoresMap} portrait={portrait} />
           )}
           {activeTab === 'field' && (
             <YourFieldTab compositeScores={portrait.compositeScores} />

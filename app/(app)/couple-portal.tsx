@@ -128,7 +128,7 @@ const TABS: CoupleTabDef[] = [
   { key: 'overview',    label: 'Overview',    Icon: HeartPulseIcon, color: Colors.couplePartnerA },
   { key: 'dance',       label: 'Your Dance',  Icon: LightningIcon,  color: Colors.couplePartnerB },
   { key: 'together',    label: 'Together',    Icon: LinkIcon,        color: Colors.calm },
-  { key: 'matrix',      label: 'Our Matrix', Icon: CompassIcon,     color: Colors.overlapPurple },
+  { key: 'matrix',      label: 'Our Key',    Icon: CompassIcon,     color: Colors.overlapPurple },
   { key: 'assessments', label: 'Assessments', Icon: CompassIcon,     color: Colors.depth },
   { key: 'insights',    label: 'Insights',    Icon: SparkleIcon,     color: Colors.accent },
   { key: 'growth',      label: 'Growth',      Icon: SeedlingIcon,    color: Colors.warning },

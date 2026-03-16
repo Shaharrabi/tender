@@ -1,12 +1,10 @@
 /**
- * MatrixTab V2 — Evolved from the original assessment-matrix tab.
+ * MatrixTab — Attachment matrix with explore mode, connections, and profile.
  *
- * Default view: TenderMatrix — the integrated relational overview.
- * Sub-segments: Overview (TenderMatrix) | Explore | Connections | Profile
+ * This is the ATTACHMENT-focused matrix tab (ECR-R scatter plot).
+ * The integrated cross-assessment overview lives in its own tab: "Your Key".
  *
- * The TenderMatrix replaces the old attachment-only matrix as the
- * primary view, providing cross-instrument narratives organized by
- * relational architecture rather than individual assessments.
+ * Sub-segments: Attachment | Connections | Profile
  */
 
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
@@ -19,7 +17,6 @@ import {
   Shadows,
 } from '@/constants/theme';
 import { LockIcon } from '@/assets/graphics/icons';
-import TenderMatrix from '@/components/matrix/TenderMatrix';
 import { AttachmentMatrix } from '@/components/visualizations/AttachmentMatrix';
 import { ExploreMode } from '@/components/visualizations/ExploreMode';
 import { ConnectionMap } from '@/components/visualizations/ConnectionMap';
@@ -40,8 +37,7 @@ import type { ECRRScores, AttachmentStyle } from '@/types';
 type Segment = 'overview' | 'explore' | 'connections' | 'profile';
 
 const SEGMENTS: { key: Segment; label: string; minAssessments: number }[] = [
-  { key: 'overview', label: 'Overview', minAssessments: 1 },
-  { key: 'explore', label: 'Explore', minAssessments: 1 },
+  { key: 'overview', label: 'Attachment', minAssessments: 1 },
   { key: 'connections', label: 'Connections', minAssessments: 2 },
   { key: 'profile', label: 'Profile', minAssessments: 3 },
 ];
@@ -249,13 +245,8 @@ export default function MatrixTab({ allScores, portrait }: MatrixTabProps) {
         })}
       </View>
 
-      {/* ═══ OVERVIEW — TenderMatrix ═══ */}
-      {activeSegment === 'overview' && portrait && (
-        <TenderMatrix allScores={allScores} portrait={portrait} />
-      )}
-
-      {/* ═══ EXPLORE — Attachment scatter plot + explore mode ═══ */}
-      {activeSegment === 'explore' && ecrScores && (
+      {/* ═══ OVERVIEW — Attachment scatter plot + explore mode ═══ */}
+      {(activeSegment === 'overview' || activeSegment === 'explore') && ecrScores && (
         <View style={styles.segmentContent}>
           {interpretation && (
             <View style={styles.styleHeader}>
