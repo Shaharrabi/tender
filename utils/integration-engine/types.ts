@@ -19,24 +19,68 @@ export type DomainId =
 /** The depth of the integration — how many domains are woven together */
 export type IntegrationDepth = 'pairwise' | 'triple' | 'quad';
 
-/** The developmental arc: protection → cost → emergence */
+/** The six viewpoint lenses — same data, six different doors */
+export type LensType = 'therapeutic' | 'soulful' | 'practical' | 'developmental' | 'relational' | 'simple';
+
+/** All six lens narratives for a single integration */
+export interface LensedNarrative {
+  therapeutic: string;     // Clinical warmth — EFT, IFS, Gottman, ACT, DBT, Polyvagal
+  soulful: string;         // The WEARE voice — embodied, cultural, whole, field-aware, spiral
+  practical: string;       // Direct action, no theory — "do this, this week"
+  developmental: string;   // Erikson + Kegan + spiral dynamics framing
+  relational: string;      // What your partner experiences
+  simple: string;          // 2-4 lines, distilled essence
+}
+
+/** Lens display metadata */
+export const LENS_META: Record<LensType, { label: string; subtitle: string }> = {
+  therapeutic: { label: 'Therapeutic', subtitle: 'What the research sees' },
+  soulful: { label: 'Soulful', subtitle: 'What the field sees' },
+  practical: { label: 'Practical', subtitle: 'What to do this week' },
+  developmental: { label: 'Developmental', subtitle: 'Where you are on the journey' },
+  relational: { label: 'Relational', subtitle: "What your partner experiences" },
+  simple: { label: 'Simple', subtitle: 'In one breath' },
+};
+
+/** The developmental arc: wound → protection → cost → emergence */
 export interface DevelopmentalArc {
-  protection: string;   // What you built to stay safe
-  cost: string;         // What that protection costs in relationships
-  emergence: string;    // What wants to happen if you can hold the tension
+  wound?: string;         // Where this began — in the body, in the family, in the culture
+  protection: string;     // What you built to stay safe
+  cost: string;           // What that protection costs in relationships
+  emergence: string;      // What wants to happen if you can hold the tension
+}
+
+/** Enhanced practice with structured metadata */
+export interface MatchedPractice {
+  name: string;
+  instruction: string;       // 3-5 sentences, step by step
+  whyThisOne: string;        // 1 sentence connecting to the combination
+  linkedExerciseId?: string; // e.g., "eft_hold_me_tight"
+  frequency: string;         // "Once this week" / "Daily for 5 minutes" / etc.
+  modality?: string;         // e.g., "EFT", "ACT", "Gottman"
 }
 
 /** Full integration result for display */
 export interface IntegrationResult {
   title: string;                // e.g., "When Reach Meets Read"
   subtitle: string;             // e.g., "Your attachment × emotional intelligence"
-  body: string;                 // 2-3 paragraphs about the intersection
-  arc: DevelopmentalArc;        // Protection → Cost → Emergence
-  practice: string;             // A specific exercise for this intersection
+  body: string;                 // 2-3 paragraphs (legacy single-voice fallback)
+  arc: DevelopmentalArc;        // Wound → Protection → Cost → Emergence
+  practice: string;             // Legacy single-string practice
   oneThing: string | null;      // Distilled one-line invitation (optional)
   depth: IntegrationDepth;
   domains: DomainId[];          // Which domains are involved
   confidence: 'high' | 'emerging' | 'low';
+
+  // ─── Enhanced Lens System (optional — present when Tier 1/2 pattern matches) ───
+  patternId?: string;                          // e.g., 'invisible_partner'
+  patternName?: string;                        // e.g., 'The Invisible Partner'
+  lenses?: LensedNarrative;                    // All six lens narratives
+  matchedPractice?: MatchedPractice;           // Structured practice
+  invitation?: string;                         // The "one invitation" — large type, the screenshot moment
+  evidenceLevel?: 'strong' | 'moderate' | 'theoretical';
+  keyCitations?: string[];                     // e.g., ["Bazyari et al., 2024"]
+  evidenceNote?: string;                       // Shown when user taps "What's this based on?"
 }
 
 /** Raw assessment scores passed to integration functions */

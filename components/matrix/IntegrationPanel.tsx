@@ -2,18 +2,24 @@
  * IntegrationPanel — Shows the integration result when 2-4 domains
  * are selected in "Integrate" mode.
  *
- * Displays: title, body text, developmental arc (protection → cost → emergence),
- * practice, and optional "one thing" sentence.
+ * Enhanced with the 6-lens system:
+ *   Lens picker → Lensed narrative → Developmental arc → Practice → Invitation
  *
- * Appears with a slide-in animation below the domain selection area.
+ * When a Tier 1/2 pattern matches, shows full lens experience.
+ * Falls back to legacy single-voice body for existing pairwise/triple/quad results.
  */
 
-import React, { useRef, useEffect } from 'react';
-import { View, StyleSheet, Animated, LayoutAnimation, Platform, UIManager } from 'react-native';
+import React, { useRef, useEffect, useState } from 'react';
+import {
+  View, StyleSheet, Animated, LayoutAnimation, Platform, UIManager,
+  TouchableOpacity,
+} from 'react-native';
 import TenderText from '@/components/ui/TenderText';
 import { Colors, Spacing, BorderRadius, Shadows, FontFamilies } from '@/constants/theme';
 import { MATRIX_COLORS } from './constants/matrix-colors';
-import type { IntegrationResult } from '@/utils/integration-engine';
+import LensPicker from './LensPicker';
+import type { IntegrationResult, LensType } from '@/utils/integration-engine';
+import { LENS_META } from '@/utils/integration-engine';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -26,6 +32,8 @@ interface IntegrationPanelProps {
 
 export default function IntegrationPanel({ result, visible }: IntegrationPanelProps) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const [activeLens, setActiveLens] = useState<LensType>('soulful');
+  const [showEvidence, setShowEvidence] = useState(false);
 
   useEffect(() => {
     if (visible && result) {
@@ -40,17 +48,39 @@ export default function IntegrationPanel({ result, visible }: IntegrationPanelPr
     }
   }, [visible, result?.title]);
 
+  // Reset lens when result changes
+  useEffect(() => {
+    setActiveLens('soulful');
+    setShowEvidence(false);
+  }, [result?.title]);
+
   if (!visible || !result) return null;
 
-  // Pick a warm accent color based on the first domain
+  const hasLenses = !!result.lenses;
   const domainColor = result.domains[0]
     ? MATRIX_COLORS[result.domains[0] as keyof typeof MATRIX_COLORS]
     : MATRIX_COLORS.invitation;
+
+  // Get the active narrative text
+  const narrativeText = hasLenses
+    ? result.lenses![activeLens]
+    : result.body;
+
+  // Get enhanced practice if available
+  const practice = result.matchedPractice;
+  const invitation = result.invitation || result.oneThing;
 
   return (
     <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
       {/* Header */}
       <View style={styles.header}>
+        {result.patternName && (
+          <View style={[styles.patternBadge, { backgroundColor: domainColor.bg }]}>
+            <TenderText variant="caption" style={[styles.patternBadgeText, { color: domainColor.text }]}>
+              {result.patternName}
+            </TenderText>
+          </View>
+        )}
         <View style={[styles.depthBadge, { backgroundColor: domainColor.bg }]}>
           <TenderText variant="caption" style={[styles.depthText, { color: domainColor.text }]}>
             {result.depth === 'pairwise' ? '2 domains' : result.depth === 'triple' ? '3 domains' : '4 domains'}
@@ -76,12 +106,35 @@ export default function IntegrationPanel({ result, visible }: IntegrationPanelPr
         {result.subtitle}
       </TenderText>
 
-      {/* Body */}
-      <TenderText variant="body" style={styles.body}>{result.body}</TenderText>
+      {/* Lens Picker — only when lenses available */}
+      {hasLenses && (
+        <View style={styles.lensPickerContainer}>
+          <LensPicker activeLens={activeLens} onLensChange={setActiveLens} />
+          <TenderText variant="caption" style={styles.lensSubtitle}>
+            {LENS_META[activeLens].subtitle}
+          </TenderText>
+        </View>
+      )}
 
-      {/* Developmental Arc */}
+      {/* Narrative Body */}
+      <TenderText variant="body" style={styles.body}>{narrativeText}</TenderText>
+
+      {/* Developmental Arc — enhanced with optional wound */}
       <View style={styles.arcContainer}>
         <TenderText variant="caption" style={styles.arcLabel}>DEVELOPMENTAL ARC</TenderText>
+
+        {result.arc.wound && (
+          <>
+            <View style={styles.arcStep}>
+              <View style={[styles.arcDot, { backgroundColor: '#9B7B8B' }]} />
+              <View style={styles.arcContent}>
+                <TenderText variant="caption" style={styles.arcStepLabel}>Wound</TenderText>
+                <TenderText variant="body" style={styles.arcText}>{result.arc.wound}</TenderText>
+              </View>
+            </View>
+            <View style={styles.arcConnector} />
+          </>
+        )}
 
         <View style={styles.arcStep}>
           <View style={[styles.arcDot, { backgroundColor: '#C4917A' }]} />
@@ -112,18 +165,88 @@ export default function IntegrationPanel({ result, visible }: IntegrationPanelPr
         </View>
       </View>
 
-      {/* Practice */}
+      {/* Enhanced Practice Card */}
       <View style={styles.practiceContainer}>
-        <TenderText variant="caption" style={styles.practiceLabel}>THIS WEEK'S PRACTICE</TenderText>
-        <TenderText variant="body" style={styles.practiceText}>{result.practice}</TenderText>
+        {practice ? (
+          <>
+            <View style={styles.practiceHeader}>
+              <TenderText variant="caption" style={styles.practiceLabel}>THIS WEEK'S PRACTICE</TenderText>
+              {practice.modality && (
+                <TenderText variant="caption" style={styles.practiceModality}>
+                  {practice.modality}
+                </TenderText>
+              )}
+            </View>
+            <TenderText variant="body" style={styles.practiceName}>{practice.name}</TenderText>
+            <TenderText variant="body" style={styles.practiceText}>{practice.instruction}</TenderText>
+            <View style={styles.practiceFooter}>
+              <TenderText variant="caption" style={styles.practiceFrequency}>
+                {practice.frequency}
+              </TenderText>
+            </View>
+          </>
+        ) : (
+          <>
+            <TenderText variant="caption" style={styles.practiceLabel}>THIS WEEK'S PRACTICE</TenderText>
+            <TenderText variant="body" style={styles.practiceText}>{result.practice}</TenderText>
+          </>
+        )}
       </View>
 
-      {/* One Thing */}
-      {result.oneThing && (
-        <View style={styles.oneThingContainer}>
-          <TenderText variant="body" style={styles.oneThingText}>
-            {result.oneThing}
+      {/* Invitation — the screenshot moment */}
+      {invitation && (
+        <View style={styles.invitationContainer}>
+          <TenderText variant="body" style={styles.invitationText}>
+            {invitation}
           </TenderText>
+        </View>
+      )}
+
+      {/* Evidence footer — tap to expand */}
+      {result.evidenceLevel && (
+        <TouchableOpacity
+          style={styles.evidenceToggle}
+          onPress={() => setShowEvidence(!showEvidence)}
+          activeOpacity={0.7}
+        >
+          <TenderText variant="caption" style={styles.evidenceToggleText}>
+            {showEvidence ? 'Hide evidence' : "What's this based on?"}
+          </TenderText>
+        </TouchableOpacity>
+      )}
+
+      {showEvidence && result.evidenceLevel && (
+        <View style={styles.evidenceContainer}>
+          <View style={styles.evidenceLevelRow}>
+            <View style={[styles.evidenceLevelBadge, {
+              backgroundColor: result.evidenceLevel === 'strong' ? '#E3EFE5'
+                : result.evidenceLevel === 'moderate' ? '#FDF3E0' : '#F0EBF5',
+            }]}>
+              <TenderText variant="caption" style={{
+                fontSize: 10,
+                textTransform: 'uppercase',
+                letterSpacing: 1,
+                color: result.evidenceLevel === 'strong' ? '#4A6F50'
+                  : result.evidenceLevel === 'moderate' ? '#8B6914' : '#5A4A7A',
+              }}>
+                {result.evidenceLevel} evidence
+              </TenderText>
+            </View>
+          </View>
+          {result.keyCitations && result.keyCitations.length > 0 && (
+            <View style={styles.citationsContainer}>
+              {result.keyCitations.map((citation, i) => (
+                <TenderText key={i} variant="caption" style={styles.citationText}>
+                  {citation}
+                </TenderText>
+              ))}
+            </View>
+          )}
+          {result.evidenceNote && (
+            <TenderText variant="caption" style={styles.evidenceNote}>
+              {result.evidenceNote}
+            </TenderText>
+          )}
         </View>
       )}
     </Animated.View>
@@ -144,6 +267,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.sm,
     marginBottom: Spacing.md,
+    flexWrap: 'wrap',
+  },
+  patternBadge: {
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 3,
+    borderRadius: BorderRadius.sm,
+  },
+  patternBadgeText: {
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    fontFamily: FontFamilies.heading,
   },
   depthBadge: {
     paddingHorizontal: Spacing.sm,
@@ -169,7 +304,17 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 12,
     fontStyle: 'italic',
+    marginBottom: Spacing.sm,
+  },
+  lensPickerContainer: {
     marginBottom: Spacing.md,
+  },
+  lensSubtitle: {
+    fontSize: 11,
+    fontStyle: 'italic',
+    color: Colors.textMuted,
+    marginTop: 4,
+    marginLeft: 2,
   },
   body: {
     fontSize: 14,
@@ -233,31 +378,104 @@ const styles = StyleSheet.create({
     borderLeftColor: '#D4B96A',
     marginBottom: Spacing.md,
   },
+  practiceHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.xs,
+  },
   practiceLabel: {
     fontSize: 10,
     textTransform: 'uppercase',
     letterSpacing: 1.5,
     color: Colors.textMuted,
-    marginBottom: Spacing.xs,
     fontFamily: FontFamilies.heading,
+  },
+  practiceModality: {
+    fontSize: 9,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    color: Colors.textMuted,
+    backgroundColor: Colors.background,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  practiceName: {
+    fontSize: 14,
+    fontFamily: FontFamilies.heading,
+    color: Colors.text,
+    marginBottom: 6,
   },
   practiceText: {
     fontSize: 13,
     lineHeight: 20,
     color: Colors.text,
   },
-  oneThingContainer: {
+  practiceFooter: {
+    marginTop: Spacing.sm,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: Colors.borderLight,
+    paddingTop: Spacing.xs,
+  },
+  practiceFrequency: {
+    fontSize: 11,
+    fontFamily: FontFamilies.heading,
+    color: Colors.textSecondary,
+    fontStyle: 'italic',
+  },
+  invitationContainer: {
     alignItems: 'center',
-    paddingVertical: Spacing.md,
+    paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.md,
+    marginTop: Spacing.sm,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: Colors.borderLight,
   },
-  oneThingText: {
-    fontSize: 15,
+  invitationText: {
+    fontSize: 17,
     fontFamily: FontFamilies.heading,
     color: Colors.text,
     textAlign: 'center',
     fontStyle: 'italic',
-    lineHeight: 22,
+    lineHeight: 26,
+  },
+  evidenceToggle: {
+    alignItems: 'center',
+    paddingVertical: Spacing.sm,
+  },
+  evidenceToggleText: {
+    fontSize: 11,
+    color: Colors.textMuted,
+    textDecorationLine: 'underline',
+  },
+  evidenceContainer: {
+    backgroundColor: Colors.background,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    marginTop: Spacing.xs,
+  },
+  evidenceLevelRow: {
+    flexDirection: 'row',
+    marginBottom: Spacing.sm,
+  },
+  evidenceLevelBadge: {
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 3,
+    borderRadius: BorderRadius.sm,
+  },
+  citationsContainer: {
+    gap: 4,
+  },
+  citationText: {
+    fontSize: 11,
+    color: Colors.textSecondary,
+    fontStyle: 'italic',
+  },
+  evidenceNote: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    marginTop: Spacing.sm,
+    lineHeight: 18,
   },
 });

@@ -49,7 +49,8 @@ export async function checkCanGeneratePortrait(
   const { data } = await supabase
     .from('assessments')
     .select('type')
-    .eq('user_id', userId);
+    .eq('user_id', userId)
+    .eq('is_current', true);
 
   const completed = new Set((data ?? []).map((a: { type: string }) => a.type));
   const missing = REQUIRED_ASSESSMENTS.filter((t) => !completed.has(t));
@@ -73,19 +74,21 @@ export async function fetchSharedScores(
   return fetchAllScores(userId, validTypes);
 }
 
-/** Fetch the most recent scores for each of the 6 assessments (or a filtered subset). */
+/** Fetch the current scores for each of the 6 assessments (or a filtered subset). */
 export async function fetchAllScores(userId: string, typeFilter?: string[]) {
   const types = typeFilter ?? REQUIRED_ASSESSMENTS;
   const { data, error } = await supabase
     .from('assessments')
     .select('id, type, scores')
     .eq('user_id', userId)
+    .eq('is_current', true)
     .in('type', types)
     .order('completed_at', { ascending: false });
 
   if (error) throw error;
 
-  // Take the most recent per type
+  // Take the most recent per type (is_current filter should give us one per type,
+  // but belt-and-suspenders in case of race conditions)
   const latest: Record<string, { id: string; scores: any }> = {};
   for (const row of data ?? []) {
     if (!latest[row.type]) {
@@ -127,36 +130,29 @@ export function extractSupplementScores(
 }
 
 /**
- * Fetch the second-most-recent scores for each of the 6 assessments.
+ * Fetch the most recent non-current (archived) scores for each of the 6 assessments.
  * Returns null if the user hasn't taken any assessment more than once.
  * Used by ReassessmentDelta to show before/after comparison.
+ *
+ * With the is_current flag, archived rows are is_current=false.
+ * We fetch ALL rows ordered by completed_at desc and pick the first
+ * non-current row per type.
  */
 export async function fetchPreviousScores(userId: string): Promise<Record<string, { id: string; scores: any }> | null> {
   const { data, error } = await supabase
     .from('assessments')
-    .select('id, type, scores, completed_at')
+    .select('id, type, scores, completed_at, is_current')
     .eq('user_id', userId)
     .in('type', REQUIRED_ASSESSMENTS)
     .order('completed_at', { ascending: false });
 
   if (error || !data) return null;
 
-  // Group by type, take the second entry (index 1) for each
-  const byType: Record<string, { id: string; scores: any }[]> = {};
-  for (const row of data) {
-    if (!byType[row.type]) byType[row.type] = [];
-    byType[row.type].push({ id: row.id, scores: row.scores });
-  }
-
-  // Check if at least one assessment type has been taken more than once
-  const hasRetakes = Object.values(byType).some((entries) => entries.length >= 2);
-  if (!hasRetakes) return null;
-
-  // Return the second-most-recent per type (or the only one if only taken once)
+  // Find the most recent archived (non-current) row per type
   const previous: Record<string, { id: string; scores: any }> = {};
-  for (const [type, entries] of Object.entries(byType)) {
-    if (entries.length >= 2) {
-      previous[type] = entries[1]; // second most recent
+  for (const row of data) {
+    if (row.is_current === false && !previous[row.type]) {
+      previous[row.type] = { id: row.id, scores: row.scores };
     }
   }
 

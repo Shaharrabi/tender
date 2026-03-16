@@ -617,17 +617,18 @@ export default function TenderAssessmentScreen() {
         return;
       }
 
-      // Remove any previous record for this assessment type (handles retakes
-      // and avoids duplicate-key failures on the insert)
-      const { error: deleteError } = await supabase
+      // Mark any previous records for this assessment type as non-current
+      // (preserves history for longitudinal analysis instead of deleting)
+      const { error: archiveError } = await supabase
         .from('assessments')
-        .delete()
+        .update({ is_current: false })
         .eq('user_id', user.id)
-        .eq('type', currentConfig.type);
+        .eq('type', currentConfig.type)
+        .eq('is_current', true);
 
-      if (deleteError) {
-        console.error('[Assessment] Delete failed:', deleteError.message, deleteError.code);
-        const msg = `Failed to save: ${deleteError.message}. Please try again.`;
+      if (archiveError) {
+        console.error('[Assessment] Archive failed:', archiveError.message, archiveError.code);
+        const msg = `Failed to save: ${archiveError.message}. Please try again.`;
         typeof window !== 'undefined' ? window.alert(msg) : Alert.alert('Error', msg);
         setSubmittingSection(false);
         return;
@@ -651,6 +652,7 @@ export default function TenderAssessmentScreen() {
         scores,
         completed_at: new Date().toISOString(),
         instrument_version: INSTRUMENT_VERSIONS[currentConfig.type] ?? null,
+        is_current: true,
       });
 
       if (error) {

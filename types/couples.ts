@@ -446,6 +446,8 @@ export interface RelationalFieldLayer {
   bottleneckLabel: string;
   movement: string;
   fieldNarrative: string;
+  /** True when values are estimated from dyadic scores, not from a real WEARE profile. */
+  isEstimated?: boolean;
 }
 
 // ── Deep Couple Portrait ────────────────────────────────

@@ -13,7 +13,7 @@ import { generateBigFiveReframes } from './big-five-reframes';
 import { buildTailoringContext } from './attachment-tailoring';
 import { generateIntegratedNarratives } from './assessment-synthesis';
 import type { AllAssessmentScores, IndividualPortrait } from '@/types';
-import type { SupplementScores } from '@/types/portrait';
+import type { SupplementScores, ScoreProvenance } from '@/types/portrait';
 
 /**
  * Current portrait generation code version.
@@ -111,6 +111,31 @@ export function generatePortrait(
   // Step 8: Cross-instrument integrated narratives
   const integrated = generateIntegratedNarratives(scores);
 
+  // Build provenance map — tells the UI what kind of data each output is
+  const provenanceMap: Record<string, ScoreProvenance> = {
+    // Composite scores are derived from multiple instruments
+    regulationScore: { type: 'derived_composite', label: 'Derived from IPIP, SSEIT, and DSI-R scores' },
+    windowWidth: { type: 'derived_composite', label: 'Derived from IPIP, DSI-R, and SSEIT scores' },
+    accessibility: { type: 'derived_composite', label: 'Derived from ECR-R and DSI-R scores' },
+    responsiveness: { type: 'derived_composite', label: 'Derived from SSEIT and IPIP scores' },
+    engagement: { type: 'derived_composite', label: 'Derived from ECR-R, IPIP, Values, and SSEIT scores' },
+    selfLeadership: { type: 'derived_composite', label: 'Derived from DSI-R and IPIP scores' },
+    valuesCongruence: { type: 'derived_composite', label: 'Derived from Values assessment gap scores' },
+    attachmentSecurity: { type: 'derived_composite', label: 'Derived from ECR-R anxiety and avoidance' },
+    emotionalIntelligence: { type: 'derived_composite', label: 'Derived from SSEIT total score' },
+    differentiation: { type: 'derived_composite', label: 'Derived from DSI-R subscale scores' },
+    conflictFlexibility: { type: 'derived_composite', label: 'Derived from DUTCH conflict mode balance' },
+    relationalAwareness: { type: 'derived_composite', label: 'Derived from SSEIT and IPIP scores' },
+    // Raw subscales
+    anxietyNorm: { type: 'raw_assessment', label: 'ECR-R anxiety subscale (normalized)' },
+    avoidanceNorm: { type: 'raw_assessment', label: 'ECR-R avoidance subscale (normalized)' },
+    // Narratives
+    integratedNarratives: { type: 'interpretive', label: 'Cross-instrument narrative synthesis' },
+    oneThingSentence: { type: 'interpretive', label: 'Pattern-based interpretive summary' },
+    fourLens: { type: 'interpretive', label: 'Assessment-driven interpretive analysis' },
+    growthEdges: { type: 'interpretive', label: 'Identified from score patterns and gaps' },
+  };
+
   return {
     userId,
     assessmentIds,
@@ -128,5 +153,7 @@ export function generatePortrait(
     // Portrait Intelligence Upgrade
     integratedNarratives: integrated.narratives.length > 0 ? integrated.narratives : undefined,
     oneThingSentence: integrated.oneThingSentence,
+    // Provenance — tells UI what kind of data each output is
+    provenanceMap,
   };
 }
