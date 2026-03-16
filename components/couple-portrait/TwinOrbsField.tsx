@@ -131,6 +131,13 @@ export default function TwinOrbsField({ field, partnerAName, partnerBName }: Twi
       {/* Qualitative Label */}
       <Text style={styles.qualitativeLabel}>{field.qualitativeLabel}</Text>
 
+      {/* Estimated badge — shown when field is derived from dyadic scores, not real WEARE */}
+      {field.isEstimated && (
+        <View style={styles.estimatedBadge}>
+          <Text style={styles.estimatedBadgeText}>Estimated from satisfaction data</Text>
+        </View>
+      )}
+
       {/* Field Narrative */}
       {field.fieldNarrative ? (
         <Text style={styles.fieldNarrative}>{field.fieldNarrative}</Text>
@@ -184,6 +191,19 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     marginTop: Spacing.md,
     textAlign: 'center',
+  },
+  estimatedBadge: {
+    backgroundColor: Colors.surfaceElevated,
+    borderRadius: 12,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 3,
+    marginTop: Spacing.xs,
+  },
+  estimatedBadgeText: {
+    ...Typography.caption,
+    color: Colors.textMuted,
+    fontSize: 10,
+    fontStyle: 'italic',
   },
   fieldNarrative: {
     ...Typography.body,

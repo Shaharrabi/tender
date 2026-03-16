@@ -145,7 +145,7 @@ serve(async (req: Request) => {
     // stream flag — client requests streaming via Accept header or body param
     const acceptHeader = req.headers.get('Accept') || '';
     const body = await req.json();
-    const { sessionId, message, userId, coupleMode, coupleId } = body;
+    const { sessionId, message, userId, coupleMode, coupleId, idempotencyKey } = body;
     const clientWantsStream = acceptHeader.includes('text/event-stream') || body.stream === true;
 
     if (!sessionId || !message || !userId) {
@@ -484,6 +484,7 @@ serve(async (req: Request) => {
     }
 
     // Save user message immediately (before streaming starts)
+    // Uses idempotency_key (unique index) to prevent duplicate inserts on retry
     const userMsgInsert: any = {
       session_id: sessionId,
       role: 'user',
@@ -493,11 +494,23 @@ serve(async (req: Request) => {
         safetyTriggered: !safetyResult.safe,
         safetyCategory: safetyResult.category || null,
       },
+      ...(idempotencyKey ? { idempotency_key: idempotencyKey } : {}),
     };
     if (coupleMode && coupleId) {
       userMsgInsert.user_id = userId;
     }
-    await supabase.from(messageTable).insert(userMsgInsert);
+    const { error: userMsgError } = await supabase.from(messageTable).insert(userMsgInsert);
+
+    // If insert failed due to idempotency key conflict, this is a retry —
+    // the message was already saved. Skip the duplicate, proceed to AI call.
+    if (userMsgError) {
+      const isDuplicate = userMsgError.code === '23505' && idempotencyKey;
+      if (!isDuplicate) {
+        console.error('[chat] Failed to save user message:', userMsgError.message);
+      } else {
+        console.log('[chat] Duplicate message detected (idempotency key), skipping insert');
+      }
+    }
 
     // ─── Call Claude API ────────────────────────────────────
     console.log('[chat] Client wants stream:', clientWantsStream);

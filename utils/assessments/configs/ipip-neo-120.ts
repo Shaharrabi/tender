@@ -204,15 +204,19 @@ const QUESTIONS: GenericQuestion[] = [
   { id: 60, text: 'Make rash decisions.', inputType: 'likert', subscale: 'C6_cautiousness', reverseScored: true },
 ];
 
-// ─── Percentile via logistic CDF ─────────────────────────────
+// ─── Relative score via logistic CDF ─────────────────────────
+// NOTE: These are NOT true normative percentiles derived from population
+// norms. They use a logistic transform over the theoretical score range.
+// Useful for within-person patterning and cross-domain comparison, but
+// should not be presented as "your percentile rank vs. the population."
 
-function toPercentile(sum: number, min: number, max: number): number {
+function toRelativeScore(sum: number, min: number, max: number): number {
   const range = max - min;
   const midpoint = min + range / 2;
   const sd = range / 6;
   const z = (sum - midpoint) / sd;
-  const percentile = Math.round((1 / (1 + Math.exp(-1.7 * z))) * 100);
-  return Math.max(1, Math.min(99, percentile));
+  const score = Math.round((1 / (1 + Math.exp(-1.7 * z))) * 100);
+  return Math.max(1, Math.min(99, score));
 }
 
 // ─── Scoring ─────────────────────────────────────────────────
@@ -233,7 +237,7 @@ function scoreIPIP(responses: (number | string | string[] | null)[]): IPIPScores
       sum,
       mean: Math.round((sum / 2) * 100) / 100,
     };
-    facetPercentiles[facet.key] = toPercentile(sum, 2, 10);
+    facetPercentiles[facet.key] = toRelativeScore(sum, 2, 10);
   }
 
   // Domain scores (12 items each)
@@ -246,7 +250,7 @@ function scoreIPIP(responses: (number | string | string[] | null)[]): IPIPScores
       sum,
       mean: Math.round((sum / 12) * 100) / 100,
     };
-    domainPercentiles[domain] = toPercentile(sum, 12, 60);
+    domainPercentiles[domain] = toRelativeScore(sum, 12, 60);
   }
 
   return { domainScores, domainPercentiles, facetScores, facetPercentiles };

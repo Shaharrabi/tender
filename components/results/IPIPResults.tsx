@@ -83,7 +83,7 @@ export default function IPIPResults({ scores }: Props) {
                     />
                   </View>
                   <Text style={[styles.percentileText, { color }]}>
-                    {percentile}th — {label}
+                    {percentile} — {label}
                   </Text>
                 </View>
                 <Text style={styles.domainDesc}>
@@ -112,7 +112,7 @@ export default function IPIPResults({ scores }: Props) {
                         <View style={styles.facetLabelRow}>
                           <Text style={styles.facetLabel}>{facet.label}</Text>
                           <Text style={styles.facetValue}>
-                            {fp}th — {fl}
+                            {fp} — {fl}
                           </Text>
                         </View>
                         <View style={styles.facetBarBg}>

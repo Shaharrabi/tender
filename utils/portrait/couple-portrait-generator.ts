@@ -59,10 +59,11 @@ function buildRelationalFieldLayer(
       bottleneckLabel: weareProfile.bottleneck?.label || '',
       movement: weareProfile.movementPhase,
       fieldNarrative: weareProfile.movementNarrative || buildDefaultFieldNarrative(weareProfile),
+      isEstimated: false,
     };
   }
 
-  // Fallback: build from dyadic scores
+  // Fallback: build from dyadic scores (estimated, not true WEARE)
   const hasData = dyadicScores && (dyadicScores.rdas || dyadicScores.dci || dyadicScores.csi16);
   if (!hasData) {
     return {
@@ -74,6 +75,7 @@ function buildRelationalFieldLayer(
       bottleneckLabel: '',
       movement: 'recognition',
       fieldNarrative: 'The relational field data is still being collected. What we have so far gives us a starting picture — the full picture will emerge as you continue.',
+      isEstimated: true,
     };
   }
 
@@ -110,6 +112,7 @@ function buildRelationalFieldLayer(
     bottleneckLabel: '',
     movement: 'recognition',
     fieldNarrative: narrative || 'The relational field is present and measurable. As more data comes in, the picture will sharpen.',
+    isEstimated: true,
   };
 }
 

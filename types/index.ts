@@ -167,11 +167,16 @@ export interface DSIRScores {
 }
 
 // ─── IPIP-NEO-120 Scores ─────────────────────────────────
+// IMPORTANT: "Percentiles" here are relative scores (logistic transform
+// over theoretical range), NOT true normative percentiles from population
+// data. Property names are kept for backward compat with stored JSONB.
 
 export interface IPIPScores {
   domainScores: Record<string, { sum: number; mean: number }>;
+  /** Relative scores (0-100) — NOT true population percentiles. See note above. */
   domainPercentiles: Record<string, number>;
   facetScores: Record<string, { sum: number; mean: number }>;
+  /** Relative scores (0-100) — NOT true population percentiles. See note above. */
   facetPercentiles: Record<string, number>;
 }
 

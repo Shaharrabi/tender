@@ -24,7 +24,7 @@ export function calculateCompositeScores(
   // ── Normalize ECR-R (1-7 → 0-100) ──
   const avoidanceNorm = ((ecrr.avoidanceScore - 1) / 6) * 100;
 
-  // ── IPIP percentiles (already 0-100) ──
+  // ── IPIP relative scores (0-100, logistic transform — NOT true population percentiles) ──
   const neuroPct = ipip.domainPercentiles.neuroticism;
   const extraPct = ipip.domainPercentiles.extraversion;
   const openPct = ipip.domainPercentiles.openness;

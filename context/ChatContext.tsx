@@ -212,6 +212,9 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
     // Client-side state detection
     const stateResult = detectState(text);
 
+    // Generate idempotency key to prevent duplicate messages on retry
+    const idempotencyKey = `${session.id}-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+
     // Optimistically add user message to UI
     const tempUserMsg: ChatMessage = {
       id: `temp-${Date.now()}`,
@@ -312,6 +315,7 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
             sessionId: session.id,
             message: text,
             userId: user!.id,
+            idempotencyKey,
             ...(supportsStreaming ? { stream: true } : {}),
             ...(coupleModeRef.current && coupleIdRef.current ? {
               coupleMode: true,
@@ -357,6 +361,7 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
                   sessionId: session.id,
                   message: text,
                   userId: user!.id,
+                  idempotencyKey,
                   ...(supportsStreaming ? { stream: true } : {}),
                   ...(coupleModeRef.current && coupleIdRef.current ? {
                     coupleMode: true,

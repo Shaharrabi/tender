@@ -4,7 +4,7 @@
  */
 
 import { supabase } from './supabase';
-import { initializeSharingDefaults } from './consent';
+// initializeSharingDefaults is now handled inside the accept_couple_invite RPC
 import { assertNotGuest } from '@/utils/security/guest-guard';
 import type {
   CoupleInvite,
@@ -132,67 +132,29 @@ export async function getMyInvites(userId: string): Promise<CoupleInvite[]> {
 
 export async function acceptInvite(inviteId: string, acceptorId: string): Promise<Couple | null> {
   assertNotGuest(acceptorId, 'accept_partner_invite');
-  // 1. Update the invite
-  const { data: invite, error: invError } = await supabase
-    .from('couple_invites')
-    .update({
-      status: 'accepted',
-      accepted_by: acceptorId,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', inviteId)
-    .eq('status', 'pending')
-    .select()
-    .maybeSingle();
 
-  if (invError || !invite) {
-    console.error('[Couples] Failed to accept invite:', invError);
+  // Use atomic RPC — all steps (invite update, couple creation, profile
+  // updates, sharing defaults) happen in a single database transaction.
+  // If any step fails, everything rolls back cleanly.
+  const { data, error } = await supabase.rpc('accept_couple_invite', {
+    p_invite_id: inviteId,
+    p_acceptor_id: acceptorId,
+  });
+
+  if (error) {
+    console.error('[Couples] Atomic accept failed:', error.message);
     return null;
   }
 
-  // 2. Create the couple record
-  const { data: couple, error: coupleError } = await supabase
-    .from('couples')
-    .insert({
-      partner_a_id: invite.inviter_id,
-      partner_b_id: acceptorId,
-      invite_id: inviteId,
-    })
-    .select()
-    .single();
-
-  if (coupleError) {
-    console.error('[Couples] Failed to create couple:', coupleError);
-    // Rollback invite
-    await supabase
-      .from('couple_invites')
-      .update({ status: 'pending', accepted_by: null })
-      .eq('id', inviteId);
-    return null;
-  }
-
-  // 3. Update both partners' relationship_mode to 'real_partner'
-  //    (acceptor can update their own; inviter's update may be limited by RLS
-  //    but we attempt it — it will succeed if they have a profile row)
-  const now = new Date().toISOString();
-  await supabase
-    .from('user_profiles')
-    .update({ relationship_mode: 'real_partner', updated_at: now })
-    .eq('user_id', acceptorId);
-
-  await supabase
-    .from('user_profiles')
-    .update({ relationship_mode: 'real_partner', updated_at: now })
-    .eq('user_id', invite.inviter_id);
-
-  // 4. Initialize sharing defaults (all assessments private by default)
-  try {
-    await initializeSharingDefaults(acceptorId, couple.id);
-  } catch (e) {
-    console.warn('[Couples] Failed to initialize sharing defaults:', e);
-  }
-
-  return couple as Couple;
+  // RPC returns a JSONB object with couple fields
+  const result = data as any;
+  return {
+    id: result.couple_id,
+    partner_a_id: result.partner_a_id,
+    partner_b_id: result.partner_b_id,
+    status: result.status || 'active',
+    created_at: result.created_at,
+  } as Couple;
 }
 
 export async function declineInvite(inviteId: string): Promise<boolean> {

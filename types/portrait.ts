@@ -232,6 +232,26 @@ export interface SupplementScores {
   values?: import('../utils/assessments/supplements/values-supplement').ValuesSupplementScores;
 }
 
+// ─── Score Provenance ────────────────────────────────────
+// Classifies each output so the UI can label it honestly.
+//
+//   raw_assessment   — Direct instrument score (e.g. ECR-R anxiety mean)
+//   derived_composite — Weighted blend of multiple instruments (e.g. Regulation Score)
+//   interpretive      — Narrative text generated from score patterns
+//   growth_adjusted   — Display value with growth boost layered on top
+
+export type ScoreProvenanceType =
+  | 'raw_assessment'
+  | 'derived_composite'
+  | 'interpretive'
+  | 'growth_adjusted';
+
+export interface ScoreProvenance {
+  type: ScoreProvenanceType;
+  /** Human-readable explanation shown in info tooltips */
+  label: string;
+}
+
 // ─── Individual Portrait ─────────────────────────────────
 
 export interface IndividualPortrait {
@@ -253,6 +273,8 @@ export interface IndividualPortrait {
   // Portrait Intelligence Upgrade — cross-instrument narratives
   integratedNarratives?: string[];
   oneThingSentence?: string;
+  // Provenance map — tells the UI what kind of data each output is
+  provenanceMap?: Record<string, ScoreProvenance>;
 }
 
 // ─── Helper: All assessment scores grouped ───────────────
