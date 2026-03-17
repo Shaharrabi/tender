@@ -19,6 +19,8 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 // ─── CORS — restrict to your domains only ────────────
 const PRODUCTION_ORIGINS = [
   'https://tender-science.netlify.app',
+  'https://tenderrelationship.com',
+  'https://www.tenderrelationship.com',
 ];
 
 function isAllowedOrigin(origin: string): boolean {
