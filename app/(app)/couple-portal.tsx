@@ -894,6 +894,7 @@ function CouplePortalScreen() {
               partner1Name={nameA}
               partner2Name={nameB}
               weareData={weare}
+              dyadicScores={dyadicScores}
             />
           </View>
         );
@@ -1987,6 +1988,7 @@ function CouplePortalScreen() {
           partner1Name={nameA}
           partner2Name={nameB}
           weareData={weare}
+          dyadicScores={dyadicScores}
         />
       </View>
     );

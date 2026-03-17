@@ -115,7 +115,6 @@ import TenderMatrix from '@/components/matrix/TenderMatrix';
 import AudioLibrary from '@/components/audio/AudioLibrary';
 import PortraitHistoryChart from '@/components/portrait/PortraitHistoryChart';
 import {
-  IllustrationPortraitAttachment,
   IllustrationPortraitRadar,
   IllustrationAttachAnxious,
   IllustrationAttachDismissive,
@@ -1190,11 +1189,6 @@ function OverviewTab({
           compositeScores={cs}
           onSeeDetails={() => onNavigate('scores')}
         />
-      </View>
-
-      {/* Portrait Illustration */}
-      <View style={{ alignItems: 'center', marginBottom: Spacing.md }}>
-        <IllustrationPortraitAttachment width={Math.min(SCREEN_WIDTH - 48, 340)} animated={true} />
       </View>
 
       {/* Portrait Digest — 60 second summary */}

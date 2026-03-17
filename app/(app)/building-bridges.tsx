@@ -1054,6 +1054,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: Spacing.md,
+    paddingBottom: 120,
   },
   playingActions: {
     alignItems: 'center',
@@ -1105,7 +1106,7 @@ const styles = StyleSheet.create({
   // Reflecting view
   reflectingContent: {
     padding: Spacing.md,
-    paddingBottom: Spacing.scrollPadBottom,
+    paddingBottom: 200,
   },
   reflectTitle: {
     fontFamily: FontFamilies.heading,
@@ -1177,7 +1178,7 @@ const styles = StyleSheet.create({
   // Complete view
   completeContent: {
     padding: Spacing.md,
-    paddingBottom: Spacing.scrollPadBottom,
+    paddingBottom: 200,
     alignItems: 'center',
   },
   completeInner: {

@@ -57,6 +57,11 @@ interface PartnerScores {
   values?: any;
 }
 
+interface DyadicScoresPair {
+  partnerA: any | null;
+  partnerB: any | null;
+}
+
 interface CoupleMatrixProps {
   partner1: PartnerScores;
   partner2: PartnerScores;
@@ -75,6 +80,11 @@ interface CoupleMatrixProps {
     presenceAttunement?: number;
     emergentOrientation?: number;
   };
+  dyadicScores?: {
+    rdas: DyadicScoresPair;
+    dci: DyadicScoresPair;
+    csi16: DyadicScoresPair;
+  } | null;
 }
 
 /** Tier 3 couple arc — four universal steps shown as a visual flow */
@@ -331,6 +341,7 @@ export default function CoupleMatrix({
   partner2Name = 'Partner',
   weareData,
   rfasData,
+  dyadicScores,
 }: CoupleMatrixProps) {
   const [expandedDomain, setExpandedDomain] = useState<string | null>(null);
   const [activeLens, setActiveLens] = useState<LensType>('soulful');
@@ -584,8 +595,138 @@ export default function CoupleMatrix({
       });
     }
 
+    // ─── COUPLE ASSESSMENTS (RDAS, CSI-16, DCI) ─────────
+    // These show real data if completed, or placeholder rows if not.
+
+    const hasRDAS = dyadicScores?.rdas?.partnerA && dyadicScores?.rdas?.partnerB;
+    const hasCSI = dyadicScores?.csi16?.partnerA && dyadicScores?.csi16?.partnerB;
+    const hasDCI = dyadicScores?.dci?.partnerA && dyadicScores?.dci?.partnerB;
+
+    // DOMAIN 8: Relationship Satisfaction (CSI-16)
+    if (hasCSI) {
+      const csiA = dyadicScores!.csi16.partnerA;
+      const csiB = dyadicScores!.csi16.partnerB;
+      result.push({
+        id: 'satisfaction',
+        title: 'How satisfied you each feel',
+        color: 'foundation',
+        confidence: 'high',
+        partner1Cells: [
+          { label: 'Satisfaction', value: `${csiA.total ?? '\u2014'}` },
+          { label: 'Level', value: csiA.satisfactionLevel ?? '\u2014' },
+        ],
+        partner2Cells: [
+          { label: 'Satisfaction', value: `${csiB.total ?? '\u2014'}` },
+          { label: 'Level', value: csiB.satisfactionLevel ?? '\u2014' },
+        ],
+        centerLabel: csiA.distressed || csiB.distressed ? 'Needs care' : 'Thriving',
+        narrative: `Your satisfaction scores reveal how each of you experiences the relationship right now. ${aName} scores ${csiA.total} and ${bName} scores ${csiB.total}. ${csiA.distressed || csiB.distressed ? 'One or both of you may be feeling strain \u2014 this is an invitation to tend to the space between you.' : 'You both feel a sense of warmth and contentment in the relationship.'}`,
+        instruments: ['CSI-16'],
+      });
+    } else {
+      result.push({
+        id: 'satisfaction',
+        title: 'How satisfied you each feel',
+        color: 'foundation',
+        confidence: 'low',
+        partner1Cells: [
+          { label: 'Satisfaction', value: '\u2014' },
+          { label: 'Level', value: '\u2014' },
+        ],
+        partner2Cells: [
+          { label: 'Satisfaction', value: '\u2014' },
+          { label: 'Level', value: '\u2014' },
+        ],
+        centerLabel: 'Awaiting',
+        narrative: 'Complete the Couples Satisfaction Index (CSI-16) together to see how satisfied each of you feels in the relationship. This unlocks insights about your shared contentment and areas that may need tending.',
+        instruments: ['CSI-16'],
+      });
+    }
+
+    // DOMAIN 9: Dyadic Adjustment (RDAS)
+    if (hasRDAS) {
+      const rdA = dyadicScores!.rdas.partnerA;
+      const rdB = dyadicScores!.rdas.partnerB;
+      result.push({
+        id: 'adjustment',
+        title: 'How well you adjust together',
+        color: 'compass',
+        confidence: 'high',
+        partner1Cells: [
+          { label: 'Total', value: `${rdA.total ?? '\u2014'}` },
+          { label: 'Consensus', value: `${rdA.consensus ?? '\u2014'}` },
+        ],
+        partner2Cells: [
+          { label: 'Total', value: `${rdB.total ?? '\u2014'}` },
+          { label: 'Consensus', value: `${rdB.consensus ?? '\u2014'}` },
+        ],
+        centerLabel: rdA.distressLevel === 'low' && rdB.distressLevel === 'low' ? 'Well-adjusted' : 'Growing',
+        narrative: `The Revised Dyadic Adjustment Scale maps how you navigate consensus, satisfaction, and cohesion as a couple. ${aName} scores ${rdA.total} overall while ${bName} scores ${rdB.total}. ${rdA.distressLevel !== 'low' || rdB.distressLevel !== 'low' ? 'Some areas show room for growth \u2014 which is completely normal and healthy.' : 'You show strong alignment across the key dimensions of partnership.'}`,
+        instruments: ['RDAS'],
+      });
+    } else {
+      result.push({
+        id: 'adjustment',
+        title: 'How well you adjust together',
+        color: 'compass',
+        confidence: 'low',
+        partner1Cells: [
+          { label: 'Total', value: '\u2014' },
+          { label: 'Consensus', value: '\u2014' },
+        ],
+        partner2Cells: [
+          { label: 'Total', value: '\u2014' },
+          { label: 'Consensus', value: '\u2014' },
+        ],
+        centerLabel: 'Awaiting',
+        narrative: 'Complete the Revised Dyadic Adjustment Scale (RDAS) together to see how you navigate consensus, satisfaction, and cohesion as a couple. This assessment reveals the structural health of your partnership.',
+        instruments: ['RDAS'],
+      });
+    }
+
+    // DOMAIN 10: Dyadic Coping (DCI)
+    if (hasDCI) {
+      const dcA = dyadicScores!.dci.partnerA;
+      const dcB = dyadicScores!.dci.partnerB;
+      result.push({
+        id: 'coping',
+        title: 'How you cope with stress together',
+        color: 'navigation',
+        confidence: 'high',
+        partner1Cells: [
+          { label: 'Supportive', value: `${dcA.supportiveBySelf ?? '\u2014'}` },
+          { label: 'Stress comm.', value: `${dcA.stressCommunicationBySelf ?? '\u2014'}` },
+        ],
+        partner2Cells: [
+          { label: 'Supportive', value: `${dcB.supportiveBySelf ?? '\u2014'}` },
+          { label: 'Stress comm.', value: `${dcB.stressCommunicationBySelf ?? '\u2014'}` },
+        ],
+        centerLabel: (dcA.totalPositive ?? 0) > 3 && (dcB.totalPositive ?? 0) > 3 ? 'Strong team' : 'Building',
+        narrative: `The Dyadic Coping Inventory reveals how you support each other under stress. ${aName}'s supportive coping is ${dcA.supportiveBySelf ?? 'unknown'} while ${bName}'s is ${dcB.supportiveBySelf ?? 'unknown'}. ${(dcA.negativeBySelf ?? 0) > 2.5 || (dcB.negativeBySelf ?? 0) > 2.5 ? 'Watch for negative coping patterns \u2014 they can erode trust over time.' : 'Your coping patterns show care and mutual support.'}`,
+        instruments: ['DCI'],
+      });
+    } else {
+      result.push({
+        id: 'coping',
+        title: 'How you cope with stress together',
+        color: 'navigation',
+        confidence: 'low',
+        partner1Cells: [
+          { label: 'Supportive', value: '\u2014' },
+          { label: 'Stress comm.', value: '\u2014' },
+        ],
+        partner2Cells: [
+          { label: 'Supportive', value: '\u2014' },
+          { label: 'Stress comm.', value: '\u2014' },
+        ],
+        centerLabel: 'Awaiting',
+        narrative: 'Complete the Dyadic Coping Inventory (DCI) together to understand how you support each other under stress. This reveals your shared coping strengths and blind spots.',
+        instruments: ['DCI'],
+      });
+    }
+
     return result;
-  }, [partner1, partner2, partner1Name, partner2Name, weareData, rfasData]);
+  }, [partner1, partner2, partner1Name, partner2Name, weareData, rfasData, dyadicScores]);
 
   // Couple invitation
   const invitation = useMemo(() => {
