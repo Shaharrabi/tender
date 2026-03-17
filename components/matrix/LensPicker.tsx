@@ -70,7 +70,7 @@ export default function LensPicker({ activeLens, onLensChange }: LensPickerProps
                 { color: isActive ? '#FFFFFF' : colors.text },
               ]}
             >
-              {meta.label}
+              {meta.emoji} {meta.label}
             </TenderText>
           </TouchableOpacity>
         );

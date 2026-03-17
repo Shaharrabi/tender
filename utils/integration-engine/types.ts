@@ -33,13 +33,13 @@ export interface LensedNarrative {
 }
 
 /** Lens display metadata */
-export const LENS_META: Record<LensType, { label: string; subtitle: string }> = {
-  therapeutic: { label: 'Therapeutic', subtitle: 'What the research sees' },
-  soulful: { label: 'Soulful', subtitle: 'What the field sees' },
-  practical: { label: 'Practical', subtitle: 'What to do this week' },
-  developmental: { label: 'Developmental', subtitle: 'Where you are on the journey' },
-  relational: { label: 'Relational', subtitle: "What your partner experiences" },
-  simple: { label: 'Simple', subtitle: 'In one breath' },
+export const LENS_META: Record<LensType, { label: string; subtitle: string; emoji: string }> = {
+  therapeutic: { label: 'Therapeutic', subtitle: 'What the research sees', emoji: '🧠' },
+  soulful: { label: 'Soulful', subtitle: 'What the field sees', emoji: '🔮' },
+  practical: { label: 'Practical', subtitle: 'What to do this week', emoji: '🔧' },
+  developmental: { label: 'Developmental', subtitle: 'Where you are on the journey', emoji: '📈' },
+  relational: { label: 'Relational', subtitle: "What your partner experiences", emoji: '💑' },
+  simple: { label: 'Simple', subtitle: 'In one breath', emoji: '💡' },
 };
 
 /** The developmental arc: wound → protection → cost → emergence */
