@@ -36,7 +36,7 @@
  * See: utils/steps/intervention-protocols.ts for the protocol engine.
  */
 
-import type { HealingStep, HealingPhase } from '@/types/growth';
+import type { HealingStep, HealingPhase, IntegrationInsight } from '@/types/growth';
 import { Colors } from '@/constants/theme';
 import type { ComponentType } from 'react';
 import type { IconProps } from '@/assets/graphics/icons';
@@ -180,6 +180,26 @@ export const TWELVE_STEPS: HealingStep[] = [
     partnerRoundPrompt: 'What made you decide to try this?',
     togetherPractices: ['stress-reducing-conversation'],
     courseGatewayIds: ['mc-attachment-101'],
+    integrationInsights: [
+      {
+        domains: ['foundation', 'navigation'],
+        title: 'When Your Alarm System Meets Your Radar',
+        insight: 'Your attachment style is essentially your nervous system\'s alarm system — it decides what feels dangerous before you even think about it. Your emotional intelligence is the radar that picks up signals from your partner. When anxious attachment meets low emotional perception, you feel the alarm but can\'t read the signal clearly, so you escalate. When avoidant attachment meets high emotional perception, you actually sense everything — you just learned to shut the alarm off. As Sue Johnson writes, "The drama of love is all about this dance of seeking and finding emotional connection." Understanding which alarm-radar combination you carry is the first step to seeing your pattern without shame.',
+        microPractice: 'This week: When you feel the alarm go off (heart racing, stomach tightening, jaw clenching), pause and ask yourself: "What signal am I actually picking up from my partner right now?" Write down the alarm and the signal separately.',
+      },
+      {
+        domains: ['foundation', 'conflict', 'stance'],
+        title: 'The Attachment-Conflict Cascade',
+        insight: 'Here is something most couples never realize: your conflict style is not a personality trait — it is your attachment system\'s battle strategy. The person who accommodates learned that their needs were dangerous to express. The person who dominates learned that vulnerability was never safe. Gottman\'s research shows that 69% of couple conflicts are perpetual — they never get "solved." But they become gridlocked only when attachment insecurity turns disagreement into a threat to the bond itself. Your differentiation level determines whether you can stay present in that threat or whether you fuse with your partner\'s emotions or cut off entirely.',
+        microPractice: 'This week: During a disagreement, notice which comes first — the conflict behavior (withdrawing, criticizing, accommodating) or the attachment fear (abandonment, engulfment, inadequacy). Name it silently: "There\'s my fear of ___ driving my move to ___."',
+      },
+      {
+        domains: ['instrument', 'field'],
+        title: 'Your Personality as a Lens on the Field',
+        insight: 'Jung wrote, "Until you make the unconscious conscious, it will direct your life and you will call it fate." Your Big Five personality traits are the lens through which you perceive the relational field — the living space between you and your partner. High neuroticism narrows the lens, making threats seem larger and safety seem smaller. High agreeableness can blur the lens, making you see harmony where there is actually suppression. Low openness can freeze the lens, preventing you from seeing new possibilities in old patterns. The field between you is always transmitting — but your personality determines what you receive.',
+        microPractice: 'This week: Ask yourself, "Is the field actually tense right now, or is my personality amplifying something small?" Check with your partner: "How are you experiencing the space between us right now?"',
+      },
+    ],
   },
   {
     stepNumber: 2,
@@ -214,6 +234,32 @@ export const TWELVE_STEPS: HealingStep[] = [
     partnerRoundPrompt: 'When do you feel the space between us is warm? When does it feel cold?',
     togetherPractices: ['turning-toward', 'love-maps'],
     courseGatewayIds: ['mc-bids-connection'],
+    integrationInsights: [
+      {
+        domains: ['field', 'foundation', 'navigation'],
+        title: 'The Field Is Real — Your Nervous Systems Prove It',
+        insight: 'Polyvagal theory reveals something couples intuitively know but rarely articulate: your nervous systems are in constant dialogue, beneath words, beneath conscious awareness. Stephen Porges calls this "neuroception" — your body\'s below-awareness detection of safety or danger. The relational field is not a metaphor; it is the real-time co-regulation happening between two nervous systems. When your attachment system is secure, you broadcast safety signals that your partner\'s vagus nerve picks up. When it is activated, you broadcast threat — and your partner\'s emotional intelligence determines whether they can read that broadcast accurately or whether they misinterpret your fear as hostility.',
+        microPractice: 'This week: Sit facing your partner for two minutes in silence. Notice what your body does — does it settle or tighten? That is the field speaking through your nervous system. Share what you noticed afterward.',
+      },
+      {
+        domains: ['compass', 'field'],
+        title: 'Values as the Field\'s North Star',
+        insight: 'Rumi wrote, "Out beyond ideas of wrongdoing and rightdoing, there is a field. I\'ll meet you there." The relational field becomes trustworthy when both partners orient toward shared values rather than individual rightness. ACT therapy teaches that values are not goals you achieve but directions you walk toward. When a couple discovers that they share a deep value — say, honesty or growth — the field gains a kind of gravitational center. Conflicts stop being battles about who is right and become collaborative navigations: "We both value honesty. How do we live that together right now, even though we see this situation differently?"',
+        microPractice: 'This week: Name one value you believe you share with your partner. Ask them to name one they believe you share. See where you overlap — and where the surprise is.',
+      },
+      {
+        domains: ['instrument', 'foundation'],
+        title: 'Why Your Partner\'s Personality Feels Like a Threat (And Isn\'t)',
+        insight: 'Here is a pattern that derails millions of couples: you mistake your partner\'s personality for a relational wound. Their introversion feels like withdrawal. Their conscientiousness feels like criticism. Their openness feels like instability. But as James Hillman argued, "The soul doesn\'t want to be fixed — it wants to be seen." Your partner\'s Big Five traits are not strategies designed to hurt you. They are the instrument through which their soul expresses itself. When your attachment system is activated, you cannot see their personality clearly — you see only the threat. Trusting the field means learning to see your partner\'s instrument as music, not noise.',
+        microPractice: 'This week: Identify one personality trait of your partner\'s that triggers your attachment alarm. Reframe it: "Their [trait] is not about me. It is how they are built. What would it mean to appreciate this instead of fear it?"',
+      },
+      {
+        domains: ['stance', 'field'],
+        title: 'Differentiation: The Paradox of "We"',
+        insight: 'David Schnarch wrote that differentiation is "your ability to maintain your sense of self when you are emotionally or physically close to others — especially as they become increasingly important to you." Here is the paradox of the relational field: you can only trust the "we" to the degree that you can hold onto your "I" within it. Undifferentiated partners do not actually merge — they oscillate between fusion and emotional cutoff, never truly meeting. The field comes alive not when two people become one, but when two distinct selves choose to remain present to each other. That is what makes the space between you sacred rather than suffocating.',
+        microPractice: 'This week: Notice one moment where you lost yourself in your partner\'s emotional state (fusion) or one moment where you cut off to protect yourself (cutoff). What would "staying you while staying close" have looked like instead?',
+      },
+    ],
   },
   {
     stepNumber: 3,
@@ -247,6 +293,26 @@ export const TWELVE_STEPS: HealingStep[] = [
     partnerRoundPrompt: 'What\'s a story you\'ve told yourself about me that might not be the whole picture?',
     togetherPractices: ['unified-detachment', 'externalizing-the-problem'],
     courseGatewayIds: ['mc-act-defusion'],
+    integrationInsights: [
+      {
+        domains: ['instrument', 'navigation', 'stance'],
+        title: 'The Certainty Trap: How Personality Hardens Stories',
+        insight: 'Low openness in the Big Five creates a cognitive style that favors certainty — familiar interpretations feel safe, novel perspectives feel threatening. When this combines with low emotional perception (not reading your partner\'s actual emotional state), you end up responding to the story you wrote about your partner rather than the person in front of you. Pema Chodron teaches that "the root of suffering is resisting the certainty that no matter what the circumstances, uncertainty is all we really have." Differentiation is what allows you to hold your story lightly enough to let your partner surprise you. Without it, you will always prefer the comfort of your narrative over the discomfort of their reality.',
+        microPractice: 'This week: Catch yourself telling a story about your partner\'s motivation ("They did that because they don\'t care"). Replace it with a question: "I noticed you did X. What was going on for you?" Listen to the answer as if hearing them for the first time.',
+      },
+      {
+        domains: ['foundation', 'conflict'],
+        title: 'Attachment Stories Become Conflict Scripts',
+        insight: 'Your attachment style writes a script for conflict before the conflict even begins. Anxious attachment writes: "They will leave, so I must escalate to be heard." Avoidant attachment writes: "They will overwhelm me, so I must withdraw to survive." These scripts become self-fulfilling prophecies — the anxious partner\'s escalation triggers the avoidant partner\'s withdrawal, which confirms the anxious partner\'s fear. Gottman calls this "absorbing state" — a conflict pattern so powerful it overrides all other relational data. Releasing certainty means recognizing that your conflict script was written by a younger version of you who needed protection. The question is whether that script still serves the relationship you are trying to build now.',
+        microPractice: 'This week: Before your next disagreement, write down what you expect will happen. After, compare your prediction with what actually happened. Where was the script accurate? Where was it wrong?',
+      },
+      {
+        domains: ['compass', 'stance'],
+        title: 'When Values Become Weapons',
+        insight: 'There is a shadow side to values that few therapists name directly: values can become certainty traps. "I value honesty" can become "I have the right to say anything I want, regardless of impact." "I value loyalty" can become "You must never disagree with me." Jung called this enantiodromia — the tendency of any principle, taken to its extreme, to flip into its opposite. Your differentiation level determines whether you can hold your values as living, breathing orientations or whether they calcify into rigid rules you use to judge your partner. As Brene Brown writes, "Clear is kind. Unclear is unkind." But certainty is not clarity — it is the refusal to stay in the discomfort of not knowing.',
+        microPractice: 'This week: Identify one value you hold strongly. Ask yourself: "Have I ever used this value as a weapon? Have I ever used it to end a conversation instead of opening one?" Share your reflection with your partner.',
+      },
+    ],
   },
   {
     stepNumber: 4,
@@ -281,6 +347,32 @@ export const TWELVE_STEPS: HealingStep[] = [
     partnerRoundPrompt: 'What\'s one move I make in our conflicts that I know doesn\'t help?',
     togetherPractices: ['recognize-cycle', 'protest-polka'],
     courseGatewayIds: ['mc-regulation'],
+    integrationInsights: [
+      {
+        domains: ['foundation', 'stance', 'navigation'],
+        title: 'The Parts Beneath the Pattern',
+        insight: 'IFS therapy reveals that what looks like "your part in the problem" is actually a constellation of protective parts, each with its own logic. Your attachment style determines which protectors show up first — anxious attachment activates the Pursuer, who floods with emotion to maintain connection; avoidant attachment activates the Firefighter, who numbs or distracts to escape overwhelm. Your emotional intelligence determines whether you can even detect these parts before they take over. As Richard Schwartz writes, "There are no bad parts." Your protectors developed in response to real threats. The work of this step is not to silence them but to understand what they are protecting — and to discover the exiled vulnerability underneath.',
+        microPractice: 'This week: When you notice yourself doing "your thing" in a conflict, pause and ask internally: "Which part just took over? What is it protecting? What is it afraid will happen if it stops?" Write a brief letter to that part, thanking it for its service.',
+      },
+      {
+        domains: ['instrument', 'conflict'],
+        title: 'Your Personality\'s Shadow in Conflict',
+        insight: 'Jung taught that the shadow is not evil — it is simply the part of yourself you have refused to see. Your Big Five profile creates both your gifts and your shadows. High agreeableness shadows into conflict avoidance and resentment that builds silently. High conscientiousness shadows into rigidity and contempt for your partner\'s "messiness." Low neuroticism shadows into emotional dismissiveness — "I don\'t see why you\'re so upset." Your conflict style is often the behavioral expression of your personality\'s shadow. The person who accommodates may be living in the shadow of their agreeableness. The person who dominates may be living in the shadow of their low agreeableness. Examining your part means examining which personality gifts have become relational liabilities.',
+        microPractice: 'This week: Name your top personality strength. Then ask: "What is the shadow of this strength? How does it show up when I am stressed or threatened in my relationship?" Ask your partner if they recognize this shadow.',
+      },
+      {
+        domains: ['navigation', 'compass', 'field'],
+        title: 'Emotional Inheritance and Value Wounds',
+        insight: 'The values you hold most fiercely often point to your deepest emotional wounds. Someone who is passionate about fairness may have been treated unfairly as a child. Someone who insists on independence may have been controlled. Your emotional intelligence in this area — your ability to use emotions as information — is what determines whether you recognize the wound driving the value or whether you simply feel righteous. As James Hillman wrote, "The wound is the place where the Light enters you." In the relational field, examining your part means seeing how your values-driven reactions create impact on your partner that you never intended. Your emotional inheritance is not your fault. But it is your responsibility.',
+        microPractice: 'This week: Choose your most deeply held value. Trace it backward: "When did I first learn this value mattered? What happened that made it essential?" Share the origin story with your partner.',
+      },
+      {
+        domains: ['conflict', 'foundation'],
+        title: 'The Horseman You Ride Without Knowing',
+        insight: 'Gottman identified four conflict behaviors that predict relationship failure with 93% accuracy: criticism, contempt, defensiveness, and stonewalling. But here is what most people miss — each horseman maps directly to an attachment strategy. Criticism is the anxious partner\'s attempt to be heard when bids have been missed too many times. Stonewalling is the avoidant partner\'s nervous system shutting down under emotional flooding. Defensiveness is the disorganized partner\'s attempt to manage contradictory impulses to approach and flee simultaneously. Contempt — the most destructive — emerges when attachment wounds have calcified into resentment over time. Knowing your horseman is knowing your attachment system\'s emergency broadcast.',
+        microPractice: 'This week: Identify your primary horseman. Then trace it to its attachment root: "I criticize because I am afraid of ___. I stonewall because I am overwhelmed by ___." Share this with your partner as a vulnerability, not a justification.',
+      },
+    ],
   },
   {
     stepNumber: 5,
@@ -314,6 +406,26 @@ export const TWELVE_STEPS: HealingStep[] = [
     partnerRoundPrompt: 'What\'s something true that I\'ve been afraid to tell you?',
     togetherPractices: ['hold-me-tight', 'bonding-through-vulnerability'],
     courseGatewayIds: ['mc-seen'],
+    integrationInsights: [
+      {
+        domains: ['foundation', 'navigation', 'field'],
+        title: 'Vulnerability Is a Nervous System Event',
+        insight: 'When Sue Johnson describes the "Hold Me Tight" conversation, she is describing something that happens in the body before it happens in words. Sharing your truth requires your ventral vagal system to be online — the part of your nervous system that enables social engagement, eye contact, and vocal prosody. If you are in sympathetic activation (fight-or-flight) or dorsal vagal shutdown (freeze-collapse), you literally cannot be vulnerable; your neurobiology will not allow it. Your emotional intelligence determines whether you can sense when your partner\'s nervous system is ready to receive your truth. The relational field either holds you or drops you in these moments, and you can feel the difference in your body before either of you speaks a word.',
+        microPractice: 'This week: Before sharing something vulnerable, check in with your body first. Place a hand on your chest. If your heart is racing or your throat is tight, co-regulate first — breathe together, hold hands, make eye contact — before sharing. The body must feel safe before the truth can travel.',
+      },
+      {
+        domains: ['stance', 'foundation'],
+        title: 'The Differentiation Paradox of Disclosure',
+        insight: 'Schnarch identified a profound paradox: true intimacy requires differentiation. You can only share your deepest truth when you can tolerate the possibility that your partner may not respond the way you need. Anxious attachment makes disclosure feel desperate — "If I tell you, you must validate me immediately or I will fall apart." Avoidant attachment makes disclosure feel impossible — "If I show you my insides, you will have too much power over me." The differentiated self can say, as Rilke wrote, "I want to unfold. I don\'t want to stay folded anywhere, because where I am folded, there I am a lie." This is the courage of self-validated intimacy: sharing not because you need your partner to complete you, but because hiding diminishes you.',
+        microPractice: 'This week: Share one truth with your partner that you have been holding back. Before sharing, silently tell yourself: "I am sharing this because it is true and it matters, not because I need a specific response." Notice what shifts when you release the outcome.',
+      },
+      {
+        domains: ['instrument', 'compass'],
+        title: 'What Your Personality Won\'t Let You Say',
+        insight: 'Your Big Five profile creates a truth-telling fingerprint. High agreeableness suppresses truths that might create conflict — you swallow your needs to keep the peace until resentment poisons the well. Low openness suppresses truths that feel too abstract or emotional — "I can\'t put it into words" becomes "It doesn\'t matter." High neuroticism can make every truth feel catastrophic, so you either blurt everything in a flood or say nothing at all. Your values system adds another layer: if you value loyalty, you may silence truths that feel disloyal. If you value strength, you may silence truths that feel weak. As Brene Brown writes, "Vulnerability is not about winning or losing. It\'s having the courage to show up when you can\'t control the outcome."',
+        microPractice: 'This week: Complete this sentence and share it with your partner: "Something true about me that my personality makes hard to say is ___." Notice which part of your personality resisted — was it the peacekeeper, the stoic, the worrier, or the loyalist?',
+      },
+    ],
   },
   {
     stepNumber: 6,
@@ -347,6 +459,26 @@ export const TWELVE_STEPS: HealingStep[] = [
     partnerRoundPrompt: 'What\'s one thing I do that I know triggers you? What do you think I\'m actually trying to communicate underneath it?',
     togetherPractices: ['externalizing-the-problem', 'aftermath-of-fight', 'repair-attempt'],
     courseGatewayIds: ['mc-conflict-repair'],
+    integrationInsights: [
+      {
+        domains: ['foundation', 'navigation', 'conflict'],
+        title: 'The Enemy Story Is an Attachment Fever Dream',
+        insight: 'When your attachment system is fully activated, your partner is no longer a person — they become a threat. Your emotional perception narrows dramatically under stress (what neuroscientists call "amygdala hijack"), and you begin to read neutral expressions as hostile, ambiguous tones as contemptuous, and ordinary human imperfection as deliberate cruelty. Your conflict style then kicks in as the defense strategy against this hallucinated enemy. Sue Johnson calls this "demon dialogue" — the cycle where both partners are fighting phantoms of each other rather than the real person. Releasing the enemy story requires your emotional intelligence to come back online, which only happens when your nervous system drops below the flooding threshold. You cannot think your way out of an enemy story. You must calm your way out.',
+        microPractice: 'This week: When you notice the enemy story activating ("They always..." "They never..."), place both feet on the floor and take five slow breaths. Then ask: "Is this my partner, or is this my attachment system\'s version of my partner?" Wait until the fever breaks before responding.',
+      },
+      {
+        domains: ['instrument', 'stance'],
+        title: 'How Personality Differences Become Character Indictments',
+        insight: 'One of the most destructive things couples do is pathologize personality differences. Your partner\'s introversion becomes "emotional unavailability." Your partner\'s spontaneity becomes "irresponsibility." Your partner\'s sensitivity becomes "being too much." Jung called this projecting the shadow — we reject in our partner the qualities we have rejected in ourselves. A highly conscientious person may carry contempt for their partner\'s flexibility because they secretly long for the permission to be less rigid. A highly open person may dismiss their partner\'s need for structure because they fear what would happen if they slowed down. Differentiation is the capacity to honor your partner\'s instrument without needing it to play your song.',
+        microPractice: 'This week: Name one trait of your partner\'s that irritates you. Then honestly ask: "Is this actually harmful, or is it just different from me? And what would it mean if I let them be different without making it wrong?"',
+      },
+      {
+        domains: ['compass', 'field', 'foundation'],
+        title: 'The Dream Beneath the Gridlock',
+        insight: 'Gottman discovered that behind every perpetual conflict lies an unfulfilled dream — a deeply held value or life aspiration that the partner experiences as being blocked. When you release the enemy story, you begin to see that your partner\'s frustrating position is not stubbornness but the expression of something sacred to them. Their insistence on saving money may carry a childhood dream of security they never had. Their desire for adventure may express a value of aliveness that feels essential to their soul. The relational field transforms when both partners shift from "You are blocking me" to "Tell me about the dream underneath your position." As Rumi writes, "Your task is not to seek for love, but merely to seek and find all the barriers within yourself that you have built against it."',
+        microPractice: 'This week: Choose your most persistent disagreement. Ask your partner: "What is the dream underneath your position? What does this represent for you that goes beyond this specific issue?" Listen without defending your own position.',
+      },
+    ],
   },
   {
     stepNumber: 7,
@@ -380,6 +512,32 @@ export const TWELVE_STEPS: HealingStep[] = [
     partnerRoundPrompt: 'What\'s one small thing I do that makes you feel loved?',
     togetherPractices: ['fondness-admiration', 'rituals-of-connection', 'reassurance-menu', 'little-you-photo-share'],
     courseGatewayIds: ['mc-orientation-pleasure', 'mc-fondness-gratitude'],
+    integrationInsights: [
+      {
+        domains: ['foundation', 'instrument', 'field'],
+        title: 'Rituals That Rewire Your Attachment System',
+        insight: 'Neuroscience has confirmed what contemplatives have known for millennia: repeated practice physically changes the brain. When you establish daily rituals of connection — a six-second kiss, a stress-reducing conversation, a bedtime gratitude exchange — you are literally building new neural pathways that compete with your old attachment programming. Your personality determines which rituals will feel natural and which will require stretch. An introverted partner may thrive with quiet parallel presence; an extraverted partner may need face-to-face verbal connection. Neither is wrong. The field between you strengthens not when you practice the "right" ritual but when you practice consistently in ways that honor both instruments. As the Zen saying goes, "Before enlightenment, chop wood, carry water. After enlightenment, chop wood, carry water."',
+        microPractice: 'This week: Choose one small ritual that honors your personality and one that stretches it. Practice both daily. Notice which feels nourishing and which feels effortful — both are building new wiring.',
+      },
+      {
+        domains: ['compass', 'conflict', 'stance'],
+        title: 'Values-Aligned Practice vs. Avoidance in Disguise',
+        insight: 'There is a trap in relational practice that therapists call "spiritual bypassing" or what ACT calls "experiential avoidance dressed as acceptance." A couple might establish a nightly check-in ritual that actually serves to manage anxiety rather than build connection. An accommodating conflict style can masquerade as "being flexible." A partner who is low in differentiation might practice "turning toward" as a way to fuse rather than connect. The test is simple: does this practice bring you closer to your values, or does it help you avoid discomfort? As Pema Chodron teaches, "The most fundamental aggression to ourselves, the most fundamental harm we can do to ourselves, is to remain ignorant by not having the courage and the respect to look at ourselves honestly and gently." Practice with honesty. Practice with courage. Do not practice to perform.',
+        microPractice: 'This week: Review your current relational practices. For each one, honestly ask: "Am I doing this to connect, or am I doing this to avoid something uncomfortable?" If the answer is avoidance, name what you are avoiding.',
+      },
+      {
+        domains: ['navigation', 'foundation'],
+        title: 'Reading the Bid Behind the Behavior',
+        insight: 'Gottman\'s research on bids for connection reveals that couples who thrive turn toward each other\'s bids 86% of the time, while couples who divorce turn toward only 33% of the time. But here is the integration insight that changes everything: your emotional intelligence determines whether you can even detect a bid, and your attachment style determines whether you interpret it as an invitation or a demand. An avoidantly attached partner with low emotional perception will miss bids entirely — their partner\'s "How was your day?" registers as noise, not as a hand reaching across the gap. An anxiously attached partner with high emotional perception may detect every bid but respond with such intensity that the partner feels overwhelmed rather than met. The practice is not just turning toward — it is learning to calibrate your response to match the bid.',
+        microPractice: 'This week: Track your partner\'s bids for three days. For each one, note: (1) What was the bid? (2) Did I detect it in the moment? (3) How did I respond? (4) What response would have matched the bid\'s actual size and need?',
+      },
+      {
+        domains: ['stance', 'field'],
+        title: 'The Discipline of Showing Up Differentiated',
+        insight: 'Commitment to practice requires a specific kind of psychological muscle: the ability to show up for your partner without losing yourself, day after day, even when it is not reciprocated in the moment. This is differentiation in action — not as a concept but as a daily discipline. Schnarch calls this "holding on to yourself" — maintaining your own emotional center while remaining emotionally available to your partner. The relational field deepens not through grand gestures but through what Rilke called "the love that consists in this: that two solitudes protect and border and greet each other." Your practice is not about becoming your partner\'s emotional caretaker. It is about becoming a steady, differentiated presence that the field can organize around.',
+        microPractice: 'This week: Choose one practice you will do regardless of your partner\'s mood, response, or participation. Do it as an expression of your values, not as a bid for reciprocity. Notice what shifts in you when you practice for its own sake.',
+      },
+    ],
   },
   {
     stepNumber: 8,
@@ -413,6 +571,26 @@ export const TWELVE_STEPS: HealingStep[] = [
     partnerRoundPrompt: 'What\'s one new move you\'re trying to make? How can I support it?',
     togetherPractices: ['turning-toward', 'dreams-within-conflict', 'empathic-joining'],
     courseGatewayIds: ['mc-boundaries', 'mc-boundaries-deep'],
+    integrationInsights: [
+      {
+        domains: ['foundation', 'conflict', 'navigation'],
+        title: 'Why Repair Terrifies Your Attachment System',
+        insight: 'Preparing to repair harm activates the deepest layer of your attachment programming. For the anxiously attached, repair feels urgent — they want to rush in, fix it now, hear "it\'s okay" before the wound has even been fully witnessed. For the avoidantly attached, repair feels like walking into a minefield — acknowledging harm means acknowledging vulnerability, which their system has spent a lifetime defending against. Your emotional intelligence here serves a critical function: it determines whether you can accurately sense your partner\'s readiness for repair or whether you project your own timeline onto them. As Sue Johnson teaches, "Emotional injuries need emotional healing." The preparation is not about scripting the right words. It is about getting your nervous system regulated enough to truly show up for the conversation your partner needs to have.',
+        microPractice: 'This week: Think of one unresolved hurt between you. Without bringing it up yet, journal about it: "What is my attachment system\'s impulse around this repair? Rush in? Avoid? How does my partner\'s readiness actually seem, separate from my own urgency or avoidance?"',
+      },
+      {
+        domains: ['compass', 'stance', 'field'],
+        title: 'The Values Required for Genuine Repair',
+        insight: 'Genuine repair requires a specific constellation of values held in tension: honesty without cruelty, accountability without self-flagellation, empathy without losing your own perspective. Your differentiation level determines whether you can hold this tension or whether you collapse into one pole — all empathy (losing yourself) or all self-protection (losing your partner). The relational field during repair is exquisitely sensitive; both partners can feel whether the repair is genuine or performative. As Brene Brown writes, "Accountability is a prerequisite for meaningful change, but shame is not." The values you bring to repair — courage, humility, patience — are not strategies. They are the bedrock that makes the field safe enough for the wound to finally breathe.',
+        microPractice: 'This week: Name the value that is hardest for you to hold during repair (honesty? humility? patience?). Sit with why it is hard. What does your history tell you about what happened when you practiced that value before?',
+      },
+      {
+        domains: ['instrument', 'conflict'],
+        title: 'Your Personality\'s Repair Signature',
+        insight: 'Your Big Five profile creates a distinctive repair signature — a default way you approach (or avoid) making things right. High agreeableness repairs through accommodation, which can look generous but may skip genuine accountability: "I\'ll just give them what they want." Low agreeableness repairs through problem-solving, which can feel dismissive: "Here\'s how we fix it" before the hurt has been felt. High neuroticism repairs through emotional flooding — the apology becomes about your guilt rather than their pain. High conscientiousness repairs through perfectionism — crafting the "right" apology instead of the real one. DBT teaches that effective repair requires the middle path between emotional mind and reasonable mind. Your personality pulls you toward one side. Knowing your signature means you can consciously move toward what the moment actually requires.',
+        microPractice: 'This week: Recall your last attempt at repair. Which personality trait drove your approach? What would repair look like if you led with the opposite quality — emotional presence instead of logic, or calm accountability instead of emotional overwhelm?',
+      },
+    ],
   },
   {
     stepNumber: 9,
@@ -447,6 +625,26 @@ export const TWELVE_STEPS: HealingStep[] = [
     partnerRoundPrompt: 'What\'s the repair gesture from me that works best for you?',
     togetherPractices: ['aftermath-of-fight', 'hold-me-tight', 'couple-bubble'],
     courseGatewayIds: ['mc-trust-repair', 'mc-lightness-lab'],
+    integrationInsights: [
+      {
+        domains: ['foundation', 'field', 'navigation'],
+        title: 'Trust Rebuilds Through the Nervous System, Not the Mind',
+        insight: 'Cognitive apologies land in the prefrontal cortex, but trust lives in the limbic system and the vagus nerve. This is why your partner can say "I forgive you" and still flinch when you raise your voice — their thinking brain has updated but their nervous system has not. Rebuilding trust is fundamentally a Polyvagal project: you must provide enough repeated experiences of safety that your partner\'s neuroception recalibrates. Your emotional intelligence serves as the feedback loop — can you sense when your partner\'s nervous system is still on guard, even when their words say otherwise? The relational field carries the accumulated weight of every rupture and every repair. Each genuine repair deposits safety. Each broken promise withdraws it. As Sue Johnson says, "Forgiveness is not an event. It is a process — a series of small steps toward renewed trust."',
+        microPractice: 'This week: After a repair conversation, check in with your partner\'s body, not just their words: "I hear you saying it\'s okay. How does your body feel about it — settled or still on guard?" Honor whatever answer comes.',
+      },
+      {
+        domains: ['conflict', 'compass', 'stance'],
+        title: 'From Conflict Style to Repair Style',
+        insight: 'Your DUTCH conflict style predicts not just how you fight but how you repair — or fail to. Accommodators repair by giving in, which creates a false peace that erodes over time. Avoiders repair by pretending it never happened, which leaves the wound untreated. Dominators repair by declaring the solution, which bypasses the partner\'s experience entirely. Compromisers repair by splitting the difference, which can leave both partners partially unseen. Only problem-solving as a repair mode — when combined with differentiation and values-alignment — creates the conditions for genuine resolution. But here is the deeper truth: real repair often requires you to use a conflict style that is not your default. The avoider must stay present. The dominator must yield. The accommodator must hold their ground. Acting to rebuild trust means acting against your conditioning.',
+        microPractice: 'This week: Identify your default repair style. Then deliberately try its opposite in one small moment. If you normally avoid, stay and name the discomfort. If you normally accommodate, state what you actually need. Notice what happens in the field when you show up differently.',
+      },
+      {
+        domains: ['instrument', 'foundation'],
+        title: 'Consistency Is the Language Your Partner\'s Attachment System Speaks',
+        insight: 'Your partner\'s attachment system does not respond to grand gestures — it responds to pattern recognition. One beautiful date night cannot override months of emotional absence. One vulnerable conversation cannot undo a pattern of defensiveness. The research is clear: trust rebuilds through small, consistent, predictable actions over time. Your Big Five personality determines how natural consistency is for you. High conscientiousness makes follow-through easier but can make it feel mechanical. Low conscientiousness makes spontaneity easy but reliability hard. The integration insight is that trust-building is not a personality trait — it is a practice. As Aristotle wrote and psychologists have confirmed: "We are what we repeatedly do. Excellence, then, is not an act but a habit." Your partner does not need you to be perfect. They need you to be predictable in the ways that matter.',
+        microPractice: 'This week: Choose one small trust-building action and do it every single day for seven days. Not something dramatic — something sustainable. A good-morning text. A question about their day. A six-second hug. Consistency over intensity.',
+      },
+    ],
   },
   {
     stepNumber: 10,
@@ -480,6 +678,26 @@ export const TWELVE_STEPS: HealingStep[] = [
     partnerRoundPrompt: 'What small ritual do you want us to never lose?',
     togetherPractices: ['rituals-of-connection', 'stress-reducing-conversation', 'relationship-mission-statement', 'eulogy-exercise'],
     courseGatewayIds: ['mc-values-alignment'],
+    integrationInsights: [
+      {
+        domains: ['foundation', 'navigation', 'field'],
+        title: 'The Setback Is the Teacher',
+        insight: 'Here is what Polyvagal theory teaches about relapse into old patterns: your nervous system has multiple states, and stress, illness, sleep deprivation, or external threat can drop you from ventral vagal (safe and social) back into sympathetic (fight-or-flight) or dorsal vagal (shutdown) in seconds. When this happens, your attachment system reactivates its oldest programming — the anxious partner starts pursuing again, the avoidant partner starts withdrawing again — and it feels like all your growth has evaporated. It has not. Your emotional intelligence is the key difference: you can now detect the shift happening. You can name it: "My nervous system just dropped. I\'m in old programming." The relational field holds a memory of every repair you have made, and that memory is stronger than any single setback. As Pema Chodron writes, "Fail. Fail again. Fail better."',
+        microPractice: 'This week: When you catch yourself in an old pattern, celebrate the catching rather than shaming the slipping. Say to your partner: "I notice I just did my old thing. I\'m coming back." Track how quickly you catch yourself — that speed is the real measure of growth.',
+      },
+      {
+        domains: ['compass', 'stance', 'instrument'],
+        title: 'Values as Your Compass Through the Fog',
+        insight: 'When old patterns resurface, your values system is the compass that keeps you oriented. ACT therapy teaches that values are not destinations but directions — you never "arrive" at kindness or courage; you walk toward them, step by step, forever. Your personality traits determine which values feel accessible under stress and which go offline. High neuroticism can make the value of "calmness" feel unreachable during activation. Low openness can make the value of "growth" feel meaningless when you are scared. Differentiation is what allows you to hold your values even when your emotional weather is stormy — to say, "I am feeling flooded AND I still choose to respond with care." This is what Schnarch calls "the crucible of marriage" — the relationship as a container for becoming the person you most want to be.',
+        microPractice: 'This week: Write your three core relational values on a card and keep it where you will see it daily. When you notice a setback, read the card and ask: "Which value can I practice right now, even imperfectly?"',
+      },
+      {
+        domains: ['conflict', 'foundation', 'field'],
+        title: 'Perpetual Problems as Ongoing Practice',
+        insight: 'Gottman\'s research reveals that 69% of couple conflicts are perpetual — they will never be fully resolved because they arise from fundamental personality differences or core values divergences. This sounds depressing until you realize the reframe: perpetual problems are not evidence of failure. They are the curriculum of your relationship. Your attachment security determines whether you can engage these problems with curiosity or whether each recurrence feels like proof of doom. Your conflict style determines whether you engage productively or destructively. The awareness you are building in this step transforms your perpetual problems from recurring wounds into recurring invitations to practice everything you have learned — regulation, vulnerability, repair, and differentiated presence. As Rilke wrote to a young poet: "Have patience with everything unresolved in your heart and try to love the questions themselves."',
+        microPractice: 'This week: Name your most perpetual problem. Instead of trying to solve it, have a 15-minute "dream within the conflict" conversation about it. The goal is not resolution but understanding. End with: "What did I learn about you today that I did not know before?"',
+      },
+    ],
   },
   {
     stepNumber: 11,
@@ -513,6 +731,26 @@ export const TWELVE_STEPS: HealingStep[] = [
     partnerRoundPrompt: 'What\'s one moment this week where we got it right?',
     togetherPractices: ['stress-reducing-conversation'],
     courseGatewayIds: ['mc-text-between-us'],
+    integrationInsights: [
+      {
+        domains: ['field', 'navigation', 'foundation'],
+        title: 'Listening to the Third Body',
+        insight: 'The poet Robert Bly wrote about "the third body" — the entity that exists between two lovers, composed of neither person alone. This is the relational field in its most alive form: not a metaphor but an emergent property of two nervous systems in sustained, attuned contact. Seeking shared insight means developing the capacity to sense this third body — to ask not just "What do I need?" or "What do you need?" but "What does the relationship need right now?" Your emotional intelligence is the organ of perception for this sensing. Your attachment security determines whether you trust what you sense or dismiss it. Jung called this the "transcendent function" — the capacity to hold opposites until something new emerges that neither person could have created alone. The relational field speaks in feelings, dreams, synchronicities, and recurring themes. Learning to listen to it is the most advanced relational skill there is.',
+        microPractice: 'This week: At the end of each day, sit quietly with your partner and ask: "If our relationship could speak right now, what would it say it needs?" Do not think — sense. Share whatever image, feeling, or word arises, no matter how strange.',
+      },
+      {
+        domains: ['compass', 'stance', 'field'],
+        title: 'Shared Values as Living Architecture',
+        insight: 'By this step, your individual values have been tested, refined, and — if you have done the work — woven into something larger: a shared values architecture that gives the relational field its structure. This is not compromise, where both partners sacrifice. It is integration, where individual values are held within a larger container that honors both. Differentiation makes this possible — you can say "This is deeply important to me AND I can hold it alongside what is deeply important to you." Without differentiation, shared values become either imposed values (one partner dominates) or vague values (both partners accommodate until nothing has substance). As James Hillman wrote, "The soul requires beauty as much as it requires truth." Your shared values architecture should be beautiful — not in an aesthetic sense, but in the sense that it reflects something true and alive about who you are becoming together.',
+        microPractice: 'This week: Together, create a simple "values architecture" for your relationship: name three values you both hold sacred, and for each one, describe one way you currently live it and one way you want to live it more fully.',
+      },
+      {
+        domains: ['instrument', 'conflict', 'compass'],
+        title: 'Your Differences as Complementary Intelligence',
+        insight: 'At this stage of the journey, something extraordinary becomes possible: you can begin to see your personality differences and conflict style differences not as problems to manage but as complementary forms of intelligence. The conscientious partner provides structure; the open partner provides possibility. The agreeable partner holds the peace; the direct partner holds the truth. The avoiding partner provides space; the engaging partner provides presence. As Rilke wrote, "Love consists of this: two solitudes that meet, protect, and greet each other." Your differences are not obstacles to shared insight — they are the very source of it. The relationship\'s wisdom is wider than either partner\'s because it contains both perspectives. Seeking shared insight means learning to harvest the intelligence that lives in the tension between your different ways of seeing.',
+        microPractice: 'This week: Identify one difference between you and your partner that has been a source of conflict. Reframe it together: "Your [quality] and my [quality] are actually complementary in this way: ___." Name one situation where having both perspectives made you stronger as a couple.',
+      },
+    ],
   },
   {
     stepNumber: 12,
@@ -550,6 +788,32 @@ export const TWELVE_STEPS: HealingStep[] = [
       'mc-seen', 'mc-conflict-repair', 'mc-orientation-pleasure', 'mc-fondness-gratitude',
       'mc-boundaries', 'mc-boundaries-deep', 'mc-trust-repair', 'mc-lightness-lab',
       'mc-values-alignment', 'mc-text-between-us',
+    ],
+    integrationInsights: [
+      {
+        domains: ['foundation', 'stance', 'compass'],
+        title: 'The Integrated Self in Love',
+        insight: 'You began this journey with an attachment style that operated on autopilot, a differentiation level that either fused you with your partner or cut you off from them, and values that were clear in theory but muddled under pressure. Jung described individuation as "becoming who you already are" — not inventing a new self but uncovering the one that was always there beneath the defenses. Step 12 is about integration in this Jungian sense: your attachment anxiety or avoidance has not vanished, but you have transcended being driven by it. Your differentiation has grown not by eliminating your need for connection but by holding that need alongside your need for selfhood. Your values have been pressure-tested through every conflict and repair, and the ones that survived are truly yours — not inherited, not performative, but lived. As Rilke wrote, "Perhaps all the dragons in our lives are princesses who are only waiting to see us act, just once, with beauty and courage."',
+        microPractice: 'This week: Write a letter to the person you were at Step 1. What do you know now about your attachment, your stance, and your values that you did not know then? What dragon turned out to be a princess? Share this letter with your partner.',
+      },
+      {
+        domains: ['field', 'navigation', 'instrument'],
+        title: 'From Pattern Recognition to Field Generation',
+        insight: 'The journey from Step 1 to Step 12 mirrors what developmental psychologists call the shift from reactive consciousness to generative consciousness. In the early steps, your emotional intelligence helped you detect patterns. Your personality shaped how you responded to them. Your field awareness told you something was happening between you. Now, in Step 12, these same capacities flip from receptive to creative: you do not just sense the relational field, you actively shape it. You do not just respond to emotions, you generate emotional realities through your presence and practices. As Erikson would frame it, you have moved from Intimacy (the capacity to be in relationship) to Generativity (the capacity to create something through relationship that extends beyond yourselves). Your personality — once a source of friction — has become an instrument of creation. Your emotional intelligence — once a survival tool — has become a way of tending the world. Changed people change the world. Not by preaching but by being.',
+        microPractice: 'This week: Identify one relationship in your wider life — a friend, family member, or colleague — that could benefit from something you have learned in this journey. Without preaching, model one practice you have learned. Let the ripple begin.',
+      },
+      {
+        domains: ['conflict', 'foundation', 'compass'],
+        title: 'The Ongoing Practice of Love',
+        insight: 'Step 12 is not a graduation — it is a commencement. As Pema Chodron teaches, "We think that the point is to pass the test or to overcome the problem, but the truth is that things don\'t really get solved. They come together and they fall apart." Your conflict skills, attachment security, and values alignment will all be tested again — by stress, by change, by the ordinary erosion of daily life. The difference is that now you have a map — your map, built from your own data, your own patterns, your own growth. When the old cycle returns (and it will), you will not be starting from zero. You will catch it earlier, name it faster, and return to connection with less shame and more speed. That acceleration is the transformation. Love, as the philosopher Erich Fromm wrote, "is not a sentiment which can be enjoyed by anyone regardless of the level of maturity. All attempts at love are bound to fail unless one tries most actively to develop one\'s total personality." You have been developing your total personality. This is the gift you carry forward.',
+        microPractice: 'This week: Create a "relapse plan" together. Write down: "When we notice [your pattern name] starting, the first person to see it says [your code word], and we both [your agreed micro-practice]." Put it somewhere you will both see it. This is not a sign of failure — it is the ultimate sign of maturity.',
+      },
+      {
+        domains: ['instrument', 'field', 'stance'],
+        title: 'The Archetype of the Wounded Healer',
+        insight: 'Jung wrote extensively about the Wounded Healer archetype — the idea that the very wounds that once crippled you become the source of your capacity to help others. Your personality traits that once created friction in your relationship have been integrated into strengths. Your field awareness that once picked up only threat now senses beauty and possibility. Your differentiation that once manifested as walls or fusion now allows you to be deeply present without losing yourself. The couple that has done this work together becomes what Jung called a "temenos" — a sacred container where transformation happens naturally. You do not need to teach anyone what you have learned. You simply need to live it. As Rumi wrote, "Let the beauty we love be what we do. There are hundreds of ways to kneel and kiss the ground." Your relationship, imperfect and ongoing, is one of those ways.',
+        microPractice: 'This week: Together, name one wound you have integrated — one pain that has become a source of wisdom or compassion. Acknowledge it together: "We turned this wound into this gift." Let that acknowledgment be its own celebration.',
+      },
     ],
   },
 ];

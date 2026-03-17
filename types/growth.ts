@@ -53,6 +53,15 @@ export interface TreatmentPathway {
   estimatedWeeks: number;
 }
 
+// ─── Integration Insights ────────────────────────────────
+
+export interface IntegrationInsight {
+  domains: string[];
+  title: string;
+  insight: string;
+  microPractice: string;
+}
+
 // ─── Twelve Steps ──────────────────────────────────────
 
 export type HealingPhase = 'seeing' | 'feeling' | 'shifting' | 'integrating' | 'sustaining';
@@ -86,6 +95,8 @@ export interface HealingStep {
   togetherPractices?: string[];
   /** Sprint B — Micro-course IDs unlocked at this step */
   courseGatewayIds?: string[];
+  /** Integration insights connecting Integrated Map domains to this step */
+  integrationInsights?: IntegrationInsight[];
 }
 
 export interface StepProgress {

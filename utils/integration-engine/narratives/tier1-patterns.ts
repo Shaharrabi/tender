@@ -52,25 +52,31 @@ The research supports two pathways: EFT to access the vulnerable affect undernea
 
     soulful: `Something in you learned to become invisible in order to stay close. Not all at once — slowly, like a tide going out so gently you didn't notice the water leaving. You sense everything in the field between you. Every shift, every cooling, every unnamed tension. Your radar is extraordinary. And what you sense, you serve.
 
-This is not weakness. This is a soul that learned love requires disappearance. The accommodation kept people near. The perception kept you useful. Together they made you the person everyone finds easy to be around. The cost was invisible too — until now.
+Jung called this the loss of the Self through the inflation of the Persona. You became so good at reading what was needed that the mask fused with the face. The Persona — that social self we present to the world — ate the person underneath. Not through cruelty, but through devotion. As David Whyte wrote: "The soul would rather fail at its own life than succeed at someone else's."
 
-The field between you needs both of you present. Not one person and one echo. Your partner fell in love with weather — with the full sky of who you are. Right now they're getting a forecast that always says "mild and pleasant." But you are not mild. You are someone with a thunderstorm inside who has learned to present sunshine. And the field between you — that living, breathing space — it can feel the difference.
+This is the archetype of the Invisible One — the figure in every myth who gives their name away to keep the peace, who trades their voice for belonging. Think of the selkie who shed her skin to walk on land. Think of Persephone before she chose her own descent. The accommodation kept people near. The perception kept you useful. Together they made you the person everyone finds easy to be around. But ecopsychology teaches us that every ecosystem needs diversity to thrive. A forest of identical trees is a plantation, not a wilderness. Your relationship needs your weather — all of it. The storms AND the sun.
 
-The invitation is not to stop sensing. It is to let what you sense travel somewhere new: from your accommodation to your voice. One true sentence. That is enough. That is everything.`,
+Rilke understood this: "Perhaps all the dragons in our lives are princesses who are only waiting to see us act, just once, with beauty and courage." The dragon here is your own voice. It feels dangerous because an ancient part of you decided it was. The field between you needs both of you present. Not one person and one echo. Your partner fell in love with weather — with the full sky of who you are. Right now they're getting a forecast that always says "mild and pleasant." But you are not mild. You are someone with a thunderstorm inside who has learned to present sunshine.
+
+The invitation is not to stop sensing. It is to let what you sense travel somewhere new: from your accommodation to your voice. As John O'Donohue wrote: "You can never love another person unless you are equally involved in the beautiful but difficult spiritual work of learning to love yourself." One true sentence. That is enough. That is everything.`,
 
     practical: `THE PATTERN: You sense something is off → anxiety says "danger" → you accommodate → you disappear.
 
 THE COST: Your partner is in love with your performance, not with you.
 
-THIS WEEK: When you sense something is off (your radar is strong — you WILL sense it), say it out loud within 60 seconds. One sentence:
+YOUR ATOMIC HABIT (start today):
+Stack this onto an existing routine. After dinner, before you clear the table, say ONE true thing about your day. Not "fine." Something real. "Work was frustrating." "I missed you." "I'm tired." Habit stack: meal ends → one true sentence → then clear the table.
+
+THIS WEEK'S MICRO-SHIFT:
+When you sense something is off (your radar is strong — you WILL sense it), say it out loud within 60 seconds. One sentence:
 
 "Something feels off to me right now."
 
 Don't explain. Don't fix. Don't apologize for saying it. Just say it.
 
-NOTICE: The relationship survived. Your partner wanted to know. The sky didn't fall.
+THE BOLD ASK: Set a phone reminder for 8pm every day this week. When it goes off, text your partner one real feeling. Not a question about them. A statement about YOU. "I felt proud today." "I'm anxious about tomorrow." Five seconds. That's the whole practice.
 
-That's the data your nervous system needs. Repeat weekly. Add one sentence at a time.`,
+NOTICE: The relationship survived. Your partner wanted to know. The sky didn't fall. That's the data your nervous system needs. James Clear calls this "casting votes for your new identity." Each sentence is a vote for the person who speaks instead of disappears.`,
 
     developmental: `In Erikson's framework, you're deep in the work of Intimacy vs. Isolation — but with a specific twist. You've achieved intimacy's FORM (closeness, togetherness, partnership) without its SUBSTANCE (two full selves meeting). Your intimacy is built on one self dissolving into the other.
 
@@ -147,29 +153,45 @@ function matchFortress(s: IntegrationScores): IntegrationResult | null {
   const lenses: LensedNarrative = {
     therapeutic: `Your profile shows a comprehensive distance system operating across every dimension. Attachment avoidance (${avoidance.toFixed(1)}) keeps emotional closeness at bay. Emotional cutoff (${Math.round(cutoff)}) severs the signal when feelings get too intense. Conflict avoidance (${avoiding.toFixed(1)}) ensures tension never gets addressed. And low perception (${Math.round(perception)}) means the emotional field is muted — you don't pick up the signals that would pull you toward engagement.
 
-In polyvagal terms, your nervous system may be operating from a dorsal vagal state — not the acute freeze of panic, but the chronic low-energy withdrawal that looks like calm from the outside. Research shows that attachment avoidance at intake predicts change trajectories in therapy — meaning your pattern IS modifiable, even though it feels fixed. EFT targets what clinicians call "defensive exclusion" — the systematic shutting out of vulnerability that your system learned was necessary for survival. The research shows that prioritizing safety and accessibility before any behavioral activation is essential for this pattern.
+Multiple clinical models illuminate this pattern:
 
-In IFS terms, there isn't one protector running the show. There's an entire TEAM — a committee of parts that collectively ensure nothing gets through. The exile they're protecting likely carries overwhelming experience from early life — not necessarily trauma in the dramatic sense, but the consistent message that emotional needs would not be met, so it was safer to stop having them.`,
+POLYVAGAL THEORY (Porges): Your nervous system may be operating from a dorsal vagal state — not acute freeze, but chronic low-energy withdrawal that looks calm from outside. The ventral vagal system (social engagement) is underactivated. The work is not "be more emotional" — it's gradually expanding your window of tolerance for social-emotional arousal.
+
+EFT (Sue Johnson): This is "defensive exclusion" — the systematic shutting out of vulnerability your system learned was necessary for survival. Johnson's research shows that avoidant partners can access vulnerable affect when the therapeutic context is safe enough. The key is NOT pushing for emotion, but creating safety FIRST.
+
+IFS (Richard Schwartz): There isn't one protector running the show. There's an entire TEAM — a committee of parts that collectively ensure nothing gets through. The exile they're protecting likely carries the consistent message that emotional needs would not be met, so it was safer to stop having them. Schwartz's approach: befriend the protectors before trying to reach the exile.
+
+SCHEMA THERAPY (Jeffrey Young): This maps to the Emotional Inhibition and Detached Protector schemas — strategies that develop when emotional expression was punished, ignored, or met with withdrawal in childhood. The antidote is not insight alone but corrective emotional experiences in relationship.
+
+CBT (Aaron Beck): Cognitive distortions maintain the pattern: "If I show emotion, I'll be overwhelmed." "Needing people means I'm weak." "I can handle everything alone." These beliefs feel like facts because your system has never tested them in a safe relationship context.`,
 
     soulful: `There is a quiet inside you that you have mistaken for peace. It is not peace. It is the absence of signal — the emotional field turned down so low that neither pain nor joy can reach you. The walls you built are elegant. They work perfectly. And they are slowly starving the very thing they were built to protect.
 
-You did not build these walls from cruelty. You built them from wisdom — the wisdom of a nervous system that learned: the only safe feeling is no feeling. That was true once. It kept you alive in a world that was too much. Honor that. The walls were built by someone who needed them desperately, and they worked.
+In Jungian terms, you are living in the archetype of the Armored Knight — the figure who made the armor so well that it cannot be removed, even to eat, even to sleep, even to be touched by the person they love. The Shadow here is not aggression or chaos — your Shadow is tenderness itself. The soft animal of your body, as Mary Oliver called it, has been locked in the basement while the competent, controlled self runs the show upstairs. Jung wrote: "That which we need the most will be found where we least want to look."
 
-But the field between you and the person you chose — it cannot breathe behind glass. It needs air. Not a hurricane. A breeze. Not the dramatic burn-it-down vulnerability that movies sell. The smallest kind: one feeling, named out loud, to one person who might hear it.
+You did not build these walls from cruelty. You built them from wisdom — the wisdom of a nervous system that learned the only safe feeling is no feeling. Ecopsychology speaks of "nature-deficit disorder" — how we suffer when cut off from the living world. Your emotional system has its own version: feeling-deficit. The numbness that looks like strength is actually a form of chronic drought. As Wendell Berry wrote: "It may be that when we no longer know what to do, we have come to our real work, and when we no longer know which way to go, we have begun our real journey."
 
-You are not being asked to demolish the walls. You are being asked to install a door. A small one. That you can open when you choose, and close when you need to. The door is a sentence. Any true sentence. "I felt sad today." That is the door. And on the other side of it: the field between you, waiting, still alive.`,
+But the field between you and the person you chose — it cannot breathe behind glass. James Hillman, the great archetypal psychologist, said: "We don't heal in isolation but in community." Your healing is not a solo project done inside the fortress. It happens in the micro-moment of contact — when one feeling, however small, travels from the inside of you to the outside air. Not a hurricane. A breeze. The door is a sentence. Any true sentence. "I felt sad today." And on the other side of it: the field between you, waiting, still alive. As Pema Chödrön teaches: "The most fundamental aggression to ourselves is to remain ignorant by not having the courage to look at ourselves honestly and gently."`,
 
     practical: `THE PATTERN: Something emotional happens → your system shuts down the signal → you withdraw → nothing gets discussed → distance grows → repeat.
 
 THE COST: Your partner feels like they're living with someone who's present but not there.
 
-THIS WEEK: Once — just once — share one feeling with your partner that you would normally process alone. Not a crisis. Not a confession. Something small:
+YOUR ATOMIC HABIT (start tonight):
+BJ Fogg's Tiny Habits formula: After [existing routine], I will [tiny behavior]. After you get into bed, before you turn off the light, tell your partner one thing you felt today. One word counts. "Stressed." "Grateful." "Lonely." That's it. Under 5 seconds. Repeat nightly until it's automatic.
+
+THIS WEEK'S MICRO-SHIFT:
+Once — just once — share one feeling with your partner that you would normally process alone. Not a crisis. Not a confession. Something small:
 
 "I had a hard day."
 "That movie made me sad."
 "I missed you today."
 
-One sentence. Then notice what happens. Your partner will probably light up. Because they've been waiting for a crack in the wall. Not to invade. To connect.`,
+THE BOLD ASK: Write your partner a 3-line text right now. "Thinking about you. Today was [one word]. Love you." Send before you overthink it. Your brain will scream "that's unnecessary." Send it anyway.
+
+STAGES OF CHANGE CHECK: If you're in Contemplation (thinking about being more open but not doing it yet), the one-word bedtime habit is your entry point. If you're in Preparation (you've tried small shares before), upgrade to the 60-second version: share one thing that happened and how it made you feel. Not what you did about it — how it made you FEEL.
+
+Your partner will probably light up. Because they've been waiting for a crack in the wall. Not to invade. To connect.`,
 
     developmental: `Your profile maps to a specific developmental position. In Kegan's framework, you may have achieved Self-Authoring (Order 4) in a particular way — you have a strong internal compass, you know what you think, you don't need external validation. But you've achieved it through EXCLUSION rather than INTEGRATION. You authored yourself by cutting off the relational channels, not by holding them alongside your independence.
 
@@ -256,11 +278,13 @@ In IFS terms, a firefighter part takes over when your system gets overwhelmed. I
 
     soulful: `There is a fire in you that was never meant to burn this hot. The sensitivity that makes you feel everything — every shift, every distance, every change in your partner's tone — that sensitivity is a gift. A rare one. Most people walk through the relational field half-asleep. You are painfully, beautifully awake.
 
-But somewhere the sensitivity got wired to the alarm system. Now when you feel, you don't just feel. You flood. And when you flood, you burn. The fire leaps from your chest into your words, and before you know it, you've said things you didn't mean at a volume you didn't intend, and your partner is backing away — not from you, from the heat.
+In Jungian psychology, fire belongs to the archetype of the Passionate Seeker — the one who cannot rest when something is wrong, who pursues truth and closeness with an intensity that both attracts and overwhelms. The fire is sacred. In every tradition, fire is both destroyer and transformer — Prometheus stole it to give humanity consciousness itself. Your fire is consciousness. But consciousness without containment is a wildfire. As Rumi wrote: "Set your life on fire. Seek those who fan your flames." The question is whether your flame warms or burns those closest to you.
 
-The intensity is love. It genuinely is. But love at that temperature scalds. Your partner can't hear the care underneath the force. They can't feel the reaching underneath the demand. They experience fire. And they do what anyone does near fire — they retreat.
+The Shadow of this archetype is not the fire itself — it's the unconscious belief that intensity equals connection. That if you can make them FEEL how much this hurts, they'll finally understand. But as bell hooks observed: "Rarely, if ever, are any of us healed in isolation. Healing is an act of communion." Communion requires two nervous systems that can be in the same room. When yours is on fire, theirs shuts down. Not because they don't care. Because biology won't let them stay.
 
-The field between you does not need less fire. It needs a hearth. A container that holds the fire without letting it consume the room. Your regulation capacity is the hearth. Not about feeling less. About feeling fully while staying in your body, in the room, in the conversation. One hand on your chest. One breath before the next word. That is the practice. That is everything.`,
+The field between you does not need less fire. It needs a hearth — the ancient symbol of home, where fire is held by stone, where warmth radiates without consuming. In ecopsychology, we learn that controlled burns are essential to forest health — fire that is tended renews the soil, clears deadwood, makes space for new growth. Uncontrolled fire destroys. The difference is not the fire. It's the container. As the poet David Whyte wrote: "The only choice we have as we mature is how we inhabit our vulnerability, how we become larger and more courageous and more compassionate through our intimacy with disappearance."
+
+One hand on your chest. One breath before the next word. That is the hearth. That is everything.`,
 
     practical: `THE PATTERN: Anxiety detects distance → reactivity ignites → you escalate → partner retreats → distance grows → anxiety spikes → repeat.
 
@@ -356,13 +380,13 @@ Clinical trials demonstrate that EFT can surface the emotional costs of chronic 
 
     soulful: `You hold space for everyone. In every friendship, in every room, in every crisis — you are the steady one. The one who senses what others need and provides it. The one who absorbs the tension and gives back calm. The one who is never too much, never inconvenient, never the one who needs holding.
 
-But here is what no one has asked you, perhaps ever: Who holds space for you?
+Jung would recognize you as living in the archetype of the Great Mother — the universal nurturer, the one whose identity is woven from the act of giving. But Jung also warned: the Great Mother has a shadow. When giving becomes compulsive, when the identity cannot survive without someone to save, the nurturer becomes a prisoner of their own generosity. As Clarissa Pinkola Estés wrote in Women Who Run With the Wolves: "If you have ever been called defiant, incorrigible, forward, cunning, insurgent, unruly, rebellious, you're on the right track." Your rebellion — should you choose it — is the act of receiving.
 
-Not because they won't. Because you never let them. Your system learned early that being needed was safer than being known. That providing care was more reliable than receiving it. And so you built a life — a beautiful, generous, exhausting life — where you are the container for everyone else's feelings and no one knows what yours are.
+Who holds space for you? Not because they won't. Because you never let them. Khalil Gibran understood this architecture of love: "Let there be spaces in your togetherness, and let the winds of the heavens dance between you." But in your togetherness, there is only one wind — yours, always blowing toward them. Thomas Moore, in Care of the Soul, wrote that genuine care requires both giving AND receiving: "The soul needs the experience of being dependent, of being cared for, as much as it needs to care."
 
-The field between you and your partner is tilted. Not broken — tilted. Love flows one way more than the other. Not because your partner is selfish. Because you've trained them, with years of gentle over-functioning, to expect that you'll be fine. And you look fine. You sound fine. The only thing that isn't fine is the quiet, growing ache of being held by no one.
+Ecopsychology teaches that in healthy ecosystems, reciprocity is the law. The mycorrhizal network beneath a forest — the "wood wide web" — flows nutrients in both directions. Trees that only give without receiving eventually hollow out. You are hollowing. Not visibly. The outside still looks strong, still looks giving, still looks fine. But the inside aches with a hunger you've forbidden yourself to name.
 
-The invitation: let someone in. Not to help you solve a problem. Just to see you. Unhelped. Unhelpful. Just a person who is tired, and tender, and worthy of the same care you give so freely.`,
+The field between you and your partner is tilted. Love flows one way. Not because your partner is selfish — because you've trained them, with years of gentle over-functioning, to expect that you'll be fine. As Pema Chödrön teaches: "Compassion is not a relationship between the healer and the wounded. It's a relationship between equals." The invitation: let someone in. Not to help. Just to see you. As Mary Oliver asked in her luminous simplicity: "Tell me, what is it you plan to do with your one wild and precious life?" Perhaps the answer begins with letting it be held by someone other than yourself.`,
 
     practical: `THE PATTERN: Others feel something → you sense it → you help them regulate → they feel better → you feel needed → your own feelings stay unprocessed → repeat.
 
@@ -456,11 +480,11 @@ Research addresses this directly. EFT's experiential techniques are designed to 
 
     soulful: `You understand everything. You can name your attachment style, describe your negative cycle, explain why your partner does what they do. You've read the books. You've thought the thoughts. Your mind is a beautiful instrument for seeing relational patterns.
 
-And yet.
+And yet. Jung himself warned of this exact trap: "One does not become enlightened by imagining figures of light, but by making the darkness conscious." You have made the darkness conscious. Brilliantly. But consciousness was never the destination — it was the trailhead. The archetype here is the Eternal Student — the one who gathers wisdom endlessly but delays the moment of descent into the underworld where wisdom must be lived, not known. In every hero's journey, there comes the moment when the map must be put down and the territory entered. Odysseus couldn't read his way home. He had to sail.
 
-The space between you and your partner — that living, breathing field — it doesn't respond to understanding. It responds to action. To risk. To one moment of doing something different, even when every neuron is screaming to do the familiar thing. Your insight is a map. But you have been studying the map so intently that you forgot to walk.
+The existentialists understood this. Kierkegaard wrote: "Life can only be understood backwards; but it must be lived forwards." You've mastered the backwards understanding. The forwards living — the messy, awkward, unscripted act of doing something different in your body, in real time — that's where your edge lives. Thomas Moore wrote in Care of the Soul: "The soul doesn't evolve or grow, it cycles and deepens." Your cycling has been entirely cerebral. The deepening requires descent into the body, into action, into the possibility of failure.
 
-This is not a failure of intelligence. It is a failure of courage — the specific, embodied courage of DOING what you know instead of KNOWING what you should do. The gap between your relational IQ and your relational behavior is not a mystery. It is the most important distance in your life right now. And it closes not through more understanding, but through one different action. Today. Not tomorrow. Today.`,
+This is not a failure of intelligence. It is the specific spiritual crisis of the intellectual — what James Hillman called "psychologizing as defense": using insight to avoid the raw experience insight was meant to prepare you for. The gap between your relational IQ and your relational behavior is the most important distance in your life right now. As Pema Chödrön taught: "Nothing ever goes away until it has taught us what we need to know." Your pattern has taught you everything. Now it's waiting for you to move. One different action. Today.`,
 
     practical: `THE PATTERN: You see the pattern → you understand the pattern → you explain the pattern → you continue doing the exact same thing.
 
@@ -551,13 +575,13 @@ In attachment theory, this maps to the fearful-avoidant or disorganized style, w
 
 In IFS terms, you have protectors pulling in opposite directions — one part reaching desperately for connection, another part slamming the door the moment connection gets close. Neither is wrong. Both are trying to keep you safe. The work is in Self-leadership: the capacity to hold both parts with compassion without letting either hijack the whole system.`,
 
-    soulful: `You want closeness. You are terrified of closeness. Both at once. Every day.
+    soulful: `You want closeness. You are terrified of closeness. Both at once. Every day. This is the archetype of the Shapeshifter — the figure who moves between worlds, never fully belonging to either. In mythology, shapeshifters are sacred and terrifying: Proteus, who held all forms and none. The selkie, caught between ocean and shore. Your inner life is that liminal space — the threshold between reaching and retreating, longing and defense.
 
-This is not confusion. This is the lived experience of a nervous system that learned, early and deeply, that the people you love are also the people who can hurt you. That reaching for someone is necessary AND dangerous. That you need and fear the same thing.
+Jung called this the union of opposites — the central work of individuation. But for you, the opposites are not abstract concepts. They live in your body. The warmth that floods your chest when your partner smiles, and the cold terror that follows three seconds later: "If I let this in, it can destroy me." As Rumi wrote: "Your task is not to seek for love, but merely to seek and find all the barriers within yourself that you have built against it." Your barriers are not walls. They are oscillations — the exhausting rhythm of approach-retreat that never resolves into either full contact or clean distance.
 
-Your partner experiences this as weather — warmth, then sudden cold. Reaching, then withdrawal. "Come here" followed by "go away." They are bewildered not because they can't read you, but because what they're reading is real: you ARE reaching. You ARE retreating. Both are true. Simultaneously. And the exhaustion of holding those two truths at the same time is something most people never have to comprehend.
+This is the wound the alchemists called the nigredo — the blackening, the stage of dissolution where opposites war within the vessel before integration can occur. Clarissa Pinkola Estés understood: "The doors to the world of the wild Self are few but precious. If you have a deep scar, that is a door. If you have an old, old story, that is a door." Your oscillation IS the door. Not a malfunction — a passage. The exhaustion you feel is labor, not failure. Something is trying to be born in you: the capacity to hold both the reaching and the fear, simultaneously, without letting either one drive.
 
-Here is what no one has told you: this pattern makes sense. It is the most rational response to an irrational situation — loving people who were both source of comfort and source of pain. Your nervous system solved an impossible problem with the only solution available: approach and avoid at the same time. Honor that. And then: one small step toward. Not a leap. A step. Then rest. Then another.`,
+Here is what no one has told you: this pattern is the most rational response to an irrational situation. Your nervous system solved an impossible problem: loving people who were both source of comfort and source of pain. As the Sufi poets knew: "The wound is the place where the Light enters you." One small step toward. Not a leap. A step. Then rest. Then another. Then rest. The rest is not retreat. It is the breath between contractions.`,
 
     practical: `THE PATTERN: You approach → closeness triggers fear → you retreat → distance triggers longing → you approach → repeat.
 
@@ -650,13 +674,13 @@ The mechanism: psychological flexibility — the capacity to hold uncomfortable 
 
 The intervention is sequential: EFT to secure the attachment context (make it safe enough to be honest), then ACT values clarification and committed action — specific behavioral experiments that build the muscle of doing what matters even when it's uncomfortable.`,
 
-    soulful: `You know what matters. Your compass is clear — your top value is not a vague aspiration. It is a deep, felt knowing about who you want to be in this relationship. And there is a gap between that knowing and your living.
+    soulful: `You know what matters. Your compass is clear — your top value is not a vague aspiration. It is a deep, felt knowing about who you want to be in this relationship. And there is a gap between that knowing and your living. Jung called this the tension between the Self (who you truly are) and the Persona (who you perform to keep the peace). The gap between them is where the Shadow grows — not evil, but exiled truth.
 
-That gap is where the suffering lives. Not in the conflict. Not in your partner's behavior. In the distance between who you are and who you know yourself to be. Every time you swallow the truth, every time you accommodate when your compass says "speak," every time you choose safety over authenticity — the gap widens. And with it, a quiet kind of despair: the sense that you are betraying yourself in slow motion.
+That gap is where the suffering lives. Not in the conflict. Not in your partner's behavior. In the distance between who you are and who you know yourself to be. As Søren Kierkegaard wrote: "The most common form of despair is not being who you are." Every time you swallow the truth, every time you accommodate when your compass says "speak," every time you choose safety over authenticity — the gap widens. The alchemists called this the prima materia — the raw, unworked material of the soul that must be confronted before gold can emerge. Your prima materia is the unsaid.
 
-You are not a hypocrite. You are a person whose nervous system hasn't learned yet that the discomfort of truth is survivable. That the relationship can hold your honesty. That your partner would rather hear what's real than what's easy.
+In ecopsychology, there is a concept called "ecological grief" — the sorrow we feel when we witness living systems being diminished. Your relationship has its own ecology, and every swallowed truth is a small extinction. The songbird of your authenticity goes quiet. The river of your desire runs underground. Eventually the landscape looks fine — maintained, orderly, pleasant — but something essential has been removed. Wendell Berry wrote: "The world is not a problem to be solved; it is a living being to which we belong." Your relationship is not a problem to be managed with accommodation. It is a living being that needs your full presence to thrive.
 
-The gap closes one sentence at a time. Not one grand confession. One small, true thing. "That matters to me." "I feel differently." "I need something I haven't asked for." Each sentence is a step toward the person your values know you already are.`,
+You are not a hypocrite. You are a person whose nervous system hasn't learned yet that the discomfort of truth is survivable. As David Whyte wrote: "The courageous conversation is the one you don't want to have." The gap closes one sentence at a time. One small, true thing. "That matters to me." "I feel differently." Each sentence is a step toward the person your values know you already are. As Rilke counseled: "Let everything happen to you: beauty and terror. Just keep going. No feeling is final."`,
 
     practical: `THE GAP: Your biggest values gap is in ${gapDomain} (gap: ${gapSize.toFixed(1)}) — where your importance score is high but your accordance (how much you live it) is low.
 
@@ -760,15 +784,15 @@ function matchUnlivedLife(s: IntegrationScores): IntegrationResult | null {
 
 Your high perception and solid I-position mean you have the internal resources. This isn't a skills deficit. It's an existential question: what are you waiting for? Research shows that couples with the capacity for deep intimacy who don't activate it experience a specific kind of frustration — the suffering of unused potential. The intervention is less about building capacity (you have it) and more about removing the obstacle to using it.`,
 
-    soulful: `You have everything you need. The perception to sense the field. The ground to hold your own center. The values to know what matters.
+    soulful: `You have everything you need. The perception to sense the field. The ground to hold your own center. The values to know what matters. And yet: a gap in the domain that matters most. Not because you can't. Because you haven't.
 
-And yet: a gap in the domain that matters most to you. Not because you can't. Because you haven't.
+Jung wrote about the unlived life with devastating clarity: "Nothing has a stronger influence psychologically on their environment and especially on their children than the unlived life of the parent." But the unlived life doesn't only haunt children. It haunts the one who carries it. You are the archetype of the Reluctant Hero — standing at the threshold of the cave, sword in hand, allies beside you, and still you wait. Joseph Campbell called this the "Refusal of the Call" — the most dangerous moment in the hero's journey, because the longer you wait, the more the cave seems to darken.
 
-This is the most bittersweet pattern in the matrix. Not the pain of inability — the ache of the unlived. You are standing at the threshold of the relationship you actually want, with all the tools to walk through it, and something keeps you on this side. Not fear exactly. Something quieter. Perhaps the sense that if you actually showed up fully — used everything you have — and it still wasn't enough... that would be unbearable.
+This is the most bittersweet pattern in the matrix. Not the pain of inability — the ache of the unlived. As the poet Mary Oliver asked: "Tell me, what is it you plan to do with your one wild and precious life?" You know the answer. The answer is clear inside you like a bell. But there is a strange comfort in potential — in keeping the dream alive by never testing it. Perhaps the deepest fear is not failure but confirmation: if you actually showed up fully and it still wasn't enough... that would be a grief with no bottom.
 
-So you hold back. Just enough. Just enough to keep the possibility alive without risking the proof. But here's what the field between you knows: holding back IS the thing that's preventing what you want. You can't get to the depth while protecting yourself from the depth. The relationship you want is on the other side of the risk you haven't taken.
+Ecopsychology offers a mirror: in nature, a seed that has everything it needs — soil, water, sun — but refuses to germinate is not "cautious." It is unlived. And eventually, the season passes. The poet David Whyte understood: "The price of our vitality is the sum of all our fears." Your vitality is not low — it is held in reserve. And the field between you — that living space between you and the person you love — it can feel the difference between someone who is fully here and someone who is holding back. As John O'Donohue wrote: "Your soul knows the geography of your destiny. Your soul alone has the map of your future."
 
-You have everything you need. Start using it.`,
+You have everything you need. The threshold is not going to get more inviting. Go.`,
 
     practical: `You have the capacity. You have the values. You have the self.
 
