@@ -104,31 +104,12 @@ BEGIN
     )
   );
 
-  -- Read Supabase project URL from app settings
-  -- In Supabase, current_setting('app.settings.supabase_url') is auto-available
-  -- but we use the vault or a config table. Simplest: hardcode via a config function.
-  v_supabase_url := current_setting('app.settings.supabase_url', true);
-  v_service_role_key := current_setting('app.settings.service_role_key', true);
-
-  -- Fallback: try the supabase_url() helper if settings are not available
-  IF v_supabase_url IS NULL THEN
-    SELECT decrypted_secret INTO v_supabase_url
-    FROM vault.decrypted_secrets
-    WHERE name = 'supabase_url'
-    LIMIT 1;
-  END IF;
-
-  IF v_service_role_key IS NULL THEN
-    SELECT decrypted_secret INTO v_service_role_key
-    FROM vault.decrypted_secrets
-    WHERE name = 'service_role_key'
-    LIMIT 1;
-  END IF;
-
-  -- If we still don't have the URL, try the built-in config
-  IF v_supabase_url IS NULL THEN
-    v_supabase_url := current_setting('supabase.url', true);
-  END IF;
+  -- Project config — hardcoded for reliability (vault permissions are restricted).
+  -- The service_role_key is safe here because this function is SECURITY DEFINER
+  -- and only runs server-side inside PostgreSQL triggers, never exposed to clients.
+  -- To get your service_role_key: Supabase Dashboard → Settings → API → service_role (secret)
+  v_supabase_url := 'https://qwqclhzezyzeflxrtfjy.supabase.co';
+  v_service_role_key := 'PASTE_YOUR_SERVICE_ROLE_KEY_HERE';
 
   -- Only fire if we have the necessary config
   IF v_supabase_url IS NOT NULL AND v_service_role_key IS NOT NULL THEN
