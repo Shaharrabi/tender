@@ -80,6 +80,7 @@ import type { Couple, UserProfile, RelationshipPortrait, DeepCouplePortrait } fr
 import type { IndividualPortrait } from '@/types/portrait';
 import type { WEAREProfile, WeeklyCheckIn } from '@/types/weare';
 import { getLatestWEAREProfile, getThisWeeksCheckIn, saveWeeklyCheckIn } from '@/services/weare';
+import { supabase } from '@/services/supabase';
 import WeeklyCheckInCard from '@/components/weare/WeeklyCheckInCard';
 
 // Deep Couple Portrait components
@@ -145,6 +146,60 @@ export default function CouplePortalScreenWithBoundary() {
       <CouplePortalScreen />
     </CouplePortalErrorBoundary>
   );
+}
+
+/**
+ * Swap the current user's real name → "You" in the deep portrait for display.
+ * The cached portrait uses real names so it's viewer-independent; we localise
+ * at render time.
+ */
+function localiseNamesForViewer(
+  dp: DeepCouplePortrait,
+  myRealName: string,
+): DeepCouplePortrait {
+  if (!myRealName || myRealName === 'You') return dp;
+
+  // Deep-clone so we don't mutate the cache
+  const clone: DeepCouplePortrait = JSON.parse(JSON.stringify(dp));
+
+  // Replace the viewer's real name with "You" throughout all string values
+  const nameRegex = new RegExp(myRealName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+  const replaceInObj = (obj: any): void => {
+    if (!obj || typeof obj !== 'object') return;
+    for (const key of Object.keys(obj)) {
+      if (typeof obj[key] === 'string') {
+        obj[key] = obj[key].replace(nameRegex, 'You');
+      } else if (Array.isArray(obj[key])) {
+        obj[key].forEach((item: any, i: number) => {
+          if (typeof item === 'string') {
+            obj[key][i] = item.replace(nameRegex, 'You');
+          } else {
+            replaceInObj(item);
+          }
+        });
+      } else if (typeof obj[key] === 'object') {
+        replaceInObj(obj[key]);
+      }
+    }
+  };
+
+  // Swap the name labels
+  if (clone.partnerAName?.toLowerCase() === myRealName.toLowerCase()) {
+    clone.partnerAName = 'You';
+  }
+  if (clone.partnerBName?.toLowerCase() === myRealName.toLowerCase()) {
+    clone.partnerBName = 'You';
+  }
+
+  // Swap in narrative text
+  replaceInObj(clone.narrative);
+  replaceInObj(clone.coupleAnchors);
+  replaceInObj(clone.patternInterlock);
+  replaceInObj(clone.convergenceDivergence);
+  replaceInObj(clone.coupleGrowthEdges);
+  replaceInObj(clone.dyadicInsights);
+
+  return clone;
 }
 
 function CouplePortalScreen() {
@@ -469,12 +524,23 @@ function CouplePortalScreen() {
           const isPartnerA = myCouple.partner_a_id === user.id;
           const pA = isPartnerA ? mp : pp;
           const pB = isPartnerA ? pp : mp;
-          const pAName = isPartnerA
-            ? 'You'
-            : (partner?.display_name || (selfCouple ? 'Demo Partner' : 'Your partner'));
-          const pBName = isPartnerA
-            ? (partner?.display_name || (selfCouple ? 'Demo Partner' : 'Your partner'))
-            : 'You';
+
+          // Use REAL names (not "You") for generation & caching so the cached
+          // portrait is correct regardless of which partner loads it later.
+          const partnerDisplayName = partner?.display_name || (selfCouple ? 'Demo Partner' : 'Your partner');
+          let myDisplayName = 'You';
+          try {
+            const { data: myProfile } = await supabase
+              .from('user_profiles')
+              .select('display_name')
+              .eq('user_id', user.id)
+              .maybeSingle();
+            if (myProfile?.display_name) myDisplayName = myProfile.display_name;
+          } catch { /* fallback to 'You' */ }
+
+          // pAName/pBName now use real names for the generation/cache
+          const pAName = isPartnerA ? myDisplayName : partnerDisplayName;
+          const pBName = isPartnerA ? partnerDisplayName : myDisplayName;
 
           // Load dyadic scores
           const [rdas, dci, csi16] = await Promise.all([
@@ -495,9 +561,14 @@ function CouplePortalScreen() {
           // Try loading cached deep portrait from DB first (skip regeneration if data hasn't changed)
           const needsDeepRegen = needsRelPortraitRegen || !rp;
           let cachedDp = needsDeepRegen ? null : await getDeepCouplePortrait(myCouple.id);
+          // Invalidate cache if it has "You" baked in (old bug: name not viewer-independent)
+          if (cachedDp && (cachedDp.partnerAName === 'You' || cachedDp.partnerBName === 'You')) {
+            console.log('[CouplePortal] Cached portrait has "You" baked in — regenerating with real names');
+            cachedDp = null;
+          }
           if (cachedDp && !needsDeepRegen) {
             console.log('[CouplePortal] Loaded deep portrait from DB cache');
-            setDeepPortrait(cachedDp);
+            setDeepPortrait(localiseNamesForViewer(cachedDp, myDisplayName));
           } else {
             console.log('[CouplePortal] Generating deep couple portrait...', {
               dyadicAvailable: Object.keys(dScores),
@@ -514,9 +585,10 @@ function CouplePortalScreen() {
               dScores,
               wp,
             );
-            setDeepPortrait(dp);
+            // Display with "You" for current viewer
+            setDeepPortrait(localiseNamesForViewer(dp, myDisplayName));
 
-            // Persist to database for future loads
+            // Persist with REAL names (not "You") so both partners see correct data
             saveDeepCouplePortrait(myCouple.id, dp).then((saved) => {
               if (saved) console.log('[CouplePortal] Deep portrait persisted to DB');
             }).catch((e) => {
