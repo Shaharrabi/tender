@@ -6,8 +6,8 @@
  * Soft, artsy Wes Anderson aesthetic — rounded corners, vintage warmth.
  */
 
-import React, { useRef, useEffect } from 'react';
-import { View, TouchableOpacity, StyleSheet, useWindowDimensions, Animated, Alert, Platform } from 'react-native';
+import React, { useRef, useEffect, useState } from 'react';
+import { View, TouchableOpacity, StyleSheet, useWindowDimensions, Animated, Alert, Platform, Pressable } from 'react-native';
 import TenderText from '@/components/ui/TenderText';
 import { MATRIX_COLORS, type MatrixColorKey } from './constants/matrix-colors';
 import { Spacing, BorderRadius, FontFamilies } from '@/constants/theme';
@@ -61,6 +61,7 @@ export default function MatrixCell({ cell, compact, selectable, selected, onSele
   const { width } = useWindowDimensions();
   const isNarrow = width < 400;
   const isTextScore = typeof cell.score === 'string' && isNaN(Number(cell.score));
+  const [showInfo, setShowInfo] = useState(false);
 
   // Selection animation
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -121,7 +122,7 @@ export default function MatrixCell({ cell, compact, selectable, selected, onSele
           style={styles.infoButton}
           onPress={() => {
             if (Platform.OS === 'web') {
-              window.alert(`${cell.label}: ${cell.descriptor}\n\n${SCORE_EXPLAINERS[cell.label]}`);
+              setShowInfo((prev) => !prev);
             } else {
               Alert.alert(
                 cell.label,
@@ -133,8 +134,27 @@ export default function MatrixCell({ cell, compact, selectable, selected, onSele
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           accessibilityLabel={`Info about ${cell.label}`}
         >
-          <TenderText variant="caption" style={[styles.infoIcon, { color: palette.label }]}>ⓘ</TenderText>
+          <View style={styles.infoCircle}>
+            <TenderText variant="caption" style={[styles.infoIcon, { color: palette.label }]}>ⓘ</TenderText>
+          </View>
         </TouchableOpacity>
+      )}
+      {showInfo && SCORE_EXPLAINERS[cell.label] && (
+        <Pressable
+          style={styles.tooltipOverlay}
+          onPress={() => setShowInfo(false)}
+        >
+          <View style={styles.tooltip}>
+            <View style={styles.tooltipHeader}>
+              <TenderText variant="caption" style={styles.tooltipTitle}>{cell.label}</TenderText>
+              <TouchableOpacity onPress={() => setShowInfo(false)} hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}>
+                <TenderText variant="caption" style={styles.tooltipClose}>x</TenderText>
+              </TouchableOpacity>
+            </View>
+            <TenderText variant="caption" style={styles.tooltipDescriptor}>{cell.descriptor}</TenderText>
+            <TenderText variant="caption" style={styles.tooltipText}>{SCORE_EXPLAINERS[cell.label]}</TenderText>
+          </View>
+        </Pressable>
       )}
       {selectable && selected && (
         <View style={[styles.checkOverlay, { backgroundColor: palette.accent || palette.text }]}>
@@ -219,12 +239,80 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 2,
     right: 2,
-    padding: 4,
+    padding: 2,
+    zIndex: 5,
+  },
+  infoCircle: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: 'rgba(0,0,0,0.06)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   infoIcon: {
+    fontSize: 12,
+    opacity: 0.7,
+    lineHeight: 14,
+  },
+  tooltipOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: -4,
+    right: -4,
+    bottom: 0,
+    zIndex: 100,
+    justifyContent: 'flex-end',
+    paddingBottom: 2,
+  },
+  tooltip: {
+    position: 'absolute',
+    bottom: '100%',
+    left: -8,
+    right: -8,
+    backgroundColor: '#FFF8F0',
+    borderRadius: 10,
+    padding: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.06)',
+    zIndex: 110,
+  },
+  tooltipHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  tooltipTitle: {
+    fontSize: 11,
+    fontFamily: 'JosefinSans_400Regular',
+    fontWeight: '600',
+    color: '#5A4A3A',
+    letterSpacing: 0.3,
+  },
+  tooltipClose: {
+    fontSize: 13,
+    color: '#999',
+    fontWeight: '600',
+    lineHeight: 14,
+  },
+  tooltipDescriptor: {
     fontSize: 10,
-    opacity: 0.35,
-    lineHeight: 12,
+    fontFamily: 'JosefinSans_300Light',
+    color: '#8A7A6A',
+    marginBottom: 4,
+    fontStyle: 'italic',
+  },
+  tooltipText: {
+    fontSize: 10,
+    fontFamily: 'JosefinSans_300Light',
+    color: '#5A4A3A',
+    lineHeight: 14,
   },
   checkOverlay: {
     position: 'absolute',

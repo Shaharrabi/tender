@@ -253,7 +253,7 @@ export default function BuildingBridgesScreen() {
 
       {/* Content */}
       {phase === 'home' && (
-        <ScrollView style={styles.scrollView} contentContainerStyle={[styles.scrollContent, { paddingBottom: BAR_HEIGHT + 90 }]} showsVerticalScrollIndicator={false} onScroll={handleScroll} scrollEventThrottle={16}>
+        <ScrollView style={styles.scrollView} contentContainerStyle={[styles.scrollContent, { paddingBottom: BAR_HEIGHT + 140 }]} showsVerticalScrollIndicator={false} onScroll={handleScroll} scrollEventThrottle={16}>
           <HomeView
             homeTab={homeTab}
             setHomeTab={setHomeTab}

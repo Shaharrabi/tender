@@ -83,6 +83,20 @@ export default function QuickLinksBar({ showHome = true, currentScreen, isSingle
           </TouchableOpacity>
         )}
 
+        {currentScreen !== 'practices' && (
+          <TouchableOpacity
+            ref={currentScreen === 'home' ? (r) => RefRegistry.register('home_practicesCard', r) : undefined}
+            style={styles.linkButton}
+            onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/building-bridges' as any); }}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Practices"
+          >
+            <TargetIcon size={20} color={Colors.secondary} />
+            <Text style={styles.linkLabel}>Practices</Text>
+          </TouchableOpacity>
+        )}
+
         {currentScreen !== 'journal' && (
           <TouchableOpacity
             ref={currentScreen === 'home' ? (r) => RefRegistry.register('home_journalCard', r) : undefined}

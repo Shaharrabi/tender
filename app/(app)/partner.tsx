@@ -37,7 +37,6 @@ import {
   disconnectCouple,
   deleteCouple,
 } from '@/services/couples';
-import { supabase } from '@/services/supabase';
 import { getDyadicAssessments } from '@/utils/assessments/registry';
 import { getGatedDyadicTypes } from '@/utils/unlockLogic';
 import {
@@ -385,10 +384,7 @@ export default function PartnerScreen() {
           {/* Dyadic Assessments Progress */}
           <Text style={styles.sectionTitle}>Relationship Assessments</Text>
           <Text style={styles.sectionDesc}>
-            These are optional assessments you complete together about your relationship. They measure satisfaction (RDAS), stress coping (DCI), and closeness (CSI-16).
-          </Text>
-          <Text style={[styles.sectionDesc, { fontStyle: 'italic', marginTop: 4, marginBottom: 8 }]}>
-            Your couple portrait is already built from your individual assessments. These add extra depth — but aren't required. Complete them here, and they'll automatically enrich your couple portrait.
+            Both partners complete these about your relationship together.
           </Text>
 
           {dyadicAssessments.map((assessment) => {
@@ -531,39 +527,6 @@ export default function PartnerScreen() {
             >
               <Text style={styles.shareButtonText}>
                 {Platform.OS === 'web' ? 'Copy Code' : 'Share Code'}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.regenerateBtn}
-              onPress={async () => {
-                if (!user) return;
-                setProcessing(true);
-                try {
-                  // Expire the old invite
-                  await supabase
-                    .from('couple_invites')
-                    .update({ status: 'expired', updated_at: new Date().toISOString() })
-                    .eq('id', activeInvite.id);
-                  // Generate a fresh code
-                  const freshInvite = await createInvite(user.id, displayName.trim() || undefined);
-                  if (freshInvite) {
-                    setActiveInvite(freshInvite);
-                    Alert.alert('New Code', `Your new invite code is: ${freshInvite.invite_code}`);
-                  }
-                } catch (e) {
-                  console.error('[Partner] Error regenerating code:', e);
-                  Alert.alert('Error', 'Could not generate a new code. Please try again.');
-                } finally {
-                  setProcessing(false);
-                }
-              }}
-              disabled={processing}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel="Generate New Code"
-            >
-              <Text style={styles.regenerateBtnText}>
-                Code not working? Generate a new one
               </Text>
             </TouchableOpacity>
           </View>
@@ -949,17 +912,6 @@ const styles = StyleSheet.create({
     fontFamily: FontFamilies.body,
     fontSize: FontSizes.body,
     fontWeight: '600',
-  },
-  regenerateBtn: {
-    marginTop: Spacing.md,
-    paddingVertical: Spacing.sm,
-    alignItems: 'center',
-  },
-  regenerateBtnText: {
-    color: Colors.textMuted,
-    fontFamily: FontFamilies.body,
-    fontSize: FontSizes.bodySmall,
-    textDecorationLine: 'underline',
   },
 
   // Create invite
