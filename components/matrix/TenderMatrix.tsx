@@ -18,6 +18,7 @@
 
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, findNodeHandle } from 'react-native';
+import { useRouter } from 'expo-router';
 import TenderText from '@/components/ui/TenderText';
 import MatrixDomain, { type MatrixDomainData } from './MatrixDomain';
 import MatrixInvitation from './MatrixInvitation';
@@ -75,6 +76,7 @@ function getConfidence(instruments: string[], allScores: Record<string, any>): C
 // ─── Component ──────────────────────────────────────
 
 export default function TenderMatrix({ allScores, portrait, scrollViewRef }: TenderMatrixProps) {
+  const router = useRouter();
   const [expandedDomain, setExpandedDomain] = useState<string | null>(null);
   const [integrateMode, setIntegrateMode] = useState(false);
   const [selectedBoxes, setSelectedBoxes] = useState<string[]>([]); // "domainId:CellLabel"
@@ -472,6 +474,23 @@ export default function TenderMatrix({ allScores, portrait, scrollViewRef }: Ten
         </View>
       )}
 
+      {/* Learn About Me — guided walkthrough of strengths & growth areas */}
+      {portrait.compositeScores && !integrateMode && (
+        <View style={styles.learnButtonRow}>
+          <TouchableOpacity
+            style={styles.learnButton}
+            onPress={() => router.push('/(app)/learn-about-me' as any)}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Learn about myself — guided view of your strengths and growing areas"
+          >
+            <TenderText variant="caption" style={styles.learnButtonText}>
+              Learn About Me
+            </TenderText>
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* Integrate mode toggle */}
       {domains.length >= 2 && (
         <View style={styles.integrateToggleRow}>
@@ -669,5 +688,24 @@ const styles = StyleSheet.create({
     fontSize: 11,
     letterSpacing: 0.5,
     color: Colors.textMuted,
+  },
+  learnButtonRow: {
+    alignItems: 'center' as const,
+    paddingHorizontal: Spacing.md,
+  },
+  learnButton: {
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.full,
+    borderWidth: 1,
+    borderColor: Colors.success,
+    backgroundColor: Colors.successLight,
+  },
+  learnButtonText: {
+    fontFamily: FontFamilies.heading,
+    fontSize: 12,
+    letterSpacing: 1,
+    textTransform: 'uppercase' as const,
+    color: Colors.successDark,
   },
 });
