@@ -1193,10 +1193,7 @@ function OverviewTab({
         />
       </View>
 
-      {/* Portrait Illustration */}
-      <View style={{ alignItems: 'center', marginBottom: Spacing.md }}>
-        <IllustrationPortraitAttachment width={Math.min(SCREEN_WIDTH - 48, 340)} animated={true} />
-      </View>
+      {/* Illustration removed — was showing generic attachment graphic, not user-specific */}
 
       {/* Portrait Digest — 60 second summary */}
       <PortraitDigest portrait={portrait} />
@@ -1618,7 +1615,7 @@ function IntegratedNarrativesCard({
             variant="headingS"
             color={Colors.primary}
             align="center"
-            style={{ lineHeight: 26, fontStyle: 'italic' }}
+            style={{ lineHeight: 26 }}
           >
             {oneThingSentence}
           </TenderText>

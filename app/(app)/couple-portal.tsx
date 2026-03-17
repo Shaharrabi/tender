@@ -958,7 +958,7 @@ function CouplePortalScreen() {
               variant="headingS"
               color={Colors.primary}
               align="center"
-              style={{ lineHeight: 26, fontStyle: 'italic' }}
+              style={{ lineHeight: 26 }}
             >
               {oneThingSentence}
             </TenderText>
@@ -2091,7 +2091,7 @@ function CouplePortalScreen() {
           </View>
 
           <TenderText variant="headingXL" style={styles.heading}>Your Couple Portal</TenderText>
-          <TenderText variant="headingS" color={Colors.textSecondary} style={[styles.subtitle, { fontStyle: 'italic', marginBottom: 4 }]}>
+          <TenderText variant="headingS" color={Colors.textSecondary} style={[styles.subtitle, { marginBottom: 4 }]}>
             The Space Between You
           </TenderText>
           <TenderText variant="bodySmall" color={Colors.textMuted} style={styles.subtitle}>
@@ -2282,7 +2282,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 20,
     marginTop: 4,
-    fontStyle: 'italic' as const,
   },
   assessmentExplainerLink: {
     marginTop: 10,
