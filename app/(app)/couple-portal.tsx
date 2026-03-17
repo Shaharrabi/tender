@@ -734,6 +734,23 @@ function CouplePortalScreen() {
         <IllustrationPortalHero width={Math.min(Dimensions.get('window').width - 32, 380)} animated />
       </View>
 
+      {/* Couple assessments explainer */}
+      <View style={styles.assessmentExplainerCard}>
+        <TenderText variant="label" style={styles.assessmentExplainerTitle}>
+          How Your Couple Portrait Works
+        </TenderText>
+        <TenderText variant="bodySmall" color={Colors.textSecondary} style={styles.assessmentExplainerBody}>
+          Your couple portrait is built from both partners' individual assessments — the same 6 sections you each completed on your own. That's where most of the depth comes from.
+        </TenderText>
+        <TenderText variant="bodySmall" color={Colors.textSecondary} style={styles.assessmentExplainerBody}>
+          The three couple assessments (RDAS, DCI, CSI-16) are optional enrichments. They add texture — like relationship satisfaction, how you cope with stress together, and how you handle conflict as a pair — but they are not required.
+        </TenderText>
+        <TenderText variant="bodySmall" color={Colors.textMuted} style={styles.assessmentExplainerNote}>
+          ✦ Portrait without couple assessments: rich and accurate{'\n'}
+          ✦ Portrait with couple assessments: even richer
+        </TenderText>
+      </View>
+
       {/* Stale partner portrait nudge */}
       {partnerPortraitStale && (
         <View style={styles.staleBanner}>
@@ -2152,6 +2169,33 @@ const styles = StyleSheet.create({
     gap: 6,
   },
 
+  assessmentExplainerCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    marginBottom: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  assessmentExplainerTitle: {
+    fontSize: 11,
+    letterSpacing: 2,
+    textTransform: 'uppercase' as const,
+    color: Colors.textMuted,
+    marginBottom: 10,
+    textAlign: 'center' as const,
+  },
+  assessmentExplainerBody: {
+    lineHeight: 20,
+    marginBottom: 8,
+    fontSize: 13,
+  },
+  assessmentExplainerNote: {
+    fontSize: 12,
+    lineHeight: 20,
+    marginTop: 4,
+    fontStyle: 'italic' as const,
+  },
   staleBanner: {
     flexDirection: 'row' as const,
     alignItems: 'flex-start' as const,
