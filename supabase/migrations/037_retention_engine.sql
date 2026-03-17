@@ -8,8 +8,8 @@
 CREATE TABLE IF NOT EXISTS partner_activity (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   couple_id UUID REFERENCES couples(id) ON DELETE CASCADE,
-  actor_user_id UUID REFERENCES users(id),
-  recipient_user_id UUID REFERENCES users(id),
+  actor_user_id UUID REFERENCES auth.users(id),
+  recipient_user_id UUID REFERENCES auth.users(id),
   activity_type TEXT NOT NULL,
   activity_data JSONB DEFAULT '{}',
   requires_completion TEXT,
@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS daily_question_responses (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   couple_id UUID REFERENCES couples(id) ON DELETE CASCADE,
   question_id UUID REFERENCES daily_questions(id),
-  user_id UUID REFERENCES users(id),
+  user_id UUID REFERENCES auth.users(id),
   response_text TEXT NOT NULL,
   responded_at TIMESTAMPTZ DEFAULT NOW(),
   partner_seen BOOLEAN DEFAULT false,
@@ -123,7 +123,7 @@ ALTER TABLE weare_scores ADD COLUMN IF NOT EXISTS change_narrative TEXT;
 -- 5. Emotional Safety — notification budget tracking
 CREATE TABLE IF NOT EXISTS notification_budget (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   date DATE NOT NULL DEFAULT CURRENT_DATE,
   relational_nudges_sent INTEGER DEFAULT 0,
   last_nudge_at TIMESTAMPTZ,

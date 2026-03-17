@@ -78,45 +78,47 @@ CREATE OR REPLACE FUNCTION accept_couple_invite(
 ) RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
   v_invite RECORD;
   v_couple RECORD;
   v_now TIMESTAMPTZ := now();
 BEGIN
-  -- 1. Lock and update the invite (only if still pending)
-  UPDATE couple_invites
-    SET status = 'accepted',
-        accepted_by = p_acceptor_id,
-        updated_at = v_now
-    WHERE id = p_invite_id
-      AND status = 'pending'
-    RETURNING * INTO v_invite;
+  -- 1. Lock the invite row and read it (without changing status yet)
+  SELECT * INTO v_invite
+  FROM couple_invites
+  WHERE id = p_invite_id
+    AND status = 'pending'
+  FOR UPDATE;
 
   IF v_invite IS NULL THEN
     RAISE EXCEPTION 'Invite not found or no longer pending';
   END IF;
 
-  -- 1b. Reject self-invites (user trying to accept their own code)
+  -- 1b. Reject self-invites BEFORE any state change
   IF v_invite.inviter_id = p_acceptor_id THEN
-    -- Roll back the status change
-    UPDATE couple_invites
-      SET status = 'pending', accepted_by = NULL, updated_at = v_now
-      WHERE id = p_invite_id;
     RAISE EXCEPTION 'Cannot accept your own invite';
   END IF;
 
-  -- 2. Create the couple record
+  -- 2. Now mark the invite as accepted
+  UPDATE couple_invites
+    SET status = 'accepted',
+        accepted_by = p_acceptor_id,
+        updated_at = v_now
+    WHERE id = p_invite_id;
+
+  -- 3. Create the couple record
   INSERT INTO couples (partner_a_id, partner_b_id, invite_id)
     VALUES (v_invite.inviter_id, p_acceptor_id, p_invite_id)
     RETURNING * INTO v_couple;
 
-  -- 3. Update both partners' relationship_mode
+  -- 4. Update both partners' relationship_mode
   UPDATE user_profiles
     SET relationship_mode = 'real_partner', updated_at = v_now
     WHERE user_id IN (p_acceptor_id, v_invite.inviter_id);
 
-  -- 4. Initialize sharing defaults for both partners
+  -- 5. Initialize sharing defaults for both partners
   INSERT INTO sharing_preferences (user_id, couple_id, assessment_type, shared)
     SELECT u.user_id, v_couple.id, t.type, false
     FROM (VALUES (p_acceptor_id), (v_invite.inviter_id)) AS u(user_id)
@@ -132,3 +134,6 @@ BEGIN
   );
 END;
 $$;
+
+-- Grant execute to authenticated users
+GRANT EXECUTE ON FUNCTION accept_couple_invite(UUID, UUID) TO authenticated;

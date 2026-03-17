@@ -2,8 +2,9 @@
  * LensPicker — Six viewpoint pills for the Integration Engine.
  *
  * Same data, six different doors:
- *   Therapeutic | Soulful | Practical | Developmental | Relational | Simple
+ *   Soulful | Therapeutic | Practical | Developmental | Relational | Simple
  *
+ * Each pill shows a hand-drawn SVG icon + label.
  * Default lens: Soulful (Tender's WEARE signature voice).
  * Arc, practice, and invitation stay the same across lenses.
  */
@@ -14,6 +15,15 @@ import TenderText from '@/components/ui/TenderText';
 import { Colors, Spacing, BorderRadius, FontFamilies } from '@/constants/theme';
 import type { LensType } from '@/utils/integration-engine';
 import { LENS_META } from '@/utils/integration-engine';
+import {
+  BrainIcon,
+  MoonIcon,
+  LightningIcon,
+  SeedlingIcon,
+  HeartDoubleIcon,
+  SunIcon,
+} from '@/assets/graphics/icons';
+import type { IconProps } from '@/assets/graphics/icons';
 
 interface LensPickerProps {
   activeLens: LensType;
@@ -38,6 +48,16 @@ const LENS_COLORS: Record<LensType, { bg: string; active: string; text: string }
   simple:      { bg: '#F5F0EB', active: '#9B8B7B', text: '#6A5B4A' },
 };
 
+/** Map lens type to its hand-drawn SVG icon component */
+const LENS_ICONS: Record<LensType, React.ComponentType<IconProps>> = {
+  therapeutic: BrainIcon,
+  soulful: MoonIcon,
+  practical: LightningIcon,
+  developmental: SeedlingIcon,
+  relational: HeartDoubleIcon,
+  simple: SunIcon,
+};
+
 export default function LensPicker({ activeLens, onLensChange }: LensPickerProps) {
   return (
     <ScrollView
@@ -49,6 +69,8 @@ export default function LensPicker({ activeLens, onLensChange }: LensPickerProps
         const isActive = lens === activeLens;
         const colors = LENS_COLORS[lens];
         const meta = LENS_META[lens];
+        const IconComponent = LENS_ICONS[lens];
+        const iconColor = isActive ? '#FFFFFF' : colors.text;
 
         return (
           <TouchableOpacity
@@ -63,15 +85,18 @@ export default function LensPicker({ activeLens, onLensChange }: LensPickerProps
             onPress={() => onLensChange(lens)}
             activeOpacity={0.7}
           >
-            <TenderText
-              variant="caption"
-              style={[
-                styles.pillLabel,
-                { color: isActive ? '#FFFFFF' : colors.text },
-              ]}
-            >
-              {meta.emoji} {meta.label}
-            </TenderText>
+            <View style={styles.pillContent}>
+              <IconComponent size={12} color={iconColor} />
+              <TenderText
+                variant="caption"
+                style={[
+                  styles.pillLabel,
+                  { color: iconColor },
+                ]}
+              >
+                {meta.label}
+              </TenderText>
+            </View>
           </TouchableOpacity>
         );
       })}
@@ -91,6 +116,11 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 16,
     borderWidth: 1,
+  },
+  pillContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   pillLabel: {
     fontSize: 11,

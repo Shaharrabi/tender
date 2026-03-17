@@ -32,14 +32,14 @@ export interface LensedNarrative {
   simple: string;          // 2-4 lines, distilled essence
 }
 
-/** Lens display metadata */
-export const LENS_META: Record<LensType, { label: string; subtitle: string; emoji: string }> = {
-  therapeutic: { label: 'Therapeutic', subtitle: 'What the research sees', emoji: '🧠' },
-  soulful: { label: 'Soulful', subtitle: 'What the field sees', emoji: '🔮' },
-  practical: { label: 'Practical', subtitle: 'What to do this week', emoji: '🔧' },
-  developmental: { label: 'Developmental', subtitle: 'Where you are on the journey', emoji: '📈' },
-  relational: { label: 'Relational', subtitle: "What your partner experiences", emoji: '💑' },
-  simple: { label: 'Simple', subtitle: 'In one breath', emoji: '💡' },
+/** Lens display metadata — icon field maps to hand-drawn SVG component name */
+export const LENS_META: Record<LensType, { label: string; subtitle: string; icon: string }> = {
+  therapeutic: { label: 'Therapeutic', subtitle: 'What the research sees', icon: 'BrainIcon' },
+  soulful: { label: 'Soulful', subtitle: 'What the field sees', icon: 'MoonIcon' },
+  practical: { label: 'Practical', subtitle: 'What to do this week', icon: 'LightningIcon' },
+  developmental: { label: 'Developmental', subtitle: 'Where you are on the journey', icon: 'SeedlingIcon' },
+  relational: { label: 'Relational', subtitle: "What your partner experiences", icon: 'HeartDoubleIcon' },
+  simple: { label: 'Simple', subtitle: 'In one breath', icon: 'SunIcon' },
 };
 
 /** The developmental arc: wound → protection → cost → emergence */
