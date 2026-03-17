@@ -341,6 +341,21 @@ export default function PartnerScreen() {
             <Text style={styles.connectedLabel}>Connected</Text>
           </View>
 
+          {/* Your Couple Journey — Hero Entry Point */}
+          <View style={[styles.card, { backgroundColor: '#F5F0EB', borderLeftWidth: 3, borderLeftColor: Colors.secondary, marginBottom: Spacing.md }]}>
+            <Text style={[styles.heading, { fontSize: 16, marginBottom: 4 }]}>Your Couple Journey</Text>
+            <Text style={[styles.sectionDesc, { marginBottom: Spacing.sm }]}>
+              Your couple portrait is built from both partners' individual assessments. The optional couple assessments below add extra texture — but they're not required.
+            </Text>
+            <TouchableOpacity
+              style={{ backgroundColor: Colors.secondary, borderRadius: BorderRadius.md, paddingVertical: 12, paddingHorizontal: 20, alignItems: 'center', marginBottom: 8 }}
+              onPress={() => router.push('/(app)/couple-portal' as any)}
+              activeOpacity={0.7}
+            >
+              <Text style={{ fontFamily: FontFamilies.heading, fontSize: 14, color: Colors.textOnPrimary }}>View Couple Portal</Text>
+            </TouchableOpacity>
+          </View>
+
           {/* Sharing Settings */}
           <TouchableOpacity
             style={[styles.card, styles.sharingCard]}

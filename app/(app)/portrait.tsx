@@ -93,6 +93,7 @@ import {
   LinkIcon,
   SeedlingIcon,
   LightbulbIcon,
+  MirrorIcon,
 } from '@/assets/graphics/icons';
 import { getExerciseById } from '@/utils/interventions/registry';
 import { getExercisesForEdge } from '@/utils/portrait/growth-edges';
@@ -139,7 +140,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 // ─── Tab definitions ────────────────────────────────────
 
-type TabKey = 'overview' | 'scores' | 'lenses' | 'stress' | 'growth' | 'map';
+type TabKey = 'overview' | 'scores' | 'lenses' | 'stress' | 'growth' | 'connections' | 'map';
 
 interface TabDef {
   key: TabKey;
@@ -154,6 +155,7 @@ const TABS: TabDef[] = [
   { key: 'lenses', label: 'Lenses', Icon: STAT_ICONS.lenses, color: Colors.depth },
   { key: 'stress', label: 'Under Stress', Icon: STAT_ICONS.cycle, color: Colors.secondary },
   { key: 'growth', label: 'Growth', Icon: STAT_ICONS.growth, color: Colors.warning },
+  { key: 'connections', label: 'Connections', Icon: MirrorIcon, color: Colors.accent },
   { key: 'map', label: 'Integrated Map', Icon: LinkIcon, color: Colors.depth },
 ];
 
@@ -1065,6 +1067,7 @@ export default function PortraitScreen() {
             </>
           )}
           {activeTab === 'growth' && <GrowthTab portrait={portrait} router={router} />}
+          {activeTab === 'connections' && <ConnectionsTab portrait={portrait} />}
           {activeTab === 'map' && (
             <>
               <MatrixTab allScores={allScoresMap} portrait={portrait} />
@@ -2499,6 +2502,136 @@ function CycleTab({ portrait, rawScores }: { portrait: IndividualPortrait; rawSc
         </>
       )}
     </Animated.View>
+  );
+}
+
+// ─── CONNECTIONS TAB ────────────────────────────────
+
+interface ConnectionInsight {
+  title: string;
+  domains: string;
+  text: string;
+  color: string;
+}
+
+function generateConnectionInsights(cs: any): ConnectionInsight[] {
+  const insights: ConnectionInsight[] = [];
+  if (!cs) return insights;
+
+  // Attachment × Emotional Intelligence
+  const attach = cs.attachmentSecurity ?? 50;
+  const ei = cs.emotionalIntelligence ?? 50;
+  if (attach < 45 && ei > 60) {
+    insights.push({ title: 'Sharp Radar, Shaky Ground', domains: 'Attachment × Emotional Intelligence', text: `Your emotional intelligence (${Math.round(ei)}) is strong — you read people well. But your attachment security (${Math.round(attach)}) suggests the signals you pick up can trigger old fears. You see clearly, then react from a wounded place.`, color: Colors.secondary });
+  } else if (attach > 60 && ei < 45) {
+    insights.push({ title: 'Secure but Missing Signals', domains: 'Attachment × Emotional Intelligence', text: `You feel safe in relationships (${Math.round(attach)}), which is a gift. But your emotional radar (${Math.round(ei)}) may miss what your partner is feeling. Security without perception can create blind spots.`, color: Colors.calm });
+  } else if (attach > 60 && ei > 60) {
+    insights.push({ title: 'Grounded and Attuned', domains: 'Attachment × Emotional Intelligence', text: `With attachment security at ${Math.round(attach)} and emotional intelligence at ${Math.round(ei)}, you can both feel safe AND read the room. This is a strong foundation for deep intimacy.`, color: Colors.success });
+  }
+
+  // Differentiation × Regulation
+  const diff = cs.differentiation ?? 50;
+  const reg = cs.regulationScore ?? 50;
+  if (diff > 60 && reg < 40) {
+    insights.push({ title: 'Self-Aware but Overwhelmed', domains: 'Differentiation × Regulation', text: `You know who you are (${Math.round(diff)}) but your emotional regulation (${Math.round(reg)}) means strong feelings can still flood you. You have the clarity — now you need the tools to stay steady.`, color: Colors.warning });
+  } else if (diff < 40 && reg > 60) {
+    insights.push({ title: 'Calm but Merging', domains: 'Differentiation × Regulation', text: `You stay calm under pressure (${Math.round(reg)}), but with lower differentiation (${Math.round(diff)}), that calm may come from absorbing your partner's reality rather than holding your own.`, color: Colors.depth });
+  }
+
+  // Conflict × Values
+  const conflict = cs.conflictFlexibility ?? 50;
+  const values = cs.valuesCongruence ?? 50;
+  if (conflict < 40 && values > 65) {
+    insights.push({ title: 'Values-Conflict Tension', domains: 'Conflict Style × Values', text: `Your values are clear and strongly held (${Math.round(values)}), but your conflict flexibility is low (${Math.round(conflict)}). When values clash, you may dig in rather than find creative solutions.`, color: Colors.accent });
+  } else if (conflict > 65 && values < 40) {
+    insights.push({ title: 'Flexible but Unanchored', domains: 'Conflict Style × Values', text: `You're flexible in conflict (${Math.round(conflict)}), which is a gift. But without strong values alignment (${Math.round(values)}), you may bend too much — compromising on things that actually matter.`, color: Colors.secondary });
+  }
+
+  // Self-Leadership × Relational Awareness
+  const lead = cs.selfLeadership ?? 50;
+  const aware = cs.relationalAwareness ?? 50;
+  if (lead > 60 && aware > 60) {
+    insights.push({ title: 'Leading and Listening', domains: 'Self-Leadership × Relational Awareness', text: `You lead yourself well (${Math.round(lead)}) and stay attuned to your partner (${Math.round(aware)}). This combination means you can hold your ground while genuinely hearing the other.`, color: Colors.success });
+  } else if (lead > 60 && aware < 40) {
+    insights.push({ title: 'Strong Voice, Deaf Ear', domains: 'Self-Leadership × Relational Awareness', text: `Your self-leadership (${Math.round(lead)}) means you know what you want. But lower relational awareness (${Math.round(aware)}) means your partner may feel unseen — even when you're trying.`, color: Colors.warning });
+  }
+
+  // Window × Reactivity
+  const window = cs.windowWidth ?? 50;
+  if (window < 35 && reg < 40) {
+    insights.push({ title: 'Narrow Window, Fast Flood', domains: 'Window of Tolerance × Regulation', text: `Your window of tolerance (${Math.round(window)}) is narrow and your regulation capacity (${Math.round(reg)}) is still developing. This means you move from "fine" to "flooded" quickly. Building regulation practices will literally widen your window.`, color: Colors.secondary });
+  } else if (window > 65 && reg > 60) {
+    insights.push({ title: 'Wide Window, Steady Ship', domains: 'Window of Tolerance × Regulation', text: `With a wide window of tolerance (${Math.round(window)}) and strong regulation (${Math.round(reg)}), you can hold a lot of emotional intensity without shutting down. This is a superpower in relationships.`, color: Colors.success });
+  }
+
+  // Always add at least one if we found nothing
+  if (insights.length === 0) {
+    insights.push({ title: 'Your Unique Profile', domains: 'All Dimensions', text: 'Your scores create a unique pattern. As you complete more practices and revisit assessments, deeper cross-domain connections will emerge here.', color: Colors.primary });
+  }
+
+  return insights;
+}
+
+function ConnectionsTab({ portrait }: { portrait: IndividualPortrait }) {
+  const cs = portrait.compositeScores;
+  const insights = generateConnectionInsights(cs);
+  const [expanded, setExpanded] = React.useState<Record<number, boolean>>({});
+
+  return (
+    <View style={{ paddingHorizontal: Spacing.md }}>
+      <TenderText variant="bodySmall" color={Colors.textSecondary} style={{ marginBottom: Spacing.lg, lineHeight: 20 }}>
+        Your assessments don't live in isolation. Here's what happens when we read across domains — the patterns that only emerge at the intersection.
+      </TenderText>
+
+      {insights.map((insight, i) => (
+        <TouchableOpacity
+          key={i}
+          activeOpacity={0.8}
+          onPress={() => setExpanded(prev => ({ ...prev, [i]: !prev[i] }))}
+          style={{
+            backgroundColor: Colors.surfaceElevated,
+            borderRadius: BorderRadius.lg,
+            padding: Spacing.md,
+            marginBottom: Spacing.sm,
+            borderLeftWidth: 3,
+            borderLeftColor: insight.color,
+            ...Shadows.sm,
+          }}
+        >
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <View style={{ flex: 1 }}>
+              <TenderText variant="caption" color={Colors.textMuted} style={{ marginBottom: 2 }}>
+                {insight.domains}
+              </TenderText>
+              <TenderText variant="headingS" style={{ color: insight.color }}>
+                {insight.title}
+              </TenderText>
+            </View>
+            <TenderText variant="body" color={Colors.textMuted}>
+              {expanded[i] ? '−' : '+'}
+            </TenderText>
+          </View>
+          {expanded[i] && (
+            <TenderText variant="body" color={Colors.textSecondary} style={{ marginTop: Spacing.sm, lineHeight: 22 }}>
+              {insight.text}
+            </TenderText>
+          )}
+        </TouchableOpacity>
+      ))}
+
+      {portrait.integratedNarratives && portrait.integratedNarratives.length > 0 && (
+        <View style={{ marginTop: Spacing.md }}>
+          <TenderText variant="label" color={Colors.textMuted} style={{ marginBottom: Spacing.sm }}>
+            FROM YOUR INTEGRATED MAP
+          </TenderText>
+          {portrait.integratedNarratives.slice(0, 3).map((n: any, i: number) => (
+            <View key={i} style={{ backgroundColor: '#FDFBF9', borderRadius: BorderRadius.md, padding: Spacing.sm, marginBottom: Spacing.xs }}>
+              <TenderText variant="bodySmall" color={Colors.textSecondary}>{typeof n === 'string' ? n : n.narrative || n.text || ''}</TenderText>
+            </View>
+          ))}
+        </View>
+      )}
+    </View>
   );
 }
 

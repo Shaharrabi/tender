@@ -69,6 +69,10 @@ export const TAB_SUMMARIES: Record<string, { summary: string; readMinutes: numbe
     summary: 'Your personalized growth plan \u2014 prioritized edges, recommended practices, and a phased pathway forward.',
     readMinutes: 5,
   },
+  connections: {
+    summary: 'Cross-domain insights \u2014 what happens when your attachment meets your emotional intelligence, when your conflict style meets your values.',
+    readMinutes: 4,
+  },
   map: {
     summary: 'Your integrated map \u2014 see how attachment, personality, regulation, conflict style, values, and differentiation all connect into one picture.',
     readMinutes: 8,
