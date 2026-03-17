@@ -93,7 +93,7 @@ export default function QuickLinksBar({ showHome = true, currentScreen, isSingle
             accessibilityLabel="Bridges"
           >
             <TargetIcon size={20} color={Colors.accent} />
-            <Text style={styles.linkLabel}>Bridges</Text>
+            <Text style={styles.linkLabel}>{currentScreen === 'home' ? 'Practices' : 'Bridges'}</Text>
           </TouchableOpacity>
         )}
 
