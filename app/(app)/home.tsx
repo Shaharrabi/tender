@@ -1855,6 +1855,37 @@ export default function HomeScreen() {
             </View>
           )}
 
+          {/* Section 7: The Space Between — available after all 6 individual assessments */}
+          {individualCompleted && hasPortrait && !statuses['relational-field']?.state?.includes('completed') && (
+            <TouchableOpacity
+              style={[styles.portraitGenerateCard, { marginHorizontal: 0, borderLeftWidth: 3, borderLeftColor: '#7CA4B8' }]}
+              onPress={() => {
+                SoundHaptics.tap();
+                router.push({ pathname: '/(app)/tender-assessment' as any, params: { startSection: 7 } });
+              }}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.portraitGenerateTitle, { fontSize: 15 }]}>
+                The Space Between
+              </Text>
+              <Text style={styles.portraitGenerateSubtitle}>
+                One more section — how you sense, hold, and co-create the relational field with your partner. This deepens your portrait and unlocks the Field domain in your Integrated Map.
+              </Text>
+              <TenderButton
+                title="Take Section 7"
+                onPress={() => {
+                  SoundHaptics.tap();
+                  router.push({ pathname: '/(app)/tender-assessment' as any, params: { startSection: 7 } });
+                }}
+                variant="secondary"
+                size="md"
+                fullWidth
+                style={{ marginTop: Spacing.xs }}
+                accessibilityLabel="Take the Space Between assessment"
+              />
+            </TouchableOpacity>
+          )}
+
           {/* ═══ COUPLE PORTAL PREVIEW (hidden when dual strip is active) ═══ */}
           {hasCoupleLinked && !(hasPortrait && portrait) && (
             <TouchableOpacity

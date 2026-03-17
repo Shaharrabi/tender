@@ -254,11 +254,12 @@ const styles = StyleSheet.create({
   },
   grid: {
     gap: 16,
-    paddingHorizontal: 0,
+    paddingHorizontal: Spacing.md,
   },
   gridWide: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    paddingHorizontal: Spacing.md,
   },
   badgesSection: {
     marginTop: 24,
