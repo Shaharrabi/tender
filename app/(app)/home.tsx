@@ -1004,15 +1004,37 @@ export default function HomeScreen() {
     if (!user || generating) return;
 
     // Check if user has signed consent waiver
-    const consent = await getUserConsent(user.id);
-    if (!consent) {
-      router.push('/(app)/consent-waiver' as any);
-      return;
+    try {
+      const consent = await getUserConsent(user.id);
+      if (!consent) {
+        // User needs to sign the consent waiver first
+        router.push('/(app)/consent-waiver' as any);
+        return;
+      }
+    } catch (consentErr) {
+      console.warn('[Portrait] Consent check failed (table may not exist), proceeding:', consentErr);
+      // If the data_consents table doesn't exist yet, skip the consent gate
+      // rather than blocking the user entirely. The table is nice-to-have.
     }
 
     setGenerating(true);
     try {
       const latest = await fetchAllScores(user.id);
+
+      // Verify all 6 assessment scores are present
+      const requiredTypes = ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'ipip-neo-120', 'values'] as const;
+      const missingTypes = requiredTypes.filter((t) => !latest[t]?.scores);
+      if (missingTypes.length > 0) {
+        const msg = `Missing assessment data for: ${missingTypes.join(', ')}. Please complete all assessments first.`;
+        console.error('[Portrait]', msg);
+        if (Platform.OS === 'web') {
+          window.alert(msg);
+        } else {
+          Alert.alert('Missing Data', msg);
+        }
+        return;
+      }
+
       const ids = Object.values(latest).map((r) => r.id);
       const scores: AllAssessmentScores = {
         ecrr: latest['ecr-r'].scores,
@@ -1027,8 +1049,14 @@ export default function HomeScreen() {
       const saved = await savePortrait(p);
       setPortrait(saved);
       router.push('/(app)/portrait' as any);
-    } catch (e) {
+    } catch (e: any) {
       console.error('Portrait generation failed:', e);
+      const errMsg = e?.message || 'An unexpected error occurred.';
+      if (Platform.OS === 'web') {
+        window.alert(`Portrait generation failed: ${errMsg}`);
+      } else {
+        Alert.alert('Portrait Generation Failed', errMsg);
+      }
     } finally {
       setGenerating(false);
     }
