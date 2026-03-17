@@ -425,18 +425,18 @@ export default function ExerciseFlow({
         <Animated.View
           style={[styles.celebrationContent, { opacity: celebrationFade }]}
         >
-          <Text style={styles.completionTitle}>Exercise Complete!</Text>
+          <Text style={styles.completionTitle}>You showed up.</Text>
           <Text style={styles.completionSubtitle}>
-            Well done. You completed{' '}
-            <Text style={{ fontFamily: FontFamilies.heading, fontWeight: '600' }}>
+            That's what matters. You just finished{' '}
+            <Text style={{ fontFamily: FontFamilies.accent, fontWeight: '600', color: Colors.primary }}>
               {exercise.title}
             </Text>
-            .
+            {' '}\u2014 and something shifted, even if it's subtle.
           </Text>
 
           {/* Star Rating */}
           <View style={styles.ratingSection}>
-            <Text style={styles.ratingLabel}>How was this exercise?</Text>
+            <Text style={styles.ratingLabel}>How did that land?</Text>
             <View style={styles.stars}>
               {[1, 2, 3, 4, 5].map((star) => {
                 const isFilled = rating != null && star <= rating;
@@ -461,30 +461,30 @@ export default function ExerciseFlow({
             {rating != null && (
               <Text style={styles.ratingFeedback}>
                 {rating <= 2
-                  ? 'Thank you for your honesty.'
+                  ? 'Honest feedback is a gift. Noted.'
                   : rating <= 4
-                    ? 'Great, glad it was helpful!'
-                    : 'Wonderful! So glad you loved it.'}
+                    ? 'Nice. Every practice plants a seed.'
+                    : 'Love that. Keep going.'}
               </Text>
             )}
           </View>
 
-          {/* Final Reflection */}
+          {/* Final Reflection — light, optional */}
           <View style={styles.reflectionSection}>
             <Text style={styles.reflectionLabel}>
-              Any final thoughts? (optional)
+              One word or thought? (totally optional)
             </Text>
             <View style={styles.reflectionInputWrapper}>
               <TextInput
                 style={styles.reflectionInput}
-                placeholder="What are you taking away from this exercise?"
+                placeholder="Just a word, a feeling, whatever comes up..."
                 placeholderTextColor={Colors.textMuted}
                 value={finalReflection}
                 onChangeText={setFinalReflection}
                 multiline
                 textAlignVertical="top"
                 accessibilityRole="text"
-                accessibilityLabel="Final reflection: What are you taking away from this exercise?"
+                accessibilityLabel="Quick reflection: one word or thought"
               />
             </View>
           </View>
@@ -1310,14 +1310,14 @@ const stepStyles = StyleSheet.create({
   stepTitle: {
     fontSize: FontSizes.headingM,
     fontWeight: '600',
-    fontFamily: FontFamilies.heading,
+    fontFamily: FontFamilies.accent,
     color: Colors.text,
     marginBottom: Spacing.sm,
   },
   stepContent: {
-    fontSize: FontSizes.body,
-    color: Colors.text,
-    lineHeight: 26,
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    lineHeight: 22,
     marginBottom: Spacing.md,
   },
 
@@ -1582,18 +1582,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   completionTitle: {
-    fontSize: FontSizes.headingL,
-    fontWeight: '700',
-    fontFamily: FontFamilies.heading,
-    color: Colors.text,
+    fontSize: 28,
+    fontWeight: '600',
+    fontFamily: FontFamilies.accent,
+    color: Colors.primary,
     marginBottom: Spacing.sm,
   },
   completionSubtitle: {
-    fontSize: FontSizes.body,
+    fontSize: FontSizes.bodySmall,
     color: Colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 22,
     marginBottom: Spacing.xl,
+    paddingHorizontal: Spacing.md,
   },
 
   // ─── Rating ────────────────────────────────
@@ -1622,7 +1623,7 @@ const styles = StyleSheet.create({
   ratingFeedback: {
     fontSize: FontSizes.bodySmall,
     color: Colors.textSecondary,
-    fontStyle: 'italic',
+    fontFamily: FontFamilies.body,
     marginTop: 4,
   },
 
@@ -1646,10 +1647,10 @@ const styles = StyleSheet.create({
   },
   reflectionInput: {
     padding: Spacing.md,
-    fontSize: FontSizes.body,
+    fontSize: FontSizes.bodySmall,
     color: Colors.text,
-    minHeight: 110,
-    lineHeight: 24,
+    minHeight: 72,
+    lineHeight: 22,
   },
 
   // ─── Buttons ───────────────────────────────

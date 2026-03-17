@@ -11,9 +11,9 @@ import type { Intervention } from '@/types/intervention';
 
 export const fondnessAdmiration: Intervention = {
   id: 'fondness-admiration',
-  title: 'Fondness & Admiration: Building Positive Sentiment',
+  title: 'Fondness & Admiration',
   description:
-    'Actively nurture the positive feelings between you. This exercise strengthens the friendship system that Gottman identifies as the foundation of lasting relationships — by practicing admiration, gratitude, and positive memories.',
+    'Nurture what\u2019s good between you. Admiration, gratitude, and positive memories \u2014 the antidote to taking each other for granted.',
   fieldInsight: 'What you notice and name grows. Admiration feeds the field between you.',
   category: 'attachment',
   duration: 15,
@@ -28,9 +28,9 @@ export const fondnessAdmiration: Intervention = {
   steps: [
     {
       type: 'instruction',
-      title: 'Why Fondness and Admiration Matter',
+      title: 'The Antidote',
       content:
-        'Contempt — the most destructive of the "Four Horsemen" — grows when we lose sight of what we value in our partner. The antidote is a culture of appreciation. Couples who regularly express fondness and admiration build a positive sentiment override: a general sense that their partner is a good person, even during disagreements. This exercise helps you intentionally strengthen that override.',
+        'When we stop noticing what we love about our partner, distance creeps in. This exercise reverses that \u2014 deliberately. It\u2019s simple but powerful.',
     },
     {
       type: 'prompt',
@@ -55,10 +55,10 @@ export const fondnessAdmiration: Intervention = {
     },
     {
       type: 'reflection',
-      title: 'Create an Appreciation Ritual',
+      title: 'Make It Stick',
       content:
-        'How could you make appreciation a regular habit rather than a one-time exercise? Some couples share one appreciation at dinner, or text one thing they are grateful for each morning. What ritual would work for you?',
-      promptPlaceholder: 'Our appreciation ritual could be...',
+        'One small way to keep this going \u2014 a text, a word at dinner, a look?',
+      promptPlaceholder: 'We could...',
     },
   ],
 };

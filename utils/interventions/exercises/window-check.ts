@@ -29,9 +29,9 @@ export const windowCheck: Intervention = {
   steps: [
     {
       type: 'instruction',
-      title: 'About Your Window',
+      title: 'Find Your Window',
       content:
-        'Your "window of tolerance" is the zone where you can think clearly, feel your emotions without being overwhelmed, and respond rather than react. Above the window, you feel activated — anxious, reactive, flooded. Below the window, you feel shut down — numb, disconnected, frozen. This quick check helps you locate yourself.',
+        'Your nervous system has a sweet spot \u2014 where you can think clearly and feel without flooding. Above it: anxious, reactive. Below it: numb, frozen. Let\u2019s find where you are right now.',
     },
     {
       type: 'timer',
@@ -61,16 +61,16 @@ export const windowCheck: Intervention = {
     },
     {
       type: 'instruction',
-      title: 'Guidance',
+      title: 'Quick Guidance',
       content:
-        'If you are inside your window (4-7): You are in a good place to engage, reflect, and connect. Well done noticing.\n\nIf you are above the window (8-10): Try the 5-4-3-2-1 Grounding exercise or slow your breathing to a 4-count in, 6-count out pattern.\n\nIf you are below the window (1-3): Try gentle movement — stretch, press your feet into the floor, splash cold water on your face, or hold something warm.',
+        'In your window? Great \u2014 you\u2019re ready to engage.\n\nAbove it? Slow breath: 4 counts in, 6 out. Or try 5-4-3-2-1 grounding.\n\nBelow it? Move gently. Stretch, press feet into floor, splash cold water.',
     },
     {
       type: 'reflection',
-      title: 'Reflection',
+      title: 'One Thing',
       content:
-        'What did you notice in your body scan? Is there anything that surprised you? What might have contributed to where you are right now?',
-      promptPlaceholder: 'I noticed that...',
+        'What\u2019s one thing you noticed?',
+      promptPlaceholder: 'I noticed...',
     },
   ],
 };

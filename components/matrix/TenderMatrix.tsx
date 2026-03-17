@@ -494,49 +494,49 @@ export default function TenderMatrix({ allScores, portrait, scrollViewRef }: Ten
     // Pick the most interesting combo for this person
     if (N > 65 && O > 65 && anxiety > 3.5) {
       return {
-        emoji: '\u26A1',
+        emoji: '\u2736',
         title: 'Your Hidden Superpower',
         body: `Your high sensitivity (${Math.round(N)}th) combined with high openness (${Math.round(O)}th) means you can sense emotional shifts others miss entirely. Your anxiety isn't just noise \u2014 it's a finely tuned antenna. The trick isn't turning it off. It's learning to trust the signal without drowning in it.`,
       };
     }
     if (A > 70 && conflictFlex < 40) {
       return {
-        emoji: '\uD83C\uDFAD',
+        emoji: '\u2727',
         title: 'The Warmth Paradox',
         body: `You score in the ${Math.round(A)}th percentile for warmth, yet your conflict flexibility is just ${Math.round(conflictFlex)}/100. Translation: you're deeply caring, but when things get tense you lock into one mode. Your warmth could actually be your best conflict tool \u2014 if you let yourself stay warm while disagreeing.`,
       };
     }
     if (avoidance > 3.5 && valCong > 65) {
       return {
-        emoji: '\uD83D\uDD2E',
+        emoji: '\u2662',
         title: 'The Closeness Puzzle',
         body: `Your values say intimacy matters (alignment: ${Math.round(valCong)}/100), but your attachment system pulls away (avoidance: ${avoidance.toFixed(1)}/7). This isn't hypocrisy \u2014 it's a nervous system that learned to protect what it values most by creating distance from it. The bridge? Small, repeated moments of closeness that prove safety.`,
       };
     }
     if (E < 35 && reg > 60) {
       return {
-        emoji: '\uD83C\uDF0A',
+        emoji: '\u2014',
         title: 'Your Quiet Strength',
         body: `Low social energy (${Math.round(E)}th) with solid regulation (${Math.round(reg)}/100) is an underrated combo. You don't need to be the loudest person in the room because your emotional stability does the heavy lifting. In relationships, you're the calm in the storm \u2014 your partner probably relies on this more than either of you realize.`,
       };
     }
     if (diff > 65 && anxiety > 4) {
       return {
-        emoji: '\u2694\uFE0F',
+        emoji: '\u2021',
         title: 'The Inner Tug-of-War',
         body: `Strong differentiation (${Math.round(diff)}/100) means you know who you are. But attachment anxiety (${anxiety.toFixed(1)}/7) means part of you keeps checking if your partner is still there. You're simultaneously the most grounded and most anxious person in the room. The growth edge: trusting that your solidness is exactly what makes you safe to love.`,
       };
     }
     if (N < 35 && A > 60 && avoidance < 3) {
       return {
-        emoji: '\u2728',
+        emoji: '\u2740',
         title: 'The Steady Hearth',
         body: `Low sensitivity (${Math.round(N)}th), high warmth (${Math.round(A)}th), and secure attachment \u2014 you are the emotional safe haven that attachment theory dreams about. Your partner likely feels a calm they can't quite name when they're with you. Your growth edge isn't about becoming more \u2014 it's about making sure you're also receiving, not just giving.`,
       };
     }
     // Default fun combo
     return {
-      emoji: '\uD83E\uDDE9',
+      emoji: '\u2726',
       title: 'Your Unique Mix',
       body: `Here's something interesting: your sensitivity (${Math.round(N)}th), social energy (${Math.round(E)}th), and regulation (${Math.round(reg)}/100) create a profile that's distinctly yours. No textbook describes this exact combination \u2014 which means your relationship won't look like anyone else's either. That's not a bug. It's the feature.`,
     };

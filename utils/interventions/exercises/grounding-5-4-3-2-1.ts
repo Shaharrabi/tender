@@ -28,9 +28,9 @@ export const grounding54321: Intervention = {
   steps: [
     {
       type: 'instruction',
-      title: 'Welcome',
+      title: 'Land Here',
       content:
-        'This is a quick sensory grounding exercise. It works by gently shifting your attention from internal distress to the world around you. Find a comfortable position and take one slow breath before we begin.',
+        'A quick sensory reset. We\u2019ll walk through your five senses to bring you back to right now. One slow breath first.',
     },
     {
       type: 'checklist',
@@ -93,10 +93,10 @@ export const grounding54321: Intervention = {
     },
     {
       type: 'reflection',
-      title: 'Closing Reflection',
+      title: 'Check In',
       content:
-        'Take another slow breath. Notice if anything has shifted in your body or mind since you started. You have just moved through all five senses — a small but powerful act of presence.',
-      promptPlaceholder: 'What do you notice now?',
+        'One more breath. Anything different now?',
+      promptPlaceholder: 'I feel...',
     },
   ],
 };
