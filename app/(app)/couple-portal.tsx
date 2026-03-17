@@ -162,8 +162,90 @@ function localiseNamesForViewer(
   // Deep-clone so we don't mutate the cache
   const clone: DeepCouplePortrait = JSON.parse(JSON.stringify(dp));
 
-  // Replace the viewer's real name with "You" throughout all string values
-  const nameRegex = new RegExp(myRealName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+  // Determine if viewer is partner B — if so, swap ALL partner-specific data first
+  const viewerIsB = clone.partnerBName?.toLowerCase() === myRealName.toLowerCase();
+
+  if (viewerIsB) {
+    // ── Swap partner names ──
+    const tmpName = clone.partnerAName;
+    clone.partnerAName = clone.partnerBName;
+    clone.partnerBName = tmpName;
+
+    // ── Swap pattern interlock data ──
+    if (clone.patternInterlock) {
+      const pi = clone.patternInterlock;
+      if (pi.combinedCycle) {
+        const tmpPos = pi.combinedCycle.partnerAPosition;
+        pi.combinedCycle.partnerAPosition = pi.combinedCycle.partnerBPosition;
+        pi.combinedCycle.partnerBPosition = tmpPos;
+        // Swap exit points partner labels
+        if (pi.combinedCycle.exitPoints) {
+          pi.combinedCycle.exitPoints.forEach((ep: any) => {
+            if (ep.partnerA && ep.partnerB) {
+              const tmpEp = ep.partnerA;
+              ep.partnerA = ep.partnerB;
+              ep.partnerB = tmpEp;
+            }
+          });
+        }
+      }
+      if (pi.attachmentDynamic) {
+        const ad = pi.attachmentDynamic;
+        // Swap anxiety/avoidance scores
+        let tmp = ad.partnerAAnxiety; ad.partnerAAnxiety = ad.partnerBAnxiety; ad.partnerBAnxiety = tmp;
+        tmp = ad.partnerAAvoidance; ad.partnerAAvoidance = ad.partnerBAvoidance; ad.partnerBAvoidance = tmp;
+        tmp = ad.partnerASecureDistance; ad.partnerASecureDistance = ad.partnerBSecureDistance; ad.partnerBSecureDistance = tmp;
+        const tmpQ = ad.partnerAQuadrant; ad.partnerAQuadrant = ad.partnerBQuadrant; ad.partnerBQuadrant = tmpQ;
+      }
+    }
+
+    // ── Swap convergence/divergence data ──
+    if (clone.convergenceDivergence) {
+      const cd = clone.convergenceDivergence;
+      if (cd.radarOverlap) {
+        cd.radarOverlap.forEach((r: any) => {
+          const tmpS = r.partnerAScore; r.partnerAScore = r.partnerBScore; r.partnerBScore = tmpS;
+        });
+      }
+      if (cd.frictionZones) {
+        cd.frictionZones.forEach((fz: any) => {
+          if (fz.partnerAPull && fz.partnerBPull) {
+            const tmpP = fz.partnerAPull; fz.partnerAPull = fz.partnerBPull; fz.partnerBPull = tmpP;
+          }
+        });
+      }
+      if (cd.valuesTensions) {
+        cd.valuesTensions.forEach((vt: any) => {
+          if (vt.partnerAImportance !== undefined && vt.partnerBImportance !== undefined) {
+            const tmpI = vt.partnerAImportance; vt.partnerAImportance = vt.partnerBImportance; vt.partnerBImportance = tmpI;
+          }
+        });
+      }
+    }
+
+    // ── Swap couple growth edges ──
+    if (clone.coupleGrowthEdges) {
+      clone.coupleGrowthEdges.forEach((edge: any) => {
+        if (edge.partnerAPart && edge.partnerBPart) {
+          const tmpPart = edge.partnerAPart; edge.partnerAPart = edge.partnerBPart; edge.partnerBPart = tmpPart;
+        }
+        if (edge.who === 'partnerA') edge.who = 'partnerB';
+        else if (edge.who === 'partnerB') edge.who = 'partnerA';
+      });
+    }
+
+    // ── Swap couple anchors ──
+    if (clone.coupleAnchors) {
+      const tmpAnchors = clone.coupleAnchors.forPartnerA;
+      clone.coupleAnchors.forPartnerA = clone.coupleAnchors.forPartnerB;
+      clone.coupleAnchors.forPartnerB = tmpAnchors;
+    }
+  }
+
+  // Now replace the viewer's real name with "You" throughout all string values
+  // (after swapping, partnerAName is the viewer's name)
+  const nameToReplace = viewerIsB ? myRealName : myRealName;
+  const nameRegex = new RegExp(nameToReplace.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
   const replaceInObj = (obj: any): void => {
     if (!obj || typeof obj !== 'object') return;
     for (const key of Object.keys(obj)) {
@@ -183,13 +265,8 @@ function localiseNamesForViewer(
     }
   };
 
-  // Swap the name labels
-  if (clone.partnerAName?.toLowerCase() === myRealName.toLowerCase()) {
-    clone.partnerAName = 'You';
-  }
-  if (clone.partnerBName?.toLowerCase() === myRealName.toLowerCase()) {
-    clone.partnerBName = 'You';
-  }
+  // Set the viewer's name label to "You"
+  clone.partnerAName = 'You';
 
   // Swap in narrative text
   replaceInObj(clone.narrative);
@@ -198,6 +275,7 @@ function localiseNamesForViewer(
   replaceInObj(clone.convergenceDivergence);
   replaceInObj(clone.coupleGrowthEdges);
   replaceInObj(clone.dyadicInsights);
+  if (clone.relationalField) replaceInObj(clone.relationalField);
 
   return clone;
 }

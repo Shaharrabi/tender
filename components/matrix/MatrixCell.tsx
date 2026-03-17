@@ -60,7 +60,7 @@ export default function MatrixCell({ cell, compact, selectable, selected, onSele
         {cell.label}
       </TenderText>
       <TenderText
-        variant="headingS"
+        variant="caption"
         style={[
           styles.score,
           { color: palette.text },
@@ -116,21 +116,23 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.xs,
   },
   label: {
-    fontSize: 9,
-    letterSpacing: 0.6,
+    fontSize: 8,
+    letterSpacing: 0.5,
     textTransform: 'uppercase',
-    fontFamily: 'JosefinSans_500Medium',
+    fontFamily: 'JosefinSans_400Regular',
     marginBottom: 1,
+    textAlign: 'center',
   },
   score: {
-    fontFamily: 'PlayfairDisplay_600SemiBold',
-    fontSize: 15,
-    letterSpacing: -0.3,
-    lineHeight: 20,
+    fontFamily: 'JosefinSans_400Regular',
+    fontSize: 13,
+    letterSpacing: -0.2,
+    lineHeight: 17,
+    textAlign: 'center',
   },
   descriptor: {
-    fontSize: 9,
-    lineHeight: 12,
+    fontSize: 8,
+    lineHeight: 11,
     textAlign: 'center',
     marginTop: 1,
     fontFamily: 'JosefinSans_300Light',
@@ -141,21 +143,21 @@ const styles = StyleSheet.create({
     minHeight: 52,
   },
   labelNarrow: {
-    fontSize: 7,
+    fontSize: 6.5,
     letterSpacing: 0.2,
   },
   scoreNarrow: {
-    fontSize: 12,
-    lineHeight: 16,
+    fontSize: 11,
+    lineHeight: 14,
   },
   scoreTextNarrow: {
-    fontSize: 10,
-    lineHeight: 14,
+    fontSize: 9,
+    lineHeight: 12,
     textAlign: 'center' as const,
   },
   descriptorNarrow: {
-    fontSize: 9,
-    lineHeight: 12,
+    fontSize: 7.5,
+    lineHeight: 10,
   },
   checkOverlay: {
     position: 'absolute',

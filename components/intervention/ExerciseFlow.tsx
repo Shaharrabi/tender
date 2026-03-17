@@ -556,17 +556,7 @@ export default function ExerciseFlow({
 
       {/* ─── Navigation ─────────────────────────────────── */}
       <View style={styles.navigation}>
-        {currentIndex > 0 ? (
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={handlePrevious}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel="Go to previous step"
-          >
-            <Text style={styles.backButtonText}>{'\u2039'} Back</Text>
-          </TouchableOpacity>
-        ) : (
+        <View style={styles.navLeft}>
           <TouchableOpacity
             style={styles.backButton}
             onPress={onExit}
@@ -576,7 +566,18 @@ export default function ExerciseFlow({
           >
             <Text style={styles.backButtonText}>{'\u2715'} Exit</Text>
           </TouchableOpacity>
-        )}
+          {currentIndex > 0 && (
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={handlePrevious}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Go to previous step"
+            >
+              <Text style={styles.backButtonText}>{'\u2039'} Back</Text>
+            </TouchableOpacity>
+          )}
+        </View>
 
         <TouchableOpacity
           style={styles.nextButton}
@@ -1493,12 +1494,18 @@ const styles = StyleSheet.create({
   navigation: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.md,
     borderTopWidth: 1,
     borderTopColor: Colors.borderLight,
     backgroundColor: Colors.surfaceElevated,
     gap: Spacing.sm,
+  },
+  navLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
   },
   backButton: {
     height: ButtonSizes.medium,
