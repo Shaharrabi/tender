@@ -17,9 +17,11 @@ import {
 import TenderText from '@/components/ui/TenderText';
 import { Colors, Spacing, BorderRadius, Shadows, FontFamilies } from '@/constants/theme';
 import { MATRIX_COLORS } from './constants/matrix-colors';
+import { useRouter } from 'expo-router';
 import LensPicker from './LensPicker';
 import type { IntegrationResult, LensType } from '@/utils/integration-engine';
 import { LENS_META } from '@/utils/integration-engine';
+import { getExerciseById } from '@/utils/interventions/registry';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -31,6 +33,7 @@ interface IntegrationPanelProps {
 }
 
 export default function IntegrationPanel({ result, visible }: IntegrationPanelProps) {
+  const router = useRouter();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const [activeLens, setActiveLens] = useState<LensType>('soulful');
   const [showEvidence, setShowEvidence] = useState(false);
@@ -165,9 +168,12 @@ export default function IntegrationPanel({ result, visible }: IntegrationPanelPr
         </View>
       </View>
 
-      {/* Enhanced Practice Card */}
-      <View style={styles.practiceContainer}>
-        {practice ? (
+      {/* Enhanced Practice Card — tappable when linked exercise exists */}
+      {(() => {
+        const exerciseId = practice?.linkedExerciseId;
+        const hasExercise = exerciseId ? !!getExerciseById(exerciseId) : false;
+
+        const practiceContent = practice ? (
           <>
             <View style={styles.practiceHeader}>
               <TenderText variant="caption" style={styles.practiceLabel}>THIS WEEK'S PRACTICE</TenderText>
@@ -183,6 +189,11 @@ export default function IntegrationPanel({ result, visible }: IntegrationPanelPr
               <TenderText variant="caption" style={styles.practiceFrequency}>
                 {practice.frequency}
               </TenderText>
+              {hasExercise && (
+                <TenderText variant="caption" style={styles.practiceStartHint}>
+                  Tap to start this practice
+                </TenderText>
+              )}
             </View>
           </>
         ) : (
@@ -190,8 +201,24 @@ export default function IntegrationPanel({ result, visible }: IntegrationPanelPr
             <TenderText variant="caption" style={styles.practiceLabel}>THIS WEEK'S PRACTICE</TenderText>
             <TenderText variant="body" style={styles.practiceText}>{result.practice}</TenderText>
           </>
-        )}
-      </View>
+        );
+
+        if (hasExercise && exerciseId) {
+          return (
+            <TouchableOpacity
+              style={styles.practiceContainer}
+              activeOpacity={0.7}
+              onPress={() => router.push({ pathname: '/(app)/exercise' as any, params: { id: exerciseId } })}
+              accessibilityRole="button"
+              accessibilityLabel={`Start practice: ${practice?.name}`}
+            >
+              {practiceContent}
+            </TouchableOpacity>
+          );
+        }
+
+        return <View style={styles.practiceContainer}>{practiceContent}</View>;
+      })()}
 
       {/* Invitation — the screenshot moment */}
       {invitation && (
@@ -259,7 +286,7 @@ const styles = StyleSheet.create({
     marginHorizontal: Spacing.sm,
     backgroundColor: Colors.surfaceElevated,
     borderRadius: BorderRadius.lg,
-    padding: Spacing.lg,
+    padding: Spacing.md,
     ...Shadows.card,
   },
   header: {
@@ -297,12 +324,12 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.sm,
   },
   title: {
-    fontSize: 20,
+    fontSize: 16,
     color: Colors.text,
     marginBottom: 4,
   },
   subtitle: {
-    fontSize: 12,
+    fontSize: 11,
     fontStyle: 'italic',
     marginBottom: Spacing.sm,
   },
@@ -310,17 +337,18 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   lensSubtitle: {
-    fontSize: 11,
+    fontSize: 10,
     fontStyle: 'italic',
     color: Colors.textMuted,
     marginTop: 4,
     marginLeft: 2,
   },
   body: {
-    fontSize: 14,
-    lineHeight: 22,
+    fontSize: 13,
+    lineHeight: 20,
     color: Colors.text,
     marginBottom: Spacing.lg,
+    fontFamily: 'JosefinSans_400Regular',
   },
   arcContainer: {
     backgroundColor: Colors.background,
@@ -359,9 +387,10 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   arcText: {
-    fontSize: 13,
-    lineHeight: 20,
+    fontSize: 12,
+    lineHeight: 18,
     color: Colors.text,
+    fontFamily: 'JosefinSans_400Regular',
   },
   arcConnector: {
     width: 1,
@@ -402,15 +431,16 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   practiceName: {
-    fontSize: 14,
-    fontFamily: FontFamilies.heading,
+    fontSize: 13,
+    fontFamily: 'Jost_500Medium',
     color: Colors.text,
-    marginBottom: 6,
+    marginBottom: 4,
   },
   practiceText: {
-    fontSize: 13,
-    lineHeight: 20,
+    fontSize: 12,
+    lineHeight: 18,
     color: Colors.text,
+    fontFamily: 'JosefinSans_400Regular',
   },
   practiceFooter: {
     marginTop: Spacing.sm,
@@ -424,6 +454,13 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     fontStyle: 'italic',
   },
+  practiceStartHint: {
+    fontSize: 10,
+    color: '#B5593A',
+    fontFamily: 'JosefinSans_400Regular',
+    marginTop: 4,
+    letterSpacing: 0.3,
+  },
   invitationContainer: {
     alignItems: 'center',
     paddingVertical: Spacing.lg,
@@ -433,12 +470,12 @@ const styles = StyleSheet.create({
     borderTopColor: Colors.borderLight,
   },
   invitationText: {
-    fontSize: 17,
-    fontFamily: FontFamilies.heading,
+    fontSize: 14,
+    fontFamily: 'JosefinSans_300Light',
+    fontStyle: 'italic',
     color: Colors.text,
     textAlign: 'center',
-    fontStyle: 'italic',
-    lineHeight: 26,
+    lineHeight: 22,
   },
   evidenceToggle: {
     alignItems: 'center',

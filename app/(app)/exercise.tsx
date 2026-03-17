@@ -155,9 +155,7 @@ export default function ExerciseScreen() {
         onComplete={handleComplete}
         onExit={handleExit}
       />
-      <View style={styles.quickLinksWrapper}>
-        <QuickLinksBar />
-      </View>
+      <QuickLinksBar />
     </SafeAreaView>
   );
 }
@@ -167,7 +165,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  quickLinksWrapper: { position: 'absolute', bottom: 0, left: 0, right: 0 },
+  // quickLinksWrapper removed — QuickLinksBar now in normal flex flow
   center: {
     flex: 1,
     justifyContent: 'center',

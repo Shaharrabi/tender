@@ -224,7 +224,11 @@ function generateCycleSVG(position: string): string {
 
 /* ── main template ──────────────────────────────────────── */
 
-export function generatePortraitHTML(portrait: IndividualPortrait, userName?: string): string {
+export function generatePortraitHTML(
+  portrait: IndividualPortrait,
+  userName?: string,
+  allScores?: Record<string, { id: string; scores: any }>,
+): string {
   const cs = portrait.compositeScores;
   const fl = portrait.fourLens;
   const nc = portrait.negativeCycle;
@@ -385,6 +389,72 @@ export function generatePortraitHTML(portrait: IndividualPortrait, userName?: st
           <p class="narrative-text">${esc(narrative)}</p>
         </div>`).join('')
     : '';
+
+  // Domain stories from the Integrated Map (generated from raw scores)
+  const domainStoriesHTML = (() => {
+    if (!allScores) return '';
+    const stories: string[] = [];
+    const ecrr = allScores['ecr-r']?.scores;
+    const ipip = allScores['ipip-neo-120']?.scores;
+    const sseit = allScores['sseit']?.scores;
+    const dsir = allScores['dsi-r']?.scores;
+    const dutch = allScores['dutch']?.scores;
+    const vals = allScores['values']?.scores;
+    const rfas = allScores['relational-field']?.scores;
+
+    // We import the narrative generators lazily to generate domain stories
+    try {
+      const { generateFoundationNarrative } = require('@/components/matrix/narratives/foundation');
+      const { generateInstrumentNarrative } = require('@/components/matrix/narratives/instrument');
+      const { generateNavigationNarrative } = require('@/components/matrix/narratives/navigation');
+      const { generateStanceNarrative } = require('@/components/matrix/narratives/stance');
+      const { generateConflictNarrative } = require('@/components/matrix/narratives/conflict');
+      const { generateCompassNarrative } = require('@/components/matrix/narratives/compass');
+      const { generateFieldNarrative } = require('@/components/matrix/narratives/field');
+
+      const domainColors: Record<string, string> = {
+        foundation: '#C4616E', instrument: '#D4A843', navigation: '#6B9080',
+        stance: '#4A6FA8', conflict: '#6B5E61', compass: '#6E4E6E', field: '#6BA3A0',
+      };
+
+      if (ecrr) {
+        const n = generateFoundationNarrative({ anxietyScore: ecrr.anxietyScore, avoidanceScore: ecrr.avoidanceScore, attachmentStyle: ecrr.attachmentStyle, windowWidth: cs.windowWidth });
+        stories.push(`<div class="domain-story" style="border-left-color:${domainColors.foundation}"><p class="domain-story-title">How You Seek Closeness</p><p class="domain-story-body">${esc(n.body)}</p>${n.insight ? `<p class="domain-story-insight">${esc(n.insight)}</p>` : ''}</div>`);
+      }
+      if (ipip) {
+        const dp = ipip.domainPercentiles || {};
+        const n = generateInstrumentNarrative({ N: dp.N ?? 50, E: dp.E ?? 50, O: dp.O ?? 50, A: dp.A ?? 50, C: dp.C ?? 50, anxietyScore: ecrr?.anxietyScore ?? 3, avoidanceScore: ecrr?.avoidanceScore ?? 3 });
+        stories.push(`<div class="domain-story" style="border-left-color:${domainColors.instrument}"><p class="domain-story-title">Who You Are in Love</p><p class="domain-story-body">${esc(n.body)}</p>${n.insight ? `<p class="domain-story-insight">${esc(n.insight)}</p>` : ''}</div>`);
+      }
+      if (sseit) {
+        const sn = sseit.subscaleNormalized || {};
+        const n = generateNavigationNarrative({ perception: sn.perception ?? 50, managingOwn: sn.managingOwn ?? 50, managingOthers: sn.managingOthers ?? 50, utilization: sn.utilization ?? 50, fusionNormalized: dsir?.subscaleScores?.fusionWithOthers?.normalized ?? 50, iPosition: dsir?.subscaleScores?.iPosition?.normalized ?? 50 });
+        stories.push(`<div class="domain-story" style="border-left-color:${domainColors.navigation}"><p class="domain-story-title">How You Read the Room</p><p class="domain-story-body">${esc(n.body)}</p>${n.insight ? `<p class="domain-story-insight">${esc(n.insight)}</p>` : ''}</div>`);
+      }
+      if (dsir) {
+        const sub = dsir.subscaleScores || {};
+        const n = generateStanceNarrative({ totalNormalized: dsir.totalNormalized ?? 50, emotionalReactivity: sub.emotionalReactivity?.normalized ?? 50, iPosition: sub.iPosition?.normalized ?? 50, emotionalCutoff: sub.emotionalCutoff?.normalized ?? 50, fusionWithOthers: sub.fusionWithOthers?.normalized ?? 50, anxietyScore: ecrr?.anxietyScore ?? 3, avoidanceScore: ecrr?.avoidanceScore ?? 3 });
+        stories.push(`<div class="domain-story" style="border-left-color:${domainColors.stance}"><p class="domain-story-title">How You Hold Your Ground</p><p class="domain-story-body">${esc(n.body)}</p>${n.insight ? `<p class="domain-story-insight">${esc(n.insight)}</p>` : ''}</div>`);
+      }
+      if (dutch) {
+        const sub = dutch.subscaleScores || {};
+        const n = generateConflictNarrative({ primaryStyle: dutch.primaryStyle, secondaryStyle: dutch.secondaryStyle, yieldingMean: sub.yielding?.mean ?? 2.5, avoidingMean: sub.avoiding?.mean ?? 2.5, forcingMean: sub.forcing?.mean ?? 2.5, problemSolvingMean: sub.problemSolving?.mean ?? 2.5, compromisingMean: sub.compromising?.mean ?? 2.5, anxietyScore: ecrr?.anxietyScore ?? 3, avoidanceScore: ecrr?.avoidanceScore ?? 3 });
+        stories.push(`<div class="domain-story" style="border-left-color:${domainColors.conflict}"><p class="domain-story-title">How You Navigate Conflict</p><p class="domain-story-body">${esc(n.body)}</p>${n.insight ? `<p class="domain-story-insight">${esc(n.insight)}</p>` : ''}</div>`);
+      }
+      if (vals) {
+        const n = generateCompassNarrative({ top5Values: vals.top5Values || [], domainScores: vals.domainScores || {}, avoidanceTendency: vals.avoidanceTendency ?? 0, balancedTendency: vals.balancedTendency ?? 0, totalScenarios: (vals.actionResponses?.length ?? 0) || 5 });
+        stories.push(`<div class="domain-story" style="border-left-color:${domainColors.compass}"><p class="domain-story-title">What Matters Most</p><p class="domain-story-body">${esc(n.body)}</p>${n.insight ? `<p class="domain-story-insight">${esc(n.insight)}</p>` : ''}</div>`);
+      }
+      if (rfas) {
+        const n = generateFieldNarrative({ rfasTotalMean: rfas.totalMean, fieldRecognition: rfas.fieldRecognition, creativeTension: rfas.creativeTension, presenceAttunement: rfas.presenceAttunement, emergentOrientation: rfas.emergentOrientation });
+        stories.push(`<div class="domain-story" style="border-left-color:${domainColors.field}"><p class="domain-story-title">The Space Between</p><p class="domain-story-body">${esc(n.body)}</p>${n.insight ? `<p class="domain-story-insight">${esc(n.insight)}</p>` : ''}</div>`);
+      }
+    } catch (err) {
+      // Domain story generation is best-effort — don't block PDF
+      console.warn('[PDF] Domain story generation failed:', err);
+    }
+    return stories.join('');
+  })();
 
   // Supplement data section
   function supplementScoreItem(label: string, value: number, max: number, color: string): string {
@@ -893,6 +963,31 @@ p { margin-bottom: 8px; line-height: 1.7; }
   line-height: 1.7; margin: 0;
 }
 
+/* ── DOMAIN STORIES ─────────────────── */
+.domain-story {
+  border-left: 3px solid var(--rose);
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  background: var(--surface);
+  border-radius: 0 8px 8px 0;
+  break-inside: avoid; page-break-inside: avoid;
+}
+.domain-story-title {
+  font-family: 'Jost', Poppins, 'Liberation Sans', sans-serif;
+  font-weight: 600; font-size: 10.5pt; color: var(--text);
+  margin-bottom: 4px; letter-spacing: 0.3px;
+}
+.domain-story-body {
+  font-family: 'Josefin Sans', Poppins, 'Liberation Sans', sans-serif;
+  font-size: 9.5pt; color: var(--text-secondary);
+  line-height: 1.7; margin: 0;
+}
+.domain-story-insight {
+  font-family: 'Josefin Sans', Poppins, 'Liberation Sans', sans-serif;
+  font-style: italic; font-size: 9pt; color: var(--text-muted);
+  line-height: 1.6; margin-top: 6px;
+}
+
 /* ── PRINT HELPERS ───────────────────── */
 .page-break { page-break-before: always; break-before: page; }
 .avoid-break { page-break-inside: avoid; break-inside: avoid; }
@@ -1213,6 +1308,17 @@ ${integratedNarrativesHTML ? `
   <div class="section-title">Connecting the Threads</div>
   <p style="font-style:italic;color:var(--text-muted);font-size:9.5pt;margin-bottom:16px">These insights emerge from reading all your assessments together — patterns visible only when the full picture is held at once.</p>
   ${integratedNarrativesHTML}
+</div>` : ''}
+
+${domainStoriesHTML ? `
+<!-- INTEGRATED MAP — DOMAIN STORIES -->
+<div class="page-break"></div>
+<div class="section">
+  <div class="section-divider"></div>
+  <p class="section-label">YOUR INTEGRATED MAP</p>
+  <div class="section-title">Seven Domains of Your Relational Life</div>
+  <p style="font-style:italic;color:var(--text-muted);font-size:9.5pt;margin-bottom:16px">Each domain tells a story about a different dimension of how you love. Together, they form your integrated relational map.</p>
+  ${domainStoriesHTML}
 </div>` : ''}
 
 <!-- GROWTH EDGES -->

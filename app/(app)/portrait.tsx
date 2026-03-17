@@ -115,8 +115,8 @@ import TenderMatrix from '@/components/matrix/TenderMatrix';
 import AudioLibrary from '@/components/audio/AudioLibrary';
 import PortraitHistoryChart from '@/components/portrait/PortraitHistoryChart';
 import {
-  IllustrationPortraitAttachment,
-  IllustrationPortraitRadar,
+  // IllustrationPortraitAttachment removed — was hardcoded mockup
+  // IllustrationPortraitRadar removed — was hardcoded mockup
   IllustrationAttachAnxious,
   IllustrationAttachDismissive,
   IllustrationAttachFearful,
@@ -872,7 +872,7 @@ export default function PortraitScreen() {
           onPress={async () => {
             try {
               const { generatePortraitPDF } = await import('@/services/pdf-export');
-              await generatePortraitPDF(portrait, userName);
+              await generatePortraitPDF(portrait, userName, allScoresMap);
             } catch (err) {
               if (__DEV__) console.warn('[Export] PDF failed:', err);
               if (Platform.OS !== 'web') {
@@ -1188,11 +1188,6 @@ function OverviewTab({
           compositeScores={cs}
           onSeeDetails={() => onNavigate('scores')}
         />
-      </View>
-
-      {/* Portrait Illustration */}
-      <View style={{ alignItems: 'center', marginBottom: Spacing.md }}>
-        <IllustrationPortraitAttachment width={Math.min(SCREEN_WIDTH - 48, 340)} animated={true} />
       </View>
 
       {/* Portrait Digest — 60 second summary */}

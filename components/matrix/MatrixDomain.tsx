@@ -251,15 +251,18 @@ const styles = StyleSheet.create({
   narrativeTitle: {
     marginBottom: Spacing.xs,
     fontFamily: 'PlayfairDisplay_600SemiBold',
-    fontSize: 16,
+    fontSize: 14,
   },
   narrativeBody: {
-    lineHeight: 24,
+    lineHeight: 20,
+    fontSize: 13,
+    fontFamily: 'JosefinSans_400Regular',
     marginBottom: Spacing.sm,
   },
   narrativeInsight: {
     fontStyle: 'italic',
-    lineHeight: 22,
+    lineHeight: 20,
+    fontSize: 12,
     marginBottom: Spacing.sm,
   },
   instrumentsRow: {

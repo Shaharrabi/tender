@@ -114,7 +114,7 @@ Close it. One sentence at a time.`,
     instruction: "When you sense something is off between you and your partner this week, say it out loud within 60 seconds. One sentence: 'Something feels off to me right now.' Don't explain, don't fix, don't apologize. Just name what you sense. Then notice: the relationship survived. Your partner wanted to know.",
     whyThisOne: 'Your radar is strong — you WILL sense it. The practice is letting the perception reach your voice instead of your accommodation.',
     frequency: 'Once this week',
-    linkedExerciseId: 'eft_hold_me_tight',
+    linkedExerciseId: 'hold-me-tight',
   };
 
   return {
@@ -231,7 +231,7 @@ Install a door. A small one. Open it once this week.`,
     instruction: "Once this week, share one feeling with your partner that you would normally process alone. Something small: 'I had a hard day.' 'That movie made me sad.' 'I missed you today.' Then notice their response. They will probably light up.",
     whyThisOne: "Your walls don't need demolishing — they need a door. One shared feeling IS the door.",
     frequency: 'Once this week',
-    linkedExerciseId: 'eft_soften_emotions',
+    linkedExerciseId: 'accessing-primary-emotions',
   };
 
   return {
@@ -335,7 +335,7 @@ That's the whole practice.`,
     instruction: "When the fire rises (chest tight, jaw clenched, heat rising), put your hand on your chest. Take one breath. Say: 'I'm getting activated. Give me 60 seconds.' After 60 seconds, say what you were going to say at half the volume. Same message, different delivery.",
     whyThisOne: "Your intensity IS caring. The practice isn't feeling less — it's delivering the same care at a temperature your partner can receive.",
     frequency: 'Every time the fire rises — aim for once this week',
-    linkedExerciseId: 'gottman_repair_attempts',
+    linkedExerciseId: 'repair-attempt',
   };
 
   return {
@@ -437,7 +437,7 @@ Let someone in this week. Not to help you. To see you.`,
     instruction: "When your partner asks 'How was your day?' — don't say 'Fine.' Say something true: 'Actually, it was hard.' Then LET THEM RESPOND. Don't manage their reaction. Don't reassure them. Let them hold something for you, even if it's small.",
     whyThisOne: "Your partner needs to feel useful to you — not just needed BY you. One vulnerable request rebalances the entire dynamic.",
     frequency: 'Once this week',
-    linkedExerciseId: 'eft_hold_me_tight',
+    linkedExerciseId: 'hold-me-tight',
   };
 
   return {
@@ -534,7 +534,7 @@ This week: one thing you know, done differently. Not understood differently. Don
     instruction: "Pick ONE insight you've had about your relationship — something you KNOW but haven't DONE. And do it. Once. Imperfectly. If you know you should soften: soften once. If you know you should share: share once. If you know you should stay: stay once, for 60 seconds longer.",
     whyThisOne: "You have enough insight. What you need is embodiment — the awkward, messy practice of doing something different.",
     frequency: 'Once this week',
-    linkedExerciseId: 'act_committed_action',
+    linkedExerciseId: 'relationship-values-compass',
   };
 
   return {
@@ -629,7 +629,7 @@ One small step toward. Then rest. Then another.`,
     instruction: "Pick one direction and stay in it for one day. If TOWARD: reach once, and when the urge to retreat comes, say 'I want to stay close right now, even though part of me wants to pull away.' If AWAY: take space, and say 'I need space right now, but I'm not leaving. I'll be back.'",
     whyThisOne: "The practice isn't choosing the right direction — it's NAMING what's happening so your partner isn't left guessing.",
     frequency: 'Once this week',
-    linkedExerciseId: 'eft_recognize_negative_cycle',
+    linkedExerciseId: 'recognize-cycle',
   };
 
   return {
@@ -730,7 +730,7 @@ One true sentence this week. Start there.`,
     instruction: "Say one thing this week that closes the gap between your values and your behavior. The smallest possible truth: 'That matters to me.' 'I'd prefer something different.' 'I haven't been fully honest about this.' Not the hardest truth — the easiest one you've been avoiding.",
     whyThisOne: 'Your values are clear. Your behavior under pressure defaults to safety. This practice builds the muscle of alignment.',
     frequency: 'Once this week',
-    linkedExerciseId: 'act_committed_action',
+    linkedExerciseId: 'relationship-values-compass',
   };
 
   return {
@@ -830,7 +830,7 @@ Go.`,
     instruction: "Take ONE action this week toward closing your biggest values gap. Not the safe version — the real one. The one you've been saving for 'when the time is right.' The time is right. Go.",
     whyThisOne: "You have everything you need — capacity, values, self-awareness. The only thing missing is deployment.",
     frequency: 'Once this week',
-    linkedExerciseId: 'act_committed_action',
+    linkedExerciseId: 'relationship-values-compass',
   };
 
   return {

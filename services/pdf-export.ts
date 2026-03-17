@@ -72,8 +72,12 @@ async function presentPDF(html: string, dialogTitle: string): Promise<void> {
 // ─── Portrait PDF ─────────────────────────────────────
 
 /** Generate and present an individual portrait PDF. */
-export async function generatePortraitPDF(portrait: IndividualPortrait, userName?: string): Promise<void> {
-  const html = generatePortraitHTML(portrait, userName);
+export async function generatePortraitPDF(
+  portrait: IndividualPortrait,
+  userName?: string,
+  allScores?: Record<string, { id: string; scores: any }>,
+): Promise<void> {
+  const html = generatePortraitHTML(portrait, userName, allScores);
   await presentPDF(html, 'Share Portrait Report');
 }
 

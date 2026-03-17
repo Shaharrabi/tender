@@ -138,24 +138,8 @@ export default function TenderMatrix({ allScores, portrait, scrollViewRef }: Ten
     });
   }, []);
 
-  // Generate integration result when 2+ boxes selected (from 2+ domains)
+  // Integration scores (memoized before domains)
   const integrationScores = useMemo(() => toIntegrationScores(allScores), [allScores]);
-  const integrationResult = useMemo(() => {
-    if (selectedDomains.length < 2) return null;
-    return generateIntegration(selectedDomains, integrationScores, selectedBoxes);
-  }, [selectedDomains, integrationScores, selectedBoxes]);
-
-  // Auto-scroll to integration panel when results appear
-  useEffect(() => {
-    if (integrationResult && integrationPanelRef.current && scrollViewRef?.current) {
-      const timer = setTimeout(() => {
-        integrationPanelRef.current?.measureInWindow((_x: number, y: number) => {
-          scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 100), animated: true });
-        });
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [integrationResult, scrollViewRef]);
 
   // ── Extract raw scores ──
   const ecrr = allScores['ecr-r']?.scores;
@@ -185,8 +169,8 @@ export default function TenderMatrix({ allScores, portrait, scrollViewRef }: Ten
         subtitle: 'The Foundation',
         cells: [
           { label: 'Attachment', score: Labels.getAttachmentLabel(ecrr.attachmentStyle), descriptor: '', color: 'foundation' },
-          { label: 'Anxiety', score: ecrr.anxietyScore.toFixed(1), descriptor: Labels.getAnxietyLabel(ecrr.anxietyScore), color: 'foundation' },
-          { label: 'Avoidance', score: ecrr.avoidanceScore.toFixed(1), descriptor: Labels.getAvoidanceLabel(ecrr.avoidanceScore), color: 'foundation' },
+          { label: 'Anxiety', score: Math.round((ecrr.anxietyScore - 1) / 6 * 100), descriptor: Labels.getAnxietyLabel(ecrr.anxietyScore), color: 'foundation' },
+          { label: 'Avoidance', score: Math.round((ecrr.avoidanceScore - 1) / 6 * 100), descriptor: Labels.getAvoidanceLabel(ecrr.avoidanceScore), color: 'foundation' },
           { label: 'Window', score: Math.round(cs.windowWidth), descriptor: Labels.getWindowLabel(cs.windowWidth), color: 'foundation' },
         ],
         narrative,
@@ -307,8 +291,8 @@ export default function TenderMatrix({ allScores, portrait, scrollViewRef }: Ten
         cells: [
           { label: 'Primary style', score: Labels.getConflictStyleLabel(dutch.primaryStyle), descriptor: '', color: 'conflict' },
           { label: 'Secondary', score: Labels.getConflictStyleLabel(dutch.secondaryStyle), descriptor: '', color: 'conflict' },
-          { label: 'Yielding', score: (sub.yielding?.mean ?? 0).toFixed(1), descriptor: Labels.getConflictMeanLabel(sub.yielding?.mean ?? 0), color: 'conflict' },
-          { label: 'Avoiding', score: (sub.avoiding?.mean ?? 0).toFixed(1), descriptor: Labels.getConflictMeanLabel(sub.avoiding?.mean ?? 0), color: 'conflict' },
+          { label: 'Yielding', score: Math.round(((sub.yielding?.mean ?? 1) - 1) / 4 * 100), descriptor: Labels.getConflictMeanLabel(sub.yielding?.mean ?? 0), color: 'conflict' },
+          { label: 'Avoiding', score: Math.round(((sub.avoiding?.mean ?? 1) - 1) / 4 * 100), descriptor: Labels.getConflictMeanLabel(sub.avoiding?.mean ?? 0), color: 'conflict' },
         ],
         narrative,
         color: 'conflict',
@@ -346,7 +330,7 @@ export default function TenderMatrix({ allScores, portrait, scrollViewRef }: Ten
         subtitle: 'The Compass',
         cells: [
           { label: 'Top value', score: (values.top5Values?.[0] || '\u2014'), descriptor: '', color: 'compass' },
-          { label: 'Biggest gap', score: largestGapDomain || '\u2014', descriptor: largestGap > 0 ? `${largestGap.toFixed(1)} pts` : '', color: 'compass' },
+          { label: 'Biggest gap', score: largestGapDomain || '\u2014', descriptor: largestGap > 0 ? `${Math.round(largestGap * 10)}% gap` : '', color: 'compass' },
           { label: 'Alignment', score: Math.round(avgAlignment), descriptor: Labels.getValuesAlignmentLabel(avgAlignment), color: 'compass' },
           { label: 'Action score', score: Labels.getActionLabel(values.avoidanceTendency ?? 0, (values.actionResponses?.length ?? 0) || 5), descriptor: '', color: 'compass' },
         ],
@@ -370,10 +354,10 @@ export default function TenderMatrix({ allScores, portrait, scrollViewRef }: Ten
         title: 'The space between',
         subtitle: 'The Field',
         cells: [
-          { label: 'Field awareness', score: (rfas.totalMean ?? 0).toFixed(1), descriptor: Labels.getEQLabel((rfas.totalMean ?? 0) / 7 * 100), color: 'field' },
-          { label: 'Recognition', score: (rfas.fieldRecognition ?? 0).toFixed(1), descriptor: '', color: 'field' },
-          { label: 'Presence', score: (rfas.presenceAttunement ?? 0).toFixed(1), descriptor: '', color: 'field' },
-          { label: 'Emergence', score: (rfas.emergentOrientation ?? 0).toFixed(1), descriptor: '', color: 'field' },
+          { label: 'Field awareness', score: Math.round(((rfas.totalMean ?? 1) - 1) / 6 * 100), descriptor: Labels.getEQLabel((rfas.totalMean ?? 0) / 7 * 100), color: 'field' },
+          { label: 'Recognition', score: Math.round(((rfas.fieldRecognition ?? 1) - 1) / 6 * 100), descriptor: Labels.getEQLabel((rfas.fieldRecognition ?? 0) / 7 * 100), color: 'field' },
+          { label: 'Presence', score: Math.round(((rfas.presenceAttunement ?? 1) - 1) / 6 * 100), descriptor: Labels.getEQLabel((rfas.presenceAttunement ?? 0) / 7 * 100), color: 'field' },
+          { label: 'Emergence', score: Math.round(((rfas.emergentOrientation ?? 1) - 1) / 6 * 100), descriptor: Labels.getEQLabel((rfas.emergentOrientation ?? 0) / 7 * 100), color: 'field' },
         ],
         narrative,
         color: 'field',
@@ -383,6 +367,39 @@ export default function TenderMatrix({ allScores, portrait, scrollViewRef }: Ten
 
     return result;
   }, [ecrr, ipip, sseit, dsir, dutch, values, rfas, cs, allScores]);
+
+  // Generate integration result when 2+ boxes selected (from 2+ domains)
+  const integrationResult = useMemo(() => {
+    if (selectedDomains.length < 2) return null;
+
+    // When ALL cells of every selected domain are selected (full-row selection),
+    // skip box-level matching so we get the richer domain-level Tier 2/Tier 3
+    // integration instead of a narrow cell-intersection narrative.
+    const isFullRowSelection = selectedDomains.every(domainId => {
+      const domain = domains.find(d => d.id === domainId);
+      if (!domain) return false;
+      const selectedInDomain = selectedBoxes.filter(k => k.startsWith(`${domainId}:`));
+      return selectedInDomain.length >= domain.cells.length;
+    });
+
+    return generateIntegration(
+      selectedDomains,
+      integrationScores,
+      isFullRowSelection ? undefined : selectedBoxes,
+    );
+  }, [selectedDomains, integrationScores, selectedBoxes, domains]);
+
+  // Auto-scroll to integration panel when results appear
+  useEffect(() => {
+    if (integrationResult && integrationPanelRef.current && scrollViewRef?.current) {
+      const timer = setTimeout(() => {
+        integrationPanelRef.current?.measureInWindow((_x: number, y: number) => {
+          scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 100), animated: true });
+        });
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [integrationResult, scrollViewRef]);
 
   // ── Invitation ──
   const invitation = useMemo(() => {
@@ -437,9 +454,23 @@ export default function TenderMatrix({ allScores, portrait, scrollViewRef }: Ten
         <TenderText variant="bodySmall" color={Colors.textSecondary} align="center" style={styles.headerSubtitle}>
           {integrateMode
             ? `Tap cells across domains to discover what emerges at the intersection${selectedBoxes.length > 0 ? ` — ${selectedBoxes.length} selected from ${selectedDomains.length} domain${selectedDomains.length !== 1 ? 's' : ''}` : ''}`
-            : 'Each row holds a story. Tap any to open it — then try Integrate to see where they meet.'}
+            : 'All scores are 0–100. Higher means more of that quality.'}
         </TenderText>
       </View>
+
+      {/* How it works — shown only when NOT in integrate mode */}
+      {!integrateMode && (
+        <View style={styles.howItWorks}>
+          <TenderText variant="caption" style={styles.howItWorksText}>
+            We often see assessments through a reductionist lens — one score, one label. This map is different. TENDER identifies unique combinations and interconnections across your results, helping you see the full picture and the uniqueness of how you show up in relationships — through soulful, therapeutic, developmental, practical, relational, and simple perspectives.
+          </TenderText>
+          <TenderText variant="caption" style={[styles.howItWorksText, { marginTop: 6 }]}>
+            Tap any row to read its story. Then press{' '}
+            <TenderText variant="caption" style={styles.howItWorksBold}>Integrate</TenderText> to
+            select cells from 2+ rows and discover what emerges at the intersection. Play around, get curious — share with your partner or therapist!
+          </TenderText>
+        </View>
+      )}
 
       {/* Integrate mode toggle */}
       {domains.length >= 2 && (
@@ -479,41 +510,41 @@ export default function TenderMatrix({ allScores, portrait, scrollViewRef }: Ten
         </View>
       )}
 
-      {/* Domain rows */}
+      {/* Domain rows — integration panel renders inline after the last selected domain */}
       <View style={styles.domainList}>
-        {domains.map((domain) => (
-          <MatrixDomain
-            key={domain.id}
-            domain={domain}
-            isExpanded={expandedDomain === domain.id}
-            onToggle={handleToggle}
-            selectable={integrateMode}
-            selected={selectedDomains.includes(domain.id as DomainId)}
-            cellSelectable={integrateMode}
-            selectedCells={selectedBoxes
-              .filter(k => k.startsWith(`${domain.id}:`))
-              .map(k => k.split(':')[1])}
-            onCellSelect={(cellLabel) => handleCellSelect(domain.id, cellLabel)}
-            onRowSelect={() => handleRowSelect(domain.id, domain.cells)}
-          />
-        ))}
-      </View>
+        {domains.map((domain, index) => {
+          const isSelected = selectedDomains.includes(domain.id as DomainId);
+          // Show integration panel right after the last selected domain row
+          const isLastSelectedDomain = integrateMode && isSelected &&
+            !domains.slice(index + 1).some(d => selectedDomains.includes(d.id as DomainId));
+          const showIntegrationHere = isLastSelectedDomain && integrationResult && selectedDomains.length >= 2;
 
-      {/* Integration result hint */}
-      {integrateMode && integrationResult && selectedDomains.length >= 2 && (
-        <View style={styles.resultReadyHint}>
-          <TenderText variant="bodySmall" color={Colors.primary} align="center" style={{ fontStyle: 'italic' }}>
-            Your integration is ready below — scroll down to explore 6 ways of seeing it
-          </TenderText>
-        </View>
-      )}
-
-      {/* Integration result panel */}
-      <View ref={integrationPanelRef}>
-        <IntegrationPanel
-          result={integrationResult}
-          visible={integrateMode && selectedDomains.length >= 2}
-        />
+          return (
+            <React.Fragment key={domain.id}>
+              <MatrixDomain
+                domain={domain}
+                isExpanded={expandedDomain === domain.id}
+                onToggle={handleToggle}
+                selectable={integrateMode}
+                selected={isSelected}
+                cellSelectable={integrateMode}
+                selectedCells={selectedBoxes
+                  .filter(k => k.startsWith(`${domain.id}:`))
+                  .map(k => k.split(':')[1])}
+                onCellSelect={(cellLabel) => handleCellSelect(domain.id, cellLabel)}
+                onRowSelect={() => handleRowSelect(domain.id, domain.cells)}
+              />
+              {showIntegrationHere && (
+                <View ref={integrationPanelRef}>
+                  <IntegrationPanel
+                    result={integrationResult}
+                    visible
+                  />
+                </View>
+              )}
+            </React.Fragment>
+          );
+        })}
       </View>
 
       {/* The Invitation (hidden in integrate mode) */}
@@ -537,13 +568,33 @@ export default function TenderMatrix({ allScores, portrait, scrollViewRef }: Ten
 
 const styles = StyleSheet.create({
   container: {
-    gap: Spacing.md,
+    gap: Spacing.sm,
     paddingBottom: Spacing.lg,
   },
   header: {
     alignItems: 'center',
     paddingHorizontal: Spacing.lg,
     gap: Spacing.xs,
+  },
+  howItWorks: {
+    marginHorizontal: Spacing.md,
+    backgroundColor: Colors.backgroundAlt,
+    borderRadius: BorderRadius.md,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderLeftWidth: 2,
+    borderLeftColor: Colors.primaryLight,
+  },
+  howItWorksText: {
+    fontSize: 11,
+    lineHeight: 17,
+    color: Colors.textSecondary,
+    fontFamily: 'JosefinSans_400Regular',
+  },
+  howItWorksBold: {
+    fontSize: 11,
+    fontFamily: 'Jost_600SemiBold',
+    color: Colors.primary,
   },
   headerLabel: {
     fontSize: 10,
@@ -555,8 +606,8 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   domainList: {
-    gap: Spacing.sm + 2,
-    paddingHorizontal: Spacing.md,
+    gap: Spacing.xs + 2,
+    paddingHorizontal: Spacing.sm,
   },
   emptyState: {
     padding: Spacing.xl,

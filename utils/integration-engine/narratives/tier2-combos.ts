@@ -58,6 +58,7 @@ function combo1(s: IntegrationScores): IntegrationResult | null {
       instruction: `When you sense something shifted, say two sentences: 'I notice some tension right now. The story I'm telling myself is [X]. Is that what's happening?' Separate the sensing from the story. Out loud.`,
       whyThisOne: `Your radar is accurate. Your anxiety's interpretation often isn't. This practice separates the two.`,
       frequency: 'Every time you sense a shift — aim for twice this week',
+      linkedExerciseId: 'defusion-from-stories',
     };
 
     return {
@@ -101,6 +102,7 @@ function combo1(s: IntegrationScores): IntegrationResult | null {
       instruction: `Before reacting to what you THINK your partner is feeling, ask: 'I'm sensing something but I'm not sure what. Am I reading you right?' Get data before interpreting.`,
       whyThisOne: `Your anxiety fills perception gaps with worst-case stories. Asking gives your system better information.`,
       frequency: 'Once this week',
+      linkedExerciseId: 'window-check',
     };
 
     return {
@@ -144,6 +146,7 @@ function combo1(s: IntegrationScores): IntegrationResult | null {
       instruction: `This week, share one observation about the relational space: 'I notice we've been a little distant.' Your calm perception is trustworthy — let your partner benefit from it.`,
       whyThisOne: `You have undistorted perception — rare and valuable. The practice is sharing it.`,
       frequency: 'Once this week',
+      linkedExerciseId: 'stress-reducing-conversation',
     };
 
     return {
@@ -194,6 +197,7 @@ function combo2(s: IntegrationScores): IntegrationResult | null {
       instruction: `In one small disagreement this week, state your actual preference BEFORE yielding: 'I'd rather do X, but I'm willing to do Y.' You don't have to fight for it — just name it.`,
       whyThisOne: `Your yielding is anxiety's conflict strategy, not your choice. Naming your preference reclaims the choice.`,
       frequency: 'Once this week',
+      linkedExerciseId: 'soft-startup',
     };
 
     return {
@@ -237,6 +241,7 @@ function combo2(s: IntegrationScores): IntegrationResult | null {
       instruction: `When you feel the urge to press your point, replace the statement with a question: 'I'm scared we're disconnecting. Can we slow down?' Same need, delivered as vulnerability instead of force.`,
       whyThisOne: `Your partner can't hear love through the volume. A question reaches them where a demand can't.`,
       frequency: 'Once this week',
+      linkedExerciseId: 'soft-startup',
     };
 
     return {
@@ -287,6 +292,7 @@ function combo3(s: IntegrationScores): IntegrationResult | null {
       instruction: `Three times this week, pause when you notice a strong feeling and ask: 'Is this feeling MINE, or am I picking it up from the field?' You don't need to answer correctly. Just asking creates the boundary.`,
       whyThisOne: `Your perception is extraordinary. The practice is learning to observe the field without being dissolved by it.`,
       frequency: 'Three times this week',
+      linkedExerciseId: 'parts-check-in',
     };
 
     return {
@@ -336,6 +342,7 @@ function combo4(s: IntegrationScores): IntegrationResult | null {
       instruction: `Bring up ONE thing you've been sitting on this week. Start with: 'There's something I've been avoiding saying.' Then say it. Breaking the seal matters more than what comes through it.`,
       whyThisOne: `Double avoidance means nothing gets addressed. The first crack is the hardest and the most important.`,
       frequency: 'Once this week',
+      linkedExerciseId: 'empathic-joining',
     };
 
     return {
@@ -386,6 +393,7 @@ function combo5(s: IntegrationScores): IntegrationResult | null {
       instruction: `In your next disagreement, pause and ask: 'Is this what I'm ACTUALLY upset about?' If there's something underneath, say THAT: 'I think what I'm really feeling is...'`,
       whyThisOne: `Your force hides your vulnerability. Naming what's underneath transforms the conversation.`,
       frequency: 'Once this week',
+      linkedExerciseId: 'accessing-primary-emotions',
     };
 
     return {
@@ -439,6 +447,7 @@ function combo6(s: IntegrationScores): IntegrationResult | null {
       instruction: `Carry one value INTO one conversation this week: 'This matters to me because [value] is important to me.' Say it during the conversation, not after.`,
       whyThisOne: `You have the self and the compass. The practice is making them operational in the relationship.`,
       frequency: 'Once this week',
+      linkedExerciseId: 'values-compass',
     };
 
     return {
@@ -488,6 +497,7 @@ function combo7(s: IntegrationScores): IntegrationResult | null {
       instruction: `Do one thing this week that is entirely yours — that has nothing to do with your partner. Notice how it feels to be a separate person who also happens to be in love. That distinction is the foundation.`,
       whyThisOne: `Your fusion dissolves boundaries. This practice rebuilds them from the inside — through action, not theory.`,
       frequency: 'Once this week',
+      linkedExerciseId: 'over-functioning-brake',
     };
 
     return {
@@ -538,6 +548,7 @@ function combo8(s: IntegrationScores): IntegrationResult | null {
       instruction: `Take ONE thing you've been sensing and bring it into the open: 'I've been noticing [thing] between us. Can we talk about it?' Your perception did the hard work. Let your voice do the rest.`,
       whyThisOne: `You see clearly but avoid naming what you see. This practice reconnects perception to voice.`,
       frequency: 'Once this week',
+      linkedExerciseId: 'stress-reducing-conversation',
     };
 
     return {
@@ -587,6 +598,7 @@ function combo9(s: IntegrationScores): IntegrationResult | null {
       instruction: `When a feeling arrives with a story: 'I'm feeling [emotion]. The story my mind is adding is [story]. I'll sit with the feeling and check the story later.' Practice the split.`,
       whyThisOne: `Your neuroticism amplifies the signal. Your anxiety writes the story. Separating them gives you choice.`,
       frequency: 'Three times this week',
+      linkedExerciseId: 'defusion-from-stories',
     };
 
     return {
@@ -637,6 +649,7 @@ function combo10(s: IntegrationScores): IntegrationResult | null {
       instruction: `Disagree with your partner about something small this week. Not to fight — to practice difference. 'I actually prefer the other option.' Notice: the relationship survives. Your partner likes that you have a preference.`,
       whyThisOne: `Your warmth is genuine. The practice adds texture to it — so your partner gets a person, not just a pleasant surface.`,
       frequency: 'Once this week',
+      linkedExerciseId: 'unified-detachment',
     };
 
     return {
@@ -686,6 +699,7 @@ function combo11(s: IntegrationScores): IntegrationResult | null {
       instruction: `When you notice flooding (chest tight, jaw clenched, tunnel vision), say: 'I need 20 minutes.' Leave the room. Breathe. Walk. Return. THEN continue. This break restores physiological baseline.`,
       whyThisOne: `When reactivity overwhelms regulation, nothing productive happens. The break IS the intervention.`,
       frequency: 'Every time you notice flooding',
+      linkedExerciseId: 'distress-tolerance-together',
     };
 
     return {
@@ -737,6 +751,7 @@ function combo12(s: IntegrationScores): IntegrationResult | null {
       instruction: `Three times a day, pause for 30 seconds and feel your feet on the floor. That's it. You're training the nervous system to drop into the body — which is where the window widens and attunement becomes possible.`,
       whyThisOne: `Your narrow window prevents attunement. Widening the window is the single most impactful practice.`,
       frequency: 'Three times daily',
+      linkedExerciseId: 'grounding-5-4-3-2-1',
     };
 
     return {
