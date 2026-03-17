@@ -930,31 +930,28 @@ export default function HomeScreen() {
   // hasShownTourRef prevents re-triggers from useFocusEffect loading cycles.
   const hasShownTourRef = useRef(false);
   useEffect(() => {
-    if (
-      !loading &&
-      !ftueLoading &&
-      ftueState.isFirstLaunch &&
-      !ftueState.completedTours.includes('tour_home') &&
-      !hasShownTourRef.current
-    ) {
-      // If user has completed ANY assessments, they're a returning user whose
-      // FTUE flag was lost (e.g. web storage cleared). Auto-complete tour AND
-      // all tooltips so they never replay.
-      // NOTE: Do NOT check hasCompletedOnboarding here — fresh users who just
-      // finished onboarding already have onboarding_completed_at set in DB,
-      // but they should still see the tour on their first home visit.
-      if (completedCount > 0) {
-        markTourCompleted('tour_home');
-        markFirstLaunchComplete();
-        // Mark all tooltips as seen to prevent bubbles replaying
-        markAllTooltipsSeen(TOOLTIP_CONFIGS.map((t) => t.id));
-        return;
-      }
-      // Small delay to let layout render before measuring
-      hasShownTourRef.current = true;
-      const timer = setTimeout(() => setShowTour(true), 800);
-      return () => clearTimeout(timer);
+    // Already shown this mount — skip
+    if (hasShownTourRef.current) return;
+    // Still loading — wait
+    if (loading || ftueLoading) return;
+    // Tour already completed — never show again
+    if (ftueState.completedTours.includes('tour_home')) return;
+    // Not first launch — skip
+    if (!ftueState.isFirstLaunch) return;
+
+    // If user has completed ANY assessments, they're a returning user whose
+    // FTUE flag was lost (e.g. web storage cleared). Auto-complete tour AND
+    // all tooltips so they never replay.
+    if (completedCount > 0) {
+      markTourCompleted('tour_home');
+      markFirstLaunchComplete();
+      markAllTooltipsSeen(TOOLTIP_CONFIGS.map((t) => t.id));
+      return;
     }
+    // Small delay to let layout render before measuring
+    hasShownTourRef.current = true;
+    const timer = setTimeout(() => setShowTour(true), 800);
+    return () => clearTimeout(timer);
   }, [loading, ftueLoading, ftueState.isFirstLaunch, ftueState.completedTours, completedCount]);
 
   const handleTourComplete = useCallback(() => {
@@ -1744,8 +1741,18 @@ export default function HomeScreen() {
           </View>
           <JourneySpiral
             currentStep={currentStepNum}
-            onStepPress={(stepNum) => {
+            onStepPress={async (stepNum) => {
               SoundHaptics.tapSoft();
+              // Gate: first step requires seeing the overview page at least once
+              if (stepNum === 1) {
+                try {
+                  const seen = await AsyncStorage.getItem('journey_overview_seen');
+                  if (seen !== 'true') {
+                    router.push('/(app)/growth' as any);
+                    return;
+                  }
+                } catch { /* proceed on error */ }
+              }
               router.push(`/(app)/step-detail?step=${stepNum}` as any);
             }}
             onCenterPress={() => {

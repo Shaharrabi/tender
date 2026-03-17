@@ -764,6 +764,11 @@ export default function PortraitScreen() {
     contentScrollRef.current?.scrollTo({ y: 0, animated: true });
   };
 
+  // Scroll to top whenever the active tab changes (covers both user taps and param-based navigation)
+  useEffect(() => {
+    contentScrollRef.current?.scrollTo({ y: 0, animated: false });
+  }, [activeTab]);
+
   // Load portrait history when scores tab becomes active
   useEffect(() => {
     if (activeTab === 'scores' && user && portraitHistory.length === 0) {
@@ -1981,6 +1986,7 @@ function ScoresTab({
   history?: PortraitHistoryEntry[];
 }) {
   const cs = portrait.compositeScores;
+  const scoreRouter = useRouter();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const [selectedScoreKey, setSelectedScoreKey] = useState<keyof CompositeScores>('accessibility');
 
@@ -2167,9 +2173,15 @@ function ScoresTab({
           YOUR SCORES OVER TIME
         </TenderText>
         {history.length === 0 ? (
-          <TenderText variant="body" color={Colors.textSecondary} style={{ marginTop: 8, lineHeight: 22 }}>
-            Retake your assessment after working on your growth edges to see your scores change over time.
-          </TenderText>
+          <TouchableOpacity
+            onPress={() => scoreRouter.push('/(app)/tender-assessment' as any)}
+            activeOpacity={0.7}
+            style={{ marginTop: 8 }}
+          >
+            <TenderText variant="body" color={Colors.primary} style={{ lineHeight: 22, textDecorationLine: 'underline' }}>
+              Retake your assessment after working on your growth edges to see your scores change over time.
+            </TenderText>
+          </TouchableOpacity>
         ) : (
           <>
             <TenderText variant="body" color={Colors.textSecondary} style={{ marginBottom: 12 }}>
@@ -2396,8 +2408,8 @@ function CycleTab({ portrait, rawScores }: { portrait: IndividualPortrait; rawSc
   return (
     <Animated.View style={{ opacity: fadeAnim }}>
       {/* Cycle illustration */}
-      <View style={{ alignItems: 'center', marginBottom: 12, overflow: 'visible' }}>
-        <IllustrationPortalConflict width={SCREEN_WIDTH - 48} animated={false} />
+      <View style={{ alignItems: 'center', marginBottom: 24, overflow: 'visible' }}>
+        <IllustrationPortalConflict width={SCREEN_WIDTH - 64} animated={false} />
       </View>
 
       {/* Position Hero */}
@@ -2411,7 +2423,7 @@ function CycleTab({ portrait, rawScores }: { portrait: IndividualPortrait; rawSc
             {nc.position.toUpperCase()}
           </TenderText>
         </View>
-        <TenderText variant="headingM">Your Negative Cycle</TenderText>
+        <TenderText variant="headingS">Your Negative Cycle</TenderText>
         <CollapsibleNarrative text={nc.description} previewLength={140} />
       </View>
 
@@ -2424,10 +2436,10 @@ function CycleTab({ portrait, rawScores }: { portrait: IndividualPortrait; rawSc
       )}
 
       {/* Triggers */}
-      <View style={st.card}>
+      <View style={[st.card, { marginTop: Spacing.md }]}>
         <View style={st.cardHeaderRow}>
           <LightningIcon size={16} color={Colors.warning} />
-          <TenderText variant="headingM">Triggers</TenderText>
+          <TenderText variant="headingS">Triggers</TenderText>
         </View>
         {nc.primaryTriggers.map((t, i) => (
           <View key={i} style={st.listItem}>
@@ -2441,7 +2453,7 @@ function CycleTab({ portrait, rawScores }: { portrait: IndividualPortrait; rawSc
       <View style={st.card}>
         <View style={st.cardHeaderRow}>
           <MasksIcon size={16} color={Colors.secondary} />
-          <TenderText variant="headingM">Typical Moves</TenderText>
+          <TenderText variant="headingS">Typical Moves</TenderText>
         </View>
         {nc.typicalMoves.map((m, i) => (
           <View key={i} style={st.listItem}>
@@ -2455,7 +2467,7 @@ function CycleTab({ portrait, rawScores }: { portrait: IndividualPortrait; rawSc
       <View style={st.card}>
         <View style={st.cardHeaderRow}>
           <DoveIcon size={16} color={Colors.calm} />
-          <TenderText variant="headingM">De-escalators</TenderText>
+          <TenderText variant="headingS">De-escalators</TenderText>
         </View>
         {nc.deEscalators.map((d, i) => (
           <View key={i} style={st.listItem}>

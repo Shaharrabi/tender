@@ -373,3 +373,81 @@ export async function schedulePartnerInviteFollowUp(
 
   if (__DEV__) console.log(`[Notifications] Partner invite follow-up scheduled for ${name} — "${body}"`);
 }
+
+// ─── Partner Activity Notifications ─────────────────────
+
+/** Activity type → human-readable notification copy (warm Tender tone). */
+function getPartnerActivityCopy(
+  type: string,
+  partnerName: string,
+  details?: string,
+): { title: string; body: string } {
+  const name = partnerName || 'Your partner';
+
+  switch (type) {
+    case 'assessment_complete':
+      return {
+        title: `${name} completed an assessment!`,
+        body: details
+          ? `They just finished ${details}. Tap to see what's new in your couple portal.`
+          : "A new piece of the puzzle is in. Tap to see what's new together.",
+      };
+    case 'practice_complete':
+      return {
+        title: `${name} finished a practice!`,
+        body: 'They are putting in the work. Your shared journey just moved forward.',
+      };
+    case 'step_reflection':
+      return {
+        title: `${name} shared a reflection`,
+        body: 'Something new is waiting for you in the couple portal.',
+      };
+    case 'checkin':
+      return {
+        title: `${name} checked in`,
+        body: 'They are thinking about you. Tap to see how they are feeling.',
+      };
+    case 'portrait_update':
+      return {
+        title: `${name}'s portrait just updated`,
+        body: 'New insights have landed. See how your portraits connect.',
+      };
+    default:
+      return {
+        title: `${name} did something new`,
+        body: "Tap to see what's happening in your couple portal.",
+      };
+  }
+}
+
+/**
+ * Schedule an immediate local notification for a partner activity event.
+ * Fires within 1 second so it feels real-time.
+ */
+export async function schedulePartnerActivityNotification(activity: {
+  type: string;
+  partnerName: string;
+  details?: string;
+}): Promise<void> {
+  const { title, body } = getPartnerActivityCopy(
+    activity.type,
+    activity.partnerName,
+    activity.details,
+  );
+
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title,
+      body,
+      data: { type: 'partner_activity', activityType: activity.type },
+      sound: 'default',
+    },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+      seconds: 1,
+      repeats: false,
+    },
+  });
+
+  if (__DEV__) console.log(`[Notifications] Partner activity notification — "${title}": "${body}"`);
+}

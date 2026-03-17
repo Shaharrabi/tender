@@ -12,6 +12,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useEngagementNotification } from '@/hooks/useEngagementNotification';
+import { usePartnerActivityRealtime } from '@/hooks/usePartnerActivityRealtime';
 import NotificationBanner from './NotificationBanner';
 import NotificationToast from './NotificationToast';
 import NotificationBellButton from './NotificationBellButton';
@@ -39,6 +40,9 @@ export default function HomeNotificationLayer({
     markAllRead,
     loading,
   } = useEngagementNotification(userId, weareBottleneck, dayNumber);
+
+  // Subscribe to realtime partner activity → fires local notifications
+  usePartnerActivityRealtime(userId);
 
   // Don't render anything while loading
   if (loading) return null;

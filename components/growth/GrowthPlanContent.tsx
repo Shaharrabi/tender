@@ -221,11 +221,18 @@ export default function GrowthPlanContent({ portrait, router, phaseColor }: Grow
           {/* Your Path — Integrated into the 12-step journey */}
           <View style={s.phasesContainer}>
             <TenderText variant="headingS" color={Colors.text}>Your Path</TenderText>
-            <View style={s.pathIntegratedCard}>
+            <TouchableOpacity
+              style={s.pathIntegratedCard}
+              activeOpacity={0.7}
+              onPress={() => router.push('/(app)/building-bridges' as any)}
+            >
               <TenderText variant="body" color={Colors.textSecondary} style={s.pathIntegratedText}>
                 Your 12-step journey is your path. Each step integrates the practices your protocol recommends — completing steps and exercises grows your edges and moves your portrait score.
               </TenderText>
-            </View>
+              <TenderText variant="bodySmall" color={Colors.primary} style={{ marginTop: 6, textDecorationLine: 'underline' }}>
+                View your 12-step journey →
+              </TenderText>
+            </TouchableOpacity>
           </View>
 
           {/* Contraindications as gentle guidance */}

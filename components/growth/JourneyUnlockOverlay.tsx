@@ -117,10 +117,12 @@ export default function JourneyUnlockOverlay({
   onExploreJourney,
 }: JourneyUnlockOverlayProps) {
 
-  // Play celebration sound on mount
+  // Play celebration sound on mount + persist seen flag
   useEffect(() => {
     SoundHaptics.playBadgeUnlock();
     markJourneyUnlockSeen();
+    // Also mark on unmount as safety net (e.g. back-navigation dismissal)
+    return () => { markJourneyUnlockSeen(); };
   }, []);
 
   return (

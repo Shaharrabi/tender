@@ -441,9 +441,24 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
         const decoder = new TextDecoder();
         let buffer = '';
         let fullContent = '';
+        let flushedContent = '';
         let streamFlushScheduled = false;
         let firstChunkReceived = false;
         streamingLockRef.current = true;
+
+        // Flush accumulated content to the message state
+        const flushStreamContent = () => {
+          const snapshot = fullContent;
+          if (snapshot === flushedContent) return; // nothing new to flush
+          flushedContent = snapshot;
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === streamMsgId
+                ? { ...msg, content: snapshot }
+                : msg
+            )
+          );
+        };
 
         try {
           while (true) {
@@ -471,20 +486,35 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
                     firstChunkReceived = true;
                     setSending(false);
                   }
-                  // Batch streaming updates — flush at most every 50ms for fluid rendering
+                  // Batch streaming updates — flush on word boundaries using rAF
+                  // for smooth 60fps-synced rendering on mobile
                   if (!streamFlushScheduled) {
                     streamFlushScheduled = true;
-                    setTimeout(() => {
-                      const snapshot = fullContent;
-                      setMessages((prev) =>
-                        prev.map((msg) =>
-                          msg.id === streamMsgId
-                            ? { ...msg, content: snapshot }
-                            : msg
-                        )
+                    requestAnimationFrame(() => {
+                      // Only flush on word boundaries (space/newline) unless
+                      // the pending buffer is large (>80 chars, e.g. long URL)
+                      const pending = fullContent.slice(flushedContent.length);
+                      const lastSpace = Math.max(
+                        pending.lastIndexOf(' '),
+                        pending.lastIndexOf('\n')
                       );
+                      if (lastSpace > 0 && pending.length < 80) {
+                        // Trim fullContent snapshot to the last word boundary
+                        const trimmed = flushedContent + pending.slice(0, lastSpace + 1);
+                        const snap = trimmed;
+                        flushedContent = snap;
+                        setMessages((prev) =>
+                          prev.map((msg) =>
+                            msg.id === streamMsgId
+                              ? { ...msg, content: snap }
+                              : msg
+                          )
+                        );
+                      } else {
+                        flushStreamContent();
+                      }
                       streamFlushScheduled = false;
-                    }, 50);
+                    });
                   }
                 } else if (event.type === 'metadata') {
                   // Update session title if provided
@@ -529,6 +559,9 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
             );
           }
         }
+
+        // Final flush — ensure ALL remaining content is displayed
+        flushStreamContent();
 
         if (__DEV__) console.log('[Chat] Stream complete, length:', fullContent.length);
       } else {

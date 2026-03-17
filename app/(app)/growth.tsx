@@ -71,6 +71,11 @@ export default function GrowthScreen() {
   const [hasPortrait, setHasPortrait] = useState(false);
   const [showFoundation, setShowFoundation] = useState(false);
 
+  // Mark that user has seen the journey overview (gates step 1 in home.tsx)
+  useEffect(() => {
+    AsyncStorage.setItem('journey_overview_seen', 'true').catch(() => {});
+  }, []);
+
   // Check if Foundation audio should auto-play on first visit
   // Pass server hint once step data loads — if user has any step progress
   // beyond initial state, they've been here before (survives cache clears)

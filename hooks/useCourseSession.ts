@@ -71,7 +71,13 @@ export function useCourseSession(
         .single();
 
       if (existing) {
-        // Join existing session
+        // Join existing session — set partner_b_id if not already set
+        if (existing.started_by !== userId && !existing.partner_b_id) {
+          await supabase
+            .from('course_sessions')
+            .update({ partner_b_id: userId })
+            .eq('id', existing.id); // Non-blocking — presence handles activation
+        }
         setState(s => ({
           ...s,
           sessionId: existing.id,
