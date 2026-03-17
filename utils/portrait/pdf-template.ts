@@ -1054,6 +1054,22 @@ ${oneThingHTML ? `<!-- ONE-THING SENTENCE -->\n${oneThingHTML}` : ''}
     <p class="anchor-subheader">BUILDING BLOCKS</p>
     ${bulletList(fl.regulation.regulationToolkit.buildingBlocks)}
   </div>` : ''}
+  ${fl.regulation.coRegulationPattern ? `
+  <div class="card card-blue">
+    <div class="card-title">Co-Regulation Pattern</div>
+    <p><strong>Style:</strong> ${esc(fl.regulation.coRegulationPattern.style.replace(/-/g, ' '))}</p>
+    <p>${esc(fl.regulation.coRegulationPattern.description)}</p>
+    <div class="two-col">
+      <div>
+        <p class="anchor-subheader">WHAT YOU OFFER</p>
+        ${bulletList(fl.regulation.coRegulationPattern.whatYouOffer)}
+      </div>
+      <div>
+        <p class="anchor-subheader">WHAT YOU NEED</p>
+        ${bulletList(fl.regulation.coRegulationPattern.whatYouNeed)}
+      </div>
+    </div>
+  </div>` : ''}
 </div>
 
 <!-- VALUES -->
@@ -1066,6 +1082,26 @@ ${oneThingHTML ? `<!-- ONE-THING SENTENCE -->\n${oneThingHTML}` : ''}
     <div class="card-title">Core Values</div>
     ${bulletList(fl.values.coreValues)}
   </div>
+  ${fl.values.qualitativeInsights ? `
+  <div class="card card-muted">
+    <div class="card-title">Who You Are as a Partner</div>
+    <p>${esc(fl.values.qualitativeInsights.partnerIdentity)}</p>
+    ${fl.values.qualitativeInsights.nonNegotiables.length > 0 ? `
+    <p class="anchor-subheader">NON-NEGOTIABLES</p>
+    ${bulletList(fl.values.qualitativeInsights.nonNegotiables)}` : ''}
+    <div class="insight-callout">${esc(fl.values.qualitativeInsights.aspirationalVision)}</div>
+  </div>` : ''}
+  ${fl.values.developmentalInvitations && fl.values.developmentalInvitations.length > 0 ? `
+  <div class="card card-sage">
+    <div class="card-title">Developmental Invitations</div>
+    ${bulletList(fl.values.developmentalInvitations)}
+  </div>` : ''}
+  ${fl.values.willingnessRequirements && fl.values.willingnessRequirements.length > 0 ? `
+  <div class="card card-gold">
+    <div class="card-title">What Growth Requires</div>
+    <p style="font-style:italic;color:var(--text-muted);font-size:9.5pt;margin-bottom:8px">The discomfort that meaningful change asks of you</p>
+    ${bulletList(fl.values.willingnessRequirements)}
+  </div>` : ''}
   ${valuesGapsHTML ? `
   <div class="card">
     <div class="card-title">Values Alignment</div>
@@ -1087,6 +1123,16 @@ ${fl.fieldAwareness ? `
   ${scoreBar('Field Sensitivity', Math.round((fl.fieldAwareness.fieldSensitivity / 5) * 100), '#6B9080')}
   ${scoreBar('Boundary Clarity', Math.round((fl.fieldAwareness.boundaryClarity / 6) * 100), '#4A6FA8')}
   ${scoreBar('Pattern Awareness', Math.round((fl.fieldAwareness.patternAwareness / 7) * 100), '#D4A843')}
+  ${fl.fieldAwareness.metacognitiveCapacity ? `
+  <div class="card card-muted" style="margin-top:12px">
+    <div class="card-title">Metacognitive Capacity</div>
+    <p>You show the ability to observe your own relational patterns while they're happening — a key capacity for breaking cycles and deepening intimacy.</p>
+  </div>` : ''}
+  ${fl.fieldAwareness.crossPatterns && fl.fieldAwareness.crossPatterns.length > 0 ? `
+  <div class="card card-accent" style="margin-top:12px">
+    <div class="card-title">Cross-Pattern Insights</div>
+    ${bulletList(fl.fieldAwareness.crossPatterns)}
+  </div>` : ''}
 </div>` : ''}
 
 ${bigFiveHTML ? `
@@ -1132,6 +1178,22 @@ ${supplementHTML ? `
     <div class="card-title">De-Escalators</div>
     ${bulletList(nc.deEscalators)}
   </div>
+  ${nc.repairReadiness ? `
+  <div class="card card-gold">
+    <div class="card-title">Repair Readiness</div>
+    <div class="two-col">
+      <div>
+        ${scoreBar('Can Make Repair', nc.repairReadiness.canMakeRepair, '#6B9080')}
+      </div>
+      <div>
+        ${scoreBar('Can Receive Repair', nc.repairReadiness.canReceiveRepair, '#4A6FA8')}
+      </div>
+    </div>
+    <p style="margin-top:8px"><strong>Repair Style:</strong> ${esc(nc.repairReadiness.repairStyle)}</p>
+    ${nc.repairReadiness.barriers.length > 0 ? `
+    <p class="anchor-subheader">BARRIERS TO REPAIR</p>
+    ${bulletList(nc.repairReadiness.barriers)}` : ''}
+  </div>` : ''}
 </div>
 
 ${patternsHTML ? `

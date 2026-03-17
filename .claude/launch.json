@@ -4,8 +4,8 @@
     {
       "name": "expo-web",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["expo", "start", "--web", "--port", "8082", "--clear"],
-      "port": 8082,
+      "runtimeArgs": ["expo", "start", "--web", "--port", "8083", "--clear"],
+      "port": 8083,
       "autoPort": true
     },
     {
@@ -23,8 +23,9 @@
     {
       "name": "expo-android",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["expo", "start", "--android", "--port", "8082"],
-      "port": 8082
+      "runtimeArgs": ["expo", "start", "--android", "--port", "8083"],
+      "port": 8083,
+      "autoPort": true
     },
     {
       "name": "supabase-functions",

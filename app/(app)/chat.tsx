@@ -331,9 +331,14 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
+    zIndex: 10,
+    backgroundColor: Colors.background,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderLight,
   },
   keyboardContainer: {
     flex: 1,
+    paddingBottom: 56,
   },
 
   // ── Header ──
