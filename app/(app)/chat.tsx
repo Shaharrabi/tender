@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
   },
   keyboardContainer: {
     flex: 1,
-    paddingBottom: 80,
+    paddingBottom: 100,
   },
 
   // ── Header ──

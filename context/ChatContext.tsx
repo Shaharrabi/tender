@@ -436,6 +436,7 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
         const decoder = new TextDecoder();
         let buffer = '';
         let fullContent = '';
+        let streamFlushScheduled = false;
         let firstChunkReceived = false;
         streamingLockRef.current = true;
 
@@ -465,14 +466,21 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
                     firstChunkReceived = true;
                     setSending(false);
                   }
-                  // Update the streaming message progressively
-                  setMessages((prev) =>
-                    prev.map((msg) =>
-                      msg.id === streamMsgId
-                        ? { ...msg, content: fullContent }
-                        : msg
-                    )
-                  );
+                  // Batch streaming updates — flush at most every 50ms for fluid rendering
+                  if (!streamFlushScheduled) {
+                    streamFlushScheduled = true;
+                    setTimeout(() => {
+                      const snapshot = fullContent;
+                      setMessages((prev) =>
+                        prev.map((msg) =>
+                          msg.id === streamMsgId
+                            ? { ...msg, content: snapshot }
+                            : msg
+                        )
+                      );
+                      streamFlushScheduled = false;
+                    }, 50);
+                  }
                 } else if (event.type === 'metadata') {
                   // Update session title if provided
                   if (event.sessionTitle) {
