@@ -261,22 +261,19 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
         token = refreshData.session?.access_token;
         if (__DEV__) console.log('[Chat] refreshSession result:', !!refreshData.session, refreshError?.message || 'no error');
 
-        // If the refresh token itself is dead (deleted/rotated/expired), auto-sign-out.
-        // This is unrecoverable — the user MUST re-authenticate.
+        // If the refresh token itself is dead (deleted/rotated/expired), show error.
+        // Don't auto-sign-out — let the user decide.
         if (refreshError && /refresh token|not found|invalid/i.test(refreshError.message)) {
-          console.warn('[Chat] Refresh token is dead — signing out automatically');
+          console.warn('[Chat] Refresh token is dead:', refreshError.message);
           setSessionExpired(true);
-          try { await signOut(); } catch {}
-          throw new Error('__SESSION_EXPIRED__:Your session expired. Signing you out — please sign back in.');
+          throw new Error('Your session expired. Please sign out and back in to continue chatting.');
         }
       }
 
       // If still no token, the user truly isn't authenticated
       if (!token) {
         setSessionExpired(true);
-        // Auto-sign-out so the user doesn't get stuck in a limbo state
-        try { await signOut(); } catch {}
-        throw new Error('__SESSION_EXPIRED__:Your session has expired. Please sign back in.');
+        throw new Error('Could not get an auth token. Please sign out and back in to continue chatting.');
       }
 
       if (__DEV__) {
@@ -338,7 +335,9 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
       if (!response.ok) {
         // ── 401: try one session refresh + retry before giving up ──
         if (response.status === 401) {
-          if (__DEV__) console.log('[Chat] Got 401 — attempting session refresh and retry...');
+          // Log in production too — helps diagnose auth issues on deployed site
+          console.warn('[Chat] Got 401 from edge function — attempting session refresh and retry...');
+          try { const b = await response.clone().text(); console.warn('[Chat] 401 body:', b.substring(0, 300)); } catch {}
           const { data: retryRefresh, error: retryRefreshError } = await supabase.auth.refreshSession();
           const retryToken = retryRefresh?.session?.access_token;
 
@@ -382,20 +381,26 @@ export function ChatProvider({ children, coupleMode, coupleId }: ChatProviderPro
               // Retry succeeded — replace `response` and continue normal processing
               response = retryResponse;
             } else if (retryResponse.status === 401) {
-              // Still 401 after refresh — session is truly expired, auto-sign-out
-              if (__DEV__) console.log('[Chat] Retry still 401 — session truly expired, signing out');
-              setSessionExpired(true);
-              try { await signOut(); } catch {}
-              throw new Error('__SESSION_EXPIRED__:Your session expired. Signing you out — please sign back in.');
+              // Still 401 after refresh — show error but DON'T sign out.
+              // The session may still be valid for other operations (DB reads etc.)
+              // and the 401 could be a transient edge-function issue.
+              if (__DEV__) console.log('[Chat] Retry still 401 — edge function auth issue');
+              let debugMsg = '';
+              try {
+                const errBody = await retryResponse.text();
+                const errData = JSON.parse(errBody);
+                debugMsg = errData.debug ? ` (${errData.debug.authError || 'unknown'})` : '';
+                console.warn('[Chat] 401 debug:', errData.debug);
+              } catch {}
+              throw new Error(`Nuance couldn't verify your session${debugMsg}. Please try again or sign out and back in.`);
             } else {
               // Some other error on retry
               response = retryResponse;
             }
           } else {
             if (__DEV__) console.log('[Chat] Could not refresh session token:', retryRefreshError?.message);
-            setSessionExpired(true);
-            try { await signOut(); } catch {}
-            throw new Error('__SESSION_EXPIRED__:Your session expired. Signing you out — please sign back in.');
+            // Don't auto-sign-out — just show a helpful error
+            throw new Error('Your session token could not be refreshed. Please try again, or sign out and back in if this persists.');
           }
         }
 
