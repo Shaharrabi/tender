@@ -122,6 +122,14 @@ export default function MoreScreen() {
             <ArrowLeftIcon size={20} color={Colors.text} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>More</Text>
+          <TouchableOpacity
+            onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/sharing-settings' as any); }}
+            style={styles.settingsButton}
+            accessibilityRole="button"
+            accessibilityLabel="Settings"
+          >
+            <SettingsIcon size={20} color={Colors.text} />
+          </TouchableOpacity>
         </View>
 
         {/* ═══ EXPLORE ══════════════════════════════════════ */}
@@ -263,6 +271,11 @@ const styles = StyleSheet.create({
   headerTitle: {
     ...Typography.headingL,
     color: Colors.text,
+    flex: 1,
+  },
+  settingsButton: {
+    padding: Spacing.xs,
+    marginRight: -Spacing.xs,
   },
   sectionLabel: {
     ...Typography.label,

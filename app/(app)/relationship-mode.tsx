@@ -148,10 +148,10 @@ export default function RelationshipModeScreen() {
         if (couple) {
           await seedDyadicAssessments(couple.id, user.id, user.id);
         }
-      } else if (
-        (currentMode === 'demo_partner' || currentMode === 'random_partner')
-      ) {
-        // Switching away from demo mode — clean up the self-couple
+      } else {
+        // Switching to real_partner or solo — always clean up any self-couple
+        // regardless of currentMode, since a self-couple should never block
+        // connecting to a real partner.
         const myCouple = await getMyCouple(user.id);
         if (myCouple && myCouple.partner_a_id === myCouple.partner_b_id) {
           await cleanupAllCouples(user.id);

@@ -258,6 +258,7 @@ export interface IndividualPortrait {
   id: string;
   userId: string;
   createdAt: string;
+  updatedAt?: string;
   assessmentIds: string[];
   compositeScores: CompositeScores;
   patterns: DetectedPattern[];

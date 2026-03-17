@@ -10,8 +10,8 @@ import { Colors, Spacing, BorderRadius, Shadows, Typography } from '@/constants/
 // ─── FTUE Colors ──────────────────────────────────────────────────────────
 
 export const FTUEColors = {
-  /** Warm gold for highlights, CTA buttons, progress fills */
-  highlight: Colors.accentGold,        // #D4A843
+  /** Blue for highlights, CTA buttons, progress fills */
+  highlight: Colors.primary,            // #6B7B9B
 
   /** Tooltip / tour card background */
   cardBg: Colors.background,           // #FDF6F0
@@ -20,7 +20,7 @@ export const FTUEColors = {
   backdrop: 'rgba(45, 34, 38, 0.6)',
 
   /** Spotlight border around target elements */
-  spotlightBorder: Colors.accentGold,  // #D4A843
+  spotlightBorder: Colors.primary,     // #6B7B9B
 
   /** Text colors */
   title: Colors.text,                  // #2D2226
@@ -28,19 +28,19 @@ export const FTUEColors = {
   muted: Colors.textMuted,            // #9B8E91
 
   /** CTA button */
-  ctaBg: Colors.accentGold,            // #D4A843
+  ctaBg: Colors.secondary,             // #4A6FA8
   ctaText: Colors.white,               // #FFFFFF
 
   /** Progress bar */
   progressTrack: Colors.progressTrack, // #F0E6E0
-  progressFill: Colors.accentGold,     // #D4A843
+  progressFill: Colors.primary,        // #6B7B9B
 
   /** Audio player bar */
   audioBg: Colors.text,                // #2D2226 (dark bar)
   audioText: Colors.white,
 
   /** Highlight glow shadow */
-  glowShadow: Colors.accentGold,      // #D4A843
+  glowShadow: Colors.primary,         // #6B7B9B
 };
 
 // ─── FTUE Spacing & Sizing ────────────────────────────────────────────────

@@ -37,7 +37,7 @@ import {
   getDeepCouplePortrait,
 } from '@/services/couples';
 import { getPartnerSharedAssessments, INDIVIDUAL_ASSESSMENT_TYPES } from '@/services/consent';
-import { getPortrait, checkCanGeneratePortrait, fetchAllScores, extractSupplementScores, savePortrait } from '@/services/portrait';
+import { getPortrait, checkCanGeneratePortrait, fetchAllScores, fetchSharedScores, extractSupplementScores, savePortrait } from '@/services/portrait';
 import { generatePortrait, isPortraitStale } from '@/utils/portrait/portrait-generator';
 import { generateRelationshipPortrait } from '@/utils/portrait/relationship-portrait-generator';
 import { generateDeepCouplePortrait } from '@/utils/portrait/couple-portrait-generator';
@@ -68,6 +68,8 @@ import {
   CompassIcon,
   LeafIcon,
   RefreshIcon,
+  BookOpenIcon,
+  SettingsIcon,
 } from '@/assets/graphics/icons';
 import QuickLinksBar from '@/components/QuickLinksBar';
 import { useScrollHideBar } from '@/hooks/useScrollHideBar';
@@ -105,6 +107,7 @@ import SectionSummaryHeader from '@/components/portrait-enhancements/SectionSumm
 import AudioLibrary from '@/components/audio/AudioLibrary';
 import ResetLibrary from '@/components/emergency/ResetLibrary';
 import CoupleMatrix from '@/components/matrix/CoupleMatrix';
+import CoursesTab from '@/components/courses/CoursesTab';
 import { HourglassIcon } from '@/assets/graphics/icons';
 import {
   IllustrationPairing01,
@@ -117,7 +120,7 @@ import {
   IllustrationAttachSecure,
 } from '@/assets/graphics/illustrations';
 
-type TabKey = 'overview' | 'pattern' | 'connection' | 'insights' | 'growth' | 'field';
+type TabKey = 'overview' | 'pattern' | 'connection' | 'insights' | 'growth' | 'field' | 'courses';
 
 interface CoupleTabDef {
   key: TabKey;
@@ -133,6 +136,7 @@ const TABS: CoupleTabDef[] = [
   { key: 'insights',    label: 'Insights',        Icon: SparkleIcon,    color: Colors.accent },
   { key: 'growth',      label: 'Growth',          Icon: SeedlingIcon,   color: Colors.warning },
   { key: 'field',       label: 'Field',           Icon: SparkleIcon,    color: Colors.accentGold },
+  { key: 'courses',     label: 'Courses',         Icon: BookOpenIcon,   color: Colors.calm },
 ];
 
 export default function CouplePortalScreenWithBoundary() {
@@ -318,10 +322,12 @@ function CouplePortalScreen() {
       console.log('[CouplePortal] Final portraits:', { mine: !!mp, partner: !!pp });
 
       // ─── 1b. Load Raw Individual Scores for Our Matrix ──
+      // Only load partner scores that they have explicitly shared (privacy/consent)
       try {
+        const sharedTypes = partner ? await getPartnerSharedAssessments(partnerId, myCouple.id) : [];
         const [myScoresMap, partnerScoresMap] = await Promise.all([
           fetchAllScores(user.id).catch(() => null),
-          selfCouple ? Promise.resolve(null) : fetchAllScores(partnerId).catch(() => null),
+          selfCouple ? Promise.resolve(null) : fetchSharedScores(partnerId, sharedTypes).catch(() => null),
         ]);
         if (myScoresMap) setMyRawScores(myScoresMap);
         if (partnerScoresMap) setPartnerRawScores(partnerScoresMap);
@@ -334,34 +340,40 @@ function CouplePortalScreen() {
       let rp = await getRelationshipPortrait(myCouple.id);
       console.log('[CouplePortal] Relationship portrait from DB:', !!rp);
 
-      // Detect partner portrait changes by comparing portrait IDs stored in relationship portrait
+      // Detect if individual portraits have changed since last relationship portrait generation.
+      // Compares both portrait IDs AND updated_at timestamps (upsert keeps same row ID).
       let partnerPortraitChanged = false;
-      if (pp && rp && !selfCouple) {
+      if (rp && (mp || pp) && !selfCouple) {
         const rpData = rp as any;
-        const isPartnerA = myCouple.partner_a_id === user.id;
-        // The partner's portrait ID stored when the relationship portrait was last generated
-        const savedPartnerPortraitId = isPartnerA
-          ? rpData.partner_b_portrait_id
-          : rpData.partner_a_portrait_id;
-        const currentPartnerPortraitId = (pp as any).id;
-        if (savedPartnerPortraitId && currentPartnerPortraitId && savedPartnerPortraitId !== currentPartnerPortraitId) {
+        const rpUpdatedAt = rpData.updated_at ? new Date(rpData.updated_at).getTime() : 0;
+
+        // Check if either individual portrait was updated AFTER the relationship portrait
+        const mpTyped = mp as unknown as IndividualPortrait;
+        const ppTyped = pp as unknown as IndividualPortrait;
+        const myUpdatedAt = mpTyped?.updatedAt
+          ? new Date(mpTyped.updatedAt).getTime() : 0;
+        const partnerUpdatedAt = ppTyped?.updatedAt
+          ? new Date(ppTyped.updatedAt).getTime() : 0;
+
+        if (myUpdatedAt > rpUpdatedAt) {
           partnerPortraitChanged = true;
-          console.log('[CouplePortal] Partner portrait ID changed — will regenerate relationship portrait', {
-            saved: savedPartnerPortraitId,
-            current: currentPartnerPortraitId,
-          });
+          console.log('[CouplePortal] My portrait updated after relationship portrait — will regenerate');
         }
-        // Also check if partner's assessment IDs are newer (portrait row ID may stay same on upsert)
+        if (partnerUpdatedAt > rpUpdatedAt) {
+          partnerPortraitChanged = true;
+          console.log('[CouplePortal] Partner portrait updated after relationship portrait — will regenerate');
+        }
+
+        // Also check portrait IDs as fallback
         if (!partnerPortraitChanged) {
-          const ppIds = new Set((pp as any).assessmentIds || []);
-          const myPortraitId = isPartnerA
-            ? rpData.partner_a_portrait_id
-            : rpData.partner_b_portrait_id;
-          const currentMyPortraitId = mp ? (mp as any).id : null;
-          // If saved portrait IDs don't match current, something changed
-          if (myPortraitId && currentMyPortraitId && myPortraitId !== currentMyPortraitId) {
-            partnerPortraitChanged = true; // re-use flag to trigger regen
-            console.log('[CouplePortal] My portrait ID changed since last relationship portrait — will regenerate');
+          const isPartnerA = myCouple.partner_a_id === user.id;
+          const savedPartnerPortraitId = isPartnerA
+            ? rpData.partner_b_portrait_id
+            : rpData.partner_a_portrait_id;
+          const currentPartnerPortraitId = (pp as any)?.id;
+          if (savedPartnerPortraitId && currentPartnerPortraitId && savedPartnerPortraitId !== currentPartnerPortraitId) {
+            partnerPortraitChanged = true;
+            console.log('[CouplePortal] Partner portrait ID changed — will regenerate relationship portrait');
           }
         }
       }
@@ -1725,6 +1737,11 @@ function CouplePortalScreen() {
       readMinutes: 3,
       color: Colors.accentGold,
     },
+    courses: {
+      summary: 'Four live courses to play together \u2014 family patterns, nervous systems, boundaries, and bids.',
+      readMinutes: 15,
+      color: Colors.calm,
+    },
   };
 
   /** Generate a 60-second digest of the couple portrait */
@@ -1837,6 +1854,7 @@ function CouplePortalScreen() {
       case 'insights':   return renderCombinedInsights();
       case 'growth':     return renderGrowth();
       case 'field':      return <OurFieldTab coupleId={couple!.id} userId={user!.id} compositeScores={myPortrait?.compositeScores} />;
+      case 'courses':    return <CoursesTab coupleId={couple!.id} userId={user!.id} />;
       default:           return renderOverview();
     }
   };
@@ -1883,6 +1901,15 @@ function CouplePortalScreen() {
               accessibilityState={{ disabled: !dp }}
             >
               <TenderText variant="body" color={Colors.primary} style={[styles.exportBtnText, !dp && { opacity: 0.4 }]}>Export PDF</TenderText>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => router.push('/(app)/sharing-settings' as any)}
+              activeOpacity={0.7}
+              style={styles.settingsBtn}
+              accessibilityRole="button"
+              accessibilityLabel="Settings"
+            >
+              <SettingsIcon size={20} color={Colors.primary} />
             </TouchableOpacity>
           </View>
 
@@ -2240,6 +2267,10 @@ const styles = StyleSheet.create({
   },
   exportBtnText: {
     letterSpacing: 0.5,
+  },
+  settingsBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 8,
   },
 
   // ── WEARE enhancements ────────────────────────────────

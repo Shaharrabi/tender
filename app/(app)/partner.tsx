@@ -34,6 +34,8 @@ import {
   getOrCreateProfile,
   checkDyadicCompletion,
   isSelfCouple,
+  disconnectCouple,
+  deleteCouple,
 } from '@/services/couples';
 import { getDyadicAssessments } from '@/utils/assessments/registry';
 import { getGatedDyadicTypes } from '@/utils/unlockLogic';
@@ -119,7 +121,10 @@ export default function PartnerScreen() {
         const invites = await getMyInvites(user.id);
         console.log('[Partner] Invites loaded:', invites.length);
         setMyInvites(invites);
-        const pending = invites.find((i) => i.status === 'pending');
+        const now = new Date();
+        const pending = invites.find(
+          (i) => i.status === 'pending' && new Date(i.expires_at) > now,
+        );
         if (pending) setActiveInvite(pending);
       }
     } catch (e) {
@@ -185,12 +190,13 @@ export default function PartnerScreen() {
           Alert.alert('Error', 'Failed to connect. Please try again.');
         }
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error('[Partner] Error in doAcceptInvite:', e);
+      const msg = e?.message || 'Failed to connect. Please try again.';
       if (Platform.OS === 'web') {
-        window.alert('Failed to connect. Please try again.');
+        window.alert(msg);
       } else {
-        Alert.alert('Error', 'Failed to connect. Please try again.');
+        Alert.alert('Connection Error', msg);
       }
     } finally {
       setProcessing(false);
@@ -207,16 +213,6 @@ export default function PartnerScreen() {
           window.alert('This invite code is invalid or has expired. Please check and try again.');
         } else {
           Alert.alert('Invalid Code', 'This invite code is invalid or has expired. Please check and try again.');
-        }
-        setProcessing(false);
-        return;
-      }
-
-      if (invite.inviter_id === user.id) {
-        if (Platform.OS === 'web') {
-          window.alert("You can't accept your own invite!");
-        } else {
-          Alert.alert('Oops', "You can't accept your own invite!");
         }
         setProcessing(false);
         return;
@@ -246,6 +242,47 @@ export default function PartnerScreen() {
     } catch (e) {
       console.error('[Partner] Error accepting invite:', e);
       setProcessing(false);
+    }
+  };
+
+  // ─── Disconnect Partner ────────────────────────────────
+
+  const handleDisconnect = () => {
+    if (!couple) return;
+    const isDemo = isSelfCouple(couple);
+    const title = isDemo ? 'Leave Demo Connection' : 'Disconnect Partner';
+    const message = isDemo
+      ? 'This will remove the demo couple connection. You can reconnect anytime.'
+      : 'This will disconnect you from your partner. Your individual data is preserved, but the couple portrait will be removed. You can connect with a new partner afterward.';
+
+    const doDisconnect = async () => {
+      try {
+        setProcessing(true);
+        if (isDemo) {
+          await deleteCouple(couple.id);
+        } else {
+          await disconnectCouple(couple.id);
+        }
+        setCouple(null);
+        setPartnerProfile(null);
+        setActiveInvite(null);
+        loadData();
+      } catch (e) {
+        console.error('[Partner] Disconnect error:', e);
+      } finally {
+        setProcessing(false);
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm(`${title}\n\n${message}`)) {
+        doDisconnect();
+      }
+    } else {
+      Alert.alert(title, message, [
+        { text: 'Cancel', style: 'cancel' },
+        { text: isDemo ? 'Leave' : 'Disconnect', style: 'destructive', onPress: doDisconnect },
+      ]);
     }
   };
 
@@ -397,7 +434,7 @@ export default function PartnerScreen() {
               <View style={styles.celebrationBanner}>
                 <SparkleIcon size={16} color={Colors.secondary} />
                 <Text style={styles.celebrationText}>
-                  Your couple portrait is ready!
+                  Couple Portal unlocked!
                 </Text>
               </View>
               <TouchableOpacity
@@ -411,7 +448,7 @@ export default function PartnerScreen() {
                 <Text style={styles.portalTitle}>Couple Portal</Text>
                 <Text style={styles.portalDesc}>
                   Explore your combined relationship portrait, patterns,
-                  strengths, and growth edges together.
+                  strengths, and growth edges together. Both partners need their individual portrait for the full experience.
                 </Text>
                 <Text style={styles.portalCta}>Enter Portal {'\u2192'}</Text>
               </TouchableOpacity>
@@ -425,6 +462,20 @@ export default function PartnerScreen() {
               </Text>
             </View>
           )}
+
+          {/* Disconnect button */}
+          <TouchableOpacity
+            style={styles.disconnectBtn}
+            onPress={handleDisconnect}
+            activeOpacity={0.7}
+            disabled={processing}
+            accessibilityRole="button"
+            accessibilityLabel={isSelfCouple(couple) ? 'Leave demo connection' : 'Disconnect from partner'}
+          >
+            <Text style={styles.disconnectText}>
+              {isSelfCouple(couple) ? 'Leave Demo Connection' : 'Disconnect Partner'}
+            </Text>
+          </TouchableOpacity>
         </ScrollView>
         </KeyboardAvoidingView>
         <ReAnimated.View style={[{ position: 'absolute', bottom: 0, left: 0, right: 0 }, quickLinksAnimStyle]}>
@@ -786,6 +837,20 @@ const styles = StyleSheet.create({
     fontFamily: FontFamilies.body,
     color: Colors.textMuted,
     lineHeight: 20,
+  },
+
+  disconnectBtn: {
+    marginTop: Spacing.xl,
+    paddingVertical: Spacing.md,
+    alignItems: 'center',
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: Colors.error + '40',
+  },
+  disconnectText: {
+    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.body,
+    color: Colors.error,
   },
 
   celebrationBanner: {

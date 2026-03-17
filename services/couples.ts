@@ -93,30 +93,29 @@ export async function createInvite(inviterId: string, inviterName?: string): Pro
 }
 
 export async function getInviteByCode(code: string): Promise<CoupleInvite | null> {
-  const normalized = code.toUpperCase().replace(/[^A-Z0-9]/g, '');
-  const formatted = normalized.length === 8
-    ? `${normalized.slice(0, 4)}-${normalized.slice(4)}`
-    : code.toUpperCase().trim();
+  // Use SECURITY DEFINER RPC to bypass RLS for code lookup.
+  // Direct SELECT was blocked by migration 027 which restricted reads
+  // to inviter_id or accepted_by — but the accepting user is neither.
+  const { data, error } = await supabase.rpc('lookup_invite_by_code', {
+    p_code: code,
+  });
 
-  const { data, error } = await supabase
-    .from('couple_invites')
-    .select('*')
-    .eq('invite_code', formatted)
-    .eq('status', 'pending')
-    .maybeSingle();
-
-  if (error || !data) return null;
-
-  // Check if expired
-  if (new Date(data.expires_at) < new Date()) {
-    await supabase
-      .from('couple_invites')
-      .update({ status: 'expired' })
-      .eq('id', data.id);
+  if (error) {
+    console.error('[Couples] Invite lookup failed:', error.message);
     return null;
   }
 
-  return data as CoupleInvite;
+  if (!data) return null;
+
+  // RPC returns JSONB with safe fields
+  return {
+    id: data.id,
+    invite_code: data.invite_code,
+    inviter_name: data.inviter_name,
+    status: data.status,
+    expires_at: data.expires_at,
+    created_at: data.created_at,
+  } as CoupleInvite;
 }
 
 export async function getMyInvites(userId: string): Promise<CoupleInvite[]> {
@@ -143,7 +142,14 @@ export async function acceptInvite(inviteId: string, acceptorId: string): Promis
 
   if (error) {
     console.error('[Couples] Atomic accept failed:', error.message);
-    return null;
+    // Surface specific errors for better debugging
+    if (error.message?.includes('Cannot accept your own invite')) {
+      throw new Error("You can't accept your own invite code.");
+    }
+    if (error.message?.includes('no longer pending')) {
+      throw new Error('This invite has already been used or expired.');
+    }
+    throw new Error(`Connection failed: ${error.message}`);
   }
 
   // RPC returns a JSONB object with couple fields

@@ -201,6 +201,7 @@ export async function savePortrait(
     anchor_points: portrait.anchorPoints,
     partner_guide: portrait.partnerGuide,
     version: portrait.version,
+    updated_at: new Date().toISOString(),
   };
 
   // Try with Phase 3 + Intelligence Upgrade columns first, fall back without them
@@ -271,6 +272,7 @@ function mapRow(row: any): IndividualPortrait {
     id: row.id,
     userId: row.user_id,
     createdAt: row.created_at,
+    updatedAt: row.updated_at,
     assessmentIds: row.assessment_ids,
     compositeScores: row.composite_scores,
     patterns: row.patterns,

@@ -508,7 +508,7 @@ export default function HomeScreen() {
         loadedPortrait = await getPortrait(user.id);
 
         // Auto-regenerate portrait if assessments have been updated OR code version is newer
-        if (loadedPortrait && completedAssessmentTypes.length >= 7) {
+        if (loadedPortrait && completedAssessmentTypes.length >= 6) {
           const latestScoresMap = await fetchAllScores(user.id);
           const currentIds = new Set(Object.values(latestScoresMap).map((r) => r.id));
           const portraitIds = new Set(loadedPortrait.assessmentIds || []);
@@ -543,7 +543,7 @@ export default function HomeScreen() {
         }
 
         // Auto-generate portrait if all assessments complete but no portrait yet
-        if (!loadedPortrait && completedAssessmentTypes.length >= 7) {
+        if (!loadedPortrait && completedAssessmentTypes.length >= 6) {
           let step = 'init';
           let localError = '';
           try {
