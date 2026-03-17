@@ -101,6 +101,26 @@ export default function TenderMatrix({ allScores, portrait, scrollViewRef }: Ten
     });
   }, []);
 
+  // Select/deselect all cells in a domain (full-row selection)
+  const handleRowSelect = useCallback((domainId: string, cells: { label: string }[]) => {
+    setSelectedBoxes(prev => {
+      const rowKeys = cells.map(c => `${domainId}:${c.label}`);
+      const allSelected = rowKeys.every(k => prev.includes(k));
+      if (allSelected) {
+        // Deselect entire row
+        return prev.filter(k => !k.startsWith(`${domainId}:`));
+      }
+      // Select entire row (add any not yet selected)
+      const newKeys = rowKeys.filter(k => !prev.includes(k));
+      const combined = [...prev, ...newKeys];
+      return combined.slice(0, 12); // generous limit for full rows
+    });
+  }, []);
+
+  const handleReset = useCallback(() => {
+    setSelectedBoxes([]);
+  }, []);
+
   const handleToggle = useCallback((id: string) => {
     setExpandedDomain(prev => prev === id ? null : id);
   }, []);
@@ -438,9 +458,22 @@ export default function TenderMatrix({ allScores, portrait, scrollViewRef }: Ten
               {integrateMode ? 'Exit Integrate' : 'Integrate'}
             </TenderText>
           </TouchableOpacity>
+          {integrateMode && selectedBoxes.length > 0 && (
+            <TouchableOpacity
+              style={styles.resetButton}
+              onPress={handleReset}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Reset selections"
+            >
+              <TenderText variant="caption" style={styles.resetButtonText}>
+                Reset
+              </TenderText>
+            </TouchableOpacity>
+          )}
           {integrateMode && selectedBoxes.length > 0 && selectedDomains.length < 2 && (
             <TenderText variant="caption" color={Colors.textMuted} style={{ marginLeft: Spacing.sm }}>
-              Select cells from at least 2 domains
+              Select from at least 2 domains
             </TenderText>
           )}
         </View>
@@ -461,6 +494,7 @@ export default function TenderMatrix({ allScores, portrait, scrollViewRef }: Ten
               .filter(k => k.startsWith(`${domain.id}:`))
               .map(k => k.split(':')[1])}
             onCellSelect={(cellLabel) => handleCellSelect(domain.id, cellLabel)}
+            onRowSelect={() => handleRowSelect(domain.id, domain.cells)}
           />
         ))}
       </View>
@@ -569,5 +603,20 @@ const styles = StyleSheet.create({
   },
   integrateButtonTextActive: {
     color: Colors.textOnPrimary,
+  },
+  resetButton: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.full,
+    borderWidth: 1,
+    borderColor: Colors.textMuted,
+    backgroundColor: 'transparent',
+    marginLeft: Spacing.sm,
+  },
+  resetButtonText: {
+    fontFamily: FontFamilies.heading,
+    fontSize: 11,
+    letterSpacing: 0.5,
+    color: Colors.textMuted,
   },
 });

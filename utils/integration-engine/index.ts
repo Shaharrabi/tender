@@ -21,6 +21,7 @@ import { getQuadIntegration } from './quad';
 import { matchTier1Pattern } from './narratives/tier1-patterns';
 import { matchTier2Combo } from './narratives/tier2-combos';
 import { matchBoxCombination } from './narratives/box-combinations';
+import { generateFallbackLenses } from './lens-fallback';
 
 /**
  * Main entry point: generate an integration for the selected domains.
@@ -67,25 +68,38 @@ export function generateIntegration(
   }
 
   // ── Layer 3: Legacy Integration Functions ──
+  // These return results without lenses — we generate fallback lenses
+  // so the LensPicker always appears for every combination.
+  let legacyResult: IntegrationResult | null = null;
   switch (domains.length) {
     case 2:
-      return getPairwiseIntegration(domains[0], domains[1], scores);
+      legacyResult = getPairwiseIntegration(domains[0], domains[1], scores);
+      break;
 
     case 3:
-      return getTripleIntegration(
+      legacyResult = getTripleIntegration(
         domains as [DomainId, DomainId, DomainId],
         scores,
       );
+      break;
 
     case 4:
-      return getQuadIntegration(
+      legacyResult = getQuadIntegration(
         domains as [DomainId, DomainId, DomainId, DomainId],
         scores,
       );
+      break;
 
     default:
       return null;
   }
+
+  // Add fallback lenses if the legacy result doesn't have them
+  if (legacyResult && !legacyResult.lenses) {
+    legacyResult.lenses = generateFallbackLenses(legacyResult);
+  }
+
+  return legacyResult;
 }
 
 /**

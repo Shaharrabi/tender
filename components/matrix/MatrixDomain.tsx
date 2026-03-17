@@ -56,9 +56,10 @@ interface MatrixDomainProps {
   cellSelectable?: boolean;
   selectedCells?: string[];
   onCellSelect?: (cellLabel: string) => void;
+  onRowSelect?: () => void;
 }
 
-export default function MatrixDomain({ domain, isExpanded, onToggle, selectable = false, selected = false, cellSelectable = false, selectedCells = [], onCellSelect }: MatrixDomainProps) {
+export default function MatrixDomain({ domain, isExpanded, onToggle, selectable = false, selected = false, cellSelectable = false, selectedCells = [], onCellSelect, onRowSelect }: MatrixDomainProps) {
   const expandAnim = useRef(new Animated.Value(0)).current;
   const palette = MATRIX_COLORS[domain.color];
   const confidenceStyle = CONFIDENCE_COLORS[domain.confidence];
@@ -74,8 +75,15 @@ export default function MatrixDomain({ domain, isExpanded, onToggle, selectable 
   }, [isExpanded]);
 
   const handlePress = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    onToggle(domain.id);
+    if (selectable && onRowSelect) {
+      // In integrate mode, tapping the row header selects all cells in this row
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      onRowSelect();
+    } else {
+      // Normal mode — expand/collapse narrative
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      onToggle(domain.id);
+    }
   };
 
   return (
