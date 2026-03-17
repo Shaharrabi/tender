@@ -259,9 +259,7 @@ function ChatScreenInner({ topic, practiceWith }: { topic?: string; practiceWith
         </KeyboardAvoidingView>
       )}
 
-      <View style={styles.quickLinksWrapper}>
-        <QuickLinksBar currentScreen="nuance" />
-      </View>
+      <QuickLinksBar currentScreen="nuance" />
 
       {/* Session history modal */}
       <Modal
@@ -326,19 +324,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  quickLinksWrapper: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    zIndex: 10,
-    backgroundColor: Colors.background,
-    borderTopWidth: 1,
-    borderTopColor: Colors.borderLight,
-  },
   keyboardContainer: {
     flex: 1,
-    paddingBottom: 100,
   },
 
   // ── Header ──

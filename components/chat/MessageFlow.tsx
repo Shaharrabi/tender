@@ -465,7 +465,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: Spacing.md,
     paddingTop: Spacing.md,
-    paddingBottom: 80,
+    paddingBottom: Spacing.lg,
   },
 
   // ── Empty / welcome state ──
