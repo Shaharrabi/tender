@@ -31,6 +31,22 @@ import type {
 
 /* ── helpers ────────────────────────────────────────────── */
 
+function possessive(name: string): string {
+  return name === 'You' ? 'Your' : `${name}'s`;
+}
+
+function verbAgree(name: string, singular: string, plural: string): string {
+  return name === 'You' ? `You ${plural}` : `${name} ${singular}`;
+}
+
+function isProvisionalScore(score: number | undefined): boolean {
+  return score === undefined || score === 0;
+}
+
+function provisionalNote(score: number | undefined): string {
+  return isProvisionalScore(score) ? ' <em class="muted">(provisional)</em>' : '';
+}
+
 function esc(text: string | undefined): string {
   if (!text) return '';
   return text
@@ -287,14 +303,17 @@ export function generateCouplePortraitHTML(
       <p style="font-style:italic;color:var(--text-secondary);font-size:10pt;margin-bottom:16px">${esc(field.qualitativeLabel)}</p>
 
       <div class="card">
+        ${isProvisionalScore(field.resonance) && isProvisionalScore(field.direction) && isProvisionalScore(field.vitality)
+          ? '<p class="muted" style="font-size:9pt;margin-bottom:8px">Field data is still being collected. Scores below are provisional and will update as you complete the Space Between assessment.</p>'
+          : ''}
         <div style="margin-bottom:12px">
-          ${generateFieldBarSVG(field.resonance, 'Resonance', '#C4616E')}
+          ${generateFieldBarSVG(field.resonance, 'Resonance' + (isProvisionalScore(field.resonance) ? ' (provisional)' : ''), '#C4616E')}
         </div>
         <div style="margin-bottom:12px">
-          ${generateFieldBarSVG(field.direction, 'Direction', '#D4A843')}
+          ${generateFieldBarSVG(field.direction, 'Direction' + (isProvisionalScore(field.direction) ? ' (provisional)' : ''), '#D4A843')}
         </div>
         <div style="margin-bottom:4px">
-          ${generateFieldBarSVG(field.vitality, 'Vitality', '#6B9080')}
+          ${generateFieldBarSVG(field.vitality, 'Vitality' + (isProvisionalScore(field.vitality) ? ' (provisional)' : ''), '#6B9080')}
         </div>
       </div>
 
@@ -453,11 +472,20 @@ export function generateCouplePortraitHTML(
 
   const complementaryHTML = conv.complementaryGifts && conv.complementaryGifts.length > 0
     ? conv.complementaryGifts.map((c) => {
-        const strongerName = c.strongerPartner === 'A' ? nameA : nameB;
+        // Cross-check stronger partner against radar overlap scores
+        let strongerName = c.strongerPartner === 'A' ? nameA : nameB;
+        const radarMatch = conv.radarOverlap?.find(r => r.dimensionLabel === c.dimensionLabel);
+        if (radarMatch) {
+          // Use actual scores to determine who is stronger
+          strongerName = radarMatch.partnerAScore >= radarMatch.partnerBScore ? nameA : nameB;
+        }
+        const scoreA = radarMatch ? Math.round(radarMatch.partnerAScore) : '';
+        const scoreB = radarMatch ? Math.round(radarMatch.partnerBScore) : '';
+        const scoreDisplay = radarMatch ? ` (${esc(nameA)}: ${scoreA} / ${esc(nameB)}: ${scoreB})` : '';
         return `
       <div class="card card-gold" style="margin-bottom:10px;page-break-inside:avoid">
         <div class="card-title">${esc(c.dimensionLabel)}</div>
-        <p style="font-size:9pt;color:var(--text-muted);margin-bottom:4px">Stronger: ${esc(strongerName)} (gap: ${Math.round(c.gap)})</p>
+        <p style="font-size:9pt;color:var(--text-muted);margin-bottom:4px">Stronger: ${esc(strongerName)} (gap: ${Math.round(c.gap)})${scoreDisplay}</p>
         <p><strong>Gift:</strong> ${esc(c.giftNarrative)}</p>
         <p><strong>Risk:</strong> ${esc(c.riskNarrative)}</p>
         ${c.growthOpportunity ? `<p style="font-size:9.5pt;color:var(--gold);margin-bottom:0"><strong>Growth:</strong> ${esc(c.growthOpportunity)}</p>` : ''}
@@ -471,11 +499,11 @@ export function generateCouplePortraitHTML(
         <div class="card-title">${esc(f.area)}</div>
         <div class="two-col" style="margin-bottom:8px">
           <div>
-            <p style="font-size:9pt;color:var(--rose);font-weight:500">${esc(nameA)}'s pull</p>
+            <p style="font-size:9pt;color:var(--rose);font-weight:500">${possessive(esc(nameA))} pull</p>
             <p style="font-size:9.5pt">${esc(f.partnerAPull)}</p>
           </div>
           <div>
-            <p style="font-size:9pt;color:var(--blue);font-weight:500">${esc(nameB)}'s pull</p>
+            <p style="font-size:9pt;color:var(--blue);font-weight:500">${possessive(esc(nameB))} pull</p>
             <p style="font-size:9.5pt">${esc(f.partnerBPull)}</p>
           </div>
         </div>
@@ -644,11 +672,11 @@ export function generateCouplePortraitHTML(
 
           <div class="two-col" style="margin-top:8px">
             <div class="card card-rose" style="margin-bottom:0">
-              <p style="font-size:9pt;color:var(--rose);font-weight:500;margin-bottom:2px">${esc(nameA)}'s Part</p>
+              <p style="font-size:9pt;color:var(--rose);font-weight:500;margin-bottom:2px">${possessive(esc(nameA))} Part</p>
               <p style="font-size:9.5pt;margin-bottom:0">${esc(edge.partnerAPart)}</p>
             </div>
             <div class="card card-blue" style="margin-bottom:0">
-              <p style="font-size:9pt;color:var(--blue);font-weight:500;margin-bottom:2px">${esc(nameB)}'s Part</p>
+              <p style="font-size:9pt;color:var(--blue);font-weight:500;margin-bottom:2px">${possessive(esc(nameB))} Part</p>
               <p style="font-size:9.5pt;margin-bottom:0">${esc(edge.partnerBPart)}</p>
             </div>
           </div>
@@ -809,7 +837,7 @@ export function generateCouplePortraitHTML(
           return `
             <div style="margin-bottom:8px;padding:8px 10px;background:#FDFBF9;border-left:3px solid var(--rose-light);break-inside:avoid;page-break-inside:avoid">
               <p style="font-family:'Josefin Sans',sans-serif;font-size:7.5pt;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin:0 0 3px 0">${lensLabels[lens] || lens}</p>
-              <p style="font-size:9pt;line-height:1.5;color:var(--text);margin:0">${esc(text.substring(0, 500))}${text.length > 500 ? '…' : ''}</p>
+              <p style="font-size:9pt;line-height:1.5;color:var(--text);margin:0">${esc(text)}</p>
             </div>`;
         }).join('') : '';
 
@@ -865,7 +893,7 @@ export function generateCouplePortraitHTML(
 
           sections.push(`
             <div style="margin-bottom:20px">
-              <p style="font-family:'Josefin Sans',sans-serif;font-size:9pt;letter-spacing:2px;text-transform:uppercase;color:var(--rose);margin-bottom:12px">${esc(partner.name)}'s Patterns</p>
+              <p style="font-family:'Josefin Sans',sans-serif;font-size:9pt;letter-spacing:2px;text-transform:uppercase;color:var(--rose);margin-bottom:12px">${possessive(esc(partner.name))} Patterns</p>
               ${top.map(renderIntegrationPattern).join('')}
             </div>`);
         }
@@ -903,7 +931,7 @@ export function generateCouplePortraitHTML(
             return `
               <div style="margin-bottom:8px;padding:8px 10px;background:#FDFBF9;border-left:3px solid var(--rose-light);break-inside:avoid;page-break-inside:avoid">
                 <p style="font-family:'Josefin Sans',sans-serif;font-size:7.5pt;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin:0 0 3px 0">${lensLabels[lens] || lens}</p>
-                <p style="font-size:9pt;line-height:1.5;color:var(--text);margin:0">${esc(text.substring(0, 500))}${text.length > 500 ? '…' : ''}</p>
+                <p style="font-size:9pt;line-height:1.5;color:var(--text);margin:0">${esc(text)}</p>
               </div>`;
           }).join('');
 
@@ -1296,7 +1324,7 @@ p { margin-bottom: 8px; line-height: 1.7; }
     ${esc((() => {
       const parts: string[] = [];
       const dynamic = cycle.dynamic.replace(/-/g, ' ');
-      parts.push(`Your relational dance is a ${dynamic} pattern \u2014 ${nameA} tends to ${cycle.partnerAPosition}, while ${nameB} tends to ${cycle.partnerBPosition}.`);
+      parts.push(`Your relational dance is a ${dynamic} pattern \u2014 ${verbAgree(nameA, 'tends', 'tend')} to ${cycle.partnerAPosition}, while ${verbAgree(nameB, 'tends', 'tend')} to ${cycle.partnerBPosition}.`);
       parts.push(`In the attachment landscape, you\u2019re a ${attachment.dynamicLabel} pairing.`);
       if (conv.sharedStrengths.length > 0) {
         const top = conv.sharedStrengths.slice(0, 2).map(s => s.dimensionLabel).join(' and ');
