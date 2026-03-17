@@ -33,9 +33,51 @@ import { generateFieldNarrative } from './narratives/field';
 import { generateOneInvitation } from './narratives/invitation';
 import * as Labels from './constants/matrix-labels';
 import type { ConfidenceLevel } from './constants/matrix-colors';
-import { Colors, Spacing, BorderRadius, FontFamilies } from '@/constants/theme';
+import { Colors, Spacing, BorderRadius, FontFamilies, Shadows } from '@/constants/theme';
 import type { IndividualPortrait } from '@/types/portrait';
+import type { InterventionCategory, Intervention } from '@/types/intervention';
 import { generateIntegration, toIntegrationScores, type DomainId } from '@/utils/integration-engine';
+import { getAllExercises } from '@/utils/interventions/registry';
+
+// ─── Learn Mode types & constants ────────────────────
+
+type LearnMode = 'off' | 'intro' | 'strengths' | 'growth' | 'full';
+
+const STRENGTH_THRESHOLD = 65;
+const GROWTH_THRESHOLD = 40;
+const STRENGTH_COLOR = '#6B9080'; // sage green
+const GROWTH_COLOR = '#B5593A';   // warm blush
+
+/** Maps composite score keys to matrix domain IDs and which cell labels they affect. */
+const COMPOSITE_TO_DOMAIN: Record<string, { domainId: string; cellLabels: string[] }> = {
+  attachmentSecurity: { domainId: 'foundation', cellLabels: ['Attachment', 'Anxiety', 'Avoidance', 'Window'] },
+  emotionalIntelligence: { domainId: 'navigation', cellLabels: ['Perception', 'Self-regulation', 'Other-support', 'Emotional use'] },
+  relationalAwareness: { domainId: 'navigation', cellLabels: ['Perception', 'Other-support'] },
+  regulationScore: { domainId: 'instrument', cellLabels: ['Sensitivity', 'Warmth'] },
+  differentiation: { domainId: 'stance', cellLabels: ['Differentiation', 'Reactivity', 'I-position', 'Fusion'] },
+  selfLeadership: { domainId: 'stance', cellLabels: ['Differentiation', 'I-position'] },
+  conflictFlexibility: { domainId: 'conflict', cellLabels: ['Primary style', 'Secondary', 'Yielding', 'Avoiding'] },
+  valuesCongruence: { domainId: 'compass', cellLabels: ['Alignment', 'Action score', 'Biggest gap'] },
+  fieldAwareness: { domainId: 'field', cellLabels: ['Field awareness', 'Recognition', 'Presence', 'Emergence'] },
+};
+
+/** Exercise category mapping for composite scores */
+const COMPOSITE_CATEGORIES: Record<string, { categories: InterventionCategory[]; patterns: string[] }> = {
+  attachmentSecurity: { categories: ['attachment'], patterns: ['attachment', 'emotional_bids', 'disconnection'] },
+  emotionalIntelligence: { categories: ['communication'], patterns: ['empathy', 'emotional_awareness', 'perception'] },
+  relationalAwareness: { categories: ['communication', 'attachment'], patterns: ['attunement', 'presence', 'emotional_bids'] },
+  regulationScore: { categories: ['regulation'], patterns: ['regulation', 'flooding', 'hyperactivation', 'shutdown'] },
+  differentiation: { categories: ['differentiation'], patterns: ['differentiation', 'boundaries', 'fusion'] },
+  selfLeadership: { categories: ['differentiation'], patterns: ['protective_patterns', 'differentiation', 'self_awareness'] },
+  conflictFlexibility: { categories: ['communication'], patterns: ['conflict', 'repair', 'flooding'] },
+  valuesCongruence: { categories: ['values'], patterns: ['values_gap', 'avoidance', 'values'] },
+};
+
+const ANALYZED_DOMAINS = [
+  'attachmentSecurity', 'emotionalIntelligence', 'differentiation',
+  'conflictFlexibility', 'relationalAwareness', 'regulationScore',
+  'selfLeadership', 'valuesCongruence',
+];
 
 // ─── Props ──────────────────────────────────────────
 
@@ -81,6 +123,8 @@ export default function TenderMatrix({ allScores, portrait, scrollViewRef }: Ten
   const [integrateMode, setIntegrateMode] = useState(false);
   const [selectedBoxes, setSelectedBoxes] = useState<string[]>([]); // "domainId:CellLabel"
   const integrationPanelRef = useRef<View>(null);
+  const [learnMode, setLearnMode] = useState<LearnMode>('off');
+  const learnPanelRef = useRef<View>(null);
 
   // Derive selected domains from selected boxes
   const selectedDomains = useMemo<DomainId[]>(() => {
@@ -431,6 +475,134 @@ export default function TenderMatrix({ allScores, portrait, scrollViewRef }: Ten
     });
   }, [ecrr, ipip, sseit, dsir, dutch, cs]);
 
+  // ── Learn Mode: determine highlighted cells ──
+  const { highlightedCellMap, learnSummary, learnExercises } = useMemo(() => {
+    const map: Record<string, Record<string, 'strength' | 'growth'>> = {};
+    let summary = '';
+    let exercises: Intervention[] = [];
+
+    if (learnMode === 'off' || learnMode === 'intro' || !portrait.compositeScores) {
+      return { highlightedCellMap: map, learnSummary: summary, learnExercises: exercises };
+    }
+
+    const cs = portrait.compositeScores as any;
+    const strengthKeys: string[] = [];
+    const growthKeys: string[] = [];
+
+    for (const key of ANALYZED_DOMAINS) {
+      const value = cs[key] as number | undefined;
+      if (value == null) continue;
+      if (value >= STRENGTH_THRESHOLD) strengthKeys.push(key);
+      if (value <= GROWTH_THRESHOLD) growthKeys.push(key);
+    }
+
+    // Build highlight map based on learn mode
+    const addToMap = (keys: string[], type: 'strength' | 'growth') => {
+      for (const key of keys) {
+        const mapping = COMPOSITE_TO_DOMAIN[key];
+        if (!mapping) continue;
+        if (!map[mapping.domainId]) map[mapping.domainId] = {};
+        for (const label of mapping.cellLabels) {
+          map[mapping.domainId][label] = type;
+        }
+      }
+    };
+
+    if (learnMode === 'strengths') {
+      addToMap(strengthKeys, 'strength');
+      summary = strengthKeys.length > 0
+        ? 'These highlighted cells represent your relational superpowers \u2014 the dimensions where you naturally shine. They are the foundation you can always return to when things feel uncertain.'
+        : 'Your scores are fairly balanced across dimensions. As you keep growing, some will naturally emerge as clear strengths.';
+    } else if (learnMode === 'growth') {
+      addToMap(growthKeys, 'growth');
+      summary = growthKeys.length > 0
+        ? 'These highlighted cells show where you have the most room to grow. Lower scores are not weaknesses \u2014 they are invitations to develop new relational capacities, gently and at your own pace.'
+        : 'Your scores are well above the growth threshold across all dimensions. You have a solid foundation to build on.';
+    } else if (learnMode === 'full') {
+      addToMap(strengthKeys, 'strength');
+      addToMap(growthKeys, 'growth');
+      summary = 'The full picture: sage-green highlighted cells are your strengths, blush-highlighted cells are your growing edges. Together they tell the story of who you are in relationship \u2014 whole, complex, and always unfolding.';
+    }
+
+    // Pick exercises — creative rotation using day-of-year hash
+    const allEx = getAllExercises();
+    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
+
+    const relevantCategories = new Set<InterventionCategory>();
+    const relevantPatterns = new Set<string>();
+
+    const keysToUse = learnMode === 'strengths' ? strengthKeys
+      : learnMode === 'growth' ? growthKeys
+      : [...strengthKeys, ...growthKeys];
+
+    for (const key of keysToUse) {
+      const meta = COMPOSITE_CATEGORIES[key];
+      if (!meta) continue;
+      meta.categories.forEach(c => relevantCategories.add(c));
+      meta.patterns.forEach(p => relevantPatterns.add(p));
+    }
+
+    // For growth mode, prefer portrait.growthEdges practices first
+    const priorityIds: string[] = [];
+    if ((learnMode === 'growth' || learnMode === 'full') && portrait.growthEdges) {
+      for (const edge of portrait.growthEdges) {
+        for (const pid of edge.practices) {
+          if (!priorityIds.includes(pid)) priorityIds.push(pid);
+        }
+      }
+    }
+
+    // Score and shuffle exercises
+    const scored = allEx.map(ex => {
+      let score = 0;
+      if (priorityIds.includes(ex.id)) score += 5;
+      if (relevantCategories.has(ex.category)) score += 2;
+      for (const p of ex.forPatterns) {
+        if (relevantPatterns.has(p.toLowerCase())) score += 1;
+      }
+      return { ex, score };
+    });
+
+    // Sort by score, then rotate using day hash to ensure variety
+    const eligible = scored.filter(s => s.score > 0).sort((a, b) => b.score - a.score);
+    // Use day hash to pick a rotating window from eligible exercises
+    const offset = dayOfYear % Math.max(1, eligible.length - 4);
+    const rotated = [...eligible.slice(offset), ...eligible.slice(0, offset)];
+    exercises = rotated.slice(0, 5).map(s => s.ex);
+
+    return { highlightedCellMap: map, learnSummary: summary, learnExercises: exercises };
+  }, [learnMode, portrait]);
+
+  const isLearnActive = learnMode !== 'off' && learnMode !== 'intro';
+
+  // Toggle learn mode — entering it exits integrate mode
+  const handleLearnTap = useCallback(() => {
+    if (learnMode === 'off') {
+      setLearnMode('intro');
+      setIntegrateMode(false);
+      setSelectedBoxes([]);
+      setExpandedDomain(null);
+    } else {
+      setLearnMode('off');
+    }
+  }, [learnMode]);
+
+  const handleLearnChoice = useCallback((mode: 'strengths' | 'growth' | 'full') => {
+    setLearnMode(mode);
+  }, []);
+
+  // Auto-scroll to learn panel
+  useEffect(() => {
+    if (isLearnActive && learnPanelRef.current && scrollViewRef?.current) {
+      const timer = setTimeout(() => {
+        learnPanelRef.current?.measureInWindow((_x: number, y: number) => {
+          scrollViewRef.current?.scrollTo({ y: Math.max(0, y - 80), animated: true });
+        });
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+  }, [isLearnActive, scrollViewRef]);
+
   // ── Check minimum data ──
   const completedCount = Object.keys(allScores).length;
   if (completedCount < 1 || domains.length === 0) {
@@ -474,29 +646,34 @@ export default function TenderMatrix({ allScores, portrait, scrollViewRef }: Ten
         </View>
       )}
 
-      {/* Learn About Me — guided walkthrough of strengths & growth areas */}
-      {portrait.compositeScores && !integrateMode && (
-        <View style={styles.learnButtonRow}>
-          <TouchableOpacity
-            style={styles.learnButton}
-            onPress={() => router.push('/(app)/learn-about-me' as any)}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel="Learn about myself — guided view of your strengths and growing areas"
-          >
-            <TenderText variant="caption" style={styles.learnButtonText}>
-              Learn About Me
-            </TenderText>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {/* Integrate mode toggle */}
+      {/* Action buttons row — Learn About Me + Integrate side by side */}
       {domains.length >= 2 && (
-        <View style={styles.integrateToggleRow}>
+        <View style={styles.actionButtonRow}>
+          {portrait.compositeScores && (
+            <TouchableOpacity
+              style={[
+                styles.learnButton,
+                (learnMode !== 'off') && styles.learnButtonActive,
+              ]}
+              onPress={handleLearnTap}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={learnMode !== 'off' ? 'Exit learn mode' : 'Learn about myself'}
+            >
+              <TenderText variant="caption" style={[
+                styles.learnButtonText,
+                (learnMode !== 'off') && styles.learnButtonTextActive,
+              ]}>
+                {learnMode !== 'off' ? 'Exit Learn' : 'Learn About Me'}
+              </TenderText>
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
             style={[styles.integrateButton, integrateMode && styles.integrateButtonActive]}
-            onPress={toggleIntegrateMode}
+            onPress={() => {
+              if (learnMode !== 'off') setLearnMode('off');
+              toggleIntegrateMode();
+            }}
             activeOpacity={0.7}
             accessibilityRole="button"
             accessibilityLabel={integrateMode ? 'Exit integrate mode' : 'Enter integrate mode to select domains'}
@@ -529,6 +706,71 @@ export default function TenderMatrix({ allScores, portrait, scrollViewRef }: Ten
         </View>
       )}
 
+      {/* Learn mode intro — brief explanation + 3 pill choices */}
+      {learnMode === 'intro' && (
+        <View style={styles.learnIntroPanel}>
+          <TenderText variant="bodySmall" color={Colors.text} style={styles.learnIntroText}>
+            Discover what your map reveals about you. Choose a lens and watch the relevant cells light up in the map below.
+          </TenderText>
+          <View style={styles.learnPillRow}>
+            <TouchableOpacity
+              style={[styles.learnPill, { borderColor: STRENGTH_COLOR, backgroundColor: STRENGTH_COLOR + '15' }]}
+              onPress={() => handleLearnChoice('strengths')}
+              activeOpacity={0.7}
+            >
+              <TenderText variant="caption" style={[styles.learnPillText, { color: STRENGTH_COLOR }]}>
+                Strengths
+              </TenderText>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.learnPill, { borderColor: GROWTH_COLOR, backgroundColor: GROWTH_COLOR + '15' }]}
+              onPress={() => handleLearnChoice('growth')}
+              activeOpacity={0.7}
+            >
+              <TenderText variant="caption" style={[styles.learnPillText, { color: GROWTH_COLOR }]}>
+                Growth Edges
+              </TenderText>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.learnPill, { borderColor: Colors.primary, backgroundColor: Colors.primaryFaded }]}
+              onPress={() => handleLearnChoice('full')}
+              activeOpacity={0.7}
+            >
+              <TenderText variant="caption" style={[styles.learnPillText, { color: Colors.primaryDark }]}>
+                Full Picture
+              </TenderText>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      {/* Learn mode active — pill selectors (when already viewing a lens) */}
+      {isLearnActive && (
+        <View style={styles.learnActivePillRow}>
+          {(['strengths', 'growth', 'full'] as const).map(mode => (
+            <TouchableOpacity
+              key={mode}
+              style={[
+                styles.learnActivePill,
+                learnMode === mode && styles.learnActivePillSelected,
+                learnMode === mode && {
+                  backgroundColor: mode === 'strengths' ? STRENGTH_COLOR : mode === 'growth' ? GROWTH_COLOR : Colors.primary,
+                },
+              ]}
+              onPress={() => setLearnMode(mode)}
+              activeOpacity={0.7}
+            >
+              <TenderText variant="caption" style={[
+                styles.learnActivePillText,
+                learnMode === mode && { color: '#FFFFFF' },
+              ]}>
+                {mode === 'strengths' ? 'Strengths' : mode === 'growth' ? 'Growth Edges' : 'Full Picture'}
+              </TenderText>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+
       {/* Domain rows — integration panel renders inline after the last selected domain */}
       <View style={styles.domainList}>
         {domains.map((domain, index) => {
@@ -552,6 +794,8 @@ export default function TenderMatrix({ allScores, portrait, scrollViewRef }: Ten
                   .map(k => k.split(':')[1])}
                 onCellSelect={(cellLabel) => handleCellSelect(domain.id, cellLabel)}
                 onRowSelect={() => handleRowSelect(domain.id, domain.cells)}
+                highlightedCells={highlightedCellMap[domain.id]}
+                learnModeActive={isLearnActive}
               />
               {showIntegrationHere && (
                 <View ref={integrationPanelRef}>
@@ -566,13 +810,77 @@ export default function TenderMatrix({ allScores, portrait, scrollViewRef }: Ten
         })}
       </View>
 
-      {/* The Invitation (hidden in integrate mode) */}
-      {!integrateMode && invitation && (
+      {/* Learn mode summary panel — below highlighted map */}
+      {isLearnActive && (
+        <View ref={learnPanelRef} style={[
+          styles.learnSummaryPanel,
+          {
+            borderLeftColor: learnMode === 'strengths' ? STRENGTH_COLOR
+              : learnMode === 'growth' ? GROWTH_COLOR : Colors.primary,
+            backgroundColor: learnMode === 'strengths' ? STRENGTH_COLOR + '10'
+              : learnMode === 'growth' ? GROWTH_COLOR + '10' : Colors.primaryFaded,
+          },
+        ]}>
+          <TenderText variant="bodySmall" color={Colors.text} style={styles.learnSummaryText}>
+            {learnSummary}
+          </TenderText>
+
+          {learnExercises.length > 0 && (
+            <View style={styles.learnExercisesSection}>
+              <TenderText variant="caption" style={styles.learnExercisesTitle}>
+                {learnMode === 'strengths' ? 'DEEPEN YOUR STRENGTHS' : learnMode === 'growth' ? 'GENTLE GROWTH PRACTICES' : 'PRACTICES FOR YOUR WHOLE PICTURE'}
+              </TenderText>
+              {learnExercises.map(ex => (
+                <TouchableOpacity
+                  key={ex.id}
+                  style={styles.learnExerciseCard}
+                  onPress={() => router.push(`/(app)/exercise?id=${ex.id}` as any)}
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Open practice: ${ex.title}`}
+                >
+                  <View style={styles.learnExerciseHeader}>
+                    <View style={[
+                      styles.learnExerciseBadge,
+                      {
+                        backgroundColor: (learnMode === 'strengths' ? STRENGTH_COLOR
+                          : learnMode === 'growth' ? GROWTH_COLOR : Colors.primary) + '18',
+                      },
+                    ]}>
+                      <TenderText variant="caption" style={[
+                        styles.learnExerciseBadgeText,
+                        {
+                          color: learnMode === 'strengths' ? STRENGTH_COLOR
+                            : learnMode === 'growth' ? GROWTH_COLOR : Colors.primary,
+                        },
+                      ]}>
+                        {ex.category}
+                      </TenderText>
+                    </View>
+                    <TenderText variant="caption" color={Colors.textMuted}>
+                      {ex.duration} min
+                    </TenderText>
+                  </View>
+                  <TenderText variant="headingS" style={styles.learnExerciseTitle}>
+                    {ex.title}
+                  </TenderText>
+                  <TenderText variant="caption" color={Colors.textSecondary} numberOfLines={2} style={{ marginTop: 2 }}>
+                    {ex.description}
+                  </TenderText>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+        </View>
+      )}
+
+      {/* The Invitation (hidden in integrate mode and learn mode) */}
+      {!integrateMode && !isLearnActive && invitation && (
         <MatrixInvitation text={invitation} />
       )}
 
       {/* Incomplete assessments hint */}
-      {completedCount < 6 && !integrateMode && (
+      {completedCount < 6 && !integrateMode && !isLearnActive && (
         <View style={styles.hintBox}>
           <TenderText variant="caption" color={Colors.textSecondary} align="center">
             {6 - completedCount} more assessment{6 - completedCount > 1 ? 's' : ''} will deepen your matrix
@@ -647,11 +955,15 @@ const styles = StyleSheet.create({
     borderLeftWidth: 3,
     borderLeftColor: Colors.primary,
   },
-  integrateToggleRow: {
+
+  // ── Action buttons row (Learn + Integrate side by side) ──
+  actionButtonRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: Spacing.md,
+    gap: Spacing.sm,
+    flexWrap: 'wrap',
   },
   integrateButton: {
     paddingHorizontal: Spacing.lg,
@@ -681,17 +993,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.textMuted,
     backgroundColor: 'transparent',
-    marginLeft: Spacing.sm,
   },
   resetButtonText: {
     fontFamily: FontFamilies.heading,
     fontSize: 11,
     letterSpacing: 0.5,
     color: Colors.textMuted,
-  },
-  learnButtonRow: {
-    alignItems: 'center' as const,
-    paddingHorizontal: Spacing.md,
   },
   learnButton: {
     paddingHorizontal: Spacing.lg,
@@ -701,11 +1008,127 @@ const styles = StyleSheet.create({
     borderColor: Colors.success,
     backgroundColor: Colors.successLight,
   },
+  learnButtonActive: {
+    backgroundColor: Colors.success,
+    borderColor: Colors.success,
+  },
   learnButtonText: {
     fontFamily: FontFamilies.heading,
     fontSize: 12,
     letterSpacing: 1,
     textTransform: 'uppercase' as const,
     color: Colors.successDark,
+  },
+  learnButtonTextActive: {
+    color: '#FFFFFF',
+  },
+
+  // ── Learn mode intro panel ──
+  learnIntroPanel: {
+    marginHorizontal: Spacing.md,
+    backgroundColor: Colors.backgroundAlt,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    borderLeftWidth: 3,
+    borderLeftColor: Colors.success,
+  },
+  learnIntroText: {
+    lineHeight: 20,
+    fontFamily: 'JosefinSans_400Regular',
+    marginBottom: Spacing.md,
+  },
+  learnPillRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    justifyContent: 'center',
+  },
+  learnPill: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.full,
+    borderWidth: 1.5,
+  },
+  learnPillText: {
+    fontFamily: FontFamilies.heading,
+    fontSize: 11,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase' as const,
+  },
+
+  // ── Learn mode active pill selectors ──
+  learnActivePillRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: Spacing.xs,
+    paddingHorizontal: Spacing.md,
+  },
+  learnActivePill: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 6,
+    borderRadius: BorderRadius.full,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    backgroundColor: 'transparent',
+  },
+  learnActivePillSelected: {
+    borderColor: 'transparent',
+  },
+  learnActivePillText: {
+    fontFamily: FontFamilies.heading,
+    fontSize: 10,
+    letterSpacing: 0.6,
+    textTransform: 'uppercase' as const,
+    color: Colors.textMuted,
+  },
+
+  // ── Learn summary panel (below highlighted map) ──
+  learnSummaryPanel: {
+    marginHorizontal: Spacing.md,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    borderLeftWidth: 3,
+  },
+  learnSummaryText: {
+    lineHeight: 20,
+    fontFamily: 'JosefinSans_400Regular',
+  },
+  learnExercisesSection: {
+    marginTop: Spacing.md,
+  },
+  learnExercisesTitle: {
+    fontSize: 10,
+    letterSpacing: 2,
+    color: Colors.textMuted,
+    fontFamily: 'Jost_500Medium',
+    textTransform: 'uppercase' as const,
+    marginBottom: Spacing.sm,
+  },
+  learnExerciseCard: {
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    marginBottom: Spacing.sm,
+    ...Shadows.subtle,
+  },
+  learnExerciseHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  learnExerciseBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: BorderRadius.sm,
+  },
+  learnExerciseBadgeText: {
+    fontFamily: 'JosefinSans_500Medium',
+    fontSize: 10,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 1,
+  },
+  learnExerciseTitle: {
+    fontSize: 15,
+    marginTop: 2,
   },
 });

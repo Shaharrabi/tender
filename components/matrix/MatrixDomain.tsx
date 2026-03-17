@@ -57,9 +57,13 @@ interface MatrixDomainProps {
   selectedCells?: string[];
   onCellSelect?: (cellLabel: string) => void;
   onRowSelect?: () => void;
+  /** Map of cell label → highlight type for learn mode */
+  highlightedCells?: Record<string, 'strength' | 'growth'>;
+  /** Whether learn mode is active (dims non-highlighted cells) */
+  learnModeActive?: boolean;
 }
 
-export default function MatrixDomain({ domain, isExpanded, onToggle, selectable = false, selected = false, cellSelectable = false, selectedCells = [], onCellSelect, onRowSelect }: MatrixDomainProps) {
+export default function MatrixDomain({ domain, isExpanded, onToggle, selectable = false, selected = false, cellSelectable = false, selectedCells = [], onCellSelect, onRowSelect, highlightedCells, learnModeActive }: MatrixDomainProps) {
   const expandAnim = useRef(new Animated.Value(0)).current;
   const palette = MATRIX_COLORS[domain.color];
   const confidenceStyle = CONFIDENCE_COLORS[domain.confidence];
@@ -145,7 +149,12 @@ export default function MatrixDomain({ domain, isExpanded, onToggle, selectable 
         ) : (
           <View style={[styles.cellRow, isNarrow && styles.cellRowNarrow]}>
             {domain.cells.map((cell, i) => (
-              <MatrixCell key={i} cell={cell} />
+              <MatrixCell
+                key={i}
+                cell={cell}
+                highlightType={highlightedCells?.[cell.label] ?? null}
+                learnModeActive={learnModeActive}
+              />
             ))}
           </View>
         )}
