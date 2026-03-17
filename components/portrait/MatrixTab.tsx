@@ -58,7 +58,7 @@ function getPortraitInsightForAssessment(
   switch (assessmentKey) {
     case 'ecr-r':
       return {
-        narrative: fourLens.attachment.narrative.slice(0, 400) + (fourLens.attachment.narrative.length > 400 ? '\u2026' : ''),
+        narrative: fourLens.attachment.narrative.slice(0, 500) + (fourLens.attachment.narrative.length > 500 ? '\u2026' : ''),
         growthEdges: growthEdges
           .filter(e => e.category === 'attachment' || e.title.toLowerCase().includes('attach'))
           .map(e => ({ title: e.title, description: e.description }))
@@ -66,44 +66,50 @@ function getPortraitInsightForAssessment(
       };
     case 'ipip-neo-120':
       return {
-        narrative: fourLens.values?.narrative
-          ? fourLens.values.narrative.slice(0, 400) + (fourLens.values.narrative.length > 400 ? '\u2026' : '')
-          : `Your personality profile shapes how you show up. Self-leadership: ${compositeScores.selfLeadership}/100.`,
+        narrative: fourLens.parts?.narrative
+          ? fourLens.parts.narrative.slice(0, 500) + (fourLens.parts.narrative.length > 500 ? '\u2026' : '')
+          : `Your personality profile shapes how you show up in love. Self-leadership: ${compositeScores.selfLeadership}/100. ${portrait.bigFiveReframes?.[0] ?? ''}`,
         growthEdges: growthEdges
-          .filter(e => e.category === 'personality' || e.category === 'values')
+          .filter(e => e.category === 'personality' || e.category === 'differentiation' || e.title.toLowerCase().includes('part'))
           .map(e => ({ title: e.title, description: e.description }))
           .slice(0, 3),
       };
     case 'sseit':
       return {
         narrative: fourLens.regulation?.narrative
-          ? fourLens.regulation.narrative.slice(0, 400) + (fourLens.regulation.narrative.length > 400 ? '\u2026' : '')
+          ? fourLens.regulation.narrative.slice(0, 500) + (fourLens.regulation.narrative.length > 500 ? '\u2026' : '')
           : `Emotional intelligence shapes how you read and manage feelings. Regulation: ${compositeScores.regulationScore}/100.`,
         growthEdges: growthEdges
           .filter(e => e.category === 'regulation' || e.title.toLowerCase().includes('emotion'))
           .map(e => ({ title: e.title, description: e.description }))
           .slice(0, 3),
       };
-    case 'dsi-r':
+    case 'dsi-r': {
+      const diffScore = compositeScores.differentiation ?? 0;
+      const selfLead = compositeScores.selfLeadership ?? 0;
+      const diffLevel = diffScore >= 70 ? 'strong' : diffScore >= 45 ? 'moderate' : 'developing';
       return {
-        narrative: `Your differentiation reflects the balance between staying connected and maintaining your sense of self.`,
+        narrative: `Your differentiation is ${diffLevel} (${Math.round(diffScore)}/100) \u2014 this shapes how well you hold onto yourself while staying connected. Self-leadership sits at ${Math.round(selfLead)}/100. ${diffScore < 45 ? 'When emotions run high, the line between your feelings and your partner\'s can blur. Building your I-position \u2014 knowing what you think and feel independent of the relationship \u2014 is your growth edge.' : diffScore >= 70 ? 'You can stay present in difficult conversations without losing yourself. This is a relational strength.' : 'You hold your ground in some situations but may lose yourself in others, especially when attachment anxiety rises.'}`,
         growthEdges: growthEdges
           .filter(e => e.category === 'differentiation' || e.title.toLowerCase().includes('boundar'))
           .map(e => ({ title: e.title, description: e.description }))
           .slice(0, 3),
       };
-    case 'dutch':
+    }
+    case 'dutch': {
+      const conflictFlex = compositeScores.conflictFlexibility ?? 0;
       return {
-        narrative: `Your conflict style reveals protective patterns: "${negativeCycle.position}" position. Triggers: ${(negativeCycle.primaryTriggers || []).slice(0, 2).join(', ')}.`,
+        narrative: `Your conflict position is "${negativeCycle.position}". Primary triggers: ${(negativeCycle.primaryTriggers || []).slice(0, 3).join(', ') || 'not yet identified'}. Conflict flexibility: ${Math.round(conflictFlex)}/100. ${conflictFlex < 40 ? 'You tend to rely on one or two strategies in conflict, which can create rigid patterns your partner learns to predict.' : conflictFlex >= 65 ? 'You show good flexibility in how you approach conflict \u2014 adjusting your strategy based on what the moment needs.' : 'You have some flexibility but may default to protective patterns when stress is high.'}`,
         growthEdges: growthEdges
           .filter(e => e.category === 'conflict' || e.category === 'communication')
           .map(e => ({ title: e.title, description: e.description }))
           .slice(0, 3),
       };
+    }
     case 'values':
       return {
         narrative: fourLens.values?.narrative
-          ? fourLens.values.narrative.slice(0, 400) + (fourLens.values.narrative.length > 400 ? '\u2026' : '')
+          ? fourLens.values.narrative.slice(0, 500) + (fourLens.values.narrative.length > 500 ? '\u2026' : '')
           : `Values alignment: ${compositeScores.valuesCongruence}/100.`,
         growthEdges: growthEdges
           .filter(e => e.category === 'values' || e.title.toLowerCase().includes('value'))
