@@ -828,6 +828,15 @@ function CouplePortalScreen() {
           ✦ Courses and practices deepen your growth together{'\n'}
           ✦ Your portrait updates as you both grow
         </TenderText>
+        <TouchableOpacity
+          style={styles.assessmentExplainerLink}
+          onPress={() => router.push('/(app)/partner' as any)}
+          activeOpacity={0.7}
+        >
+          <TenderText variant="bodySmall" color={Colors.primary} style={{ textAlign: 'center' }}>
+            Take couple assessments to enrich your portrait →
+          </TenderText>
+        </TouchableOpacity>
       </View>
 
       {/* Stale partner portrait nudge */}
@@ -2274,6 +2283,12 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     marginTop: 4,
     fontStyle: 'italic' as const,
+  },
+  assessmentExplainerLink: {
+    marginTop: 10,
+    paddingVertical: 8,
+    borderTopWidth: 0.5,
+    borderTopColor: Colors.border,
   },
   staleBanner: {
     flexDirection: 'row' as const,

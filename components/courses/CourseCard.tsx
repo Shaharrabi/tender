@@ -44,7 +44,7 @@ export default function CourseCard({ course, isCompleted, onPress }: CourseCardP
         <TenderText variant="caption" style={styles.courseLabel}>
           course {numberLabel} · {course.tags.map(t => t.label).join(' + ')}
         </TenderText>
-        <TenderText variant="headingS" style={styles.courseTitle}>
+        <TenderText variant="bodySmall" style={styles.courseTitle}>
           {course.title}
         </TenderText>
         <TenderText variant="bodySmall" style={styles.courseDescription} numberOfLines={3}>

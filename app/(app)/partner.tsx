@@ -385,7 +385,10 @@ export default function PartnerScreen() {
           {/* Dyadic Assessments Progress */}
           <Text style={styles.sectionTitle}>Relationship Assessments</Text>
           <Text style={styles.sectionDesc}>
-            Both partners complete these about your relationship together.
+            These are optional assessments you complete together about your relationship. They measure satisfaction (RDAS), stress coping (DCI), and closeness (CSI-16).
+          </Text>
+          <Text style={[styles.sectionDesc, { fontStyle: 'italic', marginTop: 4, marginBottom: 8 }]}>
+            Your couple portrait is already built from your individual assessments. These add extra depth — but aren't required. Complete them here, and they'll automatically enrich your couple portrait.
           </Text>
 
           {dyadicAssessments.map((assessment) => {
