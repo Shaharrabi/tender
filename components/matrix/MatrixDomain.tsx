@@ -9,7 +9,7 @@
  * and visually distinguishes raw vs. composite vs. interpreted data.
  */
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import {
   View,
   TouchableOpacity,
@@ -65,6 +65,7 @@ interface MatrixDomainProps {
 
 export default function MatrixDomain({ domain, isExpanded, onToggle, selectable = false, selected = false, cellSelectable = false, selectedCells = [], onCellSelect, onRowSelect, highlightedCells, learnModeActive }: MatrixDomainProps) {
   const expandAnim = useRef(new Animated.Value(0)).current;
+  const [activeInfoLabel, setActiveInfoLabel] = useState<string | null>(null);
   const palette = MATRIX_COLORS[domain.color];
   const confidenceStyle = CONFIDENCE_COLORS[domain.confidence];
   const { width } = useWindowDimensions();
@@ -143,6 +144,8 @@ export default function MatrixDomain({ domain, isExpanded, onToggle, selectable 
                 selectable
                 selected={selectedCells.includes(cell.label)}
                 onSelect={() => onCellSelect?.(cell.label)}
+                activeInfoLabel={activeInfoLabel}
+                onInfoPress={setActiveInfoLabel}
               />
             ))}
           </View>
@@ -154,6 +157,8 @@ export default function MatrixDomain({ domain, isExpanded, onToggle, selectable 
                 cell={cell}
                 highlightType={highlightedCells?.[cell.label] ?? null}
                 learnModeActive={learnModeActive}
+                activeInfoLabel={activeInfoLabel}
+                onInfoPress={setActiveInfoLabel}
               />
             ))}
           </View>

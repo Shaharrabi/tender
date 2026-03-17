@@ -341,11 +341,18 @@ export default function PartnerScreen() {
             <Text style={styles.connectedLabel}>Connected</Text>
           </View>
 
+          {/* Overview explanation */}
+          <Text style={[styles.sectionDesc, { marginTop: Spacing.md }]}>
+            Your couple portrait is built from both partners' individual assessments.
+            The couple assessments below add optional depth. Complete them and see
+            richer insights in your Couple Portal.
+          </Text>
+
           {/* Your Couple Journey — Hero Entry Point */}
           <View style={[styles.card, { backgroundColor: '#F5F0EB', borderLeftWidth: 3, borderLeftColor: Colors.secondary, marginBottom: Spacing.md }]}>
             <Text style={[styles.heading, { fontSize: 16, marginBottom: 4 }]}>Your Couple Journey</Text>
             <Text style={[styles.sectionDesc, { marginBottom: Spacing.sm }]}>
-              Your couple portrait is built from both partners' individual assessments. The optional couple assessments below add extra texture — but they're not required.
+              Your couple portal is ready. Complete couple assessments below to add even more depth.
             </Text>
             <TouchableOpacity
               style={{ backgroundColor: Colors.secondary, borderRadius: BorderRadius.md, paddingVertical: 12, paddingHorizontal: 20, alignItems: 'center', marginBottom: 8 }}
@@ -356,50 +363,11 @@ export default function PartnerScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Sharing Settings */}
-          <TouchableOpacity
-            style={[styles.card, styles.sharingCard]}
-            onPress={() => router.push('/(app)/sharing-settings' as any)}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel="Sharing Settings"
-          >
-            <View style={styles.sharingRow}>
-              <Text style={styles.sharingIcon}>{'🔄'}</Text>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.sharingTitle}>Sharing Settings</Text>
-                <Text style={styles.sharingSubtitle}>
-                  Control which assessments {partnerProfile?.display_name || (couple && isSelfCouple(couple) ? 'Demo Partner' : 'your partner')} can see
-                </Text>
-              </View>
-              <Text style={styles.sharingArrow}>{'→'}</Text>
-            </View>
-          </TouchableOpacity>
-
-          {/* Data Consent Review */}
-          <TouchableOpacity
-            style={[styles.card, styles.sharingCard]}
-            onPress={() => router.push('/(app)/consent-waiver' as any)}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel="Data Consent"
-          >
-            <View style={styles.sharingRow}>
-              <ShieldIcon size={20} color={Colors.primary} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.sharingTitle}>Data Consent</Text>
-                <Text style={styles.sharingSubtitle}>
-                  Review or change your data storage preferences
-                </Text>
-              </View>
-              <Text style={styles.sharingArrow}>{'→'}</Text>
-            </View>
-          </TouchableOpacity>
-
-          {/* Dyadic Assessments Progress */}
-          <Text style={styles.sectionTitle}>Relationship Assessments</Text>
+          {/* Couple Assessments */}
+          <Text style={styles.sectionTitle}>Couple Assessments</Text>
           <Text style={styles.sectionDesc}>
-            Both partners complete these about your relationship together.
+            These optional assessments deepen your couple portrait. Both partners
+            complete them about your relationship together.
           </Text>
 
           {dyadicAssessments.map((assessment) => {
@@ -443,40 +411,61 @@ export default function PartnerScreen() {
             );
           })}
 
-          {/* Couple Portal Entry */}
-          {dyadicStatus.allDone ? (
-            <View>
-              <View style={styles.celebrationBanner}>
-                <SparkleIcon size={16} color={Colors.secondary} />
-                <Text style={styles.celebrationText}>
-                  Couple Portal unlocked!
-                </Text>
-              </View>
-              <TouchableOpacity
-                style={[styles.card, styles.portalCard]}
-                onPress={() => router.push('/(app)/couple-portal' as any)}
-                activeOpacity={0.7}
-                accessibilityRole="button"
-                accessibilityLabel="Couple Portal"
-              >
-                <SparkleIcon size={24} color={Colors.secondary} />
-                <Text style={styles.portalTitle}>Couple Portal</Text>
-                <Text style={styles.portalDesc}>
-                  Explore your combined relationship portrait, patterns,
-                  strengths, and growth edges together. Both partners need their individual portrait for the full experience.
-                </Text>
-                <Text style={styles.portalCta}>Enter Portal {'\u2192'}</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <View style={[styles.card, styles.portalLocked]}>
-              <Text style={styles.portalLockedTitle}>Couple Portal</Text>
-              <Text style={styles.portalLockedDesc}>
-                Complete at least 1 relationship assessment together to unlock your
-                couple portal. More assessments unlock deeper insights.
+          {dyadicStatus.allDone && (
+            <View style={styles.celebrationBanner}>
+              <SparkleIcon size={16} color={Colors.secondary} />
+              <Text style={styles.celebrationText}>
+                All couple assessments complete!
               </Text>
             </View>
           )}
+
+          {/* ─── Settings ─── */}
+          <View style={styles.settingsDivider}>
+            <View style={styles.settingsDividerLine} />
+            <Text style={styles.settingsDividerText}>Settings</Text>
+            <View style={styles.settingsDividerLine} />
+          </View>
+
+          {/* Sharing Settings */}
+          <TouchableOpacity
+            style={[styles.card, styles.sharingCard]}
+            onPress={() => router.push('/(app)/sharing-settings' as any)}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Sharing Settings"
+          >
+            <View style={styles.sharingRow}>
+              <Text style={styles.sharingIcon}>{'🔄'}</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.sharingTitle}>Sharing Settings</Text>
+                <Text style={styles.sharingSubtitle}>
+                  Control which assessments {partnerProfile?.display_name || (couple && isSelfCouple(couple) ? 'Demo Partner' : 'your partner')} can see
+                </Text>
+              </View>
+              <Text style={styles.sharingArrow}>{'→'}</Text>
+            </View>
+          </TouchableOpacity>
+
+          {/* Data Consent Review */}
+          <TouchableOpacity
+            style={[styles.card, styles.sharingCard]}
+            onPress={() => router.push('/(app)/consent-waiver' as any)}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Data Consent"
+          >
+            <View style={styles.sharingRow}>
+              <ShieldIcon size={20} color={Colors.primary} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.sharingTitle}>Data Consent</Text>
+                <Text style={styles.sharingSubtitle}>
+                  Review or change your data storage preferences
+                </Text>
+              </View>
+              <Text style={styles.sharingArrow}>{'→'}</Text>
+            </View>
+          </TouchableOpacity>
 
           {/* Disconnect button */}
           <TouchableOpacity
@@ -854,10 +843,29 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 
+  settingsDivider: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    marginTop: Spacing.xl,
+    marginBottom: Spacing.md,
+  },
+  settingsDividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: Colors.border,
+  },
+  settingsDividerText: {
+    marginHorizontal: Spacing.md,
+    fontSize: FontSizes.bodySmall,
+    fontFamily: FontFamilies.heading,
+    color: Colors.textMuted,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase' as const,
+  },
   disconnectBtn: {
     marginTop: Spacing.xl,
     paddingVertical: Spacing.md,
-    alignItems: 'center',
+    alignItems: 'center' as const,
     borderRadius: BorderRadius.md,
     borderWidth: 1,
     borderColor: Colors.error + '40',

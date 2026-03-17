@@ -78,6 +78,9 @@ const FirstTimeContext = createContext<FirstTimeContextType | undefined>(
 // ─── Storage Keys ─────────────────────────────────────────────────────────
 
 const STORAGE_PREFIX = '@ftue_';
+/** Global (non-scoped) key for tour completion — survives guest-to-user transitions */
+const GLOBAL_TOUR_KEY = `${STORAGE_PREFIX}tours_global`;
+const GLOBAL_FIRST_LAUNCH_KEY = `${STORAGE_PREFIX}first_launch_global`;
 const getKeys = (scopeId: string) => ({
   highlights: `${STORAGE_PREFIX}highlights_${scopeId}`,
   tooltips: `${STORAGE_PREFIX}tooltips_${scopeId}`,
@@ -112,21 +115,34 @@ export function FirstTimeProvider({
       setLoading(true);
       const keys = getKeys(scopeId);
 
-      const [highlights, tooltips, audios, tours, firstLaunch] =
+      const [highlights, tooltips, audios, tours, firstLaunch, globalTours, globalFirstLaunch] =
         await Promise.all([
           AsyncStorage.getItem(keys.highlights),
           AsyncStorage.getItem(keys.tooltips),
           AsyncStorage.getItem(keys.audios),
           AsyncStorage.getItem(keys.tours),
           AsyncStorage.getItem(keys.firstLaunch),
+          AsyncStorage.getItem(GLOBAL_TOUR_KEY),
+          AsyncStorage.getItem(GLOBAL_FIRST_LAUNCH_KEY),
         ]);
+
+      // Merge scoped and global tour completions so tours completed as
+      // guest are recognized after the user authenticates (scope change).
+      const scopedTours: string[] = tours ? JSON.parse(tours) : [];
+      const globalToursArr: string[] = globalTours ? JSON.parse(globalTours) : [];
+      const mergedTours = Array.from(new Set([...scopedTours, ...globalToursArr]));
+
+      // isFirstLaunch is false if EITHER scoped or global says false
+      const scopedFirst = firstLaunch === null ? true : JSON.parse(firstLaunch);
+      const globalFirst = globalFirstLaunch === null ? true : JSON.parse(globalFirstLaunch);
+      const isFirst = scopedFirst && globalFirst;
 
       setState({
         seenHighlights: highlights ? JSON.parse(highlights) : [],
         seenTooltips: tooltips ? JSON.parse(tooltips) : [],
         heardAudios: audios ? JSON.parse(audios) : [],
-        completedTours: tours ? JSON.parse(tours) : [],
-        isFirstLaunch: firstLaunch === null ? true : JSON.parse(firstLaunch),
+        completedTours: mergedTours,
+        isFirstLaunch: isFirst,
       });
     } catch (error) {
       console.warn('[FirstTimeContext] Error loading data:', error);
@@ -207,6 +223,9 @@ export function FirstTimeProvider({
         if (prev.completedTours.includes(tourId)) return prev;
         const updated = [...prev.completedTours, tourId];
         persistArray(getKeys(scopeId).tours, updated);
+        // Also persist to global (non-scoped) key so the tour stays
+        // dismissed across guest-to-user transitions and storage resets.
+        persistArray(GLOBAL_TOUR_KEY, updated);
         return { ...prev, completedTours: updated };
       });
     },
@@ -217,6 +236,8 @@ export function FirstTimeProvider({
     setState((prev) => {
       if (!prev.isFirstLaunch) return prev;
       persistValue(getKeys(scopeId).firstLaunch, false);
+      // Also persist globally so first-launch stays false after scope changes
+      persistValue(GLOBAL_FIRST_LAUNCH_KEY, false);
       return { ...prev, isFirstLaunch: false };
     });
   }, [scopeId, persistValue]);
