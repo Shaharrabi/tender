@@ -60,6 +60,8 @@ export interface GenericQuestion {
   // Ranking questions:
   rankingItems?: RankingItem[];
   rankCount?: number;
+  // Suggested chips — tappable quality words shown below text inputs:
+  suggestedChips?: string[];
 }
 
 // ─── Assessment Sections (for breaks) ─────────────────────

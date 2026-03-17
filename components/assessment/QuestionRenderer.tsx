@@ -100,6 +100,46 @@ export default function QuestionRenderer({
           >
             {(currentAnswer || '').length}/{question.charLimit || 500}
           </Text>
+
+          {/* Suggested quality chips */}
+          {question.suggestedChips && question.suggestedChips.length > 0 && (
+            <View style={styles.chipsSection}>
+              <Text style={styles.chipsHint}>
+                No pressure to write — you can also tap qualities below to add them:
+              </Text>
+              <View style={styles.chipsWrap}>
+                {question.suggestedChips.map((chip) => {
+                  const current: string = currentAnswer || '';
+                  // Check if chip is already in the text (case-insensitive)
+                  const isAdded = current.toLowerCase().includes(chip.toLowerCase());
+                  return (
+                    <TouchableOpacity
+                      key={chip}
+                      style={[styles.chip, isAdded && styles.chipSelected]}
+                      activeOpacity={0.7}
+                      onPress={() => {
+                        if (isAdded) return; // Already added
+                        const separator = current.length > 0
+                          ? (current.endsWith(' ') || current.endsWith(', ') ? '' : ', ')
+                          : '';
+                        const newVal = current + separator + chip;
+                        if (newVal.length <= (question.charLimit || 500)) {
+                          onSelect(newVal);
+                        }
+                      }}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Add "${chip}"${isAdded ? ' (already added)' : ''}`}
+                      accessibilityState={{ selected: isAdded }}
+                    >
+                      <Text style={[styles.chipText, isAdded && styles.chipTextSelected]}>
+                        {chip}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+          )}
         </View>
       )}
 
@@ -260,6 +300,41 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.caption,
     color: Colors.textSecondary,
     textAlign: 'right',
+  },
+  chipsSection: {
+    marginTop: Spacing.sm,
+  },
+  chipsHint: {
+    fontSize: 12,
+    color: Colors.textMuted,
+    fontStyle: 'italic',
+    marginBottom: Spacing.xs,
+  },
+  chipsWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  chip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: '#F5F0EB',
+    borderWidth: 1,
+    borderColor: '#E8E0D8',
+  },
+  chipSelected: {
+    backgroundColor: Colors.primaryFaded,
+    borderColor: Colors.primary,
+    opacity: 0.6,
+  },
+  chipText: {
+    fontSize: 12,
+    color: '#6A5B4A',
+    fontWeight: '500',
+  },
+  chipTextSelected: {
+    color: Colors.primary,
   },
 
   // Choice

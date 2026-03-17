@@ -48,6 +48,12 @@ export const VALUES_SUPPLEMENT_QUESTIONS: GenericQuestion[] = [
     subscale: 'difference-as-resource',
     charLimit: 500,
     placeholder: 'Describe how this difference might serve your relationship...',
+    suggestedChips: [
+      'Balance', 'Perspective', 'Growth', 'Challenge', 'Expansion',
+      'Depth', 'Creativity', 'Resilience', 'Patience', 'Openness',
+      'Flexibility', 'Strength', 'Compassion', 'Courage', 'Curiosity',
+      'Grounding', 'Spark', 'Wisdom', 'Humility', 'Independence',
+    ],
   },
   {
     id: 31,
@@ -63,6 +69,13 @@ export const VALUES_SUPPLEMENT_QUESTIONS: GenericQuestion[] = [
     subscale: 'shared-value',
     charLimit: 300,
     placeholder: 'Name the shared value...',
+    suggestedChips: [
+      'Honesty', 'Trust', 'Growth', 'Kindness', 'Adventure',
+      'Family', 'Laughter', 'Respect', 'Loyalty', 'Freedom',
+      'Compassion', 'Faith', 'Generosity', 'Curiosity', 'Patience',
+      'Courage', 'Authenticity', 'Gratitude', 'Connection', 'Joy',
+      'Commitment', 'Tenderness', 'Humor', 'Presence', 'Purpose',
+    ],
   },
   {
     id: 33,

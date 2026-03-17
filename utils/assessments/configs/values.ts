@@ -139,6 +139,13 @@ const QUESTIONS: GenericQuestion[] = [
     inputType: 'text',
     charLimit: 500,
     placeholder: 'Describe your partner at their best...',
+    suggestedChips: [
+      'Patient', 'Kind', 'Present', 'Attentive', 'Playful',
+      'Supportive', 'Honest', 'Vulnerable', 'Affectionate', 'Gentle',
+      'Funny', 'Thoughtful', 'Generous', 'Calm', 'Passionate',
+      'Reliable', 'Curious', 'Empathetic', 'Encouraging', 'Warm',
+      'Adventurous', 'Understanding', 'Creative', 'Protective', 'Spontaneous',
+    ],
   },
   {
     id: 23,
@@ -146,6 +153,13 @@ const QUESTIONS: GenericQuestion[] = [
     inputType: 'text',
     charLimit: 750,
     placeholder: 'Describe your ideal future...',
+    suggestedChips: [
+      'Peaceful', 'Deeply connected', 'Trusting', 'Safe', 'Playful',
+      'Growing together', 'Honest', 'Intimate', 'Joyful', 'Balanced',
+      'Communicative', 'Affectionate', 'Exciting', 'Stable', 'Meaningful',
+      'Tender', 'Free', 'Grounded', 'Collaborative', 'Passionate',
+      'Adventurous', 'Supportive', 'Spontaneous', 'Resilient', 'Lighthearted',
+    ],
   },
 
   // Part D: Scenarios (Q24-28) — 5 relational value-conflict situations
