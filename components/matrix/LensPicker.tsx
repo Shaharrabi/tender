@@ -4,9 +4,9 @@
  * Same data, six different doors:
  *   Soulful | Therapeutic | Practical | Developmental | Relational | Simple
  *
- * Each pill shows a hand-drawn SVG icon + label.
+ * Each pill shows a hand-drawn SVG icon + label, matching Tender's
+ * warm, organic, stroke-based aesthetic.
  * Default lens: Soulful (Tender's WEARE signature voice).
- * Arc, practice, and invitation stay the same across lenses.
  */
 
 import React from 'react';
@@ -16,12 +16,12 @@ import { Colors, Spacing, BorderRadius, FontFamilies } from '@/constants/theme';
 import type { LensType } from '@/utils/integration-engine';
 import { LENS_META } from '@/utils/integration-engine';
 import {
-  BrainIcon,
+  MirrorIcon,
   MoonIcon,
-  LightningIcon,
   SeedlingIcon,
+  TreeIcon,
   HeartDoubleIcon,
-  SunIcon,
+  LeafIcon,
 } from '@/assets/graphics/icons';
 import type { IconProps } from '@/assets/graphics/icons';
 
@@ -50,12 +50,12 @@ const LENS_COLORS: Record<LensType, { bg: string; active: string; text: string }
 
 /** Map lens type to its hand-drawn SVG icon component */
 const LENS_ICONS: Record<LensType, React.ComponentType<IconProps>> = {
-  therapeutic: BrainIcon,
-  soulful: MoonIcon,
-  practical: LightningIcon,
-  developmental: SeedlingIcon,
-  relational: HeartDoubleIcon,
-  simple: SunIcon,
+  soulful: MoonIcon,           // Organic crescent + stars — dreamy, field-aware
+  therapeutic: MirrorIcon,     // Oval mirror — self-reflection, therapeutic gaze
+  practical: SeedlingIcon,     // Flowing stem + leaves — small actionable growth
+  developmental: TreeIcon,     // Rounded canopy — mature growth, the journey
+  relational: HeartDoubleIcon, // Two overlapping hearts — the partner's view
+  simple: LeafIcon,            // Single graceful leaf — distilled essence
 };
 
 export default function LensPicker({ activeLens, onLensChange }: LensPickerProps) {

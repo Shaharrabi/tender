@@ -34,12 +34,12 @@ export interface LensedNarrative {
 
 /** Lens display metadata — icon field maps to hand-drawn SVG component name */
 export const LENS_META: Record<LensType, { label: string; subtitle: string; icon: string }> = {
-  therapeutic: { label: 'Therapeutic', subtitle: 'What the research sees', icon: 'BrainIcon' },
+  therapeutic: { label: 'Therapeutic', subtitle: 'What the research sees', icon: 'MirrorIcon' },
   soulful: { label: 'Soulful', subtitle: 'What the field sees', icon: 'MoonIcon' },
-  practical: { label: 'Practical', subtitle: 'What to do this week', icon: 'LightningIcon' },
-  developmental: { label: 'Developmental', subtitle: 'Where you are on the journey', icon: 'SeedlingIcon' },
+  practical: { label: 'Practical', subtitle: 'What to do this week', icon: 'SeedlingIcon' },
+  developmental: { label: 'Developmental', subtitle: 'Where you are on the journey', icon: 'TreeIcon' },
   relational: { label: 'Relational', subtitle: "What your partner experiences", icon: 'HeartDoubleIcon' },
-  simple: { label: 'Simple', subtitle: 'In one breath', icon: 'SunIcon' },
+  simple: { label: 'Simple', subtitle: 'In one breath', icon: 'LeafIcon' },
 };
 
 /** The developmental arc: wound → protection → cost → emergence */
