@@ -186,10 +186,9 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
   sectionTitle: {
-    fontFamily: FontFamilies.accent,
-    fontStyle: 'italic',
+    fontFamily: FontFamilies.body,
     color: Colors.textSecondary,
-    fontSize: 14,
+    fontSize: 13,
     textAlign: 'center',
     marginBottom: 8,
   },

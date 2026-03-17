@@ -84,11 +84,11 @@ export const Colors = {
   overlapPurple: '#9B7BA7',   // Lavender Blend — couple overlap, convergence
   overlapPurpleLight: '#F0E6FF', // Pale Lavender — overlap badge backgrounds
 
-  // Couple partner differentiation (warm vs cool for clear visual identity)
-  couplePartnerA: '#C4616E',     // Dusty Rose — you / user (warm)
-  couplePartnerALight: '#F4D5D0', // Pale Rose — user backgrounds
-  couplePartnerB: '#4A6FA8',     // Lobby Blue — partner (cool)
-  couplePartnerBLight: '#C6CDF7', // Lavender Haze — partner backgrounds
+  // Couple partner differentiation (warm tones — no gendered colors)
+  couplePartnerA: '#D4A843',     // Mustard Gold — you / user (warm)
+  couplePartnerALight: '#F5ECD0', // Pale Mustard — user backgrounds
+  couplePartnerB: '#6B9080',     // Sage — partner (earthy)
+  couplePartnerBLight: '#DAE5DE', // Pale Sage — partner backgrounds
 
   // Attachment style quadrants
   attachmentSecure: '#6B9080',   // Muted Sage — calm, grounded

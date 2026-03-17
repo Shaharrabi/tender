@@ -812,20 +812,21 @@ function CouplePortalScreen() {
         <IllustrationPortalHero width={Math.min(Dimensions.get('window').width - 32, 380)} animated />
       </View>
 
-      {/* Couple assessments explainer */}
+      {/* How the couple portal works */}
       <View style={styles.assessmentExplainerCard}>
         <TenderText variant="label" style={styles.assessmentExplainerTitle}>
-          How Your Couple Portrait Works
+          How This Works
         </TenderText>
         <TenderText variant="bodySmall" color={Colors.textSecondary} style={styles.assessmentExplainerBody}>
-          Your couple portrait is built from both partners' individual assessments — the same 6 sections you each completed on your own. That's where most of the depth comes from.
+          Your couple portrait is built from both partners' individual assessments — the same 6 sections you each completed on your own. Tender reads across all your domains to find what happens when your patterns meet.
         </TenderText>
         <TenderText variant="bodySmall" color={Colors.textSecondary} style={styles.assessmentExplainerBody}>
-          The three couple assessments (RDAS, DCI, CSI-16) are optional enrichments. They add texture — like relationship satisfaction, how you cope with stress together, and how you handle conflict as a pair — but they are not required.
+          The three couple assessments (RDAS, DCI, CSI-16) are optional. They add texture — relationship satisfaction, stress coping, and how you handle conflict as a pair — but they're not required for your portrait.
         </TenderText>
         <TenderText variant="bodySmall" color={Colors.textMuted} style={styles.assessmentExplainerNote}>
-          ✦ Portrait without couple assessments: rich and accurate{'\n'}
-          ✦ Portrait with couple assessments: even richer
+          ✦ Each tab below explores a different layer of your relationship{'\n'}
+          ✦ Courses and practices deepen your growth together{'\n'}
+          ✦ Your portrait updates as you both grow
         </TenderText>
       </View>
 
