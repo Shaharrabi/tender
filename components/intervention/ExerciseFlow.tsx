@@ -395,6 +395,16 @@ export default function ExerciseFlow({
 
   if (phase === 'complete') {
     return (
+      <View style={{ flex: 1 }}>
+        {/* Exit button — always accessible */}
+        <TouchableOpacity
+          onPress={onExit}
+          style={{ position: 'absolute', top: 12, right: 16, zIndex: 10, padding: 8 }}
+          accessibilityRole="button"
+          accessibilityLabel="Exit exercise"
+        >
+          <Text style={styles.backButtonText}>✕ Exit</Text>
+        </TouchableOpacity>
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.completionScroll}
@@ -504,6 +514,7 @@ export default function ExerciseFlow({
           </TouchableOpacity>
         </Animated.View>
       </ScrollView>
+      </View>
     );
   }
 

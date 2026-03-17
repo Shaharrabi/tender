@@ -14,27 +14,44 @@ import { Spacing, BorderRadius, FontFamilies } from '@/constants/theme';
 
 /** Brief explainer for each score label — shown when user taps ⓘ */
 const SCORE_EXPLAINERS: Record<string, string> = {
-  'Sensitivity': 'How easily your nervous system responds to emotional signals. Higher = more reactive to feelings (not "caring more"). Lower = emotionally steady, not easily triggered.',
-  'Anxiety': 'How much you worry about closeness and abandonment in relationships. Higher = more vigilant about connection. Lower = more relaxed about attachment.',
-  'Avoidance': 'How much you pull away from emotional closeness. Higher = more distance-seeking. Lower = more comfortable with intimacy.',
-  'Warmth': 'Your natural tendency toward kindness and cooperation. Higher = deeply warm and empathic. Lower = more direct and straightforward.',
-  'Openness': 'How curious and open you are to new experiences and ideas. Higher = loves exploring. Lower = values stability and the familiar.',
-  'Extraversion': 'How much energy you get from others. Higher = energized by people. Lower = prefers quiet depth and solitude.',
-  'Conscientiousness': 'How organized and disciplined you are. Higher = structured and reliable. Lower = more spontaneous and flexible.',
-  'Perception': 'How accurately you read others\' emotions. Higher = strong emotional radar. Lower = may miss emotional signals.',
-  'Managing self': 'How well you regulate your own emotions. Higher = can calm yourself down. Lower = emotions can overwhelm you.',
-  'Managing others': 'How well you influence others\' emotions. Higher = naturally soothing. Lower = still developing this skill.',
-  'Utilization': 'How well you use emotions as information. Higher = emotions guide decisions wisely. Lower = still learning to listen to feelings.',
-  'Reactivity': 'How calm you stay under pressure. Higher = calm and grounded. Lower = emotions take over quickly.',
-  'I-Position': 'How clearly you can state your own views. Higher = clear voice, strong boundaries. Lower = may lose your position in closeness.',
-  'Fusion': 'How well you maintain yourself in relationships. Higher = clear boundaries. Lower = may merge with your partner\'s emotions.',
-  'Cutoff': 'How connected you stay during conflict. Higher = stays engaged. Lower = may shut down or disconnect.',
+  // Foundation (ECR-R)
+  'Attachment': 'Your overall attachment style — how you typically relate in close relationships.',
+  'Anxiety': 'How much you worry about closeness and abandonment. Higher = more vigilant about connection. Lower = more relaxed.',
+  'Avoidance': 'How much you pull away from emotional closeness. Higher = more distance-seeking. Lower = comfortable with intimacy.',
+  'Window': 'Your window of tolerance — how much emotional intensity you can hold before shutting down or flooding.',
+  // Instrument (IPIP Big Five)
+  'Sensitivity': 'How easily your nervous system responds to emotional signals. Higher = more reactive (not "caring more"). Lower = emotionally steady.',
+  'Social energy': 'How much energy you get from being around others. Higher = energized by people. Lower = prefers quiet depth.',
+  'Openness': 'How curious and open you are to new experiences and ideas. Higher = loves exploring. Lower = values the familiar.',
+  'Warmth': 'Your natural tendency toward kindness and cooperation. Higher = deeply empathic. Lower = more direct.',
+  // Navigation (SSEIT)
+  'Perception': 'How accurately you read others\' emotions. Higher = strong emotional radar. Lower = may miss signals.',
+  'Self-regulation': 'How well you regulate your own emotions. Higher = can calm yourself down. Lower = emotions can overwhelm.',
+  'Other-support': 'How well you support and influence others\' emotions. Higher = naturally soothing. Lower = still developing this.',
+  'Emotional use': 'How well you use emotions as information. Higher = emotions guide decisions wisely. Lower = still learning.',
+  // Stance (DSI-R)
+  'Differentiation': 'Your overall ability to stay yourself while staying connected. Higher = clear sense of self. Lower = may lose yourself in closeness.',
+  'Reactivity': 'How calm you stay under pressure. Higher = grounded. Lower = emotions take over quickly.',
+  'I-position': 'How clearly you can state your own views. Higher = clear voice, strong boundaries. Lower = may lose your position.',
+  'Fusion': 'How well you maintain yourself in relationships. Higher = clear boundaries. Lower = may merge with partner\'s emotions.',
+  // Conflict (DUTCH)
+  'Primary style': 'Your most natural approach when conflict arises.',
+  'Secondary': 'Your backup conflict style when your primary doesn\'t work.',
   'Yielding': 'How much you give in during disagreements. Higher = tends to accommodate. Lower = holds ground.',
-  'Compromising': 'How much you seek middle ground. Higher = natural negotiator. Lower = prefers clear win/lose.',
+  'Compromising': 'How much you seek middle ground. Higher = natural negotiator. Lower = prefers clear resolution.',
   'Forcing': 'How much you push your position in conflict. Higher = drives hard. Lower = avoids pushing.',
-  'Problem-solving': 'How much you work to find solutions. Higher = creative problem-solver. Lower = may avoid engagement.',
+  'Problem-solving': 'How much you work to find creative solutions. Higher = problem-solver. Lower = may avoid engagement.',
   'Avoiding': 'How much you sidestep conflict entirely. Higher = conflict-avoidant. Lower = faces disagreements directly.',
-  'Field awareness': 'How attuned you are to the relational space between you and your partner. Higher = deeply present. Lower = still developing this sense.',
+  // Compass (Values)
+  'Top value': 'The value that matters most to you in relationships.',
+  'Biggest gap': 'Where your values and actions are most misaligned.',
+  'Alignment': 'How well your daily actions match your stated values. Higher = living your values. Lower = gap between ideals and behavior.',
+  'Action score': 'How actively you pursue your values vs. avoid discomfort.',
+  // Field (RFAS)
+  'Field awareness': 'How attuned you are to the relational space between you and your partner. Higher = deeply present.',
+  'Recognition': 'How well you notice shifts in the relational field — the subtle changes in energy between you.',
+  'Presence': 'How fully present and attuned you are during connection. Higher = deeply here. Lower = often distracted.',
+  'Emergence': 'How open you are to what arises spontaneously between you. Higher = trusts the process. Lower = needs to control.',
 };
 
 export interface MatrixCellData {

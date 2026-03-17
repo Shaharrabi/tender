@@ -140,18 +140,7 @@ export default function QuickLinksBar({ showHome = true, currentScreen, isSingle
             </TouchableOpacity>
           )
         ) : (
-          currentScreen !== 'bridges' && (
-            <TouchableOpacity
-              style={styles.linkButton}
-              onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/building-bridges' as any); }}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel="Building Bridges"
-            >
-              <RainbowIcon size={20} color={Colors.accent} />
-              <Text style={styles.linkLabel}>Bridges</Text>
-            </TouchableOpacity>
-          )
+          null /* "Bridges" removed — "Practices" tab already links to building-bridges */
         )}
       </View>
 

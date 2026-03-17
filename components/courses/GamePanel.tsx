@@ -395,7 +395,6 @@ const styles = StyleSheet.create({
   },
   headerSub: {
     fontFamily: FontFamilies.accent,
-    fontStyle: 'italic',
     color: Colors.textSecondary,
     fontSize: 13,
     marginTop: 4,
@@ -636,7 +635,6 @@ const styles = StyleSheet.create({
   },
   revealText: {
     fontFamily: FontFamilies.accent,
-    fontStyle: 'italic',
     fontSize: 12,
     color: Colors.textSecondary,
     lineHeight: 20,
@@ -691,7 +689,6 @@ const styles = StyleSheet.create({
   },
   completeSub: {
     fontFamily: FontFamilies.accent,
-    fontStyle: 'italic',
     color: Colors.textSecondary,
     fontSize: 15,
     textAlign: 'center',
@@ -699,7 +696,6 @@ const styles = StyleSheet.create({
   },
   completeWalked: {
     fontFamily: FontFamilies.accent,
-    fontStyle: 'italic',
     color: Colors.textSecondary,
     fontSize: 13,
     marginTop: 4,
@@ -726,7 +722,6 @@ const styles = StyleSheet.create({
     marginTop: 6,
     fontSize: 10,
     color: Colors.textMuted,
-    fontStyle: 'italic',
   },
   nuanceNote: {
     backgroundColor: Colors.backgroundAlt,
@@ -739,7 +734,6 @@ const styles = StyleSheet.create({
   },
   nuanceNoteText: {
     fontFamily: FontFamilies.accent,
-    fontStyle: 'italic',
     fontSize: 12,
     color: Colors.textSecondary,
     lineHeight: 20,
