@@ -352,15 +352,26 @@ export default function ExerciseFlow({
 
         {/* Navigation */}
         <View style={styles.navigation}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={handleSummaryBack}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel="Back to exercise steps"
-          >
-            <Text style={styles.backButtonText}>{'\u2039'} Back</Text>
-          </TouchableOpacity>
+          <View style={styles.navLeft}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={onExit}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Exit exercise"
+            >
+              <Text style={styles.backButtonText}>{'\u2715'} Exit</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={handleSummaryBack}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Back to exercise steps"
+            >
+              <Text style={styles.backButtonText}>{'\u2039'} Back</Text>
+            </TouchableOpacity>
+          </View>
 
           <TouchableOpacity
             style={styles.nextButton}

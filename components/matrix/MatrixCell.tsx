@@ -50,9 +50,13 @@ interface MatrixCellProps {
   selectable?: boolean;
   selected?: boolean;
   onSelect?: () => void;
+  /** Learn-mode highlight: 'strength' | 'growth' | null. Non-highlighted cells dim when any are highlighted. */
+  highlightType?: 'strength' | 'growth' | null;
+  /** Whether learn mode is active (dims non-highlighted cells) */
+  learnModeActive?: boolean;
 }
 
-export default function MatrixCell({ cell, compact, selectable, selected, onSelect }: MatrixCellProps) {
+export default function MatrixCell({ cell, compact, selectable, selected, onSelect, highlightType, learnModeActive }: MatrixCellProps) {
   const palette = MATRIX_COLORS[cell.color] as { bg: string; text: string; label: string; accent: string };
   const { width } = useWindowDimensions();
   const isNarrow = width < 400;
@@ -69,6 +73,11 @@ export default function MatrixCell({ cell, compact, selectable, selected, onSele
     }
   }, [selected]);
 
+  // Learn-mode highlight styles
+  const isHighlighted = !!highlightType;
+  const isDimmed = learnModeActive && !isHighlighted;
+  const highlightBorderColor = highlightType === 'strength' ? '#6B9080' : highlightType === 'growth' ? '#B5593A' : 'transparent';
+
   const content = (
     <View style={[
       styles.cell,
@@ -76,6 +85,8 @@ export default function MatrixCell({ cell, compact, selectable, selected, onSele
       compact && styles.cellCompact,
       isNarrow && styles.cellNarrow,
       selectable && selected && { borderWidth: 2, borderColor: palette.accent || palette.text },
+      isHighlighted && { borderWidth: 2, borderColor: highlightBorderColor, transform: [{ scale: 1.05 }] },
+      isDimmed && { opacity: 0.45 },
     ]}>
       <TenderText
         variant="caption"
@@ -206,21 +217,14 @@ const styles = StyleSheet.create({
   },
   infoButton: {
     position: 'absolute',
-    bottom: 3,
-    right: 3,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: 'rgba(255,255,255,0.75)',
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-    borderWidth: 0.5,
-    borderColor: 'rgba(0,0,0,0.08)',
+    bottom: 2,
+    right: 2,
+    padding: 4,
   },
   infoIcon: {
-    fontSize: 11,
-    opacity: 0.85,
-    lineHeight: 13,
+    fontSize: 10,
+    opacity: 0.35,
+    lineHeight: 12,
   },
   checkOverlay: {
     position: 'absolute',

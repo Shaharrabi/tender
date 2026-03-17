@@ -771,7 +771,7 @@ export function generateCouplePortraitHTML(
 
       <div class="anchor-section">
         <div class="anchor-header">
-          <div class="anchor-icon repair">\u2764</div>
+          <div class="anchor-icon repair">&hearts;</div>
           <h3>Shared Truths</h3>
         </div>
         ${anchorItems(anchors.sharedTruths)}
@@ -794,12 +794,12 @@ export function generateCouplePortraitHTML(
     if (!rawScores) return '';
     try {
       const lensLabels: Record<string, string> = {
-        therapeutic: '🔬 Therapeutic',
-        soulful: '🌙 Soulful',
-        practical: '🌱 Practical',
-        developmental: '🌳 Developmental',
-        relational: '💕 Relational',
-        simple: '🍃 Simple',
+        therapeutic: '◇ Therapeutic',
+        soulful: '◆ Soulful',
+        practical: '▸ Practical',
+        developmental: '○ Developmental',
+        relational: '❦ Relational',
+        simple: '· Simple',
       };
 
       const renderIntegrationPattern = (r: IntegrationResult): string => {

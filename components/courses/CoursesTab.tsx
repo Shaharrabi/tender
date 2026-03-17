@@ -121,12 +121,13 @@ export default function CoursesTab({ coupleId, userId }: CoursesTabProps) {
       {/* Course grid */}
       <View style={[styles.grid, isWide && styles.gridWide]}>
         {COURSES.map((course) => (
-          <CourseCard
-            key={course.id}
-            course={course}
-            isCompleted={completedCourses.includes(course.id)}
-            onPress={() => handleOpenCourse(course)}
-          />
+          <View key={course.id} style={isWide ? styles.gridWideCard : undefined}>
+            <CourseCard
+              course={course}
+              isCompleted={completedCourses.includes(course.id)}
+              onPress={() => handleOpenCourse(course)}
+            />
+          </View>
         ))}
       </View>
 
@@ -176,6 +177,7 @@ export default function CoursesTab({ coupleId, userId }: CoursesTabProps) {
 const styles = StyleSheet.create({
   container: {
     paddingTop: Spacing.md,
+    paddingHorizontal: Spacing.md,
   },
   sectionLabel: {
     fontSize: 10,
@@ -186,9 +188,9 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
   sectionTitle: {
-    fontFamily: FontFamilies.body,
+    fontFamily: FontFamilies.heading,
     color: Colors.textSecondary,
-    fontSize: 13,
+    fontSize: 14,
     textAlign: 'center',
     marginBottom: 8,
   },
@@ -208,7 +210,7 @@ const styles = StyleSheet.create({
     color: Colors.textMuted,
     marginHorizontal: 12,
     letterSpacing: 2,
-    fontFamily: FontFamilies.accent,
+    fontFamily: FontFamilies.heading,
   },
   liveBadgeRow: {
     alignItems: 'center',
@@ -217,13 +219,13 @@ const styles = StyleSheet.create({
   liveBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 7,
+    gap: 5,
     backgroundColor: Colors.surface,
     borderWidth: 1,
     borderColor: Colors.border,
     borderRadius: 20,
-    paddingVertical: 5,
-    paddingHorizontal: 14,
+    paddingVertical: 3,
+    paddingHorizontal: 10,
   },
   liveDot: {
     width: 6,
@@ -232,7 +234,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#7A9E8E',
   },
   liveBadgeText: {
-    fontSize: 9,
+    fontSize: 8,
     letterSpacing: 2,
     textTransform: 'uppercase',
     color: '#2A5040',
@@ -240,7 +242,6 @@ const styles = StyleSheet.create({
   subheaderRow: {
     borderBottomWidth: 0.5,
     borderBottomColor: Colors.border,
-    marginHorizontal: 20,
     marginBottom: 14,
     paddingBottom: 8,
     alignItems: 'center',
@@ -250,15 +251,18 @@ const styles = StyleSheet.create({
     letterSpacing: 3,
     textTransform: 'uppercase',
     color: Colors.textMuted,
+    fontFamily: FontFamilies.heading,
   },
   grid: {
-    gap: 16,
-    paddingHorizontal: Spacing.md,
+    gap: 12,
   },
   gridWide: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingHorizontal: Spacing.md,
+  },
+  gridWideCard: {
+    flexBasis: '48%',
+    flexGrow: 1,
   },
   badgesSection: {
     marginTop: 24,
@@ -270,6 +274,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     color: Colors.textMuted,
     marginBottom: 8,
+    fontFamily: FontFamilies.heading,
   },
   badgesRow: {
     flexDirection: 'row',

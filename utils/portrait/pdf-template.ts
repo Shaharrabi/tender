@@ -485,12 +485,12 @@ export function generatePortraitHTML(
         .slice(0, 5);
 
       const lensLabels: Record<LensType, string> = {
-        therapeutic: '🔬 Therapeutic',
-        soulful: '🌙 Soulful',
-        practical: '🌱 Practical',
-        developmental: '🌳 Developmental',
-        relational: '💕 Relational',
-        simple: '🍃 Simple',
+        therapeutic: '◇ Therapeutic',
+        soulful: '◆ Soulful',
+        practical: '▸ Practical',
+        developmental: '○ Developmental',
+        relational: '❦ Relational',
+        simple: '· Simple',
       };
 
       return sorted.map((r) => {
@@ -1437,7 +1437,7 @@ ${integrationPatternsHTML ? `
 
   <div class="anchor-section">
     <div class="anchor-header">
-      <div class="anchor-icon activated">\u26A1</div>
+      <div class="anchor-icon activated">&uarr;</div>
       <h3>When Activated</h3>
     </div>
     ${activated}
@@ -1445,7 +1445,7 @@ ${integrationPatternsHTML ? `
 
   <div class="anchor-section">
     <div class="anchor-header">
-      <div class="anchor-icon shutdown">\u2744</div>
+      <div class="anchor-icon shutdown">&darr;</div>
       <h3>When Shut Down</h3>
     </div>
     ${shutdown}
@@ -1453,7 +1453,7 @@ ${integrationPatternsHTML ? `
 
   <div class="anchor-section">
     <div class="anchor-header">
-      <div class="anchor-icon interrupt">\u23F8</div>
+      <div class="anchor-icon interrupt">||</div>
       <h3>Pattern Interrupts</h3>
     </div>
     ${patternInterrupts}
@@ -1461,7 +1461,7 @@ ${integrationPatternsHTML ? `
 
   <div class="anchor-section">
     <div class="anchor-header">
-      <div class="anchor-icon repair">\u2764</div>
+      <div class="anchor-icon repair">&hearts;</div>
       <h3>Repair</h3>
     </div>
     ${repairSection}
@@ -1469,7 +1469,7 @@ ${integrationPatternsHTML ? `
 
   <div class="anchor-section">
     <div class="anchor-header">
-      <div class="anchor-icon compassion">\u2728</div>
+      <div class="anchor-icon compassion">&loz;</div>
       <h3>Self-Compassion</h3>
     </div>
     ${compassionSection}
