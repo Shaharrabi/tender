@@ -8,6 +8,10 @@
  * and `window.open()` + `print()` on web.
  */
 
+import { generateIntegration, toIntegrationScores, getAvailableDomains } from '@/utils/integration-engine';
+import type { IntegrationResult, LensType } from '@/utils/integration-engine';
+import { routeAttachmentDynamic, routeConflictDynamic, routeValuesDynamic, interpolateCouple } from '@/utils/integration-engine/narratives/tier3-couple-dynamics';
+
 import type {
   DeepCouplePortrait,
   CombinedCycle,
@@ -785,6 +789,159 @@ export function generateCouplePortraitHTML(
       </div>` : ''}
     </div>`;
 
+  // ── Cross-Domain Integration Patterns (per partner + couple dynamics) ──
+  const coupleIntegrationHTML = (() => {
+    if (!rawScores) return '';
+    try {
+      const lensLabels: Record<string, string> = {
+        therapeutic: '🔬 Therapeutic',
+        soulful: '🌙 Soulful',
+        practical: '🌱 Practical',
+        developmental: '🌳 Developmental',
+        relational: '💕 Relational',
+        simple: '🍃 Simple',
+      };
+
+      const renderIntegrationPattern = (r: IntegrationResult): string => {
+        const lensesHTML = r.lenses ? (['therapeutic', 'soulful', 'practical', 'developmental', 'relational', 'simple'] as LensType[]).map((lens) => {
+          const text = r.lenses![lens];
+          if (!text) return '';
+          return `
+            <div style="margin-bottom:8px;padding:8px 10px;background:#FDFBF9;border-left:3px solid var(--rose-light);break-inside:avoid;page-break-inside:avoid">
+              <p style="font-family:'Josefin Sans',sans-serif;font-size:7.5pt;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin:0 0 3px 0">${lensLabels[lens] || lens}</p>
+              <p style="font-size:9pt;line-height:1.5;color:var(--text);margin:0">${esc(text.substring(0, 500))}${text.length > 500 ? '…' : ''}</p>
+            </div>`;
+        }).join('') : '';
+
+        const practiceHTML = r.matchedPractice ? `
+          <div class="card card-sage" style="margin-top:6px;break-inside:avoid">
+            <div class="card-title">Practice: ${esc(r.matchedPractice.name)}</div>
+            <p style="font-size:9pt;line-height:1.4">${esc(r.matchedPractice.instruction)}</p>
+            <p style="font-size:8pt;font-style:italic;color:var(--text-muted);margin-top:3px">${esc(r.matchedPractice.whyThisOne)}</p>
+            <p style="font-size:7.5pt;color:var(--sage);margin-top:3px">Frequency: ${esc(r.matchedPractice.frequency)}</p>
+          </div>` : '';
+
+        return `
+          <div style="margin-bottom:20px;break-inside:avoid-page">
+            <div style="border-bottom:1px solid var(--border);padding-bottom:4px;margin-bottom:10px">
+              <p style="font-family:'Playfair Display',Georgia,serif;font-size:13pt;color:var(--primary);margin:0">${esc(r.title)}</p>
+              <p style="font-size:8.5pt;color:var(--text-muted);margin:2px 0 0">${esc(r.subtitle)}</p>
+            </div>
+            ${r.invitation ? `<div style="text-align:center;margin:8px 0;padding:10px;background:linear-gradient(135deg,#FAF5F0,#F5EDE8);border-radius:8px"><p style="font-family:'Playfair Display',Georgia,serif;font-size:11pt;font-style:italic;color:var(--rose);margin:0">"${esc(r.invitation)}"</p></div>` : ''}
+            ${lensesHTML}
+            ${practiceHTML}
+          </div>`;
+      };
+
+      const sections: string[] = [];
+
+      // Individual integration patterns for each partner
+      const partnerScores = [
+        { name: nameA, scores: rawScores.partner1 },
+        { name: nameB, scores: rawScores.partner2 },
+      ];
+
+      for (const partner of partnerScores) {
+        if (!partner.scores) continue;
+        const intScores = toIntegrationScores(partner.scores);
+        const available = getAvailableDomains(intScores);
+        if (available.length < 2) continue;
+
+        const results: IntegrationResult[] = [];
+        for (let i = 0; i < available.length; i++) {
+          for (let j = i + 1; j < available.length; j++) {
+            const r = generateIntegration([available[i], available[j]], intScores);
+            if (r && r.lenses) results.push(r);
+          }
+        }
+
+        if (results.length > 0) {
+          const top = results
+            .sort((a, b) => {
+              const conf = { high: 3, emerging: 2, low: 1 };
+              return (conf[b.confidence] || 1) - (conf[a.confidence] || 1);
+            })
+            .slice(0, 3);
+
+          sections.push(`
+            <div style="margin-bottom:20px">
+              <p style="font-family:'Josefin Sans',sans-serif;font-size:9pt;letter-spacing:2px;text-transform:uppercase;color:var(--rose);margin-bottom:12px">${esc(partner.name)}'s Patterns</p>
+              ${top.map(renderIntegrationPattern).join('')}
+            </div>`);
+        }
+      }
+
+      // Tier 3 couple dynamics
+      const aPartnerScores = {
+        ecrr: rawScores.partner1?.['ecr-r']?.scores,
+        dutch: rawScores.partner1?.['dutch']?.scores,
+        values: rawScores.partner1?.['values']?.scores,
+        dsir: rawScores.partner1?.['dsi-r']?.scores,
+      };
+      const bPartnerScores = {
+        ecrr: rawScores.partner2?.['ecr-r']?.scores,
+        dutch: rawScores.partner2?.['dutch']?.scores,
+        values: rawScores.partner2?.['values']?.scores,
+        dsir: rawScores.partner2?.['dsi-r']?.scores,
+      };
+
+      const dynamics = [
+        routeAttachmentDynamic(aPartnerScores, bPartnerScores),
+        routeConflictDynamic(aPartnerScores, bPartnerScores),
+        routeValuesDynamic(aPartnerScores, bPartnerScores),
+      ].filter(Boolean);
+
+      if (dynamics.length > 0) {
+        const dynamicsHTML = dynamics.map((d) => {
+          if (!d) return '';
+          const entry = d.entry;
+          const aName = d.swap ? nameB : nameA;
+          const bName = d.swap ? nameA : nameB;
+
+          const lensesHTML = (['therapeutic', 'soulful', 'practical', 'simple'] as const).map((lens) => {
+            const text = interpolateCouple(entry.lenses[lens], aName, bName, d.extras);
+            return `
+              <div style="margin-bottom:8px;padding:8px 10px;background:#FDFBF9;border-left:3px solid var(--rose-light);break-inside:avoid;page-break-inside:avoid">
+                <p style="font-family:'Josefin Sans',sans-serif;font-size:7.5pt;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin:0 0 3px 0">${lensLabels[lens] || lens}</p>
+                <p style="font-size:9pt;line-height:1.5;color:var(--text);margin:0">${esc(text.substring(0, 500))}${text.length > 500 ? '…' : ''}</p>
+              </div>`;
+          }).join('');
+
+          const practiceDesc = interpolateCouple(entry.couplePractice.description, aName, bName, d.extras);
+          const practiceHTML = `
+            <div class="card card-sage" style="margin-top:6px;break-inside:avoid">
+              <div class="card-title">Couple Practice: ${esc(entry.couplePractice.name)}</div>
+              <p style="font-size:9pt;line-height:1.4">${esc(practiceDesc)}</p>
+              <p style="font-size:7.5pt;color:var(--sage);margin-top:3px">Frequency: ${esc(entry.couplePractice.frequency)}</p>
+              ${entry.couplePractice.partnerATask ? `<p style="font-size:8.5pt;margin-top:4px"><strong>${esc(aName)}:</strong> ${esc(interpolateCouple(entry.couplePractice.partnerATask, aName, bName))}</p>` : ''}
+              ${entry.couplePractice.partnerBTask ? `<p style="font-size:8.5pt;margin-top:2px"><strong>${esc(bName)}:</strong> ${esc(interpolateCouple(entry.couplePractice.partnerBTask, aName, bName))}</p>` : ''}
+            </div>`;
+
+          return `
+            <div style="margin-bottom:20px;break-inside:avoid-page">
+              <div style="border-bottom:1px solid var(--border);padding-bottom:4px;margin-bottom:10px">
+                <p style="font-family:'Playfair Display',Georgia,serif;font-size:13pt;color:var(--primary);margin:0">${esc(entry.dynamicName)}</p>
+              </div>
+              ${entry.coupleInvitation ? `<div style="text-align:center;margin:8px 0;padding:10px;background:linear-gradient(135deg,#FAF5F0,#F5EDE8);border-radius:8px"><p style="font-family:'Playfair Display',Georgia,serif;font-size:11pt;font-style:italic;color:var(--rose);margin:0">"${esc(interpolateCouple(entry.coupleInvitation, aName, bName))}"</p></div>` : ''}
+              ${lensesHTML}
+              ${practiceHTML}
+            </div>`;
+        }).join('');
+
+        sections.push(`
+          <div style="margin-bottom:20px">
+            <p style="font-family:'Josefin Sans',sans-serif;font-size:9pt;letter-spacing:2px;text-transform:uppercase;color:var(--rose);margin-bottom:12px">Your Couple Dynamics</p>
+            ${dynamicsHTML}
+          </div>`);
+      }
+
+      return sections.join('');
+    } catch (err) {
+      console.warn('[CouplePDF] Integration pattern generation failed:', err);
+      return '';
+    }
+  })();
+
   /* ── Assemble full HTML ── */
 
   return `<!DOCTYPE html>
@@ -1186,6 +1343,17 @@ ${convergenceHTML}
 
 <!-- DYADIC INSIGHTS -->
 ${dyadicHTML}
+
+${coupleIntegrationHTML ? `
+<!-- CROSS-DOMAIN PATTERNS — 6-LENS INTEGRATION ENGINE -->
+<div class="page-break"></div>
+<div class="section">
+  <div class="section-divider"></div>
+  <p class="section-label">CROSS-DOMAIN PATTERNS</p>
+  <div class="section-title">What Emerges When Domains Meet</div>
+  <p style="font-style:italic;color:var(--text-muted);font-size:9.5pt;margin-bottom:16px">Tender reads across all seven assessment domains to find the patterns that only emerge at the intersection — unique combinations visible only when the full picture is held together. Each pattern is seen through multiple lenses: therapeutic, soulful, practical, and more.</p>
+  ${coupleIntegrationHTML}
+</div>` : ''}
 
 <!-- COUPLE GROWTH EDGES -->
 ${growthEdgesHTML}

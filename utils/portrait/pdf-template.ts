@@ -9,6 +9,8 @@
  */
 
 import type { IndividualPortrait } from '@/types/portrait';
+import { generateIntegration, toIntegrationScores, getAvailableDomains } from '@/utils/integration-engine';
+import type { IntegrationResult, DomainId, LensType } from '@/utils/integration-engine';
 
 /* ── helpers ────────────────────────────────────────────── */
 
@@ -454,6 +456,91 @@ export function generatePortraitHTML(
       console.warn('[PDF] Domain story generation failed:', err);
     }
     return stories.join('');
+  })();
+
+  // ── Integration Engine Patterns (6-lens cross-domain insights) ──
+  const integrationPatternsHTML = (() => {
+    if (!allScores) return '';
+    try {
+      const intScores = toIntegrationScores(allScores);
+      const available = getAvailableDomains(intScores);
+      if (available.length < 2) return '';
+
+      const results: IntegrationResult[] = [];
+      // Run all pairwise combinations to find matching patterns
+      for (let i = 0; i < available.length; i++) {
+        for (let j = i + 1; j < available.length; j++) {
+          const r = generateIntegration([available[i], available[j]], intScores);
+          if (r && r.lenses) results.push(r);
+        }
+      }
+      if (results.length === 0) return '';
+
+      // Take top 5 patterns (prioritize those with higher confidence)
+      const sorted = results
+        .sort((a, b) => {
+          const conf = { high: 3, emerging: 2, low: 1 };
+          return (conf[b.confidence] || 1) - (conf[a.confidence] || 1);
+        })
+        .slice(0, 5);
+
+      const lensLabels: Record<LensType, string> = {
+        therapeutic: '🔬 Therapeutic',
+        soulful: '🌙 Soulful',
+        practical: '🌱 Practical',
+        developmental: '🌳 Developmental',
+        relational: '💕 Relational',
+        simple: '🍃 Simple',
+      };
+
+      return sorted.map((r) => {
+        const lensesHTML = r.lenses ? (Object.keys(r.lenses) as LensType[]).map((lens) => {
+          const text = r.lenses![lens];
+          if (!text) return '';
+          return `
+            <div class="lens-block" style="margin-bottom:10px;padding:10px 12px;background:#FDFBF9;border-left:3px solid var(--rose-light);break-inside:avoid;page-break-inside:avoid">
+              <p style="font-family:'Josefin Sans',sans-serif;font-size:8pt;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin:0 0 4px 0">${lensLabels[lens] || lens}</p>
+              <p style="font-size:9.5pt;line-height:1.6;color:var(--text);margin:0">${esc(text.substring(0, 600))}${text.length > 600 ? '…' : ''}</p>
+            </div>`;
+        }).join('') : '';
+
+        const practiceHTML = r.matchedPractice ? `
+          <div class="card card-sage" style="margin-top:8px;break-inside:avoid;page-break-inside:avoid">
+            <div class="card-title">Practice: ${esc(r.matchedPractice.name)}</div>
+            <p style="font-size:9.5pt;line-height:1.5">${esc(r.matchedPractice.instruction)}</p>
+            <p style="font-size:8.5pt;font-style:italic;color:var(--text-muted);margin-top:4px">${esc(r.matchedPractice.whyThisOne)}</p>
+            <p style="font-size:8pt;color:var(--sage);margin-top:4px">Frequency: ${esc(r.matchedPractice.frequency)}</p>
+          </div>` : '';
+
+        const arcHTML = r.arc ? `
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+            ${r.arc.wound ? `<div class="card card-rose" style="break-inside:avoid"><p class="card-title" style="font-size:8pt">The Wound</p><p style="font-size:9pt">${esc(r.arc.wound)}</p></div>` : ''}
+            <div class="card card-gold" style="break-inside:avoid"><p class="card-title" style="font-size:8pt">The Protection</p><p style="font-size:9pt">${esc(r.arc.protection)}</p></div>
+            <div class="card card-muted" style="break-inside:avoid"><p class="card-title" style="font-size:8pt">The Cost</p><p style="font-size:9pt">${esc(r.arc.cost)}</p></div>
+            <div class="card card-sage" style="break-inside:avoid"><p class="card-title" style="font-size:8pt">What Wants to Emerge</p><p style="font-size:9pt">${esc(r.arc.emergence)}</p></div>
+          </div>` : '';
+
+        const invitationHTML = r.invitation ? `
+          <div style="text-align:center;margin:12px 0 8px;padding:12px;background:linear-gradient(135deg,#FAF5F0,#F5EDE8);border-radius:8px">
+            <p style="font-family:'Playfair Display',Georgia,serif;font-size:12pt;font-style:italic;color:var(--rose);margin:0">"${esc(r.invitation)}"</p>
+          </div>` : '';
+
+        return `
+          <div style="margin-bottom:24px;break-inside:avoid-page">
+            <div style="border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:12px">
+              <p style="font-family:'Playfair Display',Georgia,serif;font-size:14pt;color:var(--primary);margin:0">${esc(r.title)}</p>
+              <p style="font-size:9pt;color:var(--text-muted);margin:2px 0 0">${esc(r.subtitle)}</p>
+            </div>
+            ${invitationHTML}
+            ${arcHTML}
+            ${lensesHTML}
+            ${practiceHTML}
+          </div>`;
+      }).join('');
+    } catch (err) {
+      console.warn('[PDF] Integration pattern generation failed:', err);
+      return '';
+    }
   })();
 
   // Supplement data section
@@ -1319,6 +1406,17 @@ ${domainStoriesHTML ? `
   <div class="section-title">Seven Domains of Your Relational Life</div>
   <p style="font-style:italic;color:var(--text-muted);font-size:9.5pt;margin-bottom:16px">Each domain tells a story about a different dimension of how you love. Together, they form your integrated relational map.</p>
   ${domainStoriesHTML}
+</div>` : ''}
+
+${integrationPatternsHTML ? `
+<!-- CROSS-DOMAIN PATTERNS — 6-LENS INTEGRATION ENGINE -->
+<div class="page-break"></div>
+<div class="section">
+  <div class="section-divider"></div>
+  <p class="section-label">CROSS-DOMAIN PATTERNS</p>
+  <div class="section-title">What Emerges When Domains Meet</div>
+  <p style="font-style:italic;color:var(--text-muted);font-size:9.5pt;margin-bottom:16px">Most assessments reduce you to a single score. Tender reads across all seven domains to find the patterns that only emerge at the intersection — the unique combinations that make your relational life yours. Each pattern is seen through six lenses: therapeutic, soulful, practical, developmental, relational, and simple.</p>
+  ${integrationPatternsHTML}
 </div>` : ''}
 
 <!-- GROWTH EDGES -->

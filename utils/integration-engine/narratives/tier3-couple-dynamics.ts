@@ -33,6 +33,7 @@ export interface CoupleNarrativeEntry {
     bothPartners: boolean;
     partnerATask?: string;
     partnerBTask?: string;
+    linkedExerciseId?: string;
   };
   coupleInvitation: string;
   evidenceLevel: 'strong' | 'moderate' | 'theoretical';
@@ -110,6 +111,7 @@ What the relationship itself is trying to become is a space where pursuit transf
     bothPartners: false,
     partnerATask: 'When you feel the urge to press: "I\'m feeling disconnected and it scares me. Can we find a time to reconnect?"',
     partnerBTask: 'When you feel the urge to retreat: "I\'m starting to feel flooded. I need 20 minutes but I\'m coming back."',
+    linkedExerciseId: 'hold-me-tight',
   },
   coupleInvitation: 'Learn each other\'s dialect. Urgency is fear. Silence is care. Both are love.',
   evidenceLevel: 'strong',
@@ -178,6 +180,7 @@ Stan Tatkin's PACT approach would focus on the couple's nervous system co-regula
     description: 'Each partner shares one thing carried silently. The other listens without fixing.',
     frequency: 'Weekly',
     bothPartners: true,
+    linkedExerciseId: 'emotional-bid',
   },
   coupleInvitation: 'You built a life together. Now build a home in each other. One sentence at a time.',
   evidenceLevel: 'strong',
@@ -247,6 +250,7 @@ Stan Tatkin's PACT framework would name this: you are both "islands" who become 
     description: 'Agree on a code word. When either says it: 20-minute pause, both leave, both return, try again at half the volume.',
     frequency: 'Whenever escalation begins',
     bothPartners: true,
+    linkedExerciseId: 'repair-attempt',
   },
   coupleInvitation: 'The passion between you is not the problem. It needs a container. Build one together.',
   evidenceLevel: 'strong',
@@ -317,6 +321,7 @@ Stan Tatkin's PACT approach would identify this as an "anchor-wave" pairing wher
     bothPartners: false,
     partnerATask: 'Follow without debating or overriding. Notice what it feels like to receive instead of lead.',
     partnerBTask: 'Choose first. Sit with the discomfort of asserting instead of deferring.',
+    linkedExerciseId: 'soft-startup',
   },
   coupleInvitation: 'A relationship of one voice is a monologue. Bring both voices to the table.',
   evidenceLevel: 'moderate',
@@ -386,6 +391,7 @@ Stan Tatkin's PACT framework celebrates your pattern — you are a "secure-funct
     description: 'Before proposing any solution to a disagreement, each partner shares one sentence about how they feel about it first.',
     frequency: 'Every disagreement this week',
     bothPartners: true,
+    linkedExerciseId: 'dreams-within-conflict',
   },
   coupleInvitation: 'You already build well together. Now feel before you fix. That\'s the missing step.',
   evidenceLevel: 'strong',
@@ -453,6 +459,7 @@ Stan Tatkin's PACT framework would identify this as a "wave-wave" pairing — tw
     description: 'Hold hands for 60 seconds in silence. No words. No reassuring. Just physical presence. The nervous systems co-regulate through contact.',
     frequency: 'Daily — especially during distress',
     bothPartners: true,
+    linkedExerciseId: 'grounding-5-4-3-2-1',
   },
   coupleInvitation: 'Build an anchor that belongs to both of you. When neither can be steady, the ritual holds you.',
   evidenceLevel: 'strong',
@@ -524,6 +531,7 @@ Stan Tatkin's PACT framework identifies this as an "anchor-anchor" pairing — t
     description: 'Each partner says one real thing they\'ve been holding silently — not a complaint, just something true and small.',
     frequency: 'Once this week to start — then weekly',
     bothPartners: true,
+    linkedExerciseId: 'turning-toward',
   },
   coupleInvitation: 'One sentence. From each shore. That\'s how islands become a continent.',
   evidenceLevel: 'strong',
@@ -595,6 +603,7 @@ Stan Tatkin's PACT framework identifies this as an "anchor-wave" pairing — the
     bothPartners: false,
     partnerATask: 'Name when you\'re approaching your limit. "I love you and I\'m getting stretched. Can we reconnect in an hour?" Honesty protects the system.',
     partnerBTask: 'Hand on heart, three breaths, then ask for what you need. Build the internal alongside the external.',
+    linkedExerciseId: 'couple-bubble',
   },
   coupleInvitation: 'The anchor is allowed to need things too. The wave is allowed to be steady sometimes. Meet in the middle.',
   evidenceLevel: 'strong',
@@ -672,6 +681,7 @@ The relationship itself is trying to become what Donald Winnicott called a "tran
     bothPartners: false,
     partnerATask: 'Offer closeness (a touch, a word), then give space. Let them come to you in their timing.',
     partnerBTask: 'Notice one moment of warmth this week and don\'t pull away. Just let it register. That\'s enough.',
+    linkedExerciseId: 'bonding-through-vulnerability',
   },
   coupleInvitation: 'The warmth doesn\'t push. The thaw doesn\'t rush. Trust the pace of the geological.',
   evidenceLevel: 'strong',
@@ -752,6 +762,7 @@ The relationship itself is trying to become what the philosopher Hegel called "s
     description: 'Each partner shares the story behind their top 3 values — not the value itself, but why it matters. Where did it come from? What was it trying to heal or protect?',
     frequency: 'Once this week — set aside 30 minutes',
     bothPartners: true,
+    linkedExerciseId: 'relationship-values-compass',
   },
   coupleInvitation: 'You don\'t have to share the value. You have to respect the wound it comes from.',
   evidenceLevel: 'moderate',
