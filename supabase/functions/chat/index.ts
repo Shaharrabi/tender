@@ -1001,7 +1001,7 @@ Attune your responses to where this person is in their journey. The phase name t
 
   if (vFlag === 'POSSIBLE_BIAS') {
     prompt += `\n\n### Assessment Validity Note`;
-    prompt += `\nThis person's assessment responses may reflect social desirability bias — their answers painted an unusually positive picture. Coach with gentle challenge: "I notice things sound really smooth — what might be underneath that?"`;
+    prompt += `\nThis person's assessment responses may reflect how they want to be seen rather than how they are. Their self-report may be idealized. Coach with gentle curiosity — ask questions that invite honest self-reflection rather than accepting stated positions at face value. Use phrases like "I wonder if there's another layer here" and "What would your partner say about that?"`;
   }
 
   if (relPers && Object.keys(relPers).length > 0) {
