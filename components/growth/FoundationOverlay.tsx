@@ -147,44 +147,13 @@ export default function FoundationOverlay({ onDismiss }: FoundationOverlayProps)
   const webAudioRef = useRef<HTMLAudioElement | null>(null);
   const webTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Start audio — platform-aware
+  // Start audio — native only (web uses the iframe which has its own audio)
   useEffect(() => {
+    if (Platform.OS === 'web') return; // iframe handles everything on web
+
     let mounted = true;
 
-    if (Platform.OS === 'web') {
-      // Web: Use HTML5 Audio + polling for caption sync
-      try {
-        const audioPath = require('@/assets/audio/THE FOUNDATION.mp3');
-        const audioUrl = typeof audioPath === 'string' ? audioPath : audioPath?.uri ?? audioPath?.default ?? audioPath;
-        const audio = new window.Audio(audioUrl);
-        webAudioRef.current = audio;
-        audio.volume = 1.0;
-
-        audio.addEventListener('ended', () => {
-          if (mounted) handleComplete();
-        });
-
-        audio.addEventListener('error', () => {
-          console.warn('[FoundationOverlay] Web audio failed');
-          // Fallback: auto-advance captions without audio
-          if (mounted) startCaptionOnlyMode();
-        });
-
-        audio.play().catch(() => {
-          // Autoplay blocked — fall back to caption-only mode
-          if (mounted) startCaptionOnlyMode();
-        });
-
-        // Poll for position to sync captions
-        webTimerRef.current = setInterval(() => {
-          if (!mounted || !audio) return;
-          setCurrentCaption(getCaptionAtTime(audio.currentTime));
-        }, 200);
-      } catch (err) {
-        console.warn('[FoundationOverlay] Web audio setup failed:', err);
-        if (mounted) startCaptionOnlyMode();
-      }
-    } else {
+    {
       // Native: Use expo-av
       const play = async () => {
         try {
@@ -216,16 +185,7 @@ export default function FoundationOverlay({ onDismiss }: FoundationOverlayProps)
 
     return () => {
       mounted = false;
-      // Cleanup native
       soundRef.current?.unloadAsync();
-      // Cleanup web
-      if (webAudioRef.current) {
-        webAudioRef.current.pause();
-        webAudioRef.current = null;
-      }
-      if (webTimerRef.current) {
-        clearInterval(webTimerRef.current);
-      }
     };
   }, []);
 
