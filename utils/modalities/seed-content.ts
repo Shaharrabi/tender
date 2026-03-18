@@ -1070,6 +1070,186 @@ const SEED: ModalityContentEntry[] = [
     practice: 'This week, share one thing with your partner that you\'ve never shared — not a trauma. Something small and true: a memory, a fear, a wish. Something that lets them see one more inch of who you are. Surrender is not one big leap. It\'s a thousand small offerings.',
     quote: 'We long for the very thing we fear — to be fully known. That longing is the soul\'s memory of where it came from.', quoteAttribution: 'James Hollis',
   }},
+
+  // ═══════════════════════════════════════════════════════════
+  // VALUES AUTONOMY BUT FUSED — 4 modalities at high severity
+  // Values independence but lives in enmeshment.
+  // ═══════════════════════════════════════════════════════════
+  { patternId: 'values_autonomy_but_fused', modalityId: 'bowen', severity: 'high', content: {
+    insight: 'You value independence — it\'s one of your core principles. But your fusion score tells a different story: your emotional life is organized around your partner. Their mood is your weather. Their opinion shapes your decisions. Fusion operates below the level of values — it\'s a relational pattern that runs deeper than belief.',
+    bodyCheck: 'Imagine making a significant decision without consulting your partner. Not in secret. Just independently. What happens in your body? If the thought creates anxiety, that\'s the fusion. Your nervous system has wired autonomy to danger.',
+    practice: 'This week, make one decision entirely yours — what to eat, where to go, how to spend an evening — without checking with your partner first. Notice the impulse to consult. That impulse is the fusion. Complete the decision without it.',
+    quote: 'Differentiation is not distance. It is the ability to be yourself in the presence of another.', quoteAttribution: 'Murray Bowen',
+  }},
+  { patternId: 'values_autonomy_but_fused', modalityId: 'ifs', severity: 'high', content: {
+    insight: 'You have an Autonomy Part that speaks clearly in your values — and a Fusion Part that runs your behavior. The Autonomy Part is aspirational. The Fusion Part is operational. Every time the Autonomy Part tries to assert itself, the Fusion Part panics: "If we separate even slightly, we\'ll lose them."',
+    bodyCheck: 'When your Autonomy Part speaks ("I need space"), where does it speak from? Usually head or chest. When your Fusion Part responds ("But what if they\'re upset?"), where does THAT come from? Usually gut — primal, survival-level.',
+    practice: 'Write a dialogue between the two parts. Autonomy says: "I need ___." Fusion says: "But if we ___, then ___." Then ask Self: "Is there a way to honor BOTH?" That third option is differentiation.',
+    quote: 'When two parts are polarized, the system is stuck. When Self mediates, movement becomes possible.', quoteAttribution: 'Richard Schwartz',
+  }},
+  { patternId: 'values_autonomy_but_fused', modalityId: 'act', severity: 'high', content: {
+    insight: 'Your value of autonomy is clear. Your behavior is fused. Is the fusion giving you the relationship you want? Or is it giving you a relationship where you\'re present in body but absent in self? The willingness move is being willing to feel the discomfort of having BOTH — being close AND being separate.',
+    bodyCheck: 'How many decisions this week did you make based on what YOU wanted versus what you thought your partner wanted? If the ratio is heavily toward your partner, that\'s the fusion expressing itself through daily choices.',
+    practice: 'Identify one value-aligned autonomous action this week. Before you do it, acknowledge the anxiety: "I notice I\'m anxious about doing this separately. I\'m willing to feel that because independence matters to me." Then do it.',
+    quote: 'Values without action are just good intentions. Action in the presence of discomfort is where values come to life.', quoteAttribution: 'Steven Hayes',
+  }},
+  { patternId: 'values_autonomy_but_fused', modalityId: 'narrative', severity: 'high', content: {
+    insight: 'You tell two stories that haven\'t met: "I\'m an independent person" and "I organize my life around my partner." Both are real. The fusion story dominates. Your autonomy story exists but it\'s been marginalized — it shows up in your values but not in your Tuesday.',
+    bodyCheck: 'When you describe yourself to others, which story do you tell? "I\'m independent" or "We do everything together"? Notice which one your body believes more.',
+    practice: 'Write a "unique outcome" — a time you DID act autonomously and the relationship survived. Maybe improved. Describe it in detail. This single counter-example proves autonomy and connection can coexist. One example is all you need to start re-authoring.',
+    quote: 'An alternative story doesn\'t erase the dominant one. It opens a door beside it.', quoteAttribution: 'Michael White',
+  }},
+
+  // ═══════════════════════════════════════════════════════════
+  // VALUES GROWTH RESISTS CHANGE — 4 modalities at high severity
+  // Values growth but personality resists novelty and change.
+  // ═══════════════════════════════════════════════════════════
+  { patternId: 'values_growth_resists_change', modalityId: 'mi', severity: 'high', content: {
+    insight: 'You value growth — it\'s one of your non-negotiables. And yet your openness score suggests you prefer the familiar. This isn\'t a contradiction. It\'s ambivalence: the part that wants to grow and the part that wants to stay safe are both active. The question isn\'t "Why don\'t you change?" It\'s "What would make change feel safe enough to attempt?"',
+    bodyCheck: 'How important is personal growth to you (1-10)? How comfortable are you with the uncertainty growth requires (1-10)? The gap between those numbers is where your resistance lives.',
+    practice: 'Answer honestly: "If I fully committed to the growth my values point toward, what would I have to give up?" The thing you\'d have to give up is what your low openness is protecting. Knowing what you\'re protecting makes the resistance intelligible, not shameful.',
+    quote: 'People don\'t resist change. They resist the loss that change requires.', quoteAttribution: 'William Miller',
+  }},
+  { patternId: 'values_growth_resists_change', modalityId: 'act', severity: 'high', content: {
+    insight: 'Your value says grow. Your behavior says stay. What are you unwilling to experience that growth would require? Vulnerability? Failure? Not knowing? The exposure of being a beginner? The specific thing you\'re avoiding is more informative than the general resistance.',
+    bodyCheck: 'Imagine committing to one significant change in how you show up in your relationship. A new one. A scary one. What does your body do? The contraction, the "not yet" — that\'s the experiential avoidance blocking the growth your values demand.',
+    practice: 'Choose the smallest possible growth action — so small your resistance can\'t argue with it. Not "transform how I communicate." Try: "Ask my partner one genuine question about their inner world that I\'ve never asked before." Micro-growth accumulates.',
+    quote: 'You don\'t have to want to grow. You just have to be willing to take the next small step.', quoteAttribution: 'Russ Harris',
+  }},
+  { patternId: 'values_growth_resists_change', modalityId: 'narrative', severity: 'high', content: {
+    insight: 'Your growth value was authored by the part of you that envisions who you could become. The resistance was authored by the part that remembers what change cost you in the past. We don\'t discard either chapter. We read them side by side and ask: which one gets to write the next page?',
+    bodyCheck: 'When you hear advice that resonates, what happens an hour later? Does the resonance fade into "I already knew that"? That fading is the dominant narrative reasserting itself over the alternative story.',
+    practice: 'Choose one insight from your Tender portrait that made you uncomfortable. Write it on a card. Put it somewhere visible. Not to shame yourself. To keep the alternative story visible. Growth doesn\'t happen in the moment of insight. It happens when the insight survives the return to routine.',
+    quote: 'The problem story doesn\'t disappear. It just makes room for another story to grow alongside it.', quoteAttribution: 'David Epston',
+  }},
+  { patternId: 'values_growth_resists_change', modalityId: 'aqal', severity: 'high', content: {
+    insight: 'Your values have developed to a stage that prizes growth and transformation, but your personality structure is still operating at an earlier, more conventional stage that prizes stability. This isn\'t hypocrisy. It\'s developmental lag: your values are pulling you forward and your structure is anchoring you. Both are doing their job.',
+    bodyCheck: 'Does "growth" feel exciting or threatening in your body? Expansive or exposing? Your body\'s response tells you whether growth is currently experienced as opportunity or danger.',
+    practice: 'Identify one area where you\'ve already grown — a way you relate to your partner now that\'s different from two years ago. Name it. This is evidence that your system CAN grow. Use your own history to reassure the part that fears change.',
+    quote: 'Development is not a straight line upward. It is a spiral — revisiting the same themes at greater depth each time.', quoteAttribution: 'Ken Wilber',
+  }},
+
+  // ═══════════════════════════════════════════════════════════
+  // LOW DIFFERENTIATION FUSED — 5 modalities at high severity
+  // No clear "I" position. Identity merged with partner's.
+  // ═══════════════════════════════════════════════════════════
+  { patternId: 'low_differentiation_fused', modalityId: 'bowen', severity: 'high', content: {
+    insight: 'In Bowen\'s framework, this is the foundational issue: you haven\'t yet developed a solid self — a set of beliefs, values, and positions that remain stable under relational pressure. Instead, you have a pseudo-self that shape-shifts to match whoever you\'re closest to. This isn\'t love. It\'s undifferentiation.',
+    bodyCheck: 'Ask yourself: what do I believe about [any topic your partner has strong opinions on]? If your first response is your PARTNER\'S position, not your own — that\'s the undifferentiation. Try again: what do YOU believe?',
+    practice: 'This week, form one opinion about something that matters — WITHOUT knowing your partner\'s position first. Don\'t ask them. Just decide what YOU think. Write it down. This is I-position practice.',
+    quote: 'The ability to define a self, to know what you believe and to act on it, without being dependent on the approval of others — that is the essence of differentiation.', quoteAttribution: 'Murray Bowen',
+  }},
+  { patternId: 'low_differentiation_fused', modalityId: 'ifs', severity: 'high', content: {
+    insight: 'Your system doesn\'t have a strong Self at the center — the parts are organized around one directive: maintain connection at all costs. The Accommodator reads your partner\'s needs. The Chameleon adjusts your personality. The Peacekeeper suppresses anything that might create distance. These parts are working HARD — but they\'re preserving a connection that isn\'t actually threatened by you having your own self.',
+    bodyCheck: 'Sit quietly and ask: "Who am I when I\'m not with my partner?" If the answer feels empty, blurry, or anxious — that\'s the starting point. The emptiness is where the self will grow.',
+    practice: 'Spend 20 minutes doing something purely yours — not your partner\'s interest, not a shared activity. If you struggle to identify what that is, start there: make a list of 10 things YOU enjoy. If the list is hard to write, that difficulty IS the diagnostic.',
+    quote: 'When Self is present, the parts don\'t disappear. They just stop running the show.', quoteAttribution: 'Richard Schwartz',
+  }},
+  { patternId: 'low_differentiation_fused', modalityId: 'aca', severity: 'high', content: {
+    insight: 'Undifferentiation often begins in childhood — in families where having your own self was a threat to the family system. You learned: "My job is to fit in, not stand out. My feelings matter less than the family\'s equilibrium." You carried this program into adulthood. Your partner didn\'t create the undifferentiation. Your family of origin did.',
+    bodyCheck: 'When you think about asserting yourself, does the resistance feel like a relationship fear or does it feel older? If it connects to something from childhood, that\'s the family-of-origin programming.',
+    practice: 'Write a letter to your childhood family system: "In my family, I was expected to ___. I wasn\'t allowed to ___. The role I played was ___. What I learned about having a self was ___." Then write one sentence about what you want to be different now.',
+    quote: 'We repeat what we don\'t repair.', quoteAttribution: 'Christine Langley-Obaugh',
+  }},
+  { patternId: 'low_differentiation_fused', modalityId: 'polyvagal', severity: 'high', content: {
+    insight: 'Your nervous system has wired separateness to danger — being different from your partner activates your threat system as if you were being abandoned. Your early environment taught: attunement = sameness. If you matched the emotional state of your caregivers, you were safe. If you diverged, you were at risk.',
+    bodyCheck: 'The next time you disagree with your partner about something trivial, notice what happens in your body in the first 3 seconds. A jolt? Tightening? Anxiety disproportionate to the disagreement? That\'s your nervous system treating difference as a survival threat.',
+    practice: 'Practice micro-disagreement in safe contexts: express a different preference about something low-stakes. Stay present to your body. Breathe through the activation. Let your nervous system learn that difference does not equal disconnection.',
+    quote: 'The nervous system that can tolerate difference is the nervous system that can tolerate intimacy.', quoteAttribution: 'Deb Dana',
+  }},
+  { patternId: 'low_differentiation_fused', modalityId: 'dbt', severity: 'high', content: {
+    insight: 'You need the FAST skill: Fair to yourself, no Apologies for existing, Stick to your values, be Truthful. Right now you\'re unfair to yourself, apologizing for having needs, abandoning your values to keep peace, and being untruthful about what you want. FAST isn\'t about being aggressive. It\'s about being present.',
+    bodyCheck: 'Think of the last time you abandoned your own position. How did it feel afterward? Resentment? Flatness? Self-contempt? That\'s the cost of chronic undifferentiation. Your body keeps the bill.',
+    practice: 'Use FAST this week: (F) "Am I being fair to myself?" (A) Don\'t apologize for stating your preference. (S) "Is what I\'m doing aligned with my values or my fear?" (T) Say one true thing you would normally suppress.',
+    quote: 'Self-respect is not built by sacrificing yourself. It is built by showing up as yourself and letting the relationship hold it.', quoteAttribution: 'Marsha Linehan',
+  }},
+
+  // ═══════════════════════════════════════════════════════════
+  // REACTIVE UNDEFINED — 4 modalities at high severity
+  // High reactivity + no solid self. Erupts with no direction.
+  // ═══════════════════════════════════════════════════════════
+  { patternId: 'reactive_undefined', modalityId: 'polyvagal', severity: 'high', content: {
+    insight: 'Your nervous system has a hair-trigger sympathetic response — it goes from resting to fight-or-flight with almost no warning. And because your sense of self is still forming, there\'s no internal anchor to hold against the surge. Think of a boat in a storm with no keel: every wave throws you completely. Your work is building the keel.',
+    bodyCheck: 'Notice how fast you go from calm to activated. Seconds? Minutes? And when activated, is there any part observing, or does it consume you completely? The observer — however faint — is the beginning of the keel.',
+    practice: 'When you feel the surge beginning, place both feet flat on the floor and press down. Feel the ground. This is your anchor point. You\'re building the keel one moment of grounding at a time. Not insight. Not understanding. Ground contact.',
+    quote: 'Before you can hold a position, you must be able to hold your own body.', quoteAttribution: 'Deb Dana',
+  }},
+  { patternId: 'reactive_undefined', modalityId: 'dbt', severity: 'high', content: {
+    insight: 'You need two skills urgently: STOP (when reactivity fires) and opposite action (to build the self). STOP keeps you from doing damage during the surge. Opposite action means: when your reactivity says "Explode," you practice deliberate calm. Over time, this builds the self-structure you\'re missing.',
+    bodyCheck: 'After your last reactive episode, what did you wish you had done differently? That gap between what happened and what you wanted is where the skill goes.',
+    practice: 'Commit to STOP every time: (S) Stop moving and talking. (T) Take a step back, physically. (O) Observe: "I\'m at a 7/10. My body wants to ___." (P) Proceed mindfully: choose ONE response different from your default.',
+    quote: 'Opposite action is not about being fake. It is about choosing who you want to be instead of letting your impulses choose for you.', quoteAttribution: 'Marsha Linehan',
+  }},
+  { patternId: 'reactive_undefined', modalityId: 'bowen', severity: 'high', content: {
+    insight: 'You are experiencing chronic emotional reactivity without the ballast of a defined self. The reactivity isn\'t guided by principles or a clear position — it\'s guided by the emotional weather. You react to tone shifts, perceived slights — not from "this matters to me because ___" but from "something happened and I\'m activated."',
+    bodyCheck: 'After a reactive moment, ask: "What was I standing FOR in that reaction?" If the answer is vague or just "I was upset," that\'s the undefined self. Reactivity without purpose is the signal.',
+    practice: 'Write down 5 things you believe. Not your partner\'s beliefs. Not what you SHOULD believe. Five things that are YOURS. If you can\'t find 5, start with 1. That one belief — held clearly — is the first brick of your I-position.',
+    quote: 'An undefined self is a reactive self. Definition is the first act of emotional maturity.', quoteAttribution: 'Murray Bowen',
+  }},
+  { patternId: 'reactive_undefined', modalityId: 'ifs', severity: 'high', content: {
+    insight: 'Your system has powerful Firefighter Parts and a very young, undeveloped Self at the center. When a Firefighter fires and there\'s no Self to catch it, the Firefighter IS the response. Building Self-energy gives the Firefighters something to report TO rather than something to take over.',
+    bodyCheck: 'In your last reactive episode, was there any moment — even a flash — where you thought "I don\'t want to be doing this"? That flash was Self, briefly visible through the Firefighter\'s smoke.',
+    practice: 'After each reactive episode, sit for 2 minutes and ask: "Which part took over? What were they afraid would happen if they didn\'t react?" Don\'t judge. Thank the part: "I see you. Next time, I want to be the one who decides." This builds Self-energy.',
+    quote: 'Self doesn\'t develop in the absence of parts. It develops in relationship with them.', quoteAttribution: 'Richard Schwartz',
+  }},
+
+  // ═══════════════════════════════════════════════════════════
+  // POROUS BOUNDARIES — 5 modalities at high severity
+  // High ER + high fusion. Absorbs partner's emotions, can't distinguish whose is whose.
+  // ═══════════════════════════════════════════════════════════
+  { patternId: 'porous_boundaries', modalityId: 'bowen', severity: 'high', content: {
+    insight: 'Your boundaries are not walls — they\'re membranes. And right now those membranes are too permeable. Everything your partner feels flows through into you. In Bowen\'s terms, this is an undifferentiated ego mass operating at the couple level. The work isn\'t building walls. It\'s thickening the membrane enough that you can feel without being CONSUMED.',
+    bodyCheck: 'Scan your emotional state. How much is about YOUR day, and how much leaked in from your partner? If you can\'t tell — that\'s the porous boundary in action.',
+    practice: 'Practice emotional sorting three times today: "What am I feeling? Is this mine, theirs, or ours?" Write three columns: MINE, THEIRS, OURS. Sort each feeling. You won\'t be perfectly accurate. The point is practicing the DISTINCTION.',
+    quote: 'The boundary between self and other is not a wall. It is a living edge — permeable enough for intimacy, firm enough for identity.', quoteAttribution: 'Roberta Gilbert',
+  }},
+  { patternId: 'porous_boundaries', modalityId: 'polyvagal', severity: 'high', content: {
+    insight: 'Your nervous system mirrors your partner\'s with unusual fidelity — when they\'re activated, your sympathetic system fires. When they collapse, your dorsal vagal drops. You are neurobiologically entangled. The issue isn\'t that you mirror. The issue is your system has no return-to-self mechanism.',
+    bodyCheck: 'After your next interaction, take your emotional temperature. Then ask: "Was this temperature mine BEFORE the interaction, or did I absorb it during?" If you can\'t remember your pre-interaction state, the mirroring is overriding your self-awareness.',
+    practice: 'Build a return-to-self ritual: after every charged interaction, 60 seconds alone. Both hands on your belly. Breathe slowly. Say: "I return to myself. What am I feeling that is mine?" Don\'t analyze. Just return to YOUR baseline.',
+    quote: 'Co-regulation is the ability to be moved by another\'s state. Self-regulation is the ability to return to your own.', quoteAttribution: 'Deb Dana',
+  }},
+  { patternId: 'porous_boundaries', modalityId: 'ifs', severity: 'high', content: {
+    insight: 'Your system has a Sponge Part that absorbs the emotional atmosphere with no filter. This part probably developed in childhood as a way to stay safe. Brilliant adaptation. But now it runs continuously, absorbing your partner\'s emotions without checking whether absorption is necessary. The work is helping the Sponge Part install a filter.',
+    bodyCheck: 'Where does absorption happen in your body? Most people feel it in the solar plexus or chest. Put your hand there. Ask: "How much of what you\'re holding right now belongs to someone else?"',
+    practice: 'Before entering your partner\'s emotional field, take 10 seconds to establish YOUR state: hand on belly, "I feel ___. This is mine." Then enter the interaction. When you notice yourself absorbing, check: "Is this still mine, or did I just pick up theirs?"',
+    quote: 'The Sponge Part doesn\'t need to be silenced. It needs to be taught: not everything that passes through your field needs to be absorbed.', quoteAttribution: 'Richard Schwartz',
+  }},
+  { patternId: 'porous_boundaries', modalityId: 'ecopsychology', severity: 'high', content: {
+    insight: 'In the ecology of your relationship, you are like a wetland — you absorb and filter everything that flows through. Wetlands are essential. But a wetland without boundaries becomes a flood plain. You are the wetland. Your partner\'s emotions are the water. The work is restoring the banks.',
+    bodyCheck: 'Go outside. Stand at the edge of something — a curb, a garden border, a shoreline. Feel the edge. Now bring that felt sense of EDGE back to your body. Where is the edge between you and your partner?',
+    practice: 'Spend time near water this week. Watch how water has its own surface, its own boundary. It touches the container but doesn\'t BECOME the container. You are not your partner\'s emotions. You are the shore they wash against. Practice feeling the shore.',
+    quote: 'Boundaries in nature aren\'t barriers. They\'re the edges where different ecosystems meet — and where the most life happens.', quoteAttribution: 'Bill Plotkin',
+  }},
+  { patternId: 'porous_boundaries', modalityId: 'dbt', severity: 'high', content: {
+    insight: 'Your boundary porousness means you need FAST and Distress Tolerance skills specifically for emotional absorption. The standard model assumes your distress is YOUR distress. Yours often isn\'t — it\'s distress you absorbed. The first skill isn\'t regulation. It\'s IDENTIFICATION: is this mine?',
+    bodyCheck: 'When carrying a heavy emotion, run this check: "Did I have this feeling before I encountered my partner today? Or did it arrive with them?" This simple before-vs-after check is the most practical boundary tool you can develop.',
+    practice: 'Create a daily boundary check: morning (before interactions) and evening (after). Morning: "I feel ___. This is my baseline." Evening: "I feel ___. How much arrived from outside?" The gap — beyond what YOUR day accounts for — is what you absorbed. Name it. Set it down.',
+    quote: 'The first step of emotion regulation is knowing which emotions are yours to regulate.', quoteAttribution: 'Marsha Linehan',
+  }},
+
+  // ═══════════════════════════════════════════════════════════
+  // HEALTHY DEEP EMPATHY — 3 modalities (STRENGTH pattern)
+  // High ER + high I-position. Feels deeply AND holds center.
+  // ═══════════════════════════════════════════════════════════
+  { patternId: 'healthy_deep_empathy', modalityId: 'contemplative', severity: 'low', content: {
+    insight: 'You have achieved something rare: the ability to feel deeply without losing yourself. You enter your partner\'s emotional world and feel it genuinely, in your own body. But you don\'t get lost there. You maintain your own center. This is genuine compassion: "I feel with you, and I remain myself." In contemplative traditions, this capacity is considered the fruit of deep practice.',
+    bodyCheck: 'Notice how it feels to hold someone\'s pain without collapsing into it. There\'s usually a quality of spaciousness — the pain is present but doesn\'t fill the whole room. That spaciousness IS your differentiation experienced somatically.',
+    practice: 'When you hold space for your partner\'s emotion, notice the moment where you feel WITH them but remain YOU. Name it: "I\'m feeling with you and I\'m still here." This naming isn\'t for them. It\'s for you — to recognize what you\'ve built.',
+    quote: 'Compassion is not drowning in another\'s suffering. It is standing at the edge of the water, fully feeling the cold, and offering your steady hand.', quoteAttribution: 'Pema Chodron',
+  }},
+  { patternId: 'healthy_deep_empathy', modalityId: 'ifs', severity: 'low', content: {
+    insight: 'Your Self-energy is strong. When your partner is in distress, your parts don\'t take over — Self stays present. The Empathy Part feels what your partner feels, and Self holds it, and neither collapses. This is Self-leadership in its highest relational expression. Not everyone\'s system works this way. Yours does.',
+    bodyCheck: 'When you hold your partner\'s pain, notice your chest. Is there warmth? Expansion? A quality of "I can hold this"? That physical sensation is Self-energy in your body. It\'s different from empathic flooding. Learn to recognize the difference.',
+    practice: 'Share this capacity with your partner as an offering: "I want you to know that when you\'re hurting, I feel it with you. And I\'m still here. You don\'t have to protect me from your pain." This gives them permission to bring their full experience into the relationship.',
+    quote: 'The goal of all inner work is this: to feel fully and to remain.', quoteAttribution: 'Richard Schwartz',
+  }},
+  { patternId: 'healthy_deep_empathy', modalityId: 'ecopsychology', severity: 'low', content: {
+    insight: 'You are like an old-growth tree — deeply rooted and also deeply connected to the ecosystem around you. Your roots go down (I-position) and your canopy reaches out (empathic resonance). Both systems are developed. Neither overwhelms the other. In the ecology of your relationship, you are the stabilizing presence.',
+    bodyCheck: 'Feel your rootedness — feet on ground, weight in chair. Now extend awareness to whoever is near you — can you sense their state without losing your ground? That simultaneous rooting and reaching is your signature capacity.',
+    practice: 'Walk in nature this week and practice your dual capacity: feel the environment while maintaining awareness of your own body, your own mood, your own center. This is what you do in relationship — doing it in nature reinforces the capacity without relational stakes.',
+    quote: 'The strongest trees are not the ones that block the wind. They are the ones that learned to bend without breaking.', quoteAttribution: 'adapted from Lao Tzu',
+  }},
 ];
 
 // ─── Register seed content ───────────────────────────────

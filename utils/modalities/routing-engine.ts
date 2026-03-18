@@ -42,10 +42,14 @@ const PATTERN_MODALITY_RELEVANCE: Record<string, string[]> = {
   // Values × Behavior patterns
   values_honesty_avoids_conflict: ['act', 'narrative', 'mi', 'ifs', 'contemplative'],
   values_intimacy_avoids_closeness: ['attachment', 'ifs', 'polyvagal', 'act', 'contemplative'],
-  values_autonomy_but_fused: ['bowen', 'ifs', 'act', 'aca'],
+  values_autonomy_but_fused: ['bowen', 'ifs', 'act', 'narrative'],
+  values_growth_resists_change: ['mi', 'act', 'narrative', 'aqal'],
 
   // Differentiation patterns
   differentiation_work: ['bowen', 'ifs', 'act', 'aca'],
+  low_differentiation_fused: ['bowen', 'ifs', 'aca', 'polyvagal', 'dbt'],
+  reactive_undefined: ['polyvagal', 'dbt', 'bowen', 'ifs'],
+  porous_boundaries: ['bowen', 'polyvagal', 'ifs', 'ecopsychology', 'dbt'],
   high_cutoff: ['bowen', 'ifs', 'polyvagal', 'organic_intelligence', 'contemplative'],
 };
 
