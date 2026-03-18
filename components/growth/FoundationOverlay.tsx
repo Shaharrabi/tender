@@ -94,6 +94,18 @@ export default function FoundationOverlay({ onDismiss }: FoundationOverlayProps)
   const [isFinishing, setIsFinishing] = useState(false);
   const [currentCaption, setCurrentCaption] = useState<string | null>(null);
 
+  const handleComplete = useCallback(async () => {
+    if (isFinishing) return;
+    setIsFinishing(true);
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, 'true');
+      await soundRef.current?.stopAsync();
+      await soundRef.current?.unloadAsync();
+    } catch {}
+    // Brief delay for fade animation
+    setTimeout(onDismiss, 400);
+  }, [isFinishing, onDismiss]);
+
   // Caption-only fallback when audio can't play (autoplay blocked, web errors)
   const captionTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startCaptionOnlyMode = useCallback(() => {
@@ -117,18 +129,6 @@ export default function FoundationOverlay({ onDismiss }: FoundationOverlayProps)
       if (captionTimerRef.current) clearInterval(captionTimerRef.current);
     };
   }, []);
-
-  const handleComplete = useCallback(async () => {
-    if (isFinishing) return;
-    setIsFinishing(true);
-    try {
-      await AsyncStorage.setItem(STORAGE_KEY, 'true');
-      await soundRef.current?.stopAsync();
-      await soundRef.current?.unloadAsync();
-    } catch {}
-    // Brief delay for fade animation
-    setTimeout(onDismiss, 400);
-  }, [isFinishing, onDismiss]);
 
   // Web audio ref for HTML5 Audio fallback
   const webAudioRef = useRef<HTMLAudioElement | null>(null);
