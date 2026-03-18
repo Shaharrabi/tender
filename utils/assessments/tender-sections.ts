@@ -96,11 +96,11 @@ export const TOTAL_ESTIMATED_MINUTES = TENDER_SECTIONS.reduce(
 
 /**
  * Total question count including supplements.
- * Base: 36 + 60 + 16 + 20 + 20 + 28 + 20 = 200  (DUTCH expanded 15→20)
+ * Base: 36 + 60 + 25 + 20 + 20 + 28 + 20 = 209  (SSEIT expanded 16→25)
  * Supplements: 5 (ECR-R) + 3 (SSEIT) + 4 (DSI-R) + 5 (Values) + 1 (DUTCH) = 18
- * Total: 218
+ * Total: 227
  */
-export const TOTAL_QUESTIONS = 218;
+export const TOTAL_QUESTIONS = 227;
 
 /** Get section by assessment type. */
 export function getSectionByType(assessmentType: string): TenderSection | undefined {

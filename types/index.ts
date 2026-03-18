@@ -149,7 +149,10 @@ export interface DUTCHScores {
 export interface SSEITScores {
   totalScore: number;
   totalMean: number;
+  /** Backward-compatible: computed from original 4 subscales only (P, MO, MA, U) */
   totalNormalized: number;
+  /** New: computed from all 6 subscales (P, MO, MA, U, PT, ER). Opt-in for new consumers. */
+  totalNormalized_v2?: number;
   subscaleScores: Record<string, { sum: number; mean: number; itemCount: number }>;
   subscaleNormalized: Record<string, number>;
 }

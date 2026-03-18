@@ -623,7 +623,7 @@ export default function TenderAssessmentScreen() {
       const INSTRUMENT_VERSIONS: Record<string, string> = {
         'ecr-r': 'tender-ip-v2',
         'dutch': 'tender-ip-v2',
-        'sseit': 'tender-ip-v1',
+        'sseit': 'tender-ip-v2',
         'values': 'tender-ip-v1',
         'dsi-r': 'tender-ip-v2',
         'ipip-neo-120': 'trimmed-v1',
