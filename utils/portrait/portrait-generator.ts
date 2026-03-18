@@ -101,7 +101,7 @@ export function generatePortrait(
   const negativeCycle = predictNegativeCycle(ecrr, dutch, sseit, compositeScores);
 
   // Step 5: Growth edges
-  const growthEdges = identifyGrowthEdges(values, dsir, compositeScores, patternResult.patterns);
+  const growthEdges = identifyGrowthEdges(values, dsir, compositeScores, patternResult.patterns, ipip);
 
   // Step 6: Anchor points — now uses emotionalStructure for deep personalization
   const anchorPoints = generateAnchorPoints(ecrr, compositeScores, attachment.emotionalStructure);

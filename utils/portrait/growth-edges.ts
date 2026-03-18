@@ -1,11 +1,17 @@
 import type {
   ValuesScores,
   DSIRScores,
+  IPIPScores,
   CompositeScores,
   DetectedPattern,
   GrowthEdge,
 } from '@/types';
 import { VALUE_DOMAINS } from '@/utils/assessments/configs/values';
+
+// Modality routing engine — enhances growth edges with multi-lens content
+import '@/utils/modalities/seed-content'; // auto-registers seed content on import
+import { routePatternToModalities, scoreSeverity } from '@/utils/modalities/routing-engine';
+import { getPatternsWithContent } from '@/utils/modalities/modality-content';
 
 /**
  * Identify 2-3 key growth edges based on patterns, gaps, and scores.
@@ -19,7 +25,8 @@ export function identifyGrowthEdges(
   values: ValuesScores,
   dsir: DSIRScores,
   composite: CompositeScores,
-  patterns: DetectedPattern[]
+  patterns: DetectedPattern[],
+  ipip?: IPIPScores,
 ): GrowthEdge[] {
   const candidates: GrowthEdge[] = [];
 
@@ -156,7 +163,53 @@ export function identifyGrowthEdges(
     }
     if (result.length >= 5) break;
   }
-  // Ensure at least 3 edges — if we have fewer, that's OK (profile is strong)
+  // ── 6. Enrich with modality-routed content (V2.1) ──
+  const patternsWithContent = getPatternsWithContent();
+  if (patternsWithContent.length > 0) {
+    const profile = {
+      compositeScores: composite,
+      values,
+      openness: ipip?.domainPercentiles?.openness ?? 50,
+      spiritualityValue: values?.domainScores?.spirituality?.importance ?? 5,
+      growthValue: values?.domainScores?.growth?.importance ?? 5,
+    };
+
+    for (const edge of result) {
+      // Only enrich edges that match patterns with modality content
+      if (!patternsWithContent.includes(edge.id)) continue;
+
+      const severity = scoreSeverity(composite.regulationScore ?? 50);
+      const routed = routePatternToModalities(edge.id, severity, profile);
+      if (routed.length === 0) continue;
+
+      // Append modality insights and practices to the edge
+      const modalityInsights = routed.map(
+        (r) => `[${r.modalityName}] ${r.content.insight}`,
+      );
+      const modalityPractices = routed.map(
+        (r) => r.content.practice,
+      );
+
+      // Store routed content as additional data on the edge
+      (edge as any).modalityContent = routed.map((r) => ({
+        modality: r.modalityName,
+        role: r.role,
+        insight: r.content.insight,
+        bodyCheck: r.content.bodyCheck,
+        practice: r.content.practice,
+        quote: r.content.quote,
+        quoteAttribution: r.content.quoteAttribution,
+      }));
+
+      // Enrich practices with modality-specific ones (append, don't replace)
+      for (const mp of modalityPractices) {
+        if (!edge.practices.includes(mp)) {
+          edge.practices.push(mp);
+        }
+      }
+    }
+  }
+
   return result;
 }
 
