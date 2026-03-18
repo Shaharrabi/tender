@@ -9,44 +9,50 @@ const LIKERT_SCALE: LikertOption[] = [
   { value: 6, label: 'Very true of me' },
 ];
 
-// 0-based indices of reverse-scored items in the trimmed 20-item version
-// idx 4=item5(R:"calm in chaos"), 6=item7(R:"do what I believe"), 7=item8(R:"stating position"),
-// 8=item9(R:"say no"), 9=item10(R:"clear sense"), 11=item12(R:"remain calm"),
-// 15=item16(R:"calmly listen"), 17=item18(R:"keep focused")
-const REVERSE_ITEMS = new Set([4, 6, 7, 8, 9, 11, 15, 17]);
+/**
+ * Tender Differentiation Assessment — 20 items
+ * Constructs from Bowen (1978), Skowron & Schmitt (2003). All items original to Tender.
+ *
+ * Reverse-scored items: IP1-IP5 (indices 5-9). Agree = HIGH differentiation,
+ * so must be reversed before double-reversal in scoring.
+ * ER/EC/FU items: agree = LOW differentiation, no individual reversal needed.
+ *
+ * instrument_version: 'tender-ip-v1'
+ */
+const REVERSE_ITEMS = new Set([5, 6, 7, 8, 9]);
 
 const QUESTIONS: GenericQuestion[] = [
   // ── Emotional Reactivity (Items 1–5) ──
-  // Original items: 1, 6, 9, 17, 26(R)
-  { id: 1, text: 'People have remarked that I\'m overly emotional.', inputType: 'likert', subscale: 'emotionalReactivity' },
-  { id: 2, text: 'At times my feelings get the best of me and I have trouble thinking clearly.', inputType: 'likert', subscale: 'emotionalReactivity' },
-  { id: 3, text: 'When my partner criticizes me, it bothers me for days.', inputType: 'likert', subscale: 'emotionalReactivity' },
-  { id: 4, text: 'I often feel overwhelmed.', inputType: 'likert', subscale: 'emotionalReactivity' },
-  { id: 5, text: 'I\'m fairly calm even when things get chaotic around me.', inputType: 'likert', subscale: 'emotionalReactivity', reverseScored: true },
+  // High = high reactivity = LOW differentiation
+  { id: 1, text: 'When my partner says something that hurts, my body reacts before my mind can catch up — chest tight, jaw clenched, heat rising.', inputType: 'likert', subscale: 'emotionalReactivity' },
+  { id: 2, text: "Small criticisms from my partner can feel enormous in the moment — like the volume is turned up way past what the situation warrants.", inputType: 'likert', subscale: 'emotionalReactivity' },
+  { id: 3, text: "When we're in conflict, I sometimes say things I don't mean — the emotion speaks before I can choose my words.", inputType: 'likert', subscale: 'emotionalReactivity' },
+  { id: 4, text: "After an argument, it takes me a long time to come back to baseline — I replay it, I stew, my body stays activated for hours.", inputType: 'likert', subscale: 'emotionalReactivity' },
+  { id: 5, text: "I tend to feel things at full volume. There's not much middle ground between fine and flooded.", inputType: 'likert', subscale: 'emotionalReactivity' },
 
   // ── I-Position (Items 6–10) ──
-  // Original items: 2, 12(R), 18(R), 27(R), 32(R)
-  { id: 6, text: 'I have difficulty expressing my feelings to people I care for.', inputType: 'likert', subscale: 'iPosition' },
-  { id: 7, text: 'I usually do what I believe is right regardless of what others say.', inputType: 'likert', subscale: 'iPosition', reverseScored: true },
-  { id: 8, text: 'I\'m good at knowing what I believe and stating my position clearly.', inputType: 'likert', subscale: 'iPosition', reverseScored: true },
-  { id: 9, text: 'I\'m able to say "no" to others even when I feel pressured by them.', inputType: 'likert', subscale: 'iPosition', reverseScored: true },
-  { id: 10, text: 'I have a clear sense of who I am and what I believe.', inputType: 'likert', subscale: 'iPosition', reverseScored: true },
+  // High = high I-Position = HIGH differentiation → reverse-scored
+  { id: 6, text: "I can hold onto what I believe even when my partner strongly disagrees — not stubbornly, but with a quiet certainty that my perspective matters too.", inputType: 'likert', subscale: 'iPosition', reverseScored: true },
+  { id: 7, text: "I have a clear sense of who I am that doesn't disappear when I'm in a relationship — my values, my needs, my way of seeing things.", inputType: 'likert', subscale: 'iPosition', reverseScored: true },
+  { id: 8, text: "I can say 'I see it differently' to my partner without it feeling like a threat to the relationship.", inputType: 'likert', subscale: 'iPosition', reverseScored: true },
+  { id: 9, text: "I make important life decisions based on my own values and judgment, not on what will keep other people comfortable with me.", inputType: 'likert', subscale: 'iPosition', reverseScored: true },
+  { id: 10, text: "When my partner wants something that conflicts with what I need, I can advocate for myself without guilt and without aggression.", inputType: 'likert', subscale: 'iPosition', reverseScored: true },
 
   // ── Emotional Cutoff (Items 11–15) ──
-  // Original items: 3, 5(R), 19, 33, 46
-  { id: 11, text: 'I often feel like I\'m being controlled by others.', inputType: 'likert', subscale: 'emotionalCutoff' },
-  { id: 12, text: 'I tend to remain pretty calm even when everyone around me is upset.', inputType: 'likert', subscale: 'emotionalCutoff', reverseScored: true },
-  { id: 13, text: 'I\'m very uncomfortable when people express negative feelings toward me.', inputType: 'likert', subscale: 'emotionalCutoff' },
-  { id: 14, text: 'When one of my relationships becomes very intense, I feel the urge to run away from it.', inputType: 'likert', subscale: 'emotionalCutoff' },
-  { id: 15, text: 'I\'m uncomfortable being around people I don\'t know.', inputType: 'likert', subscale: 'emotionalCutoff' },
+  // High = high cutoff = LOW differentiation
+  { id: 11, text: "When things get emotionally intense between us, I go somewhere inside where no one can reach me — not a choice, more like a reflex.", inputType: 'likert', subscale: 'emotionalCutoff' },
+  { id: 12, text: "There are parts of my emotional life that I've walled off — from my partner, and honestly, from myself.", inputType: 'likert', subscale: 'emotionalCutoff' },
+  { id: 13, text: "When my partner tries to talk about something emotional, I sometimes feel a physical urge to leave the room — or the conversation — or my own body.", inputType: 'likert', subscale: 'emotionalCutoff' },
+  { id: 14, text: "I've been told I'm present but unreachable — physically in the room but emotionally somewhere else entirely.", inputType: 'likert', subscale: 'emotionalCutoff' },
+  { id: 15, text: "I handle difficult emotions by pushing them away until they stop bothering me — which works until it doesn't.", inputType: 'likert', subscale: 'emotionalCutoff' },
 
   // ── Fusion with Others (Items 16–20) ──
-  // Original items: 4(R), 10, 15(R), 24, 29
-  { id: 16, text: 'I\'m able to calmly listen to my partner, even when I disagree.', inputType: 'likert', subscale: 'fusionWithOthers', reverseScored: true },
-  { id: 17, text: 'I often agree with others just to appease them.', inputType: 'likert', subscale: 'fusionWithOthers' },
-  { id: 18, text: 'When I\'m having an argument, I can keep focused on the issues and not let things get personal.', inputType: 'likert', subscale: 'fusionWithOthers', reverseScored: true },
-  { id: 19, text: 'It\'s hard for me to make decisions for myself when I know others might disapprove.', inputType: 'likert', subscale: 'fusionWithOthers' },
-  { id: 20, text: 'When I am with others, I lose my sense of who I am.', inputType: 'likert', subscale: 'fusionWithOthers' },
+  // High = high fusion = LOW differentiation
+  { id: 16, text: "My partner's mood becomes my mood — when they're down, something in me sinks. When they're light, I float.", inputType: 'likert', subscale: 'fusionWithOthers' },
+  { id: 17, text: "I sometimes lose track of what I want because I'm so focused on what my partner wants or needs.", inputType: 'likert', subscale: 'fusionWithOthers' },
+  { id: 18, text: "When my partner is upset with me, it shakes my sense of who I am — like their disapproval reaches somewhere deeper than the specific issue.", inputType: 'likert', subscale: 'fusionWithOthers' },
+  { id: 19, text: "I find it hard to know what I actually feel about something until I know how my partner feels about it.", inputType: 'likert', subscale: 'fusionWithOthers' },
+  { id: 20, text: "The line between where I end and my partner begins sometimes feels blurry — not in a beautiful way, but in a way that leaves me unsure where I am.", inputType: 'likert', subscale: 'fusionWithOthers' },
 ];
 
 const SUBSCALE_ITEMS: Record<string, number[]> = {
@@ -56,6 +62,8 @@ const SUBSCALE_ITEMS: Record<string, number[]> = {
   fusionWithOthers: [15, 16, 17, 18, 19],  // 5 items
 };
 
+// v2.0: Uniform keying within subscales. Reverse items changed from
+// {4,6,7,8,9,11,15,17} to {5,6,7,8,9}. Old and new scores are not directly comparable.
 function scoreDSIR(responses: (number | string | string[] | null)[]): DSIRScores {
   const nums = responses as number[];
   if (nums.length !== 20) throw new Error('DSI-R requires 20 responses');

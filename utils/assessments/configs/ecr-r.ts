@@ -17,63 +17,64 @@ const LIKERT_SCALE: LikertOption[] = [
 ];
 
 /**
- * Canonical ECR-R items from Fraley, Waller, & Brennan (2000).
+ * Tender Attachment Assessment — 36 items
+ * Constructs from Brennan, Clark & Shaver (1998). All item wording original to Tender.
  * Items 1-18 = Anxiety subscale, Items 19-36 = Avoidance subscale.
  *
- * Reverse-scored items (1-based): 9, 11, 20, 22, 26, 27, 28, 29, 30, 31, 33, 34, 35, 36
+ * Reverse-scored items (1-based): 9, 13, 28, 29, 30, 31, 32
+ * instrument_version: 'tender-ip-v1'
  */
 const QUESTIONS: GenericQuestion[] = [
   // ── Anxiety Subscale (Items 1-18) ────────────────────
-  { id: 1,  text: "I'm afraid that I will lose my partner's love.", inputType: 'likert', subscale: 'anxiety' },
-  { id: 2,  text: "I often worry that my partner will not want to stay with me.", inputType: 'likert', subscale: 'anxiety' },
-  { id: 3,  text: "I often worry that my partner doesn't really love me.", inputType: 'likert', subscale: 'anxiety' },
-  { id: 4,  text: "I worry that romantic partners won't care about me as much as I care about them.", inputType: 'likert', subscale: 'anxiety' },
-  { id: 5,  text: "I often wish that my partner's feelings for me were as strong as my feelings for him or her.", inputType: 'likert', subscale: 'anxiety' },
-  { id: 6,  text: "I worry a lot about my relationships.", inputType: 'likert', subscale: 'anxiety' },
-  { id: 7,  text: "When my partner is out of sight, I worry that he or she might become interested in someone else.", inputType: 'likert', subscale: 'anxiety' },
-  { id: 8,  text: "When I show my feelings for romantic partners, I'm afraid they will not feel the same about me.", inputType: 'likert', subscale: 'anxiety' },
-  { id: 9,  text: "I rarely worry about my partner leaving me.", inputType: 'likert', subscale: 'anxiety', reverseScored: true },
-  { id: 10, text: "My romantic partner makes me doubt myself.", inputType: 'likert', subscale: 'anxiety' },
-  { id: 11, text: "I do not often worry about being abandoned.", inputType: 'likert', subscale: 'anxiety', reverseScored: true },
-  { id: 12, text: "I find that my partner(s) don't want to get as close as I would like.", inputType: 'likert', subscale: 'anxiety' },
-  { id: 13, text: "Sometimes romantic partners change their feelings about me for no apparent reason.", inputType: 'likert', subscale: 'anxiety' },
-  { id: 14, text: "My desire to be very close sometimes scares people away.", inputType: 'likert', subscale: 'anxiety' },
-  { id: 15, text: "I'm afraid that once a romantic partner gets to know me, he or she won't like who I really am.", inputType: 'likert', subscale: 'anxiety' },
-  { id: 16, text: "It makes me mad that I don't get the affection and support I need from my partner.", inputType: 'likert', subscale: 'anxiety' },
-  { id: 17, text: "I worry that I won't measure up to other people.", inputType: 'likert', subscale: 'anxiety' },
-  { id: 18, text: "My partner only seems to notice me when I'm angry.", inputType: 'likert', subscale: 'anxiety' },
+  { id: 1,  text: "There's a part of me that worries my partner's feelings for me could change without warning.", inputType: 'likert', subscale: 'anxiety' },
+  { id: 2,  text: "I sometimes sense an imbalance — like I care more about this relationship than my partner does.", inputType: 'likert', subscale: 'anxiety' },
+  { id: 3,  text: "When my partner is away or out of reach, I notice a low hum of worry that something could be wrong between us.", inputType: 'likert', subscale: 'anxiety' },
+  { id: 4,  text: "If I sense my partner pulling away — even slightly — it can consume my thoughts for hours.", inputType: 'likert', subscale: 'anxiety' },
+  { id: 5,  text: "I need more reassurance than most people that my partner truly loves me.", inputType: 'likert', subscale: 'anxiety' },
+  { id: 6,  text: "When something feels off between us, I have trouble focusing on anything else until it's resolved.", inputType: 'likert', subscale: 'anxiety' },
+  { id: 7,  text: "I worry that once my partner really sees who I am, they might not want to stay.", inputType: 'likert', subscale: 'anxiety' },
+  { id: 8,  text: "I find myself testing whether my partner truly cares — bringing things up, watching for reactions, looking for proof.", inputType: 'likert', subscale: 'anxiety' },
+  { id: 9,  text: "I feel fundamentally secure in my partner's love — even when we're disconnected or in conflict, I don't question whether they still want to be here.", inputType: 'likert', subscale: 'anxiety', reverseScored: true },
+  { id: 10, text: "I'm afraid that if I show how much I need this relationship, it will push my partner away.", inputType: 'likert', subscale: 'anxiety' },
+  { id: 11, text: "When my partner doesn't respond the way I expect, I tend to assume the worst about what it means.", inputType: 'likert', subscale: 'anxiety' },
+  { id: 12, text: "I sometimes feel like I'd fall apart if this relationship ended.", inputType: 'likert', subscale: 'anxiety' },
+  { id: 13, text: "When things are going well between us, I can relax into the good without scanning for the next threat.", inputType: 'likert', subscale: 'anxiety', reverseScored: true },
+  { id: 14, text: "I get frustrated when my partner doesn't respond to my emotional needs as quickly as I need them to.", inputType: 'likert', subscale: 'anxiety' },
+  { id: 15, text: "When we argue, part of me fears it means the relationship is in danger — not just the issue, but us.", inputType: 'likert', subscale: 'anxiety' },
+  { id: 16, text: "I wish I could stop seeking reassurance from my partner, but I can't seem to help it.", inputType: 'likert', subscale: 'anxiety' },
+  { id: 17, text: "My desire for closeness sometimes feels like more than my partner can comfortably give.", inputType: 'likert', subscale: 'anxiety' },
+  { id: 18, text: "I worry that I'm not enough for my partner — not interesting enough, not attractive enough, not something enough.", inputType: 'likert', subscale: 'anxiety' },
 
   // ── Avoidance Subscale (Items 19-36) ─────────────────
-  { id: 19, text: "I prefer not to show a partner how I feel deep down.", inputType: 'likert', subscale: 'avoidance' },
-  { id: 20, text: "I feel comfortable sharing my private thoughts and feelings with my partner.", inputType: 'likert', subscale: 'avoidance', reverseScored: true },
-  { id: 21, text: "I find it difficult to allow myself to depend on romantic partners.", inputType: 'likert', subscale: 'avoidance' },
-  { id: 22, text: "I am very comfortable being close to romantic partners.", inputType: 'likert', subscale: 'avoidance', reverseScored: true },
-  { id: 23, text: "I don't feel comfortable opening up to romantic partners.", inputType: 'likert', subscale: 'avoidance' },
-  { id: 24, text: "I prefer not to be too close to romantic partners.", inputType: 'likert', subscale: 'avoidance' },
-  { id: 25, text: "I get uncomfortable when a romantic partner wants to be very close.", inputType: 'likert', subscale: 'avoidance' },
-  { id: 26, text: "I find it relatively easy to get close to my partner.", inputType: 'likert', subscale: 'avoidance', reverseScored: true },
-  { id: 27, text: "It's not difficult for me to get close to my partner.", inputType: 'likert', subscale: 'avoidance', reverseScored: true },
-  { id: 28, text: "I usually discuss my problems and concerns with my partner.", inputType: 'likert', subscale: 'avoidance', reverseScored: true },
-  { id: 29, text: "It helps to turn to my romantic partner in times of need.", inputType: 'likert', subscale: 'avoidance', reverseScored: true },
-  { id: 30, text: "I tell my partner just about everything.", inputType: 'likert', subscale: 'avoidance', reverseScored: true },
-  { id: 31, text: "I talk things over with my partner.", inputType: 'likert', subscale: 'avoidance', reverseScored: true },
-  { id: 32, text: "I am nervous when partners get too close to me.", inputType: 'likert', subscale: 'avoidance' },
-  { id: 33, text: "I feel comfortable depending on romantic partners.", inputType: 'likert', subscale: 'avoidance', reverseScored: true },
-  { id: 34, text: "I find it easy to depend on romantic partners.", inputType: 'likert', subscale: 'avoidance', reverseScored: true },
-  { id: 35, text: "It's easy for me to be affectionate with my partner.", inputType: 'likert', subscale: 'avoidance', reverseScored: true },
-  { id: 36, text: "My partner really understands me and my needs.", inputType: 'likert', subscale: 'avoidance', reverseScored: true },
+  { id: 19, text: "I prefer not to let my partner see the parts of me that feel most vulnerable.", inputType: 'likert', subscale: 'avoidance' },
+  { id: 20, text: "When things get emotionally intense between us, my instinct is to create some distance.", inputType: 'likert', subscale: 'avoidance' },
+  { id: 21, text: "I feel most at ease in my relationship when we each have our own space and independence.", inputType: 'likert', subscale: 'avoidance' },
+  { id: 22, text: "There are layers of what I feel that I keep to myself, even from my partner, even when things are good.", inputType: 'likert', subscale: 'avoidance' },
+  { id: 23, text: "I'm uncomfortable when my partner wants to talk about deep feelings or 'where we stand.'", inputType: 'likert', subscale: 'avoidance' },
+  { id: 24, text: "My partner sometimes tells me I'm hard to read or emotionally distant.", inputType: 'likert', subscale: 'avoidance' },
+  { id: 25, text: "I handle emotional pain better on my own than by sharing it with my partner.", inputType: 'likert', subscale: 'avoidance' },
+  { id: 26, text: "When my partner reaches for closeness, I sometimes feel an urge to pull back — not because I don't care, but because something tightens.", inputType: 'likert', subscale: 'avoidance' },
+  { id: 27, text: "I don't feel the need to share every part of my inner life with my partner.", inputType: 'likert', subscale: 'avoidance' },
+  { id: 28, text: "My partner knows the parts of me that most people never see.", inputType: 'likert', subscale: 'avoidance', reverseScored: true },
+  { id: 29, text: "I feel comfortable depending on my partner when I need support.", inputType: 'likert', subscale: 'avoidance', reverseScored: true },
+  { id: 30, text: "I find it relatively easy to get emotionally close to my partner.", inputType: 'likert', subscale: 'avoidance', reverseScored: true },
+  { id: 31, text: "When I'm stressed or hurting, turning to my partner for comfort feels natural.", inputType: 'likert', subscale: 'avoidance', reverseScored: true },
+  { id: 32, text: "It's important to me that my partner and I can share our deepest thoughts and feelings.", inputType: 'likert', subscale: 'avoidance', reverseScored: true },
+  { id: 33, text: "When my partner needs emotional support, I find it uncomfortable to be the one they lean on.", inputType: 'likert', subscale: 'avoidance' },
+  { id: 34, text: "I sometimes shut down in the middle of an emotional conversation — not intentionally, but like a circuit breaker tripping.", inputType: 'likert', subscale: 'avoidance' },
+  { id: 35, text: "I wonder whether truly letting someone in is worth the risk of what they might see.", inputType: 'likert', subscale: 'avoidance' },
+  { id: 36, text: "In past relationships, I've been told I'm caring but emotionally unavailable — and part of me knows they were right.", inputType: 'likert', subscale: 'avoidance' },
 ];
 
 /**
  * Reverse-scored item indices (0-based).
  *
- * Anxiety reverse:   items 9, 11       → indices 8, 10
- * Avoidance reverse: items 20, 22, 26, 27, 28, 29, 30, 31, 33, 34, 35, 36
- *                    → indices 19, 21, 25, 26, 27, 28, 29, 30, 32, 33, 34, 35
+ * Anxiety reverse:   AX9r, AX13r       → indices 8, 12
+ * Avoidance reverse: AV10, AV11, AV12, AV13, AV14 → indices 27, 28, 29, 30, 31
  *
  * Reverse formula: 8 − response  (scale 1-7)
  */
-const REVERSE_ITEMS = [8, 10, 19, 21, 25, 26, 27, 28, 29, 30, 32, 33, 34, 35];
+const REVERSE_ITEMS = [8, 12, 27, 28, 29, 30, 31];
 
 function getAttachmentStyle(anxiety: number, avoidance: number): AttachmentStyle {
   const anxietyHigh = anxiety >= 4.0;
@@ -106,9 +107,9 @@ export const ecrRConfig: AssessmentConfig = {
   type: 'ecr-r',
   name: 'Attachment Style',
   shortName: 'ECR-R',
-  description: 'Understand your attachment patterns in close relationships.',
+  description: 'Understand how you seek closeness and navigate vulnerability in your relationship.',
   instructions:
-    'The following statements concern how you feel in emotionally intimate relationships. We are interested in how you generally experience relationships, not just in what is happening in a current relationship. Respond to each statement by indicating how much you agree or disagree with it.',
+    'The following statements are about how you experience closeness, vulnerability, and emotional connection in your relationship. There are no right or wrong answers — just respond honestly based on how you generally feel.',
   estimatedMinutes: 10,
   totalQuestions: 36,
   questions: QUESTIONS,

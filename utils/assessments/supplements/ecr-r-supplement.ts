@@ -17,17 +17,21 @@ export const ECR_R_SUPPLEMENT_LIKERT: LikertOption[] = [
   { value: 7, label: 'Strongly Agree' },
 ];
 
+/**
+ * Tender ECR-R Supplement — 5 items
+ * All item wording original to Tender.
+ */
 export const ECR_R_SUPPLEMENT_QUESTIONS: GenericQuestion[] = [
   {
     id: 37,
-    text: 'When I feel disconnected from my partner, I notice it in my body before I notice it in my thoughts.',
+    text: "I can sense what my partner is feeling before they tell me — their body language, their silence, the weight of a room we're both in.",
     inputType: 'likert',
     subscale: 'somatic-awareness',
     likertScale: ECR_R_SUPPLEMENT_LIKERT,
   },
   {
     id: 38,
-    text: "I have a fixed story about what my partner 'always' or 'never' does, and it's hard to see past it.",
+    text: "I sometimes hold onto a version of my partner that no longer matches who they actually are.",
     inputType: 'likert',
     subscale: 'fixed-story',
     reverseScored: true,
@@ -35,14 +39,14 @@ export const ECR_R_SUPPLEMENT_QUESTIONS: GenericQuestion[] = [
   },
   {
     id: 39,
-    text: "When we argue, I can sometimes step back and see the pattern we're caught in rather than just my partner's behavior.",
+    text: "I can see the pattern we fall into during conflict — the predictable steps we both take — even when I can't stop it.",
     inputType: 'likert',
     subscale: 'cycle-awareness',
     likertScale: ECR_R_SUPPLEMENT_LIKERT,
   },
   {
     id: 40,
-    text: "I find it easier to be certain about my partner's motives than to stay curious about them.",
+    text: "When my partner gives me feedback about something I do, my first instinct is to defend rather than listen.",
     inputType: 'likert',
     subscale: 'certainty-vs-curiosity',
     reverseScored: true,
@@ -50,7 +54,7 @@ export const ECR_R_SUPPLEMENT_QUESTIONS: GenericQuestion[] = [
   },
   {
     id: 41,
-    text: 'I believe that my need for closeness (or space) is information about what the relationship needs, not a personal flaw.',
+    text: "Over the course of this relationship, I've become more comfortable with closeness than I used to be.",
     inputType: 'likert',
     subscale: 'needs-as-information',
     likertScale: ECR_R_SUPPLEMENT_LIKERT,

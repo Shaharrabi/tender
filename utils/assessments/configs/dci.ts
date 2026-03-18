@@ -83,68 +83,68 @@ const SECTIONS: AssessmentSection[] = [
 
 // ─── Questions ─────────────────────────────────────────────
 
+/**
+ * Tender Dyadic Coping Assessment — 37 items
+ * Constructs from Bodenmann (2005). All item wording original to Tender.
+ * instrument_version: 'tender-ip-v1'
+ */
 const QUESTIONS: GenericQuestion[] = [
   // ── Stress Communication by Self (items 1-4) ──
-  // Stem: "When I am stressed..."
-  { id: 1, text: 'I let my partner know that I appreciate his/her practical support, advice, or help', inputType: 'likert', subscale: 'stressCommunicationBySelf' },
-  { id: 2, text: 'I ask my partner to do things for me when I have too much to do', inputType: 'likert', subscale: 'stressCommunicationBySelf' },
-  { id: 3, text: 'I show my partner through my behavior when I am not doing well or when I have problems', inputType: 'likert', subscale: 'stressCommunicationBySelf' },
-  { id: 4, text: 'I tell my partner openly how I feel and that I would appreciate his/her support', inputType: 'likert', subscale: 'stressCommunicationBySelf' },
+  { id: 1, text: 'When I\'m stressed, I let my partner know what\'s bothering me — I share what\'s happening rather than carrying it alone.', inputType: 'likert', subscale: 'stressCommunicationBySelf' },
+  { id: 2, text: 'I show my partner through my behavior that something is wrong — my body language, my withdrawal, my short answers — even when I don\'t use words.', inputType: 'likert', subscale: 'stressCommunicationBySelf' },
+  { id: 3, text: 'I express my stress in ways my partner can actually respond to — clearly enough that they know what I need.', inputType: 'likert', subscale: 'stressCommunicationBySelf' },
+  { id: 4, text: 'When something is weighing on me, I tell my partner directly what I feel and that I would appreciate their support.', inputType: 'likert', subscale: 'stressCommunicationBySelf' },
 
   // ── Stress Communication by Partner (items 5-8) ──
-  // Stem: "When my partner is stressed..."
-  { id: 5, text: 'My partner lets me know that he/she appreciates my practical support, advice, or help', inputType: 'likert', subscale: 'stressCommunicationByPartner' },
-  { id: 6, text: 'My partner asks me to do things for him/her when he/she has too much to do', inputType: 'likert', subscale: 'stressCommunicationByPartner' },
-  { id: 7, text: 'My partner shows me through his/her behavior that he/she is not doing well or has problems', inputType: 'likert', subscale: 'stressCommunicationByPartner' },
-  { id: 8, text: 'My partner tells me openly how he/she feels and that he/she would appreciate my support', inputType: 'likert', subscale: 'stressCommunicationByPartner' },
+  { id: 5, text: 'My partner tells me directly when they\'re stressed — what\'s happening, what it\'s about, how it feels.', inputType: 'likert', subscale: 'stressCommunicationByPartner' },
+  { id: 6, text: 'My partner shows through their behavior that something is wrong — even when they don\'t say it in words, I can tell.', inputType: 'likert', subscale: 'stressCommunicationByPartner' },
+  { id: 7, text: 'My partner communicates their stress in ways I can understand and respond to.', inputType: 'likert', subscale: 'stressCommunicationByPartner' },
+  { id: 8, text: 'When something is bothering my partner, they come to me openly — sharing what they feel and what they need.', inputType: 'likert', subscale: 'stressCommunicationByPartner' },
 
   // ── Supportive Dyadic Coping by Self (items 9-13) ──
-  // Stem: "When my partner is stressed..."
-  { id: 9, text: 'I show empathy and understanding to my partner', inputType: 'likert', subscale: 'supportiveBySelf' },
-  { id: 10, text: 'I express that I am on my partner\'s side', inputType: 'likert', subscale: 'supportiveBySelf' },
-  { id: 11, text: 'I blame my partner for not coping well enough with stress', inputType: 'likert', subscale: 'negativeBySelf', reverseScored: true },
-  { id: 12, text: 'I help my partner to see stressful situations in a different light', inputType: 'likert', subscale: 'supportiveBySelf' },
-  { id: 13, text: 'I listen to my partner and give him/her space to communicate what really bothers him/her', inputType: 'likert', subscale: 'supportiveBySelf' },
+  { id: 9, text: 'When my partner is stressed, I show them I understand — I listen, I validate, I let them know their feelings make sense.', inputType: 'likert', subscale: 'supportiveBySelf' },
+  { id: 10, text: 'I express that I am on my partner\'s side — not neutral, but clearly theirs, especially when they\'re struggling.', inputType: 'likert', subscale: 'supportiveBySelf' },
+  { id: 11, text: 'When my partner is struggling, I sometimes blame them for not handling their stress well enough.', inputType: 'likert', subscale: 'negativeBySelf', reverseScored: true },
+  { id: 12, text: 'I help my partner see their stress from a different angle — not dismissing it, but offering a perspective that might help.', inputType: 'likert', subscale: 'supportiveBySelf' },
+  { id: 13, text: 'I listen to my partner and give them space to share what\'s really bothering them — without rushing to fix it or change the subject.', inputType: 'likert', subscale: 'supportiveBySelf' },
 
   // ── Supportive Dyadic Coping by Partner (items 14-18) ──
-  // Stem: "When I am stressed, my partner..."
-  { id: 14, text: 'Shows empathy and understanding to me', inputType: 'likert', subscale: 'supportiveByPartner' },
-  { id: 15, text: 'Expresses that he/she is on my side', inputType: 'likert', subscale: 'supportiveByPartner' },
-  { id: 16, text: 'Blames me for not coping well enough with stress', inputType: 'likert', subscale: 'negativeByPartner', reverseScored: true },
-  { id: 17, text: 'Helps me to see stressful situations in a different light', inputType: 'likert', subscale: 'supportiveByPartner' },
-  { id: 18, text: 'Listens to me and gives me the opportunity to communicate what really bothers me', inputType: 'likert', subscale: 'supportiveByPartner' },
+  { id: 14, text: 'When I\'m stressed, my partner shows me they understand — they listen without jumping to fix, they validate what I\'m feeling.', inputType: 'likert', subscale: 'supportiveByPartner' },
+  { id: 15, text: 'My partner stands clearly on my side — not neutral, but visibly in my corner, especially when I\'m struggling.', inputType: 'likert', subscale: 'supportiveByPartner' },
+  { id: 16, text: 'My partner sometimes blames me for not handling my stress well enough.', inputType: 'likert', subscale: 'negativeByPartner', reverseScored: true },
+  { id: 17, text: 'My partner helps me see my stress differently — gently offering perspective without dismissing what I\'m going through.', inputType: 'likert', subscale: 'supportiveByPartner' },
+  { id: 18, text: 'My partner listens to me and gives me space to share what\'s really bothering me — without rushing to fix it.', inputType: 'likert', subscale: 'supportiveByPartner' },
 
   // ── Delegated Dyadic Coping by Self (items 19-20) ──
-  { id: 19, text: 'I take on things that my partner would normally do in order to help him/her out', inputType: 'likert', subscale: 'delegatedBySelf' },
-  { id: 20, text: 'When my partner is stressed, I tend to withdraw', inputType: 'likert', subscale: 'negativeBySelf', reverseScored: true },
+  { id: 19, text: 'I take over practical tasks when my partner is overwhelmed — handling things they normally do so they have room to breathe.', inputType: 'likert', subscale: 'delegatedBySelf' },
+  { id: 20, text: 'When my partner is stressed, I tend to withdraw — pulling back rather than leaning in.', inputType: 'likert', subscale: 'negativeBySelf', reverseScored: true },
 
   // ── Delegated Dyadic Coping by Partner (items 21-22) ──
-  { id: 21, text: 'My partner takes on things that I would normally do in order to help me out', inputType: 'likert', subscale: 'delegatedByPartner' },
-  { id: 22, text: 'When I am stressed, my partner tends to withdraw', inputType: 'likert', subscale: 'negativeByPartner', reverseScored: true },
+  { id: 21, text: 'My partner takes things off my plate when I\'m overwhelmed — handling logistics, managing details, giving me space.', inputType: 'likert', subscale: 'delegatedByPartner' },
+  { id: 22, text: 'When I\'m stressed, my partner tends to withdraw — pulling back rather than leaning in.', inputType: 'likert', subscale: 'negativeByPartner', reverseScored: true },
 
   // ── Negative Dyadic Coping by Self (items 23-26) ──
-  { id: 23, text: 'I blame my partner for not coping well enough with stress', inputType: 'likert', subscale: 'negativeBySelf' },
-  { id: 24, text: 'I make fun of my partner\'s stress', inputType: 'likert', subscale: 'negativeBySelf' },
-  { id: 25, text: 'I don\'t take my partner\'s stress seriously', inputType: 'likert', subscale: 'negativeBySelf' },
-  { id: 26, text: 'When my partner is stressed, I tend to distance myself', inputType: 'likert', subscale: 'negativeBySelf' },
+  { id: 23, text: 'When my partner shares their stress, I sometimes dismiss it — \'it\'s not that bad\' or \'you\'re overreacting.\'', inputType: 'likert', subscale: 'negativeBySelf' },
+  { id: 24, text: 'I sometimes respond to my partner\'s stress with visible annoyance — like their struggle is an inconvenience to me.', inputType: 'likert', subscale: 'negativeBySelf' },
+  { id: 25, text: 'I sometimes help my partner with their stress but do it with visible reluctance — sighing, rushing, making it clear I\'d rather not be doing this.', inputType: 'likert', subscale: 'negativeBySelf' },
+  { id: 26, text: 'When my partner is stressed, I sometimes turn it into a conversation about MY stress — redirecting rather than holding space.', inputType: 'likert', subscale: 'negativeBySelf' },
 
   // ── Negative Dyadic Coping by Partner (items 27-30) ──
-  { id: 27, text: 'My partner blames me for not coping well enough with stress', inputType: 'likert', subscale: 'negativeByPartner' },
-  { id: 28, text: 'My partner makes fun of my stress', inputType: 'likert', subscale: 'negativeByPartner' },
-  { id: 29, text: 'My partner doesn\'t take my stress seriously', inputType: 'likert', subscale: 'negativeByPartner' },
-  { id: 30, text: 'When I am stressed, my partner tends to distance himself/herself', inputType: 'likert', subscale: 'negativeByPartner' },
+  { id: 27, text: 'When I share my stress, my partner sometimes minimizes it — making me feel like I\'m making a big deal out of nothing.', inputType: 'likert', subscale: 'negativeByPartner' },
+  { id: 28, text: 'My partner sometimes responds to my stress with annoyance or impatience, as if my struggle is a burden to them.', inputType: 'likert', subscale: 'negativeByPartner' },
+  { id: 29, text: 'My partner helps with my stress but I can feel the resentment underneath — they\'re doing it, but they don\'t want to be.', inputType: 'likert', subscale: 'negativeByPartner' },
+  { id: 30, text: 'When I try to talk about my stress, my partner sometimes redirects the conversation to their own problems.', inputType: 'likert', subscale: 'negativeByPartner' },
 
   // ── Common Dyadic Coping (items 31-35) ──
-  // Stem: "When we are both stressed..."
-  { id: 31, text: 'We try to cope with the problem together and search for solutions', inputType: 'likert', subscale: 'commonCoping' },
-  { id: 32, text: 'We engage in a serious discussion about the problem and think through what has to be done', inputType: 'likert', subscale: 'commonCoping' },
-  { id: 33, text: 'We help each other put the problem in perspective and see it in a new light', inputType: 'likert', subscale: 'commonCoping' },
-  { id: 34, text: 'We help each other relax with such things as massage, taking a bath together, or listening to music together', inputType: 'likert', subscale: 'commonCoping' },
-  { id: 35, text: 'We are affectionate to each other, make love, and try that way to cope with stress', inputType: 'likert', subscale: 'commonCoping' },
+  { id: 31, text: 'When we\'re both stressed, we try to deal with it together — pooling our energy rather than retreating into separate corners.', inputType: 'likert', subscale: 'commonCoping' },
+  { id: 32, text: 'We support each other during stressful times — taking turns being the strong one, the soft one, the steady one.', inputType: 'likert', subscale: 'commonCoping' },
+  { id: 33, text: 'When a problem affects us both, we sit down and work through it as a team — shared ownership of the challenge.', inputType: 'likert', subscale: 'commonCoping' },
+  { id: 34, text: 'We have our own ways of getting through hard times together — rituals, routines, or signals that are uniquely ours — and they actually work.', inputType: 'likert', subscale: 'commonCoping' },
+  { id: 35, text: 'We share tender moments during stressful periods — small gestures that say \'we\'re in this together\' even when things are hard.', inputType: 'likert', subscale: 'commonCoping' },
 
   // ── Evaluation of Dyadic Coping (items 36-37) ──
-  { id: 36, text: 'I am satisfied with the support I receive from my partner and the way we deal with stress together', inputType: 'likert', subscale: 'evaluationBySelf' },
-  { id: 37, text: 'I am satisfied with the support I provide to my partner and the way we deal with stress together', inputType: 'likert', subscale: 'evaluationByPartner' },
+  { id: 36, text: 'Overall, how satisfied are you with the way your partner supports you when you\'re going through a difficult time?', inputType: 'likert', subscale: 'evaluationBySelf' },
+  { id: 37, text: 'Overall, how satisfied are you with how you and your partner handle stress together — as a couple, as a team?', inputType: 'likert', subscale: 'evaluationByPartner' },
 ];
 
 // ─── Scoring ───────────────────────────────────────────────

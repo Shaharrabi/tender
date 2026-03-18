@@ -58,46 +58,51 @@ const COHESION_SCALE_11: LikertOption[] = [
 
 // ─── Questions ──────────────────────────────────────────
 
+/**
+ * Tender Relationship Adjustment Assessment — 14 items
+ * Constructs from Busby et al. (1995). All item wording original to Tender.
+ * instrument_version: 'tender-ip-v1'
+ */
 const QUESTIONS: GenericQuestion[] = [
   // Consensus Subscale (Items 1-6)
   {
     id: 1,
-    text: 'Religious matters',
+    text: 'How aligned are you on matters of faith, spirituality, or what gives life meaning?',
     inputType: 'likert',
     subscale: 'consensus',
     likertScale: CONSENSUS_SCALE,
   },
   {
     id: 2,
-    text: 'Demonstrations of affection',
+    text: 'How much do you agree on how to show affection — the kind, the frequency, the way it\'s expressed?',
     inputType: 'likert',
     subscale: 'consensus',
     likertScale: CONSENSUS_SCALE,
   },
   {
     id: 3,
-    text: 'Making major decisions',
+    text: 'How aligned are you on the big decisions — where to live, whether to have children, career priorities?',
     inputType: 'likert',
     subscale: 'consensus',
     likertScale: CONSENSUS_SCALE,
   },
   {
     id: 4,
-    text: 'Sex relations',
+    text: 'How often do you and your partner agree on how to handle finances — spending, saving, what\'s worth the money?',
     inputType: 'likert',
     subscale: 'consensus',
     likertScale: CONSENSUS_SCALE,
   },
   {
     id: 5,
-    text: 'Conventionality (correct or proper behavior)',
+    text: 'How much do you agree on how to spend your free time — individually and together?',
     inputType: 'likert',
     subscale: 'consensus',
     likertScale: CONSENSUS_SCALE,
   },
   {
     id: 6,
-    text: 'Career decisions',
+    text: 'How much do you agree on how to navigate relationships with family and friends — boundaries, time, obligations?',
     inputType: 'likert',
     subscale: 'consensus',
     likertScale: CONSENSUS_SCALE,
@@ -106,28 +111,28 @@ const QUESTIONS: GenericQuestion[] = [
   // Satisfaction Subscale (Items 7-10)
   {
     id: 7,
-    text: 'How often do you discuss or have you considered divorce, separation, or terminating your relationship?',
+    text: 'How often do you think about ending this relationship — not as a plan, but as a thought that crosses your mind?',
     inputType: 'likert',
     subscale: 'satisfaction',
     likertScale: SATISFACTION_REVERSE_SCALE,
   },
   {
     id: 8,
-    text: 'How often do you or your partner leave the house after a fight?',
+    text: 'How often do you and your partner get on each other\'s nerves in ways that feel hard to shake?',
     inputType: 'likert',
     subscale: 'satisfaction',
     likertScale: SATISFACTION_REVERSE_SCALE,
   },
   {
     id: 9,
-    text: 'In general, how often do you think that things between you and your partner are going well?',
+    text: 'Overall, how satisfied are you with your relationship right now — not how it was or how it could be, but how it IS?',
     inputType: 'likert',
     subscale: 'satisfaction',
     likertScale: SATISFACTION_FORWARD_SCALE,
   },
   {
     id: 10,
-    text: 'Do you confide in your partner?',
+    text: 'How confident are you that this relationship will last and continue to grow?',
     inputType: 'likert',
     subscale: 'satisfaction',
     likertScale: SATISFACTION_FORWARD_SCALE,
@@ -136,28 +141,28 @@ const QUESTIONS: GenericQuestion[] = [
   // Cohesion Subscale (Items 11-14)
   {
     id: 11,
-    text: 'Have a stimulating exchange of ideas?',
+    text: 'How often do you and your partner have a meaningful conversation — not logistics, but something that matters to one or both of you?',
     inputType: 'likert',
     subscale: 'cohesion',
     likertScale: COHESION_SCALE_11,
   },
   {
     id: 12,
-    text: 'Laugh together?',
+    text: 'How often do you work on something together — a project, a goal, a problem — as a team?',
     inputType: 'likert',
     subscale: 'cohesion',
     likertScale: COHESION_SCALE,
   },
   {
     id: 13,
-    text: 'Calmly discuss something?',
+    text: 'How often do you share an experience that makes you both laugh or feel genuinely connected?',
     inputType: 'likert',
     subscale: 'cohesion',
     likertScale: COHESION_SCALE,
   },
   {
     id: 14,
-    text: 'Work together on a project?',
+    text: 'How often do you calmly discuss something important to the relationship — not in crisis, but as a regular practice?',
     inputType: 'likert',
     subscale: 'cohesion',
     likertScale: COHESION_SCALE,

@@ -24,31 +24,35 @@ export const DSI_R_SUPPLEMENT_LIKERT: LikertOption[] = [
   { value: 6, label: 'Very true of me' },
 ];
 
+/**
+ * Tender DSI-R Supplement — 4 items
+ * All item wording original to Tender.
+ */
 export const DSI_R_SUPPLEMENT_QUESTIONS: GenericQuestion[] = [
   {
     id: 21,
-    text: 'I can be close to my partner without losing my sense of who I am.',
+    text: "I can be deeply connected to my partner AND hold my own center at the same time — closeness doesn't require me to disappear.",
     inputType: 'likert',
     subscale: 'boundary-awareness',
     likertScale: DSI_R_SUPPLEMENT_LIKERT,
   },
   {
     id: 22,
-    text: 'I can disagree with my partner and still feel connected to them.',
+    text: "When I look at how I handle emotions in this relationship compared to five years ago, I can see meaningful change.",
     inputType: 'likert',
     subscale: 'boundary-awareness',
     likertScale: DSI_R_SUPPLEMENT_LIKERT,
   },
   {
     id: 23,
-    text: 'I know where I end and my partner begins — emotionally, not just physically.',
+    text: "I can tolerate the discomfort of not resolving something immediately — sitting with tension between us without needing to fix it, flee from it, or pretend it isn't there.",
     inputType: 'likert',
     subscale: 'boundary-awareness',
     likertScale: DSI_R_SUPPLEMENT_LIKERT,
   },
   {
     id: 24,
-    text: 'I can hold a boundary with my partner without feeling guilty or cruel.',
+    text: "There are people in my family of origin whose emotional patterns I can see clearly in myself — and I'm actively working to update those patterns in how I show up in this relationship.",
     inputType: 'likert',
     subscale: 'boundary-awareness',
     likertScale: DSI_R_SUPPLEMENT_LIKERT,
