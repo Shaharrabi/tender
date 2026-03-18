@@ -618,7 +618,7 @@ export function generatePortraitHTML(
           const e = suppData.ecrr;
           parts.push(`
             <div class="card card-rose" style="break-inside:avoid;page-break-inside:avoid">
-              <div class="card-title">Attachment Supplement (ECR-R)</div>
+              <div class="card-title">How You Connect — Deeper Dimensions</div>
               ${supplementScoreItem('Somatic Awareness', e.somaticAwareness, 7, '#C4616E')}
               ${supplementScoreItem('Fixed Story (inv.)', e.fixedStory, 7, '#D4A843')}
               ${supplementScoreItem('Cycle Awareness', e.cycleAwareness, 7, '#6B7B9B')}
@@ -630,7 +630,7 @@ export function generatePortraitHTML(
           const s = suppData.sseit;
           parts.push(`
             <div class="card card-gold" style="break-inside:avoid;page-break-inside:avoid">
-              <div class="card-title">Field Sensitivity Supplement (SSEIT)</div>
+              <div class="card-title">How You Feel — Field Sensitivity</div>
               ${supplementScoreItem('Room Sensing', s.roomSensing, 5, '#D4A843')}
               ${supplementScoreItem('Relational Shift Awareness', s.relationalShiftAwareness, 5, '#6B7B9B')}
               ${supplementScoreItem('Emotion Differentiation', s.emotionDifferentiation, 5, '#6B9080')}
@@ -640,7 +640,7 @@ export function generatePortraitHTML(
           const d = suppData.dsir;
           parts.push(`
             <div class="card card-blue" style="break-inside:avoid;page-break-inside:avoid">
-              <div class="card-title">Boundary Clarity Supplement (DSI-R)</div>
+              <div class="card-title">How You Hold Ground — Boundary Clarity</div>
               ${supplementScoreItem('Closeness With Identity', d.closenessWithIdentity, 6, '#4A6FA8')}
               ${supplementScoreItem('Disagreement With Connection', d.disagreementWithConnection, 6, '#6B7B9B')}
               ${supplementScoreItem('Emotional Boundary Clarity', d.emotionalBoundaryClarity, 6, '#D4A843')}
@@ -651,7 +651,7 @@ export function generatePortraitHTML(
           const v = suppData.values;
           parts.push(`
             <div class="card card-sage" style="break-inside:avoid;page-break-inside:avoid">
-              <div class="card-title">Values Supplement</div>
+              <div class="card-title">What Matters Most — Values Depth</div>
               <p><strong>Divergence Response:</strong> ${esc(v.valuesDivergenceResponse.replace(/-/g, ' '))}</p>
               ${v.differenceAsResource ? `<p><strong>Difference as Resource:</strong> ${esc(v.differenceAsResource)}</p>` : ''}
               ${supplementScoreItem('Right vs Present Moment', v.rightVsPresent, 7, '#6B9080')}

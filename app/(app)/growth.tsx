@@ -170,9 +170,13 @@ export default function GrowthScreen() {
   );
 
   const handleBack = () => {
-    if (router.canGoBack()) {
-      router.back();
-    } else {
+    try {
+      if (router.canGoBack?.()) {
+        router.back();
+      } else {
+        router.replace('/(app)/home');
+      }
+    } catch {
       router.replace('/(app)/home');
     }
   };
