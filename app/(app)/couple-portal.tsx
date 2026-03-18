@@ -309,6 +309,13 @@ function CouplePortalScreen() {
   const [partnerPortrait, setPartnerPortrait] = useState<IndividualPortrait | null>(null);
   const [partnerPortraitStale, setPartnerPortraitStale] = useState(false);
 
+  // Partner journey progress
+  const [partnerStepData, setPartnerStepData] = useState<{
+    currentStep: number;
+    completedSteps: number;
+    totalPractices: number;
+  } | null>(null);
+
   // Dyadic scores
   const [dyadicScores, setDyadicScores] = useState<{
     rdas: { partnerA: any | null; partnerB: any | null };
@@ -352,6 +359,31 @@ function CouplePortalScreen() {
       if (partner) {
         const shared = await getPartnerSharedAssessments(partnerId, myCouple.id);
         setPartnerSharedAssessments(shared);
+      }
+
+      // ─── 0.5. Load partner step progress ────────────────
+      try {
+        const { data: partnerSteps } = await supabase
+          .from('step_progress')
+          .select('step_number, status')
+          .eq('user_id', partnerId);
+        if (partnerSteps && partnerSteps.length > 0) {
+          const completed = partnerSteps.filter((s: any) => s.status === 'completed').length;
+          const active = partnerSteps.find((s: any) => s.status === 'active');
+          const currentStep = active?.step_number ?? (completed > 0 ? Math.max(...partnerSteps.filter((s: any) => s.status === 'completed').map((s: any) => s.step_number)) : 1);
+          // Count partner's practice completions
+          const { count: practiceCount } = await supabase
+            .from('practice_completions')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', partnerId);
+          setPartnerStepData({
+            currentStep,
+            completedSteps: completed,
+            totalPractices: practiceCount ?? 0,
+          });
+        }
+      } catch (e) {
+        console.warn('[CouplePortal] Could not load partner step progress:', e);
       }
 
       // ─── 1. Load Individual Portraits ────────────────────
@@ -845,6 +877,62 @@ function CouplePortalScreen() {
           <RefreshIcon size={14} color={Colors.accentGold} />
           <TenderText variant="bodySmall" color={Colors.textSecondary} style={{ flex: 1 }}>
             {partnerName}'s portrait was built with an earlier version. Their insights still work — they'll get even richer once they regenerate from their device.
+          </TenderText>
+        </View>
+      )}
+
+      {/* Partner Journey Progress */}
+      {partnerStepData && (
+        <View style={{
+          backgroundColor: Colors.surface,
+          borderRadius: BorderRadius.lg,
+          padding: Spacing.md,
+          marginBottom: Spacing.md,
+          borderWidth: 1,
+          borderColor: Colors.borderLight,
+        }}>
+          <TenderText variant="label" color={Colors.primary} style={{ letterSpacing: 1.5, fontSize: FontSizes.micro, marginBottom: Spacing.xs }}>
+            {partnerName?.toUpperCase()}'S JOURNEY
+          </TenderText>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.sm }}>
+            <View style={{ alignItems: 'center', flex: 1 }}>
+              <TenderText variant="headingM" color={Colors.text}>{partnerStepData.currentStep}</TenderText>
+              <TenderText variant="caption" color={Colors.textMuted}>Current Step</TenderText>
+            </View>
+            <View style={{ width: 1, height: 30, backgroundColor: Colors.borderLight }} />
+            <View style={{ alignItems: 'center', flex: 1 }}>
+              <TenderText variant="headingM" color={Colors.text}>{partnerStepData.completedSteps}</TenderText>
+              <TenderText variant="caption" color={Colors.textMuted}>Steps Done</TenderText>
+            </View>
+            <View style={{ width: 1, height: 30, backgroundColor: Colors.borderLight }} />
+            <View style={{ alignItems: 'center', flex: 1 }}>
+              <TenderText variant="headingM" color={Colors.text}>{partnerStepData.totalPractices}</TenderText>
+              <TenderText variant="caption" color={Colors.textMuted}>Practices</TenderText>
+            </View>
+          </View>
+          {/* Step progress bar */}
+          <View style={{ flexDirection: 'row', gap: 2, height: 6, borderRadius: 3, overflow: 'hidden' }}>
+            {Array.from({ length: 12 }, (_, i) => (
+              <View
+                key={i}
+                style={{
+                  flex: 1,
+                  backgroundColor: i < partnerStepData.completedSteps
+                    ? Colors.primary
+                    : i === partnerStepData.currentStep - 1
+                      ? Colors.primary + '60'
+                      : Colors.progressTrack,
+                  borderRadius: 3,
+                }}
+              />
+            ))}
+          </View>
+          <TenderText variant="caption" color={Colors.textMuted} style={{ marginTop: Spacing.xs, textAlign: 'center' }}>
+            {partnerStepData.completedSteps === 0
+              ? `${partnerName} is just getting started`
+              : partnerStepData.completedSteps >= 10
+                ? `${partnerName} is in the home stretch`
+                : `${partnerName} is putting in the work`}
           </TenderText>
         </View>
       )}
