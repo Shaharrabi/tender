@@ -54,6 +54,12 @@ const QUADRANTS: QuadrantDef[] = [
   { key: 'relationshipMgmt', label: 'Relationship Mgmt',  subscaleKey: 'utilization',      row: 'others', col: 'management' },
 ];
 
+// New empathy subscales from EQ expansion (Phase 3)
+const EMPATHY_CELLS: QuadrantDef[] = [
+  { key: 'perspectiveTaking', label: 'Perspective Taking', subscaleKey: 'perspectiveTaking', row: 'others', col: 'awareness' },
+  { key: 'empathicResonance', label: 'Empathic Resonance', subscaleKey: 'empathicResonance', row: 'others', col: 'management' },
+];
+
 function getQuadrantDetail(key: string, score: number): { title: string; description: string; practice: string } {
   const details: Record<string, { title: string; description: string; practice: string }> = {
     selfAwareness: {
@@ -83,6 +89,20 @@ function getQuadrantDetail(key: string, score: number): { title: string; descrip
         ? 'You can influence emotional dynamics in relationships constructively — de-escalating tension and fostering connection.'
         : 'Managing the emotional flow between people is your growth edge. This is where EQ translates directly into relational quality.',
       practice: 'After your next difficult conversation, reflect: "What did I do that helped or hurt the emotional flow?"',
+    },
+    perspectiveTaking: {
+      title: 'Seeing Through Your Partner\'s Eyes',
+      description: score >= 65
+        ? 'You can step into your partner\'s perspective — even during conflict. This is a powerful repair tool: understanding their view doesn\'t mean agreeing, but it opens the door.'
+        : 'Taking your partner\'s perspective during disagreements is challenging for you. This doesn\'t mean you lack empathy — it means the skill of shifting viewpoints under stress needs building.',
+      practice: 'Before responding in your next disagreement, pause and say: "Help me understand what this looks like from where you\'re standing."',
+    },
+    empathicResonance: {
+      title: 'Feeling What Your Partner Feels',
+      description: score >= 65
+        ? 'You feel your partner\'s emotional states deeply — their joy lifts you, their pain moves you. This resonance is a gift, but watch for enmeshment: their feelings are information, not instructions.'
+        : 'You may not always feel the emotional echo of your partner\'s experience. This can create distance but also protects you from overwhelm. The growth edge is opening to their experience without losing yourself.',
+      practice: 'Try sitting quietly with your partner for 2 minutes. Notice what you feel in your body — not what you think, what you feel.',
     },
   };
   return details[key] ?? { title: '', description: '', practice: '' };
@@ -209,12 +229,45 @@ export default function EQHeatmap({ sseitScores, onQuadrantTap }: EQHeatmapProps
         </View>
       </View>
 
+      {/* Empathy row (PT + ER from EQ expansion) */}
+      {(sseitScores.subscaleNormalized?.perspectiveTaking != null ||
+        sseitScores.subscaleNormalized?.empathicResonance != null) && (
+        <>
+          <View style={styles.rowLabelContainer}>
+            <Text style={styles.rowLabel}>Empathy</Text>
+          </View>
+          <View style={styles.gridRow}>
+            {EMPATHY_CELLS.map((q, i) => {
+              const score = Math.round(sseitScores.subscaleNormalized[q.subscaleKey] ?? 50);
+              const quality = getQualityLevel(score);
+              return (
+                <TouchableOpacity
+                  key={q.key}
+                  style={[
+                    styles.cell,
+                    { backgroundColor: Colors.primary + Math.round(quality.bgOpacity * 255).toString(16).padStart(2, '0') },
+                    i === 0 && styles.cellBottomLeft,
+                    i === 1 && styles.cellBottomRight,
+                  ]}
+                  onPress={() => handleQuadrantTap(q, score)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.cellScore}>{score}</Text>
+                  <Text style={styles.cellLabel}>{q.label}</Text>
+                  <Text style={styles.cellQuality}>{quality.label}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </>
+      )}
+
       {/* Expanded detail card — shows when a quadrant is tapped */}
       {expandedKey && (() => {
-        const q = QUADRANTS.find(qd => qd.key === expandedKey);
+        const allCells = [...QUADRANTS, ...EMPATHY_CELLS];
+        const q = allCells.find(qd => qd.key === expandedKey);
         if (!q) return null;
-        const idx = QUADRANTS.indexOf(q);
-        const score = scores[idx];
+        const score = Math.round(sseitScores.subscaleNormalized[q.subscaleKey] ?? 50);
         const detail = getQuadrantDetail(q.key, score);
         return (
           <View style={styles.detailCard}>
