@@ -25,8 +25,15 @@ export function analyzePartsPolarities(
   const firefighterParts = identifyFirefighters(ecrr, ipip);
   const polarities = identifyPolarities(ecrr, dutch, values);
   const rawNarrative = buildPartsNarrative(managerParts, firefighterParts, polarities, composite);
+
+  // Add relational personality contrast if data exists
+  const relationalContrast = buildRelationalPersonalityContrast(ipip);
+  const fullNarrative = relationalContrast
+    ? rawNarrative + ' ' + relationalContrast
+    : rawNarrative;
+
   const ctx = buildTailoringContext(ecrr.attachmentStyle, ecrr.anxietyScore, ecrr.avoidanceScore);
-  const narrative = tailorNarrative(rawNarrative, ctx, 'parts');
+  const narrative = tailorNarrative(fullNarrative, ctx, 'parts');
 
   return {
     narrative,
@@ -35,6 +42,61 @@ export function analyzePartsPolarities(
     polarities,
     selfLeadershipScore: composite.selfLeadership,
   };
+}
+
+// ─── Relational Personality Contrast ─────────────────────
+
+const DOMAIN_CONTRAST: Record<string, { higher: string; lower: string }> = {
+  neuroticism: {
+    higher: 'Your emotional sensitivity amplifies in your relationship — your partner\'s mood has more power over your nervous system than anyone else\'s.',
+    lower: 'Your relationship steadies your emotional intensity — your partner\'s presence calms something that otherwise stays activated.',
+  },
+  extraversion: {
+    higher: 'You come alive as the social initiator in your relationship — your partner draws out an energy the world rarely sees.',
+    lower: 'You go quiet in your relationship — the intimacy zone is where your social energy rests.',
+  },
+  agreeableness: {
+    higher: 'You soften with your partner — the relationship feels safe enough to give more freely.',
+    lower: 'You hold a firmer line with your partner than with anyone else — the intimacy gives you permission to have edges.',
+  },
+  conscientiousness: {
+    higher: 'You step up on follow-through in your relationship — the commitment matters enough to organize around.',
+    lower: 'You let things slide in your relationship that you would never let slide elsewhere — the intimacy zone is where your discipline relaxes.',
+  },
+  openness: {
+    higher: 'Your relationship opens you to experiences you would not seek alone — your partner expands your world.',
+    lower: 'You resist novelty in your relationship — familiar patterns feel safer when the stakes are this high.',
+  },
+};
+
+function buildRelationalPersonalityContrast(ipip: IPIPScores): string | null {
+  const relPers = (ipip as any)?.relationalPersonality as Record<string, number> | undefined;
+  const domainPcts = ipip?.domainPercentiles;
+  if (!relPers || !domainPcts) return null;
+
+  const THRESHOLD = 15;
+  const MAP: Record<string, string> = {
+    N_rel: 'neuroticism', E_rel: 'extraversion', A_rel: 'agreeableness',
+    C_rel: 'conscientiousness', O_rel: 'openness',
+  };
+
+  const contrasts: string[] = [];
+  for (const [relKey, domain] of Object.entries(MAP)) {
+    const backbone = domainPcts[domain];
+    const relational = relPers[relKey];
+    if (backbone == null || relational == null) continue;
+    const delta = relational - backbone;
+    if (Math.abs(delta) <= THRESHOLD) continue;
+    const template = DOMAIN_CONTRAST[domain];
+    if (!template) continue;
+    contrasts.push(delta > 0 ? template.higher : template.lower);
+  }
+
+  if (contrasts.length === 0) return null;
+
+  return 'Something interesting emerges when we compare how you are in general with how you show up in your relationship: ' +
+    contrasts.join(' ') +
+    ' These shifts reveal the relationship\'s unique pull on your personality.';
 }
 
 // ─── Manager Parts (proactive protection) ────────────────

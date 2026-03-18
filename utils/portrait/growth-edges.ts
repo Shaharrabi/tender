@@ -105,7 +105,48 @@ export function identifyGrowthEdges(
     });
   }
 
-  // Return top 3, de-duped
+  // ── 5. Empathy capacity (from EQ expansion) ──
+  const hasEmpathyEdge = candidates.some((c) => c.id.includes('empathic') || c.id.includes('perspective'));
+  if (!hasEmpathyEdge && composite.perspectiveTaking != null && composite.perspectiveTaking < 40) {
+    candidates.push({
+      id: 'build_perspective_taking',
+      category: 'empathy',
+      title: 'Seeing Through Their Eyes',
+      description:
+        `Your perspective-taking capacity is developing (${composite.perspectiveTaking}/100). ` +
+        'When conflict arises, it is hard to step into your partner\'s position — ' +
+        'which means repairs stall before they start.',
+      rationale:
+        'Perspective-taking is the single strongest predictor of repair success. ' +
+        'You do not have to agree with your partner — you just have to be able to see what they see.',
+      practices: [
+        'Before responding in a disagreement, ask: "What does this look like from where you are standing?"',
+        'Practice the 2-chair exercise: sit in your partner\'s seat and speak as them for 2 minutes',
+        'After a conflict, write 3 sentences describing the situation from your partner\'s perspective',
+      ],
+    });
+  }
+  if (!hasEmpathyEdge && composite.empathicResonance != null && composite.empathicResonance < 30) {
+    candidates.push({
+      id: 'open_empathic_channel',
+      category: 'empathy',
+      title: 'Opening the Empathic Channel',
+      description:
+        `Your empathic resonance is low (${composite.empathicResonance}/100). ` +
+        'You may not easily feel what your partner feels — their joy, their pain, ' +
+        'their fear. This can create a sense of emotional distance.',
+      rationale:
+        'Empathic resonance is not about fixing or understanding — it is about feeling WITH. ' +
+        'Your partner needs to know their experience lands in you.',
+      practices: [
+        'Sit with your partner for 2 minutes in silence. Notice what you feel in your body — not what you think',
+        'When your partner shares something emotional, pause before responding and notice your body\'s reaction',
+        'Practice the sentence: "When you feel that, something in me feels..."',
+      ],
+    });
+  }
+
+  // Return top 5, de-duped (raised from 3 to ensure richer portrait)
   const seen = new Set<string>();
   const result: GrowthEdge[] = [];
   for (const edge of candidates) {
@@ -113,8 +154,9 @@ export function identifyGrowthEdges(
       seen.add(edge.id);
       result.push(edge);
     }
-    if (result.length >= 3) break;
+    if (result.length >= 5) break;
   }
+  // Ensure at least 3 edges — if we have fewer, that's OK (profile is strong)
   return result;
 }
 
@@ -208,6 +250,43 @@ export const EDGE_EXERCISE_MAP: Record<string, string[]> = {
     'protector-dialogue',
     'values-compass',
   ],
+  // Empathy × differentiation growth edges
+  empathic_enmeshment: [
+    'parts-check-in',
+    'grounding-5-4-3-2-1',
+    'defusion-from-stories',
+    'window-check',
+  ],
+  empathic_disconnection: [
+    'emotional-bid',
+    'hold-me-tight',
+    'bonding-through-vulnerability',
+    'self-compassion-break',
+  ],
+  avoidant_low_perspective: [
+    'repair-attempt',
+    'soft-startup',
+    'emotional-bid',
+    'turning-toward',
+  ],
+  anxious_high_perspective: [
+    'window-check',
+    'grounding-5-4-3-2-1',
+    'self-compassion-break',
+    'distress-tolerance-together',
+  ],
+  build_perspective_taking: [
+    'repair-attempt',
+    'soft-startup',
+    'unified-detachment',
+    'emotional-bid',
+  ],
+  open_empathic_channel: [
+    'emotional-bid',
+    'bonding-through-vulnerability',
+    'hold-me-tight',
+    'turning-toward',
+  ],
   // Reclaiming self → differentiation + acceptance exercises
   reclaim_self: [
     'protector-dialogue',
@@ -269,6 +348,75 @@ export function getEdgesForPractices(
 }
 
 const PATTERN_EDGES: Record<string, GrowthEdge> = {
+  // ── Empathy × Differentiation patterns (from Enhancement 3) ──
+  empathic_enmeshment: {
+    id: 'empathic_enmeshment',
+    category: 'empathy',
+    title: 'Feeling Deeply Without Losing Yourself',
+    description:
+      'You feel everything your partner feels — and your sense of self blurs in the process. ' +
+      'This is deep attunement without a container. The work is not to feel less, ' +
+      'but to build a stronger sense of where you end and they begin.',
+    rationale:
+      'Empathic enmeshment exhausts both partners. Your partner cannot be fully themselves ' +
+      'if their emotions are always yours to carry. Differentiation is the gift you give each other.',
+    practices: [
+      'When you feel your partner\'s emotion, pause and ask: "Is this mine or theirs?"',
+      'Practice the hand-on-heart exercise: one hand on your heart, notice YOUR heartbeat, YOUR breath',
+      'After absorbing your partner\'s mood, do one thing that is just yours — walk, journal, listen to music',
+    ],
+  },
+  empathic_disconnection: {
+    id: 'empathic_disconnection',
+    category: 'empathy',
+    title: 'Opening to Your Partner\'s Experience',
+    description:
+      'Your system has learned to shut down incoming emotional signals. ' +
+      'This protects you from overwhelm but leaves your partner feeling unseen. ' +
+      'The work is cracking the door open — not flooding it.',
+    rationale:
+      'Your partner needs to know their experience lands in you. Not that you fix it, ' +
+      'not that you understand it — that you FEEL it, even slightly.',
+    practices: [
+      'Sit with your partner for 2 minutes in silence. Just notice what arises in your body',
+      'When they share something hard, resist the urge to problem-solve. Just say: "I hear you"',
+      'Practice noticing your partner\'s face before their words — what emotion do you see?',
+    ],
+  },
+  avoidant_low_perspective: {
+    id: 'avoidant_low_perspective',
+    category: 'empathy',
+    title: 'Breaking the Repair Bottleneck',
+    description:
+      'You struggle to see your partner\'s perspective AND your instinct is to withdraw. ' +
+      'This creates a double block: repairs cannot happen because neither reaching nor ' +
+      'understanding is available.',
+    rationale:
+      'Your partner is not asking you to agree — they are asking you to SEE them. ' +
+      'One question before withdrawing can change the entire pattern.',
+    practices: [
+      'Before withdrawing, ask one question: "Help me understand what this feels like for you"',
+      'Practice the 5-minute rule: stay present for 5 more minutes before taking space',
+      'After a conflict, write your partner\'s perspective in 3 sentences — even imperfectly',
+    ],
+  },
+  anxious_high_perspective: {
+    id: 'anxious_high_perspective',
+    category: 'empathy',
+    title: 'Using What You Know',
+    description:
+      'You understand your partner clearly — you can see exactly where they are and why. ' +
+      'But your anxiety overrides that understanding. The insight is there; ' +
+      'the regulation is the growth edge.',
+    rationale:
+      'You have a rare gift: deep perspective-taking. The work is not more understanding — ' +
+      'it is learning to trust the understanding you already have and act from it, not from fear.',
+    practices: [
+      'When anxiety spikes, pause and write down what you KNOW about your partner\'s position',
+      'Practice the mantra: "I understand them. My anxiety is not information right now"',
+      'Do a body scan before initiating a repair — check if you are in your window first',
+    ],
+  },
   values_honesty_avoids_conflict: {
     id: 'speak_truth',
     category: 'communication',

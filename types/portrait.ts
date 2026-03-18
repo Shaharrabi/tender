@@ -181,7 +181,8 @@ export type GrowthEdgeCategory =
   | 'differentiation'
   | 'conflict'
   | 'communication'
-  | 'personality';
+  | 'personality'
+  | 'empathy';
 
 export interface GrowthEdge {
   id: string;
