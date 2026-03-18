@@ -21,6 +21,7 @@ import { COURSES, type CourseDefinition } from '@/constants/course-data';
 import { useCourseSession, type CourseScores } from '@/hooks/useCourseSession';
 import CourseCard from './CourseCard';
 import GamePanel from './GamePanel';
+import { notifyPartner } from '@/services/partner-activity-hooks';
 
 interface CoursesTabProps {
   coupleId: string;
@@ -49,10 +50,15 @@ export default function CoursesTab({ coupleId, userId }: CoursesTabProps) {
     setActiveCourse(course);
   }, []);
 
-  // Start session when course is opened
+  // Start session when course is opened + notify partner
   useEffect(() => {
     if (activeCourse && session.status === 'idle') {
       session.startSession();
+      // Notify partner that a game has started
+      notifyPartner(userId, 'course_started', {
+        courseId: activeCourse.id,
+        name: activeCourse.name,
+      });
     }
   }, [activeCourse]);
 
@@ -81,8 +87,14 @@ export default function CoursesTab({ coupleId, userId }: CoursesTabProps) {
     await session.completeCourse();
     if (activeCourse) {
       await session.earnBadge(activeCourse.badge.name);
+      // Notify partner that a course was completed
+      notifyPartner(userId, 'course_completed', {
+        courseId: activeCourse.id,
+        name: activeCourse.name,
+        badge: activeCourse.badge.name,
+      });
     }
-  }, [session, activeCourse]);
+  }, [session, activeCourse, userId]);
 
   return (
     <View style={styles.container}>

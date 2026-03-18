@@ -108,7 +108,7 @@ export default function MatrixCell({ cell, compact, selectable, selected, onSele
       compact && styles.cellCompact,
       isNarrow && styles.cellNarrow,
       selectable && selected && { borderWidth: 2, borderColor: palette.accent || palette.text },
-      isHighlighted && { borderWidth: 2, borderColor: highlightBorderColor, transform: [{ scale: 1.05 }] },
+      isHighlighted && { borderWidth: 2, borderColor: highlightBorderColor },
       isDimmed && { opacity: 0.45 },
     ]}>
       <TenderText

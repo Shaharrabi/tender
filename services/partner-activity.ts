@@ -11,7 +11,9 @@ export type ActivityType =
   | 'practice_complete'
   | 'checkin'
   | 'assessment_complete'
-  | 'portrait_update';
+  | 'portrait_update'
+  | 'course_started'
+  | 'course_completed';
 
 export interface PartnerActivity {
   id: string;

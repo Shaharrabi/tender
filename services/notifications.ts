@@ -412,6 +412,20 @@ function getPartnerActivityCopy(
         title: `${name}'s portrait just updated`,
         body: 'New insights have landed. See how your portraits connect.',
       };
+    case 'course_started':
+      return {
+        title: `${name} wants to play!`,
+        body: details
+          ? `They started "${details}". Open the couple portal to join — it's a live game.`
+          : 'A couple course is waiting for you. Open the couple portal to join in.',
+      };
+    case 'course_completed':
+      return {
+        title: `You two did it!`,
+        body: details
+          ? `You both completed "${details}". A new badge has been earned.`
+          : 'A couple course is complete. See your new badge in the portal.',
+      };
     default:
       return {
         title: `${name} did something new`,
