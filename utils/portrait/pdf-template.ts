@@ -375,6 +375,67 @@ export function generatePortraitHTML(
        </div>`
     : '';
 
+  // ── NEW: Empathy & Perspective-Taking section ──
+  const empathyHTML = (() => {
+    const pt = cs.perspectiveTaking;
+    const er = cs.empathicResonance;
+    if (pt == null && er == null) return '';
+    const ptLabel = pt != null ? (pt >= 65 ? 'Strong' : pt >= 45 ? 'Developing' : 'Growth Area') : '';
+    const erLabel = er != null ? (er >= 65 ? 'Strong' : er >= 45 ? 'Developing' : 'Growth Area') : '';
+    const empathyPatterns = patterns.filter(p => p.category === 'empathy');
+    return `
+      <div class="card" style="break-inside:avoid;page-break-inside:avoid">
+        <div class="card-title">Empathy & Perspective-Taking</div>
+        ${pt != null ? `<div style="margin-bottom:8px">
+          <p style="font-size:10pt;color:var(--text-muted);margin-bottom:4px">Perspective-Taking</p>
+          ${scoreBar('Seeing your partner\'s viewpoint', pt, '#6B9080')}
+          <p style="font-size:9pt;color:var(--text-muted)">${ptLabel}</p>
+        </div>` : ''}
+        ${er != null ? `<div style="margin-bottom:8px">
+          <p style="font-size:10pt;color:var(--text-muted);margin-bottom:4px">Empathic Resonance</p>
+          ${scoreBar('Feeling what your partner feels', er, '#4A6FA8')}
+          <p style="font-size:9pt;color:var(--text-muted)">${erLabel}</p>
+        </div>` : ''}
+        ${empathyPatterns.length > 0 ? empathyPatterns.map(p => `
+          <div class="insight-callout" style="margin-top:8px">${esc(p.interpretation)}</div>
+        `).join('') : ''}
+      </div>`;
+  })();
+
+  // ── NEW: Relational Personality Insights ──
+  const relPersonalityHTML = (() => {
+    const insights = (portrait as any).relationalPersonalityInsights;
+    if (!insights || insights.length === 0) return '';
+    return `
+      <div class="card" style="break-inside:avoid;page-break-inside:avoid">
+        <div class="card-title">Your Relational Self — Who You Become in Love</div>
+        <p style="font-style:italic;color:var(--text-muted);font-size:9.5pt;margin-bottom:12px">
+          Your personality shifts when you're in your relationship. These contrasts reveal how your partner activates different parts of who you are.
+        </p>
+        ${insights.map((r: any) => `
+          <div style="margin-bottom:12px;padding:10px;background:var(--surface-elevated);border-radius:8px;border-left:3px solid var(--primary)">
+            <p style="font-size:9pt;color:var(--text-muted);margin-bottom:2px">${esc(r.domainLabel)}: ${r.backbone} (general) → ${r.relational} (in relationship)</p>
+            <p style="font-size:10pt;color:var(--text)">${esc(r.narrative)}</p>
+          </div>
+        `).join('')}
+      </div>`;
+  })();
+
+  // ── NEW: Portrait Metadata (validity flag) ──
+  const validityHTML = (() => {
+    const meta = (portrait as any).portraitMetadata;
+    if (!meta?.validityFlag || meta.validityFlag === 'VALID') return '';
+    return `
+      <div class="card card-muted" style="break-inside:avoid;page-break-inside:avoid;border-left:3px solid #D4A843">
+        <p style="font-size:9pt;color:#D4A843;font-weight:600;margin-bottom:4px">NOTE ON ASSESSMENT VALIDITY</p>
+        <p style="font-size:9.5pt;color:var(--text-muted)">
+          Some responses may reflect an idealized self-image rather than current reality.
+          This is common and not a problem — it simply means the portrait may paint a rosier picture
+          than your day-to-day experience. Consider discussing with your coach or therapist.
+        </p>
+      </div>`;
+  })();
+
   // One-thing sentence — the single most important sentence about this person
   const oneThingHTML = portrait.oneThingSentence
     ? `<div class="one-thing-hero" style="break-inside:avoid;page-break-inside:avoid">
@@ -1377,6 +1438,26 @@ ${supplementHTML ? `
     ${bulletList(nc.repairReadiness.barriers)}` : ''}
   </div>` : ''}
 </div>
+
+${validityHTML}
+
+${empathyHTML ? `
+<!-- EMPATHY & PERSPECTIVE-TAKING -->
+<div class="section-divider"></div>
+<div class="section">
+  <p class="section-label">EMPATHY LANDSCAPE</p>
+  <div class="section-title">How You See and Feel Your Partner</div>
+  ${empathyHTML}
+</div>` : ''}
+
+${relPersonalityHTML ? `
+<!-- RELATIONAL PERSONALITY -->
+<div class="section-divider"></div>
+<div class="section">
+  <p class="section-label">YOUR RELATIONAL SELF</p>
+  <div class="section-title">Who You Become in Love</div>
+  ${relPersonalityHTML}
+</div>` : ''}
 
 ${patternsHTML ? `
 <!-- DETECTED PATTERNS -->
