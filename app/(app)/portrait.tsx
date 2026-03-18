@@ -617,7 +617,7 @@ export default function PortraitScreen() {
       if (finalPortrait && scoresMap && isPortraitStale(finalPortrait.version)) {
         console.log(`[Portrait] Portrait version ${finalPortrait.version} is stale — regenerating...`);
         try {
-          const required = ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'ipip-neo-120', 'values'];
+          const required = ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'tender-personality-60', 'values'];
           const hasAll = required.every((t) => scoresMap[t]?.scores);
           if (hasAll) {
             const scores: AllAssessmentScores = {
@@ -625,7 +625,7 @@ export default function PortraitScreen() {
               dutch: scoresMap['dutch'].scores,
               sseit: scoresMap['sseit'].scores,
               dsir: scoresMap['dsi-r'].scores,
-              ipip: scoresMap['ipip-neo-120'].scores,
+              ipip: scoresMap['tender-personality-60'].scores,
               values: scoresMap['values'].scores,
             };
             const supplements = extractSupplementScores(scoresMap);
@@ -651,7 +651,7 @@ export default function PortraitScreen() {
             dutch: scoresMap['dutch']?.scores,
             sseit: scoresMap['sseit']?.scores,
             dsir: scoresMap['dsi-r']?.scores,
-            ipip: scoresMap['ipip-neo-120']?.scores,
+            ipip: scoresMap['tender-personality-60']?.scores,
             values: scoresMap['values']?.scores,
           });
         } catch (e) {
@@ -665,7 +665,7 @@ export default function PortraitScreen() {
           const prevScoresMap = await fetchPreviousScores(user.id);
           if (prevScoresMap) {
             // Generate a portrait from previous scores to get previous composite scores
-            const required = ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'ipip-neo-120', 'values'];
+            const required = ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'tender-personality-60', 'values'];
             const hasAllPrev = required.every((t) => prevScoresMap[t]?.scores);
             if (hasAllPrev) {
               const prevScores: AllAssessmentScores = {
@@ -673,7 +673,7 @@ export default function PortraitScreen() {
                 dutch: prevScoresMap['dutch'].scores,
                 sseit: prevScoresMap['sseit'].scores,
                 dsir: prevScoresMap['dsi-r'].scores,
-                ipip: prevScoresMap['ipip-neo-120'].scores,
+                ipip: prevScoresMap['tender-personality-60'].scores,
                 values: prevScoresMap['values'].scores,
               };
               const prevSupplements = extractSupplementScores(prevScoresMap);

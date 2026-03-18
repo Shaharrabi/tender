@@ -37,7 +37,7 @@ type AllScores = Record<string, { id: string; scores: any }>;
 const STEP_PRIMARY_ASSESSMENT: Record<number, string> = {
   1: 'ecr-r',
   2: 'dsi-r',
-  3: 'ipip-neo-120',
+  3: 'tender-personality-60',
   4: 'sseit',
   5: 'ecr-r',
   6: 'dutch',
@@ -53,7 +53,7 @@ const STEP_PRIMARY_ASSESSMENT: Record<number, string> = {
 
 const ASSESSMENT_NAMES: Record<string, string> = {
   'ecr-r': 'Attachment Assessment',
-  'ipip-neo-120': 'Personality Assessment',
+  'tender-personality-60': 'Personality Assessment',
   'sseit': 'Emotional Intelligence Assessment',
   'dsi-r': 'Differentiation Assessment',
   'dutch': 'Conflict Style Assessment',

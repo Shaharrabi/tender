@@ -75,7 +75,7 @@ function getPortraitInsightForAssessment(
           .map(e => ({ title: e.title, description: e.description }))
           .slice(0, 3),
       };
-    case 'ipip-neo-120':
+    case 'tender-personality-60':
       return {
         narrative: fourLens.values?.narrative
           ? fourLens.values.narrative.slice(0, 500) + (fourLens.values.narrative.length > 500 ? '...' : '')
@@ -202,7 +202,7 @@ export default function AssessmentMatrixScreen() {
           let p = await getPortrait(user.id);
 
           // Auto-generate portrait if all 6 assessments are complete but no portrait exists
-          const REQUIRED = ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'ipip-neo-120', 'values'];
+          const REQUIRED = ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'tender-personality-60', 'values'];
           const completedTypes = Object.keys(latest);
           const hasAll6 = REQUIRED.every((t) => completedTypes.includes(t));
 
@@ -218,7 +218,7 @@ export default function AssessmentMatrixScreen() {
                 dutch: latestScoresMap['dutch'].scores,
                 sseit: latestScoresMap['sseit'].scores,
                 dsir: latestScoresMap['dsi-r'].scores,
-                ipip: latestScoresMap['ipip-neo-120'].scores,
+                ipip: latestScoresMap['tender-personality-60'].scores,
                 values: latestScoresMap['values'].scores,
               };
               const supplements = extractSupplementScores(latestScoresMap);
@@ -537,7 +537,7 @@ export default function AssessmentMatrixScreen() {
                           'dsi-r': ['differentiation'],
                           'dutch': ['attachment-conflict'],
                           'values': ['values-behavior'],
-                          'ipip-neo-120': ['values-behavior', 'differentiation'],
+                          'tender-personality-60': ['values-behavior', 'differentiation'],
                           'relational-field': ['field-awareness'],
                         };
                         const cats = categoryMap[selectedAssessment] || [];

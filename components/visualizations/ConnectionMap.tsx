@@ -31,7 +31,7 @@ const NODE_RADIUS = 22;
 // Assessments to show (only those with connections)
 const CONNECTED_ASSESSMENTS = [
   'ecr-r',
-  'ipip-neo-120',
+  'tender-personality-60',
   'sseit',
   'dsi-r',
   'dutch',

@@ -96,7 +96,7 @@ function has(key: string, allScores: Record<string, any>): boolean {
 function getConfidence(instruments: string[], allScores: Record<string, any>): ConfidenceLevel {
   const map: Record<string, string> = {
     'ECR-R': 'ecr-r',
-    'IPIP Big Five': 'ipip-neo-120',
+    'IPIP Big Five': 'tender-personality-60',
     'SSEIT': 'sseit',
     'DSI-R': 'dsi-r',
     'DUTCH': 'dutch',
@@ -189,7 +189,7 @@ export default function TenderMatrix({ allScores, portrait, scrollViewRef }: Ten
 
   // ── Extract raw scores ──
   const ecrr = allScores['ecr-r']?.scores;
-  const ipip = allScores['ipip-neo-120']?.scores;
+  const ipip = allScores['tender-personality-60']?.scores;
   const sseit = allScores['sseit']?.scores;
   const dsir = allScores['dsi-r']?.scores;
   const dutch = allScores['dutch']?.scores;

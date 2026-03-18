@@ -68,7 +68,7 @@ export type FeatureKey = keyof Omit<UnlockState, 'completedCount' | 'totalRequir
 /** Assessment → result card mapping */
 export const ASSESSMENT_FEATURE_MAP: Record<string, FeatureKey> = {
   'ecr-r': 'attachmentResults',
-  'ipip-neo-120': 'personalityResults',
+  'tender-personality-60': 'personalityResults',
   'sseit': 'emotionalIntelligence',
   'dutch': 'conflictStyle',
   'dsi-r': 'differentiation',
@@ -83,7 +83,7 @@ export const FEATURE_KEY_TO_ASSESSMENT_TYPE: Record<string, string> = Object.fro
 /** Human-readable names for each assessment */
 export const ASSESSMENT_DISPLAY_NAMES: Record<string, string> = {
   'ecr-r': 'Attachment Style',
-  'ipip-neo-120': 'Personality',
+  'tender-personality-60': 'Personality',
   'sseit': 'Emotional Intelligence',
   'dutch': 'Conflict Style',
   'dsi-r': 'Differentiation',
@@ -295,7 +295,7 @@ export function getUnlockState(
   return {
     // Individual results
     attachmentResults: completed.has('ecr-r'),
-    personalityResults: completed.has('ipip-neo-120'),
+    personalityResults: completed.has('tender-personality-60'),
     emotionalIntelligence: completed.has('sseit'),
     conflictStyle: completed.has('dutch'),
     differentiation: completed.has('dsi-r'),
@@ -325,7 +325,7 @@ export function getUnlockState(
  * Get the next recommended assessment to take.
  */
 export function getNextAssessment(completedAssessments: AssessmentType[]): AssessmentType | null {
-  const order: AssessmentType[] = ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'values', 'ipip-neo-120', 'relational-field'];
+  const order: AssessmentType[] = ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'values', 'tender-personality-60', 'relational-field'];
   const completed = new Set(completedAssessments);
   return order.find((t) => !completed.has(t)) ?? null;
 }

@@ -383,7 +383,7 @@ function CouplePortalScreen() {
             dutch: latestScoresMap['dutch'].scores,
             sseit: latestScoresMap['sseit'].scores,
             dsir: latestScoresMap['dsi-r'].scores,
-            ipip: latestScoresMap['ipip-neo-120'].scores,
+            ipip: latestScoresMap['tender-personality-60'].scores,
             values: latestScoresMap['values'].scores,
           };
           const supplements = extractSupplementScores(latestScoresMap);
@@ -872,7 +872,7 @@ function CouplePortalScreen() {
       {dp && myRawScores && partnerRawScores && (() => {
         const toScores = (raw: Record<string, { id: string; scores: any }>) => ({
           ecrr: raw?.['ecr-r']?.scores,
-          ipip: raw?.['ipip-neo-120']?.scores,
+          ipip: raw?.['tender-personality-60']?.scores,
           sseit: raw?.['sseit']?.scores,
           dsir: raw?.['dsi-r']?.scores,
           dutch: raw?.['dutch']?.scores,
@@ -1962,7 +1962,7 @@ function CouplePortalScreen() {
     // Build partner scores from raw fetched data
     const toPartnerScores = (raw: Record<string, { id: string; scores: any }> | null) => ({
       ecrr: raw?.['ecr-r']?.scores,
-      ipip: raw?.['ipip-neo-120']?.scores,
+      ipip: raw?.['tender-personality-60']?.scores,
       sseit: raw?.['sseit']?.scores,
       dsir: raw?.['dsi-r']?.scores,
       dutch: raw?.['dutch']?.scores,

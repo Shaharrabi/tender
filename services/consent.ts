@@ -13,7 +13,7 @@ export const INDIVIDUAL_ASSESSMENT_TYPES = [
   'dutch',
   'sseit',
   'dsi-r',
-  'ipip-neo-120',
+  'tender-personality-60',
   'values',
 ];
 

@@ -47,7 +47,7 @@ function getPortraitInsightForCard(
           .map(e => ({ title: e.title, description: e.description }))
           .slice(0, 2),
       };
-    case 'ipip-neo-120':
+    case 'tender-personality-60':
       return {
         narrative: fourLens.values?.narrative
           ? fourLens.values.narrative.slice(0, 500) + (fourLens.values.narrative.length > 500 ? '...' : '')
@@ -122,7 +122,7 @@ const ASSESSMENT_DIMENSIONS: Record<string, DimensionConfig[]> = {
     { key: 'anxietyScore', label: 'Anxiety', min: 1, max: 7 },
     { key: 'avoidanceScore', label: 'Avoidance', min: 1, max: 7 },
   ],
-  'ipip-neo-120': [
+  'tender-personality-60': [
     { key: 'neuroticism', label: 'Neuroticism', min: 1, max: 5 },
     { key: 'extraversion', label: 'Extraversion', min: 1, max: 5 },
     { key: 'openness', label: 'Openness', min: 1, max: 5 },

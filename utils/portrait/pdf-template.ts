@@ -397,7 +397,7 @@ export function generatePortraitHTML(
     if (!allScores) return '';
     const stories: string[] = [];
     const ecrr = allScores['ecr-r']?.scores;
-    const ipip = allScores['ipip-neo-120']?.scores;
+    const ipip = allScores['tender-personality-60']?.scores;
     const sseit = allScores['sseit']?.scores;
     const dsir = allScores['dsi-r']?.scores;
     const dutch = allScores['dutch']?.scores;

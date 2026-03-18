@@ -128,7 +128,7 @@ export interface AssessmentConnection {
 /** Human-readable assessment names. */
 export const ASSESSMENT_LABELS: Record<string, string> = {
   'ecr-r': 'How You Connect',
-  'ipip-neo-120': 'Who You Are',
+  'tender-personality-60': 'Who You Are',
   sseit: 'How You Feel',
   'dsi-r': 'How You Hold Your Ground',
   dutch: 'How You Fight',
@@ -139,7 +139,7 @@ export const ASSESSMENT_LABELS: Record<string, string> = {
 /** Colors per assessment for the connection map. */
 export const ASSESSMENT_COLORS: Record<string, string> = {
   'ecr-r': '#C4616E',
-  'ipip-neo-120': '#5B6B8A',
+  'tender-personality-60': '#5B6B8A',
   sseit: '#6BA3A0',
   'dsi-r': '#6B9080',
   dutch: '#D4A843',
@@ -220,7 +220,7 @@ export const ASSESSMENT_CONNECTIONS: AssessmentConnection[] = [
 
   // Personality → Emotional Intelligence
   {
-    from: { assessment: 'ipip-neo-120', dimension: 'neuroticism', label: 'Neuroticism' },
+    from: { assessment: 'tender-personality-60', dimension: 'neuroticism', label: 'Neuroticism' },
     to: { assessment: 'sseit', dimension: 'managingOwn', label: 'Self-Regulation' },
     direction: 'negative',
     strength: 'strong',
@@ -242,7 +242,7 @@ export const ASSESSMENT_CONNECTIONS: AssessmentConnection[] = [
 
   // Personality → Attachment
   {
-    from: { assessment: 'ipip-neo-120', dimension: 'agreeableness', label: 'Agreeableness' },
+    from: { assessment: 'tender-personality-60', dimension: 'agreeableness', label: 'Agreeableness' },
     to: { assessment: 'ecr-r', dimension: 'avoidanceScore', label: 'Attachment Avoidance' },
     direction: 'negative',
     strength: 'moderate',

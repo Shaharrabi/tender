@@ -51,7 +51,7 @@ export function generateMiniTeaser(
         };
       }
 
-      case 'ipip-neo-120': {
+      case 'tender-personality-60': {
         const percs = scores?.domainPercentiles;
         if (!percs) return null;
         // Find top 2 most prominent traits (furthest from 50th percentile)

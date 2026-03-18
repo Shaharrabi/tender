@@ -160,7 +160,7 @@ const DELTA_EXTRACTORS: Record<string, DeltaExtractor> = {
     },
   ],
 
-  'ipip-neo-120': (prev, curr) => {
+  'tender-personality-60': (prev, curr) => {
     const domains = ['Neuroticism', 'Extraversion', 'Openness to Experience', 'Agreeableness', 'Conscientiousness'];
     const prevP = prev.domainPercentiles ?? {};
     const currP = curr.domainPercentiles ?? {};

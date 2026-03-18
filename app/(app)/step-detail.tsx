@@ -390,7 +390,7 @@ function StepDetailScreenInner() {
               dutch: latestScoresMap['dutch'].scores,
               sseit: latestScoresMap['sseit'].scores,
               dsir: latestScoresMap['dsi-r'].scores,
-              ipip: latestScoresMap['ipip-neo-120'].scores,
+              ipip: latestScoresMap['tender-personality-60'].scores,
               values: latestScoresMap['values'].scores,
             };
             const supplements = extractSupplementScores(latestScoresMap);

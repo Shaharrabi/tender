@@ -73,7 +73,7 @@ const SHARING_ITEMS: SharingItem[] = [
     desc: 'Your attachment pattern, anxiety and avoidance dimensions',
   },
   {
-    type: 'ipip-neo-120',
+    type: 'tender-personality-60',
     Icon: BrainIcon,
     iconColor: Colors.depth,
     name: 'Personality Profile',

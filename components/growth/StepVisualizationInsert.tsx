@@ -71,7 +71,7 @@ function extractECRR(raw: RawScoresMap): ECRRScores | null {
 }
 
 function extractIPIP(raw: RawScoresMap): IPIPScores | null {
-  const s = raw?.['ipip-neo-120']?.scores;
+  const s = raw?.['tender-personality-60']?.scores;
   if (!s?.domainScores) return null;
   return s as IPIPScores;
 }

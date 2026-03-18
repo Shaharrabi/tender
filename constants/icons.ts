@@ -150,7 +150,7 @@ export const ASSESSMENT_ICONS: Record<string, IconComponent> = {
   dutch: MirrorIcon,
   sseit: BrainIcon,
   'dsi-r': WaveIcon,
-  'ipip-neo-120': MasksIcon,
+  'tender-personality-60': MasksIcon,
   values: CompassIcon,
   rdas: CoupleIcon,
   dci: HandshakeIcon,

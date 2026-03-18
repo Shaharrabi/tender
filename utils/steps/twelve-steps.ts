@@ -1465,14 +1465,14 @@ export const STEP_ASSESSMENT_NUDGES: Record<number, StepAssessmentNudge> = {
     ctaLabel: 'Explore Your Boundaries',
   },
   3: {
-    assessmentIds: ['ipip-neo-120'],
+    assessmentIds: ['tender-personality-60'],
     nudgeText:
       'Your personality patterns reveal how you hold on \u2014 and how you might let go. ' +
       'Seeing these tendencies makes releasing certainty feel less like loss.',
     ctaLabel: 'See Your Patterns',
   },
   4: {
-    assessmentIds: ['sseit', 'ipip-neo-120'],
+    assessmentIds: ['sseit', 'tender-personality-60'],
     nudgeText:
       'Your emotional intelligence and personality shape how you show up in this step. ' +
       'Understanding what drives your protective moves deepens the work here.',
@@ -1530,7 +1530,7 @@ export const STEP_ASSESSMENT_NUDGES: Record<number, StepAssessmentNudge> = {
     ctaLabel: 'See How You\u2019ve Shifted',
   },
   12: {
-    assessmentIds: ['ecr-r', 'sseit', 'ipip-neo-120', 'dutch', 'dsi-r', 'values'],
+    assessmentIds: ['ecr-r', 'sseit', 'tender-personality-60', 'dutch', 'dsi-r', 'values'],
     isRetake: true,
     nudgeText:
       'The journey spirals. Retaking your assessments now shows how far you\u2019ve come \u2014 ' +
@@ -1564,7 +1564,7 @@ export interface StepAssessmentGate {
 
 export const STEP_ASSESSMENT_GATES: Record<number, StepAssessmentGate> = {
   4: {
-    assessmentIds: ['ecr-r', 'ipip-neo-120', 'sseit', 'dutch', 'dsi-r', 'values'],
+    assessmentIds: ['ecr-r', 'tender-personality-60', 'sseit', 'dutch', 'dsi-r', 'values'],
     gateText:
       'This step asks you to examine your part in the dance. ' +
       'To do that well, you need a complete picture of yourself. ' +

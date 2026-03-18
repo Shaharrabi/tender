@@ -39,11 +39,11 @@ const ASSESSMENT_LABELS: Record<string, string> = {
   'dutch': 'How You Fight',
   'sseit': 'How You Feel',
   'dsi-r': 'How You Hold Your Ground',
-  'ipip-neo-120': 'Who You Are',
+  'tender-personality-60': 'Who You Are',
   'values': 'What Matters to You',
 };
 
-const ALL_ASSESSMENT_TYPES = ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'ipip-neo-120', 'values'];
+const ALL_ASSESSMENT_TYPES = ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'tender-personality-60', 'values'];
 
 interface LockedPortraitPreviewProps {
   completedCount: number;

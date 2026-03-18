@@ -55,7 +55,7 @@ const ASSESSMENT_TYPES = [
   { type: 'dutch', label: 'How You Fight (DUTCH)' },
   { type: 'sseit', label: 'How You Feel (SSEIT)' },
   { type: 'dsi-r', label: 'How You Hold Ground (DSI-R)' },
-  { type: 'ipip-neo-120', label: 'Who You Are (IPIP)' },
+  { type: 'tender-personality-60', label: 'Who You Are (IPIP)' },
   { type: 'values', label: 'What Matters (Values)' },
 ] as const;
 

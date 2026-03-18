@@ -227,7 +227,7 @@ const DEMO_SCORES_MAP: Record<string, any> = {
   'dutch': DEMO_DUTCH,
   'sseit': DEMO_SSEIT,
   'dsi-r': DEMO_DSIR,
-  'ipip-neo-120': DEMO_IPIP,
+  'tender-personality-60': DEMO_IPIP,
   'relational-field': DEMO_RFAS,
   'values': DEMO_VALUES,
 };
@@ -295,7 +295,7 @@ export async function clearDemoAssessments(userId: string): Promise<void> {
     .from('assessments')
     .delete()
     .eq('user_id', userId)
-    .in('type', ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'ipip-neo-120', 'values', 'relational-field']);
+    .in('type', ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'tender-personality-60', 'values', 'relational-field']);
 }
 
 // ─── Dyadic Demo Scores ────────────────────────────────

@@ -64,7 +64,7 @@ function getPortraitInsightForAssessment(
           .map(e => ({ title: e.title, description: e.description }))
           .slice(0, 3),
       };
-    case 'ipip-neo-120':
+    case 'tender-personality-60':
       return {
         narrative: fourLens.parts?.narrative
           ? fourLens.parts.narrative.slice(0, 500) + (fourLens.parts.narrative.length > 500 ? '\u2026' : '')
