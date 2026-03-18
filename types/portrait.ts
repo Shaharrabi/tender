@@ -289,6 +289,15 @@ export interface IndividualPortrait {
   provenanceMap?: Record<string, ScoreProvenance>;
   // Non-numeric metadata from personality assessment
   portraitMetadata?: PortraitMetadata;
+  // Relational personality shifts — domains where backbone ≠ relational by >15 pts
+  relationalPersonalityInsights?: Array<{
+    domain: string;
+    domainLabel: string;
+    backbone: number;
+    relational: number;
+    delta: number;
+    narrative: string;
+  }>;
 }
 
 // ─── Helper: All assessment scores grouped ───────────────

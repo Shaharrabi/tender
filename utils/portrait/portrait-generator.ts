@@ -12,6 +12,7 @@ import { generatePartnerGuide } from './partner-guide';
 import { generateBigFiveReframes } from './big-five-reframes';
 import { buildTailoringContext } from './attachment-tailoring';
 import { generateIntegratedNarratives } from './assessment-synthesis';
+import { generateRelationalPersonalityNarrative } from './relational-personality-narrative';
 import type { AllAssessmentScores, IndividualPortrait } from '@/types';
 import type { SupplementScores, ScoreProvenance } from '@/types/portrait';
 
@@ -111,6 +112,9 @@ export function generatePortrait(
   // Step 8: Cross-instrument integrated narratives
   const integrated = generateIntegratedNarratives(scores);
 
+  // Step 9: Relational personality shifts (backbone vs. in-relationship)
+  const relationalShifts = generateRelationalPersonalityNarrative(ipip);
+
   // Build provenance map — tells the UI what kind of data each output is
   const provenanceMap: Record<string, ScoreProvenance> = {
     // Composite scores are derived from multiple instruments
@@ -160,5 +164,7 @@ export function generatePortrait(
       validityFlag: (ipip as any)?.validityFlag ?? undefined,
       relationalPersonality: (ipip as any)?.relationalPersonality ?? undefined,
     },
+    // Relational personality shifts — backbone vs. in-relationship comparison
+    relationalPersonalityInsights: relationalShifts.length > 0 ? relationalShifts : undefined,
   };
 }
