@@ -28,8 +28,10 @@ const PATTERN_MODALITY_RELEVANCE: Record<string, string[]> = {
   moderate_regulation_capacity: ['polyvagal', 'dbt', 'act', 'contemplative'],
   aware_but_cant_regulate: ['polyvagal', 'dbt', 'organic_intelligence', 'aqal'],
   eq_perception_management_gap: ['polyvagal', 'dbt', 'ifs', 'act', 'organic_intelligence'],
-  eq_other_focused: ['ifs', 'bowen', 'aca', 'dbt'],
+  eq_other_focused: ['ifs', 'polyvagal', 'aca', 'dbt', 'contemplative'],
+  eq_underutilized_emotions: ['act', 'dbt', 'ifs', 'mi'],
   eq_low_anxious: ['polyvagal', 'dbt', 'attachment', 'organic_intelligence'],
+  eq_resource: ['contemplative', 'ifs', 'act'],
 
   // Attachment × Conflict patterns
   anxious_but_avoiding: ['attachment', 'ifs', 'polyvagal', 'act', 'narrative'],
@@ -39,7 +41,7 @@ const PATTERN_MODALITY_RELEVANCE: Record<string, string[]> = {
 
   // Values × Behavior patterns
   values_honesty_avoids_conflict: ['act', 'narrative', 'mi', 'ifs', 'contemplative'],
-  values_intimacy_avoids_closeness: ['attachment', 'ifs', 'polyvagal', 'act'],
+  values_intimacy_avoids_closeness: ['attachment', 'ifs', 'polyvagal', 'act', 'contemplative'],
   values_autonomy_but_fused: ['bowen', 'ifs', 'act', 'aca'],
 
   // Differentiation patterns

@@ -919,6 +919,157 @@ const SEED: ModalityContentEntry[] = [
     practice: 'After a moment where your regulation was imperfect — messy but managed — take 30 seconds to appreciate the managing. Not the mess. "I stayed. I didn\'t leave. I came back." Self-compassion widens the window. Shame shrinks it.',
     quote: 'The middle of the journey is the hardest place to be — and the most sacred.', quoteAttribution: 'Pema Chodron',
   }},
+
+  // ═══════════════════════════════════════════════════════════
+  // EQ OTHER-FOCUSED — 5 modalities at high severity
+  // Regulates everyone except themselves. The caretaker pattern.
+  // ═══════════════════════════════════════════════════════════
+  { patternId: 'eq_other_focused', modalityId: 'ifs', severity: 'high', content: {
+    insight: 'Your Caretaker Part is highly developed — it can sense what others need and provide it with remarkable skill. But this part has a deal with the rest of your system: "I\'ll manage everyone else\'s emotions so that nobody has to manage mine." The exile underneath holds the belief: "My feelings are too much. If I turned this attention inward, I\'d fall apart."',
+    bodyCheck: 'When someone you love is in distress, your body activates toward THEM. Now notice: when YOU are in distress, does your body do the same toward yourself? Or does it go blank, tight, dismissive? That asymmetry is the pattern.',
+    practice: 'This week, when you notice yourself regulating someone else, pause afterward and ask: "What am I feeling RIGHT NOW that I didn\'t attend to while I was taking care of them?" Write it down. Just notice that your own feeling exists and was waiting.',
+    quote: 'The Caretaker\'s greatest fear is being the one who needs care. That fear is the exile speaking.', quoteAttribution: 'Richard Schwartz',
+  }},
+  { patternId: 'eq_other_focused', modalityId: 'polyvagal', severity: 'high', content: {
+    insight: 'Your ventral vagal system is highly developed in the outward direction. You can co-regulate others because your nervous system naturally broadcasts safety: steady voice, soft eyes, calm presence. But your system hasn\'t learned to direct that same broadcast INWARD. You can be the anchor for others but you\'ve never anchored yourself.',
+    bodyCheck: 'Place one hand on your own heart. Say: "I\'m here for you." Notice what happens. If it feels awkward, foreign, or brings up emotion — that\'s the signal. Your nervous system isn\'t used to receiving the care it gives so easily to others.',
+    practice: 'Practice self-directed co-regulation: place both hands on your chest. Speak to yourself in the same tone you use when soothing someone you love. Say: "You\'re okay. I\'m here. This feeling will pass." Your vagus nerve doesn\'t distinguish between soothing directed at others and soothing directed at yourself.',
+    quote: 'You cannot offer a regulated presence to others from a dysregulated body. Your own regulation comes first.', quoteAttribution: 'Deb Dana',
+  }},
+  { patternId: 'eq_other_focused', modalityId: 'aca', severity: 'high', content: {
+    insight: 'You probably learned early that your job in the family was to manage the emotional climate — to be the stable one, the mediator, the little therapist. But the child who learned to caretake was ALSO a child who had feelings of their own. That child\'s needs got filed under "later." It\'s later now.',
+    bodyCheck: 'When you were growing up, who took care of YOUR emotions? If the answer is "nobody" or "I did it myself" — that\'s the origin. Your body learned: "My feelings are my problem. Other people\'s feelings are my responsibility."',
+    practice: 'Write a list of 5 things you do when someone you love is upset. Now ask: "Do I ever do this for myself?" Circle the ones you don\'t. Pick one. Do it for yourself this week. Not because you\'re in crisis. Because you deserve the same care you give others.',
+    quote: 'The child who learned to take care of everyone else\'s feelings is still waiting for someone to take care of theirs. That someone is you.', quoteAttribution: 'Pia Mellody',
+  }},
+  { patternId: 'eq_other_focused', modalityId: 'dbt', severity: 'high', content: {
+    insight: 'Your Interpersonal Effectiveness is high — you know how to navigate others\' emotions. Your Emotion Regulation module is underdeveloped — you don\'t apply those same skills to yourself. This is a skill transfer problem, not a skill deficit. You already HAVE the tools. You just point them in one direction only.',
+    bodyCheck: 'After your next emotionally demanding interaction, check in: are you depleted? Irritable? Numb? Those are signs that you spent regulation resources on someone else and have none left for yourself.',
+    practice: 'Build a self-regulation routine that mirrors what you do for others: validate ("This is hard and I\'m allowed to feel it"), listen (what does your body need?), comfort (cup of tea, hand on heart, 5 slow breaths). Redirect the skill inward.',
+    quote: 'Emotion regulation is not just about managing others\' emotions. It is about giving your own emotions the same respect.', quoteAttribution: 'Marsha Linehan',
+  }},
+  { patternId: 'eq_other_focused', modalityId: 'contemplative', severity: 'high', content: {
+    insight: 'There is a spiritual trap in caretaking: it can FEEL like selflessness. But when caretaking becomes the only way you know how to exist in relationship — when you cannot be present without attending to someone else\'s experience — it stops being generosity and becomes avoidance of your own interior.',
+    bodyCheck: 'Imagine turning off your emotional radar for an hour. Not reading the room, not sensing your partner\'s state. What happens in your body? Relief? Terror? Both? That response tells you whether your EQ is a freely given gift or an obligation.',
+    practice: 'Give your emotional intelligence part a vacation — one hour this week where you deliberately DON\'T manage the emotional climate. Let things be what they are. Whatever arises — boredom, anxiety, sadness — is the feeling that lives under all the caretaking.',
+    quote: 'If you want to be of service, start by being fully present to yourself. Everything else follows from there.', quoteAttribution: 'Parker Palmer',
+  }},
+
+  // ═══════════════════════════════════════════════════════════
+  // EQ UNDERUTILIZED EMOTIONS — 4 modalities at high severity
+  // Feels clearly but doesn't USE emotional information.
+  // ═══════════════════════════════════════════════════════════
+  { patternId: 'eq_underutilized_emotions', modalityId: 'act', severity: 'high', content: {
+    insight: 'You feel emotions clearly. You perceive them in yourself and others. But between the feeling and the action, there\'s a gap — the emotion arrives and you either get overwhelmed by it or push past it, rather than asking: "What is this feeling telling me? What action does it point toward?" Emotions are not just experiences. They are information to be used.',
+    bodyCheck: 'Think of a recent strong emotion. Did you DO anything with it? Or did it just pass through? If it passed without informing any action, that\'s underutilization.',
+    practice: 'This week, treat every significant emotion as a message. When a feeling arises, write: (1) What am I feeling? (2) What is this feeling responding to? (3) What action would honor this feeling? You don\'t have to take the action. But you practice seeing emotions as SIGNALS, not just weather.',
+    quote: 'Emotions are not problems to be solved. They are compasses pointing toward what matters.', quoteAttribution: 'Steven Hayes',
+  }},
+  { patternId: 'eq_underutilized_emotions', modalityId: 'dbt', severity: 'high', content: {
+    insight: 'You\'re strong on Observe but weak on Participate. The missing step is DESCRIBE — translating a felt emotion into language that informs action. "I feel something" becomes "I feel hurt because my need for closeness isn\'t being met, and the action this points to is asking for connection." That chain — feel, name, need, action — is the utilization skill.',
+    bodyCheck: 'Right now, name what you\'re feeling. Can you get more specific than a single word? Instead of "fine" — tired, content, mildly anxious, hopeful? The specificity IS the utilization skill.',
+    practice: 'Keep a note on your phone. Three times today, write: "I feel [specific emotion] because [trigger]. This suggests I need [need]. One thing I could do is [action]." Over a week, you\'ll have 21 entries. You\'re building the bridge between feeling and doing.',
+    quote: 'The ability to name an emotion accurately is the first step toward using it wisely.', quoteAttribution: 'Marc Brackett',
+  }},
+  { patternId: 'eq_underutilized_emotions', modalityId: 'ifs', severity: 'high', content: {
+    insight: 'Your system has a part that EXPERIENCES emotions and a separate part that ACTS — and they don\'t talk to each other. The Feeler picks up everything. The Doer operates on logic. When the Feeler sends a signal, the Doer ignores it. The work is building a bridge between these two parts.',
+    bodyCheck: 'When making a decision about your relationship, where does the input come from — head or body? If it\'s almost always head, the body (where the Feeler lives) is being left out of the decision-making.',
+    practice: 'Before your next relational decision, ask your body: "What do you know about this?" Put your hand on your chest or belly and wait 10 seconds. If an image, a word, or a sensation comes — include it in the decision.',
+    quote: 'When all parts have a voice, the system makes wiser decisions than any single part could make alone.', quoteAttribution: 'Richard Schwartz',
+  }},
+  { patternId: 'eq_underutilized_emotions', modalityId: 'mi', severity: 'high', content: {
+    insight: 'You have emotional information but you\'re not yet motivated to use it as a tool. The motivational question is: what would become possible in your relationship if you started using your emotional awareness as a guide for action? Not as a weapon. Not as a demand. As a compass.',
+    bodyCheck: 'On a scale of 1-10, how important is it to you to get better at USING your emotions in your relationship? Whatever number you said — what would change if it went up by one?',
+    practice: 'Try one emotion-informed conversation this week. Before you initiate it, check in: "What am I feeling right now about us?" Then let that feeling shape what you say. Not "We need to talk about the schedule" (logic-driven). Instead: "I\'ve been feeling distant from you and I want to reconnect" (emotion-driven).',
+    quote: 'The emotion you don\'t use becomes the emotion that uses you.', quoteAttribution: 'adapted from William Miller',
+  }},
+
+  // ═══════════════════════════════════════════════════════════
+  // EQ LOW ANXIOUS — 4 modalities at high severity
+  // Low EQ + high anxiety. Can't read, can't manage, can't stop.
+  // ═══════════════════════════════════════════════════════════
+  { patternId: 'eq_low_anxious', modalityId: 'polyvagal', severity: 'high', content: {
+    insight: 'Your nervous system is in chronic alert mode — the sympathetic branch is highly activated, scanning for relational threat. But because your emotional perception is low, the alarm fires without giving you clear information about WHAT triggered it. You feel danger but can\'t name it. This creates a fog of anxiety — generalized dread without a target.',
+    bodyCheck: 'Rate your anxiety 0-10. Now try to name what specifically is driving that number. If you can\'t identify a specific cause — if it\'s just "everything" or "I don\'t know" — that\'s the perception gap. The alarm is loud. The signal is unclear.',
+    practice: 'Three times a day, stop and ask: "What am I feeling right now? Can I name it? Can I locate it in my body?" Even "I don\'t know" is an answer. Over weeks, "I don\'t know" becomes "I think I\'m worried about..." That progression IS the growth.',
+    quote: 'When we can name what we feel, the feeling loses some of its power over us.', quoteAttribution: 'Dan Siegel',
+  }},
+  { patternId: 'eq_low_anxious', modalityId: 'dbt', severity: 'high', content: {
+    insight: 'You need foundational skills — not advanced techniques. When EQ is low AND anxiety is high, the priority is building a basic emotion vocabulary and a basic regulation toolkit. Not insight. Not analysis. Skills. Think of it like learning a language: you need the basic words before you can have a conversation.',
+    bodyCheck: 'When you\'re anxious, can you name 3 different emotions besides "anxious"? Worried? Scared? Hurt? Angry? If they all blur into one undifferentiated feeling, that\'s the first skill to build: differentiation.',
+    practice: 'Start an emotion log. Five times today, write: the time, one emotion word (use a feelings wheel if needed), and a 1-10 intensity. Don\'t analyze. Don\'t explain. Just name and rate. This is the most foundational emotional intelligence exercise that exists, and it works.',
+    quote: 'You don\'t have to understand your emotions to start working with them. You just have to notice them.', quoteAttribution: 'Marsha Linehan',
+  }},
+  { patternId: 'eq_low_anxious', modalityId: 'attachment', severity: 'high', content: {
+    insight: 'Your anxiety is attachment anxiety — fear of disconnection, of being left, of not mattering enough. But because your emotional perception is low, the anxiety expresses itself in behaviors rather than words: clinginess, checking, irritability, withdrawal. Building emotional intelligence gives the anxiety a voice — and when anxiety can speak in words, it doesn\'t have to speak in behavior.',
+    bodyCheck: 'Think about the last time you did something in your relationship that you later regretted. Before the behavior, there was a feeling. Can you find it now, looking back? That feeling is what your emotional intelligence is learning to catch BEFORE it becomes behavior.',
+    practice: 'Next time you feel the urge to ACT on your anxiety (check, test, demand, withdraw), PAUSE. Write one sentence: "Right now I feel ___ because I\'m afraid ___." Writing it interrupts the anxiety-to-behavior pipeline.',
+    quote: 'Anxiety that can be named is anxiety that can be managed. Anxiety that stays nameless runs the show.', quoteAttribution: 'Sue Johnson',
+  }},
+  { patternId: 'eq_low_anxious', modalityId: 'organic_intelligence', severity: 'high', content: {
+    insight: 'Your body is carrying anxiety that your mind doesn\'t have words for. Your body learned to scan for danger without learning to interpret what it found. The body is smart — it\'s keeping you alert. But without the interpretation layer, the alertness becomes chronic and exhausting.',
+    bodyCheck: 'Sit quietly for 30 seconds. Notice any sensation that feels like "something is wrong." Don\'t explain it. Where does it live? That location is your body\'s anxiety address. Knowing the address is the beginning of a relationship with the feeling.',
+    practice: 'Once a day, put your hand on your anxiety\'s "address." Hold it gently. Breathe into that area. Say: "I feel you. I don\'t understand you yet. But I\'m not running from you." You\'re building a connection between your awareness and your activation, one hand at a time.',
+    quote: 'The body has been speaking all along. The work is learning its language.', quoteAttribution: 'Steve Hoskinson',
+  }},
+
+  // ═══════════════════════════════════════════════════════════
+  // EQ RESOURCE — 3 modalities (STRENGTH pattern, not deficit)
+  // High EQ across all dimensions. Name and reinforce.
+  // ═══════════════════════════════════════════════════════════
+  { patternId: 'eq_resource', modalityId: 'contemplative', severity: 'low', content: {
+    insight: 'Your emotional intelligence is a genuine gift — you read the room, regulate yourself, help others regulate, and use emotional information wisely. This is rare. But a gift that isn\'t recognized can become a burden. You may carry the emotional labor of your relationship without acknowledgment. The contemplative invitation: can you hold this capacity with gratitude rather than resentment?',
+    bodyCheck: 'Notice how much emotional information you\'re processing right now — about yourself, about whoever is near you, about the quality of the space. That processing is automatic. It costs energy. When was the last time you acknowledged that cost?',
+    practice: 'This week, at the end of each day, take 30 seconds to appreciate your emotional intelligence. "Today I sensed my partner needed space, and I gave it. Today I managed my frustration without dumping it." You\'re not building a skill. You\'re honoring one that already exists.',
+    quote: 'The most important relationship you can have is with your own gifts — knowing them, honoring them, and choosing when to offer them.', quoteAttribution: 'Parker Palmer',
+  }},
+  { patternId: 'eq_resource', modalityId: 'ifs', severity: 'low', content: {
+    insight: 'Your emotional intelligence is likely led by a wise, capable Manager Part. This part deserves recognition. The invitation isn\'t to develop it further — it\'s to ask: does this part ever get to rest? Is there space in your system for NOT managing the emotional field? High EQ can become a prison if the part that provides it never gets a break.',
+    bodyCheck: 'Imagine turning off your emotional radar for an hour. What happens at that thought? Relief? Terror? Both? That response tells you whether your EQ is a freely given gift or an obligation you can\'t put down.',
+    practice: 'Give your emotional intelligence part a vacation — one hour this week where you deliberately DON\'T manage the emotional climate. Let things be what they are. If discomfort arises, that\'s the part that believes it\'s not safe to stop. Thank it, and keep resting.',
+    quote: 'Even the most capable part of you deserves to rest. Self-leadership includes knowing when to lead and when to just be.', quoteAttribution: 'Richard Schwartz',
+  }},
+  { patternId: 'eq_resource', modalityId: 'act', severity: 'low', content: {
+    insight: 'Your EQ is high and that\'s genuinely good. The ACT question: is your high EQ in service of your values, or has it become automatic — a reflex rather than a choice? There\'s a difference between CHOOSING to attune because connection matters and COMPULSIVELY attuning because you don\'t know how to stop.',
+    bodyCheck: 'If you could turn your emotional radar down to 50% for a day, would you? If "yes, that would be a relief" — some of your EQ is compulsive, not chosen. If "no, I value this" — it\'s values-aligned. Both are okay. But knowing which one matters.',
+    practice: 'Before each act of emotional attunement this week, ask: "Am I choosing this, or is this happening to me?" If choosing — continue, with full presence. If automatic — pause and ask: "What would I do right now if I weren\'t managing the emotional field?"',
+    quote: 'The highest use of a skill is choosing when to use it — and choosing when to set it down.', quoteAttribution: 'Russ Harris',
+  }},
+
+  // ═══════════════════════════════════════════════════════════
+  // VALUES INTIMACY AVOIDS CLOSENESS — 5 modalities at high severity
+  // Wants deep intimacy, pulls away whenever it's offered.
+  // ═══════════════════════════════════════════════════════════
+  { patternId: 'values_intimacy_avoids_closeness', modalityId: 'attachment', severity: 'high', content: {
+    insight: 'This is the central wound of avoidant attachment: the desire for closeness is intact — you haven\'t lost it. But the approach system has been overridden by a deactivating strategy that says: "Closeness is where you get hurt." So you long for intimacy from a distance. That\'s not ambivalence. That\'s two systems — desire and protection — fighting for the steering wheel.',
+    bodyCheck: 'Think about a moment when your partner offered closeness and you pulled away. Hold both: the part that wanted to receive it and the part that couldn\'t. Where does each live? The longing is usually chest or heart. The recoil is usually shoulders, jaw, or full-body tension.',
+    practice: 'When your partner offers closeness, notice the recoil AND the longing. Don\'t follow either one. Say: "Part of me wants this. Part of me is scared. Both are true right now." Naming the conflict interrupts the automatic withdrawal.',
+    quote: 'The avoidant heart doesn\'t stop wanting love. It stops believing love is safe.', quoteAttribution: 'Stan Tatkin',
+  }},
+  { patternId: 'values_intimacy_avoids_closeness', modalityId: 'ifs', severity: 'high', content: {
+    insight: 'Your Protector Part and your Longing Part are in a painful polarity. The Longing Part aches for deep connection, real knowing, the surrender of being fully seen. The Protector stands between you and that surrender: "Last time we let someone in, we got destroyed." Both parts are right. The work isn\'t choosing between them — it\'s helping the Protector update its threat assessment.',
+    bodyCheck: 'When closeness approaches, the Protector shows up as a physical sensation first — hardening, cooling, turning away. The Longing shows up afterward, once the closeness has passed — as sadness, regret, the quiet "Why did I do that again?" Can you feel the sequence?',
+    practice: 'Have a written conversation between the two parts. Longing says: "I want to be close. Why won\'t you let me?" Protector says: "Because ___." Whatever it says is the exile\'s memory. That\'s what needs updating.',
+    quote: 'A Protector that blocks intimacy isn\'t the enemy of love. It\'s the guardian of a wound that hasn\'t finished healing.', quoteAttribution: 'Richard Schwartz',
+  }},
+  { patternId: 'values_intimacy_avoids_closeness', modalityId: 'polyvagal', severity: 'high', content: {
+    insight: 'Your autonomic nervous system has wired closeness to danger. When intimacy approaches, your neuroception fires a warning before your conscious mind can evaluate. Your body says "unsafe" while your mind says "I want this." The body wins. It always wins. Not because the body is right about THIS relationship, but because the body\'s threat library was written by an earlier one.',
+    bodyCheck: 'Notice what happens when your partner moves toward you — physically or emotionally. Is there a micro-flinch? A subtle pulling back? A holding of breath? That\'s neuroception overriding desire.',
+    practice: 'Practice titrated closeness: ask your partner to sit near you — not touching, just near — for 5 minutes. If your body stays settled, move slightly closer. If it activates, stay where you are. You\'re teaching your nervous system that closeness is survivable.',
+    quote: 'The nervous system doesn\'t change through insight. It changes through repeated experiences of safety.', quoteAttribution: 'Stephen Porges',
+  }},
+  { patternId: 'values_intimacy_avoids_closeness', modalityId: 'act', severity: 'high', content: {
+    insight: 'Your values say intimacy matters more than almost anything. Your behavior says you avoid it. This isn\'t hypocrisy — it\'s experiential avoidance: you\'re avoiding the INTERNAL EXPERIENCE (vulnerability, exposure, risk of rejection) that closeness requires. The question isn\'t "Do you want intimacy?" You clearly do. The question is: "Are you willing to feel the terror that intimacy asks you to feel?"',
+    bodyCheck: 'What is the specific feeling you\'re avoiding when you pull away? Not the story. The feeling itself. Exposure? Vulnerability? Loss of control? Being seen? Name it. That\'s what you\'re actually avoiding — not your partner.',
+    practice: 'Choose one small act of intimacy this week that your avoidance would normally block. Holding eye contact for 10 seconds. Saying "I missed you." Before you do it, say: "I\'m willing to feel uncomfortable for 60 seconds in service of the intimacy I value." Then do it. Then survive it.',
+    quote: 'You don\'t have to want to feel vulnerable. You just have to be willing. Willingness is enough.', quoteAttribution: 'Steven Hayes',
+  }},
+  { patternId: 'values_intimacy_avoids_closeness', modalityId: 'contemplative', severity: 'high', content: {
+    insight: 'The mystics all describe the same experience: the moment of surrender when the separate self dissolves into union with something larger. Your avoidance is the opposite of surrender — the separate self clinging to its boundaries because the last time those boundaries dissolved, the experience was wounding. Your longing for intimacy is a spiritual impulse — the desire to be fully known. Your avoidance is a survival impulse. Learning that some surrenders are safe is the path.',
+    bodyCheck: 'Imagine being completely known by your partner — not the curated version, but all of it. The mess, the fear, the shame, the tenderness you hide. Notice what happens in your body. That reaction IS the work.',
+    practice: 'This week, share one thing with your partner that you\'ve never shared — not a trauma. Something small and true: a memory, a fear, a wish. Something that lets them see one more inch of who you are. Surrender is not one big leap. It\'s a thousand small offerings.',
+    quote: 'We long for the very thing we fear — to be fully known. That longing is the soul\'s memory of where it came from.', quoteAttribution: 'James Hollis',
+  }},
 ];
 
 // ─── Register seed content ───────────────────────────────
