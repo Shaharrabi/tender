@@ -28,6 +28,8 @@ export interface ModalityContentEntry {
     /** Attribution for the quote */
     quoteAttribution?: string;
   };
+  /** Internal metadata: clinical framework informing this entry (not user-facing) */
+  theorySource?: string;
 }
 
 // ─── Content Database ─────────────────────────────────────
