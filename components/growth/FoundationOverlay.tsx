@@ -36,6 +36,7 @@ import {
   FontSizes,
   Typography,
 } from '@/constants/theme';
+import { getCaptionAtTime } from '@/constants/foundation-transcript';
 
 const { width: W, height: H } = Dimensions.get('window');
 const STORAGE_KEY = 'has_heard_foundation';
@@ -90,6 +91,7 @@ export default function FoundationOverlay({ onDismiss }: FoundationOverlayProps)
   const soundRef = useRef<Audio.Sound | null>(null);
   const [showSkip, setShowSkip] = useState(false);
   const [isFinishing, setIsFinishing] = useState(false);
+  const [currentCaption, setCurrentCaption] = useState<string | null>(null);
 
   // Show skip after 5 seconds
   useEffect(() => {
@@ -122,6 +124,12 @@ export default function FoundationOverlay({ onDismiss }: FoundationOverlayProps)
             if (!status.isLoaded) return;
             if (status.didJustFinish && mounted) {
               handleComplete();
+              return;
+            }
+            // Sync captions to audio position
+            if (status.positionMillis != null && mounted) {
+              const posSeconds = status.positionMillis / 1000;
+              setCurrentCaption(getCaptionAtTime(posSeconds));
             }
           }
         );
@@ -194,6 +202,13 @@ export default function FoundationOverlay({ onDismiss }: FoundationOverlayProps)
 
           <Text style={styles.listenText}>Listening...</Text>
         </Animated.View>
+
+        {/* Synced captions */}
+        {currentCaption && (
+          <Animated.View entering={FadeIn.duration(400)} exiting={FadeOut.duration(300)} style={styles.captionContainer}>
+            <Text style={styles.captionText}>{currentCaption}</Text>
+          </Animated.View>
+        )}
 
         {/* Skip button */}
         {showSkip && (
@@ -281,6 +296,22 @@ const styles = StyleSheet.create({
     ...Typography.caption,
     color: Colors.textMuted,
     fontStyle: 'italic',
+  },
+  captionContainer: {
+    position: 'absolute',
+    bottom: 130,
+    left: Spacing.xl,
+    right: Spacing.xl,
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  captionText: {
+    ...Typography.serifItalic,
+    fontSize: FontSizes.body,
+    color: Colors.text,
+    textAlign: 'center',
+    lineHeight: 26,
+    opacity: 0.85,
   },
   skipContainer: {
     position: 'absolute',
