@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wild · Co-Regulation Breath (dark sage + wave)</title>
+<style>
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:.95}}
+@keyframes flicker{0%,100%{opacity:.6}45%{opacity:1}70%{opacity:.8}}
+@keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(3px,-3px)}}
+@keyframes orbit{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes unfurl{from{stroke-dashoffset:600}to{stroke-dashoffset:0}}
+@keyframes glow{0%,100%{opacity:.07}50%{opacity:.25}}
+@keyframes sway{0%,100%{transform:rotate(0deg)}50%{transform:rotate(4deg)}}
+@keyframes rise{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes expand{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+html,body{margin:0;padding:0;background:#FFF8F2;display:flex;align-items:center;justify-content:center;min-height:100vh;width:100%}
+svg{display:block;width:100%;max-width:600px;height:auto}
+.ln line{stroke:#B9AAA0;stroke-width:.35;opacity:.06}
+</style>
+</head>
+<body>
+<svg viewBox="0 0 280 240" xmlns="http://www.w3.org/2000/svg">
+<rect width="280" height="240" fill="#FFF8F2"/>
+<g opacity=".06" stroke="#9DAA95" stroke-width=".4"><line x1="0" y1="20" x2="280" y2="20"/><line x1="0" y1="36" x2="280" y2="36"/><line x1="0" y1="52" x2="280" y2="52"/><line x1="0" y1="68" x2="280" y2="68"/><line x1="0" y1="84" x2="280" y2="84"/><line x1="0" y1="100" x2="280" y2="100"/><line x1="0" y1="116" x2="280" y2="116"/><line x1="0" y1="132" x2="280" y2="132"/><line x1="0" y1="148" x2="280" y2="148"/><line x1="0" y1="164" x2="280" y2="164"/><line x1="0" y1="180" x2="280" y2="180"/><line x1="0" y1="196" x2="280" y2="196"/><line x1="0" y1="212" x2="280" y2="212"/></g>
+<!-- SINGLE shared breath wave: connects both bodies -->
+<g style="animation:pulse 4s ease-in-out infinite">
+<path d="M50 120 Q70 100 90 120 Q110 140 130 120 Q150 100 170 120 Q190 140 210 120 Q230 100 250 120" fill="none" stroke="#8FA8BC" stroke-width="2.5" stroke-linecap="round" opacity=".5"/>
+</g>
+<g style="animation:pulse 4s ease-in-out infinite;animation-delay:-2s">
+<path d="M50 136 Q70 118 90 136 Q110 154 130 136 Q150 118 170 136 Q190 154 210 136 Q230 118 250 136" fill="none" stroke="#8FA8BC" stroke-width="1.8" stroke-linecap="round" opacity=".35"/>
+</g>
+<!-- LEFT body: sage luminous on dark -->
+<path d="M44 200 Q26 174 24 148 Q22 124 34 100 Q46 76 64 70 Q82 64 96 78 Q110 92 112 120 Q114 148 98 174 Q86 196 66 204Z" fill="#9DAA95" opacity=".85" style="animation:breathe 4.5s ease-in-out infinite;transform-origin:68px 137px"/>
+<ellipse cx="66" cy="62" rx="19" ry="23" fill="none" stroke="#FDF6F0" stroke-width=".9" opacity=".5"/>
+<!-- RIGHT body: slightly calmer, slightly larger — the regulating presence -->
+<path d="M236 202 Q256 174 258 146 Q260 120 248 94 Q236 68 216 62 Q196 56 180 70 Q164 84 162 114 Q160 144 176 172 Q190 196 212 206Z" fill="#9DAA95" opacity=".9" style="animation:breathe 5s ease-in-out infinite;animation-delay:-1s;transform-origin:210px 132px"/>
+<g opacity=".2" stroke="#FDF6F0" stroke-width="2.5" stroke-linecap="round"><path d="M164 102 Q196 96 256 100"/><path d="M162 118 Q195 113 257 116"/><path d="M162 134 Q195 129 257 132"/></g>
+<ellipse cx="210" cy="54" rx="19" ry="23" fill="none" stroke="#FDF6F0" stroke-width=".9" opacity=".45"/>
+<!-- Inhale/exhale labels -->
+</svg>
+</body>
+</html>

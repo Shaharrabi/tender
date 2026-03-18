@@ -130,6 +130,19 @@ export default function FoundationOverlay({ onDismiss }: FoundationOverlayProps)
     };
   }, []);
 
+  // Listen for film-ended message from iframe (web only)
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    const handler = (event: MessageEvent) => {
+      if (event.data?.type === 'foundation-film-ended') {
+        // Give a few seconds for the post-audio hold, then dismiss
+        setTimeout(() => handleComplete(), 3000);
+      }
+    };
+    window.addEventListener('message', handler);
+    return () => window.removeEventListener('message', handler);
+  }, [handleComplete]);
+
   // Web audio ref for HTML5 Audio fallback
   const webAudioRef = useRef<HTMLAudioElement | null>(null);
   const webTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -234,6 +247,51 @@ export default function FoundationOverlay({ onDismiss }: FoundationOverlayProps)
     opacity: interpolate(pulse.value, [0.8, 1], [0.4, 0.7]),
   }));
 
+  // On web: render the full HTML film in an iframe
+  if (Platform.OS === 'web') {
+    return (
+      <Modal
+        visible
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+      >
+        <View style={styles.backdrop}>
+          {/* Full HTML film experience */}
+          <View style={styles.filmContainer}>
+            <iframe
+              src="/foundation-film/index.html"
+              style={{
+                width: '100%',
+                height: '100%',
+                border: 'none',
+                borderRadius: 24,
+              } as any}
+              title="The Foundation — Relational Field"
+              allow="autoplay"
+            />
+          </View>
+
+          {/* Skip button */}
+          {showSkip && (
+            <Animated.View entering={FadeIn.duration(600)} style={styles.skipContainerFilm}>
+              <TouchableOpacity
+                onPress={handleComplete}
+                activeOpacity={0.7}
+                style={styles.skipButton}
+                accessibilityRole="button"
+                accessibilityLabel="Skip foundation film"
+              >
+                <Text style={styles.skipText}>Skip for now</Text>
+              </TouchableOpacity>
+            </Animated.View>
+          )}
+        </View>
+      </Modal>
+    );
+  }
+
+  // On native: render the original audio + captions experience
   return (
     <Modal
       visible
@@ -266,9 +324,7 @@ export default function FoundationOverlay({ onDismiss }: FoundationOverlayProps)
             <View style={[styles.bar, { height: 14 }]} />
           </View>
 
-          <Text style={styles.listenText}>
-            {Platform.OS === 'web' ? 'Reading...' : 'Listening...'}
-          </Text>
+          <Text style={styles.listenText}>Listening...</Text>
         </Animated.View>
 
         {/* Synced captions */}
@@ -364,6 +420,18 @@ const styles = StyleSheet.create({
     ...Typography.caption,
     color: Colors.textMuted,
     fontStyle: 'italic',
+  },
+  filmContainer: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 24,
+    overflow: 'hidden',
+  },
+  skipContainerFilm: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    zIndex: 20,
   },
   captionContainer: {
     position: 'absolute',

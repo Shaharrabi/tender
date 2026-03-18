@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wild · The Field Is Alive (dark teal + gold vesica)</title>
+<style>
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:.95}}
+@keyframes flicker{0%,100%{opacity:.6}45%{opacity:1}70%{opacity:.8}}
+@keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(3px,-3px)}}
+@keyframes orbit{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes unfurl{from{stroke-dashoffset:600}to{stroke-dashoffset:0}}
+@keyframes glow{0%,100%{opacity:.07}50%{opacity:.25}}
+@keyframes sway{0%,100%{transform:rotate(0deg)}50%{transform:rotate(4deg)}}
+@keyframes rise{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes expand{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+html,body{margin:0;padding:0;background:#FDF6F0;display:flex;align-items:center;justify-content:center;min-height:100vh;width:100%}
+svg{display:block;width:100%;max-width:600px;height:auto}
+.ln line{stroke:#B9AAA0;stroke-width:.35;opacity:.06}
+</style>
+</head>
+<body>
+<svg viewBox="0 0 280 240" xmlns="http://www.w3.org/2000/svg">
+<rect width="280" height="240" fill="#FDF6F0"/>
+<!-- deep teal paper lines -->
+<g opacity=".06" stroke="#8FA8BC" stroke-width=".4"><line x1="0" y1="20" x2="280" y2="20"/><line x1="0" y1="36" x2="280" y2="36"/><line x1="0" y1="52" x2="280" y2="52"/><line x1="0" y1="68" x2="280" y2="68"/><line x1="0" y1="84" x2="280" y2="84"/><line x1="0" y1="100" x2="280" y2="100"/><line x1="0" y1="116" x2="280" y2="116"/><line x1="0" y1="132" x2="280" y2="132"/><line x1="0" y1="148" x2="280" y2="148"/><line x1="0" y1="164" x2="280" y2="164"/><line x1="0" y1="180" x2="280" y2="180"/><line x1="0" y1="196" x2="280" y2="196"/><line x1="0" y1="212" x2="280" y2="212"/></g>
+<!-- open field as luminous horizontal traces on dark -->
+<g opacity=".35">
+<path d="M0 196 Q40 184 80 192 Q120 200 160 188 Q210 174 280 180" fill="none" stroke="#D4A843" stroke-width="1.8" stroke-linecap="round"/>
+<path d="M0 210 Q40 200 82 207 Q122 214 162 203 Q212 190 280 196" fill="none" stroke="#D4A843" stroke-width="1.2" stroke-linecap="round" opacity=".7"/>
+<path d="M0 222 Q40 214 82 219 Q122 224 162 215 Q212 204 280 209" fill="none" stroke="#D4A843" stroke-width=".7" stroke-linecap="round" opacity=".45"/>
+</g>
+<!-- left: terracotta body, luminous on dark -->
+<path d="M42 188 Q24 164 22 138 Q20 114 32 90 Q44 66 62 60 Q80 54 94 68 Q108 82 110 110 Q112 138 96 164 Q84 186 64 196Z" fill="#C9876A" opacity=".9" style="animation:breathe 5.5s ease-in-out infinite;transform-origin:66px 126px"/>
+<g opacity=".3" stroke="#FDF6F0" stroke-width="3" stroke-linecap="round"><path d="M24 98 Q64 90 108 96"/><path d="M22 114 Q63 107 109 112"/><path d="M22 130 Q63 124 108 128"/><path d="M23 146 Q63 140 106 144"/></g>
+<ellipse cx="66" cy="52" rx="20" ry="24" fill="none" stroke="#FDF6F0" stroke-width=".9" opacity=".6"/>
+<!-- right: deep navy on dark, almost silhouette -->
+<path d="M238 188 Q256 164 258 138 Q260 114 248 90 Q236 66 218 60 Q200 54 186 68 Q172 82 170 110 Q168 138 184 164 Q196 186 216 196Z" fill="#7294D4" opacity=".95" style="animation:breathe 5.5s ease-in-out infinite;animation-delay:-2.5s;transform-origin:214px 126px"/>
+<g opacity=".2" stroke="#8FA8BC" stroke-width="2.5" stroke-linecap="round"><path d="M172 106 Q200 100 256 104"/><path d="M170 120 Q199 115 257 118"/><path d="M170 134 Q199 129 257 132"/><path d="M171 148 Q199 143 255 146"/></g>
+<ellipse cx="214" cy="52" rx="20" ry="24" fill="none" stroke="#8FA8BC" stroke-width=".9" opacity=".5"/>
+<!-- MOLTEN GOLD between them: the vesica, luminous -->
+<path d="M140 72 Q162 96 162 126 Q162 156 140 180 Q118 156 118 126 Q118 96 140 72Z" fill="#D4A843" opacity=".22" style="animation:glow 3s ease-in-out infinite"/>
+<path d="M140 72 Q162 96 162 126 Q162 156 140 180 Q118 156 118 126 Q118 96 140 72Z" fill="none" stroke="#D4A843" stroke-width="1.2" opacity=".6" style="animation:pulse 3s ease-in-out infinite"/>
+<!-- vine: white on dark -->
+<g style="animation:float 4s ease-in-out infinite;transform-origin:140px 52px">
+<line x1="140" y1="72" x2="140" y2="38" stroke="#FDF6F0" stroke-width="1" opacity=".5"/>
+<path d="M140 38 Q143 28 147 38 Q143 48 140 38Z" fill="#FDF6F0" opacity=".7"/>
+<path d="M140 38 Q137 30 133 38 Q137 46 140 38Z" fill="#FDF6F0" opacity=".5"/>
+</g>
+</svg>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Results · Ch2 Who You Are in Love</title>
+<style>
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:.95}}
+@keyframes flicker{0%,100%{opacity:.6}45%{opacity:1}70%{opacity:.8}}
+@keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(3px,-3px)}}
+@keyframes orbit{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes unfurl{from{stroke-dashoffset:600}to{stroke-dashoffset:0}}
+@keyframes glow{0%,100%{opacity:.07}50%{opacity:.25}}
+@keyframes sway{0%,100%{transform:rotate(0deg)}50%{transform:rotate(4deg)}}
+@keyframes rise{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes expand{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+html,body{margin:0;padding:0;background:#FDF6F0;display:flex;align-items:center;justify-content:center;min-height:100vh;width:100%}
+svg{display:block;width:100%;max-width:600px;height:auto}
+.ln line{stroke:#B9AAA0;stroke-width:.35;opacity:.06}
+</style>
+</head>
+<body>
+<svg viewBox="0 0 220 200" xmlns="http://www.w3.org/2000/svg">
+<rect width="220" height="200" fill="#FDF6F0"/>
+<g class="ln"><line x1="0" y1="16" x2="220" y2="16"/><line x1="0" y1="30" x2="220" y2="30"/><line x1="0" y1="44" x2="220" y2="44"/><line x1="0" y1="58" x2="220" y2="58"/><line x1="0" y1="72" x2="220" y2="72"/><line x1="0" y1="86" x2="220" y2="86"/><line x1="0" y1="100" x2="220" y2="100"/><line x1="0" y1="114" x2="220" y2="114"/><line x1="0" y1="128" x2="220" y2="128"/><line x1="0" y1="142" x2="220" y2="142"/><line x1="0" y1="156" x2="220" y2="156"/><line x1="0" y1="170" x2="220" y2="170"/><line x1="0" y1="184" x2="220" y2="184"/></g>
+
+<!-- Large body: navy, stripe-heavy, with a pentagon INSIDE the torso — landscape not diagnosis -->
+<path d="M70 178 Q52 156 50 130 Q48 106 60 84 Q72 62 90 56 Q108 50 122 64 Q136 78 138 104 Q140 130 126 158 Q112 182 92 186Z" fill="#7294D4" opacity=".8" style="animation:breathe 5.5s ease-in-out infinite;transform-origin:94px 120px"/>
+<g opacity=".2" stroke="#FDF6F0" stroke-width="2.5" stroke-linecap="round">
+<path d="M52 92 Q90 86 136 90"/><path d="M50 106 Q89 101 137 104"/><path d="M50 120 Q89 115 137 118"/><path d="M51 134 Q89 129 135 132"/><path d="M53 148 Q89 143 132 146"/>
+</g>
+<ellipse cx="92" cy="48" rx="20" ry="24" fill="none" stroke="#514543" stroke-width="1"/>
+<path d="M78 36 Q88 26 94 24 Q100 22 106 30" fill="none" stroke="#514543" stroke-width=".9" stroke-linecap="round" opacity=".6"/>
+
+<!-- Pentagon radar inside torso — using mustard/blush/sage/dusty/plum -->
+<polygon points="94,72 116,90 108,116 80,116 72,90" fill="none" stroke="#D4A843" stroke-width=".9" opacity=".55" style="animation:pulse 4s ease-in-out infinite"/>
+<!-- filled sub-polygon: actual scores would vary this -->
+<polygon points="94,82 106,96 100,112 88,112 82,96" fill="#D4A843" opacity=".1"/>
+
+<!-- 5 trait labels at each point -->
+<!-- legend -->
+</svg>
+</body>
+</html>

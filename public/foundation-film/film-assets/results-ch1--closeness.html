@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Results · Ch1 How You Seek Closeness</title>
+<style>
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:.95}}
+@keyframes flicker{0%,100%{opacity:.6}45%{opacity:1}70%{opacity:.8}}
+@keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(3px,-3px)}}
+@keyframes orbit{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes unfurl{from{stroke-dashoffset:600}to{stroke-dashoffset:0}}
+@keyframes glow{0%,100%{opacity:.07}50%{opacity:.25}}
+@keyframes sway{0%,100%{transform:rotate(0deg)}50%{transform:rotate(4deg)}}
+@keyframes rise{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes expand{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+html,body{margin:0;padding:0;background:#FDF6F0;display:flex;align-items:center;justify-content:center;min-height:100vh;width:100%}
+svg{display:block;width:100%;max-width:600px;height:auto}
+.ln line{stroke:#B9AAA0;stroke-width:.35;opacity:.06}
+</style>
+</head>
+<body>
+<svg viewBox="0 0 220 200" xmlns="http://www.w3.org/2000/svg">
+<rect width="220" height="200" fill="#FDF6F0"/>
+<g class="ln"><line x1="0" y1="16" x2="220" y2="16"/><line x1="0" y1="30" x2="220" y2="30"/><line x1="0" y1="44" x2="220" y2="44"/><line x1="0" y1="58" x2="220" y2="58"/><line x1="0" y1="72" x2="220" y2="72"/><line x1="0" y1="86" x2="220" y2="86"/><line x1="0" y1="100" x2="220" y2="100"/><line x1="0" y1="114" x2="220" y2="114"/><line x1="0" y1="128" x2="220" y2="128"/><line x1="0" y1="142" x2="220" y2="142"/><line x1="0" y1="156" x2="220" y2="156"/><line x1="0" y1="170" x2="220" y2="170"/><line x1="0" y1="184" x2="220" y2="184"/></g>
+
+<!-- Four abstract bodies — distinct poses for each attachment style -->
+<!-- SECURE: standing open, warm sage, both arms gently out -->
+<path d="M152 170 Q142 152 140 132 Q138 114 146 100 Q154 86 164 82 Q174 78 180 88 Q186 98 186 118 Q186 138 178 156 Q172 170 162 174Z" fill="#9DAA95" opacity=".82" style="animation:breathe 5s ease-in-out infinite;transform-origin:163px 128px"/>
+<ellipse cx="162" cy="74" rx="14" ry="17" fill="none" stroke="#514543" stroke-width=".9"/>
+<path d="M153 64 Q160 56 164 54 Q168 52 172 58" fill="none" stroke="#514543" stroke-width=".8" stroke-linecap="round" opacity=".6"/>
+<!-- ANXIOUS-PREOCCUPIED: round body, leaning/reaching — NOT phallic, wider squat shape -->
+<path d="M30 166 Q18 148 18 128 Q18 110 28 96 Q38 82 50 78 Q62 74 68 84 Q74 94 72 114 Q70 134 58 154 Q50 166 38 170Z" fill="#E3AFB7" opacity=".82" style="animation:breathe 4s ease-in-out infinite;transform-origin:46px 124px"/>
+<!-- arm reaching: horizontal, not vertical -->
+<ellipse cx="46" cy="70" rx="16" ry="14" fill="none" stroke="#514543" stroke-width=".9" transform="rotate(5 46 70)"/>
+<path d="M36 63 Q44 56 50 55 Q56 54 60 60" fill="none" stroke="#514543" stroke-width=".8" stroke-linecap="round" opacity=".6"/>
+<!-- DISMISSIVE-AVOIDANT: tall navy body, arms crossed, turned slightly away -->
+<path d="M102 172 Q90 152 88 130 Q86 110 96 94 Q106 78 118 74 Q130 70 136 82 Q142 94 140 118 Q138 142 126 164 Q118 178 108 176Z" fill="#7294D4" opacity=".82"/>
+<g opacity=".2" stroke="#FDF6F0" stroke-width="2" stroke-linecap="round"><path d="M90 108 Q112 103 138 106"/><path d="M89 120" /><path d="M90 120 Q112 116 138 118"/></g>
+<!-- arms crossed self: folded across chest -->
+<ellipse cx="112" cy="66" rx="14" ry="17" fill="none" stroke="#514543" stroke-width=".9" transform="rotate(-4 112 66)"/>
+<path d="M102 56 Q110 48 114 46 Q118 44 122 50" fill="none" stroke="#514543" stroke-width=".8" stroke-linecap="round" opacity=".6"/>
+<!-- FEARFUL-AVOIDANT: plum body, slightly twisted, ambivalent posture -->
+<path d="M180 170 Q170 150 168 128 Q166 108 176 92 Q186 76 198 74 Q210 72 214 86 Q218 100 214 124 Q210 148 200 168 Q194 178 186 174Z" fill="#927585" opacity=".78" transform="rotate(6 190 124)"/>
+<!-- ambivalent: one arm reaching, one pulling back -->
+<ellipse cx="194" cy="66" rx="14" ry="17" fill="none" stroke="#514543" stroke-width=".9"/>
+
+</svg>
+</body>
+</html>

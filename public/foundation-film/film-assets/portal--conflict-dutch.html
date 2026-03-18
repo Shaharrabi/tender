@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Couple Portal · Conflict Interaction DUTCH</title>
+<style>
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:.95}}
+@keyframes flicker{0%,100%{opacity:.6}45%{opacity:1}70%{opacity:.8}}
+@keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(3px,-3px)}}
+@keyframes orbit{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes unfurl{from{stroke-dashoffset:600}to{stroke-dashoffset:0}}
+@keyframes glow{0%,100%{opacity:.07}50%{opacity:.25}}
+@keyframes sway{0%,100%{transform:rotate(0deg)}50%{transform:rotate(4deg)}}
+@keyframes rise{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes expand{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+html,body{margin:0;padding:0;background:#FDF6F0;display:flex;align-items:center;justify-content:center;min-height:100vh;width:100%}
+svg{display:block;width:100%;max-width:600px;height:auto}
+.ln line{stroke:#B9AAA0;stroke-width:.35;opacity:.06}
+</style>
+</head>
+<body>
+<svg viewBox="0 0 460 240" xmlns="http://www.w3.org/2000/svg">
+<rect width="460" height="240" fill="#FDF6F0"/>
+<g class="ln"><line x1="0" y1="18" x2="460" y2="18"/><line x1="0" y1="32" x2="460" y2="32"/><line x1="0" y1="46" x2="460" y2="46"/><line x1="0" y1="60" x2="460" y2="60"/><line x1="0" y1="74" x2="460" y2="74"/><line x1="0" y1="88" x2="460" y2="88"/><line x1="0" y1="102" x2="460" y2="102"/><line x1="0" y1="116" x2="460" y2="116"/><line x1="0" y1="130" x2="460" y2="130"/><line x1="0" y1="144" x2="460" y2="144"/><line x1="0" y1="158" x2="460" y2="158"/><line x1="0" y1="172" x2="460" y2="172"/><line x1="0" y1="186" x2="460" y2="186"/><line x1="0" y1="200" x2="460" y2="200"/><line x1="0" y1="214" x2="460" y2="214"/></g>
+
+<!-- BLUSH body: criticism/contempt mode — leaning forward -->
+<path d="M70 200 Q52 178 50 152 Q48 128 60 106 Q72 84 90 78 Q108 72 120 86 Q132 100 134 126 Q136 152 120 178 Q108 198 88 206Z" fill="#E3AFB7" opacity=".82" style="animation:breathe 4s ease-in-out infinite;transform-origin:92px 140px"/>
+<ellipse cx="90" cy="70" rx="20" ry="24" fill="none" stroke="#514543" stroke-width="1" transform="rotate(5 90 70)"/>
+<!-- DUTCH conflict style labels: left body -->
+<rect x="10" y="78" width="54" height="12" rx="4" fill="#E3AFB7" opacity=".2"/>
+<rect x="10" y="96" width="54" height="12" rx="4" fill="#E3AFB7" opacity=".15"/>
+<!-- NAVY body: defensive/stonewalling -->
+<path d="M320 200 Q338 178 340 152 Q342 128 330 106 Q318 84 300 78 Q282 72 270 86 Q258 100 256 126 Q254 152 270 178 Q282 198 302 206Z" fill="#7294D4" opacity=".82"/>
+<g opacity=".2" stroke="#FDF6F0" stroke-width="2.2" stroke-linecap="round"><path d="M258 122 Q284 117 338 120"/><path d="M256 136 Q283 131 339 134"/></g>
+<ellipse cx="298" cy="70" rx="20" ry="24" fill="none" stroke="#514543" stroke-width="1" transform="rotate(-5 298 70)"/>
+<!-- DUTCH conflict style labels: right body -->
+<rect x="350" y="78" width="86" height="12" rx="4" fill="#8FA8BC" opacity=".2"/>
+<rect x="350" y="96" width="86" height="12" rx="4" fill="#8FA8BC" opacity=".15"/>
+<!-- INTERACTION cycle in the middle: the DUTCH interaction -->
+<!-- pursue arrow -->
+<path d="M134 130 Q180 116 224 124" fill="none" stroke="#E3AFB7" stroke-width="1" stroke-dasharray="3 3" opacity=".5"/>
+<path d="M220 121 L224 124 L220 127" fill="none" stroke="#E3AFB7" stroke-width=".8" opacity=".5"/>
+<!-- withdraw counter -->
+<path d="M256 144 Q210 158 166 150" fill="none" stroke="#7294D4" stroke-width="1" stroke-dasharray="3 3" opacity=".5"/>
+<path d="M170 153 L166 150 L170 147" fill="none" stroke="#7294D4" stroke-width=".8" opacity=".5"/>
+<!-- center: the negative cycle label -->
+<!-- conflict score bars at bottom -->
+<g opacity=".65">
+<rect x="30" y="192" width="180" height="3.5" rx="1.5" fill="#D6CEBF"/>
+<rect x="30" y="192" width="110" height="3.5" rx="1.5" fill="#E3AFB7" opacity=".65"/>
+<rect x="30" y="214" width="180" height="3.5" rx="1.5" fill="#D6CEBF"/>
+<rect x="30" y="214" width="84" height="3.5" rx="1.5" fill="#8FA8BC" opacity=".65"/>
+</g>
+</svg>
+</body>
+</html>

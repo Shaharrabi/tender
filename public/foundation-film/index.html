@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Relational Field</title>
+<style>
+  :root {
+    --background: #fdf6f0;
+    --background-alt: #fff8f2;
+    --surface: #fffdf9;
+    --surface-soft: rgba(255, 248, 242, 0.88);
+    --border: #e6d9d1;
+    --ink: #4f4446;
+    --ink-soft: #7e7072;
+    --rose: #c4616e;
+    --blush: #e3afb7;
+    --sage: #9daa95;
+    --mustard: #d4a843;
+    --blue: #8fa8bc;
+    --terracotta: #c9876a;
+    --plum: #927585;
+    --progress: 0%;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    margin: 0;
+    min-height: 100%;
+    background:
+      radial-gradient(circle at 18% 20%, rgba(227, 175, 183, 0.45), transparent 22%),
+      radial-gradient(circle at 82% 18%, rgba(159, 170, 149, 0.38), transparent 24%),
+      radial-gradient(circle at 78% 82%, rgba(143, 168, 188, 0.34), transparent 28%),
+      radial-gradient(circle at 24% 84%, rgba(212, 168, 67, 0.24), transparent 22%),
+      var(--background);
+    color: var(--ink);
+    font-family: "Avenir Next", Futura, "Trebuchet MS", sans-serif;
+    overflow: hidden;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.25), rgba(253, 246, 240, 0.2)),
+      repeating-linear-gradient(
+        180deg,
+        rgba(185, 170, 160, 0.05) 0,
+        rgba(185, 170, 160, 0.05) 1px,
+        transparent 1px,
+        transparent 34px
+      );
+    pointer-events: none;
+  }
+
+  .app {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 18px;
+  }
+
+  .shell {
+    position: relative;
+    width: min(100vw - 36px, calc((100vh - 36px) * 16 / 9));
+    aspect-ratio: 16 / 9;
+    border-radius: 34px;
+    overflow: hidden;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 248, 242, 0.92)),
+      var(--surface);
+    border: 1px solid rgba(230, 217, 209, 0.9);
+    box-shadow:
+      0 22px 70px rgba(143, 121, 133, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+
+  .shell::before {
+    content: "";
+    position: absolute;
+    inset: 12px;
+    border-radius: 24px;
+    border: 1px solid rgba(230, 217, 209, 0.9);
+    pointer-events: none;
+    z-index: 12;
+  }
+
+  .stage {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    background:
+      linear-gradient(180deg, rgba(255, 253, 249, 0.85), rgba(253, 246, 240, 0.88)),
+      var(--background);
+  }
+
+  .stage::before,
+  .stage::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 8;
+  }
+
+  .stage::before {
+    background:
+      linear-gradient(180deg, rgba(253, 246, 240, 0.78), transparent 17%, transparent 83%, rgba(253, 246, 240, 0.82)),
+      linear-gradient(90deg, rgba(253, 246, 240, 0.38), transparent 12%, transparent 88%, rgba(253, 246, 240, 0.4));
+  }
+
+  .stage::after {
+    inset: 18px;
+    border-radius: 22px;
+    border: 1px solid rgba(230, 217, 209, 0.75);
+  }
+
+  .scene-layer {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transform: scale(1.02);
+    transition: opacity 1400ms ease, transform 1800ms ease, filter 1200ms ease;
+    filter: saturate(0.98) contrast(1.02);
+    z-index: 1;
+  }
+
+  .scene-layer.active {
+    filter: saturate(1.02) contrast(1.04);
+  }
+
+  .scene-frame,
+  .scene-media,
+  .scene-wash {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .scene-frame {
+    overflow: hidden;
+  }
+
+  .scene-media {
+    border: 0;
+    pointer-events: none;
+    transform-origin: center center;
+    transform: scale(1.04);
+    opacity: 0.98;
+  }
+
+  .scene-wash {
+    background:
+      radial-gradient(circle at 50% 44%, transparent 34%, rgba(253, 246, 240, 0.14)),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(253, 246, 240, 0.18));
+    mix-blend-mode: multiply;
+  }
+
+  .controls {
+    position: absolute;
+    top: 3%;
+    right: 2.8%;
+    z-index: 14;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .control-button {
+    appearance: none;
+    border: 1px solid rgba(230, 217, 209, 0.95);
+    border-radius: 999px;
+    padding: 10px 14px;
+    background: rgba(255, 248, 242, 0.88);
+    color: var(--ink);
+    font: inherit;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    cursor: pointer;
+    backdrop-filter: blur(14px);
+    box-shadow: 0 4px 18px rgba(143, 121, 133, 0.08);
+  }
+
+  .control-button:hover {
+    background: rgba(255, 253, 249, 0.98);
+  }
+
+  .progress {
+    position: absolute;
+    left: 4%;
+    right: 4%;
+    bottom: 3%;
+    height: 5px;
+    border-radius: 999px;
+    background: rgba(185, 170, 160, 0.22);
+    overflow: hidden;
+    z-index: 14;
+  }
+
+  .progress::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    width: var(--progress);
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--rose), var(--mustard), var(--blue), var(--sage));
+  }
+
+  .caption-wrap {
+    position: absolute;
+    left: 50%;
+    bottom: 7.2%;
+    transform: translateX(-50%);
+    z-index: 15;
+    width: min(410px, calc(100% - 72px));
+    pointer-events: none;
+  }
+
+  .caption-card {
+    padding: 14px 15px 15px;
+    border-radius: 20px;
+    background: rgba(255, 248, 242, 0.84);
+    border: 1px solid rgba(230, 217, 209, 0.92);
+    box-shadow: 0 12px 28px rgba(143, 121, 133, 0.11);
+    backdrop-filter: blur(12px);
+    text-align: left;
+  }
+
+  .caption-kicker {
+    margin: 0 0 6px;
+    color: var(--ink-soft);
+    font-size: 9px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+  }
+
+  .caption-text {
+    margin: 0;
+    color: var(--ink);
+    font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+    font-size: clamp(18px, 1.95vw, 25px);
+    line-height: 1.16;
+    letter-spacing: -0.02em;
+  }
+
+  .caption-text strong {
+    color: var(--rose);
+    font-weight: 600;
+  }
+
+  .caption-sub {
+    margin: 8px 0 0;
+    color: var(--ink-soft);
+    font-size: clamp(11px, 1.05vw, 12.5px);
+    line-height: 1.48;
+    max-width: 30ch;
+  }
+
+  .pattern-strip {
+    position: absolute;
+    left: 50%;
+    top: 10.5%;
+    transform: translateX(-50%);
+    z-index: 15;
+    width: min(700px, calc(100% - 92px));
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 500ms ease, transform 500ms ease;
+  }
+
+  .pattern-strip.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .pattern-card {
+    padding: 8px 9px 8px;
+    border-radius: 14px;
+    background: rgba(255, 248, 242, 0.78);
+    border: 1px solid rgba(230, 217, 209, 0.92);
+    box-shadow: 0 7px 16px rgba(143, 121, 133, 0.07);
+    color: var(--ink-soft);
+    position: relative;
+    overflow: hidden;
+    transform: translateY(8px) scale(0.98);
+    opacity: 0.9;
+    transition: transform 420ms ease, opacity 420ms ease, box-shadow 420ms ease, border-color 420ms ease, background 420ms ease;
+  }
+
+  .pattern-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: var(--pattern-accent, var(--blush));
+    opacity: 0.95;
+  }
+
+  .pattern-card.active {
+    background: rgba(255, 253, 249, 0.96);
+    border-color: color-mix(in srgb, var(--pattern-accent, var(--rose)) 45%, white);
+    color: var(--ink);
+    box-shadow: 0 10px 24px color-mix(in srgb, var(--pattern-accent, var(--rose)) 22%, transparent);
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+
+  .pattern-card h3,
+  .pattern-card p {
+    margin: 0;
+  }
+
+  .pattern-card h3 {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    color: var(--pattern-accent, var(--rose));
+  }
+
+  .pattern-card p {
+    font-size: 10px;
+    line-height: 1.25;
+  }
+
+  .palette-ribbon {
+    position: absolute;
+    left: 50%;
+    top: 3.2%;
+    transform: translateX(-50%);
+    z-index: 13;
+    display: grid;
+    grid-template-columns: repeat(6, 28px);
+    gap: 6px;
+    pointer-events: none;
+  }
+
+  .palette-ribbon span {
+    height: 10px;
+    border-radius: 999px;
+    opacity: 0.85;
+  }
+
+  .palette-ribbon span:nth-child(1) { background: var(--blush); }
+  .palette-ribbon span:nth-child(2) { background: var(--sage); }
+  .palette-ribbon span:nth-child(3) { background: var(--mustard); }
+  .palette-ribbon span:nth-child(4) { background: var(--blue); }
+  .palette-ribbon span:nth-child(5) { background: var(--terracotta); }
+  .palette-ribbon span:nth-child(6) { background: var(--plum); }
+
+  .splash {
+    position: absolute;
+    inset: 0;
+    z-index: 18;
+    display: grid;
+    place-items: center;
+    background:
+      radial-gradient(circle at center, rgba(255, 255, 255, 0.48), transparent 34%),
+      rgba(253, 246, 240, 0.74);
+    transition: opacity 500ms ease, visibility 500ms ease;
+    cursor: pointer;
+  }
+
+  .splash.hidden {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .splash-card {
+    width: min(360px, calc(100% - 40px));
+    padding: 26px 24px 22px;
+    border-radius: 24px;
+    text-align: center;
+    background: rgba(255, 248, 242, 0.9);
+    border: 1px solid rgba(230, 217, 209, 0.95);
+    box-shadow: 0 18px 42px rgba(143, 121, 133, 0.14);
+    position: relative;
+    z-index: 1;
+  }
+
+  .splash-kicker {
+    margin: 0 0 10px;
+    color: var(--ink-soft);
+    font-size: 10px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+  }
+
+  .splash-title {
+    margin: 0;
+    color: var(--ink);
+    font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+    font-size: clamp(32px, 4vw, 42px);
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+
+  .splash-sub {
+    margin: 12px 0 0;
+    color: var(--ink-soft);
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .start-button {
+    margin-top: 18px;
+    appearance: none;
+    border: 0;
+    border-radius: 999px;
+    padding: 12px 18px;
+    background: linear-gradient(135deg, var(--rose), var(--terracotta));
+    color: #fffaf6;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 10px 24px rgba(196, 97, 110, 0.18);
+  }
+
+  @media (max-width: 900px) {
+    .app {
+      padding: 10px;
+    }
+
+    .shell {
+      width: min(100vw - 20px, calc((100vh - 20px) * 16 / 9));
+      border-radius: 24px;
+    }
+
+    .shell::before {
+      inset: 10px;
+      border-radius: 18px;
+    }
+
+    .stage::after {
+      inset: 12px;
+      border-radius: 18px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .shell {
+      width: calc(100vw - 12px);
+      height: calc(100vh - 12px);
+      aspect-ratio: auto;
+      border-radius: 20px;
+    }
+
+    .controls {
+      top: 2.4%;
+      right: 2.6%;
+      gap: 8px;
+    }
+
+    .control-button {
+      padding: 9px 12px;
+      font-size: 10px;
+    }
+
+    .palette-ribbon {
+      top: 2.8%;
+      grid-template-columns: repeat(6, 20px);
+      gap: 4px;
+    }
+
+    .caption-wrap {
+      width: min(360px, calc(100% - 28px));
+      bottom: 7%;
+    }
+
+    .caption-card {
+      padding: 12px 12px 13px;
+    }
+
+    .pattern-strip {
+      top: 9%;
+      width: min(330px, calc(100% - 26px));
+      grid-template-columns: 1fr;
+      gap: 7px;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div class="shell">
+      <div class="stage" id="stage"></div>
+
+      <div class="palette-ribbon" aria-hidden="true">
+        <span></span><span></span><span></span><span></span><span></span><span></span>
+      </div>
+
+      <div class="controls">
+        <button class="control-button" id="playPauseButton" type="button">Play</button>
+        <button class="control-button" id="replayButton" type="button">Replay</button>
+      </div>
+
+      <div class="progress" aria-hidden="true"></div>
+
+      <div class="pattern-strip" id="patternStrip" aria-hidden="true"></div>
+
+      <div class="caption-wrap">
+        <div class="caption-card" aria-live="polite">
+          <p class="caption-kicker" id="captionKicker">The space between</p>
+          <p class="caption-text" id="captionText">Every couple has a <strong>relational field</strong>.</p>
+          <p class="caption-sub" id="captionSub">An invisible space between you, shaped by how you show up together.</p>
+        </div>
+      </div>
+
+      <div class="splash" id="splash">
+        <div class="splash-card">
+          <p class="splash-kicker">Relational field</p>
+          <h1 class="splash-title">Play</h1>
+          <p class="splash-sub">A lighter, text-free cut using the app palette and cleaned scene artwork.</p>
+          <button class="start-button" id="startButton" type="button">Play</button>
+        </div>
+      </div>
+
+      <audio id="narration" preload="auto" src="audio--relational-field.mp3"></audio>
+    </div>
+  </div>
+
+<script>
+  const audio = document.getElementById("narration");
+  const stage = document.getElementById("stage");
+  const splash = document.getElementById("splash");
+  const splashCard = splash.querySelector(".splash-card");
+  const startButton = document.getElementById("startButton");
+  const playPauseButton = document.getElementById("playPauseButton");
+  const replayButton = document.getElementById("replayButton");
+  const patternStrip = document.getElementById("patternStrip");
+  const captionKicker = document.getElementById("captionKicker");
+  const captionText = document.getElementById("captionText");
+  const captionSub = document.getElementById("captionSub");
+
+  const audioDuration = 108.669375;
+  const filmDuration = 110;
+  const syncLead = 0.15;
+  const captionLead = 0.35;
+  const patternLead = 0.45;
+  let postAudioHoldStartedAt = 0;
+  let rafId = 0;
+  let sceneElements = [];
+  let scenesLoaded = false;
+  let currentCueIndex = -1;
+
+  const scenes = [
+    { src: "./film-assets/scene--home-full.html", start: 0.0, end: 9.2, fade: 1.8, zoom: 1.025, tint: "rgba(227, 175, 183, 0.05)" },
+    { src: "./film-assets/portal--snapshot-60s.html", start: 7.8, end: 18.6, fade: 1.8, zoom: 1.025, tint: "rgba(212, 168, 67, 0.04)" },
+    { src: "./film-assets/wild-01--field-alive.html", start: 16.8, end: 30.0, fade: 1.9, zoom: 1.03, tint: "rgba(143, 168, 188, 0.05)" },
+    { src: "./film-assets/portal--pairing-secure-secure.html", start: 28.2, end: 42.0, fade: 1.9, zoom: 1.025, tint: "rgba(159, 170, 149, 0.05)" },
+    { src: "./film-assets/wild-06--co-regulation.html", start: 39.8, end: 49.6, fade: 1.9, zoom: 1.03, tint: "rgba(143, 168, 188, 0.04)" },
+    { src: "./film-assets/scene--ifs-parts-map.html", start: 44.1, end: 50.7, fade: 1.8, zoom: 1.025, tint: "rgba(212, 168, 67, 0.04)" },
+    { src: "./film-assets/wild-05--inner-rings.html", start: 50.6, end: 57.9, fade: 1.8, zoom: 1.03, tint: "rgba(143, 168, 188, 0.04)" },
+    { src: "./film-assets/portal--pairing-anxious-avoidant.html", start: 59.1, end: 65.9, fade: 1.8, zoom: 1.025, tint: "rgba(227, 175, 183, 0.05)" },
+    { src: "./film-assets/portal--conflict-dutch.html", start: 67.4, end: 74.3, fade: 1.8, zoom: 1.025, tint: "rgba(146, 117, 133, 0.05)" },
+    { src: "./film-assets/portal--pairing-fearful-fearful.html", start: 75.2, end: 83.3, fade: 1.8, zoom: 1.025, tint: "rgba(227, 175, 183, 0.05)" },
+    { src: "./film-assets/portrait--attachment-scores.html", start: 83.2, end: 95.0, fade: 1.7, zoom: 1.025, tint: "rgba(201, 135, 106, 0.04)" },
+    { src: "./film-assets/step-01--acknowledge-the-strain.html", start: 96.5, end: 108.6, fade: 1.6, zoom: 1.025, tint: "rgba(143, 168, 188, 0.04)" }
+  ];
+
+  const cues = [
+    { start: 0.0, end: 4.20, kicker: "The space between", text: "Every couple has a <strong>relational field</strong>.", sub: "An invisible space between you." },
+    { start: 4.80, end: 8.76, kicker: "Shaped by presence", text: "It is shaped by <strong>how you show up</strong>.", sub: "The space changes with the way each of you arrives." },
+    { start: 9.18, end: 15.80, kicker: "Orientation", text: "When both partners turn toward <strong>connection</strong> rather than self-protection...", sub: "Something wiser begins to emerge between them." },
+    { start: 18.26, end: 22.72, kicker: "The we", text: "There is a <strong>we</strong> that can heal what <strong>I</strong> cannot.", sub: "The bond itself becomes part of the healing." },
+    { start: 24.60, end: 28.34, kicker: "A duet", text: "Like two musicians playing together.", sub: "The relationship becomes a duet." },
+    { start: 28.34, end: 36.80, kicker: "The music", text: "Listening, adjusting, and responding in real time.", sub: "Something beautiful emerges that neither of you could make alone." },
+    { start: 37.64, end: 39.94, kicker: "Coming alive", text: "That is the <strong>relational field</strong> coming alive.", sub: "The beauty is in the mutual responsiveness." },
+    { start: 41.72, end: 43.34, kicker: "What gets in the way", text: "Then the protective habits begin to close the space.", sub: "Here is what gets in the way." },
+    { start: 44.18, end: 49.48, kicker: "Five patterns", text: "Five <strong>relational addictions</strong> tend to appear in couples.", sub: "Each one moves the bond away from openness and toward protection." },
+    { start: 50.58, end: 57.90, kicker: "Addiction one", text: "<strong>Certainty</strong>.", sub: "Needing to be right about your partner and holding fixed stories about who they are." },
+    { start: 59.12, end: 65.92, kicker: "Addiction two", text: "<strong>Control</strong>.", sub: "Managing outcomes and avoiding the vulnerability that real intimacy requires." },
+    { start: 67.42, end: 74.26, kicker: "Addiction three", text: "<strong>Distraction</strong>.", sub: "Avoiding difficult conversations and numbing out instead of tuning in." },
+    { start: 75.26, end: 83.22, kicker: "Addiction four", text: "<strong>Outrage</strong>.", sub: "Righteous anger that feels justified in the moment but fractures trust over time." },
+    { start: 83.22, end: 94.98, kicker: "Addiction five", text: "<strong>Independence</strong>.", sub: "The myth that needing your partner is weakness, when healthy dependence is part of secure love." },
+    { start: 96.50, end: 101.44, kicker: "Not moral failures", text: "These are not moral failures.", sub: "They are protective strategies that made sense at some point." },
+    { start: 102.18, end: 108.54, kicker: "Begin the path", text: "Begin this twelve-step journey with tenderness and courage.", sub: "Love grows each time two people return, listen, and choose each other again." }
+  ];
+
+  const patterns = [
+    { label: "Certainty", detail: "Fixed stories about who your partner is.", start: 50.58, end: 57.90, color: "var(--blush)" },
+    { label: "Control", detail: "Managing outcomes to avoid vulnerability.", start: 59.12, end: 65.92, color: "var(--sage)" },
+    { label: "Distraction", detail: "Numbing out instead of staying present.", start: 67.42, end: 74.26, color: "var(--mustard)" },
+    { label: "Outrage", detail: "Righteous anger that erodes trust.", start: 75.26, end: 83.22, color: "var(--blue)" },
+    { label: "Independence", detail: "Mistaking need for weakness.", start: 83.22, end: 94.98, color: "var(--terracotta)" }
+  ];
+
+  patternStrip.innerHTML = patterns.map((pattern) =>
+    '<div class="pattern-card" style="--pattern-accent:' + pattern.color + '"><h3>' + pattern.label + '</h3><p>' + pattern.detail + '</p></div>'
+  ).join("");
+  const patternCards = Array.from(patternStrip.querySelectorAll(".pattern-card"));
+
+  function ensureSceneElements() {
+    if (scenesLoaded) {
+      return;
+    }
+
+    sceneElements = scenes.map((scene, index) => {
+      const layer = document.createElement("div");
+      layer.className = "scene-layer";
+      layer.style.zIndex = String(index + 1);
+
+      const frame = document.createElement("div");
+      frame.className = "scene-frame";
+
+      const media = document.createElement("iframe");
+      media.className = "scene-media";
+      media.src = "about:blank";
+      media.loading = "lazy";
+      media.title = scene.src;
+      media.dataset.src = scene.src;
+      media.dataset.loaded = "false";
+
+      const wash = document.createElement("div");
+      wash.className = "scene-wash";
+      wash.style.background =
+        "radial-gradient(circle at 50% 44%, transparent 34%, " +
+        scene.tint +
+        "), linear-gradient(180deg, rgba(255,255,255,0.08), rgba(253,246,240,0.12))";
+
+      frame.append(media, wash);
+      layer.append(frame);
+      stage.append(layer);
+
+      return { scene, layer, media };
+    });
+
+    scenesLoaded = true;
+  }
+
+  function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+  }
+
+  function ease(value) {
+    return value * value * (3 - 2 * value);
+  }
+
+  function sceneOpacity(time, start, end, fade) {
+    if (time <= start - fade || time >= end + fade) {
+      return 0;
+    }
+
+    if (time < start) {
+      return ease((time - (start - fade)) / fade);
+    }
+
+    if (time > end) {
+      return ease(1 - (time - end) / fade);
+    }
+
+    return 1;
+  }
+
+  function getPlayhead() {
+    if (audio.ended) {
+      if (!postAudioHoldStartedAt) {
+        postAudioHoldStartedAt = performance.now();
+      }
+
+      const holdElapsed = (performance.now() - postAudioHoldStartedAt) / 1000;
+      return Math.min(audioDuration + holdElapsed, filmDuration);
+    }
+
+    return Math.min((audio.currentTime || 0) + syncLead, filmDuration);
+  }
+
+  function updateScenes(time) {
+    if (!scenesLoaded) {
+      return;
+    }
+
+    sceneElements.forEach(({ scene, layer, media }) => {
+      const shouldLoad = time >= scene.start - 4 && time <= scene.end + 8;
+      if (shouldLoad && media.dataset.loaded !== "true") {
+        media.src = media.dataset.src;
+        media.dataset.loaded = "true";
+      } else if (!shouldLoad && media.dataset.loaded === "true") {
+        media.src = "about:blank";
+        media.dataset.loaded = "false";
+      }
+
+      const opacity = sceneOpacity(time, scene.start, scene.end, scene.fade);
+      const active = opacity > 0.03;
+      const drift = clamp(time - scene.start, 0, 18) * 0.00075;
+      const scale = scene.zoom + drift;
+
+      layer.style.opacity = opacity.toFixed(3);
+      layer.style.transform = "scale(" + (1.002 + opacity * 0.006).toFixed(3) + ")";
+      layer.classList.toggle("active", active);
+      media.style.transform = "scale(" + scale.toFixed(3) + ")";
+    });
+  }
+
+  function updateCue(time) {
+    const cueTime = Math.min(time + captionLead, filmDuration);
+    let cueIndex = cues.findIndex((cue) => cueTime >= cue.start && cueTime < cue.end);
+    if (cueIndex === -1) {
+      cueIndex = 0;
+      for (let index = 0; index < cues.length; index += 1) {
+        if (cueTime >= cues[index].start) {
+          cueIndex = index;
+        } else {
+          break;
+        }
+      }
+    }
+    const cue = cues[cueIndex];
+
+    if (cueIndex !== currentCueIndex) {
+      currentCueIndex = cueIndex;
+      captionKicker.textContent = cue.kicker;
+      captionText.innerHTML = cue.text;
+      captionSub.textContent = cue.sub;
+    }
+  }
+
+  function updatePatterns(time) {
+    const patternTime = time + patternLead;
+    const visible = patternTime >= patterns[0].start - 0.8 && patternTime <= patterns[patterns.length - 1].end + 0.6;
+    patternStrip.classList.toggle("visible", visible);
+
+    let activePatternIndex = -1;
+    if (visible) {
+      for (let index = 0; index < patterns.length; index += 1) {
+        if (patternTime >= patterns[index].start) {
+          activePatternIndex = index;
+        } else {
+          break;
+        }
+      }
+    }
+
+    patternCards.forEach((card, index) => {
+      const active = index === activePatternIndex;
+      card.classList.toggle("active", active);
+    });
+  }
+
+  function updateControls() {
+    if (audio.ended && getPlayhead() >= filmDuration) {
+      playPauseButton.textContent = "Play";
+    } else if (audio.paused) {
+      playPauseButton.textContent = "Play";
+    } else {
+      playPauseButton.textContent = "Pause";
+    }
+  }
+
+  function render() {
+    const playhead = getPlayhead();
+    updateScenes(playhead);
+    updateCue(playhead);
+    updatePatterns(playhead);
+    updateControls();
+    document.documentElement.style.setProperty("--progress", (clamp(playhead / filmDuration, 0, 1) * 100).toFixed(2) + "%");
+
+    if (!audio.paused || (audio.ended && playhead < filmDuration)) {
+      rafId = requestAnimationFrame(render);
+    }
+  }
+
+  function startRenderLoop() {
+    cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(render);
+  }
+
+  function playFilm(fromStart) {
+    if (fromStart) {
+      audio.currentTime = 0;
+      postAudioHoldStartedAt = 0;
+    }
+
+    splash.classList.add("hidden");
+    playPauseButton.textContent = "Pause";
+
+    requestAnimationFrame(() => {
+      ensureSceneElements();
+      startRenderLoop();
+
+      audio.play().catch(() => {
+        splash.classList.remove("hidden");
+        playPauseButton.textContent = "Play";
+      });
+    });
+  }
+
+  function pauseFilm() {
+    audio.pause();
+    cancelAnimationFrame(rafId);
+    render();
+  }
+
+  startButton.addEventListener("click", (event) => {
+    event.stopPropagation();
+    playFilm(true);
+  });
+
+  splashCard.addEventListener("click", () => {
+    playFilm(true);
+  });
+
+  splash.addEventListener("click", (event) => {
+    if (event.target === splash) {
+      playFilm(true);
+    }
+  });
+
+  playPauseButton.addEventListener("click", () => {
+    if (audio.paused) {
+      if (audio.ended && getPlayhead() >= filmDuration) {
+        playFilm(true);
+        return;
+      }
+
+      splash.classList.add("hidden");
+      ensureSceneElements();
+      audio.play().then(startRenderLoop);
+    } else {
+      pauseFilm();
+    }
+  });
+
+  replayButton.addEventListener("click", () => {
+    playFilm(true);
+  });
+
+  audio.addEventListener("ended", () => {
+    postAudioHoldStartedAt = performance.now();
+    startRenderLoop();
+    // Notify parent (FoundationOverlay) that film has ended
+    try { window.parent.postMessage({ type: 'foundation-film-ended' }, '*'); } catch(e) {}
+  });
+
+  audio.addEventListener("pause", () => {
+    if (!audio.ended) {
+      cancelAnimationFrame(rafId);
+      render();
+    }
+  });
+
+  audio.addEventListener("play", () => {
+    postAudioHoldStartedAt = 0;
+    startRenderLoop();
+  });
+
+  audio.addEventListener("timeupdate", () => {
+    render();
+  });
+
+  window.addEventListener("keydown", (event) => {
+    if (event.code === "Space") {
+      event.preventDefault();
+      if (audio.paused) {
+        if (audio.ended && getPlayhead() >= filmDuration) {
+          playFilm(true);
+        } else {
+          audio.play().then(startRenderLoop);
+        }
+      } else {
+        pauseFilm();
+      }
+    }
+
+    if (event.key.toLowerCase() === "r") {
+      event.preventDefault();
+      playFilm(true);
+    }
+  });
+
+  render();
+</script>
+</body>
+</html>
