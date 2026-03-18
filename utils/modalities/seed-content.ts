@@ -762,6 +762,163 @@ const SEED: ModalityContentEntry[] = [
       quoteAttribution: 'Ken Wilber',
     },
   },
+
+  // ═══════════════════════════════════════════════════════════
+  // ANXIOUS YIELDING — 5 modalities at high severity
+  // Gives in to everything. Every concession buys temporary relief.
+  // ═══════════════════════════════════════════════════════════
+  { patternId: 'anxious_yielding', modalityId: 'attachment', severity: 'high', content: {
+    insight: 'Your yielding isn\'t generosity — it\'s an attachment strategy. When your anxiety fires, your nervous system calculates: "If I give them what they want, they\'ll stay." Every time you concede, the anxiety briefly quiets. But the relief trains your system to yield MORE, not less. You\'re teaching your attachment system that your needs are the price of love. They\'re not.',
+    bodyCheck: 'Think of the last time you agreed to something you didn\'t want. Where did the "yes" come from? Your mouth said yes. What did your stomach say? Your chest? The body keeps the real answer.',
+    practice: 'This week, when you feel the urge to agree with your partner to keep the peace, pause for 5 seconds. In those 5 seconds ask: "Am I saying yes because I want to, or because I\'m afraid of what happens if I say no?" You don\'t have to say no. Just know which yes you\'re giving.',
+    quote: 'An attachment strategy that sacrifices the self to preserve the bond eventually loses both.', quoteAttribution: 'Sue Johnson',
+  }},
+  { patternId: 'anxious_yielding', modalityId: 'ifs', severity: 'high', content: {
+    insight: 'Your People-Pleaser Part runs your relationship — it scans for what your partner wants and delivers it before they even ask. Underneath it is an exile who believes: "If I have needs of my own, I\'ll be too much. If I take up space, they\'ll leave." The People-Pleaser protects this exile by making sure you never test the belief.',
+    bodyCheck: 'Where does the People-Pleaser live in your body? Many people feel it in the throat — the place where their own truth gets swallowed — or in the shoulders, carrying what isn\'t theirs.',
+    practice: 'This week, notice one moment where your People-Pleaser activates. Instead of following its instructions, ask it: "What are you afraid would happen if I said what I actually want?" Write down the answer. That answer is the exile\'s voice.',
+    quote: 'The People-Pleaser doesn\'t need to be fired. It needs to be reassured that you can survive your partner\'s displeasure.', quoteAttribution: 'Bonnie Weiss',
+  }},
+  { patternId: 'anxious_yielding', modalityId: 'bowen', severity: 'high', content: {
+    insight: 'In Bowen\'s framework, this is undifferentiation expressed through compliance. You regulate your anxiety by adapting to your partner\'s emotional field — becoming what they need, erasing the edges where you are different. This isn\'t intimacy. It\'s fusion disguised as harmony. True intimacy requires two defined selves.',
+    bodyCheck: 'Can you identify one preference — about anything: food, plans, how to spend the evening — that is YOURS and not a reflection of what your partner would choose? If that\'s hard, notice the difficulty itself.',
+    practice: 'Practice micro-differentiation this week: state one preference per day that is purely yours. Not a confrontation. Just: "I\'d prefer Thai tonight" or "I want to watch this, not that." Notice what happens in your body when you state a preference.',
+    quote: 'The ability to define yourself in the context of a relationship without losing yourself or the relationship — that is differentiation.', quoteAttribution: 'Roberta Gilbert',
+  }},
+  { patternId: 'anxious_yielding', modalityId: 'aca', severity: 'high', content: {
+    insight: 'This pattern often has roots in a childhood where love was conditional on compliance. You learned: good children agree. Good children don\'t make waves. You became excellent at that. So excellent that you carried it into adulthood and called it love. But what you\'re doing isn\'t loving your partner — it\'s performing the role that earned you safety as a child.',
+    bodyCheck: 'When you imagine disagreeing with your partner about something that matters, does it feel like a relationship risk or does it feel like a SURVIVAL risk? If it\'s survival — that\'s the child speaking, not the adult.',
+    practice: 'Write a letter to your younger self — the one who learned that agreement was survival. Tell them: "You did what you needed to do. It worked. But I\'m an adult now, and the person I\'m with can handle hearing what I actually think." Then have one honest conversation this week.',
+    quote: 'We don\'t stop playing the roles we learned in childhood. We just forget they\'re roles.', quoteAttribution: 'Claudia Black',
+  }},
+  { patternId: 'anxious_yielding', modalityId: 'dbt', severity: 'high', content: {
+    insight: 'You need the DEAR MAN skill — not the concept, the actual practice. Describe the situation, Express how you feel, Assert what you need, Reinforce why it matters. Your yielding pattern skips every step: you don\'t describe, don\'t express, don\'t assert. You just accommodate.',
+    bodyCheck: 'Think of something you want from your partner that you haven\'t asked for. Is there a physical sensation that accompanies the NOT-asking? A heaviness, a resignation? That sensation is the cost of chronic yielding.',
+    practice: 'Choose one small thing you want this week. Use DEAR MAN: (1) Describe: "When we make plans, I notice I usually go along with yours." (2) Express: "I feel invisible when my preferences don\'t get heard." (3) Assert: "I\'d like us to take turns deciding." (4) Reinforce: "I think it would make me more engaged and less resentful." Say it.',
+    quote: 'Interpersonal effectiveness is not about getting what you want. It is about being willing to ask.', quoteAttribution: 'Marsha Linehan',
+  }},
+
+  // ═══════════════════════════════════════════════════════════
+  // AVOIDANT AVOIDING — 5 modalities at high severity
+  // Double avoidance: avoids closeness AND avoids talking about it.
+  // ═══════════════════════════════════════════════════════════
+  { patternId: 'avoidant_avoiding', modalityId: 'attachment', severity: 'high', content: {
+    insight: 'Your attachment system and your conflict system are aligned in the same direction: away. When your partner reaches for closeness, you step back. When they bring up a problem, you change the subject. This isn\'t cruelty — it\'s a coherent protective strategy. Your entire system agrees: distance is safety. The problem is that distance is also loneliness.',
+    bodyCheck: 'What does closeness feel like in your body? Not the idea of closeness — the actual physical experience of your partner wanting to be emotionally near you. Is there a tightening? A subtle retreat?',
+    practice: 'This week, when your partner initiates emotional connection, notice your first impulse. Don\'t override it. Just notice and name it: "My first impulse is to [change the subject / check my phone / say I\'m fine]." Then choose: follow the impulse, or stay for 30 more seconds.',
+    quote: 'Avoidance is not the absence of need. It is need wearing armor.', quoteAttribution: 'Amir Levine',
+  }},
+  { patternId: 'avoidant_avoiding', modalityId: 'polyvagal', severity: 'high', content: {
+    insight: 'Your nervous system has a strong dorsal vagal preference — when emotional demands rise, you don\'t fight or flee. You conserve. You go flat. You become pleasant, agreeable, and completely unreachable. Your partner experiences this as a wall. Your body experiences it as relief. Both are real.',
+    bodyCheck: 'During your next conversation about feelings, monitor your body every 60 seconds. Are you still breathing fully? Can you feel your feet? Is your face expressive or has it gone neutral?',
+    practice: 'Practice ventral vagal anchoring: before an emotional conversation, hum for 30 seconds (stimulates the vagus nerve), make eye contact with your partner for 5 seconds, and orient to the room. These three actions pull your nervous system toward social engagement.',
+    quote: 'Connection is a biological imperative. The nervous system that avoids it is protecting against something it once couldn\'t survive.', quoteAttribution: 'Deb Dana',
+  }},
+  { patternId: 'avoidant_avoiding', modalityId: 'mi', severity: 'high', content: {
+    insight: 'You\'re not in denial about the avoidance. You know you pull away. You\'re ambivalent — part of you wants to open up, and part of you has very good reasons for staying closed. The question isn\'t "Why don\'t you just open up?" The question is: "What would make it worth the risk?"',
+    bodyCheck: 'On a scale of 1-10, how important is it to you to be more emotionally available to your partner? Now: how confident are you that you COULD be? The gap between importance and confidence is where the work lives.',
+    practice: 'Complete this sentence three ways: "If I were more emotionally open with my partner, the best thing that could happen is ___." "The worst thing is ___." "The most LIKELY thing is ___." Notice which feels most real.',
+    quote: 'Ambivalence is not the enemy of change. It is the beginning of it.', quoteAttribution: 'William Miller',
+  }},
+  { patternId: 'avoidant_avoiding', modalityId: 'narrative', severity: 'high', content: {
+    insight: 'You\'ve authored a story: "I\'m independent. I don\'t need that much emotional connection. I\'m low-maintenance." This story serves you — it protects against vulnerability. But there\'s an alternative story that\'s also true: "I am someone who learned to need less because asking for more was dangerous."',
+    bodyCheck: 'When you tell yourself "I\'m just not that emotional," does your body agree? Or is there a quieter voice underneath that wants to be known?',
+    practice: 'Write the alternative story — not the one you tell, but the one you\'ve been avoiding: "I am someone who ___." Fill in the blank with something honest about what you actually want from intimacy.',
+    quote: 'The stories we tell about ourselves are never the whole truth. The question is: which parts have we left out, and why?', quoteAttribution: 'David Epston',
+  }},
+  { patternId: 'avoidant_avoiding', modalityId: 'contemplative', severity: 'high', content: {
+    insight: 'Every spiritual tradition has a name for the practice you\'re avoiding: presence, witness, being-with. Your avoidance is not just a relational pattern — it\'s a way of moving through life that keeps you at a comfortable distance from your own depth.',
+    bodyCheck: 'Sit quietly for 60 seconds. Don\'t distract. Don\'t plan. Just be in the silence. What rises? The thing that rises when the distractions stop — that\'s what you\'re avoiding.',
+    practice: 'This week, practice one minute of stillness before bed. No phone, no book. Just you, in the dark, with whatever is there. Start with one minute. See what comes.',
+    quote: 'We must be willing to let go of the life we planned so as to have the life that is waiting for us.', quoteAttribution: 'Joseph Campbell',
+  }},
+
+  // ═══════════════════════════════════════════════════════════
+  // AVOIDANT BUT COLLABORATIVE — 4 modalities at high severity
+  // Avoids emotional intimacy but ENGAGES with practical problems.
+  // ═══════════════════════════════════════════════════════════
+  { patternId: 'avoidant_but_collaborative', modalityId: 'attachment', severity: 'high', content: {
+    insight: 'Your problem-solving is your love language — but it\'s also your hiding place. When your partner says "I feel disconnected," you hear a problem to solve rather than a feeling to sit with. Underneath the doing is a belief: "If I\'m useful enough, they won\'t ask me to be vulnerable."',
+    bodyCheck: 'When your partner shares a feeling, does your brain immediately translate it into a PROBLEM? "They\'re sad" becomes "What can I do?" That translation — emotion into task — is the avoidance wearing the mask of helpfulness.',
+    practice: 'This week, when your partner shares a feeling, practice NOT solving it. Say: "That sounds hard. Tell me more." Then stop. No advice. No fix. Just: "Tell me more." Notice how uncomfortable the silence feels.',
+    quote: 'Being heard is so close to being loved that for the average person, they are almost indistinguishable.', quoteAttribution: 'David Augsburger',
+  }},
+  { patternId: 'avoidant_but_collaborative', modalityId: 'ifs', severity: 'high', content: {
+    insight: 'Your Fixer Part is running your relationship — and it\'s exhausted. This part believes that love is earned through competence. But being needed and being loved are different things. The exile underneath holds the terrifying question: "If I stop being useful, am I still wanted?"',
+    bodyCheck: 'When there\'s nothing to fix and your partner just wants to sit with you in silence — what happens in your body? Restlessness? The urge to start a project? That\'s the Fixer panicking.',
+    practice: 'Schedule 20 minutes this week of deliberate uselessness with your partner. No activity. No planning. If the Fixer starts itching, say internally: "I know you want to do something. We\'re practicing being."',
+    quote: 'The most profound thing we can offer another person is our presence — not our solutions.', quoteAttribution: 'Richard Schwartz',
+  }},
+  { patternId: 'avoidant_but_collaborative', modalityId: 'act', severity: 'high', content: {
+    insight: 'You\'re fused with the thought: "I show love by doing things." And that IS one way — a valuable one. But you\'ve made it the ONLY way, closing the door on other forms of intimacy. The ACT move isn\'t to stop doing. It\'s to expand the repertoire.',
+    bodyCheck: 'Think of the last time your partner wanted emotional connection and you offered a solution instead. What were you FEELING right before you started problem-solving? Can you name it?',
+    practice: 'This week, before you solve anything your partner brings to you, ask one question first: "Do you want me to listen, or do you want me to help fix it?" If they say listen — LISTEN.',
+    quote: 'The willingness to be present to another\'s pain — without fixing it — is one of the highest forms of courage.', quoteAttribution: 'Russ Harris',
+  }},
+  { patternId: 'avoidant_but_collaborative', modalityId: 'bowen', severity: 'high', content: {
+    insight: 'Your problem-solving is overfunctioning — you take responsibility for the emotional climate by managing, planning, and executing. This lets your partner underfunction emotionally. The reciprocity keeps both of you stuck: you never rest, they never grow, and neither of you is truly intimate.',
+    bodyCheck: 'How much of your mental energy is currently occupied by things you\'re managing FOR the relationship? If you stopped, what would happen? The answer reveals what the overfunctioning is protecting.',
+    practice: 'This week, consciously underfunction in ONE area you normally manage. Don\'t remind your partner. Let something stay unsolved. Notice what happens — both in the relationship and in your body.',
+    quote: 'Overfunctioning for another person is a way of avoiding your own emotional life. It looks like love. It feels like control.', quoteAttribution: 'Roberta Gilbert',
+  }},
+
+  // ═══════════════════════════════════════════════════════════
+  // AWARE BUT CAN'T REGULATE — 4 modalities at high severity
+  // Narrates flooding in real time but can't stop it.
+  // ═══════════════════════════════════════════════════════════
+  { patternId: 'aware_but_cant_regulate', modalityId: 'polyvagal', severity: 'high', content: {
+    insight: 'Your awareness is top-down — your cortex observes and labels. Your dysregulation is bottom-up — your brainstem activates without consulting your cortex. These two systems aren\'t in conversation. You can WATCH yourself flood without being able to STOP it. This isn\'t a failure of insight. It\'s a failure of neural integration.',
+    bodyCheck: 'The next time you\'re activated, notice: can you observe the activation with some part of your awareness? That observing part is your resource. It\'s small right now. But it exists.',
+    practice: 'Practice dual awareness: during a calm moment, recall a mildly stressful interaction. Let activation rise to a 3/10. Keep one hand on a solid surface — your anchor. Hold BOTH: the activation AND the anchor. This is titration.',
+    quote: 'The goal is not to stop the wave. The goal is to learn to surf.', quoteAttribution: 'Jon Kabat-Zinn',
+  }},
+  { patternId: 'aware_but_cant_regulate', modalityId: 'dbt', severity: 'high', content: {
+    insight: 'You have Observe mastered. What\'s missing is the Non-judgmental Stance. When you observe yourself flooding, your mind adds: "Here I go again. I KNOW better." That judgment IS the second wave that makes the first worse. The flooding is one problem. The self-criticism about the flooding is a bigger one.',
+    bodyCheck: 'When you catch yourself in a pattern, what\'s the FIRST thought? Is it "I\'m flooding" (observation) or "I\'m STILL flooding, what\'s wrong with me" (judgment)? The judgment adds fuel.',
+    practice: 'When you notice yourself dysregulated, replace the judgment with a weather report: "A storm is moving through. It\'s a 6/10. I can see it. It will pass." No self-criticism. Just weather.',
+    quote: 'Awareness without judgment is the beginning of change. Awareness WITH judgment is the beginning of another cycle.', quoteAttribution: 'Marsha Linehan',
+  }},
+  { patternId: 'aware_but_cant_regulate', modalityId: 'organic_intelligence', severity: 'high', content: {
+    insight: 'Your body has incomplete survival responses — moments from the past where your nervous system started to fight, flee, or freeze but couldn\'t complete the action. Your high awareness means you FEEL this stored activation acutely. But knowing it\'s there doesn\'t discharge it.',
+    bodyCheck: 'When activated and aware of it, notice what your body WANTS to do — push? Run? Curl up? That impulse is the incomplete response. It\'s not irrational. It\'s unfinished.',
+    practice: 'In a safe space, let your body complete one small impulse: if it wants to push, push against a wall for 10 seconds. If it wants to curl up, curl up for 60 seconds, then uncurl slowly. The awareness you already have will tell you when the discharge is complete — a shift, a settling, a sigh.',
+    quote: 'The body doesn\'t lie. And it doesn\'t forget. But it can complete what it started, if we let it.', quoteAttribution: 'Steve Hoskinson',
+  }},
+  { patternId: 'aware_but_cant_regulate', modalityId: 'aqal', severity: 'high', content: {
+    insight: 'You\'re at a developmental transition: you\'ve developed self-observation (later-stage cognitive skill) but your emotional regulation is still catching up (earlier-stage embodied skill). This gap is normal — lines develop unevenly. The frustration "I can SEE it but can\'t STOP it" is the felt experience of being between stages.',
+    bodyCheck: 'The gap between seeing and stopping feels like failure. Reframe it: it feels like a bridge being built. The seeing side is solid. The stopping side is under construction. You\'re in the middle.',
+    practice: 'Track regulation, not awareness. Keep a daily log: "Today my activation peaked at ___/10 and took ___ minutes to return to baseline." Over weeks, watch recovery time shorten. That\'s development.',
+    quote: 'The measure of growth is not whether you still get triggered. It is how quickly you return to yourself.', quoteAttribution: 'Dan Siegel',
+  }},
+
+  // ═══════════════════════════════════════════════════════════
+  // MODERATE REGULATION CAPACITY — 4 modalities at medium severity
+  // Not in crisis. Regulates some of the time. Building reliability.
+  // ═══════════════════════════════════════════════════════════
+  { patternId: 'moderate_regulation_capacity', modalityId: 'polyvagal', severity: 'medium', content: {
+    insight: 'Your regulation capacity is real — it works in many situations. What you\'re noticing is a threshold: below a certain intensity, you regulate well. Above it, the system overwhelms. This threshold isn\'t fixed. Every time you regulate successfully at your edge, you stretch the window slightly wider.',
+    bodyCheck: 'Think of a recent moment where you regulated well. Now one where you couldn\'t. What\'s the difference? Intensity? Topic? Fatigue? Finding the conditions that narrow your window is as important as building it.',
+    practice: 'Practice edge work: find the 4-5/10 activation level — the edge where you can feel the pull of dysregulation but still maintain your center. Not 2/10 (too easy). Not 8/10 (too much). The edge is where the window stretches.',
+    quote: 'Resilience is not built by avoiding difficulty. It is built by meeting difficulty at the edge of your capacity.', quoteAttribution: 'Deb Dana',
+  }},
+  { patternId: 'moderate_regulation_capacity', modalityId: 'dbt', severity: 'medium', content: {
+    insight: 'You\'re in the middle zone — not crisis-level and not solid either. This is the best place to build skills because you have enough capacity to PRACTICE without being overwhelmed. The skills you need aren\'t emergency skills. They\'re maintenance skills: daily practices that keep your baseline low.',
+    bodyCheck: 'Check your baseline right now — not during conflict, just now. Rate tension 0-10. If your RESTING baseline is above 4, you\'re starting every interaction partially activated. Lowering the resting baseline is the highest-leverage change.',
+    practice: 'Build a daily 5-minute practice: Morning: 2 minutes paced breathing (inhale 4, hold 4, exhale 6). Midday: 60-second body scan. Evening: name 3 emotions you felt today without judging them. This lowers your resting baseline more reliably than any crisis intervention.',
+    quote: 'The goal is not to be calm all the time. The goal is to return to calm more quickly each time.', quoteAttribution: 'Marsha Linehan',
+  }},
+  { patternId: 'moderate_regulation_capacity', modalityId: 'act', severity: 'medium', content: {
+    insight: 'Your regulation is good enough to support values-based action most of the time. The question isn\'t "Can I regulate?" — you can, often. The question is: "When I can\'t, am I willing to feel the discomfort and act according to my values anyway?" Regulation is ideal. Willingness is the backup.',
+    bodyCheck: 'Think of a moment where you were partially activated but still functioned — still said the right thing. That moment wasn\'t perfect regulation. It was willingness plus good-enough regulation. That\'s real.',
+    practice: 'This week, notice one moment where your regulation wavers but doesn\'t collapse. Ask: "What value is at stake? Am I willing to feel this discomfort in service of that value?" If yes — act. It won\'t be clean. It will be real.',
+    quote: 'Willingness is not wanting to feel discomfort. It is choosing to feel it when something important is at stake.', quoteAttribution: 'Steven Hayes',
+  }},
+  { patternId: 'moderate_regulation_capacity', modalityId: 'contemplative', severity: 'medium', content: {
+    insight: 'You\'re in the middle of your regulation journey — not at the beginning, not at mastery. Many contemplative traditions honor this in-between space. You are not dysregulated. You are not regulated. You are becoming.',
+    bodyCheck: 'Sit with the imperfection of your current capacity. "I can sometimes hold myself through difficulty, and sometimes I can\'t." Can you hold that truth without it collapsing into "I\'m not good enough"?',
+    practice: 'After a moment where your regulation was imperfect — messy but managed — take 30 seconds to appreciate the managing. Not the mess. "I stayed. I didn\'t leave. I came back." Self-compassion widens the window. Shame shrinks it.',
+    quote: 'The middle of the journey is the hardest place to be — and the most sacred.', quoteAttribution: 'Pema Chodron',
+  }},
 ];
 
 // ─── Register seed content ───────────────────────────────

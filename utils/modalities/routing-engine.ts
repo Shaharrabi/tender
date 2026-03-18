@@ -25,14 +25,17 @@ const PATTERN_MODALITY_RELEVANCE: Record<string, string[]> = {
 
   // Regulation patterns
   regulation_capacity: ['polyvagal', 'dbt', 'organic_intelligence', 'act'],
-  moderate_regulation_capacity: ['polyvagal', 'dbt', 'act'],
+  moderate_regulation_capacity: ['polyvagal', 'dbt', 'act', 'contemplative'],
+  aware_but_cant_regulate: ['polyvagal', 'dbt', 'organic_intelligence', 'aqal'],
   eq_perception_management_gap: ['polyvagal', 'dbt', 'ifs', 'act', 'organic_intelligence'],
   eq_other_focused: ['ifs', 'bowen', 'aca', 'dbt'],
   eq_low_anxious: ['polyvagal', 'dbt', 'attachment', 'organic_intelligence'],
 
   // Attachment × Conflict patterns
   anxious_but_avoiding: ['attachment', 'ifs', 'polyvagal', 'act', 'narrative'],
-  anxious_yielding: ['attachment', 'ifs', 'dbt', 'bowen'],
+  anxious_yielding: ['attachment', 'ifs', 'bowen', 'aca', 'dbt'],
+  avoidant_avoiding: ['attachment', 'polyvagal', 'mi', 'narrative', 'contemplative'],
+  avoidant_but_collaborative: ['attachment', 'ifs', 'act', 'bowen'],
 
   // Values × Behavior patterns
   values_honesty_avoids_conflict: ['act', 'narrative', 'mi', 'ifs', 'contemplative'],
