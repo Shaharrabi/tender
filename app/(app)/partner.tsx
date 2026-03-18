@@ -533,6 +533,27 @@ export default function PartnerScreen() {
                 {Platform.OS === 'web' ? 'Copy Code' : 'Share Code'}
               </Text>
             </TouchableOpacity>
+            {/* Regenerate code option */}
+            <TouchableOpacity
+              style={{ marginTop: 12 }}
+              onPress={async () => {
+                setActiveInvite(null);
+                setProcessing(true);
+                try {
+                  const invite = await createInvite(user!.id, displayName.trim() || undefined);
+                  if (invite) setActiveInvite(invite);
+                } catch (e) {
+                  console.error('[Partner] Error regenerating invite:', e);
+                } finally {
+                  setProcessing(false);
+                }
+              }}
+              activeOpacity={0.7}
+            >
+              <Text style={{ fontSize: 13, color: Colors.textMuted, textDecorationLine: 'underline', textAlign: 'center' }}>
+                Code not working? Generate a new one
+              </Text>
+            </TouchableOpacity>
           </View>
         ) : (
           <View style={[styles.card, styles.createInviteCard]}>

@@ -1865,17 +1865,28 @@ export default function HomeScreen() {
           {/* Section 7: The Space Between — available after all 6 individual assessments */}
           {individualCompleted && hasPortrait && !statuses['relational-field']?.state?.includes('completed') && (
             <TouchableOpacity
-              style={[styles.portraitGenerateCard, { marginHorizontal: 0, borderWidth: 1, borderColor: Colors.border, borderLeftWidth: 3, borderLeftColor: '#7CA4B8' }]}
+              style={{
+                marginHorizontal: Spacing.md,
+                marginBottom: Spacing.md,
+                backgroundColor: Colors.surface,
+                borderRadius: BorderRadius.md,
+                borderWidth: 1,
+                borderColor: Colors.border,
+                borderLeftWidth: 3,
+                borderLeftColor: '#7CA4B8',
+                padding: Spacing.md,
+                overflow: 'hidden' as const,
+              }}
               onPress={() => {
                 SoundHaptics.tap();
                 router.push({ pathname: '/(app)/tender-assessment' as any, params: { startSection: 7 } });
               }}
               activeOpacity={0.8}
             >
-              <Text style={[styles.portraitGenerateTitle, { fontSize: 15 }]}>
+              <Text style={{ fontFamily: 'Jost_500Medium', fontSize: 14, color: Colors.text, textAlign: 'center', marginBottom: 4 }}>
                 The Space Between
               </Text>
-              <Text style={styles.portraitGenerateSubtitle}>
+              <Text style={{ fontFamily: 'JosefinSans_400Regular', fontSize: 12, color: Colors.textSecondary, textAlign: 'center', lineHeight: 18 }}>
                 One more section — how you sense, hold, and co-create the relational field with your partner. This deepens your portrait and unlocks the Field domain in your Integrated Map.
               </Text>
               <TenderButton
@@ -1885,9 +1896,8 @@ export default function HomeScreen() {
                   router.push({ pathname: '/(app)/tender-assessment' as any, params: { startSection: 7 } });
                 }}
                 variant="secondary"
-                size="md"
-                fullWidth
-                style={{ marginTop: Spacing.xs }}
+                size="sm"
+                style={{ marginTop: Spacing.sm, alignSelf: 'center' }}
                 accessibilityLabel="Take the Space Between assessment"
               />
             </TouchableOpacity>
