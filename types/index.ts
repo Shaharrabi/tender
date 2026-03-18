@@ -8,6 +8,7 @@
 export type IndividualAssessmentType =
   | 'ecr-r'
   | 'ipip-neo-120'
+  | 'tender-personality-60'
   | 'values'
   | 'sseit'
   | 'dutch'
@@ -183,6 +184,26 @@ export interface IPIPScores {
   facetScores: Record<string, { sum: number; mean: number }>;
   /** Relative scores (0-100) — NOT true population percentiles. See note above. */
   facetPercentiles: Record<string, number>;
+}
+
+// ─── Tender Personality-60 Scores ─────────────────────────
+
+export interface TenderPersonality60Scores {
+  domainScores: Record<string, { sum: number; mean: number }>;
+  /**
+   * Relative scores (0-100). Includes BOTH full-name keys (neuroticism, extraversion, etc.)
+   * AND single-letter keys (N, E, O, A, C) — fixes the integration engine mapping bug.
+   */
+  domainPercentiles: Record<string, number>;
+  /**
+   * Backward compat: only contains A4_Cooperation (derived from items A4 + A10).
+   * No 30-facet structure — the old facet system is removed.
+   */
+  facetPercentiles: Record<string, number>;
+  /** Relational personality subscores: N_rel, E_rel, A_rel, C_rel, O_rel (0-100) */
+  relationalPersonality: Record<string, number>;
+  /** Validity flag: 'VALID' or 'POSSIBLE_BIAS' based on V1 + V2 items */
+  validityFlag: 'VALID' | 'POSSIBLE_BIAS';
 }
 
 // ─── Values Scores ────────────────────────────────────────
