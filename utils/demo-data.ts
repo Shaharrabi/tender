@@ -57,11 +57,14 @@ export const DEMO_SSEIT: SSEITScores = {
     managingOthers: { sum: 13, mean: 3.25, itemCount: 4 },
     utilization: { sum: 16, mean: 3.2, itemCount: 5 },
   },
+  totalNormalized_v2: 60,
   subscaleNormalized: {
     perception: 70,
     managingOwn: 60,
     managingOthers: 65,
     utilization: 64,
+    perspectiveTaking: 42,
+    empathicResonance: 78,
   },
 };
 
@@ -98,10 +101,23 @@ export const DEMO_IPIP: IPIPScores = {
     openness: 78,
     agreeableness: 87,
     conscientiousness: 74,
+    // Single-letter keys for integration engine
+    N: 70, E: 65, O: 78, A: 87, C: 74,
   },
   facetScores: {},
-  facetPercentiles: {},
-};
+  facetPercentiles: {
+    A4_Cooperation: 72,
+  },
+  // New tender-personality-60 fields (cast as any for backward compat with IPIPScores type)
+  relationalPersonality: {
+    N_rel: 85,   // Higher neuroticism in relationship
+    E_rel: 45,   // Lower extraversion in relationship (withdraws in intimacy)
+    O_rel: 82,   // Higher openness in relationship
+    A_rel: 70,   // Lower agreeableness in relationship
+    C_rel: 55,   // Lower conscientiousness in relationship
+  },
+  validityFlag: 'VALID',
+} as any;
 
 export const DEMO_VALUES: ValuesScores = {
   domainScores: {
