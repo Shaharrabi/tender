@@ -154,6 +154,9 @@ export function calculateCompositeScores(
     // Raw ECR-R subscales for couple portrait attachment plotting
     anxietyNorm: clamp(anxietyNorm),
     avoidanceNorm: clamp(avoidanceNorm),
+    // EQ expansion: perspective-taking and empathic resonance (pass-through from SSEIT)
+    perspectiveTaking: sseit.subscaleNormalized?.perspectiveTaking ?? undefined,
+    empathicResonance: sseit.subscaleNormalized?.empathicResonance ?? undefined,
   };
 }
 

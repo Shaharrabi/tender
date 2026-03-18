@@ -155,5 +155,10 @@ export function generatePortrait(
     oneThingSentence: integrated.oneThingSentence,
     // Provenance — tells UI what kind of data each output is
     provenanceMap,
+    // Non-numeric metadata from personality assessment (not in compositeScores to avoid type issues)
+    portraitMetadata: {
+      validityFlag: (ipip as any)?.validityFlag ?? undefined,
+      relationalPersonality: (ipip as any)?.relationalPersonality ?? undefined,
+    },
   };
 }

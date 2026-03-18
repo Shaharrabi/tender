@@ -974,6 +974,47 @@ Attune your responses to where this person is in their journey. The phase name t
     prompt += `\n### Current Growth Edge\n${topGrowthEdge}\n`;
   }
 
+  // ── Empathy & Perspective-Taking (from EQ expansion) ──
+  const pt = cs.perspectiveTaking ?? null;
+  const er = cs.empathicResonance ?? null;
+  const meta = row.portrait_metadata ?? {};
+  const vFlag = meta.validityFlag ?? null;
+  const relPers = meta.relationalPersonality ?? null;
+
+  if (pt !== null || er !== null) {
+    prompt += `\n\n### Empathy & Perspective-Taking`;
+    if (pt !== null) prompt += `\nPerspective-Taking: ${pt}/100`;
+    if (er !== null) prompt += `\nEmpathic Resonance: ${er}/100`;
+    if (pt !== null && pt < 40) {
+      prompt += `\nLow perspective-taking: Use concrete, experiential language with this person — "Imagine you are sitting where they sit right now" rather than pattern-level abstractions like "the pursue-withdraw cycle." They learn through felt experience, not frameworks.`;
+    }
+    if (er !== null && er > 70 && diffScore < 45) {
+      prompt += `\nHigh empathic resonance + low differentiation: This person feels their partner's emotions as their own. They may confuse empathy with enmeshment. Help them distinguish "I feel your pain" from "your pain is mine."`;
+    }
+    if (er !== null && er > 65 && diffScore > 55) {
+      prompt += `\nHealthy deep empathy: This person feels deeply AND holds their center. This is a relational strength — name it when you see it.`;
+    }
+    if (pt !== null && pt < 40 && avdNorm > 55) {
+      prompt += `\nRepair bottleneck: Low perspective-taking combined with avoidance means repairs stall — they cannot see the partner's view AND tend to withdraw. Coach small perspective shifts before asking for approach.`;
+    }
+  }
+
+  if (vFlag === 'POSSIBLE_BIAS') {
+    prompt += `\n\n### Assessment Validity Note`;
+    prompt += `\nThis person's assessment responses may reflect social desirability bias — their answers painted an unusually positive picture. Coach with gentle challenge: "I notice things sound really smooth — what might be underneath that?"`;
+  }
+
+  if (relPers && Object.keys(relPers).length > 0) {
+    const labels: Record<string, string> = { N_rel: 'Emotional Reactivity', E_rel: 'Social Energy', A_rel: 'Cooperativeness', C_rel: 'Follow-through', O_rel: 'Openness' };
+    prompt += `\n\n### Relational Personality (How They Show Up in Relationship)`;
+    for (const [key, label] of Object.entries(labels)) {
+      if (relPers[key] != null) {
+        prompt += `\n- ${label}: ${relPers[key]}/100`;
+      }
+    }
+    prompt += `\nThese scores reflect how this person behaves specifically in their relationship — which may differ from their general personality. Use this context when their relationship behavior surprises them.`;
+  }
+
   // Coaching instruction for using cross-instrument data
   prompt += `\n### How to Use This Intelligence
 - Reference their attachment style when they describe relationship dynamics (e.g., "Given how you track connection, it makes sense that silence feels threatening")

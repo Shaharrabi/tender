@@ -24,6 +24,16 @@ export interface CompositeScores {
   // ── Raw ECR-R subscales (for couple portrait attachment plotting) ──
   anxietyNorm?: number;          // 0-100: ECR-R anxiety subscale normalized
   avoidanceNorm?: number;        // 0-100: ECR-R avoidance subscale normalized
+
+  // ── EQ expansion: perspective-taking & empathic resonance ──
+  perspectiveTaking?: number;    // 0-100: capacity to see partner's viewpoint
+  empathicResonance?: number;    // 0-100: capacity to feel partner's experience
+}
+
+/** Non-numeric metadata stored alongside composite scores in the portrait. */
+export interface PortraitMetadata {
+  validityFlag?: 'VALID' | 'POSSIBLE_BIAS';
+  relationalPersonality?: Record<string, number>; // N_rel, E_rel, A_rel, C_rel, O_rel
 }
 
 // ─── Pattern Detection ───────────────────────────────────
@@ -276,6 +286,8 @@ export interface IndividualPortrait {
   oneThingSentence?: string;
   // Provenance map — tells the UI what kind of data each output is
   provenanceMap?: Record<string, ScoreProvenance>;
+  // Non-numeric metadata from personality assessment
+  portraitMetadata?: PortraitMetadata;
 }
 
 // ─── Helper: All assessment scores grouped ───────────────
