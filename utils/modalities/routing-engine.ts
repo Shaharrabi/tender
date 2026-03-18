@@ -21,27 +21,27 @@ const PATTERN_MODALITY_RELEVANCE: Record<string, string[]> = {
   empathic_disconnection: ['attachment', 'polyvagal', 'mi', 'organic_intelligence'],
   healthy_deep_empathy: ['ifs', 'contemplative', 'ecopsychology'],
   avoidant_low_perspective: ['attachment', 'ifs', 'polyvagal', 'act', 'mi'],
-  anxious_high_perspective: ['polyvagal', 'dbt', 'attachment', 'act'],
+  anxious_high_perspective: ['polyvagal', 'dbt', 'act', 'ifs', 'aqal'],
 
   // Regulation patterns
   regulation_capacity: ['polyvagal', 'dbt', 'organic_intelligence', 'act'],
   moderate_regulation_capacity: ['polyvagal', 'dbt', 'act'],
-  eq_perception_management_gap: ['dbt', 'polyvagal', 'ifs', 'act'],
+  eq_perception_management_gap: ['polyvagal', 'dbt', 'ifs', 'act', 'organic_intelligence'],
   eq_other_focused: ['ifs', 'bowen', 'aca', 'dbt'],
   eq_low_anxious: ['polyvagal', 'dbt', 'attachment', 'organic_intelligence'],
 
   // Attachment × Conflict patterns
-  anxious_but_avoiding: ['attachment', 'ifs', 'act', 'narrative'],
+  anxious_but_avoiding: ['attachment', 'ifs', 'polyvagal', 'act', 'narrative'],
   anxious_yielding: ['attachment', 'ifs', 'dbt', 'bowen'],
 
   // Values × Behavior patterns
-  values_honesty_avoids_conflict: ['act', 'narrative', 'mi', 'ifs'],
+  values_honesty_avoids_conflict: ['act', 'narrative', 'mi', 'ifs', 'contemplative'],
   values_intimacy_avoids_closeness: ['attachment', 'ifs', 'polyvagal', 'act'],
   values_autonomy_but_fused: ['bowen', 'ifs', 'act', 'aca'],
 
   // Differentiation patterns
   differentiation_work: ['bowen', 'ifs', 'act', 'aca'],
-  high_cutoff: ['polyvagal', 'attachment', 'organic_intelligence', 'mi'],
+  high_cutoff: ['bowen', 'ifs', 'polyvagal', 'organic_intelligence', 'contemplative'],
 };
 
 /** Get relevant modalities for a pattern (returns IDs in priority order) */
