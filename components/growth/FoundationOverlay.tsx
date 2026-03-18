@@ -14,6 +14,7 @@ import {
   StyleSheet,
   Dimensions,
   Modal,
+  Platform,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -93,10 +94,28 @@ export default function FoundationOverlay({ onDismiss }: FoundationOverlayProps)
   const [isFinishing, setIsFinishing] = useState(false);
   const [currentCaption, setCurrentCaption] = useState<string | null>(null);
 
+  // Caption-only fallback when audio can't play (autoplay blocked, web errors)
+  const captionTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const startCaptionOnlyMode = useCallback(() => {
+    let elapsed = 0;
+    captionTimerRef.current = setInterval(() => {
+      elapsed += 0.2;
+      setCurrentCaption(getCaptionAtTime(elapsed));
+      // Auto-complete after transcript ends (~110 seconds)
+      if (elapsed > 112) {
+        if (captionTimerRef.current) clearInterval(captionTimerRef.current);
+        handleComplete();
+      }
+    }, 200);
+  }, [handleComplete]);
+
   // Show skip after 5 seconds
   useEffect(() => {
     const timer = setTimeout(() => setShowSkip(true), 5000);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      if (captionTimerRef.current) clearInterval(captionTimerRef.current);
+    };
   }, []);
 
   const handleComplete = useCallback(async () => {
@@ -111,42 +130,89 @@ export default function FoundationOverlay({ onDismiss }: FoundationOverlayProps)
     setTimeout(onDismiss, 400);
   }, [isFinishing, onDismiss]);
 
-  // Start audio
+  // Web audio ref for HTML5 Audio fallback
+  const webAudioRef = useRef<HTMLAudioElement | null>(null);
+  const webTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Start audio — platform-aware
   useEffect(() => {
     let mounted = true;
 
-    const play = async () => {
+    if (Platform.OS === 'web') {
+      // Web: Use HTML5 Audio + polling for caption sync
       try {
-        const { sound } = await Audio.Sound.createAsync(
-          require('@/assets/audio/THE FOUNDATION.mp3'),
-          { shouldPlay: true, volume: 1.0 },
-          (status: AVPlaybackStatus) => {
-            if (!status.isLoaded) return;
-            if (status.didJustFinish && mounted) {
-              handleComplete();
-              return;
-            }
-            // Sync captions to audio position
-            if (status.positionMillis != null && mounted) {
-              const posSeconds = status.positionMillis / 1000;
-              setCurrentCaption(getCaptionAtTime(posSeconds));
-            }
-          }
-        );
-        if (mounted) {
-          soundRef.current = sound;
-        }
-      } catch (err) {
-        console.warn('[FoundationOverlay] Audio failed:', err);
-        if (mounted) handleComplete();
-      }
-    };
+        const audioPath = require('@/assets/audio/THE FOUNDATION.mp3');
+        const audioUrl = typeof audioPath === 'string' ? audioPath : audioPath?.uri ?? audioPath?.default ?? audioPath;
+        const audio = new window.Audio(audioUrl);
+        webAudioRef.current = audio;
+        audio.volume = 1.0;
 
-    play();
+        audio.addEventListener('ended', () => {
+          if (mounted) handleComplete();
+        });
+
+        audio.addEventListener('error', () => {
+          console.warn('[FoundationOverlay] Web audio failed');
+          // Fallback: auto-advance captions without audio
+          if (mounted) startCaptionOnlyMode();
+        });
+
+        audio.play().catch(() => {
+          // Autoplay blocked — fall back to caption-only mode
+          if (mounted) startCaptionOnlyMode();
+        });
+
+        // Poll for position to sync captions
+        webTimerRef.current = setInterval(() => {
+          if (!mounted || !audio) return;
+          setCurrentCaption(getCaptionAtTime(audio.currentTime));
+        }, 200);
+      } catch (err) {
+        console.warn('[FoundationOverlay] Web audio setup failed:', err);
+        if (mounted) startCaptionOnlyMode();
+      }
+    } else {
+      // Native: Use expo-av
+      const play = async () => {
+        try {
+          const { sound } = await Audio.Sound.createAsync(
+            require('@/assets/audio/THE FOUNDATION.mp3'),
+            { shouldPlay: true, volume: 1.0 },
+            (status: AVPlaybackStatus) => {
+              if (!status.isLoaded) return;
+              if (status.didJustFinish && mounted) {
+                handleComplete();
+                return;
+              }
+              if (status.positionMillis != null && mounted) {
+                const posSeconds = status.positionMillis / 1000;
+                setCurrentCaption(getCaptionAtTime(posSeconds));
+              }
+            }
+          );
+          if (mounted) {
+            soundRef.current = sound;
+          }
+        } catch (err) {
+          console.warn('[FoundationOverlay] Audio failed:', err);
+          if (mounted) handleComplete();
+        }
+      };
+      play();
+    }
 
     return () => {
       mounted = false;
+      // Cleanup native
       soundRef.current?.unloadAsync();
+      // Cleanup web
+      if (webAudioRef.current) {
+        webAudioRef.current.pause();
+        webAudioRef.current = null;
+      }
+      if (webTimerRef.current) {
+        clearInterval(webTimerRef.current);
+      }
     };
   }, []);
 
@@ -200,7 +266,9 @@ export default function FoundationOverlay({ onDismiss }: FoundationOverlayProps)
             <View style={[styles.bar, { height: 14 }]} />
           </View>
 
-          <Text style={styles.listenText}>Listening...</Text>
+          <Text style={styles.listenText}>
+            {Platform.OS === 'web' ? 'Reading...' : 'Listening...'}
+          </Text>
         </Animated.View>
 
         {/* Synced captions */}
