@@ -621,12 +621,15 @@ export default function TenderAssessmentScreen() {
 
       // Determine instrument version for this assessment type
       const INSTRUMENT_VERSIONS: Record<string, string> = {
-        'ecr-r': 'original',
-        'dutch': 'tender-ip-v1',
+        'ecr-r': 'tender-ip-v2',
+        'dutch': 'tender-ip-v2',
         'sseit': 'tender-ip-v1',
         'values': 'tender-ip-v1',
-        'dsi-r': 'trimmed-v1',
+        'dsi-r': 'tender-ip-v2',
         'ipip-neo-120': 'trimmed-v1',
+        'rdas': 'tender-ip-v1',
+        'dci': 'tender-ip-v1',
+        'csi-16': 'tender-ip-v1',
       };
 
       // Save to Supabase with the ORIGINAL assessment type

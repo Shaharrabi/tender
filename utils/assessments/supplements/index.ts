@@ -27,6 +27,12 @@ import {
   scoreValuesSupplement,
 } from './values-supplement';
 
+import {
+  DUTCH_SUPPLEMENT_QUESTIONS,
+  DUTCH_SUPPLEMENT_LIKERT,
+  scoreDUTCHSupplement,
+} from './dutch-supplement';
+
 export interface SupplementDef {
   questions: GenericQuestion[];
   scoringFn: (responses: (number | string | string[] | null)[]) => any;
@@ -53,6 +59,11 @@ export const SUPPLEMENT_REGISTRY: Record<string, SupplementDef> = {
     questions: VALUES_SUPPLEMENT_QUESTIONS,
     scoringFn: scoreValuesSupplement,
   },
+  'dutch-supplement': {
+    questions: DUTCH_SUPPLEMENT_QUESTIONS,
+    scoringFn: scoreDUTCHSupplement,
+    likertScale: DUTCH_SUPPLEMENT_LIKERT,
+  },
 };
 
 export function getSupplementDef(group: string): SupplementDef | undefined {
@@ -69,3 +80,5 @@ export type { ECRRSupplementScores } from './ecr-r-supplement';
 export type { SSEITSupplementScores } from './sseit-supplement';
 export type { DSIRSupplementScores } from './dsi-r-supplement';
 export type { ValuesSupplementScores } from './values-supplement';
+export { DUTCH_SUPPLEMENT_QUESTIONS, scoreDUTCHSupplement } from './dutch-supplement';
+export type { DUTCHSupplementScores } from './dutch-supplement';

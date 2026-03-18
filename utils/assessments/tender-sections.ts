@@ -8,8 +8,8 @@
  *
  * Post-migration item counts:
  *   ECR-R: 36 (unchanged) | IPIP: 60 (was 120) | SSEIT: 16 (was 33)
- *   DSI-R: 20 (was 46) | DUTCH: 15 (was 20) | VALUES: 28 (was 32)
- *   RFAS: 20 (unchanged) | Supplements: 17 (unchanged)
+ *   DSI-R: 20 (was 46) | DUTCH: 20 (expanded from 15) | VALUES: 28 (was 32)
+ *   RFAS: 20 (unchanged) | Supplements: 18 (added DUTCH MC1)
  */
 
 import type { TenderSection } from '@/types';
@@ -59,7 +59,8 @@ export const TENDER_SECTIONS: TenderSection[] = [
     fieldName: 'How You Navigate Conflict',
     fieldDescription: 'Your approach to conflict and disagreement — what you do when things get hard.',
     assessmentType: 'dutch',
-    estimatedMinutes: 3,
+    supplementGroup: 'dutch-supplement',
+    estimatedMinutes: 4,
     breakAfter: true,
     breakMessage: 'Conflict takes courage to face. You are doing the work.',
   },
@@ -95,11 +96,11 @@ export const TOTAL_ESTIMATED_MINUTES = TENDER_SECTIONS.reduce(
 
 /**
  * Total question count including supplements.
- * Base: 36 + 60 + 16 + 20 + 15 + 28 + 20 = 195
- * Supplements: 5 (ECR-R) + 3 (SSEIT) + 4 (DSI-R) + 5 (Values) = 17
- * Total: 212
+ * Base: 36 + 60 + 16 + 20 + 20 + 28 + 20 = 200  (DUTCH expanded 15→20)
+ * Supplements: 5 (ECR-R) + 3 (SSEIT) + 4 (DSI-R) + 5 (Values) + 1 (DUTCH) = 18
+ * Total: 218
  */
-export const TOTAL_QUESTIONS = 212;
+export const TOTAL_QUESTIONS = 218;
 
 /** Get section by assessment type. */
 export function getSectionByType(assessmentType: string): TenderSection | undefined {
