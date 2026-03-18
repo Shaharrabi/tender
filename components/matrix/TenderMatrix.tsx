@@ -981,6 +981,7 @@ const styles = StyleSheet.create({
   container: {
     gap: Spacing.sm,
     paddingBottom: Spacing.lg,
+    overflow: 'hidden' as const,
   },
   header: {
     alignItems: 'center',
@@ -1135,6 +1136,7 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     borderLeftWidth: 3,
     borderLeftColor: Colors.success,
+    overflow: 'hidden' as const,
   },
   learnIntroText: {
     lineHeight: 20,
@@ -1191,6 +1193,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
     borderLeftWidth: 3,
+    overflow: 'hidden' as const,
   },
   learnSummaryText: {
     lineHeight: 20,

@@ -73,23 +73,42 @@ export async function updateProfile(userId: string, updates: Partial<UserProfile
 
 export async function createInvite(inviterId: string, inviterName?: string): Promise<CoupleInvite | null> {
   assertNotGuest(inviterId, 'create_partner_invite');
-  const code = generateInviteCode();
 
-  const { data, error } = await supabase
-    .from('couple_invites')
-    .insert({
-      inviter_id: inviterId,
-      invite_code: code,
-      inviter_name: inviterName || null,
-    })
-    .select()
-    .single();
+  // Use RPC that auto-expires old pending invites before creating new one
+  const { data, error } = await supabase.rpc('create_invite_and_expire_old', {
+    p_inviter_id: inviterId,
+    p_inviter_name: inviterName || null,
+  });
 
   if (error) {
     console.error('[Couples] Failed to create invite:', error);
-    return null;
+    // Fallback to direct insert if RPC not deployed yet
+    const code = generateInviteCode();
+    const { data: fallback, error: fbErr } = await supabase
+      .from('couple_invites')
+      .insert({
+        inviter_id: inviterId,
+        invite_code: code,
+        inviter_name: inviterName || null,
+      })
+      .select()
+      .single();
+    if (fbErr) {
+      console.error('[Couples] Fallback invite creation also failed:', fbErr);
+      return null;
+    }
+    return fallback as CoupleInvite;
   }
-  return data as CoupleInvite;
+
+  const result = data as any;
+  return {
+    id: result.id,
+    invite_code: result.invite_code,
+    inviter_name: result.inviter_name,
+    status: result.status,
+    expires_at: result.expires_at,
+    created_at: result.created_at,
+  } as CoupleInvite;
 }
 
 export async function getInviteByCode(code: string): Promise<CoupleInvite | null> {

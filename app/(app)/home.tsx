@@ -1865,7 +1865,7 @@ export default function HomeScreen() {
           {/* Section 7: The Space Between — available after all 6 individual assessments */}
           {individualCompleted && hasPortrait && !statuses['relational-field']?.state?.includes('completed') && (
             <TouchableOpacity
-              style={[styles.portraitGenerateCard, { marginHorizontal: 0, borderLeftWidth: 3, borderLeftColor: '#7CA4B8' }]}
+              style={[styles.portraitGenerateCard, { marginHorizontal: 0, borderLeftWidth: 3, borderLeftColor: '#7CA4B8', overflow: 'hidden' as const }]}
               onPress={() => {
                 SoundHaptics.tap();
                 router.push({ pathname: '/(app)/tender-assessment' as any, params: { startSection: 7 } });
@@ -2501,6 +2501,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
     backgroundColor: Colors.primary,
     borderRadius: BorderRadius.lg,
+    overflow: 'hidden' as const,
     padding: Spacing.lg,
     alignItems: 'center',
     gap: Spacing.xs,
