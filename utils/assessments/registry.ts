@@ -4,6 +4,7 @@ import { dutchConfig } from './configs/dutch';
 import { sseitConfig } from './configs/sseit';
 import { dsirConfig } from './configs/dsi-r';
 import { ipipConfig } from './configs/ipip-neo-120';
+import { tenderPersonality60Config } from './configs/tender-personality-60';
 import { valuesConfig } from './configs/values';
 import { rdasConfig } from './configs/rdas';
 import { dciConfig } from './configs/dci';
@@ -17,7 +18,8 @@ const ASSESSMENT_REGISTRY: Record<string, AssessmentConfig> = {
   'dutch': dutchConfig,
   'sseit': sseitConfig,
   'dsi-r': dsirConfig,
-  'ipip-neo-120': ipipConfig,
+  'ipip-neo-120': ipipConfig,           // kept for backward compat with stored data
+  'tender-personality-60': tenderPersonality60Config,
   'values': valuesConfig,
   // Dyadic assessments
   'rdas': rdasConfig,
@@ -60,7 +62,7 @@ export const INDIVIDUAL_ASSESSMENT_ORDER: IndividualAssessmentType[] = [
   'dutch',
   'sseit',
   'dsi-r',
-  'ipip-neo-120',
+  'tender-personality-60',
   'values',
 ];
 

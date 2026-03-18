@@ -29,8 +29,8 @@ export const TENDER_SECTIONS: TenderSection[] = [
     sectionNumber: 2,
     fieldName: 'Who You Are in Love',
     fieldDescription: 'Your personality and how it shapes the way you show up in your relationship.',
-    assessmentType: 'ipip-neo-120',
-    estimatedMinutes: 7,
+    assessmentType: 'tender-personality-60',
+    estimatedMinutes: 12,
     breakAfter: true,
     breakMessage: 'Great work. Take a stretch. You are building something important.',
   },
@@ -96,11 +96,11 @@ export const TOTAL_ESTIMATED_MINUTES = TENDER_SECTIONS.reduce(
 
 /**
  * Total question count including supplements.
- * Base: 36 + 60 + 25 + 20 + 20 + 28 + 20 = 209  (SSEIT expanded 16→25)
+ * Base: 36 + 62 + 25 + 20 + 20 + 28 + 20 = 211  (Personality 60→62 incl. validity)
  * Supplements: 5 (ECR-R) + 3 (SSEIT) + 4 (DSI-R) + 5 (Values) + 1 (DUTCH) = 18
- * Total: 227
+ * Total: 229
  */
-export const TOTAL_QUESTIONS = 227;
+export const TOTAL_QUESTIONS = 229;
 
 /** Get section by assessment type. */
 export function getSectionByType(assessmentType: string): TenderSection | undefined {

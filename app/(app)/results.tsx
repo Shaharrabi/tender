@@ -53,6 +53,7 @@ export default function ResultsScreen() {
     case 'dsi-r':
       return <DSIRResults scores={scores} />;
     case 'ipip-neo-120':
+    case 'tender-personality-60':
       return <IPIPResults scores={scores} />;
     case 'values':
       return <ValuesResults scores={scores} />;

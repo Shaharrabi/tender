@@ -39,7 +39,7 @@ export async function getPortraitHistory(userId: string): Promise<PortraitHistor
 }
 
 const REQUIRED_ASSESSMENTS: AssessmentType[] = [
-  'ecr-r', 'dutch', 'sseit', 'dsi-r', 'ipip-neo-120', 'values',
+  'ecr-r', 'dutch', 'sseit', 'dsi-r', 'tender-personality-60', 'values',
 ];
 
 /** Check whether user has completed all 6 assessments. */

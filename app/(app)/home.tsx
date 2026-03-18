@@ -526,7 +526,7 @@ export default function HomeScreen() {
                 dutch: latestScoresMap['dutch'].scores,
                 sseit: latestScoresMap['sseit'].scores,
                 dsir: latestScoresMap['dsi-r'].scores,
-                ipip: latestScoresMap['ipip-neo-120'].scores,
+                ipip: latestScoresMap['tender-personality-60'].scores,
                 values: latestScoresMap['values'].scores,
               };
               const supplements = extractSupplementScores(latestScoresMap);
@@ -552,7 +552,7 @@ export default function HomeScreen() {
             const fetchedTypes = Object.keys(latestScoresMap);
 
             step = 'checkRequired';
-            const required = ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'ipip-neo-120', 'values'];
+            const required = ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'tender-personality-60', 'values'];
             const missing = required.filter((t) => !latestScoresMap[t]);
             if (missing.length > 0) {
               localError = `MISSING: ${missing.join(',')}, fetched: ${fetchedTypes.join(',')}`;
@@ -571,7 +571,7 @@ export default function HomeScreen() {
                 dutch: latestScoresMap['dutch'].scores,
                 sseit: latestScoresMap['sseit'].scores,
                 dsir: latestScoresMap['dsi-r'].scores,
-                ipip: latestScoresMap['ipip-neo-120'].scores,
+                ipip: latestScoresMap['tender-personality-60'].scores,
                 values: latestScoresMap['values'].scores,
               };
 
@@ -677,13 +677,13 @@ export default function HomeScreen() {
         try {
           const ASSESSMENT_NAMES: Record<string, string> = {
             'ecr-r': 'How You Connect',
-            'ipip-neo-120': 'Who You Are',
+            'tender-personality-60': 'Who You Are',
             'dutch': 'How You Fight',
             'sseit': 'How You Feel',
             'dsi-r': 'How You Hold Ground',
             'values': 'What Matters',
           };
-          const ASSESSMENT_ORDER = ['ecr-r', 'ipip-neo-120', 'dutch', 'sseit', 'dsi-r', 'values'];
+          const ASSESSMENT_ORDER = ['ecr-r', 'tender-personality-60', 'dutch', 'sseit', 'dsi-r', 'values'];
           const completedSet = new Set(completedAssessmentTypes as string[]);
           const nextType = ASSESSMENT_ORDER.find((t) => !completedSet.has(t));
           const nextName = nextType ? (ASSESSMENT_NAMES[nextType] ?? 'your next assessment') : 'your next assessment';
@@ -1019,7 +1019,7 @@ export default function HomeScreen() {
       const latest = await fetchAllScores(user.id);
 
       // Verify all 6 assessment scores are present
-      const requiredTypes = ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'ipip-neo-120', 'values'] as const;
+      const requiredTypes = ['ecr-r', 'dutch', 'sseit', 'dsi-r', 'tender-personality-60', 'values'] as const;
       const missingTypes = requiredTypes.filter((t) => !latest[t]?.scores);
       if (missingTypes.length > 0) {
         const msg = `Missing assessment data for: ${missingTypes.join(', ')}. Please complete all assessments first.`;
@@ -1038,7 +1038,7 @@ export default function HomeScreen() {
         dutch: latest['dutch'].scores,
         sseit: latest['sseit'].scores,
         dsir: latest['dsi-r'].scores,
-        ipip: latest['ipip-neo-120'].scores,
+        ipip: latest['tender-personality-60'].scores,
         values: latest['values'].scores,
       };
       const supplements = extractSupplementScores(latest);

@@ -627,6 +627,7 @@ export default function TenderAssessmentScreen() {
         'values': 'tender-ip-v1',
         'dsi-r': 'tender-ip-v2',
         'ipip-neo-120': 'trimmed-v1',
+        'tender-personality-60': 'tender-personality-v1',
         'rdas': 'tender-ip-v1',
         'dci': 'tender-ip-v1',
         'csi-16': 'tender-ip-v1',
