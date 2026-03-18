@@ -7,7 +7,7 @@ import ECRRResults from '@/components/results/ECRRResults';
 import DUTCHResults from '@/components/results/DUTCHResults';
 import SSEITResults from '@/components/results/SSEITResults';
 import DSIRResults from '@/components/results/DSIRResults';
-import IPIPResults from '@/components/results/IPIPResults';
+import PersonalityResults from '@/components/results/IPIPResults';
 import ValuesResults from '@/components/results/ValuesResults';
 import RDASResults from '@/components/results/RDASResults';
 import CSI16Results from '@/components/results/CSI16Results';
@@ -54,7 +54,7 @@ export default function ResultsScreen() {
       return <DSIRResults scores={scores} />;
     case 'ipip-neo-120':
     case 'tender-personality-60':
-      return <IPIPResults scores={scores} />;
+      return <PersonalityResults scores={scores} />;
     case 'values':
       return <ValuesResults scores={scores} />;
     case 'rdas':

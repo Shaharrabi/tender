@@ -8,12 +8,12 @@ import {
   ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { IPIPScores } from '@/types';
+import { IPIPScores, TenderPersonality60Scores } from '@/types';
 import {
-  FACETS,
   DOMAINS,
   DOMAIN_LABELS,
-} from '@/utils/assessments/configs/ipip-neo-120';
+} from '@/utils/assessments/configs/tender-personality-60';
+import { FACETS } from '@/utils/assessments/configs/ipip-neo-120';
 import {
   getIPIPPercentileLabel,
   getIPIPDomainInterpretation,
@@ -21,7 +21,7 @@ import {
 import { Colors, Spacing, FontSizes, FontFamilies, Typography, ButtonSizes, BorderRadius, Shadows } from '@/constants/theme';
 
 interface Props {
-  scores: IPIPScores;
+  scores: IPIPScores | TenderPersonality60Scores;
 }
 
 const DOMAIN_COLORS: Record<string, string> = {
@@ -32,7 +32,9 @@ const DOMAIN_COLORS: Record<string, string> = {
   conscientiousness: Colors.secondary,
 };
 
-export default function IPIPResults({ scores }: Props) {
+export default function PersonalityResults({ scores }: Props) {
+  // Detect whether we have old 30-facet data or new tender-personality-60 data
+  const hasFacets = scores.facetPercentiles && Object.keys(scores.facetPercentiles).length > 1;
   const router = useRouter();
   const [expanded, setExpanded] = useState<string | null>(null);
 
@@ -102,10 +104,10 @@ export default function IPIPResults({ scores }: Props) {
                 </View>
               </TouchableOpacity>
 
-              {isExpanded && (
+              {isExpanded && hasFacets && (
                 <View style={styles.facetsSection}>
                   {domainFacets.map((facet) => {
-                    const fp = scores.facetPercentiles[facet.key] ?? 50;
+                    const fp = scores.facetPercentiles?.[facet.key] ?? 50;
                     const fl = getIPIPPercentileLabel(fp);
                     return (
                       <View key={facet.key} style={styles.facetRow}>
