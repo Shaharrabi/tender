@@ -29,6 +29,7 @@ export function detectPatterns(
     ...detectAttachmentConflict(ecrr, dutch),
     ...detectRegulation(sseit, composite),
     ...detectEmotionalIntelligenceGaps(sseit, ecrr, composite),
+    ...detectEmpathyDifferentiation(sseit, dsir, ecrr),
     ...detectValuesBehavior(values, dutch, ecrr, dsir, ipip),
     ...detectDifferentiation(dsir),
     ...(supplements ? detectFieldAwareness(supplements, ecrr, ipip, composite) : []),
@@ -274,6 +275,106 @@ function detectEmotionalIntelligenceGaps(
         'from your attunement and you can generally navigate emotional complexity.',
       confidence: 'high',
       flags: ['emotional_resource'],
+    });
+  }
+
+  return patterns;
+}
+
+// ─── Category 2b: Empathy × Differentiation (PT + ER from EQ expansion) ──
+
+function detectEmpathyDifferentiation(
+  sseit: SSEITScores,
+  dsir: DSIRScores,
+  ecrr: ECRRScores,
+): DetectedPattern[] {
+  const patterns: DetectedPattern[] = [];
+  const er = sseit.subscaleNormalized?.empathicResonance;
+  const pt = sseit.subscaleNormalized?.perspectiveTaking;
+
+  // Skip if PT/ER data not present (pre-expansion assessments)
+  if (er == null && pt == null) return patterns;
+
+  const fusion = dsir.subscaleScores?.fusionWithOthers?.normalized ?? 50;
+  const iPosition = dsir.subscaleScores?.iPosition?.normalized ?? 50;
+  const cutoff = dsir.subscaleScores?.emotionalCutoff?.normalized ?? 50;
+
+  // 1. Empathic Enmeshment: feels everything + no container
+  if (er != null && er > 75 && fusion > 65) {
+    patterns.push({
+      id: 'empathic_enmeshment',
+      category: 'empathy',
+      description: 'High empathic resonance with high fusion — empathic enmeshment risk',
+      interpretation:
+        'You feel everything your partner feels — and you have no container for it. ' +
+        'Their sadness becomes your sadness, their anxiety becomes your anxiety. ' +
+        'This is not weakness — it is deep attunement without boundaries. ' +
+        'The work is learning to feel WITH your partner without becoming them.',
+      confidence: 'high',
+      flags: ['enmeshment_risk', 'differentiation_priority', 'growth_edge_candidate'],
+    });
+  }
+
+  // 2. Healthy Deep Empathy: feels deeply + holds center (STRENGTH)
+  if (er != null && er > 75 && iPosition > 65) {
+    patterns.push({
+      id: 'healthy_deep_empathy',
+      category: 'empathy',
+      description: 'High empathic resonance with strong I-Position — healthy deep empathy',
+      interpretation:
+        'You feel deeply AND hold your center. You can sit in your partner\'s pain without ' +
+        'losing yourself. This is one of the rarest and most valuable relational capacities — ' +
+        'the ability to be moved without being swept away. Name this as the strength it is.',
+      confidence: 'high',
+      flags: ['emotional_resource', 'relational_strength'],
+    });
+  }
+
+  // 3. Empathic Disconnection: doesn't register partner's state
+  if (er != null && er < 30 && cutoff > 65) {
+    patterns.push({
+      id: 'empathic_disconnection',
+      category: 'empathy',
+      description: 'Low empathic resonance with high emotional cutoff — empathic disconnection',
+      interpretation:
+        'You do not easily register your partner\'s emotional state. This is not coldness — ' +
+        'it is a protective pattern, likely learned early. Your system shuts down incoming emotional ' +
+        'signals to avoid overwhelm. Your partner may feel unseen. The work is slowly opening ' +
+        'the channel — not flooding it, just cracking the door.',
+      confidence: 'high',
+      flags: ['empathic_gap', 'cutoff_pattern', 'growth_edge_candidate'],
+    });
+  }
+
+  // 4. Avoidant Low Perspective: withdrawer can't see pursuer's position
+  if (pt != null && pt < 40 && ecrr.avoidanceScore > 4.0) {
+    patterns.push({
+      id: 'avoidant_low_perspective',
+      category: 'empathy',
+      description: 'Low perspective-taking combined with avoidant attachment — repair bottleneck',
+      interpretation:
+        'You struggle to see from your partner\'s position AND your instinct is to withdraw. ' +
+        'This creates a repair bottleneck — when conflict happens, you cannot access their viewpoint ' +
+        'and you pull away before understanding arrives. Repairs stall. ' +
+        'The smallest step: before withdrawing, ask one question about their experience.',
+      confidence: 'high',
+      flags: ['repair_bottleneck', 'avoidant_pattern', 'growth_edge_candidate'],
+    });
+  }
+
+  // 5. Anxious High Perspective: understands but anxiety overrides
+  if (pt != null && pt > 70 && ecrr.anxietyScore > 4.0) {
+    patterns.push({
+      id: 'anxious_high_perspective',
+      category: 'empathy',
+      description: 'High perspective-taking with anxious attachment — understanding overridden by anxiety',
+      interpretation:
+        'You understand your partner\'s position clearly — you can see exactly where they are ' +
+        'and why they react the way they do. But your anxiety overrides that understanding. ' +
+        'You know what they need and still cannot stop pursuing, checking, seeking reassurance. ' +
+        'The insight is there; the regulation is the growth edge.',
+      confidence: 'high',
+      flags: ['insight_action_gap', 'regulation_priority'],
     });
   }
 

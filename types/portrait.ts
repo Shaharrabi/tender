@@ -41,6 +41,7 @@ export interface PortraitMetadata {
 export type PatternCategory =
   | 'attachment-conflict'
   | 'regulation'
+  | 'empathy'
   | 'values-behavior'
   | 'differentiation'
   | 'field-awareness';
