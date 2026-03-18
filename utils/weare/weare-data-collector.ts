@@ -118,7 +118,7 @@ async function collectPartnerData(
     return {
       compositeScores: portrait.compositeScores,
       ecrr: scores['ecr-r']?.scores as ECRRScores,
-      ipip: scores['ipip-neo-120']?.scores as IPIPScores,
+      ipip: (scores['tender-personality-60']?.scores ?? scores['ipip-neo-120']?.scores) as IPIPScores,
       sseit: scores['sseit']?.scores as SSEITScores,
       dsir: scores['dsi-r']?.scores as DSIRScores,
       dutch: scores['dutch']?.scores as DUTCHScores,

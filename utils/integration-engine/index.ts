@@ -121,7 +121,7 @@ export function toIntegrationScores(
 ): IntegrationScores {
   return {
     ecrr: allScores['ecr-r']?.scores ?? undefined,
-    ipip: allScores['ipip-neo-120']?.scores ?? undefined,
+    ipip: (allScores['tender-personality-60']?.scores ?? allScores['ipip-neo-120']?.scores) ?? undefined,
     sseit: allScores['sseit']?.scores ?? undefined,
     dsir: allScores['dsi-r']?.scores ?? undefined,
     dutch: allScores['dutch']?.scores ?? undefined,
