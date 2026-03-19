@@ -638,7 +638,7 @@ export default function CoupleMatrix({
           { label: 'Level', value: '\u2014' },
         ],
         centerLabel: 'Awaiting',
-        narrative: 'Complete the Couples Satisfaction Index (CSI-16) together to see how satisfied each of you feels in the relationship. This unlocks insights about your shared contentment and areas that may need tending.',
+        narrative: 'Complete the Relationship Closeness assessment together to see how satisfied each of you feels in the relationship. This unlocks insights about your shared contentment and areas that may need tending.',
         instruments: ['CSI-16'],
       });
     }
@@ -679,7 +679,7 @@ export default function CoupleMatrix({
           { label: 'Consensus', value: '\u2014' },
         ],
         centerLabel: 'Awaiting',
-        narrative: 'Complete the Revised Dyadic Adjustment Scale (RDAS) together to see how you navigate consensus, satisfaction, and cohesion as a couple. This assessment reveals the structural health of your partnership.',
+        narrative: 'Complete the Relationship Quality assessment together to see how you navigate consensus, satisfaction, and cohesion as a couple. This assessment reveals the structural health of your partnership.',
         instruments: ['RDAS'],
       });
     }
@@ -720,7 +720,7 @@ export default function CoupleMatrix({
           { label: 'Stress comm.', value: '\u2014' },
         ],
         centerLabel: 'Awaiting',
-        narrative: 'Complete the Dyadic Coping Inventory (DCI) together to understand how you support each other under stress. This reveals your shared coping strengths and blind spots.',
+        narrative: 'Complete the Stress & Coping assessment together to understand how you support each other under stress. This reveals your shared coping strengths and blind spots.',
         instruments: ['DCI'],
       });
     }

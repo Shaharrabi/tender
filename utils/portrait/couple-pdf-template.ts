@@ -603,7 +603,7 @@ export function generateCouplePortraitHTML(
 
   const copingHTML = dyadic.coping
     ? `<div class="card card-sage" style="page-break-inside:avoid">
-        <div class="card-title">Dyadic Coping</div>
+        <div class="card-title">Stress & Coping</div>
         <p>${esc(dyadic.coping.narrative)}</p>
       </div>`
     : '';

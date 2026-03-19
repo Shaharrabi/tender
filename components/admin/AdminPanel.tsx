@@ -52,11 +52,11 @@ import type { AllAssessmentScores } from '@/types';
 import { DEMO_PARTNERS, type DemoPartnerId } from '@/constants/demoPartners';
 
 const ASSESSMENT_TYPES = [
-  { type: 'ecr-r', label: 'How You Connect (ECR-R)' },
-  { type: 'dutch', label: 'How You Fight (DUTCH)' },
-  { type: 'sseit', label: 'How You Feel (SSEIT)' },
-  { type: 'dsi-r', label: 'How You Hold Ground (DSI-R)' },
-  { type: 'tender-personality-60', label: 'Who You Are (IPIP)' },
+  { type: 'ecr-r', label: 'How You Connect' },
+  { type: 'dutch', label: 'How You Navigate Conflict' },
+  { type: 'sseit', label: 'How You Feel' },
+  { type: 'dsi-r', label: 'How You Hold Ground' },
+  { type: 'tender-personality-60', label: 'Who You Are in Love' },
   { type: 'values', label: 'What Matters (Values)' },
 ] as const;
 

@@ -37,6 +37,12 @@ interface StepIntroContext {
   biggestGap: number;
   /** Attachment label */
   attachmentLabel: string;
+  /** EQ perspective-taking (0-100) */
+  perspectiveTaking: number;
+  /** EQ empathic resonance (0-100) */
+  empathicResonance: number;
+  /** Whether backbone and relational personality diverge significantly */
+  hasRelationalShifts: boolean;
 }
 
 function extractContext(portrait: IndividualPortrait): StepIntroContext {
@@ -75,6 +81,9 @@ function extractContext(portrait: IndividualPortrait): StepIntroContext {
     biggestGapDomain: biggestGap.domain,
     biggestGap: biggestGap.gap,
     attachmentLabel,
+    perspectiveTaking: raw?.sseit?.subscaleNormalized?.perspectiveTaking ?? 50,
+    empathicResonance: raw?.sseit?.subscaleNormalized?.empathicResonance ?? 50,
+    hasRelationalShifts: Array.isArray((portrait as any)?.relationalPersonalityInsights) && (portrait as any).relationalPersonalityInsights.length > 0,
   };
 }
 
@@ -106,6 +115,8 @@ export function getPersonalizedStepIntro(
       return null;
 
     case 3: // See Your Part
+      if (ctx.hasRelationalShifts)
+        return "Something interesting showed up in your assessment: you show up differently in your relationship than you do in the rest of your life. This step helps you see WHICH version appears when stress arrives — and what drives the shift.";
       if (ctx.neuroticism > 70)
         return "Your emotional landscape runs hot — signals arrive fast and loud. Seeing your part means distinguishing between 'something is wrong' and 'my system is activated.' Both are real. Only one is current.";
       if (ctx.dutchPrimary === 'yielding')
@@ -122,13 +133,19 @@ export function getPersonalizedStepIntro(
       return null;
 
     case 5: // Listen to Understand
+      if (ctx.perspectiveTaking < 40)
+        return "Your perspective-taking capacity is still developing — seeing from your partner's side doesn't come naturally yet. This step builds that muscle with concrete practices: not 'imagine how they feel' (which is abstract) but 'sit where they sit and describe what you see' (which is experiential).";
       if (ctx.attachmentLabel === 'anxious')
         return "When your partner speaks, your anxiety may already be writing the next line — 'are they leaving? am I enough?' This step asks you to pause the internal narrative and actually hear what's being said, not what your fear says is being said.";
+      if (ctx.empathicResonance > 75 && ctx.fusion > 60)
+        return "You feel your partner's emotions deeply — sometimes too deeply. Listening for you isn't about feeling MORE. It's about hearing what they're saying underneath the feelings, without absorbing their state as your own.";
       if (ctx.cutoff > 65)
         return "Listening deeply requires staying in the room — emotionally, not just physically. Your system defaults to cutting off when feelings intensify. This step practices keeping the channel open for 60 seconds longer than feels comfortable.";
       return null;
 
     case 6: // Hold Space for Difference
+      if (ctx.empathicResonance > 75 && ctx.fusion > 65)
+        return "You feel everything your partner feels — your empathic resonance is exceptionally high, but so is your fusion. This step teaches you to feel WITH your partner without becoming them. The distinction between 'I sense your pain' and 'Your pain is my pain' is where your growth lives.";
       if (ctx.fusion > 65)
         return "Your boundaries tend to dissolve in closeness. That's not weakness — it's love without a container. This step builds the container. You'll practice distinguishing 'what I feel' from 'what my partner feels' — which, for you, is harder than it sounds.";
       if (ctx.cutoff > 65)
@@ -154,6 +171,8 @@ export function getPersonalizedStepIntro(
       return null;
 
     case 9: // Repair What's Broken
+      if (ctx.perspectiveTaking < 40 && ctx.attachmentLabel === 'avoidant')
+        return "Repair is doubly hard for you: your system avoids the return, AND you struggle to see the rupture from your partner's perspective. This step works on both — small returns + one concrete question: 'What did that moment feel like on your side?'";
       if (ctx.attachmentLabel === 'anxious' && ctx.dutchPrimary === 'forcing')
         return "Your repair instinct is to pursue harder — more words, more intensity, more reaching. This step teaches you to repair by stepping back, which feels wrong to your system but creates the space for your partner to come toward you.";
       if (ctx.attachmentLabel === 'avoidant')

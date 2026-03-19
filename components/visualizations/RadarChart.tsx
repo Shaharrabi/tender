@@ -71,28 +71,28 @@ function getDimensionDetail(key: string, score: number): { description: string; 
       description: s >= 65
         ? 'You have a solid foundation of relational security. You can tolerate closeness and separateness without excessive anxiety or withdrawal.'
         : 'Your attachment system is somewhat activated — you may swing between seeking reassurance and pulling away when closeness feels unsafe.',
-      source: 'Based on your ECR-R attachment assessment (anxiety + avoidance dimensions)',
+      source: 'Based on your attachment assessment — how you connect in relationships',
       strength: s >= 65 ? 'Secure base for deeper work' : 'Building safety is the priority',
     }),
     emotionalIntelligence: (s) => ({
       description: s >= 65
         ? 'You have strong emotional intelligence — you perceive, understand, and manage emotions effectively in yourself and others.'
         : 'There\'s room to grow in perceiving and managing emotions. This directly affects how you navigate difficult relational moments.',
-      source: 'Based on your SSEIT emotional intelligence assessment (4 subscales)',
+      source: 'Based on your emotional intelligence assessment — how you read and manage emotions',
       strength: s >= 65 ? 'Natural empathy and attunement' : 'Growth in EQ transforms relationships',
     }),
     differentiation: (s) => ({
       description: s >= 65
         ? 'You maintain a healthy sense of self within relationships — able to stay connected without losing your own perspective.'
         : 'Holding your own position while staying connected to others is your growth edge. This is about being a "self" while in a "we."',
-      source: 'Based on your DSI-R differentiation assessment (reactivity, I-position, cutoff, fusion)',
+      source: 'Based on your differentiation assessment — how you hold your ground in closeness',
       strength: s >= 65 ? 'Strong relational backbone' : 'I-position work is key',
     }),
     conflictFlexibility: (s) => ({
       description: s >= 65
         ? 'You have a flexible conflict repertoire — able to adapt your style based on the situation rather than defaulting to one pattern.'
         : 'You tend to rely on one or two conflict styles, which can create predictable (and stuck) patterns in disagreements.',
-      source: 'Based on your DUTCH conflict styles assessment (5 modes)',
+      source: 'Based on your conflict styles assessment — how you navigate disagreement',
       strength: s >= 65 ? 'Adaptive and versatile under pressure' : 'Expanding your conflict toolkit',
     }),
     valuesCongruence: (s) => ({
@@ -106,7 +106,7 @@ function getDimensionDetail(key: string, score: number): { description: string; 
       description: s >= 65
         ? 'You have strong regulation capacity — your nervous system can handle intensity without flooding or shutting down.'
         : 'When things get emotionally intense, your system may struggle to stay regulated. This affects every other dimension.',
-      source: 'Composite: Big Five neuroticism (inverse), EQ self-management, DSI-R emotional reactivity',
+      source: 'Composite: Big Five neuroticism (inverse), EQ self-management, emotional reactivity',
       strength: s >= 65 ? 'Solid emotional foundation' : 'Regulation comes before communication',
     }),
     relationalAwareness: (s) => ({

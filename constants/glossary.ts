@@ -47,13 +47,13 @@ const GLOSSARY: Record<string, GlossaryEntry> = {
     term: 'Attachment Anxiety',
     definition:
       'The degree to which you worry about being abandoned or not being loved enough. Higher anxiety means more preoccupation with your partner\'s availability.',
-    source: 'ECR-R (Fraley et al.)',
+    source: 'Attachment research (Fraley et al.)',
   },
   'attachment avoidance': {
     term: 'Attachment Avoidance',
     definition:
       'The degree to which you feel uncomfortable with emotional closeness and prefer self-reliance. Higher avoidance means more discomfort with vulnerability.',
-    source: 'ECR-R (Fraley et al.)',
+    source: 'Attachment research (Fraley et al.)',
   },
 
   // ─── Differentiation ──────────────────────────────────
@@ -117,7 +117,7 @@ const GLOSSARY: Record<string, GlossaryEntry> = {
     term: 'Conflict Style',
     definition:
       'Your default approach when disagreements arise. It\'s not about being right or wrong — it\'s about the pattern you fall into under pressure.',
-    source: 'DUTCH (De Dreu et al.)',
+    source: 'Conflict research (De Dreu et al.)',
   },
   'yielding': {
     term: 'Yielding',
@@ -150,7 +150,7 @@ const GLOSSARY: Record<string, GlossaryEntry> = {
     term: 'Emotional Intelligence',
     definition:
       'Your ability to notice, understand, and work with emotions — both your own and your partner\'s. It\'s the skill of reading the emotional weather in a room.',
-    source: 'Schutte et al. (SSEIT)',
+    source: 'Emotional intelligence research (Schutte et al.)',
   },
 
   // ─── Personality (Big Five) ───────────────────────────
@@ -214,7 +214,7 @@ const GLOSSARY: Record<string, GlossaryEntry> = {
     term: 'Dyadic Coping',
     definition:
       'How you and your partner manage stress together. When one person is struggling, the other helps carry the load — through listening, problem-solving, or simply being present.',
-    source: 'Bodenmann (DCI)',
+    source: 'Coping research (Bodenmann)',
   },
   'relational field': {
     term: 'Relational Field',
@@ -225,7 +225,7 @@ const GLOSSARY: Record<string, GlossaryEntry> = {
     term: 'Couple Satisfaction',
     definition:
       'How happy and fulfilled each partner feels in the relationship overall. It\'s not about perfection — it\'s about whether the relationship feels like a good place to be.',
-    source: 'CSI-16 (Funk & Rogge)',
+    source: 'Satisfaction research (Funk & Rogge)',
   },
   'values alignment': {
     term: 'Values Alignment',

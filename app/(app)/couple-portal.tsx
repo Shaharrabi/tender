@@ -1811,7 +1811,7 @@ function CouplePortalScreen() {
             {(dci.partnerA || dci.partnerB) && (
               <>
               <AssessmentCard
-                title="Dyadic Coping"
+                title="Stress & Coping"
                 subtitle="How you support each other through stress"
                 accentColor={Colors.success}
               >
@@ -1881,7 +1881,7 @@ function CouplePortalScreen() {
         )}
         {dp.dyadicInsights.coping && (
           <View style={styles.synthesisCard}>
-            <TenderText variant="headingS" style={styles.synthesisTitle}>Dyadic Coping</TenderText>
+            <TenderText variant="headingS" style={styles.synthesisTitle}>Stress & Coping</TenderText>
             <TenderText variant="body" color={Colors.textSecondary}>{dp.dyadicInsights.coping.narrative}</TenderText>
           </View>
         )}
