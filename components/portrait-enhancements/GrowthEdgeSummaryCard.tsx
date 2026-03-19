@@ -84,10 +84,17 @@ export default function GrowthEdgeSummaryCard({
   onPracticePress,
 }: GrowthEdgeSummaryCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const [lensesOpen, setLensesOpen] = useState(false);
 
   const toggle = useCallback(() => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setExpanded((prev) => !prev);
+    if (expanded) setLensesOpen(false); // collapse lenses when card collapses
+  }, [expanded]);
+
+  const toggleLenses = useCallback(() => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setLensesOpen((prev) => !prev);
   }, []);
 
   const { Icon: EdgeIcon, color: edgeColor } = getEdgeVisual(edge);
@@ -142,6 +149,39 @@ export default function GrowthEdgeSummaryCard({
                   <TenderText variant="bodySmall" color={Colors.text} style={styles.practiceText}>
                     {practice}
                   </TenderText>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* Therapeutic Lenses — modality-routed content */}
+          {edge.modalityContent && edge.modalityContent.length > 0 && (
+            <View style={styles.lensesSection}>
+              <TouchableOpacity onPress={toggleLenses} activeOpacity={0.7} style={styles.lensesToggle}>
+                <SparkleIcon size={13} color={WA.plum} />
+                <TenderText variant="label" color={WA.plum} style={styles.lensesLabel}>THERAPEUTIC LENSES</TenderText>
+                {lensesOpen
+                  ? <ChevronUpIcon size={12} color={WA.plum} />
+                  : <ChevronDownIcon size={12} color={WA.plum} />}
+              </TouchableOpacity>
+              {lensesOpen && edge.modalityContent.map((mc, li) => (
+                <View key={li} style={styles.lensCard}>
+                  <TenderText variant="label" color={WA.plum} style={styles.lensModality}>
+                    {mc.modality}
+                  </TenderText>
+                  <TenderText variant="bodySmall" color={Colors.textSecondary} style={styles.lensInsight}>
+                    {mc.insight}
+                  </TenderText>
+                  {mc.bodyCheck ? (
+                    <TenderText variant="bodySmall" color={Colors.textMuted} style={styles.lensBodyCheck}>
+                      Body check: {mc.bodyCheck}
+                    </TenderText>
+                  ) : null}
+                  {mc.quote ? (
+                    <TenderText variant="bodySmall" color={WA.plum} style={styles.lensQuote}>
+                      "{mc.quote}"{mc.quoteAttribution ? ` — ${mc.quoteAttribution}` : ''}
+                    </TenderText>
+                  ) : null}
                 </View>
               ))}
             </View>
@@ -240,5 +280,46 @@ const styles = StyleSheet.create({
   },
   practiceText: {
     flex: 1,
+  },
+  lensesSection: {
+    marginTop: Spacing.xs,
+  },
+  lensesToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: Spacing.sm,
+  },
+  lensesLabel: {
+    flex: 1,
+    fontSize: 10,
+    letterSpacing: 1.5,
+  },
+  lensCard: {
+    backgroundColor: Colors.backgroundAlt,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    marginBottom: Spacing.sm,
+    borderLeftWidth: 2,
+    borderLeftColor: '#8B6B7B' + '40',
+  },
+  lensModality: {
+    fontSize: 10,
+    letterSpacing: 1.2,
+    marginBottom: 6,
+  },
+  lensInsight: {
+    lineHeight: 22,
+    marginBottom: 6,
+  },
+  lensBodyCheck: {
+    lineHeight: 20,
+    fontStyle: 'italic',
+    marginBottom: 6,
+  },
+  lensQuote: {
+    lineHeight: 20,
+    fontStyle: 'italic',
+    marginTop: 4,
   },
 });

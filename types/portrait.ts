@@ -184,6 +184,17 @@ export type GrowthEdgeCategory =
   | 'personality'
   | 'empathy';
 
+/** A slice of modality-routed content attached to a growth edge */
+export interface ModalitySlice {
+  modality: string;
+  role: string;
+  insight: string;
+  bodyCheck: string;
+  practice: string;
+  quote: string;
+  quoteAttribution: string;
+}
+
 export interface GrowthEdge {
   id: string;
   title: string;
@@ -191,6 +202,7 @@ export interface GrowthEdge {
   rationale: string;
   practices: string[];
   category?: GrowthEdgeCategory;  // For filtering in CombinedProfileView
+  modalityContent?: ModalitySlice[];  // Routed therapeutic lens content
 }
 
 // ─── Anchor Points ───────────────────────────────────────

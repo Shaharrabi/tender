@@ -191,7 +191,7 @@ export function identifyGrowthEdges(
       );
 
       // Store routed content as additional data on the edge
-      (edge as any).modalityContent = routed.map((r) => ({
+      edge.modalityContent = routed.map((r) => ({
         modality: r.modalityName,
         role: r.role,
         insight: r.content.insight,
