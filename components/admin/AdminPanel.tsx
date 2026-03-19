@@ -47,6 +47,7 @@ import { getPortrait, savePortrait, fetchAllScores } from '@/services/portrait';
 import { eraseUserData } from '@/services/consent';
 import { getMyCouple, disconnectCouple, cleanupAllCouples, setupDemoPartnerCouple } from '@/services/couples';
 import { supabase } from '@/services/supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { AllAssessmentScores } from '@/types';
 import { DEMO_PARTNERS, type DemoPartnerId } from '@/constants/demoPartners';
 
@@ -350,6 +351,52 @@ export default function AdminPanel({ userId, onDataChanged, onClose }: AdminPane
             color="#C85A54"
             busy={busy === 'reset'}
             onPress={handleResetAll}
+            disabled={!!busy}
+          />
+        </View>
+      </View>
+
+      {/* FTUE / Demo Replay */}
+      <View style={styles.section}>
+        <Text style={styles.sectionLabel}>REPLAY EXPERIENCES</Text>
+        <View style={styles.buttonRow}>
+          <ActionButton
+            label="Replay Welcome Tour"
+            icon={<RefreshIcon size={14} color={Colors.white} />}
+            color={Colors.calm}
+            busy={busy === 'replay-tour'}
+            onPress={async () => {
+              setBusy('replay-tour');
+              try {
+                // Clear all FTUE flags to re-trigger welcome tour
+                const keys = await AsyncStorage.getAllKeys();
+                const ftueKeys = keys.filter((k: string) => k.startsWith('@ftue_'));
+                if (ftueKeys.length > 0) await AsyncStorage.multiRemove(ftueKeys);
+                Alert.alert('Done', 'Welcome tour will show on next home screen visit. Navigate away and back to home.');
+              } catch (e: any) {
+                Alert.alert('Error', e.message || 'Failed to reset tour');
+              } finally {
+                setBusy(null);
+              }
+            }}
+            disabled={!!busy}
+          />
+          <ActionButton
+            label="Replay Foundation Film"
+            icon={<RefreshIcon size={14} color={Colors.white} />}
+            color={Colors.secondary}
+            busy={busy === 'replay-foundation'}
+            onPress={async () => {
+              setBusy('replay-foundation');
+              try {
+                await AsyncStorage.removeItem('has_heard_foundation');
+                Alert.alert('Done', 'Foundation film will play on next Growth tab visit.');
+              } catch (e: any) {
+                Alert.alert('Error', e.message || 'Failed to reset foundation');
+              } finally {
+                setBusy(null);
+              }
+            }}
             disabled={!!busy}
           />
         </View>
