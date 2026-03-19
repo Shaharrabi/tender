@@ -162,20 +162,12 @@ export const WelcomeTour: React.FC<WelcomeTourProps> = ({ onComplete }) => {
                 <Text style={styles.ctaText}>Begin My Assessment</Text>
               </Pressable>
               <Pressable
-                style={({ pressed }) => [styles.secondaryButton, pressed && styles.ctaButtonPressed]}
-                onPress={() => handleChoice('/(app)/growth')}
-                accessibilityRole="button"
-                accessibilityLabel="Explore the 12 Steps"
-              >
-                <Text style={styles.secondaryText}>Explore the 12 Steps</Text>
-              </Pressable>
-              <Pressable
                 style={styles.skipButton}
                 onPress={handleSkip}
                 accessibilityRole="button"
-                accessibilityLabel="Just explore the home page"
+                accessibilityLabel="Explore the home page"
               >
-                <Text style={styles.skipText}>Just explore the home page</Text>
+                <Text style={styles.skipText}>Explore the home page</Text>
               </Pressable>
             </View>
           ) : (
