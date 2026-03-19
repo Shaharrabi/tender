@@ -256,6 +256,19 @@ export async function saveDailyCheckIn(
       throw error;
     }
 
+    // If user marked "practiced growth edge", increment their top growth edge
+    if (practiced) {
+      try {
+        const edges = await getGrowthEdgeProgress(userId);
+        if (edges.length > 0) {
+          // Increment the first (top priority) growth edge
+          await incrementPracticeCount(userId, edges[0].edgeId);
+        }
+      } catch {
+        // Best-effort — don't block check-in save
+      }
+    }
+
     return mapCheckIn(data);
   } catch (err) {
     if (__DEV__) {

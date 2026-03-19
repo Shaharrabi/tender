@@ -8,6 +8,7 @@
 import { supabase } from './supabase';
 import type { StepProgress, PracticeCompletion, StepStatus } from '@/types/growth';
 import { notifyPartner } from './partner-activity-hooks';
+import { incrementPracticeCount, upsertGrowthEdge } from './growth';
 
 // ─── Step Progress ──────────────────────────────────────
 
@@ -88,6 +89,31 @@ export async function completeStep(
       .eq('user_id', userId)
       .eq('step_number', stepNumber + 1)
       .eq('status', 'locked');  // ← only unlock if currently locked
+  }
+
+  // Update growth edge progress — each step maps to relevant edges
+  const STEP_TO_EDGES: Record<number, string[]> = {
+    1: ['regulation_capacity'],
+    2: ['regulation_capacity'],
+    3: ['approach_closeness', 'reclaim_self'],
+    4: ['approach_closeness', 'speak_truth'],
+    5: ['speak_truth', 'values_gap'],
+    6: ['speak_truth', 'differentiation_work'],
+    7: ['differentiation_work', 'reclaim_self'],
+    8: ['approach_closeness', 'regulation_capacity'],
+    9: ['values_gap', 'differentiation_work'],
+    10: ['speak_truth', 'approach_closeness'],
+    11: ['reclaim_self', 'values_gap'],
+    12: ['regulation_capacity', 'approach_closeness', 'differentiation_work'],
+  };
+  const edgeIds = STEP_TO_EDGES[stepNumber] ?? [];
+  for (const edgeId of edgeIds) {
+    try {
+      await upsertGrowthEdge(userId, edgeId, {});
+      await incrementPracticeCount(userId, edgeId);
+    } catch {
+      // Growth tracking is best-effort — don't block step completion
+    }
   }
 
   // Notify partner (non-blocking)
