@@ -318,7 +318,7 @@ export default function GrowthScreen() {
             <>
               <Text style={styles.growthPlanStatusLabel}>YOUR PATH</Text>
               <Text style={[styles.growthPlanPathwayName, { color: pathwayAssignment.archetype.color }]}>
-                {pathwayAssignment.archetype.icon} {pathwayAssignment.archetype.name}
+                {pathwayAssignment.archetype.name}
               </Text>
               <Text style={styles.growthPlanStatusText}>
                 {pathwayAssignment.archetype.subtitle}
