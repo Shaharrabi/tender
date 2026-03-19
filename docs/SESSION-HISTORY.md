@@ -89,11 +89,13 @@ Project Path:       /Users/shaharrabi/couples-app-v0.1
 ```
 
 ## Test Accounts
-| Email | Password | Purpose |
-|-------|----------|---------|
-| qatest_feb10@test.com | testpass123 | Full QA walkthrough (all 6 assessments complete) |
-| chattest99@test.com | testpass123 | Chat testing |
-| partner_test@test.com | testpass123 | Partner feature testing |
+| Email | Purpose |
+|-------|---------|
+| qatest_feb10@test.com | Full QA walkthrough (all 6 assessments complete) |
+| chattest99@test.com | Chat testing |
+| partner_test@test.com | Partner feature testing |
+
+> Passwords removed from docs. Rotate or delete these accounts in Supabase dashboard.
 
 ---
 

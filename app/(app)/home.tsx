@@ -1113,9 +1113,22 @@ export default function HomeScreen() {
     }
     tap.lastTap = now;
 
-    if (tap.count >= 3) {
+    if (tap.count >= 5) {
       tap.count = 0;
-      setAdminMode((prev) => !prev);
+      if (adminMode) {
+        setAdminMode(false);
+        return;
+      }
+      Alert.prompt(
+        'Admin Access',
+        'Enter PIN:',
+        (pin) => {
+          if (pin === '5676') setAdminMode(true);
+        },
+        'plain-text',
+        '',
+        'number-pad'
+      );
     }
   };
 
