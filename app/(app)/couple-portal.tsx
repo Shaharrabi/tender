@@ -1926,6 +1926,49 @@ function CouplePortalScreen() {
           />
         ))}
 
+        {/* Partner Step Progress — side by side */}
+        <View style={[styles.journeyCard, { marginTop: Spacing.lg }]}>
+          <TenderText variant="headingS" color={Colors.text} style={{ marginBottom: Spacing.sm }}>
+            Your Journeys — Side by Side
+          </TenderText>
+          <View style={{ flexDirection: 'row', gap: Spacing.md }}>
+            <View style={{ flex: 1, alignItems: 'center' }}>
+              <TenderText variant="label" color={Colors.primary} style={{ marginBottom: 4 }}>
+                {dp.partnerAName}
+              </TenderText>
+              <TenderText variant="headingL" color={Colors.text}>
+                Step {(dp as any).partnerAStep ?? '?'}
+              </TenderText>
+              <TenderText variant="bodySmall" color={Colors.textSecondary}>of 12</TenderText>
+            </View>
+            <View style={{ width: 1, backgroundColor: Colors.borderLight }} />
+            <View style={{ flex: 1, alignItems: 'center' }}>
+              <TenderText variant="label" color={Colors.secondary} style={{ marginBottom: 4 }}>
+                {dp.partnerBName}
+              </TenderText>
+              <TenderText variant="headingL" color={Colors.text}>
+                Step {(dp as any).partnerBStep ?? '?'}
+              </TenderText>
+              <TenderText variant="bodySmall" color={Colors.textSecondary}>of 12</TenderText>
+            </View>
+          </View>
+          <TenderText variant="bodySmall" color={Colors.textMuted} style={{ marginTop: Spacing.sm, textAlign: 'center', fontStyle: 'italic' }}>
+            You are both on this path. Different steps, same direction.
+          </TenderText>
+        </View>
+
+        {/* Partner Action Suggestion */}
+        {dp.coupleGrowthEdges.length > 0 && (
+          <View style={[styles.journeyCard, { borderLeftWidth: 3, borderLeftColor: Colors.calm, marginTop: Spacing.md }]}>
+            <TenderText variant="headingS" color={Colors.calm} style={{ marginBottom: 4 }}>
+              How to support each other right now
+            </TenderText>
+            <TenderText variant="body" color={Colors.textSecondary}>
+              While {dp.partnerAName} works on their growth edge, the most helpful thing {dp.partnerBName} can do is: listen without fixing. They are practicing vulnerability — your job is to make it safe.
+            </TenderText>
+          </View>
+        )}
+
         {/* Healing Journey Link */}
         <TouchableOpacity
           style={styles.journeyCard}
