@@ -104,12 +104,19 @@ BEGIN
     )
   );
 
-  -- Project config — hardcoded for reliability (vault permissions are restricted).
-  -- The service_role_key is safe here because this function is SECURITY DEFINER
-  -- and only runs server-side inside PostgreSQL triggers, never exposed to clients.
-  -- To get your service_role_key: Supabase Dashboard → Settings → API → service_role (secret)
-  v_supabase_url := 'https://qwqclhzezyzeflxrtfjy.supabase.co';
-  v_service_role_key := 'PASTE_YOUR_SERVICE_ROLE_KEY_HERE';
+  -- Pull config from Supabase vault (secure, never exposed to clients).
+  -- Store secrets via SQL Editor or Dashboard → Settings → Vault:
+  --   SELECT vault.create_secret('supabase_url', 'https://xxx.supabase.co');
+  --   SELECT vault.create_secret('service_role_key', 'eyJ...');
+  SELECT decrypted_secret INTO v_supabase_url
+    FROM vault.decrypted_secrets WHERE name = 'supabase_url' LIMIT 1;
+  SELECT decrypted_secret INTO v_service_role_key
+    FROM vault.decrypted_secrets WHERE name = 'service_role_key' LIMIT 1;
+
+  -- Fallback: use project URL if vault secret not set
+  IF v_supabase_url IS NULL THEN
+    v_supabase_url := 'https://qwqclhzezyzeflxrtfjy.supabase.co';
+  END IF;
 
   -- Only fire if we have the necessary config
   IF v_supabase_url IS NOT NULL AND v_service_role_key IS NOT NULL THEN
