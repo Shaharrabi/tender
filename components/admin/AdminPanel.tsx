@@ -384,7 +384,13 @@ export default function AdminPanel({ userId, onDataChanged, onClose }: AdminPane
                   .from('user_profiles')
                   .update({ onboarding_completed_at: null })
                   .eq('user_id', userId);
-                Alert.alert('Done', 'Welcome tour reset! Close this panel and reload the app (Cmd+R on web) to see the tour again.');
+                // Force full reload so React state (completedCount etc.) resets
+                if (typeof window !== 'undefined' && window.location) {
+                  // Web: reload the page to clear in-memory React state
+                  window.location.reload();
+                } else {
+                  Alert.alert('Done', 'Welcome tour reset! Restart the app to see the tour again.');
+                }
               } catch (e: any) {
                 Alert.alert('Error', e.message || 'Failed to reset tour');
               } finally {
