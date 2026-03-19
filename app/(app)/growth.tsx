@@ -56,6 +56,7 @@ import { getNextUnlockOpportunity } from '@/utils/steps/step-gating';
 import { assignPathway, type PathwayAssignment } from '@/utils/steps/pathway-archetypes';
 import { fetchAllScores } from '@/services/portrait';
 import type { Couple } from '@/types/couples';
+import AssessmentUnlockOverlay from '@/components/growth/AssessmentUnlockOverlay';
 
 const STEP_ILLUSTRATIONS: Record<number, React.ComponentType<{ width?: number; height?: number; animated?: boolean }>> = {
   1: IllustrationStep01, 2: IllustrationStep02, 3: IllustrationStep03, 4: IllustrationStep04,
@@ -78,6 +79,9 @@ export default function GrowthScreen() {
   const [unlockMessage, setUnlockMessage] = useState<string | null>(null);
   const [completedIndividualIds, setCompletedIndividualIds] = useState<string[]>([]);
   const [completedCoupleIds, setCompletedCoupleIds] = useState<string[]>([]);
+  const [showIntroOverlay, setShowIntroOverlay] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [celebrationData, setCelebrationData] = useState<{ title: string; message: string } | null>(null);
 
   // Mark that user has seen the journey overview (gates step 1 in home.tsx)
   useEffect(() => {
@@ -170,6 +174,20 @@ export default function GrowthScreen() {
         const completedCouple = Object.keys(allScores).filter((k) =>
           ['rdas', 'dci', 'csi-16'].includes(k)
         );
+
+        // Check for newly completed assessments (celebration trigger)
+        const prevCount = completedIndividualIds.length + completedCoupleIds.length;
+        const newCount = completedIndividual.length + completedCouple.length;
+        if (prevCount > 0 && newCount > prevCount) {
+          // User completed a new assessment since last visit — check for unlock
+          const { getUnlockCelebration } = await import('@/utils/steps/step-gating');
+          const lastAssessment = completedIndividual[completedIndividual.length - 1];
+          const celebration = getUnlockCelebration(lastAssessment, completedIndividual, completedCouple);
+          if (celebration) {
+            setCelebrationData({ title: celebration.title, message: celebration.message });
+            setShowCelebration(true);
+          }
+        }
 
         // Store completed assessment IDs for step gating
         setCompletedIndividualIds(completedIndividual);
@@ -267,8 +285,44 @@ export default function GrowthScreen() {
     <SafeAreaView style={styles.container}>
       {/* Foundation Audio Overlay — first visit only */}
       {showFoundation && (
-        <FoundationOverlay onDismiss={() => setShowFoundation(false)} />
+        <FoundationOverlay onDismiss={() => {
+          setShowFoundation(false);
+          // Show intro overlay after Foundation film — only if no assessments done yet
+          if (completedIndividualIds.length === 0) {
+            setTimeout(() => setShowIntroOverlay(true), 500);
+          }
+        }} />
       )}
+
+      {/* Assessment Intro Overlay — shows after Foundation film */}
+      <AssessmentUnlockOverlay
+        mode="intro"
+        visible={showIntroOverlay}
+        onDismiss={() => setShowIntroOverlay(false)}
+        onStartAssessment={() => {
+          setShowIntroOverlay(false);
+          router.push('/(app)/tender-assessment' as any);
+        }}
+        onGoHome={() => {
+          setShowIntroOverlay(false);
+          router.replace('/(app)/home' as any);
+        }}
+        tiers={[
+          { steps: 'Steps 1-2', assessments: 'How You Connect (attachment)', description: 'Reveals how you reach for connection and what happens when distance appears', unlocked: completedIndividualIds.includes('ecr-r') },
+          { steps: 'Steps 3-4', assessments: '+ Who You Are + How You Feel', description: 'Maps your personality in love and your emotional intelligence', unlocked: completedIndividualIds.includes('tender-personality-60') && completedIndividualIds.includes('sseit') },
+          { steps: 'Steps 5-7', assessments: '+ all remaining assessments', description: 'Your full relational portrait — every dimension integrated', unlocked: completedIndividualIds.length >= 6 },
+          { steps: 'Steps 8-12', assessments: '+ a couple assessment with your partner', description: 'How your patterns interact with your partner\'s patterns', unlocked: completedCoupleIds.length > 0 },
+        ]}
+      />
+
+      {/* Assessment Celebration Overlay — shows when new steps unlock */}
+      <AssessmentUnlockOverlay
+        mode="celebration"
+        visible={showCelebration}
+        onDismiss={() => setShowCelebration(false)}
+        celebrationTitle={celebrationData?.title}
+        celebrationMessage={celebrationData?.message}
+      />
 
       {/* Header */}
       <View style={styles.header}>
