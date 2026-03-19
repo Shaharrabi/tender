@@ -1668,21 +1668,21 @@ export default function HomeScreen() {
               desc: '12 steps with practices, courses, and growth pathways',
               done: false,
               inProgress: false,
-              route: '/(app)/step-detail?step=1' as const,
+              route: '/(app)/growth' as const,
             },
             {
               name: 'Practice',
               desc: 'Exercises, micro-courses, and AI coaching',
               done: false,
               inProgress: false,
-              route: '/(app)/growth' as const,
+              route: '/(app)/exercises' as const,
             },
             {
               name: 'Progress',
               desc: 'Track milestones and personal growth',
               done: false,
               inProgress: false,
-              route: '/(app)/growth' as const,
+              route: '/(app)/portrait' as const,
             },
           ];
 
@@ -1744,6 +1744,11 @@ export default function HomeScreen() {
             currentStep={currentStepNum}
             onStepPress={async (stepNum) => {
               SoundHaptics.tapSoft();
+              // Gate: require ECR-R completion before any step access
+              if (!completedTypes.includes('ecr-r' as any)) {
+                router.push('/(app)/growth' as any);
+                return;
+              }
               // Gate: first step requires seeing the overview page at least once
               if (stepNum === 1) {
                 try {

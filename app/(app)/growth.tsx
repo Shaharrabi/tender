@@ -80,6 +80,7 @@ export default function GrowthScreen() {
   const [completedIndividualIds, setCompletedIndividualIds] = useState<string[]>([]);
   const [completedCoupleIds, setCompletedCoupleIds] = useState<string[]>([]);
   const [showIntroOverlay, setShowIntroOverlay] = useState(false);
+  const [showInlineUnlock, setShowInlineUnlock] = useState(true);
   const [showCelebration, setShowCelebration] = useState(false);
   const [celebrationData, setCelebrationData] = useState<{ title: string; message: string } | null>(null);
 
@@ -251,6 +252,11 @@ export default function GrowthScreen() {
   };
 
   const handleNavigateToStep = (stepNumber: number) => {
+    // Gate: require ECR-R before accessing any step
+    if (!completedIndividualIds.includes('ecr-r')) {
+      setShowIntroOverlay(true);
+      return;
+    }
     router.push({
       pathname: '/(app)/step-detail' as any,
       params: { step: stepNumber.toString() },
@@ -377,12 +383,14 @@ export default function GrowthScreen() {
         ) : !loading ? (
           <AssessmentUnlockOverlay
             mode="intro"
-            visible={!showFoundation && !showIntroOverlay}
-            onDismiss={() => {}}
+            visible={showInlineUnlock && !showFoundation && !showIntroOverlay}
+            onDismiss={() => setShowInlineUnlock(false)}
             onStartAssessment={() => {
+              setShowInlineUnlock(false);
               router.push('/(app)/tender-assessment' as any);
             }}
             onGoHome={() => {
+              setShowInlineUnlock(false);
               router.replace('/(app)/home' as any);
             }}
             tiers={[
