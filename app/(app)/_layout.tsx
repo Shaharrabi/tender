@@ -1,12 +1,14 @@
 import { Stack, Redirect, usePathname } from 'expo-router';
 import { ActivityIndicator, View, Text, TouchableOpacity, Modal, StyleSheet, Platform } from 'react-native';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useGuest } from '@/context/GuestContext';
-import { Colors, Spacing, FontSizes, BorderRadius } from '@/constants/theme';
+import { Colors, Spacing, FontSizes, FontFamilies, BorderRadius, Shadows } from '@/constants/theme';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { registerAndStorePushToken } from '@/services/notifications';
+import { onPartnerNotified } from '@/services/partner-activity-hooks';
 
 // Routes guests CAN access (browse-only — no data writes)
 const GUEST_ALLOWED_ROUTES = [
@@ -62,6 +64,23 @@ export default function AppLayout() {
       });
     }
   }, [session?.user?.id, isGuest]);
+
+  // ─── "Partner notified" confirmation toast ──────────────
+  const [showPartnerNotified, setShowPartnerNotified] = useState(false);
+  const partnerToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const unsub = onPartnerNotified(() => {
+      // Clear any existing timer so rapid-fire notifications restart the toast
+      if (partnerToastTimer.current) clearTimeout(partnerToastTimer.current);
+      setShowPartnerNotified(true);
+      partnerToastTimer.current = setTimeout(() => setShowPartnerNotified(false), 2500);
+    });
+    return () => {
+      unsub();
+      if (partnerToastTimer.current) clearTimeout(partnerToastTimer.current);
+    };
+  }, []);
 
   // Check if current route is restricted for guests
   useEffect(() => {
@@ -125,6 +144,20 @@ export default function AppLayout() {
         <Stack.Screen name="more" options={{ animation: 'slide_from_right' }} />
       </Stack>
       </ErrorBoundary>
+
+      {/* "Partner notified" confirmation toast */}
+      {showPartnerNotified && (
+        <Animated.View
+          entering={FadeIn.duration(200)}
+          exiting={FadeOut.duration(200)}
+          style={notifiedStyles.wrap}
+          pointerEvents="none"
+        >
+          <View style={notifiedStyles.pill}>
+            <Text style={notifiedStyles.text}>✓ Your partner will see this</Text>
+          </View>
+        </Animated.View>
+      )}
 
       {/* Guest restriction modal */}
       <Modal
@@ -215,5 +248,28 @@ const guestStyles = StyleSheet.create({
   continueText: {
     color: Colors.textSecondary,
     fontSize: FontSizes.bodySmall,
+  },
+});
+
+const notifiedStyles = StyleSheet.create({
+  wrap: {
+    position: 'absolute',
+    bottom: 100,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 9999,
+  },
+  pill: {
+    backgroundColor: Colors.surfaceElevated,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.sm + 2,
+    borderRadius: BorderRadius.pill,
+    ...Shadows.elevated,
+  },
+  text: {
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
   },
 });
