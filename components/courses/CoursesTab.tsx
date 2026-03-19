@@ -57,7 +57,7 @@ export default function CoursesTab({ coupleId, userId }: CoursesTabProps) {
       // Notify partner that a game has started
       notifyPartner(userId, 'course_started', {
         courseId: activeCourse.id,
-        name: activeCourse.name,
+        name: activeCourse.title,
       });
     }
   }, [activeCourse]);
@@ -90,7 +90,7 @@ export default function CoursesTab({ coupleId, userId }: CoursesTabProps) {
       // Notify partner that a course was completed
       notifyPartner(userId, 'course_completed', {
         courseId: activeCourse.id,
-        name: activeCourse.name,
+        name: activeCourse.title,
         badge: activeCourse.badge.name,
       });
     }

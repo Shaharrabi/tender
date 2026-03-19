@@ -1751,7 +1751,7 @@ function PartsMapInfographic({
           >
             <TenderText variant="headingL" color={selfTier.color}>{selfScore}</TenderText>
           </View>
-          <TenderText variant="bodyS" color={Colors.textMuted} align="center" style={{ marginTop: 4 }}>Self Leadership</TenderText>
+          <TenderText variant="bodySmall" color={Colors.textMuted} align="center" style={{ marginTop: 4 }}>Self Leadership</TenderText>
         </View>
       </View>
 

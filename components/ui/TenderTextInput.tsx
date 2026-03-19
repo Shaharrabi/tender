@@ -12,6 +12,7 @@ import {
   TextInput,
   StyleSheet,
   ViewStyle,
+  TextStyle,
   TextInputProps,
 } from 'react-native';
 import { Colors, Spacing, FontSizes, BorderRadius } from '@/constants/theme';
@@ -20,7 +21,7 @@ export interface TenderTextInputProps extends Omit<TextInputProps, 'style'> {
   label?: string;
   error?: string;
   containerStyle?: ViewStyle;
-  inputStyle?: ViewStyle;
+  inputStyle?: TextStyle;
 }
 
 export default function TenderTextInput({

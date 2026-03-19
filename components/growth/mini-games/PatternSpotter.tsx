@@ -156,7 +156,7 @@ export default function PatternSpotter({ onComplete, onSkip, phaseColor }: MiniG
         selectedPatterns: [] as string[],
         primary: {
           name: 'No Pattern Identified',
-          emoji: '🔍',
+          description: 'No common relational pattern was identified in this session. That\'s perfectly okay — patterns often emerge over time.',
           insights: [
             'None of the common patterns felt familiar right now.',
             'Patterns often become visible over time as you observe your interactions.',

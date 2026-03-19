@@ -88,12 +88,12 @@ try {
   const cycle = buildCombinedCycle(mayaPortrait, jordanPortrait, dyadicScores as any);
 
   console.log(`Couple dynamic: ${cycle.dynamic}`);
-  console.log(`Partner A (Maya) position: ${cycle.partnerA.position}`);
-  console.log(`Partner B (Jordan) position: ${cycle.partnerB.position}`);
+  console.log(`Partner A (Maya) position: ${cycle.partnerAPosition}`);
+  console.log(`Partner B (Jordan) position: ${cycle.partnerBPosition}`);
 
   const isPursueWithdraw = cycle.dynamic === 'pursue-withdraw';
-  const mayaPursuer = cycle.partnerA.position === 'pursuer';
-  const jordanWithdrawer = cycle.partnerB.position === 'withdrawer';
+  const mayaPursuer = cycle.partnerAPosition === 'pursuer';
+  const jordanWithdrawer = cycle.partnerBPosition === 'withdrawer';
 
   console.log(`\nPursue-withdraw detected: ${isPursueWithdraw ? 'PASS' : 'FAIL'}`);
   console.log(`Maya = pursuer: ${mayaPursuer ? 'PASS' : 'FAIL'}`);

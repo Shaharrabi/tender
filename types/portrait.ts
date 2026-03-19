@@ -191,8 +191,8 @@ export interface ModalitySlice {
   insight: string;
   bodyCheck: string;
   practice: string;
-  quote: string;
-  quoteAttribution: string;
+  quote?: string;
+  quoteAttribution?: string;
 }
 
 export interface GrowthEdge {

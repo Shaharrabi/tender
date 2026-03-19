@@ -47,7 +47,9 @@ interface StepIntroContext {
 
 function extractContext(portrait: IndividualPortrait): StepIntroContext {
   const cs = portrait.compositeScores;
-  const raw = portrait.allAssessmentScores;
+  // allAssessmentScores is populated at runtime by the portrait generator
+  // but not yet on the TypeScript interface — safe-access via any
+  const raw = (portrait as any).allAssessmentScores as Record<string, any> | undefined;
 
   // DUTCH primary style
   const dutchPrimary = raw?.dutch?.primaryStyle;
