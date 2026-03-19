@@ -189,7 +189,7 @@ function scoreCoupleField(
 export const coupleFieldConfig: AssessmentConfig = {
   type: 'couple-field',
   name: 'What Lives Between You',
-  shortName: 'CFA',
+  shortName: 'Your Shared Field',
   description: 'Explore the patterns, resources, and growing edges that live in the space between you and your partner.',
   instructions: 'Answer these questions on your own, not with your partner present. There are no right or wrong answers. Be honest about what you see \u2014 it will help your partner understand you better.',
   estimatedMinutes: 10,

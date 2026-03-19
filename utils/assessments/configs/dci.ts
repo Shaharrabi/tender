@@ -237,8 +237,8 @@ function scoreDCI(
 
 export const dciConfig: AssessmentConfig = {
   type: 'dci' as any,
-  name: 'Dyadic Coping',
-  shortName: 'DCI',
+  name: 'How You Cope Together',
+  shortName: 'Stress & Coping',
   description:
     'Assess how you and your partner communicate about stress and support each other through difficult times.',
   instructions:

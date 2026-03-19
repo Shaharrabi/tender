@@ -85,7 +85,7 @@ function scoreRelationalField(
 export const relationalFieldConfig: AssessmentConfig = {
   type: 'relational-field',
   name: 'The Space Between Us',
-  shortName: 'RFAS',
+  shortName: 'The Space Between',
   description: 'Explore your awareness of the relational field \u2014 the living space between you and your partner.',
   instructions: 'The following questions explore how you experience the space between you and your partner. There are no right or wrong answers. Respond based on how you generally feel, not how you think you should feel.',
   estimatedMinutes: 8,

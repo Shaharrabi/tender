@@ -204,10 +204,10 @@ function scoreRDAS(
 
 export const rdasConfig: AssessmentConfig = {
   type: 'rdas' as any,
-  name: 'Relationship Adjustment',
-  shortName: 'RDAS',
+  name: 'How Aligned You Are',
+  shortName: 'Relationship Quality',
   description:
-    'Measure dyadic consensus, satisfaction, and cohesion in your relationship.',
+    'Explore how aligned you and your partner are on key relationship dimensions.',
   instructions:
     'Most persons have disagreements in their relationships. Please indicate below the approximate extent of agreement or disagreement between you and your partner for each item on the following list.',
   estimatedMinutes: 5,

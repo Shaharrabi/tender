@@ -208,10 +208,10 @@ function scoreCSI16(
 
 export const csi16Config: AssessmentConfig = {
   type: 'csi-16' as any,
-  name: 'Couple Satisfaction',
-  shortName: 'CSI-16',
+  name: 'How Close You Feel',
+  shortName: 'Relationship Closeness',
   description:
-    'Measure your overall relationship satisfaction using one of the most precise and sensitive instruments available.',
+    'Explore how satisfied and connected you feel in your relationship right now.',
   instructions:
     'The following questions ask about your feelings and perceptions about your relationship. Please answer each item as honestly as possible to reflect your true experience.',
   estimatedMinutes: 5,
