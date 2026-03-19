@@ -1016,15 +1016,21 @@ const REFLECTION_QUESTION_SETS: string[][] = [
   ],
 ];
 
+/** Daily partner connection question — always included regardless of day */
+const DAILY_PARTNER_QUESTION = 'What did your partner do today that made you smile?';
+
 /**
  * Get today's reflection questions based on the day of the week.
+ * Always includes the partner smile question as the first prompt.
  */
 export function getReflectionQuestions(date: string = localDateString()): string[] {
   const d = new Date(date + 'T12:00:00');
   const dayIndex = d.getDay(); // 0=Sunday
   // Map: Sun=6, Mon=0, Tue=1, Wed=2, Thu=3, Fri=4, Sat=5
   const setIndex = dayIndex === 0 ? 6 : dayIndex - 1;
-  return REFLECTION_QUESTION_SETS[setIndex];
+  const dayQuestions = REFLECTION_QUESTION_SETS[setIndex];
+  // Partner question always first, then day-specific questions (deduplicated)
+  return [DAILY_PARTNER_QUESTION, ...dayQuestions.filter((q) => q !== DAILY_PARTNER_QUESTION)];
 }
 
 /**
