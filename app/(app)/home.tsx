@@ -2087,7 +2087,8 @@ export default function HomeScreen() {
         {!hasPortrait && <NudgeCarousel insights={nudges} />}
 
         {/* ═══ DAILY RHYTHM (collapsible section) ═════════ */}
-        {hasCompletedOnboarding && (
+        {/* Show for all authenticated users — not gated behind onboarding completion */}
+        {user && (
           <View ref={(r) => RefRegistry.register('home_dailyRhythm', r)} style={styles.section}>
             <DailyRhythmSection
               todaysCheckIn={todaysCheckIn}

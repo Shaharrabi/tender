@@ -7,7 +7,8 @@
 echo "EXPO_PUBLIC_SUPABASE_URL=$EXPO_PUBLIC_SUPABASE_URL" > .env.local && \
 echo "EXPO_PUBLIC_SUPABASE_ANON_KEY=$EXPO_PUBLIC_SUPABASE_ANON_KEY" >> .env.local && \
 npm install && \
-npx expo export --platform web
+npx expo export --platform web && \
+cp -r public/foundation-film dist/foundation-film 2>/dev/null || true
 """
   publish = "dist"
 

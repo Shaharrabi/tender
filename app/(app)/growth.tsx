@@ -76,6 +76,8 @@ export default function GrowthScreen() {
   const [showFoundation, setShowFoundation] = useState(false);
   const [pathwayAssignment, setPathwayAssignment] = useState<PathwayAssignment | null>(null);
   const [unlockMessage, setUnlockMessage] = useState<string | null>(null);
+  const [completedIndividualIds, setCompletedIndividualIds] = useState<string[]>([]);
+  const [completedCoupleIds, setCompletedCoupleIds] = useState<string[]>([]);
 
   // Mark that user has seen the journey overview (gates step 1 in home.tsx)
   useEffect(() => {
@@ -168,6 +170,10 @@ export default function GrowthScreen() {
         const completedCouple = Object.keys(allScores).filter((k) =>
           ['rdas', 'dci', 'csi-16'].includes(k)
         );
+
+        // Store completed assessment IDs for step gating
+        setCompletedIndividualIds(completedIndividual);
+        setCompletedCoupleIds(completedCouple);
 
         // Calculate next unlock opportunity
         const unlock = getNextUnlockOpportunity(completedIndividual, completedCouple);
@@ -310,6 +316,8 @@ export default function GrowthScreen() {
           currentStepNumber={currentStepNumber}
           onNavigateToStep={handleNavigateToStep}
           isCoupled={!!(couple && !isSelfCouple(couple))}
+          completedIndividual={completedIndividualIds}
+          completedCouple={completedCoupleIds}
         />
 
         {/* Growth Plan Status + Pathway */}

@@ -31,6 +31,7 @@ import {
   HEALING_PHASES,
   getPhaseForStep,
 } from '@/utils/steps/twelve-steps';
+import { getStepAccess } from '@/utils/steps/step-gating';
 
 /** WEARE-phase descriptions — what each phase develops */
 const PHASE_WEARE_DESCRIPTIONS: Record<string, string> = {
@@ -48,6 +49,10 @@ interface Props {
   onNavigateToStep?: (stepNumber: number) => void;
   /** Whether user is in a couple */
   isCoupled?: boolean;
+  /** Completed individual assessment type IDs */
+  completedIndividual?: string[];
+  /** Completed couple assessment type IDs */
+  completedCouple?: string[];
 }
 
 export default function StepJourney({
@@ -55,8 +60,15 @@ export default function StepJourney({
   currentStepNumber,
   onNavigateToStep,
   isCoupled = false,
+  completedIndividual = [],
+  completedCouple = [],
 }: Props) {
   const getStepStatus = (stepNumber: number) => {
+    // Check assessment gate FIRST
+    const access = getStepAccess(stepNumber, completedIndividual, completedCouple);
+    if (!access.isAccessible) return 'locked';
+
+    // Then check DB progress status
     const progress = stepProgress.find((sp) => sp.stepNumber === stepNumber);
     return progress?.status ?? 'locked';
   };
