@@ -124,6 +124,7 @@ import { KeyTakeawayCard } from '@/components/step-enhancements/KeyTakeawayCard'
 import MoodRouter, { type MoodChoice } from '@/components/step-enhancements/MoodRouter';
 import { getStepTeachingCards, getKeyTakeaway, getPracticeWhy } from '@/utils/steps/step-teaching-cards';
 import { getStepAccess } from '@/utils/steps/step-gating';
+import { assignPathway, getPathwayStepContent, PATHWAY_ARCHETYPES } from '@/utils/steps/pathway-archetypes';
 import { generateWhySentence } from '@/utils/practices/whyThisPractice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -173,6 +174,7 @@ function StepDetailScreenInner() {
 
   // Sprint B2 — Portrait + Exchange state
   const [portrait, setPortrait] = useState<IndividualPortrait | null>(null);
+  const [pathwayId, setPathwayId] = useState<string | null>(null);
   const [exchangeFollowUp, setExchangeFollowUp] = useState('');
   const [exchangeFollowUpSaved, setExchangeFollowUpSaved] = useState(false);
 
@@ -377,6 +379,28 @@ function StepDetailScreenInner() {
       setPortrait(userPortrait);
       const uniqueAssessmentTypes = [...new Set(assessmentRows.map((r: any) => r.type))];
       setCompletedAssessmentIds(uniqueAssessmentTypes);
+
+      // Compute pathway archetype from assessment data
+      if (userPortrait?.compositeScores) {
+        try {
+          const cs = userPortrait.compositeScores as any;
+          const pw = assignPathway({
+            anxiety: cs.anxietyNorm ? cs.anxietyNorm / 14.3 : undefined, // norm 0-100 → 1-7 scale
+            avoidance: cs.avoidanceNorm ? cs.avoidanceNorm / 14.3 : undefined,
+            empathicResonance: cs.empathicResonance,
+            regulation: cs.regulationScore,
+            openness: cs.relationalAwareness, // proxy
+            managingOwn: cs.regulationScore, // proxy
+            fusion: cs.differentiation ? 100 - cs.differentiation : undefined, // inverse
+            differentiation: cs.differentiation,
+            eqTotal: cs.emotionalIntelligence,
+            assessmentCount: uniqueAssessmentTypes.length,
+          });
+          setPathwayId(pw.primary);
+        } catch {
+          // Pathway assignment is best-effort
+        }
+      }
 
       // Auto-regenerate portrait if assessments changed or code version is newer
       if (userPortrait && uniqueAssessmentTypes.length >= 6) {
@@ -1046,6 +1070,27 @@ function StepDetailScreenInner() {
               <Text style={[styles.introText, { fontStyle: 'italic' }]}>{personalIntro}</Text>
             </Animated.View>
           ) : null;
+        })()}
+
+        {/* Pathway-Specific Content — what this step means for YOUR archetype */}
+        {(() => {
+          if (!pathwayId) return null;
+          const pwContent = getPathwayStepContent(stepNumber, pathwayId as any);
+          if (!pwContent) return null;
+          const archetype = PATHWAY_ARCHETYPES[pathwayId as keyof typeof PATHWAY_ARCHETYPES];
+          return (
+            <Animated.View entering={FadeIn.delay(80).duration(600)} style={[styles.introTextCard, { borderLeftWidth: 3, borderLeftColor: archetype?.color ?? phase.color, backgroundColor: (archetype?.color ?? phase.color) + '08' }]}>
+              <Text style={[styles.sectionTitle, { color: archetype?.color ?? phase.color, marginBottom: 6 }]}>
+                {archetype?.name ?? 'Your Path'}
+              </Text>
+              <Text style={styles.introText}>{pwContent.pathwayIntro}</Text>
+              {pwContent.watchFor ? (
+                <Text style={[styles.introText, { marginTop: 8, fontStyle: 'italic', color: Colors.textSecondary }]}>
+                  Watch for: {pwContent.watchFor}
+                </Text>
+              ) : null}
+            </Animated.View>
+          );
         })()}
 
         {/* Intro Text */}
@@ -1742,6 +1787,19 @@ function StepDetailScreenInner() {
             </>
           )}
         </Animated.View>
+
+        {/* Pathway Completion Suggestion */}
+        {(() => {
+          if (!pathwayId) return null;
+          const pwContent = getPathwayStepContent(stepNumber, pathwayId as any);
+          if (!pwContent?.completionSuggestion) return null;
+          return (
+            <View style={[styles.introTextCard, { backgroundColor: Colors.surfaceElevated, borderLeftWidth: 2, borderLeftColor: Colors.calm }]}>
+              <Text style={[styles.sectionTitle, { color: Colors.calm, marginBottom: 4 }]}>This week's invitation</Text>
+              <Text style={[styles.introText, { color: Colors.textSecondary }]}>{pwContent.completionSuggestion}</Text>
+            </View>
+          );
+        })()}
 
         {/* Growth Plan — Personalized protocol from portrait (Steps 9+) */}
         {portrait && stepNumber >= 9 && (
