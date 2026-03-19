@@ -368,11 +368,23 @@ export default function AdminPanel({ userId, onDataChanged, onClose }: AdminPane
             onPress={async () => {
               setBusy('replay-tour');
               try {
-                // Clear all FTUE flags to re-trigger welcome tour
-                const keys = await AsyncStorage.getAllKeys();
-                const ftueKeys = keys.filter((k: string) => k.startsWith('@ftue_'));
-                if (ftueKeys.length > 0) await AsyncStorage.multiRemove(ftueKeys);
-                Alert.alert('Done', 'Welcome tour will show on next home screen visit. Navigate away and back to home.');
+                // Clear ALL known FTUE keys explicitly (getAllKeys unreliable on web)
+                const ftueKeysToDelete = [
+                  '@ftue_first_launch_global',
+                  '@ftue_tours_global',
+                  `@ftue_first_launch_${userId}`,
+                  `@ftue_tours_${userId}`,
+                  `@ftue_highlights_${userId}`,
+                  `@ftue_tooltips_${userId}`,
+                  `@ftue_audios_${userId}`,
+                ];
+                await AsyncStorage.multiRemove(ftueKeysToDelete);
+                // Also clear onboarding_completed_at in Supabase so the tour re-triggers
+                await supabase
+                  .from('user_profiles')
+                  .update({ onboarding_completed_at: null })
+                  .eq('user_id', userId);
+                Alert.alert('Done', 'Welcome tour reset! Close this panel and reload the app (Cmd+R on web) to see the tour again.');
               } catch (e: any) {
                 Alert.alert('Error', e.message || 'Failed to reset tour');
               } finally {
