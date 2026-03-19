@@ -2147,7 +2147,7 @@ export default function HomeScreen() {
               <Text style={styles.gatewayCardTitle}>Your Journey</Text>
               <Text style={styles.gatewayCardSubtitle} numberOfLines={1}>
                 {hasPortrait
-                  ? `Step ${currentStepNum} of 12 \u00B7 ${getStep(currentStepNum)?.phase ?? ''}`
+                  ? `Step ${currentStepNum} of 12 \u00B7 ${getStep(currentStepNum)?.title ?? ''}`
                   : 'Twelve steps to relational health'}
               </Text>
             </View>

@@ -52,6 +52,9 @@ import {
   IllustrationStep09, IllustrationStep10, IllustrationStep11, IllustrationStep12,
 } from '@/assets/graphics/illustrations';
 import type { StepProgress } from '@/types/growth';
+import { getNextUnlockOpportunity } from '@/utils/steps/step-gating';
+import { assignPathway, type PathwayAssignment } from '@/utils/steps/pathway-archetypes';
+import { fetchAllScores } from '@/services/portrait';
 import type { Couple } from '@/types/couples';
 
 const STEP_ILLUSTRATIONS: Record<number, React.ComponentType<{ width?: number; height?: number; animated?: boolean }>> = {
@@ -71,6 +74,8 @@ export default function GrowthScreen() {
   const [couple, setCouple] = useState<Couple | null>(null);
   const [hasPortrait, setHasPortrait] = useState(false);
   const [showFoundation, setShowFoundation] = useState(false);
+  const [pathwayAssignment, setPathwayAssignment] = useState<PathwayAssignment | null>(null);
+  const [unlockMessage, setUnlockMessage] = useState<string | null>(null);
 
   // Mark that user has seen the journey overview (gates step 1 in home.tsx)
   useEffect(() => {
@@ -150,10 +155,49 @@ export default function GrowthScreen() {
         setCouple(null);
       }
 
-      // Check portrait existence (non-blocking)
+      // Check portrait existence + load pathway/gating (non-blocking)
       try {
         const p = await getPortrait(user.id);
         setHasPortrait(!!p);
+
+        // Load completed assessments for gating + pathway
+        const allScores = await fetchAllScores(user.id);
+        const completedIndividual = Object.keys(allScores).filter((k) =>
+          ['ecr-r', 'tender-personality-60', 'ipip-neo-120', 'sseit', 'dsi-r', 'dutch', 'values'].includes(k)
+        );
+        const completedCouple = Object.keys(allScores).filter((k) =>
+          ['rdas', 'dci', 'csi-16'].includes(k)
+        );
+
+        // Calculate next unlock opportunity
+        const unlock = getNextUnlockOpportunity(completedIndividual, completedCouple);
+        if (unlock) {
+          setUnlockMessage(unlock.message);
+        }
+
+        // Assign pathway if we have attachment data
+        if (allScores['ecr-r']?.scores) {
+          const ecrr = allScores['ecr-r'].scores as any;
+          const sseit = allScores['sseit']?.scores as any;
+          const ipip = (allScores['tender-personality-60']?.scores ?? allScores['ipip-neo-120']?.scores) as any;
+          const dsir = allScores['dsi-r']?.scores as any;
+          const dutch = allScores['dutch']?.scores as any;
+
+          const pathway = assignPathway({
+            anxiety: ecrr.anxietyScore,
+            avoidance: ecrr.avoidanceScore,
+            empathicResonance: sseit?.subscaleNormalized?.empathicResonance,
+            regulation: p?.compositeScores?.regulationScore,
+            openness: ipip?.domainPercentiles?.openness,
+            managingOwn: sseit?.subscaleNormalized?.managingOwn,
+            dutchPrimary: dutch?.primaryStyle,
+            fusion: dsir?.subscaleScores?.fusionWithOthers?.normalized,
+            differentiation: p?.compositeScores?.differentiation,
+            eqTotal: sseit?.totalNormalized,
+            assessmentCount: completedIndividual.length,
+          });
+          setPathwayAssignment(pathway);
+        }
       } catch {
         setHasPortrait(false);
       }
@@ -268,20 +312,43 @@ export default function GrowthScreen() {
           isCoupled={!!(couple && !isSelfCouple(couple))}
         />
 
-        {/* Growth Plan Status */}
+        {/* Growth Plan Status + Pathway */}
         <View style={styles.growthPlanStatus}>
-          <Text style={styles.growthPlanStatusLabel}>YOUR GROWTH PLAN</Text>
-          {hasPortrait && currentStepNumber >= 9 ? (
-            <Text style={styles.growthPlanStatusText}>
-              Your personalized growth plan is woven into Steps 9–12. Continue your journey to explore your pathway, phases, and practices.
-            </Text>
-          ) : hasPortrait ? (
-            <Text style={styles.growthPlanStatusText}>
-              Your growth plan is taking shape. It will appear in Step 9 as you continue your journey.
-            </Text>
+          {pathwayAssignment ? (
+            <>
+              <Text style={styles.growthPlanStatusLabel}>YOUR PATH</Text>
+              <Text style={[styles.growthPlanPathwayName, { color: pathwayAssignment.archetype.color }]}>
+                {pathwayAssignment.archetype.icon} {pathwayAssignment.archetype.name}
+              </Text>
+              <Text style={styles.growthPlanStatusText}>
+                {pathwayAssignment.archetype.subtitle}
+              </Text>
+              {pathwayAssignment.confidence === 'preliminary' && (
+                <Text style={[styles.growthPlanStatusText, { fontStyle: 'italic', marginTop: 6 }]}>
+                  This is a preliminary pathway based on your first assessment. It becomes more precise as you complete more.
+                </Text>
+              )}
+            </>
           ) : (
-            <Text style={styles.growthPlanStatusText}>
-              Complete your personal assessments to unlock your personalized growth plan within the steps.
+            <Text style={styles.growthPlanStatusLabel}>YOUR GROWTH PLAN</Text>
+          )}
+
+          {unlockMessage && (
+            <View style={styles.unlockBanner}>
+              <Text style={styles.unlockBannerText}>{unlockMessage}</Text>
+              <TouchableOpacity
+                style={styles.unlockButton}
+                onPress={() => router.push('/(app)/tender-assessment')}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.unlockButtonText}>Begin Assessment</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {!unlockMessage && hasPortrait && (
+            <Text style={[styles.growthPlanStatusText, { marginTop: 8 }]}>
+              All steps are unlocked and personalized with your full portrait.
             </Text>
           )}
         </View>
@@ -408,6 +475,41 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.bodySmall,
     color: Colors.textSecondary,
     lineHeight: 20,
+  },
+  growthPlanPathwayName: {
+    fontFamily: FontFamilies.heading,
+    fontSize: FontSizes.headingM,
+    fontWeight: '600' as const,
+    marginBottom: 4,
+  },
+  unlockBanner: {
+    marginTop: 12,
+    padding: 14,
+    borderRadius: 14,
+    backgroundColor: Colors.surfaceElevated,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+  },
+  unlockBannerText: {
+    fontSize: FontSizes.bodySmall,
+    color: Colors.text,
+    lineHeight: 20,
+    marginBottom: 10,
+  },
+  unlockButton: {
+    backgroundColor: Colors.primary,
+    borderRadius: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    alignSelf: 'flex-start' as const,
+  },
+  unlockButtonText: {
+    fontFamily: FontFamilies.heading,
+    fontSize: FontSizes.caption,
+    fontWeight: '600' as const,
+    color: Colors.textOnPrimary,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase' as const,
   },
   rewatchSection: {
     marginTop: Spacing.xl,
