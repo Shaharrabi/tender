@@ -49,3 +49,9 @@ app-example
 # Local Netlify folder
 .netlify
 .claude/worktrees/
+
+# Session transcripts (may contain secrets)
+docs/transcripts/
+
+# One-time scripts
+verify_post_cleanup.sh
