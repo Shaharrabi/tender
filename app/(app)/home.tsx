@@ -30,6 +30,8 @@ import {
   Alert,
   Platform,
   Dimensions,
+  Modal,
+  TextInput,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -310,6 +312,8 @@ export default function HomeScreen() {
 
   // Admin mode
   const [adminMode, setAdminMode] = useState(false);
+  const [showPinModal, setShowPinModal] = useState(false);
+  const [pinInput, setPinInput] = useState('');
   const adminTapRef = useRef<{ count: number; lastTap: number }>({ count: 0, lastTap: 0 });
 
   // Journey unlock celebration
@@ -1119,16 +1123,8 @@ export default function HomeScreen() {
         setAdminMode(false);
         return;
       }
-      Alert.prompt(
-        'Admin Access',
-        'Enter PIN:',
-        (pin) => {
-          if (pin === '5676') setAdminMode(true);
-        },
-        'plain-text',
-        '',
-        'number-pad'
-      );
+      setPinInput('');
+      setShowPinModal(true);
     }
   };
 
@@ -1260,6 +1256,39 @@ export default function HomeScreen() {
         )}
 
         {/* ═══ ADMIN PANEL (hidden until triple-tap) ══════════ */}
+        {/* Admin PIN Modal */}
+        <Modal visible={showPinModal} transparent animationType="fade">
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.4)' }}>
+            <View style={{ backgroundColor: '#fff', borderRadius: 12, padding: 24, width: 260, alignItems: 'center' }}>
+              <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 4 }}>Admin Access</Text>
+              <Text style={{ fontSize: 13, color: '#666', marginBottom: 16 }}>Enter PIN:</Text>
+              <TextInput
+                value={pinInput}
+                onChangeText={setPinInput}
+                keyboardType="number-pad"
+                maxLength={4}
+                secureTextEntry
+                autoFocus
+                style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 10, width: '100%', textAlign: 'center', fontSize: 18, letterSpacing: 8, marginBottom: 16 }}
+              />
+              <View style={{ flexDirection: 'row', gap: 12 }}>
+                <TouchableOpacity onPress={() => setShowPinModal(false)} style={{ paddingVertical: 8, paddingHorizontal: 16 }}>
+                  <Text style={{ color: '#666', fontSize: 14 }}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => {
+                    if (pinInput === '5676') setAdminMode(true);
+                    setShowPinModal(false);
+                  }}
+                  style={{ backgroundColor: '#4A7C59', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 16 }}
+                >
+                  <Text style={{ color: '#fff', fontSize: 14, fontWeight: '600' }}>Confirm</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
         {adminMode && user && (
           <AdminPanel
             userId={user.id}
