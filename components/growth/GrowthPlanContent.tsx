@@ -22,6 +22,7 @@ import {
   Animated,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '@/context/AuthContext';
 import {
   Colors,
@@ -78,6 +79,47 @@ export default function GrowthPlanContent({ portrait, router, phaseColor }: Grow
       useNativeDriver: true,
     }).start();
   }, []);
+
+  // ── Score improvement tracking ──
+  const [scoreImprovements, setScoreImprovements] = useState<{ label: string; from: number; to: number }[]>([]);
+
+  useEffect(() => {
+    if (!user || !portrait?.compositeScores) return;
+    const key = `@growth_baseline_${user.id}`;
+    const cs = portrait.compositeScores as any;
+    const currentScores = {
+      regulation: cs.regulationScore,
+      window: cs.windowWidth,
+      security: cs.attachmentSecurity,
+      eq: cs.emotionalIntelligence,
+      differentiation: cs.differentiation,
+    };
+
+    AsyncStorage.getItem(key).then((stored) => {
+      if (!stored) {
+        // First time — save baseline
+        AsyncStorage.setItem(key, JSON.stringify(currentScores)).catch(() => {});
+        return;
+      }
+      const baseline = JSON.parse(stored);
+      const improvements: { label: string; from: number; to: number }[] = [];
+      const labels: Record<string, string> = {
+        regulation: 'Regulation',
+        window: 'Window of Tolerance',
+        security: 'Attachment Security',
+        eq: 'Emotional Intelligence',
+        differentiation: 'Differentiation',
+      };
+      for (const [k, label] of Object.entries(labels)) {
+        const from = baseline[k];
+        const to = currentScores[k as keyof typeof currentScores];
+        if (from != null && to != null && to > from + 2) {
+          improvements.push({ label, from: Math.round(from), to: Math.round(to) });
+        }
+      }
+      setScoreImprovements(improvements);
+    }).catch(() => {});
+  }, [user, portrait]);
 
   // ── Completion tracking ──
   const [completionMap, setCompletionMap] = useState<Record<string, number>>({});
@@ -244,6 +286,18 @@ export default function GrowthPlanContent({ portrait, router, phaseColor }: Grow
               ))}
             </View>
           )}
+        </View>
+      )}
+
+      {/* ── Score Improvements ── */}
+      {scoreImprovements.length > 0 && (
+        <View style={[s.guidanceContainer, { borderLeftColor: Colors.success, borderLeftWidth: 3 }]}>
+          <TenderText variant="headingS" color={Colors.success}>Your progress is showing</TenderText>
+          {scoreImprovements.map((imp, i) => (
+            <TenderText key={i} variant="body" color={Colors.textSecondary} style={s.guidanceItem}>
+              {imp.label}: {imp.from} → {imp.to} — your growth edge is responding to the work you are doing.
+            </TenderText>
+          ))}
         </View>
       )}
 
