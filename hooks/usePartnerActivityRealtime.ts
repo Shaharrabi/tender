@@ -17,13 +17,26 @@ import { getPartnerProfile } from '@/services/couples';
 import { schedulePartnerActivityNotification } from '@/services/notifications';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
+/** Minimal payload exposed to UI layers when a partner activity arrives */
+export interface PartnerActivityEvent {
+  activityType: string;
+  partnerName: string;
+  details?: string;
+}
+
 /**
  * Subscribe to partner_activity inserts for the given user.
  * @param userId — the authenticated user's ID (recipient side).
+ * @param onActivity — optional callback fired when a new activity arrives (for in-app toast).
  */
-export function usePartnerActivityRealtime(userId: string | undefined): void {
+export function usePartnerActivityRealtime(
+  userId: string | undefined,
+  onActivity?: (event: PartnerActivityEvent) => void,
+): void {
   const channelRef = useRef<RealtimeChannel | null>(null);
   const partnerNameRef = useRef<string | null>(null);
+  const onActivityRef = useRef(onActivity);
+  onActivityRef.current = onActivity; // keep ref fresh without re-subscribing
 
   // Pre-fetch partner name so we have it ready for notifications
   useEffect(() => {
@@ -60,14 +73,21 @@ export function usePartnerActivityRealtime(userId: string | undefined): void {
           const activityType: string = row.activity_type ?? 'unknown';
           const activityData: Record<string, any> = row.activity_data ?? {};
 
+          const details = activityData.assessmentName ?? activityData.name ?? undefined;
+
           // Fire local notification (best-effort, non-blocking)
           schedulePartnerActivityNotification({
             type: activityType,
             partnerName,
-            details: activityData.assessmentName ?? activityData.name ?? undefined,
+            details,
           }).catch(() => {
             // Notification failure should never propagate
           });
+
+          // Fire in-app callback if provided (for toast display)
+          if (onActivityRef.current) {
+            onActivityRef.current({ activityType, partnerName, details });
+          }
 
           if (__DEV__) {
             console.log(
