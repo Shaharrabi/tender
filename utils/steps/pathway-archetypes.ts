@@ -296,6 +296,46 @@ const PATHWAY_STEP_CONTENT: Record<PathwayId, Record<number, PathwayStepContent>
       watchFor: "The moment when sitting with the feeling becomes unbearable and you reach for your phone, start a conversation, or create urgency. That's the edge.",
       completionSuggestion: "Sit with an uncomfortable feeling for 90 seconds without acting on it. Time it. Write what you notice.",
     },
+    5: {
+      pathwayIntro: "Sharing your truth as a pursuer means sharing the FEAR underneath the pursuit — not the complaint on top of it. You've been saying 'you never...' when what you mean is 'I'm terrified you'll leave.' This step asks you to lead with the soft underbelly, not the sharp claws.",
+      watchFor: "Turning vulnerability into a demand. 'I need you to reassure me RIGHT NOW' is pursuit wearing a vulnerability costume. Real sharing sounds quieter.",
+      completionSuggestion: "Tell your partner one fear you've never said out loud — not what they do wrong, but what you're afraid of. Start with: 'The thing I've been afraid to say is...'",
+    },
+    6: {
+      pathwayIntro: "Your enemy story is that your partner doesn't care enough. That their distance is indifference. But what if their withdrawal is their own version of overwhelm — not a statement about your worth? Releasing the enemy story means holding the possibility that your partner's silence is pain, not rejection.",
+      watchFor: "The righteous certainty that you've 'figured them out.' The moment you say 'they ALWAYS...' or 'they NEVER...' — that's the enemy story speaking, not observation.",
+      completionSuggestion: "Write your partner's enemy story about YOU from their perspective. What might they believe about your pursuit that isn't the full truth?",
+    },
+    7: {
+      pathwayIntro: "Committing to relational practices is where your energy finally becomes an asset. You've always been willing to DO the work — the risk is doing too much, too fast, then burning out or resenting that your partner isn't matching your pace. This step channels your natural drive into sustainable rhythms.",
+      watchFor: "Over-committing to practices as a new form of pursuit. If you're doing all the exercises to PROVE you're trying, that's the old pattern in a new outfit.",
+      completionSuggestion: "Choose ONE practice to do consistently for 7 days. Just one. When you feel the urge to add more, notice that urge — it's your pursuit energy looking for a target.",
+    },
+    8: {
+      pathwayIntro: "Preparing to repair harm means looking at how your pursuit itself caused wounds — the late-night texts when they needed space, the conversations pushed past their capacity, the intensity that felt like love to you and like siege to them. This isn't about shame. It's about seeing clearly.",
+      watchFor: "Defending the pursuit: 'But I was just trying to connect!' True. And it still caused harm. Both things are real.",
+      completionSuggestion: "Identify one specific moment where your pursuit crossed your partner's boundary. Don't explain it. Just name it. 'I pushed past your no when ___.'",
+    },
+    9: {
+      pathwayIntro: "Rebuilding trust as a pursuer means proving you can hold back — that you can be close WITHOUT being consuming. Your partner needs evidence that your love has a dimmer switch, not just an on/off. Trust rebuilds when they see you respect their space AND stay connected.",
+      watchFor: "Impatience with the pace of trust-building. 'I've changed, why don't you see it?' is pursuit of validation. Trust builds on THEIR timeline, not yours.",
+      completionSuggestion: "This week, notice one moment where your partner pulls away and choose to let them go without following. Afterward, tell them: 'I noticed you needed space and I wanted you to have it.'",
+    },
+    10: {
+      pathwayIntro: "Maintaining awareness means recognizing that your pursuit pattern will return — especially under stress, during transitions, or when your partner seems distant. The goal isn't to eliminate the radar. It's to hear it beep without obeying it blindly.",
+      watchFor: "Subtle pursuit: increased texting frequency, 'casually' checking their mood, over-interpreting tone. Your radar gets quieter but it never fully turns off. That's normal.",
+      completionSuggestion: "Create a personal 'alarm protocol': when you feel the pull to pursue, do three things first — breathe, name the fear, check if it's present-moment or old story. Then choose your response.",
+    },
+    11: {
+      pathwayIntro: "Seeking shared insight as a pursuer means finally hearing what the relationship has been trying to teach you: that your reaching was always about connection, and connection was always possible without the reaching. The insight isn't that you were wrong to want closeness — it's that closeness was never as far away as your alarm system believed.",
+      watchFor: "Making the insight into another project. 'Now I understand! Let me explain to my partner what I've learned!' — that's pursuit of intellectual connection. Let the insight settle before you share it.",
+      completionSuggestion: "Sit quietly and ask: 'What has this relationship been trying to teach me about trust?' Write whatever comes without editing.",
+    },
+    12: {
+      pathwayIntro: "Carrying the message means modeling what it looks like to love without gripping. Your journey from pursuit to presence is a gift — not just to your partner, but to every relationship you touch. You now know that the deepest connection comes not from chasing but from being still enough to be found.",
+      watchFor: "Evangelizing your growth. Telling everyone how much you've changed is one last form of pursuit — pursuit of recognition. Let your presence speak.",
+      completionSuggestion: "Write a letter to the pursuer you were at Step 1. What would you want them to know? What would you want them to feel?",
+    },
   },
 
   protector: {
@@ -318,6 +358,46 @@ const PATHWAY_STEP_CONTENT: Record<PathwayId, Record<number, PathwayStepContent>
       pathwayIntro: "Feeling without fixing looks different for you — your version of 'fixing' is leaving. When emotions rise, your system exits: physically, emotionally, or mentally. This step practices staying in the room for one minute longer than feels comfortable.",
       watchFor: "The shutdown sequence: first your face goes neutral, then your breathing shallows, then your mind starts planning your exit. Catch it at the face.",
       completionSuggestion: "When you feel the urge to withdraw, say out loud: 'I'm noticing I want to leave. I'm going to stay for 60 more seconds.' Then stay.",
+    },
+    5: {
+      pathwayIntro: "Sharing your truth as a protector is the step that scares you most — because truth requires proximity, and proximity is what your system avoids. But here's what you may not realize: your partner isn't asking for a flood of emotion. They're asking for a single honest sentence. You can do one sentence.",
+      watchFor: "Over-preparing what you'll say until the moment passes. Perfectionism about vulnerability is still avoidance.",
+      completionSuggestion: "Share one thing with your partner that you normally keep inside. It doesn't have to be big. 'I missed you today' counts. Say it and notice what happens in your chest.",
+    },
+    6: {
+      pathwayIntro: "Your enemy story is that your partner is too needy — that their emotions are a drain on your energy and autonomy. But what if their reaching is love, not neediness? What if what feels like demand is actually desire to be close to YOU specifically? Releasing this story means considering that their intensity might be a compliment, not a burden.",
+      watchFor: "Subtle contempt: eye-rolling, sighing, the internal 'here we go again.' These are the enemy story's body language.",
+      completionSuggestion: "Write down three things your partner does that you label as 'too much.' Now rewrite each one as an expression of love. What shifts?",
+    },
+    7: {
+      pathwayIntro: "Committing to relational practices asks you to show up consistently — which is harder for you than showing up intensely. You can handle a crisis. It's the daily drip of connection that feels unnatural. This step builds the muscle of small, reliable gestures that tell your partner: I'm still here.",
+      watchFor: "Treating practice as obligation rather than offering. 'Fine, I'll do the thing' carries a different energy than 'I'm choosing to show up.' Your partner can feel the difference.",
+      completionSuggestion: "Initiate one small connection each day this week — a touch, a question, a text. Nothing dramatic. Consistency is the practice, not intensity.",
+    },
+    8: {
+      pathwayIntro: "Preparing to repair harm means looking at the cost of your walls — the birthdays you were present for but not really there, the conversations you ended by going silent, the moments your partner reached and found you gone. Your withdrawal wasn't malicious. It was self-protection. AND it left marks.",
+      watchFor: "Minimizing the impact: 'I just needed space, it wasn't that bad.' It might not have been bad for you. Ask your partner what it was like for them.",
+      completionSuggestion: "Name one specific time your withdrawal hurt your partner. Not the category ('I pull away sometimes') but the instance ('When you cried about your mom and I went to the other room').",
+    },
+    9: {
+      pathwayIntro: "Rebuilding trust as a protector means proving you can stay — not just physically, but emotionally. Your partner needs evidence that when things get hard, you won't disappear. Trust rebuilds every time you lean in instead of pulling away, even slightly.",
+      watchFor: "Performing presence while mentally checked out. Your partner needs your attention, not just your body in the room.",
+      completionSuggestion: "This week, when your partner brings something emotional, resist the urge to problem-solve or exit. Instead say: 'Tell me more.' Then listen for two full minutes.",
+    },
+    10: {
+      pathwayIntro: "Maintaining awareness means knowing that your wall will want to go back up — after a fight, during stress, when closeness starts to feel like too much. The goal isn't to never retreat. It's to retreat consciously: 'I need 20 minutes' instead of vanishing for three hours without a word.",
+      watchFor: "The slow fade: not a dramatic withdrawal but a gradual emotional dimming. You stop initiating. You answer in shorter sentences. You're physically present but relationally absent. Catch it early.",
+      completionSuggestion: "Create a 'withdrawal signal' with your partner: a word or gesture that means 'I need space but I'm coming back.' Use it instead of just going quiet.",
+    },
+    11: {
+      pathwayIntro: "Seeking shared insight as a protector means discovering what the relationship has been teaching you: that closeness doesn't cost you yourself. That the wall kept you safe AND kept you lonely. The insight isn't that protection was wrong — it's that you're strong enough now to need less of it.",
+      watchFor: "Intellectualizing the insight without feeling it. You might create a perfect theory about your avoidance without actually letting yourself feel the loss of all the closeness you missed.",
+      completionSuggestion: "Ask yourself: 'What did my wall cost me?' Sit with the answer for five minutes. Don't fix it. Just feel it.",
+    },
+    12: {
+      pathwayIntro: "Carrying the message means showing others what it looks like to choose closeness when distance feels safer. Your journey from protection to presence is rare and hard-won. You now know that the bravest thing a protector can do is not to guard — it's to open the gate.",
+      watchFor: "Retreating into the identity of 'the one who grew.' Growth is ongoing, not a destination you arrive at and defend.",
+      completionSuggestion: "Write a letter to the protector you were at Step 1. What would you want them to know about what's on the other side of the wall?",
     },
   },
 
@@ -342,6 +422,46 @@ const PATHWAY_STEP_CONTENT: Record<PathwayId, Record<number, PathwayStepContent>
       watchFor: "Physical symptoms of emotional absorption: heaviness in chest, sudden fatigue, mood shifts that track your partner's state.",
       completionSuggestion: "After an emotional conversation, spend 5 minutes alone with your hand on your belly. Breathe and ask: 'What am I feeling that is mine right now?'",
     },
+    5: {
+      pathwayIntro: "Sharing your truth as a feeler means sharing what YOU need — not what you sense everyone else needs. You've spent your life translating other people's emotions. This step asks you to find your own voice underneath all that empathic noise. What do YOU want? What hurts YOU?",
+      watchFor: "Starting your truth with your partner's experience: 'I can tell you're stressed, so...' That's their truth, not yours. Start with 'I.'",
+      completionSuggestion: "Complete this sentence five times without mentioning your partner: 'I need ___.' Not 'I need you to ___.' Just 'I need ___.'",
+    },
+    6: {
+      pathwayIntro: "Your enemy story is more subtle than most — it's not that your partner is bad, it's that they don't feel enough. You secretly believe you're the only one who really CARES, who really FEELS the relationship. Releasing this story means acknowledging that your partner may experience love differently, not less deeply.",
+      watchFor: "Emotional superiority: 'I'm the sensitive one, they're the closed one.' This positions you as the hero of the emotional world and your partner as the villain of flatness.",
+      completionSuggestion: "Ask your partner: 'How do you experience love?' Listen without comparing it to how YOU experience love. Their answer might surprise you.",
+    },
+    7: {
+      pathwayIntro: "Committing to practices as a feeler means practicing with BOUNDARIES — not losing yourself in the exercises. You'll naturally go deep. The challenge is coming back up. Your relational practices need a beginning AND an end, not an endless immersion.",
+      watchFor: "Using practices as another portal into emotional fusion. If the grounding exercise makes you feel MORE merged rather than more centered, you're doing your pattern, not the practice.",
+      completionSuggestion: "Set a timer for each practice. When the timer ends, stop — even if you feel like there's more to process. Practice the ending.",
+    },
+    8: {
+      pathwayIntro: "Preparing to repair harm means recognizing that your empathic merging itself caused wounds — the times you couldn't hold space because you were too flooded, the times your partner's feelings became YOUR emergency, the times you responded to their pain with more pain instead of steadiness.",
+      watchFor: "Taking on ALL the guilt because you can feel how much your partner was hurt. Feeling their pain intensely is not the same as being responsible for all of it.",
+      completionSuggestion: "Identify one moment where your emotional flooding made things harder for your partner. Name it specifically, without drowning in the feeling of it.",
+    },
+    9: {
+      pathwayIntro: "Rebuilding trust as a feeler means showing your partner that you can be emotionally present WITHOUT being emotionally consumed. They need to trust that your empathy has a floor — that you can hold their experience without collapsing into it. Trust builds when they see you stay solid.",
+      watchFor: "Over-empathizing as a repair strategy: 'I feel EVERYTHING you feel!' can feel like merging rather than connecting. Your partner may need you to be a steady shore, not another wave.",
+      completionSuggestion: "This week, when your partner shares something painful, practice staying in YOUR body while listening. Feel your feet on the floor. Witness without absorbing.",
+    },
+    10: {
+      pathwayIntro: "Maintaining awareness means recognizing when you're starting to merge again — when your mood perfectly mirrors your partner's, when you can't tell whose anxiety you're carrying, when you lose yourself in their emotional weather. The radar for you is an internal boundary check.",
+      watchFor: "Compassion fatigue disguised as closeness. When you feel exhausted after every conversation, it's not because you care too much — it's because your boundaries dissolved again.",
+      completionSuggestion: "Three times today, pause and ask: 'What am I feeling that is purely mine right now?' If you can't answer, that's information.",
+    },
+    11: {
+      pathwayIntro: "Seeking shared insight means discovering that the relationship has been teaching you about the difference between empathy and enmeshment. Your capacity to feel deeply is your greatest gift. The insight is that you can offer it WITHOUT losing yourself — that boundaried empathy is deeper than boundaryless absorption.",
+      watchFor: "Grieving your old identity as 'the empath.' If feeling everything was who you WERE, who are you with boundaries? The answer: someone who can actually help.",
+      completionSuggestion: "Reflect: 'What does my empathy look like when it has a container?' Write about the difference between open-hearted and wide-open.",
+    },
+    12: {
+      pathwayIntro: "Carrying the message means modeling what boundaried empathy looks like — feeling deeply without losing yourself, being present without being consumed. Your journey teaches others that sensitivity is not weakness, and boundaries are not walls. The feeler who learns to hold their own center becomes the most powerful healer in the room.",
+      watchFor: "Absorbing other people's growth journeys as your responsibility. You can inspire without carrying.",
+      completionSuggestion: "Write a letter to the feeler you were at Step 1 — the one who couldn't tell whose feelings were whose. What do you know now about love with edges?",
+    },
   },
 
   thinker: {
@@ -364,6 +484,46 @@ const PATHWAY_STEP_CONTENT: Record<PathwayId, Record<number, PathwayStepContent>
       pathwayIntro: "Feeling without fixing is your central growth edge. Your mind wants to solve every feeling — to turn emotion into insight, pain into pattern, experience into understanding. This step practices BEING with the feeling before your mind files it away.",
       watchFor: "Rapid intellectualization: feeling arrives → mind labels it → feeling disappears into the label. The label is accurate. The feeling is gone.",
       completionSuggestion: "When a feeling arises, set a timer for 2 minutes. Feel it in your body for the full 2 minutes before you think about what it means.",
+    },
+    5: {
+      pathwayIntro: "Sharing your truth as a thinker means sharing the FEELING, not the analysis. You can explain your relationship dynamic brilliantly. What your partner needs is not your explanation — it's your heart. 'I feel scared' is more vulnerable than 'I notice a pattern of anxious-avoidant complementarity.'",
+      watchFor: "Packaging your vulnerability in insight. 'I've been reflecting on my attachment patterns and I think...' — your partner's eyes just glazed over. Try: 'I'm lonely.'",
+      completionSuggestion: "Share something with your partner using ONLY feeling words. No analysis, no framework references, no 'I think.' Just 'I feel ___ when ___.'",
+    },
+    6: {
+      pathwayIntro: "Your enemy story is sophisticated — it's not crude anger, it's a comprehensive theory about why your partner is the problem. You've built an airtight case, complete with evidence and psychological frameworks. Releasing it means admitting that your brilliant analysis might be your most elaborate defense mechanism.",
+      watchFor: "Intellectual certainty that feels like truth. 'I've objectively assessed our dynamic and...' — objectivity in relationships is a myth you use to stay in control.",
+      completionSuggestion: "Take your most well-constructed theory about your partner's issue and ask: 'What if I'm wrong about this? What would that mean about me?'",
+    },
+    7: {
+      pathwayIntro: "Committing to practices is where your knowledge finally meets your body. You've read the books. You understand the science. Now: can you DO the thing without turning it into a research project? Your practice is embodiment, not analysis of embodiment.",
+      watchFor: "Optimizing the practice instead of doing it. Researching the 'best' meditation app, reading about grounding instead of grounding, planning the perfect ritual instead of imperfectly showing up.",
+      completionSuggestion: "Do one practice this week without reading about it first. Just do it. Messy, imperfect, un-optimized. Notice how that feels.",
+    },
+    8: {
+      pathwayIntro: "Preparing to repair harm means seeing how your intellectualization itself caused wounds — the times your partner needed comfort and got an explanation, the times they cried and you analyzed, the times they begged for your heart and you offered your mind. Your insight was never the problem. Your absence from your own feelings was.",
+      watchFor: "Analyzing the harm instead of feeling it. 'I understand cognitively that my detachment was hurtful' — do you FEEL that? In your body? Where?",
+      completionSuggestion: "Ask your partner: 'When did my understanding hurt you the most?' Listen with your body, not your analytical mind.",
+    },
+    9: {
+      pathwayIntro: "Rebuilding trust as a thinker means showing your partner that you can be emotionally present — not just intellectually engaged. They need to see that when they share pain, you won't immediately explain it. Trust rebuilds when they feel FELT by you, not just understood.",
+      watchFor: "Replacing emotional attunement with helpful insights. 'Have you considered that your reaction might stem from...' is not connection. Try: 'That sounds really hard.'",
+      completionSuggestion: "This week, when your partner shares something, respond ONLY with emotional validation for the first two minutes. No analysis. No suggestions. Just: 'I hear you. That makes sense.'",
+    },
+    10: {
+      pathwayIntro: "Maintaining awareness means noticing when you retreat to your head — when the conversation gets emotional and your mind starts narrating instead of participating. The awareness practice for you is body-based: where are your feet? What's happening in your chest? These questions pull you out of the observation deck and back into the room.",
+      watchFor: "Meta-cognition as escape: thinking ABOUT your feelings instead of HAVING them. 'I notice I'm having a feeling' is three steps removed from the feeling itself.",
+      completionSuggestion: "Set three body-check alarms during the day. When they go off, stop thinking and ask: 'What does my body feel right now?' Just the body. Not your thoughts about the body.",
+    },
+    11: {
+      pathwayIntro: "Seeking shared insight is where your gift becomes useful — but differently than before. The insight you seek now isn't analytical. It's the kind of knowing that comes from having been IN the experience, not above it. You've learned that the deepest understanding comes not from observation but from participation.",
+      watchFor: "Turning the insight into a TED talk. The temptation to package your growth into a coherent narrative is strong. Let it stay messy. Messy is honest.",
+      completionSuggestion: "Reflect: 'What do I know now that I can't explain?' Write about the understanding that lives in your body, not your mind.",
+    },
+    12: {
+      pathwayIntro: "Carrying the message means modeling what it looks like to be both wise AND embodied — to understand deeply AND feel fully. Your journey from the head to the heart is one of the hardest paths. You now know that the most profound insight in any relationship is not a theory — it's the willingness to be present.",
+      watchFor: "Teaching instead of being. The thinker's version of 'carrying the message' can become another lecture. Let your presence teach. Your partner will notice.",
+      completionSuggestion: "Write a letter to the thinker you were at Step 1 — the one who thought understanding was enough. What do you know now that you couldn't think your way to?",
     },
   },
 
@@ -388,6 +548,46 @@ const PATHWAY_STEP_CONTENT: Record<PathwayId, Record<number, PathwayStepContent>
       watchFor: "The moment when you feel your 'no' forming and watch yourself swallow it. That swallowing IS the pattern.",
       completionSuggestion: "Practice saying 'Let me think about that' instead of immediately agreeing. Buy yourself 10 seconds of real consideration.",
     },
+    5: {
+      pathwayIntro: "Sharing your truth as an accommodator is the most radical thing you can do — because your entire system is built to share THEIR truth, to smooth, to harmonize. This step asks you to cause discomfort on purpose: to say what you actually think, even if it creates a moment of tension. That tension is not a problem. It's proof you exist.",
+      watchFor: "Softening your truth until it disappears: 'I kind of maybe sometimes feel like possibly...' Say it plainly. One clear sentence.",
+      completionSuggestion: "Tell your partner one thing you disagree about. It doesn't have to be big. 'I actually prefer the other restaurant.' Start there.",
+    },
+    6: {
+      pathwayIntro: "Your enemy story is invisible even to you — because you don't have an enemy story about your PARTNER. You have one about YOURSELF: that you're not important enough to have needs, that your preferences don't matter, that keeping the peace is more valuable than being honest. Releasing this means recognizing that self-erasure is not love. It's a slow disappearing act.",
+      watchFor: "The belief that having an enemy story is selfish. It's not. It's honest. You're allowed to see clearly, even when what you see is uncomfortable.",
+      completionSuggestion: "Write down three resentments you've been hiding. Not to share them yet — just to acknowledge they exist. They're yours. They're valid.",
+    },
+    7: {
+      pathwayIntro: "Committing to practices means committing to practices FOR YOURSELF — not as a way to improve the relationship for your partner. You've spent your life doing things for others. This step asks: what practice nourishes YOU? What would you do if no one was watching and no one needed you to be different?",
+      watchFor: "Choosing practices based on what your partner would approve of. If your practice selection feels like another act of accommodation, it is.",
+      completionSuggestion: "Choose one practice that is entirely for you. Not because it will make you a better partner. Because it feeds something in you that's been hungry.",
+    },
+    8: {
+      pathwayIntro: "Preparing to repair harm means confronting a paradox: your accommodation was a gift AND it caused damage. By hiding yourself, you denied your partner a real relationship. They've been loving a curated version of you. The harm isn't what you did — it's what you withheld. The real you.",
+      watchFor: "Apologizing for having needs ('I'm sorry I want things'). That's not repair. That's more accommodation. Repair means showing up as yourself, not apologizing for your existence.",
+      completionSuggestion: "Identify one way your yielding shaped the relationship in a direction your partner didn't choose. They deserve to know who you really are.",
+    },
+    9: {
+      pathwayIntro: "Rebuilding trust as an accommodator means proving you'll tell the truth — even when it's easier to agree. Your partner needs to trust that your 'yes' means yes and your 'fine' actually means fine. Trust rebuilds when they see you choose honesty over harmony.",
+      watchFor: "Performing assertiveness while internally capitulating. Saying 'no' with your words while saying 'I'm sorry' with your body language. Alignment matters.",
+      completionSuggestion: "This week, catch yourself about to say 'whatever you want' and replace it with what you actually want. Even once. That's rebuilding trust.",
+    },
+    10: {
+      pathwayIntro: "Maintaining awareness means catching the accommodation reflex before it fires — the moment between feeling your preference and swallowing it. That gap is getting wider as you grow. But under stress, it shrinks. The old pattern whispers: 'Just go along. It's easier.' Your work is to hear that whisper and choose differently.",
+      watchFor: "Accommodation in new disguises: 'I don't mind' (you do), 'It doesn't matter' (it does), 'Whatever works for you' (you have a preference). Your body knows. Listen to it.",
+      completionSuggestion: "At the end of each day, ask: 'Did I swallow anything today?' If yes, write it down. Tomorrow, try saying it instead.",
+    },
+    11: {
+      pathwayIntro: "Seeking shared insight means discovering what the relationship has been teaching you: that you matter. That your voice is not a disruption — it's a contribution. That real love requires a real you, not a pleasant ghost. The insight is that accommodation was never about kindness. It was about fear of being too much.",
+      watchFor: "Deflecting the insight onto your partner: 'They need to learn to ask for less.' No. This insight is about YOU learning to show up as more.",
+      completionSuggestion: "Reflect: 'Who am I when I'm not managing everyone's comfort?' Write about the person underneath the accommodation. They're still there.",
+    },
+    12: {
+      pathwayIntro: "Carrying the message means modeling what it looks like to show up fully without apology. Your journey from self-erasure to self-authorship is quiet but revolutionary. You now know that the most loving thing an accommodator can do is stop accommodating — and start being real.",
+      watchFor: "Returning to the old pattern under the guise of 'being kind.' Kindness that costs you your self is not kindness. It's a transaction.",
+      completionSuggestion: "Write a letter to the accommodator you were at Step 1 — the one who thought disappearing was the price of love. What do you know now about showing up?",
+    },
   },
 
   rebuilder: {
@@ -410,6 +610,46 @@ const PATHWAY_STEP_CONTENT: Record<PathwayId, Record<number, PathwayStepContent>
       pathwayIntro: "Feeling without fixing starts with feeling at all. Your regulation capacity is still developing, which means feelings can be overwhelming. This step builds tolerance in small doses — not the full ocean, just a cup at a time.",
       watchFor: "Flooding and then shutting down completely. If the feeling gets too big, it's okay to take a break. Come back in 10 minutes.",
       completionSuggestion: "Practice naming one emotion per day — just naming it. 'Right now I feel ___.' That's the first brick of emotional intelligence.",
+    },
+    5: {
+      pathwayIntro: "Sharing your truth as a rebuilder starts simple: say one real thing. You don't need to share your deepest wound or your most complex feeling. Just one honest sentence. 'I had a hard day.' 'I felt hurt when that happened.' For you, any truth shared is a victory — because the foundation is being built one brick at a time.",
+      watchFor: "The belief that your truth isn't interesting or important enough to share. It is. Every human truth matters.",
+      completionSuggestion: "Share one real thing with your partner today — not what happened at work, but how you FELT about something. Even 'I felt good today' counts.",
+    },
+    6: {
+      pathwayIntro: "Your enemy story might be about yourself — that you're broken, that you're too far behind, that you can't do this. Or it might be about relationships in general — that love is for people who had better starts. Releasing this story means accepting that you're building something new, and new things don't need to compare themselves to old things.",
+      watchFor: "Hopelessness disguised as realism. 'I'm just not good at relationships' is a story, not a fact. You're here. That's evidence against it.",
+      completionSuggestion: "Write down one story you tell yourself about why you can't have a good relationship. Then write one piece of evidence that contradicts it.",
+    },
+    7: {
+      pathwayIntro: "Committing to practices is your superpower — because you're building from scratch, every practice matters more. You're not unlearning decades of a complex pattern. You're learning for the first time. That means every practice is genuinely new territory. There's no 'going back to old habits' because these habits are being formed right now.",
+      watchFor: "Skipping practices because they feel too basic. 'This is too simple' might mean it's exactly what you need. Foundations are supposed to be simple.",
+      completionSuggestion: "Choose the simplest practice offered and do it perfectly for one week. Mastering something small builds more confidence than attempting something big.",
+    },
+    8: {
+      pathwayIntro: "Preparing to repair harm is gentler for you — not because harm didn't happen, but because much of the harm was unconscious. You weren't strategically withdrawing or pursuing. You were surviving with limited tools. Repair means acknowledging impact without drowning in shame. 'I didn't know how to show up. I'm learning now.'",
+      watchFor: "Shame overwhelming the repair process. If looking at harm makes you want to shut down entirely, slow down. You can repair in small doses.",
+      completionSuggestion: "Tell your partner: 'I know I haven't always been able to show up the way you needed. I want to learn. Can you tell me one thing that would help?'",
+    },
+    9: {
+      pathwayIntro: "Rebuilding trust as a rebuilder is literal — you're building it for the first time, not rebuilding something that broke. Each small, consistent action teaches your partner (and yourself) that you can be relied on. You don't need grand gestures. You need showing up, again and again.",
+      watchFor: "Comparing your pace to others' ('Most people already know how to do this'). Your pace is your pace. Consistency matters more than speed.",
+      completionSuggestion: "Pick one small thing you'll do every day for your partner this week — a text, a question, a small act. Do it every single day. That IS trust-building.",
+    },
+    10: {
+      pathwayIntro: "Maintaining awareness is about celebrating how far you've come while staying honest about how much is still growing. You started with a foundation that needed building. Now you have walls, maybe a roof. The house isn't finished — but it's standing. Keep noticing what needs attention without losing sight of what's already built.",
+      watchFor: "All-or-nothing thinking: 'I messed up once so I'm back to zero.' You're not. One setback doesn't demolish the foundation. It tests it. And it held.",
+      completionSuggestion: "Write two lists: 'What I can do now that I couldn't at Step 1' and 'What I'm still learning.' Let both be true at the same time.",
+    },
+    11: {
+      pathwayIntro: "Seeking shared insight means discovering that the relationship has been your greatest teacher — not because it was easy, but because it asked you to grow in ways you never imagined. The insight is that you WERE capable all along. You just needed the foundation, the tools, and the willingness to try.",
+      watchFor: "Discounting your growth: 'Anyone could have done this.' No. Not everyone starts where you started. What you've built is real.",
+      completionSuggestion: "Ask your partner: 'What's one way you've seen me change?' Listen. Let it land. You did that.",
+    },
+    12: {
+      pathwayIntro: "Carrying the message means showing others that it's never too late to learn. Your journey from ground zero to here is the most inspiring path of all — because you had the least to work with and you built the most. You now know that love is a skill, not a gift. And skills can be learned at any age.",
+      watchFor: "Imposter syndrome: 'Who am I to carry any message?' You're the person who built a relationship from the foundation up. That's who.",
+      completionSuggestion: "Write a letter to the rebuilder you were at Step 1 — the one who wondered if they could do this at all. Tell them what you built.",
     },
   },
 };
