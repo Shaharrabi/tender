@@ -30,27 +30,25 @@ function generateInviteCode(): string {
 // ─── User Profile ──────────────────────────────────────
 
 export async function getOrCreateProfile(userId: string, displayName?: string): Promise<UserProfile | null> {
-  // Try to get existing
-  const { data: existing } = await supabase
-    .from('user_profiles')
-    .select('*')
-    .eq('user_id', userId)
-    .maybeSingle();
-
-  if (existing) return existing as UserProfile;
-
-  // Create new
+  // Use upsert to prevent race condition when called simultaneously
   const { data, error } = await supabase
     .from('user_profiles')
-    .insert({
-      user_id: userId,
-      display_name: displayName || null,
-    })
+    .upsert(
+      { user_id: userId, display_name: displayName || null },
+      { onConflict: 'user_id', ignoreDuplicates: true },
+    )
     .select()
     .single();
 
   if (error) {
-    console.error('[Couples] Failed to create profile:', error);
+    // Fallback: if upsert fails, try a simple select (profile may already exist)
+    const { data: existing } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (existing) return existing as UserProfile;
+    console.error('[Couples] Failed to get or create profile:', error);
     return null;
   }
   return data as UserProfile;
@@ -100,6 +98,10 @@ export async function createInvite(inviterId: string, inviterName?: string): Pro
     return fallback as CoupleInvite;
   }
 
+  if (!data || typeof data !== 'object') {
+    console.error('[Couples] RPC returned invalid data');
+    return null;
+  }
   const result = data as any;
   return {
     id: result.id,
@@ -112,11 +114,16 @@ export async function createInvite(inviterId: string, inviterName?: string): Pro
 }
 
 export async function getInviteByCode(code: string): Promise<CoupleInvite | null> {
+  // Validate input before hitting the database
+  if (!code || code.trim().length === 0) return null;
+  const trimmed = code.trim().toUpperCase();
+  if (!/^[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(trimmed) && trimmed.length < 4) return null;
+
   // Use SECURITY DEFINER RPC to bypass RLS for code lookup.
   // Direct SELECT was blocked by migration 027 which restricted reads
   // to inviter_id or accepted_by — but the accepting user is neither.
   const { data, error } = await supabase.rpc('lookup_invite_by_code', {
-    p_code: code,
+    p_code: trimmed,
   });
 
   if (error) {
@@ -172,6 +179,9 @@ export async function acceptInvite(inviteId: string, acceptorId: string): Promis
   }
 
   // RPC returns a JSONB object with couple fields
+  if (!data || typeof data !== 'object') {
+    throw new Error('Connection succeeded but returned no data. Please try again.');
+  }
   const result = data as any;
   return {
     id: result.couple_id,

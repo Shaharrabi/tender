@@ -63,17 +63,15 @@ function localDateString(d: Date = new Date()): string {
  * Uses 'T00:00:00' (local) instead of bare date (UTC) to avoid timezone shift.
  */
 function startOfDayISO(dateStr: string): string {
-  const d = new Date(dateStr + 'T00:00:00');
-  return d.toISOString();
+  return new Date(dateStr + 'T00:00:00Z').toISOString();
 }
 
 /**
- * Get start of next day in ISO format.
- * Parses as local midnight, adds 1 day, converts to ISO.
+ * Get start of next day in ISO format (UTC).
  */
 function endOfDayISO(dateStr: string): string {
-  const d = new Date(dateStr + 'T00:00:00');
-  d.setDate(d.getDate() + 1);
+  const d = new Date(dateStr + 'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate() + 1);
   return d.toISOString();
 }
 
@@ -263,9 +261,9 @@ export async function getJournalEntriesForDate(
 
       if (isCourseLesson) {
         // Extract course ID and lesson number from pattern: mc-{courseName}-lesson-{N}
-        const courseMatch = exerciseId.match(/^(mc-[^-]+-[^-]+)-lesson-(\d+)/);
-        const courseId = courseMatch?.[1] ?? exerciseId.split('-lesson-')[0];
-        const lessonNum = courseMatch?.[2] ?? '?';
+        const lessonMatch = exerciseId.match(/-lesson-(\d+)$/);
+        const courseId = lessonMatch ? exerciseId.substring(0, exerciseId.indexOf('-lesson-')) : exerciseId;
+        const lessonNum = lessonMatch?.[1] ?? '?';
         const course = getCourseById(courseId);
         const courseTitle = course?.title ?? courseId.replace(/-/g, ' ');
 
@@ -387,7 +385,7 @@ export async function getJournalEntriesForDate(
         subtitle: 'Completed',
         data: {
           assessmentType: row.type,
-          scores: row.scores,
+          scores: row.scores || {},
         },
       });
     }
@@ -912,8 +910,8 @@ export async function getJournalEntriesForMonth(
     try {
       const dayEntries = await getJournalEntriesForDate(userId, dateStr);
       allEntries.push(...dayEntries);
-    } catch {
-      // Skip failed days silently
+    } catch (err) {
+      console.error(`[Journal] Failed to load entries for ${dateStr}:`, err);
     }
     cursor.setDate(cursor.getDate() + 1);
   }
