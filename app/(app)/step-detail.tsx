@@ -123,6 +123,7 @@ import { KeyTakeawayCard } from '@/components/step-enhancements/KeyTakeawayCard'
 // NextActionFloater removed — tabs handle navigation now
 import MoodRouter, { type MoodChoice } from '@/components/step-enhancements/MoodRouter';
 import { getStepTeachingCards, getKeyTakeaway, getPracticeWhy } from '@/utils/steps/step-teaching-cards';
+import { getStepAccess } from '@/utils/steps/step-gating';
 import { generateWhySentence } from '@/utils/practices/whyThisPractice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -333,11 +334,14 @@ function StepDetailScreenInner() {
   const isCompletedStep = thisStepProgress?.status === 'completed';
   const isActiveStep = thisStepProgress?.status === 'active';
 
-  // Assessment gate — blocks completion until required assessments are done
+  // Universal step gate — checks if required assessments for this step tier are completed
+  const stepGateAccess = getStepAccess(stepNumber, completedAssessmentIds, []);
+
+  // Per-step assessment gate — blocks completion until specific assessments are done
   const gateApplies = assessmentGate && (!assessmentGate.coupleOnly || isCoupled);
-  const gateMet = !gateApplies || assessmentGate!.assessmentIds.every(
+  const gateMet = stepGateAccess.isAccessible && (!gateApplies || assessmentGate!.assessmentIds.every(
     (id) => completedAssessmentIds.includes(id),
-  );
+  ));
   const canToggleCriteria = (isCurrentStep || isCompletedStep || isActiveStep) && gateMet;
 
   // UX enhancement derived values
@@ -1821,7 +1825,9 @@ function StepDetailScreenInner() {
               const isCurrent = s.stepNumber === stepNumber;
               const isCompleted = sp?.status === 'completed';
               const isActive = sp?.status === 'active';
-              const isLocked = !isCompleted && !isActive;
+              // Check BOTH DB status AND assessment gate
+              const gateAccess = getStepAccess(s.stepNumber, completedAssessmentIds, []);
+              const isLocked = !gateAccess.isAccessible || (!isCompleted && !isActive);
               const phaseColor = getPhaseForStep(s.stepNumber)?.color ?? Colors.textMuted;
 
               return (

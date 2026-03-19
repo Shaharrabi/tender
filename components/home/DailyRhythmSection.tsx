@@ -184,15 +184,13 @@ export default function DailyRhythmSection({
         />
       </View>
 
-      {/* 2. Window of Tolerance — only when portrait exists */}
-      {hasPortrait && (
-        <View style={styles.toolSection}>
-          <WindowOfTolerance onSelectPractice={handlePracticeFromWoT} />
-        </View>
-      )}
+      {/* 2. Window of Tolerance — available for all users */}
+      <View style={styles.toolSection}>
+        <WindowOfTolerance onSelectPractice={handlePracticeFromWoT} />
+      </View>
 
-      {/* 3. Journal Prompt — only when portrait exists */}
-      {hasPortrait && (
+      {/* 3. Journal Prompt */}
+      {(
         <View style={styles.toolSection}>
           <TouchableOpacity
             style={styles.journalCard}
