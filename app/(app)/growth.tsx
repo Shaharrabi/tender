@@ -364,15 +364,35 @@ export default function GrowthScreen() {
           onContinue={handleNavigateToStep}
         />
 
-        {/* Full Step Journey Map */}
-        <StepJourney
-          stepProgress={stepProgress}
-          currentStepNumber={currentStepNumber}
-          onNavigateToStep={handleNavigateToStep}
-          isCoupled={!!(couple && !isSelfCouple(couple))}
-          completedIndividual={completedIndividualIds}
-          completedCouple={completedCoupleIds}
-        />
+        {/* Full Step Journey Map — hidden until ECR-R is completed */}
+        {completedIndividualIds.includes('ecr-r') ? (
+          <StepJourney
+            stepProgress={stepProgress}
+            currentStepNumber={currentStepNumber}
+            onNavigateToStep={handleNavigateToStep}
+            isCoupled={!!(couple && !isSelfCouple(couple))}
+            completedIndividual={completedIndividualIds}
+            completedCouple={completedCoupleIds}
+          />
+        ) : !loading ? (
+          <AssessmentUnlockOverlay
+            mode="intro"
+            visible={!showFoundation && !showIntroOverlay}
+            onDismiss={() => {}}
+            onStartAssessment={() => {
+              router.push('/(app)/tender-assessment' as any);
+            }}
+            onGoHome={() => {
+              router.replace('/(app)/home' as any);
+            }}
+            tiers={[
+              { steps: 'Steps 1-2', assessments: 'How You Connect (attachment)', description: 'Reveals how you reach for connection and what happens when distance appears', unlocked: false },
+              { steps: 'Steps 3-4', assessments: '+ Who You Are + How You Feel', description: 'Maps your personality in love and your emotional intelligence', unlocked: false },
+              { steps: 'Steps 5-7', assessments: '+ all remaining assessments', description: 'Your full relational portrait — every dimension integrated', unlocked: false },
+              { steps: 'Steps 8-12', assessments: '+ a couple assessment with your partner', description: 'How your patterns interact with your partner\'s patterns', unlocked: false },
+            ]}
+          />
+        ) : null}
 
         {/* Growth Plan Status + Pathway */}
         <View style={styles.growthPlanStatus}>
