@@ -694,23 +694,24 @@ export default function HomeScreen() {
       }
 
       // Show Journey Unlock celebration on first visit after first assessment.
-      // Also skip if user is already past step 1 (they've clearly seen the journey).
-      if (unlock.healingJourney && completedAssessmentTypes.length >= 1) {
+      // Skip if: already seen, past step 1, or all assessments done (clearly not first time).
+      if (unlock.healingJourney && completedAssessmentTypes.length >= 1 && completedAssessmentTypes.length < 6) {
         const seen = await hasSeenJourneyUnlock();
         if (!seen) {
-          // Double-check: if user has already progressed past step 1,
-          // they've been on the journey — don't show the unlock overlay.
           try {
             const stepNum = await getCurrentStepNumber(user.id);
             if (stepNum > 1) {
-              markJourneyUnlockSeen(); // persist so we never check again
+              markJourneyUnlockSeen();
             } else {
               setShowJourneyUnlock(true);
             }
           } catch {
-            setShowJourneyUnlock(true); // fallback: show it
+            setShowJourneyUnlock(true);
           }
         }
+      } else if (completedAssessmentTypes.length >= 6) {
+        // User has all assessments — they're past the intro phase
+        markJourneyUnlockSeen();
       }
 
       // Animate progress bar

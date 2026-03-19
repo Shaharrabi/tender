@@ -117,6 +117,11 @@ export default function StepJourney({
               const stepPhase = getPhaseForStep(step.stepNumber);
               const phaseColor = stepPhase?.color ?? Colors.primary;
 
+              // Get unlock info for locked steps
+              const unlockInfo = isLocked
+                ? getStepAccess(step.stepNumber, completedIndividual, completedCouple)
+                : null;
+
               return (
                 <TouchableOpacity
                   key={step.stepNumber}
@@ -177,6 +182,11 @@ export default function StepJourney({
                     {isCurrent && (
                       <Text style={[styles.stepHint, { color: phaseColor }]}>
                         Tap to continue
+                      </Text>
+                    )}
+                    {isLocked && unlockInfo?.nextAssessmentName && (
+                      <Text style={[styles.stepHint, { color: Colors.textMuted }]}>
+                        Unlocks with: {unlockInfo.nextAssessmentName}
                       </Text>
                     )}
                   </View>
