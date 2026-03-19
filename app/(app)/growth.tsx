@@ -83,6 +83,7 @@ export default function GrowthScreen() {
   const [showInlineUnlock, setShowInlineUnlock] = useState(true);
   const [showCelebration, setShowCelebration] = useState(false);
   const [celebrationData, setCelebrationData] = useState<{ title: string; message: string } | null>(null);
+  const [pathwayEvolution, setPathwayEvolution] = useState<{ from: string; to: string } | null>(null);
 
   // Mark that user has seen the journey overview (gates step 1 in home.tsx)
   useEffect(() => {
@@ -222,6 +223,21 @@ export default function GrowthScreen() {
             assessmentCount: completedIndividual.length,
           });
           setPathwayAssignment(pathway);
+
+          // Detect pathway evolution (archetype changed since last visit)
+          try {
+            const STORED_KEY = 'last_pathway_archetype';
+            const previous = await AsyncStorage.getItem(STORED_KEY);
+            const currentKey = pathway.archetype.id;
+            if (previous && previous !== currentKey) {
+              // Find the human-readable name for the old pathway
+              const oldName = previous.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
+              setPathwayEvolution({ from: oldName, to: pathway.archetype.name });
+            }
+            await AsyncStorage.setItem(STORED_KEY, currentKey);
+          } catch {
+            // Non-critical — skip evolution detection
+          }
         }
       } catch {
         setHasPortrait(false);
@@ -418,6 +434,19 @@ export default function GrowthScreen() {
                   This is a preliminary pathway based on your first assessment. It becomes more precise as you complete more.
                 </Text>
               )}
+              {pathwayEvolution && (
+                <View style={styles.evolutionCard}>
+                  <Text style={styles.evolutionText}>
+                    Your pathway has evolved from{' '}
+                    <Text style={{ fontWeight: '600' }}>{pathwayEvolution.from}</Text>
+                    {' '}to{' '}
+                    <Text style={{ fontWeight: '600', color: pathwayAssignment.archetype.color }}>
+                      {pathwayEvolution.to}
+                    </Text>
+                    {' '}based on your latest assessments. Your growth is reshaping the journey.
+                  </Text>
+                </View>
+              )}
             </>
           ) : (
             <Text style={styles.growthPlanStatusLabel}>YOUR GROWTH PLAN</Text>
@@ -571,6 +600,20 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.headingM,
     fontWeight: '600' as const,
     marginBottom: 4,
+  },
+  evolutionCard: {
+    marginTop: 12,
+    padding: 14,
+    borderRadius: 14,
+    backgroundColor: Colors.backgroundAlt,
+    borderLeftWidth: 3,
+    borderLeftColor: '#A8B5A2',
+  },
+  evolutionText: {
+    fontFamily: FontFamilies.body,
+    fontSize: FontSizes.bodySmall,
+    color: Colors.textSecondary,
+    lineHeight: 22,
   },
   unlockBanner: {
     marginTop: 12,
