@@ -853,7 +853,7 @@ function CouplePortalScreen() {
           Your couple portrait is built from both partners' individual assessments — the same 6 sections you each completed on your own. Tender reads across all your domains to find what happens when your patterns meet.
         </TenderText>
         <TenderText variant="bodySmall" color={Colors.textSecondary} style={styles.assessmentExplainerBody}>
-          The three couple assessments (RDAS, DCI, CSI-16) are optional. They add texture — relationship satisfaction, stress coping, and how you handle conflict as a pair — but they're not required for your portrait.
+          The three couple assessments are optional. They add texture — relationship satisfaction, stress coping, and how you navigate conflict as a pair — but they're not required for your portrait.
         </TenderText>
         <TenderText variant="bodySmall" color={Colors.textMuted} style={styles.assessmentExplainerNote}>
           ✦ Each tab below explores a different layer of your relationship{'\n'}
@@ -1644,7 +1644,7 @@ function CouplePortalScreen() {
         }
       } else {
         const who = a ? nameA : nameB;
-        paras.push(`Only ${who} has completed this assessment. The RDAS is most powerful when both partners share their experience side by side.`);
+        paras.push(`Only ${who} has completed this assessment. This measure is most powerful when both partners share their experience side by side.`);
       }
       return paras;
     };
@@ -1676,7 +1676,7 @@ function CouplePortalScreen() {
         }
       } else {
         const who = a ? nameA : nameB;
-        paras.push(`Only ${who} has completed this assessment. The DCI reveals its deepest insights when both partners share how they experience coping together.`);
+        paras.push(`Only ${who} has completed this assessment. This measure reveals its deepest insights when both partners share how they experience coping together.`);
       }
       return paras;
     };

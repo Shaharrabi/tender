@@ -588,7 +588,7 @@ export function generateCouplePortraitHTML(
   const satisfactionHTML = dyadic.satisfaction
     ? `<div class="card card-rose" style="page-break-inside:avoid">
         <div class="card-title">Relationship Satisfaction</div>
-        ${scoreBar('RDAS Score', dyadic.satisfaction.total, '#C4616E')}
+        ${scoreBar('Relationship Adjustment', dyadic.satisfaction.total, '#C4616E')}
         <p style="margin-top:8px">${esc(dyadic.satisfaction.narrative)}</p>
       </div>`
     : '';
@@ -596,7 +596,7 @@ export function generateCouplePortraitHTML(
   const closenessHTML = dyadic.closeness
     ? `<div class="card card-blue" style="page-break-inside:avoid">
         <div class="card-title">Closeness</div>
-        ${scoreBar('CSI-16 Score', dyadic.closeness.total, '#7294D4')}
+        ${scoreBar('Closeness', dyadic.closeness.total, '#7294D4')}
         <p style="margin-top:8px">${esc(dyadic.closeness.narrative)}</p>
       </div>`
     : '';
