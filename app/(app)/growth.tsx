@@ -21,6 +21,7 @@ import {
   SafeAreaView,
   ActivityIndicator,
   Dimensions,
+  Platform,
 } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { useRouter } from 'expo-router';
@@ -284,6 +285,27 @@ export default function GrowthScreen() {
             </Text>
           )}
         </View>
+
+        {/* Foundation Film — rewatch widget */}
+        {Platform.OS === 'web' && (
+          <View style={styles.rewatchSection}>
+            <Text style={styles.rewatchLabel}>THE FOUNDATION</Text>
+            <Text style={styles.rewatchSub}>Understanding the Relational Field</Text>
+            <View style={styles.rewatchFrame}>
+              <iframe
+                src="/foundation-film/index.html"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  border: 'none',
+                  borderRadius: 16,
+                } as any}
+                title="The Foundation — Rewatch"
+                allow="autoplay"
+              />
+            </View>
+          </View>
+        )}
       </ScrollView>
 
       <Animated.View style={[styles.quickLinksWrapper, quickLinksAnimStyle]}>
@@ -386,5 +408,33 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.bodySmall,
     color: Colors.textSecondary,
     lineHeight: 20,
+  },
+  rewatchSection: {
+    marginTop: Spacing.xl,
+    alignItems: 'center',
+    paddingBottom: Spacing.lg,
+  },
+  rewatchLabel: {
+    fontSize: 11,
+    letterSpacing: 3,
+    textTransform: 'uppercase',
+    color: Colors.textMuted,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  rewatchSub: {
+    fontSize: FontSizes.caption,
+    color: Colors.textSecondary,
+    fontStyle: 'italic',
+    marginBottom: Spacing.md,
+  },
+  rewatchFrame: {
+    width: '100%',
+    maxWidth: 560,
+    aspectRatio: 16 / 9,
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
   },
 });

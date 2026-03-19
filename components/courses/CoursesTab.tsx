@@ -138,6 +138,7 @@ export default function CoursesTab({ coupleId, userId }: CoursesTabProps) {
             course={course}
             isCompleted={completedCourses.includes(course.id)}
             onPress={() => handleOpenCourse(course)}
+            style={isWide ? styles.cardWide : undefined}
           />
         ))}
       </View>
@@ -270,6 +271,14 @@ const styles = StyleSheet.create({
   gridWide: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    justifyContent: 'center',
+    maxWidth: 800,
+    alignSelf: 'center',
+    width: '100%',
+  },
+  cardWide: {
+    width: '47%',
+    marginHorizontal: '1.5%',
   },
   badgesSection: {
     marginTop: 24,

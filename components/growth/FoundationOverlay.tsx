@@ -389,8 +389,9 @@ const styles = StyleSheet.create({
   },
   skipContainerFilm: {
     position: 'absolute',
-    top: 20,
-    right: 20,
+    bottom: 16,
+    left: '50%',
+    transform: [{ translateX: -60 }],
     zIndex: 20,
   },
   captionContainer: {

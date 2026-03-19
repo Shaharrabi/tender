@@ -16,14 +16,15 @@ interface CourseCardProps {
   course: CourseDefinition;
   isCompleted: boolean;
   onPress: () => void;
+  style?: any;
 }
 
-export default function CourseCard({ course, isCompleted, onPress }: CourseCardProps) {
+export default function CourseCard({ course, isCompleted, onPress, style }: CourseCardProps) {
   const numberLabel = COURSE_NUMBER_LABELS[course.number - 1] ?? 'i';
 
   return (
     <TouchableOpacity
-      style={styles.card}
+      style={[styles.card, style]}
       onPress={onPress}
       activeOpacity={0.7}
       accessibilityRole="button"
