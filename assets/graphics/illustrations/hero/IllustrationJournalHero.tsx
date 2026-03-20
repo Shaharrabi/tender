@@ -7,29 +7,22 @@
  * Screen:      app/(app)/journal.tsx
  * Description: Journal header — bowed body, inner rings, day arc, floating symbols
  *
- * ANIMATIONS (per-element, matching original HTML):
- *   - Body (terracotta): breathe 5.5s
- *   - Inner rings (gold ellipses): pulse 2.5s staggered
- *   - SELF dot (gold circle): pulse 2s
- *   - Sun dot: drift 6s
- *   - Leaf: float 4s
- *   - Flame: sway 3s
- *   - Heart: float 3.5s
+ * ANIMATIONS:
+ *   WEB:    Per-element CSS via useWebSvgAnim + #id selectors
+ *   NATIVE: Whole-SVG breathing via Animated.View (Reanimated)
+ *           (AnimatedG + useAnimatedProps on SVG G is broken on native)
  *
  * DO NOT add arm or hand paths.
  * ═══════════════════════════════════════════════════════════════
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, ViewStyle, Platform } from 'react-native';
 import Svg, {
   Path, Ellipse, Circle, Rect, Line, Polygon, G, Text as SvgText
 } from 'react-native-svg';
-import ReAnimated, { useSharedValue, useAnimatedProps, withRepeat, withSequence, withTiming, withDelay, Easing } from 'react-native-reanimated';
+import ReAnimated, { useSharedValue, useAnimatedStyle, withRepeat, withSequence, withTiming, Easing } from 'react-native-reanimated';
 import { useWebSvgAnim } from '../hooks/useIllustrationAnimation';
-import { useEffect } from 'react';
-
-const AnimatedG = ReAnimated.createAnimatedComponent(G);
 
 interface Props {
   width?: number;
@@ -38,95 +31,31 @@ interface Props {
   style?: ViewStyle;
 }
 
-// Per-element native animation hooks (only run on native, CSS handles web)
-function useNativeBreathe(duration = 5000, delay = 0) {
+/** Gentle breathing scale for the whole SVG on native */
+function useNativeBreatheView(duration = 6000) {
   const scale = useSharedValue(1);
   useEffect(() => {
     if (Platform.OS === 'web') return;
-    scale.value = withDelay(delay,
-      withRepeat(withSequence(
-        withTiming(1.04, { duration: duration / 2, easing: Easing.inOut(Easing.ease) }),
-        withTiming(1.0,  { duration: duration / 2, easing: Easing.inOut(Easing.ease) }),
-      ), -1, false)
+    scale.value = withRepeat(
+      withSequence(
+        withTiming(1.015, { duration: duration / 2, easing: Easing.inOut(Easing.ease) }),
+        withTiming(1.0,   { duration: duration / 2, easing: Easing.inOut(Easing.ease) }),
+      ), -1, false
     );
   }, []);
-  return useAnimatedProps(() => ({ scale: scale.value }));
-}
-
-function useNativeFloat(duration = 4000, distance = 5, delay = 0) {
-  const ty = useSharedValue(0);
-  useEffect(() => {
-    if (Platform.OS === 'web') return;
-    ty.value = withDelay(delay,
-      withRepeat(withSequence(
-        withTiming(-distance, { duration: duration / 2, easing: Easing.inOut(Easing.ease) }),
-        withTiming(0,         { duration: duration / 2, easing: Easing.inOut(Easing.ease) }),
-      ), -1, false)
-    );
-  }, []);
-  return useAnimatedProps(() => ({ translateY: ty.value }));
-}
-
-function useNativePulse(min = 0.2, max = 0.6, duration = 3000, delay = 0) {
-  const op = useSharedValue(min);
-  useEffect(() => {
-    if (Platform.OS === 'web') return;
-    op.value = withDelay(delay,
-      withRepeat(withSequence(
-        withTiming(max, { duration: duration / 2, easing: Easing.inOut(Easing.ease) }),
-        withTiming(min, { duration: duration / 2, easing: Easing.inOut(Easing.ease) }),
-      ), -1, false)
-    );
-  }, []);
-  return useAnimatedProps(() => ({ opacity: op.value }));
-}
-
-function useNativeDrift(duration = 6000, distance = 4, delay = 0) {
-  const tx = useSharedValue(0);
-  useEffect(() => {
-    if (Platform.OS === 'web') return;
-    tx.value = withDelay(delay,
-      withRepeat(withSequence(
-        withTiming(distance, { duration: duration / 4, easing: Easing.inOut(Easing.ease) }),
-        withTiming(-distance, { duration: duration / 2, easing: Easing.inOut(Easing.ease) }),
-        withTiming(0, { duration: duration / 4, easing: Easing.inOut(Easing.ease) }),
-      ), -1, false)
-    );
-  }, []);
-  return useAnimatedProps(() => ({ translateX: tx.value }));
-}
-
-function useNativeSway(duration = 3000, angle = 5, delay = 0) {
-  const rot = useSharedValue(0);
-  useEffect(() => {
-    if (Platform.OS === 'web') return;
-    rot.value = withDelay(delay,
-      withRepeat(withSequence(
-        withTiming(angle, { duration: duration / 4, easing: Easing.inOut(Easing.ease) }),
-        withTiming(-angle, { duration: duration / 2, easing: Easing.inOut(Easing.ease) }),
-        withTiming(0, { duration: duration / 4, easing: Easing.inOut(Easing.ease) }),
-      ), -1, false)
-    );
-  }, []);
-  return useAnimatedProps(() => ({ rotation: rot.value }));
+  return useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
 }
 
 export function IllustrationJournalHero({ width = 520, height, animated = true, style }: Props) {
   const resolvedHeight = height ?? Math.round(width * (380 / 520));
 
-  // Native: per-element Reanimated animations
-  const bodyBreatheProps = useNativeBreathe(5500);
-  const ringsProps1 = useNativePulse(0.6, 1.0, 2500);
-  const ringsProps2 = useNativePulse(0.6, 1.0, 2500, 400);
-  const selfDotProps = useNativePulse(0.55, 0.85, 2000);
-  const sunDriftProps = useNativeDrift(6000, 4);
-  const leafFloatProps = useNativeFloat(4000, 5);
-  const flameSwayProps = useNativeSway(3000, 5);
-  const heartFloatProps = useNativeFloat(3500, 4, 1500);
+  // Native: whole-SVG breathing via Animated.View
+  const breatheStyle = useNativeBreatheView(5500);
+  const isNativeAnimated = animated && Platform.OS !== 'web';
 
   // Web: apply CSS animations directly to SVG DOM elements via #id selectors
-  // (react-native-svg on web renders attributes as inline styles, not DOM attributes,
-  //  so attribute selectors like path[fill="..."] don't work — use ids instead)
   const containerId = useWebSvgAnim([
     { selector: '#journal-body',     animation: 'tender-breathe 5.5s ease-in-out infinite',         origin: '220px 275px' },
     { selector: '#journal-rings',    animation: 'tender-pulse 2.5s ease-in-out infinite' },
@@ -135,73 +64,6 @@ export function IllustrationJournalHero({ width = 520, height, animated = true, 
     { selector: '#journal-leaf',     animation: 'tender-float 4s ease-in-out infinite',             origin: '340px 220px' },
     { selector: '#journal-heart',    animation: 'tender-float 3.5s ease-in-out infinite -1.5s',     origin: '345px 175px' },
   ], animated);
-
-  // Shared content pieces for animated/static rendering
-  const bodyContent = (
-    <>
-      <Path d="M190 350
-      Q168 320 165 285
-      Q162 252 175 224
-      Q188 196 212 186
-      Q236 176 254 188
-      Q272 200 275 228
-      Q278 256 265 286
-      Q252 318 234 344
-      Q218 366 204 360 Z"
-      fill="#B5593A" opacity={0.85}/>
-      <G opacity={0.2} stroke="#F2EDE4" strokeWidth="2.5" strokeLinecap="round">
-      <Path d="M172 230 Q210 222 268 228"/>
-      <Path d="M170 250 Q208 243 270 248"/>
-      <Path d="M169 270 Q207 264 270 268"/>
-      <Path d="M170 290 Q208 284 268 288"/>
-      <Path d="M172 308 Q208 303 264 307"/>
-      </G>
-      {/* Head */}
-      <Ellipse cx="228" cy="165" rx="34" ry="40" fill="none" stroke="#2C2C2A" strokeWidth="1.2" rotation={-5} origin="228, 165"/>
-      <Path d="M200 148 Q212 132 230 128 Q248 124 258 138" fill="none" stroke="#2C2C2A" strokeWidth="1.2" strokeLinecap="round" opacity={0.65}/>
-      <Path d="M200 152 Q192 140 196 130" fill="none" stroke="#2C2C2A" strokeWidth="1" strokeLinecap="round" opacity={0.45}/>
-      <Circle cx="238" cy="168" r="2.5" fill="#2C2C2A" opacity={0.38}/>
-      <Path d="M218 192 Q228 196 238 192" fill="none" stroke="#2C2C2A" strokeWidth="0.9" strokeLinecap="round" opacity={0.4}/>
-    </>
-  );
-
-  const ringsContent = (
-    <>
-      <Ellipse cx="222" cy="278" rx="12" ry="16" fill="none" stroke="#C8923A" strokeWidth="1"/>
-      <Ellipse cx="222" cy="278" rx="24" ry="30" fill="none" stroke="#C8923A" strokeWidth="0.7" opacity={0.6}/>
-      <Ellipse cx="222" cy="278" rx="36" ry="44" fill="none" stroke="#8B7355" strokeWidth="0.5" opacity={0.35}/>
-      <Ellipse cx="222" cy="278" rx="48" ry="58" fill="none" stroke="#8B7355" strokeWidth="0.4" opacity={0.18}/>
-    </>
-  );
-
-  const sunDotContent = (
-    <>
-      <Circle cx="260" cy="100" r="5" fill="#C8923A" opacity={0.6}/>
-      <Circle cx="260" cy="100" r="10" fill="none" stroke="#C8923A" strokeWidth="0.5" opacity={0.3}/>
-    </>
-  );
-
-  const leafContent = (
-    <>
-      <Path d="M338 220 Q342 210 346 220 Q342 230 338 220Z" fill="#7A9E8E" opacity={0.75}/>
-      <Line x1="342" y1="210" x2="342" y2="220" stroke="#2C2C2A" strokeWidth="0.7" opacity={0.4}/>
-    </>
-  );
-
-  const flameContent = (
-    <>
-      <Path d="M350 322 Q346 312 350 302 Q354 312 352 322Z" fill="#C8923A" opacity={0.7}/>
-      <Path d="M350 322 Q348 315 350 308 Q352 315 350 322Z" fill="#F2EDE4" opacity={0.5}/>
-    </>
-  );
-
-  const heartContent = (
-    <>
-      <Path d="M342 175 Q346 169 350 175 Q346 181 342 175Z" fill="#D4909A" opacity={0.7}/>
-    </>
-  );
-
-  const isNativeAnimated = animated && Platform.OS !== 'web';
 
   const svgContent = (
     <Svg viewBox="0 0 520 380" width={width} height={resolvedHeight} style={style}>
@@ -218,67 +80,65 @@ export function IllustrationJournalHero({ width = 520, height, animated = true, 
       </G>
       {/* Arc of a day */}
       <Path d="M60 220 Q260 60 460 220" fill="none" stroke="#C8923A" strokeWidth="1" strokeDasharray="6 5" opacity={0.35}/>
-      {/* Sun dot (drift on native) */}
-      {isNativeAnimated ? (
-        <AnimatedG animatedProps={sunDriftProps}>
-          {sunDotContent}
-        </AnimatedG>
-      ) : (
-        <G id="journal-sun">{sunDotContent}</G>
-      )}
-      {/* BODY — terracotta (breathe on native) */}
-      {isNativeAnimated ? (
-        <AnimatedG animatedProps={bodyBreatheProps} origin="220, 275">
-          {bodyContent}
-        </AnimatedG>
-      ) : (
-        <G id="journal-body">{bodyContent}</G>
-      )}
-      {/* Inner architecture — concentric rings (pulse on native) */}
-      {isNativeAnimated ? (
-        <AnimatedG animatedProps={ringsProps1} origin="222, 278">
-          {ringsContent}
-        </AnimatedG>
-      ) : (
-        <G id="journal-rings">{ringsContent}</G>
-      )}
-      {/* SELF dot — golden center (pulse on native) */}
-      {isNativeAnimated ? (
-        <AnimatedG animatedProps={selfDotProps}>
-          <Circle cx="222" cy="278" r="3.5" fill="#C8923A" opacity={0.85}/>
-        </AnimatedG>
-      ) : (
-        <Circle id="journal-self-dot" cx="222" cy="278" r="3.5" fill="#C8923A" opacity={0.85}/>
-      )}
+      {/* Sun dot */}
+      <G id="journal-sun">
+        <Circle cx="260" cy="100" r="5" fill="#C8923A" opacity={0.6}/>
+        <Circle cx="260" cy="100" r="10" fill="none" stroke="#C8923A" strokeWidth="0.5" opacity={0.3}/>
+      </G>
+      {/* BODY — terracotta */}
+      <G id="journal-body">
+        <Path d="M190 350
+        Q168 320 165 285
+        Q162 252 175 224
+        Q188 196 212 186
+        Q236 176 254 188
+        Q272 200 275 228
+        Q278 256 265 286
+        Q252 318 234 344
+        Q218 366 204 360 Z"
+        fill="#B5593A" opacity={0.85}/>
+        <G opacity={0.2} stroke="#F2EDE4" strokeWidth="2.5" strokeLinecap="round">
+        <Path d="M172 230 Q210 222 268 228"/>
+        <Path d="M170 250 Q208 243 270 248"/>
+        <Path d="M169 270 Q207 264 270 268"/>
+        <Path d="M170 290 Q208 284 268 288"/>
+        <Path d="M172 308 Q208 303 264 307"/>
+        </G>
+        {/* Head */}
+        <Ellipse cx="228" cy="165" rx="34" ry="40" fill="none" stroke="#2C2C2A" strokeWidth="1.2" rotation={-5} origin="228, 165"/>
+        <Path d="M200 148 Q212 132 230 128 Q248 124 258 138" fill="none" stroke="#2C2C2A" strokeWidth="1.2" strokeLinecap="round" opacity={0.65}/>
+        <Path d="M200 152 Q192 140 196 130" fill="none" stroke="#2C2C2A" strokeWidth="1" strokeLinecap="round" opacity={0.45}/>
+        <Circle cx="238" cy="168" r="2.5" fill="#2C2C2A" opacity={0.38}/>
+        <Path d="M218 192 Q228 196 238 192" fill="none" stroke="#2C2C2A" strokeWidth="0.9" strokeLinecap="round" opacity={0.4}/>
+      </G>
+      {/* Inner architecture — concentric rings */}
+      <G id="journal-rings">
+        <Ellipse cx="222" cy="278" rx="12" ry="16" fill="none" stroke="#C8923A" strokeWidth="1"/>
+        <Ellipse cx="222" cy="278" rx="24" ry="30" fill="none" stroke="#C8923A" strokeWidth="0.7" opacity={0.6}/>
+        <Ellipse cx="222" cy="278" rx="36" ry="44" fill="none" stroke="#8B7355" strokeWidth="0.5" opacity={0.35}/>
+        <Ellipse cx="222" cy="278" rx="48" ry="58" fill="none" stroke="#8B7355" strokeWidth="0.4" opacity={0.18}/>
+      </G>
+      {/* SELF dot — golden center */}
+      <Circle id="journal-self-dot" cx="222" cy="278" r="3.5" fill="#C8923A" opacity={0.85}/>
       {/* Floating journal symbols */}
-      {/* Leaf (float on native) */}
-      {isNativeAnimated ? (
-        <AnimatedG animatedProps={leafFloatProps}>
-          {leafContent}
-        </AnimatedG>
-      ) : (
-        <G id="journal-leaf">{leafContent}</G>
-      )}
+      {/* Leaf */}
+      <G id="journal-leaf">
+        <Path d="M338 220 Q342 210 346 220 Q342 230 338 220Z" fill="#7A9E8E" opacity={0.75}/>
+        <Line x1="342" y1="210" x2="342" y2="220" stroke="#2C2C2A" strokeWidth="0.7" opacity={0.4}/>
+      </G>
       {/* Wave (static) */}
       <G>
       <Path d="M348 265 Q355 260 362 265 Q368 270 375 265" fill="none" stroke="#7CA4B8" strokeWidth="1.2" strokeLinecap="round" opacity={0.65}/>
       </G>
-      {/* Flame (sway on native) */}
-      {isNativeAnimated ? (
-        <AnimatedG animatedProps={flameSwayProps} origin="350, 312">
-          {flameContent}
-        </AnimatedG>
-      ) : (
-        <G>{flameContent}</G>
-      )}
-      {/* Heart (float on native) */}
-      {isNativeAnimated ? (
-        <AnimatedG animatedProps={heartFloatProps}>
-          {heartContent}
-        </AnimatedG>
-      ) : (
-        <G id="journal-heart">{heartContent}</G>
-      )}
+      {/* Flame (static on native, sway on web not supported without per-element) */}
+      <G>
+        <Path d="M350 322 Q346 312 350 302 Q354 312 352 322Z" fill="#C8923A" opacity={0.7}/>
+        <Path d="M350 322 Q348 315 350 308 Q352 315 350 322Z" fill="#F2EDE4" opacity={0.5}/>
+      </G>
+      {/* Heart */}
+      <G id="journal-heart">
+        <Path d="M342 175 Q346 169 350 175 Q346 181 342 175Z" fill="#D4909A" opacity={0.7}/>
+      </G>
       {/* Timeline */}
       <Line x1="430" y1="50" x2="430" y2="340" stroke="#D6CEBF" strokeWidth="0.8" opacity={0.6}/>
       <G opacity={0.5}>
@@ -297,7 +157,13 @@ export function IllustrationJournalHero({ width = 520, height, animated = true, 
 
   return (
     <View nativeID={containerId}>
-      {svgContent}
+      {isNativeAnimated ? (
+        <ReAnimated.View style={breatheStyle}>
+          {svgContent}
+        </ReAnimated.View>
+      ) : (
+        svgContent
+      )}
     </View>
   );
 }

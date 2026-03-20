@@ -22,6 +22,7 @@ import {
   View,
   Text,
   TouchableOpacity,
+  Pressable,
   StyleSheet,
   SafeAreaView,
   ScrollView,
@@ -2182,10 +2183,9 @@ export default function HomeScreen() {
           <Text style={styles.gatewaySectionLabel}>EXPLORE</Text>
 
           {/* YOUR JOURNEY */}
-          <TouchableOpacity
-            style={styles.gatewayCard}
+          <Pressable
+            style={({ pressed }) => [styles.gatewayCard, pressed && styles.gatewayCardPressed]}
             onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/growth' as any); }}
-            activeOpacity={0.8}
             accessibilityRole="button"
             accessibilityLabel="Your Journey"
           >
@@ -2201,14 +2201,13 @@ export default function HomeScreen() {
               </Text>
             </View>
             <Text style={styles.gatewayCardArrow}>{'\u2192'}</Text>
-          </TouchableOpacity>
+          </Pressable>
 
           {/* YOUR PORTRAIT */}
-          <TouchableOpacity
+          <Pressable
             ref={(r) => RefRegistry.register('home_portraitCard', r)}
-            style={styles.gatewayCard}
+            style={({ pressed }) => [styles.gatewayCard, pressed && styles.gatewayCardPressed]}
             onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/portrait' as any); }}
-            activeOpacity={0.8}
             accessibilityRole="button"
             accessibilityLabel="Your Portrait"
           >
@@ -2224,14 +2223,13 @@ export default function HomeScreen() {
               </Text>
             </View>
             <Text style={styles.gatewayCardArrow}>{'\u2192'}</Text>
-          </TouchableOpacity>
+          </Pressable>
 
           {/* YOUR RELATIONSHIP (only when coupled) */}
           {hasCoupleLinked && (
-            <TouchableOpacity
-              style={styles.gatewayCard}
+            <Pressable
+              style={({ pressed }) => [styles.gatewayCard, pressed && styles.gatewayCardPressed]}
               onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/couple-portal' as any); }}
-              activeOpacity={0.8}
               accessibilityRole="button"
               accessibilityLabel="Your Relationship"
             >
@@ -2247,15 +2245,14 @@ export default function HomeScreen() {
                 </Text>
               </View>
               <Text style={styles.gatewayCardArrow}>{'\u2192'}</Text>
-            </TouchableOpacity>
+            </Pressable>
           )}
 
           {/* BUILDING BRIDGES — shown for coupled users */}
           {hasCoupleLinked && (
-            <TouchableOpacity
-              style={styles.gatewayCard}
+            <Pressable
+              style={({ pressed }) => [styles.gatewayCard, pressed && styles.gatewayCardPressed]}
               onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/building-bridges' as any); }}
-              activeOpacity={0.8}
               accessibilityRole="button"
               accessibilityLabel="Building Bridges"
             >
@@ -2269,15 +2266,14 @@ export default function HomeScreen() {
                 </Text>
               </View>
               <Text style={styles.gatewayCardArrow}>{'\u2192'}</Text>
-            </TouchableOpacity>
+            </Pressable>
           )}
 
           {/* DATING WELL — shown for single users */}
           {relationshipStatus === 'single' && (
-            <TouchableOpacity
-              style={styles.gatewayCard}
+            <Pressable
+              style={({ pressed }) => [styles.gatewayCard, pressed && styles.gatewayCardPressed]}
               onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/dating-well' as any); }}
-              activeOpacity={0.8}
               accessibilityRole="button"
               accessibilityLabel="Dating Well"
             >
@@ -2291,14 +2287,13 @@ export default function HomeScreen() {
                 </Text>
               </View>
               <Text style={styles.gatewayCardArrow}>{'\u2192'}</Text>
-            </TouchableOpacity>
+            </Pressable>
           )}
 
           {/* MORE */}
-          <TouchableOpacity
-            style={styles.gatewayCard}
+          <Pressable
+            style={({ pressed }) => [styles.gatewayCard, pressed && styles.gatewayCardPressed]}
             onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/more' as any); }}
-            activeOpacity={0.8}
             accessibilityRole="button"
             accessibilityLabel="More"
           >
@@ -2312,7 +2307,7 @@ export default function HomeScreen() {
               </Text>
             </View>
             <Text style={styles.gatewayCardArrow}>{'\u2192'}</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
 
         {/* Old Daily Rhythm moved above gateway cards as collapsible DailyRhythmSection */}
@@ -2327,7 +2322,7 @@ export default function HomeScreen() {
       {showTour && (
         <WelcomeTour onComplete={handleTourComplete} />
       )}
-      <TooltipManager screen="home" scrollRef={scrollRef} scrollOffset={scrollOffset} />
+      <TooltipManager screen="home" scrollRef={scrollRef} scrollOffset={scrollOffset} enabled={completedCount === 0} />
       {hasCoupleLinked && <PartnerActivityToast />}
     </SafeAreaView>
   );
@@ -4270,6 +4265,11 @@ const styles = StyleSheet.create({
     padding: Spacing.md,
     gap: Spacing.md,
     ...Shadows.card,
+  },
+  gatewayCardPressed: {
+    backgroundColor: '#F7F2EF',
+    transform: [{ scale: 0.985 }],
+    shadowOpacity: 0.04,
   },
   gatewayCardIconWrap: {
     width: 44,

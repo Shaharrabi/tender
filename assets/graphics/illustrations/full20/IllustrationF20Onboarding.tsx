@@ -8,10 +8,10 @@
  * Description: Onboarding — figure at base of 12-step spiral, step 12 glowing at crown
  * ViewBox:     0 0 480 340
  *
- * ANIMATIONS (per-element, matching original HTML):
- *   - Body (terracotta): breathe 5s
- *   - Foot step: float 3s
- *   - Golden end-goal ring: pulse 2s
+ * ANIMATIONS:
+ *   WEB:    Per-element CSS via useWebSvgAnim + #id selectors
+ *   NATIVE: Whole-SVG breathing via Animated.View (Reanimated)
+ *           (AnimatedG + useAnimatedProps on SVG G is broken on native)
  *
  * DO NOT add arm or hand paths.
  * ═══════════════════════════════════════════════════════════════
@@ -22,10 +22,8 @@ import { View, ViewStyle, Platform } from 'react-native';
 import Svg, {
   Path, Ellipse, Circle, Rect, Line, Polygon, G, Text as SvgText
 } from 'react-native-svg';
-import ReAnimated, { useSharedValue, useAnimatedProps, withRepeat, withSequence, withTiming, withDelay, Easing } from 'react-native-reanimated';
+import ReAnimated, { useSharedValue, useAnimatedStyle, withRepeat, withSequence, withTiming, Easing } from 'react-native-reanimated';
 import { useWebSvgAnim } from '../hooks/useIllustrationAnimation';
-
-const AnimatedG = ReAnimated.createAnimatedComponent(G);
 
 interface Props {
   width?: number;
@@ -34,55 +32,29 @@ interface Props {
   style?: ViewStyle;
 }
 
-function useNativeBreathe(duration = 5000, delay = 0) {
+/** Gentle breathing scale for the whole SVG on native */
+function useNativeBreatheView(duration = 6000) {
   const scale = useSharedValue(1);
   useEffect(() => {
     if (Platform.OS === 'web') return;
-    scale.value = withDelay(delay,
-      withRepeat(withSequence(
-        withTiming(1.04, { duration: duration / 2, easing: Easing.inOut(Easing.ease) }),
-        withTiming(1.0,  { duration: duration / 2, easing: Easing.inOut(Easing.ease) }),
-      ), -1, false)
+    scale.value = withRepeat(
+      withSequence(
+        withTiming(1.015, { duration: duration / 2, easing: Easing.inOut(Easing.ease) }),
+        withTiming(1.0,   { duration: duration / 2, easing: Easing.inOut(Easing.ease) }),
+      ), -1, false
     );
   }, []);
-  return useAnimatedProps(() => ({ scale: scale.value }));
-}
-
-function useNativeFloat(duration = 3000, distance = 4, delay = 0) {
-  const ty = useSharedValue(0);
-  useEffect(() => {
-    if (Platform.OS === 'web') return;
-    ty.value = withDelay(delay,
-      withRepeat(withSequence(
-        withTiming(-distance, { duration: duration / 2, easing: Easing.inOut(Easing.ease) }),
-        withTiming(0,         { duration: duration / 2, easing: Easing.inOut(Easing.ease) }),
-      ), -1, false)
-    );
-  }, []);
-  return useAnimatedProps(() => ({ translateY: ty.value }));
-}
-
-function useNativePulse(min = 0.3, max = 0.8, duration = 2000, delay = 0) {
-  const op = useSharedValue(min);
-  useEffect(() => {
-    if (Platform.OS === 'web') return;
-    op.value = withDelay(delay,
-      withRepeat(withSequence(
-        withTiming(max, { duration: duration / 2, easing: Easing.inOut(Easing.ease) }),
-        withTiming(min, { duration: duration / 2, easing: Easing.inOut(Easing.ease) }),
-      ), -1, false)
-    );
-  }, []);
-  return useAnimatedProps(() => ({ opacity: op.value }));
+  return useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
 }
 
 export function IllustrationF20Onboarding({ width = 480, height, animated = true, style }: Props) {
   const resolvedHeight = height ?? Math.round(width * (340 / 480));
 
-  // Native: per-element Reanimated animations
-  const bodyBreatheProps = useNativeBreathe(5000);
-  const footFloatProps = useNativeFloat(3000, 4);
-  const goalPulseProps = useNativePulse(0.3, 0.8, 2000);
+  // Native: whole-SVG breathing via Animated.View
+  const breatheStyle = useNativeBreatheView(5000);
+  const isNativeAnimated = animated && Platform.OS !== 'web';
 
   // Web: apply CSS animations directly to SVG DOM elements via #id selectors
   const containerId = useWebSvgAnim([
@@ -90,30 +62,6 @@ export function IllustrationF20Onboarding({ width = 480, height, animated = true
     { selector: '#onboard-foot',  animation: 'tender-float 3s ease-in-out infinite' },
     { selector: '#onboard-goal',  animation: 'tender-pulse 2s ease-in-out infinite', origin: '184px 278px' },
   ], animated);
-
-  const isNativeAnimated = animated && Platform.OS !== 'web';
-
-  const bodyContent = (
-    <>
-      <Path d="M200 316 Q184 292 186 266 Q188 240 200 224 Q212 208 224 212 Q236 216 238 238 Q240 260 230 288 Q220 314 210 320Z" fill="#B5593A" opacity={0.85}/>
-      <G opacity={0.2} stroke="#F2EDE4" strokeWidth="2" strokeLinecap="round">
-        <Path d="M188 240 Q210 234 236 239"/><Path d="M187 254 Q210 248 237 253"/><Path d="M188 268 Q210 262 236 267"/>
-      </G>
-      <Ellipse cx="212" cy="208" rx="22" ry="27" fill="none" stroke="#2C2C2A" strokeWidth="1.1" rotation={-4} origin="212, 208"/>
-      <Path d="M196 192 Q206 180 214 177 Q222 174 228 183" fill="none" stroke="#2C2C2A" strokeWidth="1" strokeLinecap="round" opacity={0.6}/>
-    </>
-  );
-
-  const footContent = (
-    <Path d="M224 314 Q230 310 236 314" fill="none" stroke="#B5593A" strokeWidth="4" strokeLinecap="round"/>
-  );
-
-  const goalContent = (
-    <>
-      <Circle cx="184" cy="278" r="8" fill="none" stroke="#C8923A" strokeWidth="1" opacity={0.5}/>
-      <Circle cx="184" cy="278" r="4" fill="#C8923A" opacity={0.7}/>
-    </>
-  );
 
   const svgContent = (
     <Svg viewBox="0 0 480 340" width={width} height={resolvedHeight} style={style}>
@@ -126,37 +74,37 @@ export function IllustrationF20Onboarding({ width = 480, height, animated = true
         <Circle cx="232" cy="106" r="3.5" fill="#D4909A"/><Circle cx="180" cy="114" r="3.5" fill="#C8923A"/><Circle cx="142" cy="148" r="3.5" fill="#B5593A"/>
         <Circle cx="128" cy="190" r="3.5" fill="#7A9E8E"/><Circle cx="142" cy="240" r="3.5" fill="#7CA4B8"/><Circle cx="184" cy="278" r="4.5" fill="#C8923A"/>
       </G>
-      {/* Figure at base of spiral (breathe on native) */}
-      {isNativeAnimated ? (
-        <AnimatedG animatedProps={bodyBreatheProps} origin="212, 268">
-          {bodyContent}
-        </AnimatedG>
-      ) : (
-        <G id="onboard-body">{bodyContent}</G>
-      )}
-      {/* Foot step (float on native) */}
-      {isNativeAnimated ? (
-        <AnimatedG animatedProps={footFloatProps}>
-          {footContent}
-        </AnimatedG>
-      ) : (
-        <G id="onboard-foot">{footContent}</G>
-      )}
-      {/* Golden end-goal ring (pulse on native) */}
-      {isNativeAnimated ? (
-        <AnimatedG animatedProps={goalPulseProps}>
-          {goalContent}
-        </AnimatedG>
-      ) : (
-        <G id="onboard-goal">{goalContent}</G>
-      )}
+      {/* Figure at base of spiral */}
+      <G id="onboard-body">
+        <Path d="M200 316 Q184 292 186 266 Q188 240 200 224 Q212 208 224 212 Q236 216 238 238 Q240 260 230 288 Q220 314 210 320Z" fill="#B5593A" opacity={0.85}/>
+        <G opacity={0.2} stroke="#F2EDE4" strokeWidth="2" strokeLinecap="round">
+          <Path d="M188 240 Q210 234 236 239"/><Path d="M187 254 Q210 248 237 253"/><Path d="M188 268 Q210 262 236 267"/>
+        </G>
+        <Ellipse cx="212" cy="208" rx="22" ry="27" fill="none" stroke="#2C2C2A" strokeWidth="1.1" rotation={-4} origin="212, 208"/>
+        <Path d="M196 192 Q206 180 214 177 Q222 174 228 183" fill="none" stroke="#2C2C2A" strokeWidth="1" strokeLinecap="round" opacity={0.6}/>
+      </G>
+      {/* Foot step */}
+      <G id="onboard-foot">
+        <Path d="M224 314 Q230 310 236 314" fill="none" stroke="#B5593A" strokeWidth="4" strokeLinecap="round"/>
+      </G>
+      {/* Golden end-goal ring */}
+      <G id="onboard-goal">
+        <Circle cx="184" cy="278" r="8" fill="none" stroke="#C8923A" strokeWidth="1" opacity={0.5}/>
+        <Circle cx="184" cy="278" r="4" fill="#C8923A" opacity={0.7}/>
+      </G>
       <SvgText x="240" y="326" textAnchor="middle" fontFamily="Georgia,serif" fontSize="10" letterSpacing="4" fill="#2C2C2A" opacity={0.45}>ONBOARDING</SvgText>
     </Svg>
   );
 
   return (
     <View nativeID={containerId}>
-      {svgContent}
+      {isNativeAnimated ? (
+        <ReAnimated.View style={breatheStyle}>
+          {svgContent}
+        </ReAnimated.View>
+      ) : (
+        svgContent
+      )}
     </View>
   );
 }
