@@ -3,6 +3,9 @@
  *
  * Renders likert, text, choice, and ranking inputs based on question.inputType.
  * Used by both the standalone assessment screen and the Tender Assessment orchestrator.
+ *
+ * Microinteraction: Pressable with pressed-state color shift + haptic selection
+ * feedback. No transforms — avoids conflicts with auto-advance fade transitions.
  */
 
 import React from 'react';
@@ -10,13 +13,25 @@ import {
   View,
   Text,
   TextInput as RNTextInput,
+  Pressable,
   TouchableOpacity,
   StyleSheet,
   Platform,
 } from 'react-native';
 import { Colors, Spacing, FontSizes } from '@/constants/theme';
-import AnimatedPressable from '@/components/ui/AnimatedPressable';
 import type { GenericQuestion, LikertOption } from '@/types';
+
+// Graceful haptic import — selection feedback on tap
+let Haptics: any = null;
+try {
+  Haptics = require('expo-haptics');
+} catch {}
+
+const fireSelectionHaptic = () => {
+  if (Platform.OS !== 'web') {
+    Haptics?.selectionAsync?.();
+  }
+};
 
 interface QuestionRendererProps {
   question: GenericQuestion;
@@ -45,36 +60,40 @@ export default function QuestionRenderer({
           {showScrollHint && (
             <Text style={styles.scrollHint}>Scroll down to see all {scale.length} options</Text>
           )}
-          {scale.map((item) => (
-            <AnimatedPressable
-              key={item.value}
-              style={[
-                styles.likertOption,
-                currentAnswer === item.value && styles.likertOptionSelected,
-              ]}
-              onPress={() => { onSelect(item.value); onAutoAdvance?.(); }}
-              accessibilityRole="radio"
-              accessibilityLabel={`${item.label}, option ${item.value} of ${scale.length}`}
-              accessibilityState={{ selected: currentAnswer === item.value }}
-            >
-              <View
-                style={[
-                  styles.radio,
-                  currentAnswer === item.value && styles.radioSelected,
+          {scale.map((item) => {
+            const isSelected = currentAnswer === item.value;
+            return (
+              <Pressable
+                key={item.value}
+                style={({ pressed }) => [
+                  styles.likertOption,
+                  isSelected && styles.likertOptionSelected,
+                  pressed && !isSelected && styles.likertOptionPressed,
                 ]}
+                onPress={() => { fireSelectionHaptic(); onSelect(item.value); onAutoAdvance?.(); }}
+                accessibilityRole="radio"
+                accessibilityLabel={`${item.label}, option ${item.value} of ${scale.length}`}
+                accessibilityState={{ selected: isSelected }}
               >
-                {currentAnswer === item.value && <View style={styles.radioInner} />}
-              </View>
-              <Text
-                style={[
-                  styles.likertLabel,
-                  currentAnswer === item.value && styles.likertLabelSelected,
-                ]}
-              >
-                {item.value} — {item.label}
-              </Text>
-            </AnimatedPressable>
-          ))}
+                <View
+                  style={[
+                    styles.radio,
+                    isSelected && styles.radioSelected,
+                  ]}
+                >
+                  {isSelected && <View style={styles.radioInner} />}
+                </View>
+                <Text
+                  style={[
+                    styles.likertLabel,
+                    isSelected && styles.likertLabelSelected,
+                  ]}
+                >
+                  {item.value} — {item.label}
+                </Text>
+              </Pressable>
+            );
+          })}
         </View>
         );
       })()}
@@ -147,41 +166,45 @@ export default function QuestionRenderer({
       {/* Choice */}
       {question.inputType === 'choice' && question.choices && (
         <View style={styles.choiceSection} accessibilityRole="radiogroup" accessibilityLabel={question.text || 'Multiple choice question'}>
-          {question.choices.map((choice, choiceIndex) => (
-            <AnimatedPressable
-              key={choice.key}
-              style={[
-                styles.choiceOption,
-                currentAnswer === choice.key && styles.choiceOptionSelected,
-              ]}
-              onPress={() => { onSelect(choice.key); onAutoAdvance?.(); }}
-              accessibilityRole="radio"
-              accessibilityLabel={`${choice.text}, option ${choiceIndex + 1} of ${question.choices!.length}`}
-              accessibilityState={{ selected: currentAnswer === choice.key }}
-            >
-              <View style={[
-                styles.choiceKeyBadge,
-                currentAnswer === choice.key && styles.choiceKeyBadgeSelected,
-              ]}>
+          {question.choices.map((choice, choiceIndex) => {
+            const isSelected = currentAnswer === choice.key;
+            return (
+              <Pressable
+                key={choice.key}
+                style={({ pressed }) => [
+                  styles.choiceOption,
+                  isSelected && styles.choiceOptionSelected,
+                  pressed && !isSelected && styles.choiceOptionPressed,
+                ]}
+                onPress={() => { fireSelectionHaptic(); onSelect(choice.key); onAutoAdvance?.(); }}
+                accessibilityRole="radio"
+                accessibilityLabel={`${choice.text}, option ${choiceIndex + 1} of ${question.choices!.length}`}
+                accessibilityState={{ selected: isSelected }}
+              >
+                <View style={[
+                  styles.choiceKeyBadge,
+                  isSelected && styles.choiceKeyBadgeSelected,
+                ]}>
+                  <Text
+                    style={[
+                      styles.choiceKey,
+                      isSelected && styles.choiceKeySelected,
+                    ]}
+                  >
+                    {choice.key}
+                  </Text>
+                </View>
                 <Text
                   style={[
-                    styles.choiceKey,
-                    currentAnswer === choice.key && styles.choiceKeySelected,
+                    styles.choiceText,
+                    isSelected && styles.choiceTextSelected,
                   ]}
                 >
-                  {choice.key}
+                  {choice.text}
                 </Text>
-              </View>
-              <Text
-                style={[
-                  styles.choiceText,
-                  currentAnswer === choice.key && styles.choiceTextSelected,
-                ]}
-              >
-                {choice.text}
-              </Text>
-            </AnimatedPressable>
-          ))}
+              </Pressable>
+            );
+          })}
         </View>
       )}
 
@@ -197,15 +220,17 @@ export default function QuestionRenderer({
             const isSelected = position !== -1;
             const isFull = ranked.length >= (question.rankCount || 5);
             return (
-              <AnimatedPressable
+              <Pressable
                 key={item.id}
-                style={[
+                style={({ pressed }) => [
                   styles.rankingItem,
                   isSelected && styles.rankingItemSelected,
                   !isSelected && isFull && styles.rankingItemDisabled,
+                  pressed && !isSelected && !isFull && styles.rankingItemPressed,
                 ]}
                 disabled={!isSelected && isFull}
                 onPress={() => {
+                  fireSelectionHaptic();
                   if (isSelected) {
                     onSelect(ranked.filter((id: string) => id !== item.id));
                   } else {
@@ -232,7 +257,7 @@ export default function QuestionRenderer({
                     <Text style={styles.rankingItemDesc}>{item.description}</Text>
                   ) : null}
                 </View>
-              </AnimatedPressable>
+              </Pressable>
             );
           })}
         </View>
@@ -257,6 +282,11 @@ const styles = StyleSheet.create({
   likertOptionSelected: {
     borderColor: Colors.primary,
     backgroundColor: Colors.primaryFaded,
+  },
+  // Pressed state: gentle warm tint — visible but no layout shift
+  likertOptionPressed: {
+    backgroundColor: '#F7F2EF',
+    borderColor: '#C9BDB7',
   },
   radio: {
     width: 22,
@@ -353,6 +383,10 @@ const styles = StyleSheet.create({
     borderColor: Colors.primary,
     backgroundColor: Colors.primaryFaded,
   },
+  choiceOptionPressed: {
+    backgroundColor: '#F7F2EF',
+    borderColor: '#C9BDB7',
+  },
   choiceKeyBadge: {
     width: 28,
     height: 28,
@@ -403,6 +437,10 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primaryFaded,
   },
   rankingItemDisabled: { opacity: 0.4 },
+  rankingItemPressed: {
+    backgroundColor: '#F7F2EF',
+    borderColor: '#C9BDB7',
+  },
   rankBadge: {
     width: 30,
     height: 30,
