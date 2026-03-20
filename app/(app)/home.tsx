@@ -2331,14 +2331,13 @@ function ExploreCard({
     }).start();
   };
 
+  // Only transform + opacity are supported by native animated driver
   const animatedStyle = {
     transform: [
       { scale: anim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.018] }) },
       { translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [0, -2] }) },
     ],
-    shadowOpacity: anim.interpolate({ inputRange: [0, 1], outputRange: [0.06, 0.14] }),
-    shadowRadius: anim.interpolate({ inputRange: [0, 1], outputRange: [4, 12] }),
-    shadowOffset: { width: 0, height: anim.interpolate({ inputRange: [0, 1], outputRange: [2, 6] }) },
+    opacity: anim.interpolate({ inputRange: [0, 1], outputRange: [1, 0.97] }),
   };
 
   return (
