@@ -51,14 +51,14 @@ export default function PatternReset({ portrait }: PatternResetProps) {
   const [activationState, setActivationState] = useState<ActivationState | null>(null);
 
   const handleActivated = useCallback(() => {
-    const script = selectResetScript('activated', portrait);
+    const script = selectResetScript('shutdown', portrait);
     setActiveScript(script);
     setActivationState('activated');
     setIsOpen(true);
   }, [portrait]);
 
   const handleShutdown = useCallback(() => {
-    const script = selectResetScript('shutdown', portrait);
+    const script = selectResetScript('activated', portrait);
     setActiveScript(script);
     setActivationState('shutdown');
     setIsOpen(true);
