@@ -2,8 +2,7 @@
  * AnimatedPressable — subtle microinteraction wrapper.
  *
  * Drop-in replacement for TouchableOpacity that adds:
- *   - gentle scale compression on press (0.97)
- *   - soft shadow lift on rest state
+ *   - gentle scale compression on press (0.975)
  *   - optional haptic feedback
  *   - smooth spring animation
  *
@@ -32,7 +31,6 @@ try {
 } catch {}
 
 // ─── Motion Tokens ──────────────────────────────────────
-// Centralised so every AnimatedPressable feels identical.
 
 export const Motion = {
   /** Scale when finger is down */
@@ -46,7 +44,7 @@ export const Motion = {
 // ─── Props ──────────────────────────────────────────────
 
 export interface AnimatedPressableProps extends Omit<PressableProps, 'style'> {
-  /** Static styles (ViewStyle or array). Animated transform is layered on top. */
+  /** Static styles (ViewStyle or array). Applied to the Pressable so layout is preserved. */
   style?: StyleProp<ViewStyle>;
   /** Disable the scale animation (still renders Pressable for consistency) */
   noAnimation?: boolean;
@@ -102,14 +100,15 @@ export default function AnimatedPressable({
     [noAnimation, onPressOut, scaleAnim],
   );
 
+  // Transform-only wrapper — no layout styles here.
+  // All visual/layout styles go on the Pressable so flexDirection, padding,
+  // border etc. apply to the same element that receives the children.
   return (
     <Animated.View
-      style={[
-        style as ViewStyle,
-        !noAnimation && { transform: [{ scale: scaleAnim }] },
-      ]}
+      style={!noAnimation ? { transform: [{ scale: scaleAnim }] } : undefined}
     >
       <Pressable
+        style={style}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         disabled={disabled}
