@@ -14,6 +14,9 @@
  *   - Leaf group: float 4s
  *   - Breath threads: pulse 3s
  *
+ * WEB: CSS animations applied via useWebSvgAnim + #id selectors
+ * NATIVE: Reanimated AnimatedG per-element
+ *
  * DO NOT add arm or hand paths.
  * DO NOT show official assessment names (ECR-R, DUTCH, etc.)
  * ═══════════════════════════════════════════════════════════════
@@ -89,12 +92,15 @@ export function IllustrationHomeHero({ width = 400, height, animated = true, sty
   const leafFloatProps = useNativeFloat(4000, 5);
   const threadPulseProps = useNativePulse(0.2, 0.55, 3000);
 
-  // Web: apply CSS animations directly to SVG DOM elements
+  // Web: apply CSS animations directly to SVG DOM elements via #id selectors
+  // (react-native-svg on web renders attributes as inline styles, so
+  //  attribute selectors like path[fill="..."] don't work — use ids instead)
   const containerId = useWebSvgAnim([
-    { selector: 'path[fill="#B5593A"]', animation: 'tender-breathe 5s ease-in-out infinite', origin: '110px 255px' },
-    { selector: 'path[fill="#1E3A52"]', animation: 'tender-breathe 5s ease-in-out infinite -2.5s', origin: '418px 252px' },
-    { selector: 'path[fill="#1E3A52"][opacity="0.82"]', animation: 'tender-float 4s ease-in-out infinite', origin: '260px 82px', parent: true },
-    { selector: 'line[stroke="#2C2C2A"][stroke-dasharray]', animation: 'tender-pulse 3s ease-in-out infinite', all: true },
+    { selector: '#home-left-body',   animation: 'tender-breathe 5s ease-in-out infinite',       origin: '110px 255px' },
+    { selector: '#home-right-body',  animation: 'tender-breathe 5s ease-in-out infinite -2.5s', origin: '418px 252px' },
+    { selector: '#home-leaf-group',  animation: 'tender-float 4s ease-in-out infinite',         origin: '260px 82px' },
+    { selector: '#home-thread-left', animation: 'tender-pulse 3s ease-in-out infinite' },
+    { selector: '#home-thread-right',animation: 'tender-pulse 3s ease-in-out infinite -1.5s' },
   ], animated);
 
   // Shared content pieces for animated/static rendering
@@ -142,13 +148,6 @@ export function IllustrationHomeHero({ width = 400, height, animated = true, sty
     </>
   );
 
-  const threadContent = (
-    <>
-      <Line x1="144" y1="148" x2="200" y2="122" stroke="#2C2C2A" strokeWidth="0.8" strokeDasharray="4 5" opacity={0.38}/>
-      <Line x1="408" y1="144" x2="352" y2="120" stroke="#2C2C2A" strokeWidth="0.8" strokeDasharray="4 5" opacity={0.38}/>
-    </>
-  );
-
   const isNativeAnimated = animated && Platform.OS !== 'web';
 
   const svgContent = (
@@ -178,7 +177,7 @@ export function IllustrationHomeHero({ width = 400, height, animated = true, sty
           {leftBodyContent}
         </AnimatedG>
       ) : (
-        <G>{leftBodyContent}</G>
+        <G id="home-left-body">{leftBodyContent}</G>
       )}
       {/* RIGHT BODY — navy (breathe with delay, origin at body center) */}
       {isNativeAnimated ? (
@@ -186,7 +185,7 @@ export function IllustrationHomeHero({ width = 400, height, animated = true, sty
           {rightBodyContent}
         </AnimatedG>
       ) : (
-        <G>{rightBodyContent}</G>
+        <G id="home-right-body">{rightBodyContent}</G>
       )}
       {/* VINE between them */}
       <Path d="M148 170 Q200 128 260 112 Q316 96 374 126 Q400 140 412 162"
@@ -198,15 +197,19 @@ export function IllustrationHomeHero({ width = 400, height, animated = true, sty
           {leafContent}
         </AnimatedG>
       ) : (
-        <G>{leafContent}</G>
+        <G id="home-leaf-group">{leafContent}</G>
       )}
-      {/* BREATH THREADS (pulse on native) */}
+      {/* BREATH THREADS (pulse on native, each gets its own id for individual delay) */}
       {isNativeAnimated ? (
         <AnimatedG animatedProps={threadPulseProps}>
-          {threadContent}
+          <Line x1="144" y1="148" x2="200" y2="122" stroke="#2C2C2A" strokeWidth="0.8" strokeDasharray="4 5" opacity={0.38}/>
+          <Line x1="408" y1="144" x2="352" y2="120" stroke="#2C2C2A" strokeWidth="0.8" strokeDasharray="4 5" opacity={0.38}/>
         </AnimatedG>
       ) : (
-        <G>{threadContent}</G>
+        <>
+          <Line id="home-thread-left" x1="144" y1="148" x2="200" y2="122" stroke="#2C2C2A" strokeWidth="0.8" strokeDasharray="4 5" opacity={0.38}/>
+          <Line id="home-thread-right" x1="408" y1="144" x2="352" y2="120" stroke="#2C2C2A" strokeWidth="0.8" strokeDasharray="4 5" opacity={0.38}/>
+        </>
       )}
       <SvgText x="260" y="360" textAnchor="middle" fontFamily="Georgia,serif" fontSize="11" letterSpacing="5" fill="#2C2C2A" opacity={0.55}>{"HOME \u00B7 TOGETHER"}</SvgText>
     </Svg>

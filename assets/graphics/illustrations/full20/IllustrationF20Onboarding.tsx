@@ -84,11 +84,11 @@ export function IllustrationF20Onboarding({ width = 480, height, animated = true
   const footFloatProps = useNativeFloat(3000, 4);
   const goalPulseProps = useNativePulse(0.3, 0.8, 2000);
 
-  // Web: apply CSS animations directly to SVG DOM elements
+  // Web: apply CSS animations directly to SVG DOM elements via #id selectors
   const containerId = useWebSvgAnim([
-    { selector: 'path[fill="#B5593A"]', animation: 'tender-breathe 5s ease-in-out infinite', origin: '212px 268px' },
-    { selector: 'path[stroke="#B5593A"]', animation: 'tender-float 3s ease-in-out infinite' },
-    { selector: 'circle[r="8"]', animation: 'tender-pulse 2s ease-in-out infinite', origin: '184px 278px', parent: true },
+    { selector: '#onboard-body',  animation: 'tender-breathe 5s ease-in-out infinite', origin: '212px 268px' },
+    { selector: '#onboard-foot',  animation: 'tender-float 3s ease-in-out infinite' },
+    { selector: '#onboard-goal',  animation: 'tender-pulse 2s ease-in-out infinite', origin: '184px 278px' },
   ], animated);
 
   const isNativeAnimated = animated && Platform.OS !== 'web';
@@ -132,7 +132,7 @@ export function IllustrationF20Onboarding({ width = 480, height, animated = true
           {bodyContent}
         </AnimatedG>
       ) : (
-        <G>{bodyContent}</G>
+        <G id="onboard-body">{bodyContent}</G>
       )}
       {/* Foot step (float on native) */}
       {isNativeAnimated ? (
@@ -140,7 +140,7 @@ export function IllustrationF20Onboarding({ width = 480, height, animated = true
           {footContent}
         </AnimatedG>
       ) : (
-        <G>{footContent}</G>
+        <G id="onboard-foot">{footContent}</G>
       )}
       {/* Golden end-goal ring (pulse on native) */}
       {isNativeAnimated ? (
@@ -148,7 +148,7 @@ export function IllustrationF20Onboarding({ width = 480, height, animated = true
           {goalContent}
         </AnimatedG>
       ) : (
-        <G>{goalContent}</G>
+        <G id="onboard-goal">{goalContent}</G>
       )}
       <SvgText x="240" y="326" textAnchor="middle" fontFamily="Georgia,serif" fontSize="10" letterSpacing="4" fill="#2C2C2A" opacity={0.45}>ONBOARDING</SvgText>
     </Svg>

@@ -95,16 +95,21 @@ export function IllustrationCommunityHero({ width = 520, height, animated = true
   const bubble3Props = useNativeFloat(4000, 5, 1000);
   const bubble4Props = useNativeFloat(4000, 5, 1500);
 
-  // Web: apply CSS animations directly to SVG DOM elements
-  // Each body figure has a unique fill — animate them all
+  // Web: apply CSS animations directly to SVG DOM elements via #id selectors
+  // (react-native-svg on web renders attributes as inline styles, not DOM attributes,
+  //  so attribute selectors like path[fill="..."] don't work — use ids instead)
   const containerId = useWebSvgAnim([
-    { selector: 'path[fill="#B5593A"]', animation: 'tender-breathe 5s ease-in-out infinite', origin: 'center', all: true },
-    { selector: 'path[fill="#7A9E8E"]', animation: 'tender-breathe 4.5s ease-in-out infinite -1s', origin: 'center' },
-    { selector: 'path[fill="#1E3A52"]', animation: 'tender-breathe 5.5s ease-in-out infinite -2s', origin: 'center' },
-    { selector: 'path[fill="#C8923A"]', animation: 'tender-breathe 6s ease-in-out infinite -0.5s', origin: 'center' },
-    { selector: 'path[fill="#D4909A"]', animation: 'tender-breathe 5s ease-in-out infinite -3s', origin: 'center' },
-    { selector: 'path[fill="#6E4E6E"]', animation: 'tender-breathe 4s ease-in-out infinite -1.5s', origin: 'center' },
-    { selector: 'circle[r="28"]', animation: 'tender-float 4s ease-in-out infinite', parent: true, all: true },
+    { selector: '#community-figure1', animation: 'tender-breathe 5s ease-in-out infinite',       origin: 'center' },
+    { selector: '#community-figure2', animation: 'tender-breathe 4.5s ease-in-out infinite -1s', origin: 'center' },
+    { selector: '#community-figure3', animation: 'tender-breathe 5.5s ease-in-out infinite -2s', origin: 'center' },
+    { selector: '#community-figure4', animation: 'tender-breathe 6s ease-in-out infinite -0.5s', origin: 'center' },
+    { selector: '#community-figure5', animation: 'tender-breathe 5s ease-in-out infinite -3s',   origin: 'center' },
+    { selector: '#community-figure6', animation: 'tender-breathe 4s ease-in-out infinite -1.5s', origin: 'center' },
+    { selector: '#community-figure7', animation: 'tender-breathe 5s ease-in-out infinite',       origin: 'center' },
+    { selector: '#community-bubble1', animation: 'tender-float 4s ease-in-out infinite' },
+    { selector: '#community-bubble2', animation: 'tender-float 4s ease-in-out infinite -0.5s' },
+    { selector: '#community-bubble3', animation: 'tender-float 4s ease-in-out infinite -1s' },
+    { selector: '#community-bubble4', animation: 'tender-float 4s ease-in-out infinite -1.5s' },
   ], animated);
 
   // Content groups for each figure
@@ -228,7 +233,7 @@ export function IllustrationCommunityHero({ width = 520, height, animated = true
           {figure1Content}
         </AnimatedG>
       ) : (
-        <G>{figure1Content}</G>
+        <G id="community-figure1">{figure1Content}</G>
       )}
       {/* Figure 2: sage */}
       {isNativeAnimated ? (
@@ -236,7 +241,7 @@ export function IllustrationCommunityHero({ width = 520, height, animated = true
           {figure2Content}
         </AnimatedG>
       ) : (
-        <G>{figure2Content}</G>
+        <G id="community-figure2">{figure2Content}</G>
       )}
       {/* Figure 3: navy */}
       {isNativeAnimated ? (
@@ -244,7 +249,7 @@ export function IllustrationCommunityHero({ width = 520, height, animated = true
           {figure3Content}
         </AnimatedG>
       ) : (
-        <G>{figure3Content}</G>
+        <G id="community-figure3">{figure3Content}</G>
       )}
       {/* Figure 4: mustard center */}
       {isNativeAnimated ? (
@@ -252,7 +257,7 @@ export function IllustrationCommunityHero({ width = 520, height, animated = true
           {figure4Content}
         </AnimatedG>
       ) : (
-        <G>{figure4Content}</G>
+        <G id="community-figure4">{figure4Content}</G>
       )}
       {/* Figure 5: blush/pink */}
       {isNativeAnimated ? (
@@ -260,7 +265,7 @@ export function IllustrationCommunityHero({ width = 520, height, animated = true
           {figure5Content}
         </AnimatedG>
       ) : (
-        <G>{figure5Content}</G>
+        <G id="community-figure5">{figure5Content}</G>
       )}
       {/* Figure 6: plum */}
       {isNativeAnimated ? (
@@ -268,7 +273,7 @@ export function IllustrationCommunityHero({ width = 520, height, animated = true
           {figure6Content}
         </AnimatedG>
       ) : (
-        <G>{figure6Content}</G>
+        <G id="community-figure6">{figure6Content}</G>
       )}
       {/* Figure 7: terracotta right */}
       {isNativeAnimated ? (
@@ -276,7 +281,7 @@ export function IllustrationCommunityHero({ width = 520, height, animated = true
           {figure7Content}
         </AnimatedG>
       ) : (
-        <G>{figure7Content}</G>
+        <G id="community-figure7">{figure7Content}</G>
       )}
       {/* Connecting threads */}
       {threadContent}
@@ -286,28 +291,28 @@ export function IllustrationCommunityHero({ width = 520, height, animated = true
           {bubble1Content}
         </AnimatedG>
       ) : (
-        <G>{bubble1Content}</G>
+        <G id="community-bubble1">{bubble1Content}</G>
       )}
       {isNativeAnimated ? (
         <AnimatedG animatedProps={bubble2Props}>
           {bubble2Content}
         </AnimatedG>
       ) : (
-        <G>{bubble2Content}</G>
+        <G id="community-bubble2">{bubble2Content}</G>
       )}
       {isNativeAnimated ? (
         <AnimatedG animatedProps={bubble3Props}>
           {bubble3Content}
         </AnimatedG>
       ) : (
-        <G>{bubble3Content}</G>
+        <G id="community-bubble3">{bubble3Content}</G>
       )}
       {isNativeAnimated ? (
         <AnimatedG animatedProps={bubble4Props}>
           {bubble4Content}
         </AnimatedG>
       ) : (
-        <G>{bubble4Content}</G>
+        <G id="community-bubble4">{bubble4Content}</G>
       )}
       <SvgText x="260" y="368" textAnchor="middle" fontFamily="Georgia,serif" fontSize="11" letterSpacing="5" fill="#2C2C2A" opacity={0.55}>{"COMMUNITY \u00B7 TOGETHER"}</SvgText>
     </Svg>

@@ -91,15 +91,17 @@ export function IllustrationPortalHero({ width = 520, height, animated = true, s
   const rightBodyProps = useNativeBreathe(5000, 2500);
   const vineFloatProps = useNativeFloat(4000, 5);
 
-  // Web: apply CSS animations directly to SVG DOM elements
+  // Web: apply CSS animations directly to SVG DOM elements via #id selectors
+  // (react-native-svg on web renders attributes as inline styles, not DOM attributes,
+  //  so attribute selectors like path[fill="..."] don't work — use ids instead)
   const containerId = useWebSvgAnim([
-    { selector: 'circle[cx="186"]', animation: 'tender-breathe 5s ease-in-out infinite', origin: '186px 160px', all: true },
-    { selector: 'circle[cx="334"]', animation: 'tender-breathe 5s ease-in-out infinite -2.5s', origin: '334px 160px', all: true },
-    { selector: 'path[fill="#C8923A"][opacity]', animation: 'tender-glow 4s ease-in-out infinite' },
-    { selector: 'path[stroke="#C8923A"]', animation: 'tender-pulse 3s ease-in-out infinite' },
-    { selector: 'path[fill="#B5593A"]', animation: 'tender-breathe 5s ease-in-out infinite', origin: '116px 260px' },
-    { selector: 'path[fill="#1E3A52"]', animation: 'tender-breathe 5s ease-in-out infinite -2.5s', origin: '402px 260px' },
-    { selector: 'line[x1="260"]', animation: 'tender-float 4s ease-in-out infinite', origin: '260px 140px', parent: true },
+    { selector: '#portal-left-orbs',   animation: 'tender-breathe 5s ease-in-out infinite',       origin: '186px 160px' },
+    { selector: '#portal-right-orbs',  animation: 'tender-breathe 5s ease-in-out infinite -2.5s', origin: '334px 160px' },
+    { selector: '#portal-vesica-fill', animation: 'tender-glow 4s ease-in-out infinite' },
+    { selector: '#portal-vesica-stroke', animation: 'tender-pulse 3s ease-in-out infinite' },
+    { selector: '#portal-body-left',   animation: 'tender-breathe 5s ease-in-out infinite',       origin: '116px 260px' },
+    { selector: '#portal-body-right',  animation: 'tender-breathe 5s ease-in-out infinite -2.5s', origin: '402px 260px' },
+    { selector: '#portal-vine',        animation: 'tender-float 4s ease-in-out infinite',         origin: '260px 140px' },
   ], animated);
 
   const isNativeAnimated = animated && Platform.OS !== 'web';
@@ -215,7 +217,7 @@ export function IllustrationPortalHero({ width = 520, height, animated = true, s
           {leftOrbsContent}
         </AnimatedG>
       ) : (
-        <G>{leftOrbsContent}</G>
+        <G id="portal-left-orbs">{leftOrbsContent}</G>
       )}
       {/* Right orbs — breathe with delay */}
       {isNativeAnimated ? (
@@ -223,7 +225,7 @@ export function IllustrationPortalHero({ width = 520, height, animated = true, s
           {rightOrbsContent}
         </AnimatedG>
       ) : (
-        <G>{rightOrbsContent}</G>
+        <G id="portal-right-orbs">{rightOrbsContent}</G>
       )}
       {/* Vesica fill — glow (opacity pulse) */}
       {isNativeAnimated ? (
@@ -231,7 +233,7 @@ export function IllustrationPortalHero({ width = 520, height, animated = true, s
           {vesicaFillContent}
         </AnimatedG>
       ) : (
-        <G>{vesicaFillContent}</G>
+        <G id="portal-vesica-fill">{vesicaFillContent}</G>
       )}
       {/* Vesica stroke — pulse (opacity pulse) */}
       {isNativeAnimated ? (
@@ -239,7 +241,7 @@ export function IllustrationPortalHero({ width = 520, height, animated = true, s
           {vesicaStrokeContent}
         </AnimatedG>
       ) : (
-        <G>{vesicaStrokeContent}</G>
+        <G id="portal-vesica-stroke">{vesicaStrokeContent}</G>
       )}
       {/* Center vine — float */}
       {isNativeAnimated ? (
@@ -247,7 +249,7 @@ export function IllustrationPortalHero({ width = 520, height, animated = true, s
           {vineContent}
         </AnimatedG>
       ) : (
-        <G>{vineContent}</G>
+        <G id="portal-vine">{vineContent}</G>
       )}
       {/* LEFT BODY — terracotta, breathe */}
       {isNativeAnimated ? (
@@ -255,7 +257,7 @@ export function IllustrationPortalHero({ width = 520, height, animated = true, s
           {leftBodyContent}
         </AnimatedG>
       ) : (
-        <G>{leftBodyContent}</G>
+        <G id="portal-body-left">{leftBodyContent}</G>
       )}
       {/* RIGHT BODY — navy, breathe with delay */}
       {isNativeAnimated ? (
@@ -263,7 +265,7 @@ export function IllustrationPortalHero({ width = 520, height, animated = true, s
           {rightBodyContent}
         </AnimatedG>
       ) : (
-        <G>{rightBodyContent}</G>
+        <G id="portal-body-right">{rightBodyContent}</G>
       )}
       {/* Report score zones */}
       <G opacity={0.55}>

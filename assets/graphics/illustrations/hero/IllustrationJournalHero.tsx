@@ -124,14 +124,16 @@ export function IllustrationJournalHero({ width = 520, height, animated = true, 
   const flameSwayProps = useNativeSway(3000, 5);
   const heartFloatProps = useNativeFloat(3500, 4, 1500);
 
-  // Web: apply CSS animations directly to SVG DOM elements
+  // Web: apply CSS animations directly to SVG DOM elements via #id selectors
+  // (react-native-svg on web renders attributes as inline styles, not DOM attributes,
+  //  so attribute selectors like path[fill="..."] don't work — use ids instead)
   const containerId = useWebSvgAnim([
-    { selector: 'path[fill="#B5593A"]', animation: 'tender-breathe 5.5s ease-in-out infinite', origin: '220px 275px' },
-    { selector: 'ellipse[stroke="#C8923A"]', animation: 'tender-pulse 2.5s ease-in-out infinite', all: true },
-    { selector: 'circle[r="3.5"]', animation: 'tender-pulse 2s ease-in-out infinite' },
-    { selector: 'circle[r="5"]', animation: 'tender-drift 6s ease-in-out infinite', origin: '260px 100px', parent: true },
-    { selector: 'path[fill="#7A9E8E"]', animation: 'tender-float 4s ease-in-out infinite', origin: '340px 220px', parent: true },
-    { selector: 'path[fill="#D4909A"]', animation: 'tender-float 3.5s ease-in-out infinite -1.5s', origin: '345px 175px', parent: true },
+    { selector: '#journal-body',     animation: 'tender-breathe 5.5s ease-in-out infinite',         origin: '220px 275px' },
+    { selector: '#journal-rings',    animation: 'tender-pulse 2.5s ease-in-out infinite' },
+    { selector: '#journal-self-dot', animation: 'tender-pulse 2s ease-in-out infinite' },
+    { selector: '#journal-sun',      animation: 'tender-drift 6s ease-in-out infinite',             origin: '260px 100px' },
+    { selector: '#journal-leaf',     animation: 'tender-float 4s ease-in-out infinite',             origin: '340px 220px' },
+    { selector: '#journal-heart',    animation: 'tender-float 3.5s ease-in-out infinite -1.5s',     origin: '345px 175px' },
   ], animated);
 
   // Shared content pieces for animated/static rendering
@@ -222,7 +224,7 @@ export function IllustrationJournalHero({ width = 520, height, animated = true, 
           {sunDotContent}
         </AnimatedG>
       ) : (
-        <G>{sunDotContent}</G>
+        <G id="journal-sun">{sunDotContent}</G>
       )}
       {/* BODY — terracotta (breathe on native) */}
       {isNativeAnimated ? (
@@ -230,7 +232,7 @@ export function IllustrationJournalHero({ width = 520, height, animated = true, 
           {bodyContent}
         </AnimatedG>
       ) : (
-        <G>{bodyContent}</G>
+        <G id="journal-body">{bodyContent}</G>
       )}
       {/* Inner architecture — concentric rings (pulse on native) */}
       {isNativeAnimated ? (
@@ -238,7 +240,7 @@ export function IllustrationJournalHero({ width = 520, height, animated = true, 
           {ringsContent}
         </AnimatedG>
       ) : (
-        <G>{ringsContent}</G>
+        <G id="journal-rings">{ringsContent}</G>
       )}
       {/* SELF dot — golden center (pulse on native) */}
       {isNativeAnimated ? (
@@ -246,7 +248,7 @@ export function IllustrationJournalHero({ width = 520, height, animated = true, 
           <Circle cx="222" cy="278" r="3.5" fill="#C8923A" opacity={0.85}/>
         </AnimatedG>
       ) : (
-        <Circle cx="222" cy="278" r="3.5" fill="#C8923A" opacity={0.85}/>
+        <Circle id="journal-self-dot" cx="222" cy="278" r="3.5" fill="#C8923A" opacity={0.85}/>
       )}
       {/* Floating journal symbols */}
       {/* Leaf (float on native) */}
@@ -255,7 +257,7 @@ export function IllustrationJournalHero({ width = 520, height, animated = true, 
           {leafContent}
         </AnimatedG>
       ) : (
-        <G>{leafContent}</G>
+        <G id="journal-leaf">{leafContent}</G>
       )}
       {/* Wave (static) */}
       <G>
@@ -275,7 +277,7 @@ export function IllustrationJournalHero({ width = 520, height, animated = true, 
           {heartContent}
         </AnimatedG>
       ) : (
-        <G>{heartContent}</G>
+        <G id="journal-heart">{heartContent}</G>
       )}
       {/* Timeline */}
       <Line x1="430" y1="50" x2="430" y2="340" stroke="#D6CEBF" strokeWidth="0.8" opacity={0.6}/>
