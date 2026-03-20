@@ -170,6 +170,14 @@
     display: flex;
     gap: 10px;
     align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 400ms ease, visibility 400ms ease;
+  }
+
+  .controls.visible {
+    opacity: 1;
+    visibility: visible;
   }
 
   .control-button {
@@ -542,6 +550,7 @@
   const startButton = document.getElementById("startButton");
   const playPauseButton = document.getElementById("playPauseButton");
   const replayButton = document.getElementById("replayButton");
+  const controls = document.querySelector(".controls");
   const patternStrip = document.getElementById("patternStrip");
   const captionKicker = document.getElementById("captionKicker");
   const captionText = document.getElementById("captionText");
@@ -787,6 +796,7 @@
     }
 
     splash.classList.add("hidden");
+    controls.classList.add("visible");
     playPauseButton.textContent = "Pause";
 
     requestAnimationFrame(() => {
@@ -795,6 +805,7 @@
 
       audio.play().catch(() => {
         splash.classList.remove("hidden");
+        controls.classList.remove("visible");
         playPauseButton.textContent = "Play";
       });
     });
