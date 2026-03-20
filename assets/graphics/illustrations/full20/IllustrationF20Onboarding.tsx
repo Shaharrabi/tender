@@ -39,7 +39,7 @@ function useNativeBreatheView(duration = 6000) {
     if (Platform.OS === 'web') return;
     scale.value = withRepeat(
       withSequence(
-        withTiming(1.015, { duration: duration / 2, easing: Easing.inOut(Easing.ease) }),
+        withTiming(1.035, { duration: duration / 2, easing: Easing.inOut(Easing.ease) }),
         withTiming(1.0,   { duration: duration / 2, easing: Easing.inOut(Easing.ease) }),
       ), -1, false
     );

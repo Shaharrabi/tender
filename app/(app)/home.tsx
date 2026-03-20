@@ -2183,12 +2183,7 @@ export default function HomeScreen() {
           <Text style={styles.gatewaySectionLabel}>EXPLORE</Text>
 
           {/* YOUR JOURNEY */}
-          <Pressable
-            style={({ pressed }) => [styles.gatewayCard, pressed && styles.gatewayCardPressed]}
-            onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/growth' as any); }}
-            accessibilityRole="button"
-            accessibilityLabel="Your Journey"
-          >
+          <ExploreCard label="Your Journey" onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/growth' as any); }}>
             <View style={styles.gatewayCardIconWrap}>
               <SeedlingIcon size={22} color={Colors.primary} />
             </View>
@@ -2201,16 +2196,10 @@ export default function HomeScreen() {
               </Text>
             </View>
             <Text style={styles.gatewayCardArrow}>{'\u2192'}</Text>
-          </Pressable>
+          </ExploreCard>
 
           {/* YOUR PORTRAIT */}
-          <Pressable
-            ref={(r) => RefRegistry.register('home_portraitCard', r)}
-            style={({ pressed }) => [styles.gatewayCard, pressed && styles.gatewayCardPressed]}
-            onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/portrait' as any); }}
-            accessibilityRole="button"
-            accessibilityLabel="Your Portrait"
-          >
+          <ExploreCard label="Your Portrait" refCallback={(r) => RefRegistry.register('home_portraitCard', r)} onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/portrait' as any); }}>
             <View style={styles.gatewayCardIconWrap}>
               <SparkleIcon size={22} color={Colors.primary} />
             </View>
@@ -2223,16 +2212,11 @@ export default function HomeScreen() {
               </Text>
             </View>
             <Text style={styles.gatewayCardArrow}>{'\u2192'}</Text>
-          </Pressable>
+          </ExploreCard>
 
           {/* YOUR RELATIONSHIP (only when coupled) */}
           {hasCoupleLinked && (
-            <Pressable
-              style={({ pressed }) => [styles.gatewayCard, pressed && styles.gatewayCardPressed]}
-              onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/couple-portal' as any); }}
-              accessibilityRole="button"
-              accessibilityLabel="Your Relationship"
-            >
+            <ExploreCard label="Your Relationship" onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/couple-portal' as any); }}>
               <View style={styles.gatewayCardIconWrap}>
                 <HeartDoubleIcon size={22} color={Colors.primary} />
               </View>
@@ -2245,17 +2229,12 @@ export default function HomeScreen() {
                 </Text>
               </View>
               <Text style={styles.gatewayCardArrow}>{'\u2192'}</Text>
-            </Pressable>
+            </ExploreCard>
           )}
 
           {/* BUILDING BRIDGES — shown for coupled users */}
           {hasCoupleLinked && (
-            <Pressable
-              style={({ pressed }) => [styles.gatewayCard, pressed && styles.gatewayCardPressed]}
-              onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/building-bridges' as any); }}
-              accessibilityRole="button"
-              accessibilityLabel="Building Bridges"
-            >
+            <ExploreCard label="Building Bridges" onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/building-bridges' as any); }}>
               <View style={styles.gatewayCardIconWrap}>
                 <RainbowIcon size={22} color={Colors.accent} />
               </View>
@@ -2266,17 +2245,12 @@ export default function HomeScreen() {
                 </Text>
               </View>
               <Text style={styles.gatewayCardArrow}>{'\u2192'}</Text>
-            </Pressable>
+            </ExploreCard>
           )}
 
           {/* DATING WELL — shown for single users */}
           {relationshipStatus === 'single' && (
-            <Pressable
-              style={({ pressed }) => [styles.gatewayCard, pressed && styles.gatewayCardPressed]}
-              onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/dating-well' as any); }}
-              accessibilityRole="button"
-              accessibilityLabel="Dating Well"
-            >
+            <ExploreCard label="Dating Well" onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/dating-well' as any); }}>
               <View style={styles.gatewayCardIconWrap}>
                 <SparkleIcon size={22} color={Colors.accent} />
               </View>
@@ -2287,16 +2261,11 @@ export default function HomeScreen() {
                 </Text>
               </View>
               <Text style={styles.gatewayCardArrow}>{'\u2192'}</Text>
-            </Pressable>
+            </ExploreCard>
           )}
 
           {/* MORE */}
-          <Pressable
-            style={({ pressed }) => [styles.gatewayCard, pressed && styles.gatewayCardPressed]}
-            onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/more' as any); }}
-            accessibilityRole="button"
-            accessibilityLabel="More"
-          >
+          <ExploreCard label="More" onPress={() => { SoundHaptics.tapSoft(); router.push('/(app)/more' as any); }}>
             <View style={styles.gatewayCardIconWrap}>
               <MenuIcon size={22} color={Colors.primary} />
             </View>
@@ -2307,7 +2276,7 @@ export default function HomeScreen() {
               </Text>
             </View>
             <Text style={styles.gatewayCardArrow}>{'\u2192'}</Text>
-          </Pressable>
+          </ExploreCard>
         </View>
 
         {/* Old Daily Rhythm moved above gateway cards as collapsible DailyRhythmSection */}
@@ -2322,9 +2291,75 @@ export default function HomeScreen() {
       {showTour && (
         <WelcomeTour onComplete={handleTourComplete} />
       )}
-      <TooltipManager screen="home" scrollRef={scrollRef} scrollOffset={scrollOffset} enabled={completedCount === 0} />
+      {/* TooltipManager disabled — tooltips kept re-triggering on storage resets */}
+      {/* <TooltipManager screen="home" scrollRef={scrollRef} scrollOffset={scrollOffset} enabled={completedCount === 0} /> */}
       {hasCoupleLinked && <PartnerActivityToast />}
     </SafeAreaView>
+  );
+}
+
+// ─── ExploreCard — smooth animated lift on press/hover ──
+
+function ExploreCard({
+  onPress,
+  label,
+  refCallback,
+  children,
+}: {
+  onPress: () => void;
+  label: string;
+  refCallback?: (r: any) => void;
+  children: React.ReactNode;
+}) {
+  const anim = useRef(new Animated.Value(0)).current;
+
+  const handlePressIn = () => {
+    Animated.spring(anim, {
+      toValue: 1,
+      speed: 50,
+      bounciness: 0,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(anim, {
+      toValue: 0,
+      speed: 40,
+      bounciness: 4,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const animatedStyle = {
+    transform: [
+      { scale: anim.interpolate({ inputRange: [0, 1], outputRange: [1, 1.018] }) },
+      { translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [0, -2] }) },
+    ],
+    shadowOpacity: anim.interpolate({ inputRange: [0, 1], outputRange: [0.06, 0.14] }),
+    shadowRadius: anim.interpolate({ inputRange: [0, 1], outputRange: [4, 12] }),
+    shadowOffset: { width: 0, height: anim.interpolate({ inputRange: [0, 1], outputRange: [2, 6] }) },
+  };
+
+  return (
+    <Animated.View style={[styles.gatewayCard, animatedStyle]}>
+      <Pressable
+        ref={refCallback}
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        // Web hover support
+        {...(Platform.OS === 'web' ? {
+          onHoverIn: handlePressIn,
+          onHoverOut: handlePressOut,
+        } as any : {})}
+      >
+        {children}
+      </Pressable>
+    </Animated.View>
   );
 }
 
@@ -4258,18 +4293,14 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xs,
   },
   gatewayCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: Colors.surface,
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
-    gap: Spacing.md,
-    ...Shadows.card,
-  },
-  gatewayCardPressed: {
-    backgroundColor: '#F7F2EF',
-    transform: [{ scale: 0.985 }],
-    shadowOpacity: 0.04,
+    shadowColor: '#8B7355',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
   },
   gatewayCardIconWrap: {
     width: 44,
