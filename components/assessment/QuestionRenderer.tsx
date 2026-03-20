@@ -15,6 +15,7 @@ import {
   Platform,
 } from 'react-native';
 import { Colors, Spacing, FontSizes } from '@/constants/theme';
+import AnimatedPressable from '@/components/ui/AnimatedPressable';
 import type { GenericQuestion, LikertOption } from '@/types';
 
 interface QuestionRendererProps {
@@ -45,7 +46,7 @@ export default function QuestionRenderer({
             <Text style={styles.scrollHint}>Scroll down to see all {scale.length} options</Text>
           )}
           {scale.map((item) => (
-            <TouchableOpacity
+            <AnimatedPressable
               key={item.value}
               style={[
                 styles.likertOption,
@@ -72,7 +73,7 @@ export default function QuestionRenderer({
               >
                 {item.value} — {item.label}
               </Text>
-            </TouchableOpacity>
+            </AnimatedPressable>
           ))}
         </View>
         );
@@ -147,7 +148,7 @@ export default function QuestionRenderer({
       {question.inputType === 'choice' && question.choices && (
         <View style={styles.choiceSection} accessibilityRole="radiogroup" accessibilityLabel={question.text || 'Multiple choice question'}>
           {question.choices.map((choice, choiceIndex) => (
-            <TouchableOpacity
+            <AnimatedPressable
               key={choice.key}
               style={[
                 styles.choiceOption,
@@ -179,7 +180,7 @@ export default function QuestionRenderer({
               >
                 {choice.text}
               </Text>
-            </TouchableOpacity>
+            </AnimatedPressable>
           ))}
         </View>
       )}
@@ -196,7 +197,7 @@ export default function QuestionRenderer({
             const isSelected = position !== -1;
             const isFull = ranked.length >= (question.rankCount || 5);
             return (
-              <TouchableOpacity
+              <AnimatedPressable
                 key={item.id}
                 style={[
                   styles.rankingItem,
@@ -231,7 +232,7 @@ export default function QuestionRenderer({
                     <Text style={styles.rankingItemDesc}>{item.description}</Text>
                   ) : null}
                 </View>
-              </TouchableOpacity>
+              </AnimatedPressable>
             );
           })}
         </View>
