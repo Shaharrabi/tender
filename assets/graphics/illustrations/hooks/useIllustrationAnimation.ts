@@ -87,11 +87,23 @@ export function useWebSvgAnim(targets: WebAnimTarget[], animated: boolean): stri
   useEffect(() => {
     if (!isWeb || !animated || typeof document === 'undefined' || !id) return;
 
-    // Use rAF to wait for SVG elements to render in the DOM
-    const raf = requestAnimationFrame(() => {
-      const container = document.getElementById(id);
-      if (!container) return;
+    let cancelled = false;
+    let attempts = 0;
+    const MAX_ATTEMPTS = 10;
 
+    // Apply CSS animations to matched SVG DOM elements
+    function applyAnimations() {
+      const container = document.getElementById(id);
+      if (!container) {
+        // Container not in DOM yet — retry
+        if (!cancelled && attempts < MAX_ATTEMPTS) {
+          attempts++;
+          requestAnimationFrame(applyAnimations);
+        }
+        return;
+      }
+
+      let allMatched = true;
       for (const target of targets) {
         const applyAnim = (matched: Element) => {
           const el = (target.parent ? matched.parentElement : matched) as HTMLElement | null;
@@ -101,15 +113,30 @@ export function useWebSvgAnim(targets: WebAnimTarget[], animated: boolean): stri
         };
 
         if (target.all) {
-          container.querySelectorAll(target.selector).forEach(applyAnim);
+          const matches = container.querySelectorAll(target.selector);
+          if (matches.length === 0) allMatched = false;
+          matches.forEach(applyAnim);
         } else {
           const matched = container.querySelector(target.selector);
-          if (matched) applyAnim(matched);
+          if (matched) {
+            applyAnim(matched);
+          } else {
+            allMatched = false;
+          }
         }
       }
-    });
 
-    return () => cancelAnimationFrame(raf);
+      // If some selectors didn't match, SVG may still be rendering — retry
+      if (!allMatched && !cancelled && attempts < MAX_ATTEMPTS) {
+        attempts++;
+        requestAnimationFrame(applyAnimations);
+      }
+    }
+
+    // Start after a frame to let SVG mount
+    requestAnimationFrame(applyAnimations);
+
+    return () => { cancelled = true; };
   }, [animated, id]);
 
   return id;
