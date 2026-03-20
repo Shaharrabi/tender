@@ -962,7 +962,7 @@ export default function TenderAssessmentScreen() {
         {/* Back button */}
         <View style={styles.welcomeTopBar}>
           <TouchableOpacity
-            onPress={() => router.back()}
+            onPress={() => router.canGoBack() ? router.back() : router.replace('/(app)/home' as any)}
             activeOpacity={0.7}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             accessibilityRole="button"
@@ -1450,7 +1450,6 @@ const styles = StyleSheet.create({
   welcomeSubtitle: {
     fontSize: FontSizes.body,
     fontFamily: FontFamilies.heading,
-    fontStyle: 'italic',
     color: Colors.textSecondary,
     textAlign: 'center',
     marginTop: Spacing.sm,
@@ -1493,9 +1492,9 @@ const styles = StyleSheet.create({
   welcomeEmphasis: {
     fontSize: FontSizes.body,
     fontFamily: FontFamilies.heading,
-    fontStyle: 'italic',
     color: Colors.secondary,
     textAlign: 'center',
+    marginBottom: Spacing.lg,
   },
 
   // Guidelines
